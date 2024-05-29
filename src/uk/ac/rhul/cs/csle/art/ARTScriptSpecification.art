@@ -1,0 +1,131 @@
+(* ART script grammar rules - suitable for RDSOB parsers: No left recursive rules; Alterates in decreasing length order;   directive at end of each rule *)
+//!parser rdsobFunction // Uncomment this line to try bootstrapping with Recursive Descent Singleton Ordered Backtracking parser instead of default GLL parser
+!whitespace &SIMPLE_WHITESPACE, &COMMENT_NEST_ART, &COMMENT_LINE_C 
+rules ::= rule rules^ | rule
+rule  ::= cfgRule^^ | trRule^^ | 'choose'^ chooseRules^ | '!'^ directive^^   
+
+(* Context Free Grammar rules ************************************************)
+cfgRule  ::= cfgLHS '::='^ cfgAlts^  
+  cfgLHS ::= &ID  
+cfgAlts ::= cfgAlt '|'^ cfgAlts^ | cfgAlt  
+cfgAlt  ::= cfgSeq^^ cfgActions cfgEpsilonCarrier | cfgSeq^^ cfgActions cfgEpsilon | cfgSeq^^ cfgElems^ cfgActions (* final actions in sequence *)  
+  cfgEpsilonCarrier ::= cfgEpsilon cfgAnnotation^^  
+cfgAltNoAction ::= cfgSeq^^ cfgSlot cfgPrim cfgSlot   // This matches a single element with no actions allowed for use in abbreviated Kleene operations
+cfgElems ::= cfgActions cfgExtended cfgElems^ | cfgActions cfgExtended  
+cfgExtended ::= cfgPrim cfgAnnotation^^ | cfgPrim^^ | cfgOptional^^ | cfgKleene^^ | cfgPositive^^ | cfgDoFirst^^  
+cfgAnnotation ::= cfgFoldUnder^^ | cfgFoldOver^^  
+  cfgFoldUnder ::= '^'^  
+  cfgFoldOver ::= '^^'^  
+cfgDoFirst  ::= '('^ cfgAlts^ ')'^  
+cfgOptional ::= '('^ cfgAlts^ ')'^ '?'^ | cfgAltNoAction '?'^  
+cfgPositive ::= '('^ cfgAlts^ ')'^ '+'^ | cfgAltNoAction '+'^  
+cfgKleene   ::= '('^ cfgAlts^ ')'^ '*'^ | cfgAltNoAction '*'^  
+cfgPrim ::= cfgNonterminal^^ | cfgCaseSensitiveTerminal^^| cfgCaseInsensitiveTerminal^^ | cfgCharacterTerminal | cfgCharacterRangeTerminal | cfgBuiltinTerminal^^  
+  cfgNonterminal ::= ID | STRING_DOLLAR
+  cfgCaseSensitiveTerminal ::= STRING_PLAIN_SQ
+  cfgCaseInsensitiveTerminal ::= STRING_DQ
+  cfgCharacterTerminal ::= CHAR_BQ
+  cfgCharacterRangeTerminal ::= CHAR_BQ '..'^ CHAR_BQ
+  cfgBuiltinTerminal ::= '&'^ ID
+  cfgEpsilon ::= '#'^
+  cfgSlotSymbol ::= '.'
+cfgActions ::= cfgSlot^^ cfgActionSeq^ | cfgSlot^^   
+  cfgActionSeq ::= cfgAction cfgActionSeq^ | cfgAction  
+  cfgAction  ::= cfgEquation^^ | cfgAssignment^^ | cfgInsert  
+cfgEquation ::= cfgAttribute '='^ trTerm  
+cfgAssignment ::= cfgAttribute ':='^ trTerm  
+cfgInsert ::= '^+'^ &ID  
+cfgAttribute ::= &ID '.'^ &ID   
+cfgSeq ::= #^   // Dirty trick: both cfgAlt and cfgAltNoAction promote cfgSeq to achieve gather operation
+cfgSlot ::= #^  
+
+(* Term rewrite rules ********************************************************)
+trRule ::= trLabel tr 
+trLabel ::= #^ | '-'^ ID | '-'^ STRING_DQ  
+tr ::= trPremises '---'^ trTransition trEquations 
+     | trPremises '---'^ trTransition
+     | trPremises '---'^ trNoTransition trEquations
+     | trPremises '---'^ trNoTransition 
+trPremises ::= #^ | trTransition trPremises^ | trMatch trPremises^
+trTransition ::= trConfiguration TRRELATION trConfiguration
+trNoTransition ::= trConfiguration
+trConfiguration ::= trTerm | trTerm trEntityReferences^ | '<'^ trTerm trEntityReferences^ '>'^
+trEntityReferences ::= ','^ trTerm | ','^ trTerm trEntityReferences^ | ','^ trNamedTerm | ','^ trNamedTerm  trEntityReferences^
+trNamedTerm ::= ID '='^ trTerm
+trMatch ::= trTerm '|>'^ trTerm
+trTerm ::= __bool^^ | __int32^^ | __real64^^ | __string^^ | __char^^ | ID^^ | ID^^ '('^ ')'^ | ID^^  '('^ trSubterms^ ')'^ | ID_ATTRIBUTE
+trSubterms ::= trTerm | trTerm  ','^ trSubterms^ | trTerm  trSubterms^
+trEquations ::= cfgEquation | cfgEquation ','^ trEquations^
+
+(* Choose rules ***************************************************************)
+chooseRules ::= chooseRule | chooseRule chooseRules^
+chooseRule ::= chooseDiff chooserOp^^ chooseDiff 
+chooseDiff ::= chooseUnionIntersection^^ | chooseDiff '||'^ chooseUnionIntersection
+chooseUnionIntersection ::= chooseElement^^ | chooseUnionIntersection chooseUnion^^ chooseElement^ | chooseUnionIntersection chooseIntersection^^ chooseElement^
+chooseUnion ::= '|'^
+chooseIntersection ::= '/'^
+chooseElement ::= cfgNonterminal | cfgCharacterTerminal | cfgBuiltinTerminal | cfgCaseInsensitiveTerminal | cfgCaseSensitiveTerminal | choosePredefinedSet^ | '('^ chooseDiff ')'^
+choosePredefinedSet ::= 'anyCharacterTerminal' | 'anyBuiltinTerminal' | 'anyCaseSensitiveTerminal' | 'anyCaseInsensitiveTerminal' 
+                      | 'anyParaterminal'      | 'anyLiteralTerminal' | 'anyTerminal'              | 'anyNonterminal'
+chooserOp ::= chooseHigher^^ | chooseLower^^ | chooseLonger^^ | chooseShorter^^
+chooseHigher ::= '>'^
+chooseLower ::= '<'^
+chooseLonger ::= '>>'^
+chooseShorter ::= '<<'^
+
+(* Directives ****************************************************************)
+directive ::= directiveElement
+
+directiveElement ::=
+  'include' file
+| 'lexer'^^ '#'^ | 'lexer'^^ lexerElements 
+| 'whitespace'^^ '#'^ | 'whitespace'^^ whiteSpaceElements^ | 'whitespace'^^ '('^ whiteSpaceElements^ ')'^
+| 'paraterminal'^^ '#'^ | 'paraterminal'^^ paraterminalElements^
+| 'parser'^^ '#'^ | 'parser'^^ parserElements^
+| 'start'^^ '#'^ | 'start'^^ cfgNonterminal // Set parser start nonterminal
+| 'rewriter'^^ '#'^ | 'rewriter'^^ rewriterElements^
+| 'configuration'^^ '#'^ | 'configuration'^^ TRRELATION | 'configuration'^^ TRRELATION ','^ trConfiguration
+| 'trace'^^ __int32
+| 'print'^^ displayElements^
+| 'show'^^ displayElements^
+| 'log'^^ displayElements^
+| 'try'^^ file | 'try'^^ trConfiguration | 'try'^^ __string 
+| 'try'^^ file '='^ trConfiguration | 'try'^^ trConfiguration '='^ trConfiguration | 'try'^^ __string '='^ trConfiguration
+| 'termTool'^^
+| 'nop'^^
+
+file ::= &STRING_PLAIN_SQ
+
+lexerElements ::= lexerElement | lexerElement ','^ lexerElements
+lexerElement ::= 'LongestMatch'^^ | 'twe'^^
+
+whiteSpaceElements ::= whiteSpaceElement | whiteSpaceElement ','^ whiteSpaceElements^
+whiteSpaceElement  ::= cfgNonterminal^^ | cfgBuiltinTerminal^^
+
+paraterminalElements ::= paraterminalElement | paraterminalElement ','^ paraterminalElements^
+paraterminalElement  ::= cfgNonterminal^^
+
+parserElements ::= parserElement | parserElement ','^ parserElements^
+parserElement ::= 'gllBaseLine'^^ | 'rdsobFunction'^^ | 'algX'^^ | 'cyk'^^
+
+rewriterElements ::= rewriterElement | rewriterElement ','^ rewriterElements^
+rewriterElement ::= 'eSOS'^^
+
+displayElements ::= displayElement | displayElement ','^ displayElements^
+displayElement  ::= 'grammar'^^ | 'grammarProperties'^^ |'scriptDerivation'^^ | 'input'^^ | 'tokens'^^ | 'sppf'^^ | 'derivation'^^ | 'outcome'^^ | 'statistics'^^ | __string^^
+
+(* Lexical elements **********************************************************)
+__bool ::= 'true' | 'false'
+__char ::= &CHAR_BQ
+__int32 ::= &SIGNED_INTEGER
+__real64 ::= &SIGNED_REAL 
+__string ::= &STRING_DQ
+ID ::= &ID^^
+ID_ATTRIBUTE ::= &ID '.'^ &ID
+STRING_DQ ::= &STRING_DQ^^ 
+STRING_DOLLAR ::= &STRING_DOLLAR^^
+STRING_PLAIN_SQ ::= &STRING_PLAIN_SQ^^
+CHAR_BQ ::= &CHAR_BQ^^
+STRING_BRACE_NEST ::= &STRING_BRACE_NEST^^
+STRING_BRACKET_NEST ::= &STRING_BRACKET_NEST^^
+TRRELATION ::= '->' | '->*' | '=>'  | '=>*' | '~>'  | '~>*'  

@@ -1,0 +1,88 @@
+(* adl - a dynamic language (or maybe Adrian's dynamic language) 
+   This is version 0.1 with lambdas and basic flow control but no pattern matching
+
+Notes on classes
+
+A class has potentially many superclasses - work on search orderings
+
+Within the body, assignments and constants become class variables, and that allows methods to be created too which are class variables that are bound to functions We don't need polymorphsim because we're dynamic.
+
+how dor we differentiate constructors?
+
+A method called new
+
+*)
+!whitespace(&SIMPLE_WHITESPACE,&COMMENT_BLOCK_C,&COMMENT_LINE_C)
+adl      ::= #^ | seq^^ | ';' | seq ';'                   // top level expression may be empty or a seq followed by optional semicolon
+seq      ::= apply^^ | apply ';'^ seq                     // and-also (void-left) operator
+apply    ::= flow | flow apply^                           // 'space' operator (juxtaposition) apply
+flow     ::= def^^ | match^^ | matchr^^                   // non-linear flow control
+  match  ::= def '?'^ flow '~'^ def | def '?'^ flow skip  // pattern matching
+  matchr ::= def '@'^ flow '~'^ def | def '@'^ flow skip  // pattern matching and repeat
+  skip   ::= #^                                           // do-nothing
+def      ::= system^^ | const^^ | assign^^                // assign and constant definition
+  const  ::= lhslst '='^ def
+  assign ::= lhslst ':='^ def
+  lhslst ::= lhselm^ | lhselm^ ','^ lhselm^               // restricted syntax for LHS of definitions, function parameters and class parameters
+  lhselm ::= ID^^ | ID^^ '::'^ or                         // pair interpreted as paramater-name(default value) 
+system   ::= slice^^ | slice '$$$'^ slice                 // system call: lhs is opcode, rhs is argument
+slice    ::= list^^                                       // extract a sub list
+           | list '#'^ or | list '#'^ or '..'^ or | list '#'^ or '..'^ or '..'^ or
+list     ::= pair^^ | pair ','^ listtl^
+  listtl ::= pair  | pair ','^ listtl^
+pair     ::= or^^ | or '::'^ or                           // sugar for list of exactly two elements
+or       ::= xor^^ |  or '|'^ xor 
+xor      ::= and^^ | xor '^'^ and 
+and      ::= eqs^^ | eqs '&'^ and
+eqs      ::= rels^^ | eq^^ | ne^^
+  eq     ::= rels '=='^ rels 
+  ne     ::= rels '!='^ rels 
+rels     ::= cat^^ | ge^^ | gt^^ | le^^ | lt^^
+  ge     ::= cat '>='^ cat 
+  gt     ::= cat '>'^ cat 
+  le     ::= cat '<='^ cat 
+  lt     ::= cat '<'^ cat
+cat      ::= shs^^  | cat ':'^ shs
+shs      ::= adds^^ | lsh^^ | rsh^^ | rol^^ | ror^^ | ash^^
+  lsh    ::= shs '<<'^ adds 
+  rsh    ::= shs '>>'^ adds 
+  rol    ::= shs '<<|'^ adds 
+  ror    ::= shs '>>|'^ adds
+  ash    ::= shs '>>>'^ adds 
+adds     ::= muls^^ | add^^ | sub^^
+  add    ::= adds '+'^ muls 
+  sub    ::= adds '-'^ muls 
+muls     ::= exp^^ | mul^^ | div^^ | mod^^
+  mul    ::= muls '*'^ exp  
+  div    ::= muls '/'^ exp 
+  mod    ::= muls '%'^ exp
+exp      ::= cast^^ | cast '**'^ exp
+cast     ::= base^^ | base '$'^ ID^                       // attempt to cast a value to another type, throwing an exeption if unavailable
+base     ::= pos^^ | neg^^ | not^^ | lambda^^ | class^^ | blist^^ | mtlist^^ | use^^ | '('^ seq^^ ')'^  
+           | __bool^^ | __int32^^ | __real64^^ | __char^^ | __string^^ | __done^^ | __empty^^ | any | break^^ | continue^^ | return^^ | yield^^
+pos      ::= '!+'^ base
+neg      ::= '!-'^ base
+not      ::= '!'^ base
+lambda   ::= lambkw^ lhslst body^ | lambkw^ '('^ lhslst ')'^ body^ | lambkw^ body^ | lambkw^ '('^ ')'^ body^
+  lambkw ::= '\'^ | 'fn'^
+class    ::= clsskw^ lhslst body^ | clsskw^ body^
+  clsskw ::= 'class'^ | '\$'^ 
+blist    ::= '['^ seq ']'^                               // fully bracketed list, allowing single element lists
+mtlist   ::= '['^ ']'^                                   // empty list (since empty seq is not allowed)
+use      ::= ID^
+any      ::= '_'^  
+__done   ::= 'done'^
+__empty  ::= 'empty'^
+break    ::= 'break'^
+continue ::= 'continue'^
+return   ::= 'return'^
+yield    ::= 'yield'^
+body     ::= '{'^ seq '}'^ 
+
+// Lexical elements below this line - replace with paraterminals when MGLL working
+ID       ::= &ID
+__bool   ::= 'true'^^ | 'false'^^
+__int32  ::= &INTEGER
+__real64 ::= &REAL
+__char   ::= &STRING_SQ
+__string ::= &STRING_DQ
