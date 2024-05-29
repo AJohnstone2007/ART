@@ -2,7 +2,7 @@
 
 ART is the Royal Holloway software language engineering tool written by Adrian Johnstone and tested by Elizabeth Scott; we are the authors of the GLL, RNGLR and BRNGLR algorithms.
 
-The default ART pipeline processes language inputs using an MGLL Parser coupled to a general lexer with semantics specified using either SOS-style reduction rules or attribute-action rules. The core idea in ART is to delay ambiguity resolution until a natural point in the pipeline by allowing alternative interpretations to coexist.
+The default ART pipeline processes language inputs using an MGLL parser coupled to a general lexer with semantics specified using either SOS-style reduction rules or attribute-action rules. The core idea in ART is to delay ambiguity resolution until a natural point in the pipeline by allowing alternative interpretations to coexist.
 
 See the [doc](https://github.com/AJohnstone2007/ART/tree/main/doc) directory for getting started, technical and tutorial documentation.
 
