@@ -1,0 +1,10 @@
+LineTerminator
+InputCharacter
+WhiteSpace
+NotStar
+NotStarNotSlash
+JavaLetter
+JavaLetterOrDigit
+SingleCharacter
+StringCharacter 
+TextBlockCharacter

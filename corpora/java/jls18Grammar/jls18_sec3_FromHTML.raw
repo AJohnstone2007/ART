@@ -1,0 +1,257 @@
+§3.1. Unicode 
+
+§3.2. Lexical Translations
+
+§3.3. Unicode Escapes 
+
+UnicodeEscape:
+\ UnicodeMarker HexDigit HexDigit HexDigit HexDigit
+UnicodeMarker:
+u {u}
+HexDigit:
+(one of)
+0 1 2 3 4 5 6 7 8 9 a b c d e f A B C D E F
+
+§3.4. Line Terminators
+
+§3.5. Input Elements and Tokens 
+
+§3.6. White Space
+
+§3.7. Comments 
+
+Comment:
+TraditionalComment
+EndOfLineComment
+TraditionalComment:
+/ * CommentTail
+CommentTail:
+* CommentTailStar
+NotStar CommentTail
+CommentTailStar:
+/
+* CommentTailStar
+NotStarNotSlash CommentTail
+EndOfLineComment:
+/ / {InputCharacter}
+
+§3.8. Identifiers 
+
+Identifier:
+IdentifierChars but not a Keyword or BooleanLiteral or NullLiteral
+IdentifierChars:
+JavaLetter {JavaLetterOrDigit}
+TypeIdentifier:
+IdentifierChars but not permits, record, sealed, var, or yield
+UnqualifiedMethodIdentifier:
+IdentifierChars but not yield
+
+§3.9. Keywords 
+Keyword:
+ReservedKeyword
+ContextualKeyword
+ReservedKeyword:
+(one of)
+abstract continue for new switch
+assert default if package synchronized
+boolean do goto private this
+break double implements protected throw
+byte else import public throws
+case enum instanceof return transient
+catch extends int short try
+char final interface static void
+class finally long strictfp volatile
+const float native super while
+_
+ContextualKeyword:
+(one of)
+exports opens requires uses
+module permits sealed var
+non-sealed provides to with
+open record transitive yield
+
+§3.10.1. Integer Literals 
+
+IntegerLiteral:
+DecimalIntegerLiteral
+HexIntegerLiteral
+OctalIntegerLiteral
+BinaryIntegerLiteral
+DecimalIntegerLiteral:
+DecimalNumeral [IntegerTypeSuffix]
+HexIntegerLiteral:
+HexNumeral [IntegerTypeSuffix]
+OctalIntegerLiteral:
+OctalNumeral [IntegerTypeSuffix]
+BinaryIntegerLiteral:
+BinaryNumeral [IntegerTypeSuffix]
+IntegerTypeSuffix:
+(one of)
+l L
+
+DecimalNumeral:
+0
+NonZeroDigit [Digits]
+NonZeroDigit Underscores Digits
+NonZeroDigit:
+(one of)
+1 2 3 4 5 6 7 8 9
+Digits:
+Digit
+Digit [DigitsAndUnderscores] Digit
+Digit:
+0
+NonZeroDigit
+DigitsAndUnderscores:
+DigitOrUnderscore {DigitOrUnderscore}
+DigitOrUnderscore:
+Digit
+_
+Underscores:
+_ {_}
+
+HexNumeral:
+0 x HexDigits
+0 X HexDigits
+HexDigits:
+HexDigit
+HexDigit [HexDigitsAndUnderscores] HexDigit
+HexDigitsAndUnderscores:
+HexDigitOrUnderscore {HexDigitOrUnderscore}
+HexDigitOrUnderscore:
+HexDigit
+_
+
+OctalNumeral:
+0 OctalDigits
+0 Underscores OctalDigits
+OctalDigits:
+OctalDigit
+OctalDigit [OctalDigitsAndUnderscores] OctalDigit
+OctalDigit:
+(one of)
+0 1 2 3 4 5 6 7
+OctalDigitsAndUnderscores:
+OctalDigitOrUnderscore {OctalDigitOrUnderscore}
+OctalDigitOrUnderscore:
+OctalDigit
+_
+
+BinaryNumeral:
+0 b BinaryDigits
+0 B BinaryDigits
+BinaryDigits:
+BinaryDigit
+BinaryDigit [BinaryDigitsAndUnderscores] BinaryDigit
+BinaryDigit:
+(one of)
+0 1
+BinaryDigitsAndUnderscores:
+BinaryDigitOrUnderscore {BinaryDigitOrUnderscore}
+BinaryDigitOrUnderscore:
+BinaryDigit
+_
+
+§3.10.2. Floating-Point Literals 
+
+FloatingPointLiteral:
+DecimalFloatingPointLiteral
+HexadecimalFloatingPointLiteral
+DecimalFloatingPointLiteral:
+Digits . [Digits] [ExponentPart] [FloatTypeSuffix]
+. Digits [ExponentPart] [FloatTypeSuffix]
+Digits ExponentPart [FloatTypeSuffix]
+Digits [ExponentPart] FloatTypeSuffix
+ExponentPart:
+ExponentIndicator SignedInteger
+ExponentIndicator:
+(one of)
+e E
+SignedInteger:
+[Sign] Digits
+Sign:
+(one of)
++ -
+FloatTypeSuffix:
+(one of)
+f F d D
+
+HexadecimalFloatingPointLiteral:
+HexSignificand BinaryExponent [FloatTypeSuffix]
+HexSignificand:
+HexNumeral [.]
+0 x [HexDigits] . HexDigits
+0 X [HexDigits] . HexDigits
+BinaryExponent:
+BinaryExponentIndicator SignedInteger
+BinaryExponentIndicator:
+(one of)
+p P
+
+§3.10.3. Boolean Literals 
+
+BooleanLiteral:
+(one of)
+true false 
+
+§3.10.4. Character Literals 
+
+CharacterLiteral:
+' SingleCharacter '
+' EscapeSequence '
+
+§3.10.5. String Literals 
+
+StringLiteral:
+" {StringCharacter} "
+
+§3.10.6. Text Blocks 
+
+TextBlock:
+" " " {TextBlockWhiteSpace} LineTerminator {TextBlockCharacter} " " "
+TextBlockWhiteSpace:
+WhiteSpace but not LineTerminator
+
+§3.10.7. Escape Sequences 
+
+EscapeSequence:
+\ b (backspace BS, Unicode \u0008)
+\ s (space SP, Unicode \u0020)
+\ t (horizontal tab HT, Unicode \u0009)
+\ n (linefeed LF, Unicode \u000a)
+\ f (form feed FF, Unicode \u000c)
+\ r (carriage return CR, Unicode \u000d)
+\ LineTerminator (line continuation, no Unicode representation)
+\ " (double quote ", Unicode \u0022)
+\ ' (single quote ', Unicode \u0027)
+\ \ (backslash \, Unicode \u005c)
+OctalEscape (octal value, Unicode \u0000 to \u00ff)
+OctalEscape:
+\ OctalDigit
+\ OctalDigit OctalDigit
+\ ZeroToThree OctalDigit OctalDigit
+ZeroToThree:
+(one of)
+0 1 2 3
+
+§3.10.8. The Null Literal 
+
+NullLiteral:
+null
+
+
+§3.11. Separators 
+
+Separator:
+(one of)
+(   )   {   }   [   ]   ;   ,   .   ...   @   ::
+
+§3.12. Operators
+
+Operator:
+(one of)
+=   >   <   !   ~   ?   :   ->
+==  >=  <=  !=  &&  ||  ++  --
++   -   *   /   &   |   ^   %   <<   >>   >>>
++=  -=  *=  /=  &=  |=  ^=  %=  <<=  >>=  >>>=
+

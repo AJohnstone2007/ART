@@ -1,0 +1,398 @@
+(* 
+This file was created by selecting text from the PDF sml97-defn
+and then manually cleaning it up
+
+The resulting file sml1.raw has now got ! infront of each comment
+and things that were \tt font in the raw have single enclosing quotes
+
+In this version each <x> has been replaced with a nonterminal
+xOp ::= x | #
+Replaced x1 y ... y xn   with 
+xyList ::= x | x y xyList
+use xyList1 if length at least 1 etc.
+
+Removed remaining instance numbers from the nonterminals
+
+Converted to art syntax by adding | and explicit #
+removed all comments
+
+added the rules for xseq
+xseq ::= x | # | '(' xList ')'
+xList ::=  x | x ',' xList
+
+In this version we identify the terminals in the sml3.raw grammar
+and create corresponding paraterminal rules that sepcify the lexer 
+This has been done by hand from the english text description
+in the SML 97 definition.
+
+Initially we use all the terminals in the Milner grammar but this will
+need analysis because the lexical phase needs context input
+For example the token vid is a subset of the token longvid
+
+smlMilnerBNF.art was created by joining smlCore.art and smlmodule.art
+together, and adding some whitespace and choose directives
+to allow for experimentation.
+
+This file has had the extra module grammar rules required by the rewrite 
+rules in Figs 18 and 19. Also strid has been made a paraterminal
+requiring the addition of a new nonterminal idBase in the lexical
+part of the grammar.
+ *)
+
+
+(*
+injectInstance WT
+injectProductionOff
+*)
+
+!paraterminal scon, lab, vid, tyvar, tycon, funid, sigid, d, WS, 
+longvid, longtycon, longstrid, strid
+
+WS ::= ( ` | `\t | `\n | `\r)+
+
+WT ::= WS | #
+
+!choose LexTWE
+//WS >> WS
+vid >> vid
+scon >> scon
+funid >> funid
+sigid >> sigid
+tyvar >> tyvar
+lab >> lab
+tycon >> tycon
+longvid >> longvid
+longstrid >> longstrid
+strid >> strid
+longtycon >> longtycon
+
+
+anyLiteralTerminal > vid
+anyLiteralTerminal > scon
+anyLiteralTerminal > funid
+anyLiteralTerminal > sigid
+anyLiteralTerminal > tyvar
+anyLiteralTerminal > lab
+anyLiteralTerminal > tycon
+//anyLiteralTerminal > longvid
+anyLiteralTerminal > longstrid
+anyLiteralTerminal > strid
+anyLiteralTerminal > longtycon
+
+
+!choose ParseSPPF
+(* Add your postparse SPPF choosers here... this one is a meaningless example *)
+longtycon >> longtycon
+
+!choose ParseTWE
+(* Add your postparse TWE here... this one is just an example *)
+longtycon >> longtycon
+
+!start program
+
+
+(* lexical specification constructed by hand *)
+
+scon  ::=  int  | word | real | char | string 
+
+tyvar ::= `' ( letter | digit | `' )*
+
+(* etyvar ::= `'`'( letter | digit | `' )*  *)  
+
+vid ::= iden
+
+funid ::= idBase
+
+sigid ::= idBase
+
+tycon ::= iden (* but excludes * *)
+
+lab ::= iden | 
+        ( `1 | `2 | `3 | `4 | `5 | `6 | `7 | `8 | `9 ) digit*
+
+d ::= digit
+
+iden ::=  
+     letter ( letter | digit | `' )* | 
+       ( `! | `% | `& | `$ | `# | `+ | `- | `/ | `: | `< | `= | `> | 
+      `? | `@ | `\\ | `~ | `` | `^ | `| | `* )+
+
+    
+idBase ::= letter (letter | digit | `' )* 
+
+strid ::= idBase 
+
+int  ::= `~? num | `~? `0`x hex 
+  
+word ::= `0`w num | `0`w`x hex
+
+num  ::= digit+
+  
+hex  ::= ( digit | `A | `B | `C | `D | `E | `F )+
+
+real ::=  ( `~ | # ) num`.num 
+        | ( `~ | # ) num (`.num)? (`e | `E) ( `~ | # ) num  
+  
+char ::= `# `" ascii `"
+   
+string ::= `" ascii* `"
+
+ascii ::=  letter  | digit | `\\ | 
+           `= | `> | `? | ` | `^ | `! | `& | `% | `- | `< | `\( | `\) |
+           `* | `. | `[ | `] | `{ | `} | `: | `£ | `$ | `+ | `; | `# | 
+           `\| | `@ | `' | `  | `,
+
+letter ::= `a | `b | `c | `d | `e | `f | `g | `h | `i | `j | `k | `l | `m | 
+          `n | `o | `p | `q | `r | `s | `t | `u | `v | `w | `x | `y | `z | 
+          `A | `B | `C | `D | `E | `F | `G | `H | `I | `J | `K | `L | `M | 
+          `N | `O | `P | `Q | `R | `S | `T | `U | `V | `W | `X | `Y | `Z
+
+digit ::= `0 | `1 | `2 | `3 | `4 | `5 | `6 | `7 | `8 | `9
+
+(* Milner uses rules for the long ids, so perhaps these should be
+nonterminals *)   
+
+longvid ::= (idBase `.)* iden
+
+longtycon ::= (idBase `.)* iden
+
+longstrid ::= (idBase `.)* idBase
+
+
+
+(* phrase level grammar *)
+
+opOp ::= 'op' | #
+exprowOp ::= exprow | #
+exprowCommaOp ::= ',' exprow | #
+matchBarOp ::= '|' match | #
+withtypeBindOp ::= 'withtype' typbind | #
+scolonOp ::= ';' | #
+dOp ::= d | #
+andvBindOp ::= 'and' valbind | #
+tyOp ::= ':' ty | #
+andfBindOp ::= 'and' fvalbind | #
+andtBindOp ::= 'and' typbind | #
+anddBindOp ::= 'and' datbind | #
+andexBindOp ::= 'and' exbind | #
+conbindBarOp ::= '|' conbind | #
+oftyOp ::= 'of' ty | # 
+patrowOp ::= patrow | #
+aspatOp ::= 'as' pat | #
+patrowCommaOp ::=  ',' patrow | #
+tyrowOp ::= tyrow | #
+tyrowCommaOp ::= ',' tyrow | #
+expComList2 ::= exp ',' exp | exp ',' expComList2
+expComList0 ::= # | exp | exp ',' expComList0
+expSemList2 ::= exp ';' exp | exp ';' expSemList2
+expSemList1 ::= exp | exp ';' expSemList1
+longstridList1 ::= longstrid | longstrid longstridList1
+vidList1 ::= vid | vid vidList1
+patComList2 ::= pat ',' pat | pat ',' patComList2
+patComList0 ::= # | pat | pat ',' patComList0
+tyStarList2 ::= ty '*' ty | ty '*' tyStarList2
+
+tyvarseq ::= tyvar | # | '(' tyvarList ')'
+tyvarList ::=  tyvar | tyvar ',' tyvarList
+
+tyseq ::= ty | # | '(' tyList ')'
+tyList ::=  ty | ty ',' tyList
+
+atpatList1 ::= atpat | atpat atpatList1
+
+andstrBindOp ::= 'and' strbind | #
+andsigBindOp ::= 'and' sigbind | #
+andvaldescOp ::= 'and' valdesc | #
+anddatdescOp ::= 'and' datdesc | #
+andtypdescOp ::= 'and' typdesc | #
+andexdescOp ::= 'and' exdesc | #
+andstrdescOp ::= 'and' strdesc | #
+condescBarOp ::= '|' condesc | #
+andfunBindOp ::=  'and' funbind | #
+topdecOp ::= topdec | #
+programOp ::= program | #
+
+longtyconList2 ::= longtycon '=' longtycon | 
+                   longtycon '=' longtyconList2
+
+
+atexp ::= scon |
+          opOp longvid  |
+          '{' exprowOp '}' |
+          '#' lab   |
+          '(' ')'  |
+          '(' expComList2 ')' |
+          '[' expComList0 ']' |
+          '(' expSemList2 ')' |
+          'let' dec 'in' expSemList1 'end'  |
+          '(' exp ')'
+
+exprow ::= lab '=' exp exprowCommaOp         
+
+appexp ::= atexp |
+           appexp atexp 
+
+infexp ::= appexp |
+           infexp vid infexp
+
+exp ::= infexp |
+        exp ':' ty |
+        exp 'andalso' exp |
+        exp 'orelse' exp   |
+        exp 'handle' match  |
+        'raise' exp       |
+        'if' exp 'then' exp 'else' exp |
+        'while' exp 'do' exp          |
+        'case' exp 'of' match         |
+        'fn' match                    
+
+match ::= mrule matchBarOp
+
+mrule ::= pat '=>' exp
+
+dec ::= 'val' tyvarseq valbind    |
+        'fun' tyvarseq fvalbind   |
+        'type' typbind          |
+        'datatype' datbind withtypeBindOp |
+        'datatype' tycon '=' 'datatype' longtycon |
+        'abstype' datbind withtypeBindOp 
+                               'with' dec 'end' |
+        'exception' exbind     |
+        'local' dec 'in' dec 'end' |
+        'open' longstridList1   |
+        # |
+        dec scolonOp dec |
+        'infix' dOp vidList1 |
+        'infixr' dOp vidList1 |
+        'nonfix' vidList1      
+
+valbind ::= pat '=' exp andvBindOp |
+            'rec' valbind
+
+(* this is the original rule, it is not context free and is replaced
+by a rule that widens the accepted language 
+A semantic check will need to be added to the translator
+
+fvalbind ::= opOp vid atpat11 ... atpat1n tyOp '='exp    !m; n>=1
+        '|'opOp vid atpat21 ... atpat2n tyOp '='exp     !See also note below
+        '|' ... ...
+        '|'opOp vid atpatm1 ... atpatmn tyOp '='exp
+                      andfBindOp
+*)
+
+fvalbindList1 ::= opOp vid atpatList1 tyOp '='exp  |
+                     opOp vid atpatList1 tyOp '='exp  '|' fvalbindList1
+
+fvalbind ::= fvalbindList1 andfBindOp
+
+typbind ::= tyvarseq tycon '=' ty andtBindOp
+
+datbind ::= tyvarseq tycon '=' conbind anddBindOp
+
+conbind ::= opOp vid oftyOp conbindBarOp
+
+exbind ::= opOp vid oftyOp andexBindOp |
+           opOp vid '=' opOp longvid andexBindOp
+
+atpat ::= scon |
+          opOp longvid |
+          '{' patrowOp '}' |
+          '(' ')'  |
+          '(' patComList2 ')' |
+          '[' patComList0 ']'  |
+          '(' pat ')'
+
+
+patrow ::= '...'    |
+           lab '=' pat patrowCommaOp |
+           vid tyOp aspatOp patrowCommaOp   
+
+pat ::= atpat             |
+        opOp longvid atpat |
+        pat vid pat       |
+        pat ':' ty      |
+        opOp vid tyOp 'as' pat
+
+ty ::= tyvar   |
+       '{' tyrowOp '}' |
+       tyseq longtycon |
+       tyStarList2  |
+       ty '->' ty |
+       '(' ty ')'
+
+tyrow ::= lab ':' ty tyrowCommaOp 
+
+
+strexp ::= 'struct' strdec 'end' | 
+           longstrid               |
+           strexp ':' sigexp     |
+           strexp':>'sigexp   |
+           funid '(' strexp ')' |
+           'let' strdec 'in' strexp 'end' |
+           (* the next alternate comes from the rewrite rules*)
+           funid '(' strdec ')' 
+
+
+
+strdec ::= dec      |
+           'structure' strbind |
+           'local' strdec 'in' strdec 'end' |
+            #  |
+           strdec scolonOp strdec 
+
+strbind ::= strid '=' strexp andstrBindOp |
+            (* the next two alternates come from the rewrite rules*)
+            strid ':' sigexp '=' strexp andstrBindOp |
+            strid ':>' sigexp '=' strexp andstrBindOp 
+
+
+sigexp ::= 'sig' spec 'end'  |
+           sigid              |
+           sigexp 'where' 'type' tyvarseq longtycon '=' ty
+
+sigdec ::= 'signature' sigbind
+
+sigbind ::= sigid '=' sigexp andsigBindOp
+
+spec ::= 'val' valdesc   |
+         'type' typdesc   |
+         'eqtype' typdesc  |
+         'datatype' datdesc |
+         'datatype' tycon '=' 'datatype' longtycon |
+         'exception' exdesc   |
+         'structure' strdesc   |
+         'include' sigexp       |
+         # |
+         spec scolonOp spec |
+         spec 'sharing' 'type' longtyconList2 
+
+valdesc ::= vid ':' ty andvaldescOp
+
+typdesc ::= tyvarseq tycon andtypdescOp
+
+datdesc ::= tyvarseq tycon '=' condesc anddatdescOp
+
+condesc ::= vid oftyOp condescBarOp
+
+exdesc ::= vid oftyOp andexdescOp
+
+strdesc ::= strid ':' sigexp andstrdescOp
+
+fundec ::= 'functor' funbind
+
+funbind ::= funid '(' strid ':' sigexp ')' '=' strexp  andfunBindOp |
+            (* the next alternates come from the rewrite rules*)
+            funid '(' strid ':' sigexp ')' ':' sigexp '=' strexp andfunBindOp |
+            funid '(' strid ':' sigexp ')' ':>' sigexp '=' strexp andfunBindOp |
+            funid '(' spec ')' ':' sigexp '=' strexp andfunBindOp |
+            funid '(' spec ')' '=' strexp andfunBindOp |
+            funid '(' spec ')' ':>' sigexp '=' strexp andfunBindOp  
+
+topdec ::= strdec topdecOp |
+           sigdec topdecOp |
+           fundec topdecOp  
+
+program ::= topdec ';' programOp |
+            (* the next alternate comes from the rewrite rules*)
+            exp ';'  programOp 
+

@@ -1,0 +1,140 @@
+(* Java Language Specification character level rules manually constructed by Adrian Johnstone from English Language descriptions in the JLS18 document https://docs.oracle.com/javase/specs/jls/se18/jls18.pdf 
+
+   V01.10 25 July 2022
+
+   Overview
+
+   In sections 3.1 to 3.3, the JLS describes in detail the front end management of general Unicode characters in which a program containing non-ASCII Unicode characters 
+   may be rewritten into a so-called Transformed Version that is ASCII only.
+
+   The main part of the JLS rules work with within ASCII character set, using escape sequences to denote general Unicode characters.
+   
+   We follow the same approach here, which allows the various character sets to be specified using compact enumeration, since there are only 95 printing ASCII characters. 
+
+   We also need denotations for newline (\n) and line end (otherwise known as carriage return) (\r).
+
+   Following https://en.wikipedia.org/wiki/ASCII, here is a (commented out) ART rule which enumerates all printing ASCII characters in code order using the 1967 glyphs
+
+ART_ASCIIPrintableCharacter ::=
+  `  | `! | `" | `# | `$ | `% | `& | `' | `( | `) | `* | `+ | `, | `- | `.  | `/ 
+| `0 | `1 | `2 | `3 | `4 | `5 | `6 | `7 | `8 | `9 
+| `: | `; | `< | `= | `> | `?  | `@ 
+| `A | `B | `C | `D | `E | `F | `G | `H | `I | `J | `K | `L | `M | `N | `O | `P | `Q | `R | `S | `T | `U | `V | `W | `X | `Y | `Z 
+| `[ | `\ | `] | `^ | `_ | `` 
+| `a | `b | `c | `d | `e | `f | `g | `h | `i | `j | `k | `l | `m | `n | `o | `p | `q | `r | `s | `t | `u | `v | `w | `x | `y | `z 
+| `{ | `| | `} | `~
+
+   We use this rule as a base for the JLS character rules, deleting elements and adding alternates as indicated by the informal rules in section 3 of the document.
+
+   These informal rules are presented as // xyz style line comments against each entry.
+
+   Other comments by Adrian are inserted using the (* xyz *) block comment
+
+   SPECIAL NOTE - the JLS expects unicode escapes to be rewritten to Unicode characters anywhere they appear, including in source code (i.e. not just in character, string and textblock literals. our grammar does NOT
+   support that interpretation but instead adds the production | UnicodeEscape to SingleCharacter, StringCharacter and TextBlockCharacter.
+
+*)
+
+(* JLS18 character rules start *)
+
+// Section 3.4 
+
+InputCharacter ::=
+  `  | `! | `" | `# | `$ | `% | `& | `' | `( | `) | `* | `+ | `, | `- | `.  | `/ 
+| `0 | `1 | `2 | `3 | `4 | `5 | `6 | `7 | `8 | `9 
+| `: | `; | `< | `= | `> | `?  | `@ 
+| `A | `B | `C | `D | `E | `F | `G | `H | `I | `J | `K | `L | `M | `N | `O | `P | `Q | `R | `S | `T | `U | `V | `W | `X | `Y | `Z 
+| `[ | `\ | `] | `^ | `_ | `` 
+| `a | `b | `c | `d | `e | `f | `g | `h | `i | `j | `k | `l | `m | `n | `o | `p | `q | `r | `s | `t | `u | `v | `w | `x | `y | `z 
+| `{ | `| | `} | `~
+
+LineTerminator ::=
+  `\n     (* Un*x and its relations *)
+| `\r     (* Many home computers, including pre-Un*x Mac OS *)
+| `\r `\n (* MS-DOS and Windows *)
+
+// Section 3.6
+
+WhiteSpace ::=
+  `  // the ASCII SP character, also known as "space"
+| `\t // the ASCII HT character, also known as "horizontal tab"
+| `f // the ASCII FF character, also known as "form feed"
+| LineTerminator
+
+NotStar ::= // (InputCharacter but not *) | LineTerminator
+  `  | `! | `" | `# | `$ | `% | `& | `' | `( | `)      | `+ | `, | `- | `.  | `/ 
+| `0 | `1 | `2 | `3 | `4 | `5 | `6 | `7 | `8 | `9 
+| `: | `; | `< | `= | `> | `?  | `@ 
+| `A | `B | `C | `D | `E | `F | `G | `H | `I | `J | `K | `L | `M | `N | `O | `P | `Q | `R | `S | `T | `U | `V | `W | `X | `Y | `Z 
+| `[ | `\ | `] | `^ | `_ | `` 
+| `a | `b | `c | `d | `e | `f | `g | `h | `i | `j | `k | `l | `m | `n | `o | `p | `q | `r | `s | `t | `u | `v | `w | `x | `y | `z 
+| `{ | `| | `} | `~
+| LineTerminator
+
+NotStarNotSlash ::= // (InputCharacter but not * or /) | LineTerminator
+  `  | `! | `" | `# | `$ | `% | `& | `' | `( | `)      | `+ | `, | `- | `.  
+| `0 | `1 | `2 | `3 | `4 | `5 | `6 | `7 | `8 | `9 
+| `: | `; | `< | `= | `> | `?  | `@ 
+| `A | `B | `C | `D | `E | `F | `G | `H | `I | `J | `K | `L | `M | `N | `O | `P | `Q | `R | `S | `T | `U | `V | `W | `X | `Y | `Z 
+| `[ | `\ | `] | `^ | `_ | `` 
+| `a | `b | `c | `d | `e | `f | `g | `h | `i | `j | `k | `l | `m | `n | `o | `p | `q | `r | `s | `t | `u | `v | `w | `x | `y | `z 
+| `{ | `| | `} | `~
+| LineTerminator
+
+
+// Section 3.8 
+
+JavaLetter ::= // any Unicode character that is a "Java letter"
+  `$   
+| `A | `B | `C | `D | `E | `F | `G | `H | `I | `J | `K | `L | `M | `N | `O | `P | `Q | `R | `S | `T | `U | `V | `W | `X | `Y | `Z 
+| `_ 
+| `a | `b | `c | `d | `e | `f | `g | `h | `i | `j | `k | `l | `m | `n | `o | `p | `q | `r | `s | `t | `u | `v | `w | `x | `y | `z 
+
+JavaLetterOrDigit ::= // any Unicode character that is a "Java letter-or-digit"
+  `$   
+| `0 | `1 | `2 | `3 | `4 | `5 | `6 | `7 | `8 | `9 
+| `A | `B | `C | `D | `E | `F | `G | `H | `I | `J | `K | `L | `M | `N | `O | `P | `Q | `R | `S | `T | `U | `V | `W | `X | `Y | `Z 
+| `_ 
+| `a | `b | `c | `d | `e | `f | `g | `h | `i | `j | `k | `l | `m | `n | `o | `p | `q | `r | `s | `t | `u | `v | `w | `x | `y | `z 
+
+// Section 3.10.4
+
+SingleCharacter ::= // InputCharacter but not ' or \
+  ` | `!  | `" | `# | `$ | `% | `&      | `( | `) | `* | `+ | `, | `- | `. | `/ 
+| `0 | `1 | `2 | `3 | `4 | `5 | `6 | `7 | `8 | `9 
+| `: | `; | `< | `= | `> | `?  | `@ 
+| `A | `B | `C | `D | `E | `F | `G | `H | `I | `J | `K | `L | `M | `N | `O | `P | `Q | `R | `S | `T | `U | `V | `W | `X | `Y | `Z 
+| `[      | `] | `^ | `_ | `` 
+| `a | `b | `c | `d | `e | `f | `g | `h | `i | `j | `k | `l | `m | `n | `o | `p | `q | `r | `s | `t | `u | `v | `w | `x | `y | `z 
+| `{ | `| | `} | `~
+| EscapeSequence
+| UnicodeEscape
+
+// Section 3.10.5
+
+StringCharacter ::= // InputCharacter but not " or \
+  `  | `!      | `# | `$ | `% | `& | `' | `( | `) | `* | `+ | `, | `- | `.  | `/ 
+| `0 | `1 | `2 | `3 | `4 | `5 | `6 | `7 | `8 | `9 
+| `: | `; | `< | `= | `> | `?  | `@ 
+| `A | `B | `C | `D | `E | `F | `G | `H | `I | `J | `K | `L | `M | `N | `O | `P | `Q | `R | `S | `T | `U | `V | `W | `X | `Y | `Z 
+| `[ |      `] | `^ | `_ | `` 
+| `a | `b | `c | `d | `e | `f | `g | `h | `i | `j | `k | `l | `m | `n | `o | `p | `q | `r | `s | `t | `u | `v | `w | `x | `y | `z 
+| `{ | `| | `} | `~
+| EscapeSequence
+| UnicodeEscape
+
+// Section 3.10.6
+
+TextBlockCharacter ::= //InputCharacter but not \ 
+  `  | `! | `" | `# | `$ | `% | `& | `' | `( | `) | `* | `+ | `, | `- | `.  | `/ 
+| `0 | `1 | `2 | `3 | `4 | `5 | `6 | `7 | `8 | `9 
+| `: | `; | `< | `= | `> | `?  | `@ 
+| `A | `B | `C | `D | `E | `F | `G | `H | `I | `J | `K | `L | `M | `N | `O | `P | `Q | `R | `S | `T | `U | `V | `W | `X | `Y | `Z 
+| `[      | `] | `^ | `_ | `` 
+| `a | `b | `c | `d | `e | `f | `g | `h | `i | `j | `k | `l | `m | `n | `o | `p | `q | `r | `s | `t | `u | `v | `w | `x | `y | `z 
+| `{ | `| | `} | `~
+| EscapeSequence
+| LineTerminator
+| UnicodeEscape
+
+(* JLS18 character rules *)
