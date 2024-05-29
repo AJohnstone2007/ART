@@ -6,9 +6,10 @@ The default ART pipeline processes language inputs using an MGLL Parser coupled 
 
 See the [doc](https://github.com/AJohnstone2007/ART/tree/main/doc) directory for getting started, technical and tutorial documentation.
 
-A variety of alternative algorithms are also available; in particular 'reference' GLL implementations that illustrate the central ideas along with a variety of optimisations. An early publication on these versions, and the associated presentation slides are [here](https://github.com/AJohnstone2007/ART/tree/main/doc/referenceImplementations). The corresponding code is [here](https://github.com/AJohnstone2007/ART/tree/main/src/uk/ac/rhul/cs/csle/art/cfg/gll),
+A variety of alternative algorithms are available; in particular 'reference' GLL implementations that illustrate the central ideas along with a variety of optimisations. An early publication on these versions, and the associated presentation slides are [here](https://github.com/AJohnstone2007/ART/tree/main/doc/referenceImplementations). The corresponding code is [here](https://github.com/AJohnstone2007/ART/tree/main/src/uk/ac/rhul/cs/csle/art/cfg/gll).
 
-We use a variety of language grammars and language examples to characterise the space and time performance of our algorithms which you can find [here](https://github.com/AJohnstone2007/ART/tree/main/corpora).
+To characterise the space and time performance of our algorithms, 
+we use a variety of language grammars and language examples which you can find [here](https://github.com/AJohnstone2007/ART/tree/main/corpora).
 
 You can access our research papers at https://pure.royalholloway.ac.uk/en/persons/adrian-johnstone/publications.
 
