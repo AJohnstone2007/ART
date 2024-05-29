@@ -1,9 +1,10 @@
-# ART
-The Ambiguity Retained Translation (ART)
+# Ambiguity Retained Translation (ART)
 
-This is the Royal Holloway software language engineering tool ART written by Adrian Johnstone and tested by Elizabeth Scott; we are the authors of the GLL, RNGLR and BRNGLR algorithms.
+ART is the Royal Holloway software language engineering tool written by Adrian Johnstone and tested by Elizabeth Scott; we are the authors of the GLL, RNGLR and BRNGLR algorithms.
 
-ART processes language inputs using MGLL Parsing coupled to a general lexer. Semantics may be implemented via either SOS-style reduction rules or attribute-action rules.
+The default ART pipline processes language inputs using MGLL Parsing coupled to a general lexer with semantics mplemented via either SOS-style reduction rules or attribute-action rules.
+
+A variety of alternative algorithms are also available; in particular 'reference' GLL implementations that illustrate the core ideas and a variety of optimisations. An early publication on these versions, and the corresponding presentation slides are in 
 
 You will find our research papers at https://pure.royalholloway.ac.uk/en/persons/adrian-johnstone/publications
 
