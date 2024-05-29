@@ -4,7 +4,7 @@ ART is the Royal Holloway software language engineering tool written by Adrian J
 
 The default ART pipline processes language inputs using MGLL Parsing coupled to a general lexer with semantics mplemented via either SOS-style reduction rules or attribute-action rules.
 
-A variety of alternative algorithms are also available; in particular 'reference' GLL implementations that illustrate the core ideas and a variety of optimisations. An early publication on these versions, and the corresponding presentation slides are in 
+A variety of alternative algorithms are also available; in particular 'reference' GLL implementations that illustrate the core ideas and a variety of optimisations. An early publication on these versions, and the corresponding presentation slides are in https://github.com/AJohnstone2007/ART/tree/main/doc/referenceImplementations
 
 You will find our research papers at https://pure.royalholloway.ac.uk/en/persons/adrian-johnstone/publications
 
