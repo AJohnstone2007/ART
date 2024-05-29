@@ -1,5 +1,10 @@
 package uk.ac.rhul.cs.csle.art.util;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.regex.Pattern;
+
 public class Util {
 
   public static int traceLevel = 3;
@@ -88,5 +93,23 @@ public class Util {
     for (int tmp = 0; tmp < index; tmp++)
       if (buffer.charAt(tmp) == '\n') lineCount++;
     return lineCount;
+  }
+
+  public static String scriptString(String[] args) { // Construct an ART script string, processing embedded filenames accordingly
+    StringBuilder scriptStringBuilder = new StringBuilder();
+    final Pattern filenamePattern = Pattern.compile("[a-zA-Z0-9/\\\\]+\\.[a-zA-Z0-9]+"); // This is a very limited idea of a filename
+
+    for (int argp = 1; argp < args.length; argp++)
+      if (!filenamePattern.matcher(args[argp]).matches())
+        scriptStringBuilder.append(args[argp]);
+      else if (args[argp].endsWith(".art"))
+        try {
+          scriptStringBuilder.append(Files.readString(Paths.get((args[argp]))));
+        } catch (IOException e) {
+          Util.fatal("Unable to open script file " + args[argp]);
+        }
+      else
+        scriptStringBuilder.append("!try '" + args[argp] + "'");
+    return scriptStringBuilder.toString();
   }
 }

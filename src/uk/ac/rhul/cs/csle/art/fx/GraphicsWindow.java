@@ -1,4 +1,4 @@
-package uk.ac.rhul.cs.csle.art.ide;
+package uk.ac.rhul.cs.csle.art.fx;
 
 import javafx.event.EventHandler;
 import javafx.scene.Group;

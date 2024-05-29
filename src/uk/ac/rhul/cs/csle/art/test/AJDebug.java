@@ -13,7 +13,6 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
-import uk.ac.rhul.cs.csle.art.ARTScriptTermInterpreter;
 import uk.ac.rhul.cs.csle.art.cfg.grammar.Grammar;
 import uk.ac.rhul.cs.csle.art.cfg.grammar.GrammarElement;
 import uk.ac.rhul.cs.csle.art.cfg.grammar.GrammarKind;
@@ -32,6 +31,7 @@ import uk.ac.rhul.cs.csle.art.old.v3.manager.grammar.element.ARTGrammarElementTe
 import uk.ac.rhul.cs.csle.art.old.v3.manager.grammar.instance.ARTGrammarInstance;
 import uk.ac.rhul.cs.csle.art.old.v3.manager.grammar.instance.ARTGrammarInstanceSlot;
 import uk.ac.rhul.cs.csle.art.old.v3.manager.module.ARTV3Module;
+import uk.ac.rhul.cs.csle.art.script.ARTScriptTermInterpreter;
 import uk.ac.rhul.cs.csle.art.term.ITermsLowLevelAPI;
 import uk.ac.rhul.cs.csle.art.util.Relation;
 import uk.ac.rhul.cs.csle.art.util.Util;

@@ -1,4 +1,4 @@
-package uk.ac.rhul.cs.csle.art;
+package uk.ac.rhul.cs.csle.art.script;
 
 import java.io.IOException;
 import java.nio.file.Files;

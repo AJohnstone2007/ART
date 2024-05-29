@@ -9,11 +9,11 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 
-import uk.ac.rhul.cs.csle.art.ARTScriptTermInterpreter;
 import uk.ac.rhul.cs.csle.art.cfg.ParserBase;
 import uk.ac.rhul.cs.csle.art.cfg.gll.GLLBaseLine;
 import uk.ac.rhul.cs.csle.art.cfg.grammar.Grammar;
 import uk.ac.rhul.cs.csle.art.cfg.lexer.LexerLM;
+import uk.ac.rhul.cs.csle.art.script.ARTScriptTermInterpreter;
 import uk.ac.rhul.cs.csle.art.term.ITerms;
 import uk.ac.rhul.cs.csle.art.term.ITermsLowLevelAPI;
 import uk.ac.rhul.cs.csle.art.term.Value;

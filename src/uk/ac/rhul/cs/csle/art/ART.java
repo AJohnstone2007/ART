@@ -1,80 +1,65 @@
 package uk.ac.rhul.cs.csle.art;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.time.format.DateTimeFormatter;
-import java.util.regex.Pattern;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import java.time.LocalDate;
+import java.time.LocalTime;
 
 import javafx.application.Application;
-import javafx.application.Platform;
-import javafx.geometry.Rectangle2D;
-import javafx.stage.Screen;
-import javafx.stage.Stage;
-import uk.ac.rhul.cs.csle.art.ide.EditorWithConsoleWindow;
-import uk.ac.rhul.cs.csle.art.ide.GraphicsWindow;
-import uk.ac.rhul.cs.csle.art.ide.MenuBuilderARTGraphics;
+import uk.ac.rhul.cs.csle.art.fx.FXStart;
 import uk.ac.rhul.cs.csle.art.old.v3.ARTV3;
 import uk.ac.rhul.cs.csle.art.old.v4.core.ARTV4;
+import uk.ac.rhul.cs.csle.art.script.ARTScriptTermInterpreter;
 import uk.ac.rhul.cs.csle.art.term.ITermsLowLevelAPI;
 import uk.ac.rhul.cs.csle.art.test.AJDebug;
 import uk.ac.rhul.cs.csle.art.util.Util;
+import uk.ac.rhul.cs.csle.art.util.Version;
 
-public class ART extends Application {
-  static String mainArgs[]; // allow FX modes to collect arguments
-  static boolean useIDE = false; // switch FX modes between batch and IDE
+public class ART {
+  public static String specificationString = null;
+  public static String tryFilename = null;
 
   // @formatter:off
   public static void main(String[] args) {
-    mainArgs = args;
     if (args.length > 0) switch (args[0]) { // Test for initial special mode argument
-    case "aj": new AJDebug(mainArgs); return;
-    case "v3": new ARTV3(scriptString(mainArgs)); return;
-    case "v4": new ARTV4(scriptString(mainArgs)); return;
-    case "v5": launch(); return;
+    case "incVersion": newVersion(); return;              // Undocumented internal mode
+    case "aj": new AJDebug(args); return;             // Undocumented internal mode
+    case "v3": new ARTV3(Util.scriptString(args)); return; // Undocumented internal mode
+    case "v4": new ARTV4(Util.scriptString(args)); return; // Undocumented internal mode
+    case "noFX": new ARTScriptTermInterpreter(new ITermsLowLevelAPI()).interpret(Util.scriptString(args)); return; // Run batch mode without fx in this context
+    case "noIDE": specificationString = Util.scriptString(args); Application.launch(FXStart.class, args); return; // Run batch mode in a JavaFX application
+    case "version": System.out.println("ART Version " + Version.version()); return; // Run batch mode in a JavaFX application
     }
-    useIDE = true; launch(); // We arrive here only if none of the special modes is activated; hence use the IDE
-  }
-
-  @Override
-  public void start(Stage primaryStage) {
-    if (useIDE) ide(primaryStage);
-    else { new ARTScriptTermInterpreter(new ITermsLowLevelAPI()).interpret(scriptString(mainArgs)); Platform.exit(); System.exit(0); }
+    specificationString = args.length < 1 ? "" : args[0];
+    tryFilename = args.length < 2 ? "" : args[1];
+    Application.launch(FXStart.class, args);  // We arrive here only if none of the special modes is activated; hence use the IDE
   }
   // @formatter:on
 
-  static String scriptString(String[] args) { // Construct an ART script string, processing embedded filenames accordingly
-    StringBuilder scriptStringBuilder = new StringBuilder();
-    final Pattern filenamePattern = Pattern.compile("[a-zA-Z0-9/\\\\]+\\.[a-zA-Z0-9]+"); // This is a very limited idea of a filename
+  private static void newVersion() {
+    try {
+      int newBuild = Version.build() + 1;
+      String timeStamp = LocalDate.now() + " " + LocalTime.now();
+      timeStamp = timeStamp.substring(0, timeStamp.indexOf('.'));
 
-    for (int argp = 1; argp < args.length; argp++)
-      if (!filenamePattern.matcher(args[argp]).matches())
-        scriptStringBuilder.append(args[argp]);
-      else if (args[argp].endsWith(".art"))
-        try {
-          scriptStringBuilder.append(Files.readString(Paths.get((args[argp]))));
-        } catch (IOException e) {
-          Util.fatal("Unable to open script file " + args[argp]);
-        }
-      else
-        scriptStringBuilder.append("!try '" + args[argp] + "'");
-    return scriptStringBuilder.toString();
-  }
+      System.out.printf("Updating from %s: new build %d%n", Version.version(), newBuild, timeStamp);
+      PrintWriter pw;
+      pw = new PrintWriter("Version.java.new");
+      pw.printf(
+          "package uk.ac.rhul.cs.csle.art.util;%n" + "public class Version {%n" + "  public static int major() {return %d;}%n"
+              + "  public static int minor() {return %d;}%n" + "  public static int build() {return %d;}%n"
+              + "  public static String timeStamp() {return \"%s\";}%n"
+              + "  public static String version() { return major()+\".\"+minor()+\".\"+build() + \" \" + timeStamp(); };%n" + "}%n",
+          Version.major(), Version.minor(), newBuild, timeStamp);
+      pw.close();
 
-  private void ide(Stage primaryStage) {
-    System.out.println("Starting IDE");
-    DateTimeFormatter format = DateTimeFormatter.ofPattern("MMM d yyyy  hh:mm a");
-
-    final int w10Vff = 7; // This is a fudge factor for Windows 10 where invisible framing still takes 7 pixels horizontally and 5 vertically
-
-    Rectangle2D screen = Screen.getPrimary().getBounds();
-    double windowWidth = screen.getWidth() / 3;
-
-    var specEditor = new EditorWithConsoleWindow(new Stage(), -w10Vff, 0, windowWidth + 2 * w10Vff, screen.getHeight(), "ART specification", "Adrian was here");
-    var tryEditor = new EditorWithConsoleWindow(new Stage(), windowWidth - w10Vff, 0, windowWidth + 2 * w10Vff, screen.getHeight(), "Try test",
-        "A test string");
-    var graphicsWindow = new GraphicsWindow(new Stage(), 2 * windowWidth - w10Vff, 0, windowWidth + 2 * w10Vff, screen.getHeight(), "ART visualiser",
-        new MenuBuilderARTGraphics(), 500.0);
-
+      pw = new PrintWriter("manifest.local.new");
+      pw.printf("Specification-Vendor: Center for Software Language Engineering, RHUL%n" + "Specification-Title: ART%n" + "Specification-Version: 5%n"
+          + "Implementation-Vendor: Center for Software Language Engineering, RHUL%n" + "Implementation-Title: ART%n" + "Implementation-Version: %d.%d.%d%n"
+          + "Implementation-Build-Date: %s%n" + "Main-Class: uk.ac.rhul.cs.csle.art.ART%n", Version.major(), Version.minor(), newBuild, timeStamp);
+      pw.close();
+    } catch (FileNotFoundException e) {
+      Util.fatal("Unable to open Version source file");
+    }
   }
 }
