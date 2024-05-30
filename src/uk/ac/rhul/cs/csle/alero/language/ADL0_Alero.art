@@ -1,0 +1,74 @@
+// adl - Adrian's dynamic language This is version zero with lambdas and basic flow control but no pattern matching
+!whitespace(&SIMPLE_WHITESPACE,&COMMENT_BLOCK_C,&COMMENT_LINE_C) // C or Java-like comments and whitespace
+
+seq  ::= list^^ | list ';'^ seq | list seq
+
+list ::= defs^^ | list ','^ defs 
+map  ::= binding | map^ ','^ binding
+binding ::= derefBinding | derefBinding ':'^ defs 
+derefBinding ::= accessor^  
+derefValue   ::= accessor^
+accessor ::= ID | ID '.'^ accessor 
+
+defs ::= flow^^ | fix^^ | assign^^
+ fix ::= derefBinding '='^ flow
+ assign ::= derefBinding ':='^ flow
+
+flow ::= rot^^ | if^^ | do^^
+ if  ::= rot '?'^  defs | rot '?'^  defs '~'^ defs
+ do  ::= rot '?@'^ defs | rot '?@'^ defs '~'^ defs
+
+rot  ::= or^^   | rot '@'^ or 
+or   ::= xor^^  |  or '|'^ xor 
+xor  ::= and^^  | xor '^'^ and 
+and  ::= eqs^^  | eqs '&'^ and
+eqs  ::= rels^^ | eq | ne
+ eq  ::= rels '=='^^ rels
+ ne  ::= rels '!='^^ rels
+rels ::= cat^^ | ge^^ | gt^^ | le^^ | lt^^
+ ge  ::= cat '>='^ cat 
+ gt  ::= cat '>'^ cat 
+ le  ::= cat '<='^ cat
+ lt  ::= cat '<'^ cat
+cat  ::= shfs^^  | cat '::'^ shfs
+shfs ::= adds^^ | lsh^^ | rsh^^ | ash^^ | rol^^ | ror^^ 
+ lsh ::= shfs '<<'^ adds
+ rsh ::= shfs '>>'^ adds
+ ash ::= shfs '>>>'^ adds
+ rol ::= shfs '<<|'^ adds
+ ror ::= shfs '>>|'^ adds
+adds ::= muls^^ | add^^ | sub^^
+ add ::= adds '+'^ muls
+ sub ::= adds '-'^ muls
+muls ::= exp^^  | mul^^ | div^^ | mod^^
+ mul ::= muls '*'^ exp 
+ div ::= muls '/'^ exp
+ mod ::= muls '%'^ exp
+exp  ::= cast^^ | cast '**'^ exp
+cast ::= mons^^ | mons '$'^ ID                        // attempt to cast a value to another type, throwing an exeption if unavailable
+mons ::= base ^^ | pos^^ | neg^^ | not^^ 
+ pos ::= '!+'^ mons
+ neg ::= '!-'^ mons
+ not ::= '!'^ mons
+
+base ::= derefValue^^ | '('^ seq^^ ')'^ | any | break^^ | continue^^ | return^^ | yield^^  
+       | __bool^^ | __int32^^ | __real64^^ | __char^^ | __string^^ | __done^^ | __empty^^  
+       | lambda^^ | syscall^^
+ 
+ lambda ::= 'fn'^ map defs
+ syscall ::= 'sys'^ __int32 defs
+ any      ::= '_'^  
+ break    ::= 'break'^
+ continue ::= 'continue'^
+ return   ::= 'return'^
+ yield    ::= 'yield'^
+ __done   ::= 'done'^
+ __empty  ::= 'empty'^
+ __bool   ::= 'true'^^ | 'false'^^
+
+// Lexical items follow
+ID        ::= &ID^^
+__int32   ::= &INTEGER
+__real64  ::= &REAL
+__char    ::= &STRING_SQ
+__string  ::= &STRING_DQ
