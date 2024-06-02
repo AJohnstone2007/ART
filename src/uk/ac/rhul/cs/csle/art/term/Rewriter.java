@@ -2,7 +2,6 @@ package uk.ac.rhul.cs.csle.art.term;
 
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -12,30 +11,30 @@ import uk.ac.rhul.cs.csle.art.util.Util;
 
 public class Rewriter {
   private final ITerms iTerms;
-  public final TermTraverserText tt;
+  private final TermTraverserText tt;
 
-  public int rewriteAttemptCounter;
-  public int rewriteStepCounter;
-  public boolean rewriteDisable = false;
-  public boolean rewritePure = true;
-  public boolean rewritePreorder = false;
-  public boolean rewritePostorder = false;
-  public boolean rewriteOneStep = false;
-  public boolean rewriteResume = false;
-  public boolean rewriteContractum = false;
+  private int rewriteAttemptCounter;
+  private int rewriteStepCounter;
+  private final boolean rewriteDisable = false;
+  private final boolean rewritePure = true;
+  private final boolean rewritePreorder = false;
+  private final boolean rewritePostorder = false;
+  private final boolean rewriteOneStep = false;
+  private final boolean rewriteResume = false;
+  private final boolean rewriteContractum = false;
   private boolean rewriteTraverse = false;
   private boolean rewriteActive = false;
   private final Map<Integer, Set<Integer>> rewriteTerminals = new HashMap<>();
-  public int startRelation = 0;
-  public Map<Integer, Integer> termToEnumElementMap = new HashMap<>();
-  public Map<Integer, Integer> enumElementToTermMap = new HashMap<>();
-  public Map<Integer, Integer> termRewriteConstructorDefinitions = new HashMap<>(); // The number of times a constructor appears as the root of a term
-  public Map<Integer, Integer> termRewriteConstructorUsages = new HashMap<>(); // The number of times a constructor appears
-  public Set<Integer> functionsInUse = new HashSet<>(); // The set of functions in use
+  private int startRelation = 0;
+  private final Map<Integer, Integer> termToEnumElementMap = new HashMap<>();
+  private final Map<Integer, Integer> enumElementToTermMap = new HashMap<>();
+  private final Map<Integer, Integer> termRewriteConstructorDefinitions = new HashMap<>(); // The number of times a constructor appears as the root of a term
+  private final Map<Integer, Integer> termRewriteConstructorUsages = new HashMap<>(); // The number of times a constructor appears
+  private final Set<Integer> functionsInUse = new HashSet<>(); // The set of functions in use
 
   private final Map<Integer, Set<Integer>> cycleCheck = new HashMap<>();
 
-  private final Map<Integer, Map<Integer, List<Integer>>> trRules = new LinkedHashMap<>();
+  private Map<Integer, Map<Integer, List<Integer>>> trRules;
   private final Map<Integer, Map<Integer, Integer>> variableNamesByRule = new HashMap<>(); // Map from term to the variable aliases used in that term
   private final Map<Integer, Map<Integer, Integer>> reverseVariableNamesByRule = new HashMap<>(); // Map from term to the variable aliases used in that term
   private Map<Integer, Integer> variableMap;
@@ -191,7 +190,7 @@ public class Rewriter {
     return term;
   }
 
-  public int stepper(int inputTerm) {
+  private int stepper(int inputTerm) {
     rewriteTraverse = rewritePreorder || rewritePostorder;
     rewriteActive = !rewriteDisable;
     rewriteAttemptCounter = rewriteStepCounter = 0;
@@ -218,17 +217,17 @@ public class Rewriter {
     return newTerm;
   }
 
-  boolean isTerminatingConfiguration(int term, int relation) {
+  private boolean isTerminatingConfiguration(int term, int relation) {
     int thetaRoot = thetaFromConfiguration(term);
     Set<Integer> terminals = rewriteTerminals.get(relation);
     return iTerms.isSpecialTerm(thetaRoot) || (terminals != null && terminals.contains(thetaRoot));
   }
 
-  public String render(int term) {
+  private String render(int term) {
     return tt.toString(term, variableMap);
   }
 
-  public void normaliseAndStaticCheckRewriteRules() {
+  private void normaliseAndStaticCheckRewriteRules() {
     Map<Integer, Integer> constructorCount = new HashMap<>(); // The number of defined rules for each constructor Map<Integer, Integer>
 
     // Stage one - collect information
@@ -259,7 +258,7 @@ public class Rewriter {
 
     // System.out.println("IndexToTerm:" + ((ITermsLowLevelAPI) iTerms).getIndexToTerm());
     for (Integer scanRelationIndex : trRules.keySet()) { // Step through the relations
-      // System.out.println("Scanning rules for relation " + tt.toString(scanRelationIndex));
+      System.out.println("Scanning rules for relation " + tt.toString(scanRelationIndex));
 
       // Note: rule root is a symbol not a term
 
@@ -420,13 +419,15 @@ public class Rewriter {
   }
   /* End of variable and function mapping ****************************************************************************/
 
-  public int rewrite(int currentDerivationTerm) {
+  public int rewrite(int currentDerivationTerm, Map<Integer, Map<Integer, List<Integer>>> trRules, int defaultStartRelation) {
+    startRelation = defaultStartRelation;
+    this.trRules = trRules;
+    normaliseAndStaticCheckRewriteRules();
     if (currentDerivationTerm != 0 && startRelation != 0) {
-      // System.out.println(
-      // "Rewriting under relation " + iTerms.getTermSymbolString(iTerms.getSubterm(startRelation, 0)) + " " + iTerms.toString(currentDerivationTerm));
-      normaliseAndStaticCheckRewriteRules();
-      // System.out.println("inputTerm " + iTerms.toString(inputTerm));
-      // System.out.println("startRelation " + iTerms.toString(startRelation));
+      System.out.println(
+          "Rewriting under relation " + iTerms.getTermSymbolString(iTerms.getSubterm(startRelation, 0)) + " " + iTerms.toString(currentDerivationTerm));
+      System.out.println("currentDerivationTerm " + iTerms.toString(currentDerivationTerm));
+      System.out.println("startRelation " + iTerms.toString(startRelation));
       return stepper(currentDerivationTerm);
     } else
       return currentDerivationTerm;

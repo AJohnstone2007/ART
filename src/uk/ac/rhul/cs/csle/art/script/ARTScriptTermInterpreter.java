@@ -56,8 +56,13 @@ private final String scriptParserTermString = "rules(directive(whitespace(cfgBui
   public Grammar currentGrammar; // scriptTraverser builds grammar rules into this grammar
   private int currentDerivationTerm = 0;
   private int currentConfiguration = 0;
+
   private final Chooser currentChooser;
+  public final Set<Integer> chooseRules = new LinkedHashSet<>();
+
   private final Rewriter currentRewriter;
+  public final Map<Integer, Map<Integer, List<Integer>>> trRules = new LinkedHashMap<>();
+  public int defaultStartRelation = 0;
 
   private int goodCount = 0;
   private int badCount = 0;
@@ -67,13 +72,8 @@ private final String scriptParserTermString = "rules(directive(whitespace(cfgBui
   public int statisticsLevel = 5;
   public int defaultDepthLimit = 5;
 
-  public final Set<Integer> chooseRules = new LinkedHashSet<>();
-  public final Map<Integer, Map<Integer, List<Integer>>> trRules = new LinkedHashMap<>();
-  public int defaultStartRelation = 0; // This is set by the first term rewrite rule encountered
-
   public ARTScriptTermInterpreter(ITerms iTerms) {
     this.iTerms = iTerms;
-    currentRewriter = new Rewriter(iTerms, tt);
 
     tt = loadTextTraverser();
     // 2a. Debug - load text traverser default action to print message if we encounter an unknown constructor
@@ -111,6 +111,9 @@ private final String scriptParserTermString = "rules(directive(whitespace(cfgBui
     currentChooser = new Chooser(iTerms);
     currentChooser.normalise(currentGrammar, chooseRules);
     scriptParser.grammar = currentGrammar;
+
+    // Initialise rewriter
+    currentRewriter = new Rewriter(iTerms, tt);
   }
 
   private void initialiseScriptTraverser() { // Initialise scriptTraverser
@@ -154,8 +157,8 @@ private final String scriptParserTermString = "rules(directive(whitespace(cfgBui
   private void buildTRRule(int term) {
     int relation = iTerms.getSubterm(term, 1, 1, 1);
     int constructorIndex = iTerms.getTermSymbolIndex((iTerms.getSubterm(term, 1, 1, 0, 0)));
-    // System.out.println("Building TR rule " + iTerms.toString(term) + "\nwith relation " + iTerms.toString(relation) + "\nand constructor "
-    // + iTerms.getString(constructorIndex));
+    System.out.println("Building TR rule " + iTerms.toString(term) + "\nwith relation " + iTerms.toString(relation) + "\nand constructor "
+        + iTerms.getString(constructorIndex));
     if (trRules.get(relation) == null) trRules.put(relation, new HashMap<>());
     Map<Integer, List<Integer>> map = trRules.get(relation);
     if (map.get(constructorIndex) == null) map.put(constructorIndex, new LinkedList<>());
@@ -305,6 +308,7 @@ private final String scriptParserTermString = "rules(directive(whitespace(cfgBui
         }
       break;
     case "try":
+      System.out.println("try at " + iTerms.toString(term));
       switch (iTerms.getTermSymbolString(iTerms.getSubterm(term, 0, 0))) {
       case "__string":
         doParse("", iTerms.getTermSymbolString(iTerms.getSubterm(term, 0, 0, 0)), true, true);
@@ -321,8 +325,7 @@ private final String scriptParserTermString = "rules(directive(whitespace(cfgBui
       default:
         currentDerivationTerm = iTerms.getSubterm(term, 0, 0); // Go straight to the rewrite stage
       }
-
-      int resultTerm = currentRewriter.rewrite(currentDerivationTerm);
+      int resultTerm = currentRewriter.rewrite(currentDerivationTerm, trRules, defaultStartRelation);
       if (iTerms.getTermArity(iTerms.getSubterm(term, 0, 0)) == 2) if (resultTerm == iTerms.getSubterm(term, 0, 0, 1))
         System.out.println("Good");
       else

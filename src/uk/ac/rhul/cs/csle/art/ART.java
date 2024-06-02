@@ -28,6 +28,7 @@ public class ART {
     case "v4": new ARTV4(Util.scriptString(args)); return; // Undocumented internal mode
     case "noFX": new ARTScriptTermInterpreter(new ITermsLowLevelAPI()).interpret(Util.scriptString(args)); return; // Run batch mode without fx in this context
     case "noIDE": specificationString = Util.scriptString(args); Application.launch(FXStart.class, args); return; // Run batch mode in a JavaFX application
+    case "compiled": testCompiled();
     case "version": System.out.println("ART Version " + Version.version()); return; // Run batch mode in a JavaFX application
     }
     specificationString = args.length < 1 ? "" : args[0];
@@ -35,6 +36,9 @@ public class ART {
     Application.launch(FXStart.class, args);  // We arrive here only if none of the special modes is activated; hence use the IDE
   }
   // @formatter:on
+
+  private static void testCompiled() {
+  }
 
   private static void newVersion() {
     try {

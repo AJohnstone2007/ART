@@ -315,7 +315,7 @@ public class Alero extends Application {
     case "_Run":
       consoleln("Run");
       // try {
-      gw.meshGroup.getChildren().clear();
+      // gw.meshGroup.getChildren().clear();
       consoleln("Returned value " + adlInterpreter.adlInterpret(tw.codeArea.getText()).javaValue());
       consoleln("Top level symbols " + adlInterpreter.topLevelSymbols);
       // } catch (RuntimeException e) {
@@ -330,7 +330,7 @@ public class Alero extends Application {
       FileChooser fileChooser = new FileChooser();
       fileChooser.setTitle("Open mesh file");
       // fileChooser.setInitialDirectory(new File(System.getProperty("user.home")));
-      fileChooser.setInitialDirectory(new File("\\adrian\\eclipse\\alero\\stlIn"));
+      fileChooser.setInitialDirectory(new File("\\adrian\\eclipse\\art\\stlIn"));
       fileChooser.getExtensionFilters().addAll(new ExtensionFilter("Mesh Files (*.stl)", "*.stl"), new ExtensionFilter("All Files", "*.*"));
       File file = fileChooser.showOpenDialog(textStage);
       if (file != null) {
