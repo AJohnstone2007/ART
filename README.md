@@ -13,6 +13,6 @@ we use a variety of language grammars and language examples which you can find a
 
 You can access our research papers at https://pure.royalholloway.ac.uk/en/persons/adrian-johnstone/publications.
 
-The code and other material in this repository is &copy; 2010-2024 by Adrian Johnstone but licensed under CC BY 4.0
+The code and other material in this repository is &copy; 2010-2024 by Adrian Johnstone but licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/deed.en)
 
 Adrian Johnstone, a.johnstone@rhul.ac.uk
