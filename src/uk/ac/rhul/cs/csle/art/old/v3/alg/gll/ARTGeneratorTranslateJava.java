@@ -65,12 +65,13 @@ public class ARTGeneratorTranslateJava extends ARTGeneratorTranslate {
   void fileOpen(String filename, String nameSpace) {
     if (nameSpace.length() != 0) text.printf("package %s;\n\n", nameSpace);
 
-    text.printf("import uk.ac.rhul.cs.csle.art.core.ARTUncheckedException;\n" + "import java.io.FileNotFoundException;\n"
-        + "import uk.ac.rhul.cs.csle.art.v3.alg.gll.support.*;\n" + "import uk.ac.rhul.cs.csle.art.v3.lex.*;\n"
-        + "import uk.ac.rhul.cs.csle.art.v3.manager.*;\n" + "import uk.ac.rhul.cs.csle.art.v3.manager.grammar.*;\n"
-        + "import uk.ac.rhul.cs.csle.art.v3.manager.mode.*;\n" + "import uk.ac.rhul.cs.csle.art.util.text.*;\n" + "import uk.ac.rhul.cs.csle.art.term.*;\n"
-        + "import uk.ac.rhul.cs.csle.art.util.bitset.ARTBitSet;\n" + "/*******************************************************************************\n"
-        + "*\n" + "* %s\n" + "*\n" + "*******************************************************************************/\n", filename);
+    text.printf("import uk.ac.rhul.cs.csle.art.old.v4.core.ARTUncheckedException;\n" + "import java.io.FileNotFoundException;\n"
+        + "import uk.ac.rhul.cs.csle.art.old.v3.alg.gll.support.*;\n" + "import uk.ac.rhul.cs.csle.art.old.v3.lex.*;\n"
+        + "import uk.ac.rhul.cs.csle.art.old.v3.manager.*;\n" + "import uk.ac.rhul.cs.csle.art.old.v3.manager.grammar.*;\n"
+        + "import uk.ac.rhul.cs.csle.art.old.v3.manager.mode.*;\n" + "import uk.ac.rhul.cs.csle.art.old.v4.util.text.*;\n"
+        + "import uk.ac.rhul.cs.csle.art.term.*;\n" + "import uk.ac.rhul.cs.csle.art.old.v4.util.bitset.ARTBitSet;\n"
+        + "/*******************************************************************************\n" + "*\n" + "* %s\n" + "*\n"
+        + "*******************************************************************************/\n", filename);
   }
 
   @Override

@@ -63,7 +63,7 @@ public class EditorWithConsoleWindow {
     menuStack.getChildren().addAll(menuBuilder.buildMenuBar(), splitPane);
 
     Scene scene = new Scene(menuStack);
-    // scene.getStylesheets().add(Alero.class.getResource("alero-highlights.css").toExternalForm());
+    scene.getStylesheets().add(EditorWithConsoleWindow.class.getResource("art-highlights.css").toExternalForm());
     stage.setScene(scene);
     stage.setTitle(title);
     stage.setX(x);
@@ -105,10 +105,7 @@ public class EditorWithConsoleWindow {
   /*
    * Styling handler below here
    */
-  private final String[] KEYWORDS = new String[] { "stl", "assert", "boolean", "break", "byte", "case", "catch", "char", "class", "const", "continue",
-      "default", "do", "double", "else", "enum", "extends", "final", "finally", "float", "for", "goto", "if", "implements", "import", "instanceof", "int",
-      "interface", "long", "native", "new", "package", "private", "protected", "public", "return", "short", "", "strictfp", "super", "switch", "synchronized",
-      "this", "throw", "throws", "transient", "try", "void", "volatile", "while", "fn", "lom", "system" };
+  private final String[] KEYWORDS = new String[] { "---", "->", "fn", "_add" };
 
   private final String KEYWORD_PATTERN = "\\b(" + String.join("|", KEYWORDS) + ")\\b";
   private final String PAREN_PATTERN = "\\(|\\)";

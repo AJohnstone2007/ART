@@ -31,7 +31,7 @@ public class PipelineParamaters {
   public int verbosityLevel = 5;
   public int traceLevel = 3;
   public int statisticsLevel = 5;
-  public int defaultDepthLimit = 3;
+  public int defaultDepthLimit = 5;
 
   public Parser parser = null;
   public Lexer lexer = null;

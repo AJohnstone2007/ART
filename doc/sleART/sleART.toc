@@ -1,0 +1,39 @@
+\contentsline {chapter}{\numberline {0}The Royal Holloway course}{iii}{}%
+\contentsline {section}{\numberline {0.1}Aims and motivation}{iv}{}%
+\contentsline {section}{\numberline {0.2}Learning outcomes}{iv}{}%
+\contentsline {section}{\numberline {0.3}Assessment}{v}{}%
+\contentsline {section}{\numberline {0.4}Project topics}{vi}{}%
+\contentsline {section}{\numberline {0.5}Teaching week by week}{vi}{}%
+\contentsline {chapter}{\numberline {1}First examples}{1}{}%
+\contentsline {section}{\numberline {1.1}Description styles for semantics}{3}{}%
+\contentsline {section}{\numberline {1.2}Description styles for syntax}{3}{}%
+\contentsline {section}{\numberline {1.3}Exercises}{4}{}%
+\contentsline {chapter}{\numberline {2}Context Free Grammars}{5}{}%
+\contentsline {section}{\numberline {2.1}A languages is a set of strings}{5}{}%
+\contentsline {section}{\numberline {2.2}A Context Free Grammar generates a language}{5}{}%
+\contentsline {section}{\numberline {2.3}A derivation records rule applications}{5}{}%
+\contentsline {section}{\numberline {2.4}A parser constructs derivations}{5}{}%
+\contentsline {section}{\numberline {2.5}GIFT operators rewrite derivations}{5}{}%
+\contentsline {section}{\numberline {2.6}Paraterminals specify the lexer-parser interface}{5}{}%
+\contentsline {section}{\numberline {2.7}Choosers reduce ambiguity}{5}{}%
+\contentsline {chapter}{\numberline {3}Rewriting}{7}{}%
+\contentsline {section}{\numberline {3.1}Equality of programs}{7}{}%
+\contentsline {section}{\numberline {3.2}Mathematical objects, their denotations and software implementations}{8}{}%
+\contentsline {paragraph}{Mathematical objects}{9}{}%
+\contentsline {paragraph}{Denotations}{9}{}%
+\contentsline {paragraph}{Implementations}{9}{}%
+\contentsline {section}{\numberline {3.3}String rewriting}{9}{}%
+\contentsline {section}{\numberline {3.4}Term rewriting}{9}{}%
+\contentsline {section}{\numberline {3.5}Internal syntax style}{11}{}%
+\contentsline {section}{\numberline {3.6}Terms}{12}{}%
+\contentsline {subsection}{\numberline {3.6.1}Denoting term symbols}{13}{}%
+\contentsline {subsection}{\numberline {3.6.2}Typed terms}{13}{}%
+\contentsline {section}{\numberline {3.7}Terms and their implementation in Java}{13}{}%
+\contentsline {section}{\numberline {3.8}The Value system and plugins}{14}{}%
+\contentsline {chapter}{\numberline {4}Reduction semantics}{15}{}%
+\contentsline {chapter}{\numberline {5}Attribute action interpreters}{17}{}%
+\contentsline {chapter}{\numberline {A}Music making with Java MIDI}{19}{}%
+\contentsline {chapter}{\numberline {B}Image processing operations}{21}{}%
+\contentsline {chapter}{\numberline {C}3D modelling}{23}{}%
+\contentsline {chapter}{\numberline {D}ART reference documentation}{25}{}%
+\contentsline {chapter}{\numberline {E}Glossary}{27}{}%

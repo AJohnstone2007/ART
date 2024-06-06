@@ -1,0 +1,328 @@
+This is pdfTeX, Version 3.141592653-2.6-1.40.24 (MiKTeX 21.12.10) (preloaded format=pdflatex 2022.1.4)  6 JUN 2024 11:52
+entering extended mode
+ restricted \write18 enabled.
+ %&-line parsing enabled.
+**./sleART.tex
+(sleART.tex
+LaTeX2e <2021-11-15> patch level 1
+L3 programming layer <2021-11-22>
+(C:\Users\adrian\AppData\Local\Programs\MiKTeX\tex/latex/base\book.cls
+Document Class: book 2021/10/04 v1.4n Standard LaTeX document class
+(C:\Users\adrian\AppData\Local\Programs\MiKTeX\tex/latex/base\bk11.clo
+File: bk11.clo 2021/10/04 v1.4n Standard LaTeX file (size option)
+)
+\c@part=\count183
+\c@chapter=\count184
+\c@section=\count185
+\c@subsection=\count186
+\c@subsubsection=\count187
+\c@paragraph=\count188
+\c@subparagraph=\count189
+\c@figure=\count190
+\c@table=\count191
+\abovecaptionskip=\skip47
+\belowcaptionskip=\skip48
+\bibindent=\dimen138
+)
+(C:\Users\adrian\AppData\Local\Programs\MiKTeX\tex/latex/nomencl\nomencl.sty
+Package: nomencl 2021/11/10 v5.6 Nomenclature package
+
+(C:\Users\adrian\AppData\Local\Programs\MiKTeX\tex/latex/xkeyval\xkeyval.sty
+Package: xkeyval 2020/11/20 v2.8 package option processing (HA)
+
+(C:\Users\adrian\AppData\Local\Programs\MiKTeX\tex/generic/xkeyval\xkeyval.tex
+(C:\Users\adrian\AppData\Local\Programs\MiKTeX\tex/generic/xkeyval\xkvutils.tex
+\XKV@toks=\toks16
+\XKV@tempa@toks=\toks17
+(C:\Users\adrian\AppData\Local\Programs\MiKTeX\tex/generic/xkeyval\keyval.tex))
+\XKV@depth=\count192
+File: xkeyval.tex 2014/12/03 v2.7a key=value parser (HA)
+)) (C:\Users\adrian\AppData\Local\Programs\MiKTeX\tex/latex/base\ifthen.sty
+Package: ifthen 2020/11/24 v1.1c Standard LaTeX ifthen package (DPC)
+)
+(C:\Users\adrian\AppData\Local\Programs\MiKTeX\tex/latex/koma-script\tocbasic.s
+ty
+Package: tocbasic 2021/11/13 v3.35 KOMA-Script package (handling toc-files)
+
+(C:\Users\adrian\AppData\Local\Programs\MiKTeX\tex/latex/koma-script\scrbase.st
+y
+Package: scrbase 2021/11/13 v3.35 KOMA-Script package (KOMA-Script-independent 
+basics and keyval usage)
+
+(C:\Users\adrian\AppData\Local\Programs\MiKTeX\tex/latex/koma-script\scrlfile.s
+ty
+Package: scrlfile 2021/11/13 v3.35 KOMA-Script package (file load hooks)
+
+(C:\Users\adrian\AppData\Local\Programs\MiKTeX\tex/latex/koma-script\scrlfile-h
+ook.sty
+Package: scrlfile-hook 2021/11/13 v3.35 KOMA-Script package (using LaTeX hooks)
+
+
+(C:\Users\adrian\AppData\Local\Programs\MiKTeX\tex/latex/koma-script\scrlogo.st
+y
+Package: scrlogo 2021/11/13 v3.35 KOMA-Script package (logo)
+)))
+Applying: [2021/05/01] Usage of raw or classic option list on input line 252.
+Already applied: [0000/00/00] Usage of raw or classic option list on input line
+ 368.
+)
+\scr@dte@tocline@numberwidth=\skip49
+\scr@dte@tocline@numbox=\box50
+)
+Package tocbasic Info: babel extension for `nlo' omitted
+(tocbasic)             because of missing \bbl@set@language on input line 187.
+Package tocbasic Info: babel extension for `nls' omitted
+(tocbasic)             because of missing \bbl@set@language on input line 188.
+\nomlabelwidth=\dimen139
+\nom@tempdim=\dimen140
+\nomitemsep=\skip50
+)
+(C:\Users\adrian\AppData\Local\Programs\MiKTeX\tex/latex/graphics\graphicx.sty
+Package: graphicx 2021/09/16 v1.2d Enhanced LaTeX Graphics (DPC,SPQR)
+
+(C:\Users\adrian\AppData\Local\Programs\MiKTeX\tex/latex/graphics\graphics.sty
+Package: graphics 2021/03/04 v1.4d Standard LaTeX Graphics (DPC,SPQR)
+
+(C:\Users\adrian\AppData\Local\Programs\MiKTeX\tex/latex/graphics\trig.sty
+Package: trig 2021/08/11 v1.11 sin cos tan (DPC)
+)
+(C:\Users\adrian\AppData\Local\Programs\MiKTeX\tex/latex/graphics-cfg\graphics.
+cfg
+File: graphics.cfg 2016/06/04 v1.11 sample graphics configuration
+)
+Package graphics Info: Driver file: pdftex.def on input line 107.
+
+(C:\Users\adrian\AppData\Local\Programs\MiKTeX\tex/latex/graphics-def\pdftex.de
+f
+File: pdftex.def 2020/10/05 v1.2a Graphics/color driver for pdftex
+))
+\Gin@req@height=\dimen141
+\Gin@req@width=\dimen142
+)
+(C:\Users\adrian\AppData\Local\Programs\MiKTeX\tex/latex/boxedminipage\boxedmin
+ipage.sty
+Package: boxedminipage 2020/04/19 v1.1 Boxed LaTeX2e minipages
+\bmp@box=\box51
+\bmp@width=\skip51
+\bmp@height=\skip52
+) (rhulcase.sty
+Modified style for RHUL reports without hanging headers, released 8 Feb 2007, A
+drian Johnstone
+\fullwidth=\skip53
+) (C:\Users\adrian\AppData\Local\Programs\MiKTeX\tex/latex/upquote\upquote.sty
+Package: upquote 2012/04/19 v1.3 upright-quote and grave-accent glyphs in verba
+tim
+)
+\@nomenclaturefile=\write3
+\openout3 = `sleART.nlo'.
+
+Package nomencl Info: Writing nomenclature file sleART.nlo on input line 8.
+
+(C:\Users\adrian\AppData\Local\Programs\MiKTeX\tex/latex/l3backend\l3backend-pd
+ftex.def
+File: l3backend-pdftex.def 2021-12-14 L3 backend support: PDF output (pdfTeX)
+\l__color_backend_stack_int=\count193
+\l__pdf_internal_box=\box52
+) (sleART.aux (Rewriting.aux))
+\openout1 = `sleART.aux'.
+
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 19.
+LaTeX Font Info:    ... okay on input line 19.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 19.
+LaTeX Font Info:    ... okay on input line 19.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 19.
+LaTeX Font Info:    ... okay on input line 19.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 19.
+LaTeX Font Info:    ... okay on input line 19.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 19.
+LaTeX Font Info:    ... okay on input line 19.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 19.
+LaTeX Font Info:    ... okay on input line 19.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 19.
+LaTeX Font Info:    ... okay on input line 19.
+
+(C:\Users\adrian\AppData\Local\Programs\MiKTeX\tex/context/base/mkii\supp-pdf.m
+kii
+[Loading MPS to PDF converter (version 2006.09.02).]
+\scratchcounter=\count194
+\scratchdimen=\dimen143
+\scratchbox=\box53
+\nofMPsegments=\count195
+\nofMParguments=\count196
+\everyMPshowfont=\toks18
+\MPscratchCnt=\count197
+\MPscratchDim=\dimen144
+\MPnumerator=\count198
+\makeMPintoPDFobject=\count199
+\everyMPtoPDFconversion=\toks19
+)
+(C:\Users\adrian\AppData\Local\Programs\MiKTeX\tex/latex/epstopdf-pkg\epstopdf-
+base.sty
+Package: epstopdf-base 2020-01-24 v2.11 Base part for package epstopdf
+Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 4
+85.
+
+(C:\Users\adrian\AppData\Local\Programs\MiKTeX\tex/latex/00miktex\epstopdf-sys.
+cfg
+File: epstopdf-sys.cfg 2021/03/18 v2.0 Configuration of epstopdf for MiKTeX
+))
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <14.4> on input line 20.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <7> on input line 20.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <10.95> on input line 20.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <8> on input line 20.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <6> on input line 20.
+ [0
+
+
+{C:/Users/adrian/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map}]
+(sleART.toc
+Underfull \vbox (badness 2261) has occurred while \output is active []
+
+ [1
+
+
+])
+\tf@toc=\write4
+\openout4 = `sleART.toc'.
+
+LaTeX Font Info:    Font shape `OT1/cmss/m/it' in size <10.95> not available
+(Font)              Font shape `OT1/cmss/m/sl' tried instead on input line 25.
+
+[2]
+Chapter 0.
+[3
+
+
+] [4
+
+]
+
+pdfTeX warning: pdflatex (file ./project.pdf): PDF inclusion: found PDF version
+ <1.7>, but at most version <1.5> allowed
+<project.pdf, id=25, 963.6pt x 542.025pt>
+File: project.pdf Graphic file (type pdf)
+<use project.pdf>
+Package pdftex.def Info: project.pdf  used on input line 88.
+(pdftex.def)             Requested size: 350.20517pt x 188.49901pt.
+[5 <./project.pdf>] [6]
+Chapter 1.
+[1
+
+
+] [2
+
+] [3
+
+] [4]
+Chapter 2.
+[5
+
+
+]
+\openout2 = `Rewriting.aux'.
+
+ (Rewriting.tex [6
+
+
+
+]
+Chapter 3.
+[7] [8] [9]
+
+LaTeX Warning: Reference `pragmatics' on page 10 undefined on input line 81.
+
+[10] [11]
+<pdf/semtree20.pdf, id=88, 279.0425pt x 333.245pt>
+File: pdf/semtree20.pdf Graphic file (type pdf)
+<use pdf/semtree20.pdf>
+Package pdftex.def Info: pdf/semtree20.pdf  used on input line 107.
+(pdftex.def)             Requested size: 139.5209pt x 166.62209pt.
+
+Underfull \vbox (badness 4378) has occurred while \output is active []
+
+ [12 <./pdf/semtree20.pdf>]
+Overfull \hbox (15.13005pt too wide) in paragraph at lines 156--157
+[]$[] [] \OMS/cmsy/m/n/10.95 
+ []
+
+) [13] [14
+
+
+]
+Chapter 4.
+[15
+
+
+] [16
+
+
+]
+Chapter 5.
+[17] [18
+
+
+]
+Appendix A.
+[19] [20
+
+
+]
+Appendix B.
+[21] [22
+
+
+]
+Appendix C.
+[23] [24
+
+
+]
+Appendix D.
+[25] [26
+
+
+]
+Appendix E.
+(sleART.nls [27] [28
+
+
+]) [29] (sleART.aux (Rewriting.aux))
+
+LaTeX Warning: There were undefined references.
+
+ ) 
+Here is how much of TeX's memory you used:
+ 2665 strings out of 478659
+ 49020 string characters out of 2845447
+ 390786 words of memory out of 3000000
+ 20738 multiletter control sequences out of 15000+600000
+ 412740 words of font info for 58 fonts, out of 8000000 for 9000
+ 1141 hyphenation exceptions out of 8191
+ 110i,8n,106p,941b,321s stack positions out of 5000i,500n,10000p,200000b,80000s
+<C:/Users/adrian/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm
+/cmbx10.pfb><C:/Users/adrian/AppData/Local/Programs/MiKTeX/fonts/type1/public/a
+msfonts/cm/cmbxti10.pfb><C:/Users/adrian/AppData/Local/Programs/MiKTeX/fonts/ty
+pe1/public/amsfonts/cm/cmcsc10.pfb><C:/Users/adrian/AppData/Local/Programs/MiKT
+eX/fonts/type1/public/amsfonts/cm/cmmi10.pfb><C:/Users/adrian/AppData/Local/Pro
+grams/MiKTeX/fonts/type1/public/amsfonts/cm/cmr10.pfb><C:/Users/adrian/AppData/
+Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmss10.pfb><C:/Users/adria
+n/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmss12.pfb><C:/U
+sers/adrian/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmssbx
+10.pfb><C:/Users/adrian/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfon
+ts/cm/cmssi10.pfb><C:/Users/adrian/AppData/Local/Programs/MiKTeX/fonts/type1/pu
+blic/amsfonts/cm/cmsy10.pfb><C:/Users/adrian/AppData/Local/Programs/MiKTeX/font
+s/type1/public/amsfonts/cm/cmsy8.pfb><C:/Users/adrian/AppData/Local/Programs/Mi
+KTeX/fonts/type1/public/amsfonts/cm/cmti10.pfb><C:/Users/adrian/AppData/Local/P
+rograms/MiKTeX/fonts/type1/public/amsfonts/cm/cmti7.pfb><C:/Users/adrian/AppDat
+a/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmtt10.pfb>
+Output written on sleART.pdf (36 pages, 307621 bytes).
+PDF statistics:
+ 215 PDF objects out of 1000 (max. 8388607)
+ 0 named destinations out of 1000 (max. 500000)
+ 17 words of extra memory for PDF output out of 10000 (max. 10000000)
+

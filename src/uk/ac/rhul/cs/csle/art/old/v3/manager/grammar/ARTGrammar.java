@@ -672,8 +672,7 @@ public class ARTGrammar {
     // 7 Compute prefix lengths and map for BSRset algorithms
     computeSlotPrefixMap();
 
-    // if (artDirectives.i("verbosity") > 0)
-    instanceTree.printDot("GrammarInstanceTreeAfterSetComputations.dot");
+    if (artDirectives.i("verbosity") > 0) instanceTree.printDot("GrammarInstanceTreeAfterSetComputations.dot");
 
     isDirty = false;
   }
