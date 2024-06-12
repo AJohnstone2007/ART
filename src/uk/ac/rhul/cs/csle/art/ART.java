@@ -22,13 +22,12 @@ public class ART {
   // @formatter:off
   public static void main(String[] args) {
     if (args.length > 0) switch (args[0]) { // Test for initial special mode argument
-    case "incVersion": newVersion(); return;              // Undocumented internal mode
+    case "incVersion": incVersion(); return;              // Undocumented internal mode
     case "aj": new AJDebug(args); return;             // Undocumented internal mode
     case "v3": new ARTV3(Util.scriptString(args)); return; // Undocumented internal mode
     case "v4": new ARTV4(Util.scriptString(args)); return; // Undocumented internal mode
     case "noFX": new ARTScriptTermInterpreter(new ITermsLowLevelAPI()).interpret(Util.scriptString(args)); return; // Run batch mode without fx in this context
     case "noIDE": specificationString = Util.scriptString(args); Application.launch(FXStart.class, args); return; // Run batch mode in a JavaFX application
-    case "compiled": testCompiled();
     case "version": System.out.println("ART Version " + Version.version()); return; // Run batch mode in a JavaFX application
     }
     specificationString = args.length < 1 ? "" : args[0];
@@ -37,10 +36,7 @@ public class ART {
   }
   // @formatter:on
 
-  private static void testCompiled() {
-  }
-
-  private static void newVersion() {
+  private static void incVersion() {
     try {
       int newBuild = Version.build() + 1;
       String timeStamp = LocalDate.now() + " " + LocalTime.now();

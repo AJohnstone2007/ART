@@ -472,7 +472,7 @@ public abstract class ITerms {
   }
 
   public boolean matchZeroSV(int closedTermIndex, int openTermIndex, int[] bindings) { // This matcher does not allow sequence
-                                                                                       // variables
+    // // variables
     // System.out
     // .println("matchZeroSV() " + closedTermIndex + ":" + toString(closedTermIndex) + " against open term " + openTermIndex + ":" + toString(openTermIndex));
 

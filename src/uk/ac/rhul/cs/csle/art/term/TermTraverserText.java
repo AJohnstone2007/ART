@@ -11,7 +11,7 @@ public class TermTraverserText extends TermTraverser {
   private Map<Integer, Integer> localAliases;
   public final StringBuilder sb = new StringBuilder();
   private int depthLimit = -1;
-  private final int defaultDepthLimit = 3;
+  private final int defaultDepthLimit = 4;
   private boolean indent = false;
 
   public TermTraverserText(ITerms iTerms) {
