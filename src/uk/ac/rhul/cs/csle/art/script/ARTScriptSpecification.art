@@ -40,22 +40,19 @@ cfgSeq ::= #^   // Dirty trick: both cfgAlt and cfgAltNoAction promote cfgSeq to
 cfgSlot ::= #^  
 
 (* Term rewrite rules ********************************************************)
-trRule ::= trLabel tr 
-trLabel ::= #^ | '-'^ ID | '-'^ STRING_DQ  
-tr ::= trPremises '---'^ trTransition trEquations 
-     | trPremises '---'^ trTransition
-     | trPremises '---'^ trNoTransition trEquations
-     | trPremises '---'^ trNoTransition 
+trRule ::= trLabel trPremises '---'^ trTransition 
+trLabel ::= #^ | '-'^ ID  
 trPremises ::= #^ | trTransition trPremises^ | trMatch trPremises^
-trTransition ::= trConfiguration TRRELATION trConfiguration
-trNoTransition ::= trConfiguration
-trConfiguration ::= trTerm | trTerm trEntityReferences^ | '<'^ trTerm trEntityReferences^ '>'^
-trEntityReferences ::= ','^ trTerm | ','^ trTerm trEntityReferences^ | ','^ trNamedTerm | ','^ trNamedTerm  trEntityReferences^
-trNamedTerm ::= ID '='^ trTerm
+trTransition ::= trTerm TRRELATION trTerm
 trMatch ::= trTerm '|>'^ trTerm
-trTerm ::= __bool^^ | __int32^^ | __real64^^ | __string^^ | __char^^ | ID^^ | ID^^ '('^ ')'^ | ID^^  '('^ trSubterms^ ')'^ | ID_ATTRIBUTE
-trSubterms ::= trTerm | trTerm  ','^ trSubterms^ | trTerm  trSubterms^
-trEquations ::= cfgEquation | cfgEquation ','^ trEquations^
+trTerm ::= trSingleTerm^ | trTuple | '('^ trTerm ')'^
+trSingleTerm ::= __bool^^ | __int32^^ | __real64^^ | __string^^ | __char^^ | ID^^ | ID^^ '('^ trTermList^ ')'^ | ID^^  '('^  ')'^ | trInlined
+trTermList ::= trTerm | trTerm ',' trTermList
+ 
+trTuple ::= trSingleTerm trTupleElement^
+trTupleElement ::= ','^ trSingleTerm | ','^ trSingleTerm trTupleElement^
+
+trInlined ::= '('^ trPremises ')'^
 
 (* Choose rules ***************************************************************)
 chooseRules ::= chooseRule | chooseRule chooseRules^
@@ -84,13 +81,13 @@ directiveElement ::=
 | 'parser'^^ '#'^ | 'parser'^^ parserElements^
 | 'start'^^ '#'^ | 'start'^^ cfgNonterminal // Set parser start nonterminal
 | 'rewriter'^^ '#'^ | 'rewriter'^^ rewriterElements^
-| 'configuration'^^ '#'^ | 'configuration'^^ TRRELATION | 'configuration'^^ TRRELATION ','^ trConfiguration
+| 'configuration'^^ '#'^ | 'configuration'^^ TRRELATION | 'configuration'^^ TRRELATION ','^ trTerm
 | 'trace'^^ __int32
 | 'print'^^ displayElements^
 | 'show'^^ displayElements^
 | 'log'^^ displayElements^
-| 'try'^^ file | 'try'^^ trConfiguration | 'try'^^ __string 
-| 'try'^^ file '='^ trConfiguration | 'try'^^ trConfiguration '='^ trConfiguration | 'try'^^ __string '='^ trConfiguration
+| 'try'^^ file | 'try'^^ trTerm | 'try'^^ __string 
+| 'try'^^ file '='^ trTerm | 'try'^^ trTerm '='^ trTerm | 'try'^^ __string '='^ trTerm
 | 'termTool'^^
 | 'nop'^^
 
