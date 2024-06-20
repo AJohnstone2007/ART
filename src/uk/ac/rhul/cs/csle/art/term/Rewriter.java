@@ -258,7 +258,7 @@ public class Rewriter {
 
     // System.out.println("IndexToTerm:" + ((ITermsLowLevelAPI) iTerms).getIndexToTerm());
     for (Integer scanRelationIndex : trRules.keySet()) { // Step through the relations
-      System.out.println("Scanning rules for relation " + tt.toString(scanRelationIndex));
+      // System.out.println("Scanning rules for relation " + tt.toString(scanRelationIndex));
 
       // Note: rule root is a symbol not a term
 
@@ -268,7 +268,7 @@ public class Rewriter {
           List<Integer> emptyConstructorSet = trRules.get(scanRelationIndex).get(iTerms.findString(""));
           if (emptyConstructorSet != null) for (Integer emptyConstructorRule : emptyConstructorSet) {
             trRules.get(scanRelationIndex).get(ruleRoot).add(emptyConstructorRule);
-            // System.out.println("Adding empty constructor rule " + tt.toString(emptyConstructorRule));
+            System.out.println("Adding empty constructor rule " + tt.toString(emptyConstructorRule));
           }
         }
         // Collect the map of rules for this relation
@@ -278,6 +278,7 @@ public class Rewriter {
           else
             termRewriteConstructorDefinitions.put(ruleRoot, termRewriteConstructorDefinitions.get(ruleRoot) + 1);
 
+          // System.out.println("Checking for invalid function calls on " + iTerms.toString(ruleIndex));
           reportInvalidFunctionCallsRec(ruleIndex, iTerms.getSubterm(ruleIndex, 1, 1, 0));
 
           Map<Integer, Integer> variableNumbers = new HashMap<>();
@@ -424,10 +425,7 @@ public class Rewriter {
     this.trRules = trRules;
     normaliseAndStaticCheckRewriteRules();
     if (currentDerivationTerm != 0 && startRelation != 0) {
-      System.out.println(
-          "Rewriting under relation " + iTerms.getTermSymbolString(iTerms.getSubterm(startRelation, 0)) + " " + iTerms.toString(currentDerivationTerm));
-      System.out.println("currentDerivationTerm " + iTerms.toString(currentDerivationTerm));
-      System.out.println("startRelation " + iTerms.toString(startRelation));
+      // System.out.println("Rewriting under relation " + iTerms.getTermSymbolString(startRelation) + " " + iTerms.toString(currentDerivationTerm));
       return stepper(currentDerivationTerm);
     } else
       return currentDerivationTerm;

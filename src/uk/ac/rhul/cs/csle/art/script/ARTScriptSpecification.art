@@ -40,14 +40,18 @@ cfgSeq ::= #^   // Dirty trick: both cfgAlt and cfgAltNoAction promote cfgSeq to
 cfgSlot ::= #^  
 
 (* Term rewrite rules ********************************************************)
-trRule ::= trLabel trPremises '---'^ trMatch
+trRule ::= trLabel tr
 trLabel ::= #^ | '-'^ ID  
-trPremises ::= #^ | trMatch trPremises^
+tr ::= trPremises '---'^ trTransition
+trPremises ::= #^ | trMatch trPremises^ | trTransition trPremises^
+trMatch ::= trTuple '|>'^ trTuple
+trTransition ::= trTuple TRRELATION^ trTuple
+trTuple ::= trTerm^^ | trTerm ','^ trTupleList^
+trTupleList ::= trTerm | trTerm ','^ trTupleList^
 
-trMatch ::= trTransition^^ | trTransition '|>'^ trTransition
-trTransition ::= trTuple^^ | trTransition TRRELATION^ trTuple
-trTuple ::= trTerm^^ | trTuple ','^ trTerm
-trTerm ::= __bool^^ | __int32^^ | __real64^^ | __string^^ | __char^^ | ID^^ | ID^^  '('^  ')'^ | ID^^ '('^  trMatch ')'^ | '('^ trMatch ')'^
+trTerm ::= __bool^^ | __int32^^ | __real64^^ | __string^^ | __char^^ | ID^^ | ID^^  '('^  ')'^ | ID^^ '('^  trArgList^ ')'^
+trArgList ::= trTerm | trTerm ','^ trArgList^ | trInlineTransition | trInlineTransition ','^ trArgList^
+trInlineTransition ::= trTerm TRRELATION^ trTerm
 
 (* Choose rules ***************************************************************)
 chooseRules ::= chooseRule | chooseRule chooseRules^

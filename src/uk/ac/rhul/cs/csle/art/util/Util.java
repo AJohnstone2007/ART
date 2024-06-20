@@ -104,7 +104,7 @@ public class Util {
         scriptStringBuilder.append(" " + args[argp]);
       else if (args[argp].endsWith(".art"))
         try {
-          System.out.println("Appending contents of ART script file" + args[argp]);
+          // System.out.println("Appending contents of ART script file" + args[argp]);
           scriptStringBuilder.append(Files.readString(Paths.get((args[argp]))));
         } catch (IOException e) {
           Util.fatal("Unable to open script file " + args[argp]);
