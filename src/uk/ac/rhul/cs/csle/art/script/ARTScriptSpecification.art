@@ -85,8 +85,8 @@ directiveElement ::=
 | 'print'^^ displayElements^
 | 'show'^^ displayElements^
 | 'log'^^ displayElements^
-| 'try'^^ file | 'try'^^ trTerm | 'try'^^ __string 
-| 'try'^^ file '='^ trTerm | 'try'^^ trTerm '='^ trTerm | 'try'^^ __string '='^ trTerm
+| 'try'^^ file | 'try'^^ trTuple | 'try'^^ __string 
+| 'try'^^ file '='^ trTuple | 'try'^^ trTuple '='^ trTuple | 'try'^^ __string '='^ trTuple
 | 'termTool'^^
 | 'nop'^^
 

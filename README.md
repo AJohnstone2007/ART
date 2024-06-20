@@ -4,7 +4,9 @@ ART is the Royal Holloway software language engineering tool written by Adrian J
 
 The default ART pipeline processes language inputs using an MGLL parser coupled to a general lexer, with semantics specified using either SOS-style reduction rules or attribute-action rules. The core idea in ART is to delay ambiguity resolution until a natural point in the pipeline by allowing alternative interpretations to coexist.
 
-You will find a tutorial and reference guide to ART in the document [SoftwareLanguageEngineeringWithART.pdf](https://github.com/AJohnstone2007/ART/tree/main/doc/SoftwareLanguageEngineeringWithART.pdf) 
+You will find a tutorial and reference guide to ART in the document [SoftwareLanguageEngineeringWithART.pdf](https://github.com/AJohnstone2007/ART/tree/main/doc/SoftwareLanguageEngineeringWithART.pdf)
+
+art.jar is the current stable version. artALPHA.jar is the current development version. If you want to use the Integrated Development Environment you aill also need to install JavaFX from https://gluonhq.com/products/javafx/
 
 A variety of alternative algorithms are available in ART; in particular 'reference' GLL implementations that illustrate the central ideas along with a variety of optimisations. An early publication on these versions, and the associated presentation slides are [here](https://github.com/AJohnstone2007/ART/tree/main/doc/referenceImplementations). The corresponding code is [here](https://github.com/AJohnstone2007/ART/tree/main/src/uk/ac/rhul/cs/csle/art/cfg/gll).
 
