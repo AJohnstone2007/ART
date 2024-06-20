@@ -2,11 +2,13 @@
 
 ART is the Royal Holloway software language engineering tool written by Adrian Johnstone and tested by Elizabeth Scott; we are the authors of the GLL, MGLL, RNGLR and BRNGLR algorithms.
 
-The default ART pipeline processes language inputs using an MGLL parser coupled to a general lexer, with semantics specified using either SOS-style reduction rules or attribute-action rules. The core idea in ART is to delay ambiguity resolution until a natural point in the pipeline by allowing alternative interpretations to coexist.
+The default ART pipeline processes language inputs using an MGLL multiparser coupled to a general lexer, with semantics specified using either SOS-style reduction rules or attribute-action rules. The core idea in ART is to delay ambiguity resolution until a natural point in the pipeline by allowing alternative interpretations to coexist.
 
 You will find a tutorial and reference guide to ART in the document [SoftwareLanguageEngineeringWithART.pdf](https://github.com/AJohnstone2007/ART/tree/main/doc/SoftwareLanguageEngineeringWithART.pdf)
 
-art.jar is the current stable version. artALPHA.jar is the current development version. If you want to use the Integrated Development Environment you aill also need to install JavaFX from https://gluonhq.com/products/javafx/
+art.jar is the current stable version. artALPHA.jar is the current development version which should be treated with caution. 
+
+If you wish to use the Integrated Development Environment you will also need to install JavaFX from https://gluonhq.com/products/javafx/
 
 A variety of alternative algorithms are available in ART; in particular 'reference' GLL implementations that illustrate the central ideas along with a variety of optimisations. An early publication on these versions, and the associated presentation slides are [here](https://github.com/AJohnstone2007/ART/tree/main/doc/referenceImplementations). The corresponding code is [here](https://github.com/AJohnstone2007/ART/tree/main/src/uk/ac/rhul/cs/csle/art/cfg/gll).
 
