@@ -22,7 +22,10 @@ ANSI-C
 
 #### 2008-2009 ART V1
 
+(ANSI C) First implementation of GLL generator algorithm
+
 #### 2009-2012 ART V2
+
 
 #### 2012-2019 ART V3
 
