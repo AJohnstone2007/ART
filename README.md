@@ -8,7 +8,7 @@ You will find a tutorial and reference guide to ART in the document [SoftwareLan
 
 To use ART, all you need a Java installation and a copy of **art.jar** which is the current stable version. **artALPHA.jar** is the current development version which should be treated with caution. 
 
-If you wish to use the Integrated Development Environment an operating-system specific JavaFX installation which you can download from https://gluonhq.com/products/javafx/. You will also need a copy of **richtextfx.jar** from https://github.com/FXMisc/RichTextFX.
+If you wish to use the Integrated Development Environment then you will need an operating-system specific JavaFX installation which you can download from https://gluonhq.com/products/javafx/. You will also need a copy of **richtextfx.jar** from https://github.com/FXMisc/RichTextFX.
 
 A variety of alternative algorithms are available in ART; in particular 'reference' GLL implementations that illustrate the central ideas along with a variety of optimisations. An early publication on these versions, and the associated presentation slides are [here](https://github.com/AJohnstone2007/ART/tree/main/doc/referenceImplementations). The corresponding code is [here](https://github.com/AJohnstone2007/ART/tree/main/src/uk/ac/rhul/cs/csle/art/cfg/gll).
 
