@@ -1,0 +1,46 @@
+
+S ::= A | H .
+A ::= B .
+B ::= F F C D | 'd' .
+C ::= B | F .
+D ::= 'a' E | 'c' .
+E ::= D | E 'a' .
+F ::= B A | G | 'e'  .
+G ::= 'a' G | F 'b' .
+H ::= I .
+I ::= M M J K | 'd' .
+J ::= I | M .
+K ::= 'a' L | 'c' .
+L ::= K | L 'a' .
+M ::= I H | N | 'e'  .
+N ::= 'a' N | M 'b' .
+
+(*
+S ::= S 'a' | 'b' B 'c' .
+B ::= C .
+C ::= D .
+D ::= E | G .
+E ::= F .
+F ::= S .
+G ::= H .
+H ::= S .
+*)
+
+(
+write["\n" gtb_version " processing '" gtb_main_file_name "' on " date_time "\n\n"]
+
+gdg_file := open["gdg.vcg"]
+gdgunc_file := open["gdgunc.vcg"]
+
+this_grammar := grammar[S] 
+
+uncompressed_gdg := gdg[this_grammar]
+
+gdg_analyse_fast[uncompressed_gdg retain_break_sets delete_break_sets 0-3]
+
+
+render[gdgunc_file uncompressed_gdg]
+
+
+write["\n" CPU_time " CPU seconds elapsed\n\n"]
+)

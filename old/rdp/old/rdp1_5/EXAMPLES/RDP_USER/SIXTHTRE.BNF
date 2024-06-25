@@ -1,0 +1,18 @@
+ANNOTATED_EPSILON_TREE
+program ::= { statement ';'^ }.
+
+statement ::= ID '='^^ e1.
+
+e1 ::= e2^^ { ('+'^^^ | '-'^^^) e2 }. (* Add or subtract (left associative) *)
+
+e2 ::= e3^^ { ('*'^^^ | '/'^^^) e3 }. (* Multiply or divide (left associative) *)
+
+e3 ::= e4^^ | ('+'^^ | '-'^^) e3.     (* Monadic positive or negative (right associative) *)
+
+e4 ::= e5 [ '**'^^ e4 ]:^^.           (* Exponentiate (right associative) *)
+
+e5::= ID^^                            (* Variable or ...         *)
+      ['('^ (e1)@','^ ')'^ ] |        (* ... function call       *)
+      INTEGER^^              |        (* Numeric literal         *)
+      '('^ e1^^ ')'^.                 (* Bracketed subexpression *)
+

@@ -1,0 +1,299 @@
+Comparing files cpp_prd97.eas and Z
+***** cpp_prd97.eas
+template_name :
+  identifier ;
+//   Note  that  a  typedef-name  naming  a  class  is  also  a  class-name
+//   (_class.name_).
+
+***** Z
+template_name :
+  identifier |
+  "Note" "that" "a" typedef_name "naming" "a" "class" "is" "also" "a" class_name |
+  "(_" "class" "." "name" "_)." ;
+
+*****
+
+***** cpp_prd97.eas
+universal_character_name :
+  "\u" hex_quad |
+  "\U" hex_quad hex_quad ;
+
+***** Z
+universal_character_name :
+  "\\" "u" hex_quad |
+  "\\" "U" hex_quad hex_quad ;
+
+*****
+
+***** cpp_prd97.eas
+  preprocessing_op_or_punc |
+  each non_white_space character that cannot be one of the above
+token :
+***** Z
+  preprocessing_op_or_punc |
+  "each" "non-white-space" "character" "that" "cannot" "be" "one" "of" "the" "above" ;
+token :
+*****
+
+***** cpp_prd97.eas
+h_char :
+  any member of the source character set except
+  new_line and ">"
+q_char_sequence :
+***** Z
+h_char :
+  "any" "member" "of" "the" "source" "character" "set" "except" |
+  new_line "and" ">" ;
+q_char_sequence :
+*****
+
+***** cpp_prd97.eas
+q_char :
+   any member of the source character set except
+   new_line and "
+pp_number :
+***** Z
+q_char :
+  "any" "member" "of" "the" "source" "character" "set" "except" |
+  new_line "and" "\"" ;
+pp_number :
+*****
+
+***** cpp_prd97.eas
+  "^=" | "&=" | "|=" | "<<" | ">>" | ">>=" | "<<=" | "==" | "!=" |
+  "<=" | ">=" | "&&" | "||" | "++" | "--" | "," | " ->*" | "->" |
+  "and" | "and_eq" | "bitand" | "bitor" | "compl" | "not" | "not_eq" | "or" | "or_eq" |
+  "xor" | "xor_eq" ;
+
+***** Z
+  "^=" | "&=" | "|=" | "<<" | ">>" | ">>=" | "<<=" | "==" | "!=" |
+  "<=" | ">=" | "&&" | "||" | "++" | "--" | "," | "->*" | "->" |
+  "and" | "and" | "_" | "eq" | "bitand" | "bitor" | "compl" | "not" | "not" | "_" | "eq" | "or" | "or" | "_" | "eq" |
+  "xor" | "xor" | "_" | "eq" ;
+
+*****
+
+***** cpp_prd97.eas
+hexadecimal_literal :
+  "0x" hexadecimal_digit |
+  "0X" hexadecimal_digit |
+  hexadecimal_literal hexadecimal_digit ;
+***** Z
+hexadecimal_literal :
+  "0" "x" hexadecimal_digit |
+  "0" "X" hexadecimal_digit |
+  hexadecimal_literal hexadecimal_digit ;
+*****
+
+***** cpp_prd97.eas
+c_char :
+  any member of the source character set except
+  the single_quote ', backslash \, or new_line character
+  escape_sequence |
+***** Z
+c_char :
+  "any" "member" "of" "the" "source" "character" "set" "except" |
+  "the" "single-quote" "'," "backslash" "\\," "or" new_line "character" |
+  escape_sequence |
+*****
+
+***** cpp_prd97.eas
+simple_escape_sequence :
+  "\'" | "\\"" | "\?" | "\\" |
+  "\a" | "\b" | "\f" | "\n" | "\r" | "\t" | "\v" ;
+octal_escape_sequence :
+  \ octal_digit
+  \ octal_digit octal_digit
+  \ octal_digit octal_digit octal_digit
+hexadecimal_escape_sequence :
+  \x hexadecimal_digit
+  hexadecimal_escape_sequence hexadecimal_digit
+floating_literal :
+***** Z
+simple_escape_sequence :
+  "\\'" | "\\\"" | "\\?" | "\\\\" |
+  "\\" | "a" | "\\" | "b" | "\\" | "f" | "\\" | "n" | "\\" | "r" | "\\" | "t" | "\\" | "v" ;
+octal_escape_sequence :
+  "\\" octal_digit |
+  "\\" octal_digit octal_digit |
+  "\\" octal_digit octal_digit octal_digit ;
+hexadecimal_escape_sequence :
+  "\\" "x" hexadecimal_digit |
+  hexadecimal_escape_sequence hexadecimal_digit ;
+floating_literal :
+*****
+
+***** cpp_prd97.eas
+string_literal :
+  "s_char_sequence?"
+  L"s_char_sequence?"
+s_char_sequence :
+***** Z
+string_literal :
+  "\"" s_char_sequence? "\"" |
+  "L" "\"" s_char_sequence? "\"" ;
+s_char_sequence :
+*****
+
+***** cpp_prd97.eas
+s_char :
+  any member of the source character set except
+the double_quote ", backslash \, or new_line character
+  escape_sequence
+  universal_character_name
+boolean_literal :
+***** Z
+s_char :
+  "any" "member" "of" "the" "source" "character" "set" "except" |
+  "the" "double-quote" "\"," "backslash" "\\," "or" new_line "character" |
+  escape_sequence |
+  universal_character_name ;
+boolean_literal :
+*****
+
+***** cpp_prd97.eas
+qualified_id :
+  nested_name_specifier "template"? unqualified_id ;
+nested_name_specifier :
+***** Z
+qualified_id :
+  nested_name_specifier "templateopt" unqualified_id ;
+nested_name_specifier :
+*****
+
+***** cpp_prd97.eas
+  postfix_expression "(" expression_list? ")" |
+  simple_type_specifier "(" expression_list? ")"
+  postfix_expression "." "template"? "::"? id_expression |
+  postfix_expression "->" "template"? "::"? id_expression |
+  postfix_expression "." pseudo_destructor_name |
+***** Z
+  postfix_expression "(" expression_list? ")" |
+  simple_type_specifier "(" expression_list? ")" |
+  postfix_expression "." "templateopt" "::" "opt" id_expression |
+  postfix_expression "->" "templateopt" "::" "opt" id_expression |
+  postfix_expression "." pseudo_destructor_name |
+*****
+
+***** cpp_prd97.eas
+  postfix_expression "--" |
+  "dynamic_cast" "<" type_id ">" "(" expression ")" |
+  "static_cast" "<" type_id ">" "(" expression ")" |
+  "reinterpret_cast" "<" type_id ">" "(" expression ")" |
+  "const_cast" "<" type_id ">" "(" expression ")" |
+  "typeid" "(" expression ")" |
+***** Z
+  postfix_expression "--" |
+  "dynamic" "_" "cast" "<" type_id ">" "(" expression ")" |
+  "static" "_" "cast" "<" type_id ">" "(" expression ")" |
+  "reinterpret" "_" "cast" "<" type_id ">" "(" expression ")" |
+  "const" "_" "cast" "<" type_id ">" "(" expression ")" |
+  "typeid" "(" expression ")" |
+*****
+
+
+***** cpp_prd97.eas
+simple_type_specifier :
+  "::"? nested_name_specifier? type_name |
+  "char" |
+  "wchar_t" |
+  "bool" |
+***** Z
+simple_type_specifier :
+  "::" "opt" nested_name_specifier? type_name |
+  "char" |
+  "wchar" "_" "t" |
+  "bool" |
+*****
+
+
+***** cpp_prd97.eas
+parameter_declaration_clause :
+  parameter_declaration_list? "..."? |
+  parameter_declaration_list "," "..." ;
+***** Z
+parameter_declaration_clause :
+  parameter_declaration_list? "..." "opt" |
+  parameter_declaration_list "," "..." ;
+*****
+
+***** cpp_prd97.eas
+  assignment_expression |
+  "{" initializer_list ","? "}" |
+  "{" "}" ;
+***** Z
+  assignment_expression |
+  "{" initializer_list "," "opt" "}" |
+  "{" "}" ;
+*****
+
+***** cpp_prd97.eas
+  decl_specifier_seq? member_declarator_list? ";" |
+  function_definition ";"? |
+  qualified_id ";" |
+***** Z
+  decl_specifier_seq? member_declarator_list? ";" |
+  function_definition ";" "opt" |
+  qualified_id ";" |
+*****
+
+
+***** cpp_prd97.eas
+operator :
+  "new"  delete" | " new[]" | "delete[]" |
+  "+" | "-" | "*" | "/" | "%" | "^" | "&" | "|" | "~" |
+  "!" | "=" | "<" | ">" | "+=" | "_=" | "*=" | "/=" | "%=" |
+  "^=" | "&=" | "|=" | "<<" | ">>" | ">>=" | "<<=" | "==" | "!=" |
+***** Z
+operator :
+  "new" | "delete" | "new" | "[]" | "delete" | "[]" |
+  "+" | "-" | "*" | "/" | "%" | "^" | "&" | "|" | "~" |
+  "!" | "=" | "<" | ">" | "+=" | "-=" | "*=" | "/=" | "%=" |
+  "^=" | "&=" | "|=" | "<<" | ">>" | ">>=" | "<<=" | "==" | "!=" |
+*****
+
+***** cpp_prd97.eas
+template_declaration :
+  "export"? "template" "<" template_parameter_list ">" declaration ;
+template_parameter_list :
+***** Z
+template_declaration :
+  "exportopt" "template" "<" template_parameter_list ">" declaration ;
+template_parameter_list :
+*****
+
+***** cpp_prd97.eas
+  "#" "define" identifier replacement_list new_line |
+  "#" "define" identifier lparen "identifier_list"? ")" replacement_list new_line |
+  "#" "undef" identifier new_line |
+***** Z
+  "#" "define" identifier replacement_list new_line |
+  "#" "define" identifier lparen "identifier-listopt" ")" replacement_list new_line |
+  "#" "undef" identifier new_line |
+*****
+
+***** cpp_prd97.eas
+lparen :
+  the left_parenthesis character without preceding white_space
+replacement_list :
+***** Z
+lparen :
+  "the" "left-parenthesis" "character" "without" "preceding" "white-space" ;
+replacement_list :
+*****
+
+***** cpp_prd97.eas
+new_line :
+  the new_line character ;
+
+***** Z
+new_line :
+  "the" new_line "character" ;
+
+*****
+
+***** cpp_prd97.eas
+***** Z
+
+*****
+

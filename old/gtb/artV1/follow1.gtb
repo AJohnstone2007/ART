@@ -1,0 +1,26 @@
+S ::= A B 'c' .
+A ::= 'a' .
+B ::= A | 'd' .
+
+(
+(* Main script *)
+
+write["\n" gtb_version " processing '" 
+gtb_main_file_name "' on " date_time "\n\n"]
+
+this_grammar := grammar[S] 
+
+write["\nTotal " CPU_time " CPU seconds elapsed\n\n"]
+gtb_verbose := true
+
+write[this_grammar]
+(*
+ri_recognise[this_grammar open["bool.tok" read_text]]
+*)
+
+write["\nTotal " CPU_time " CPU seconds elapsed\n\n"]
+
+)
+
+
+

@@ -1,0 +1,555 @@
+This version: 6 April 2017
+
+--------------------------------------------------------------
+ALGORITHM IMPLEMENTATION NOTES
+--------------------------------------------------------------
+Summary implementation notes for ART extracted from the EBNF paper
+
+1. Regular expression classes
+
+There are four classes of regular expression: BASE, BRACKETED,
+CONCATENATED and ALTERNATED.
+
+BASE: 
+epsilon: #
+terminal: a \in (T U N)
+
+BRACKETED: r unrestricted 
+do-first: (r)
+positive-closure: <r> or (r)+
+optional: [r] or (r)?
+Kleene-closure: {r} or (r)*
+
+CONCATENATED: r BASE or r BRACKETED
+r_1 r_2 ... r_n n>1, r_i is a base or bracketed regular expression
+
+ALTERNATED: r not ALTERNATED
+r_1 | r_2 | ... | r_n n>1 
+
+2. BNF grammar for RE
+
+reg ::= base | bracket | cat | alt
+
+base ::= 'a1' | ... | 'ak' | '#'
+
+bracket ::= '(' reg ')' | '{' reg '}' | '[' reg ']' | '<' reg '>'
+
+D ::= base | bracket
+cat ::= D cat | D D
+E ::= D | cat
+alt ::= E '|' alt | E '|' E
+
+Note on this grammar.
+(a) the goal is to be unambiguous - SLR(1) in this case
+(b) catenations need to be two or more  base/brackets to avoid ambiguity
+
+3. Slots
+
+A slot is any position immediately before or immediately after a base
+or bracketed expression on the RHS of a grammar rule. In
+addition, there is a dummy slot $. 
+
+4. Slots related to regular expressions
+
+For the puposes of exposition, we shall use 'slotted' regular expressions SRE. An SRE shows an RE with a dot in each slot position. Within examples, these slots will
+be numbered 1, 2, ...
+
+For r base or bracketed, L_r is the slot before r, and E_r is the slot after r
+e.g in the SRE r = .(.a.).   L_r is slot 1 and E_r is slot 4
+ 
+For r concatenated r_1 r_2 ... r_n, L_r is the slot L_r_1 and E_r is E_r_n
+e.g in the SRE r = .a.(.b.).c.   L_r is slot 1 and E_r is slot 6
+
+For r alternated r_1 | r_2 | ... | r_n, L_r is $ and E_r is E_r_n
+e.g in the SRE r = .a.|.b.|.c.   L_r is $ and E_r is slot 6
+
+5. Slot properties
+
+In the theory paper, these label->label functions f(L) return L for the undefined cases. 
+It is an informal theorem that we are not using any of the undefined cases.
+In the implementation, we test this theorem by having node->f(L) return NULL for the undefined cases.
+Future changes that breach the informal theorem should then core dump: we would need to improve the definitions at that point.
+
+Of type boolean:
+eoOP(L): a(L) is X ::= u(v.)t or X::= u(v.)?t	
+eoR(L): L is at the end of a production (or production rule in Liz's terminology).
+EoA(L): L is of the form r_1 | r_2 . | ... | r_n or L is of the form r_1 | r_2 | ... | r_n .
+
+(not needed for implemetation)
+unit(L) (i) s::=\alpha.\beta s.t. \alpha is a terminal, nonterminal or epsilon AND \beta is EMPTY, or 
+        (ii) s::= (\alpha' . \beta') or [\alpha' . \beta'] or r1 | ... | \alpha' . \beta' | ... r where \alpha' . \beta' is unit 
+
+In my terms, this means a unit grammar element with no ancestor cats between the singleton and either the root or an enclosing closure
+
+(not needed for implemetation)
+fiRE(L) (i) s::=\alpha.\beta s.t. \alpha is a terminal, nonterminal or epsilon, or 
+        (ii) s::= (\alpha' . \beta') or [\alpha' . \beta'] or r1 | ... | \alpha' . \beta' | ... r where \alpha' . \beta' is fiRE
+
+fiR(L) s::=\alpha.\beta s.t. fiRE(L), p(L) is not EoR and L is not of the form X::= A.\beta with A nullable
+        (Major change from previous fiR(L))
+
+fiC(L) X ::= \alpha < \tau1 .\tau2> \beta and \tau1.\tau2 is fiRE. 
+
+Of type Label:
+
+lhs(L) is the LHS nonterminal for the rule containing L
+
+b(L): slot before L - added in August 2016 EBNF paper
+
+n(L): slot after L
+
+a(L): if EoA(L) then E_r_n else L
+
+s(L): only used in defintion of q, so not needed (see below)
+
+p(L): if eoOP(L) then p(nL) else // Note eoOP takes priority over eoA
+        if EoA(L) then p(aL) else L
+
+q(L): not used in parsers - not implemented (see EBNF paper for definition)
+
+
+6. First sets for regular expressions
+
+Epsilon
+first(#) = {#}
+
+a \in T
+first(a) = {a}
+
+Nonterminal: A ::= r_1 | r_2 | ... | r_n
+first(A) = first(r_1) U first(r_2) U ... U first(r_n)
+
+Do-first: r = (s) 
+first(r) = first(s)
+
+Optional: r = (s)?
+first(r) = first(s) U #
+
+Positive-closure: r = (s)+
+first(r) = first(s)
+
+Kleene-closure: r = (s)*
+first(r) = first(s) U #
+
+Concatenated: r = r_1 r_2 ... r_n
+first(r) = (first(r_1) \ #) U first(r_2..r_n)    if # \in r_1
+           first(r_1)                            otherwise
+
+Alternated: r_1 | r_2 | ... | r_n 
+first(r) = first(r_1) U first(r_2) U ... first(r_n)
+
+7. First sets for EBNF slots
+
+first(.r) = first(r)
+first(r.) = { # }
+
+For expressions of the form t.m where tm is a regular expession
+
+first(t.m) where t.m = (t'.m') = first( t'.m' )
+
+first( (t'.m')? ) = first( t'.m' )
+
+first( (t'.m')* ) = first( (t'.m')+ )
+                    = first( t'.m') U first( t'm' ) if # \in first(t'.m')
+                    = first (t'.m') otherwise
+
+For expressions of the form r_1 r_2 ... . r_i ... r_n where r_i = t'.m'
+first(t.m) = (first(t'.m') \ #) U first (r_i+1 ... r_n) if # \in first(t'.m')
+               = first(t'.m') otherwise
+
+For expressions of the form r_1 | ... | r_i | ... | r_n where r_i = t.m
+first(t'.m') = first( t'm') 
+
+8. Follow sets for EBNF
+  
+follow( X ::= \alpha Y . \beta)
+  = ( first (\alpha Y. \beta) \ #) U follow(X) if # \in first(\beta)
+  = first (\alpha Y. \beta)                    otherwise 
+ 
+follow (Y) is the union of all sets follow(X ::= \alpha Y. \beta)
+
+ follow(S) contains $ (end of String) 
+
+9. Support functions
+
+(a) Test
+
+boolean testSelect(a, Y, r) return a \in first(r) or (# in first(r) and a \in follow(Y)) 
+comment: should be statically computed into the tree
+
+boolean testRepeat(T, u, i, w)
+if (T, u, i, w) \in TR return true else {
+  insert (T, u, i, w) into TR 
+  return false
+}
+
+(b) GSS construction
+
+(i) findDescriptor_add(L, u, i, w) if (L, u, i, w) \not\in U then insert(L, u, i, w) into both U and R
+
+(ia) findDescriptorReduced(L, k, i) if (L, k, i) \not\in U then insert(L, k, i) into both U and R
+
+(ii) pop(u, i, z) // u is GSSnode, i is currentTokenIndex, z is currentSPPFnode
+       if (not u = u_0) then 
+         insert(u,z) into P
+
+         for each edge (u, w, v) 
+           y := lookupSPPF(u.label, w, z)
+           findDescriptor(u.label, v, i, y)
+
+(iia) popReduced(A, k, i, z) // A is nonterminal       
+              if (A, k, z) \not\in P
+          insert (A, k, z) into P
+          for each GSS node u = ( (!L = _ ::= _ A . _), k) 
+            for each edge (u, !w, !v)
+              findDescriptor_add(L, v.level, i, getSPPFNode(L, w, z))
+
+(iia-imp) popClustered(A, k, i, z) (* Adrian's clustered implementation *)
+    if (A, k, z) \not\in P {
+      insert (A, k, z) into P
+      c = findCluster(A, k)
+        for each GSS node u = ( (!L = _ ::= _ A . _), k) {
+        for each edge (u, !w, !v) {
+          findDescriptor_add(L, v.level, i, getSPPFNode(L, w, z))
+          add w to poplist of c
+
+(iib) popMGLL(u, e, z)  - e is a pair(a, j) or (sym(e), extent(e))
+        if u != u_0 {
+          left (L, k) be the label of u
+          add (u, sym(e), z) to P
+          for each edge (U, w, v) {
+            findDescriptor_add(L, v, e, getSPPFNode(L,w,z))
+
+(iii) findGSSNode_create(L, u, i, w)
+  v := lookupGSS(L, i) // Returns NULL if (L, i) is not in the GSS, otherwise  returns the GSS node labelled (L, i)
+  if v = NULL then v := addtoGSS(L, i) fi
+
+  if there is not an edge from v to u labelled w then
+     create an edge from v to u labelled w
+     for each (v, z) in P do add(L, u, z.rightExtent, getNodeP(L, w, z)) od
+  fi
+  return v
+
+(iii-1) findGSSNodeReduced1(L, k, i, w)
+         Let L be of the form B ::= \tau A . \mu
+         if (L, w, k) \not\in C
+           if there is not already a GSS node labelled (L, i)
+             create a GSS node v labelled (L, i)
+             for all (t, x, i) \in C with t.lhs = A do
+               if w = dummyNode then j:=k else j = x.rightExtent
+               let f be the GSS node labelled (t, j)
+               add an edge labelled x from f to v               
+           insert (L, w, k) into C
+         let v be the GSS node labelled (L, i)
+         for each GSS node u with a label of the form ( Y ::= \alpha B. \beta, k)
+           if there is not an edge from v to u labelled w
+             create an edge from v to u labelled w
+             for all (A, i, z) \in P
+               findDescriptor(L, i, z.rightExtent, getNode(L, w, z))
+
+(iii-2) findGSSNodeReduced2(L, k, i, w)
+         Let L be of the form B ::= \tau A . \mu
+         if (L, w, k) \not\in C
+           if there is not already a GSS node labelled (L, i)
+             create a GSS node v labelled (L, i)
+             for all (t, x, i) \in C with t.lhs = A do
+               if w = dummyNode then j:=k else j = x.rightExtent
+               let f be the GSS node labelled (t, j)
+               add an edge labelled x from f to v               
+           insert (L, w, k) into C
+         let v be the GSS node labelled (L, i) 
+         needCP := true
+         for each GSS node u with a label of the form ( Y ::= \alpha B. \beta, k)
+           if there is an edge from v to u labelled w
+             needCP := false
+         else
+             create an edge from v to u labelled w
+         if needCP
+           for all (A, i, z) \in P
+             findDescriptor(L, i, z.rightExtent, getNode(L, w, z))
+
+(iii-3) findGSSNodeReduced3(L, k, i, w)
+         let slot(L) = B ::= _ A . _
+         if lookupGSSNode(L, i) = null 
+           v' = lookupGSSNode(_ ::= _ A . _, i)
+           v = createGSSNode(L, i)
+           if (v' != null)
+             for all lookupGSSEdge(f, x, v')
+               create an edge(f, x, v)              
+
+         needCP := true
+         for all u = lookupGSSNode(_ ::= _ B . _, k)
+           if lookupGSSEdge(u, w, v) != null
+             needCP := false
+           else
+             createGSSEdge (u, w, v)  
+         if needCP
+           for all (_, i, z) \in P
+             findDescriptor(L, i, z.rightExtent, lookupSPPfNode(L, w, z))
+
+(iii-4) findGSSNodeReduced4(L, k, i, w) (* from the GLLBoth paper *)
+         let slot(L) = !B ::= _ !A . _
+         if lookupGSSNode(L, i) = null 
+           v' = lookupGSSNode(_ ::= _ A . _, i)
+           v = createGSSNode(L, i)
+           if (v' != null)
+             for all lookupGSSEdge(!f, !x, v')
+               createGSSedge(f, x, v)              
+
+         u' = lookupGSSNode( _ ::= _ B. _, k)
+         if lookupGSSEdge(v, w, u') = null
+           for all u = lookupGSSNode(_ ::= _ B. _, k)
+             createGSSedge(v, w, u)
+
+           for all (A, i, !z) \in P
+             findDescriptor(L, k, z.rightExtent, lookupSPPfNode(L, w, z))
+
+(iii-5) findGSSNodeReduced4(L, k, i, w) (* from the SCP FRGLL paper - test removed*)
+         let slot(L) = !B ::= _ !A . _
+         if lookupGSSNode(L, i) = null 
+           v' = lookupGSSNode(_ ::= _ A . _, i)
+           v = createGSSNode(L, i)
+           if (v' != null)
+             for all lookupGSSEdge(!f, !x, v')
+               createGSSedge(f, x, v)              
+
+         for all u = lookupGSSNode(_ ::= _ B. _, k)
+           createGSSedge(v, w, u)
+
+         for all (A, i, !z) \in P
+           findDescriptor(L, k, z.rightExtent, lookupSPPfNode(L, w, z))
+
+(iii-4imp) findGSSNodeReduced4(L, k, i, w) (* Adrian's cluster implementation *)
+         (* Find (lookup, and if necessary create) the clusters for the nonterminal to be called and for the LHS nonterminal *)
+         let slot(L) = !B ::= _ !A . _
+         c = findCluster(A, i)
+         d = findCluster(B, k) 
+
+         (* Make the GSS node v, add it to the nodelist of c, and add to v any inedges that have already been created for c *)
+         if lookupGSSNode(L, i) = null 
+           v = createGSSNode(L, i)
+           add v to the node list of c
+           (* This loop creates actual GSS edges; it can be omitted without breaking the algorithm because the cluster inedge captures the information *)
+           for all inedges to c (!f, !x, _)
+             createGSSedge(f, x, v)          
+
+         (* Add the specific edge for this push; and add this to the LHS cluster inedge list *)
+         let !u' be the first element on the nodelist of d
+         if lookupGSSEdge(v, w, u') = null  
+	   add (v, w) to the inedge list of d
+           (* This loop creates actual GSS edges; it can be omitted without breaking the algorithm because the cluster inedge captures the information *)
+           for all u in node list of d
+             createGSSedge(v, w, u)
+
+           (* Look for contingent pops, and create associated descriptors *)
+           for all !z on pop list of c
+             findDescriptor(L, k, z.rightExtent, lookupSPPfNode(L, w, z))
+
+(iii-5imp) findGSSNodeReduced4(L, k, i, w) (* Adrian's cluster implementation of iii-5 AFTER LIZ'S PROPOSED CHANGES which are in the SCP RFGLL paper*)
+         (* Find (lookup, and if necessary create) the clusters for the nonterminal to be called and for the LHS nonterminal *)
+         let slot(L) = !B ::= _ !A . _
+         c = findCluster(A, i)
+         d = findCluster(B, k) 
+
+         (* Make the GSS node v, add it to the nodelist of c, and add to v any inedges that have already been created for c *)
+         if lookupGSSNode(L, i) = null 
+           v = createGSSNode(L, i)
+           add v to the node list of c
+           (* This loop creates actual GSS edges; it can be omitted without breaking the algorithm because the cluster inedge captures the information *)
+           for all inedges to c (!f, !x, _)
+             createGSSedge(f, x, v)          
+
+         (* Add the specific edge for this push; and add this to the LHS cluster inedge list *)
+//         let !u' be the first element on the nodelist of d
+//         if lookupGSSEdge(v, w, u') = null  
+
+	   add (v, w) to the inedge list of d
+
+           (* This loop creates actual GSS edges; it can be omitted without breaking the algorithm because the cluster inedge captures the information *)
+           for all u in node list of d
+             createGSSedge(v, w, u)
+
+           (* Look for contingent pops, and create associated descriptors *)
+           for all !z on pop list of c
+             findDescriptor(L, k, z.rightExtent, lookupSPPfNode(L, w, z))
+
+(b) SPPF construction - note final convention: left child is called w, and right child is called z
+
+sppfNODE findSPPF(L, i, j) 
+  y := lookupSPPF(L, i, j) // Returns NULL if (L, i, j) is not in the SPPF, otherwise  returns the SPPF node labelled (L, i, j) 
+  if y = NULL then y := addtoSPPF(L, i, j) fi 
+  return y
+
+(i) Epsilon: (getNodeE) findSPPFNode(i) -> findSPPF(#, i, i)
+
+(ii) Terminal: (getNodeT) findSPPFNode(a, i) -> findSPPF(a, i, i + 1)
+
+(iii) Other: findSPPFNode(L, w, z) // This is the inlining of getNode and getNodeRest in the EBNF paper
+  if FiR(L) return z;
+
+  j := if w = dummynode then z.leftExtent else w.leftExtent fi
+
+  if EoR(p(L)) t:= lhs(L) else t:=p(L) fi
+
+  y := findSPPF(t, j, z.rightIndex)
+
+  if (FiPC(L)) && w != dummyNode && z.leftExtent == j then L' := L: else L' := L fi
+
+  if (y does not have a child labelled (L', k) then 
+     create child x of y labelled (L' k)
+     if w != dummyNode then create left child of x labelled w fi
+     create right child of x labelled z
+
+  return y
+
+(iv) findSPPFBaseNodeOld(L, M, i, w) 
+  // L is parentLabel M is childLabel, i is currentTokenIndex and w is leftChild
+  if EoR(p(L)) t:= lhs(L) else if EoOP(L) t:=p(L) else t:=a(L) fi fi
+
+  j := if w != dummyNode then w.leftExtent else i fi
+    
+  y = findSPPF(t, j, i)	
+
+  M' := if fiPC(M) && w != dummyNode && j == i  then M; else M: fi
+
+  if y does not have a child labelled (M',  i))
+    create one with right child labelled (#, i, i) and left child w // note w == dummyNode encodes no left child in Adrian's rep 
+
+  return y 
+
+(iv) findSPPFBaseNode(L, M, i, w) 
+  // New version 30/8/16
+  // j := if w != dummyNode then w.leftExtent else i fi
+  //
+  // y = findSPPF(L, j, i)
+  //
+  // M' := if fiPC(M) && w != dummyNode && j == i then M; else M fi
+  //
+  // if y does not have a child labelled (M', i))
+  // create one with right child labelled (#, i, i) and left child w // note w == dummyNode encodes no left child in Adrian's rep
+  //
+  // return y
+
+
+(c) Finite static visible functions used in SPPF support routines (implemented as lookup tables)
+
+lhs(L)
+p(L)
+a(L)
+eOoP(L)
+eoR(L)
+eor(p(L))
+
+10. Templates - modified to suit August 2016 EBNF paper
+
+(a) Productions of nonterminal Y: code(Y ::= a_1 | ... | a_p) is
+
+if testSelect(I[c_I], Y, a_1) findDescriptor_add(L_a_1, c_u, c_I, $)
+...
+if testSelect(I[c_I], Y, a_p) findDescriptor_add(L_a_p, c_u, c_I, $)
+goto despatch
+
+L_a_1: code(a_1, Y, #); if(I[c_I] \in follow(Y)) pop(c_u, c_I, c_N); goto despatch
+...
+L_a_p: code(a_p, Y, #); if(I[c_I] \in follow(Y)) pop(c_u, c_I, c_N); goto despatch
+
+(b) Base regular expressions: code(r)
+
+(i) r is epsilon #: code(#^j) is 
+c_R := findSPPFNodeE(c_I)  c_N := findSPPFNode(E_r, c_N, c_R)
+
+(ii) r is a terminal a: code(a^j) is
+c_R := findSPPFNodeT(a, c_I)  c_I = c_I + 1  c_N := findSPPFNode(E_r, c_N, c_R)
+
+(iii) r in a nonterminal Y: code(Y^j) is
+C_u = findGSSNode_create(E_r, c_N) goto J_Y  E_r:
+
+/* r is the whole regular expression, s is the body */
+
+(iv) r is a bracketed expression (s): code(r) is code(s)
+
+(v) r is a bracketed expression [s] and s *=> #: code (r) is
+if testSelect(I[c_I], E_r) {
+  c_t :=getBaseNode(E_s, E_r, c_I)
+  findDescriptor_add(E_r, c_u, c_I, c_t);
+  testRepeat(T_r, c_u, c_I, c_t)
+}
+code(s);
+if (testRepeat(T_r, c_u, c_I, c_N) goto despatch;
+E_r:
+
+(vi) r is a bracketed expression [s] and not s *=> #: code (r) is
+if testSelect(I[c_I], E_r) {
+  c_r := findSPPFNodeE(c_I)
+  c_t := findSPPFNode(E_r, c_N, c_r)
+  findDescriptor_add(E_r, c_u, c_I, c_t)
+}
+if not testSelect(I[c_I], L_s) goto despatch
+code(s)
+E_r:
+
+
+(vii) r is a bracketed expression <s> and not s *=> #: code (r) is
+c_u := findGSSNode_create(E_r, c_u, c_I, c_N)
+c_N := dummyNode
+C_r: if not testSelect(I[c_I], L_s) goto despatch
+code(s)
+if testSelect(I[c_I], E_r) pop(c_U, c_I, c_N)
+goto C_r
+E_r:
+
+(viii) r is a bracketed expression <s> and s *=> #: code (r) is
+c_u := findGSSNode_create(E_r, c_u, c_I, c_N)
+c_N := dummyNode
+C_r: if testRepeat(T_r, c_u, c_I, c_N) goto despatch
+if not testSelect(I[c_I], L_s) goto despatch
+code(s)
+if testSelect(I[c_I], E_r) pop(c_U, c_I, c_N)
+goto C_r
+E_r:
+
+(ix) r is a bracketed expression {s} and not s *=> #: code (r) is
+c_u := findGSSNode_create(E_r, c_u, c_I, c_N)
+
+if testSelect(I[c_I], E_r) { c_N := findSPPFNodeE(c_I)  pop(c_u, c_I, c_N) }
+c_N := dummyNode
+C_r: if not testSelect(I[c_I], L_s) goto despatch
+code(s)
+if testSelect(I[c_I], E_r) pop(c_U, c_I, c_N)
+goto C_r
+E_r:
+
+(x) r is a bracketed expression {s} and s *=> #: code (r) is
+c_u := findGSSNode_create(E_r, c_u, c_I, c_N)
+c_N := getBaseNode(E_s, E_r, c_I, dummyNode)
+*** Experiment z = 1 ***
+if testSelect(I[c_I], E_r) pop(c_U, c_I, c_N)
+***
+
+C_r: if testRepeat(T_r, c_u, c_I, c_N) goto despatch
+if not testSelect(I[c_I], L_s) goto despatch
+code(s)
+if testSelect(I[c_I], E_r) pop(c_U, c_I, c_N)
+goto C_r
+E_r:
+
+(xi) r is a concatenated expression r_1...r_d: code(r) is
+code(r_1)
+if not testSelect(I[c_I], L_r_2) goto despatch
+code(r_2, X, r3..r_d\beta)
+...
+if not testSelect(I[c_I], L_r_d) goto despatch
+code(r_d, X, \beta)
+
+(xii) r is an alternated expression r_1 | ... | r_d: code (r) is
+if testSelect(I[c_I], L_r_1) findDescriptor_add(L_r_1, c_u, c_I, c_N)
+...
+if testSelect(I[c_I], L_r_2) findDescriptor_add(L_r_d, c_u, c_I, c_N)
+goto despatch
+
+L_r_1: code (r_1) goto A_r
+...
+L_r_d-1: code (r_d-1) goto A_r
+L_r_d: code (r_d)
+A_r: if testRepeat(T_r, c_u, c_I, c_N) goto despatch
+

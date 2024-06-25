@@ -1,0 +1,424 @@
+(*****************************************************************************
+*
+* RDP release 1.40 by Adrian Johnstone (adrian@dcs.rhbnc.ac.uk) 30 Jan 1995
+*
+* iso_pas.bnf - an ISO standard Pascal grammar
+*
+* This file may be freely distributed. Please mail improvements to the author.
+*
+*****************************************************************************)
+
+(* This is a transcription of the Pascal grammar from Cooper's `The Pascal
+   standard. It is presently under construction and is not yet ready to use
+*)
+
+PARSER(program)
+
+(* What I did:
+
+   change to RDP EBNF syntax
+   in simple_statement, comment out empty statement and add [] instead
+   comment out lexical elements
+   comment out level 0 productions in favour of level 1
+   move program to be start production
+*)
+
+
+(*  Lexical elements
+
+apostrophe_image ::= '"'.
+
+character_string ::= '\'' string_element {string_element} '\''.
+
+digit ::= '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9'.
+
+digit_sequence ::= {digit digit}.
+
+directive ::= letter {letter | digit}.
+
+empty_statement ::= ''.
+
+fractional_part ::= digit_sequence.
+
+identifier ::= letter {letter | digit}.
+
+label ::= digit_sequence.
+
+letter ::= 'a' | 'b' | 'c' | 'd' | 'e' | 'f' | 'g' | 'h' | 'i' | 'j' | 'k' | 'l' | 'm' |
+         'n' | 'o' | 'p' | 'q' | 'r' | 's' | 't' | 'u' | 'v' | 'w' | 'x' | 'y' | 'z'.
+
+scale_factor ::= signed_integer.
+
+special_symbol ::= '+' | '-' | '*' | '/' | '=' | '<' | '>' | '[' | ']' | '.' |
+             ',' | ';' | '(' | ')'
+              | '<>' | '<=' | '>=' | ':=' | '..' | word_symbol.
+
+string_character ::= one_of_a_set_of_implementation_defined_characters.
+
+string_element ::= apostrophe_image | string_character.
+
+unsigned_real ::= unsigned_integer '.' fractional_part ['e' scale_factor] | unsigned_integer 'e' scale_factor.
+
+unsigned_integer ::= digit_sequence.
+
+word_symbol ::= 'program' | 'label' | 'const' | 'type' | 'procedure' |
+          'function' | 'var' | 'begin' | 'end' | 'div' | 'mod' | 'and'
+           | 'not' | 'or' | 'in' | 'array' | 'file' | 'record' | 'set' | 
+          'packed' | 'case' | 'of' | 'for' | 'to' | 'downto' | 'do' | 
+          'if' | 'then' | 'else' | 'repeat' | 'until' | 'while' | 'with' | 
+          'goto' | 'nil'.
+
+End of lexical elements *)
+
+(* RDP lexical elements *)
+
+character_string ::= STRING('\'').
+
+directive ::= [ 'forward' ].
+
+label ::= INTEGER.
+
+identifier ::= ID.
+
+unsigned_integer ::= INTEGER.
+
+unsigned_real ::= REAL.
+
+(* Phrase level productions from the Pascal standard *)
+
+actual_parameter ::= expression | variable_access | procedure_identifier | function_identifier.
+
+actual_parameter_list ::= '('actual_parameter{','actual_parameter}')'.
+
+adding_operator ::= '+' | '-' | 'or'.
+
+array_type ::= 'array' '['index_type{','index_type} ']' 'of' component_type.
+
+array_variable ::= variable_access.
+
+assignment_statement ::= (variable_access | function_identifier) ':=' expression.
+
+base_type ::= ordinal_type.
+
+block ::= label_declaration_part
+          constant_definition_part
+          type_definition_part
+          variable_declaration_part
+          procedure_and_function_declaration_part
+          statement_part.
+
+boolean_expression ::= expression.
+
+bound_identifier ::= 'ID_bound'.
+
+buffer_variable ::= file_variable '^'.
+
+case_constant ::= constant.
+
+case_constant_list ::= case_constant {','case_constant}.
+
+case_index ::= expression.
+
+case_list_element ::= case_constant_list ':' statement.
+
+case_statement ::= 'case' case_index 'of'
+                    case_list_element {';' case_list_element} [';'] 'end'.
+
+component_type ::= type_denoter.
+
+component_variable ::= indexed_variable | field_designator.
+
+compound_statement ::= 'begin' statement_sequence 'end'.
+
+conditional_statement ::= if_statement | case_statement.
+
+conformant_array_parameter_specification ::= 
+           value_conformant_array_specification | 
+           variable_conformant_array_specification.  
+
+conformant_array_schema ::= packed_conformant_array_schema |
+               unpacked_conformant_array_schema.
+
+constant ::= [sign] (unsigned_number | constant_identifier) |
+                character_string.
+
+constant_definition ::= identifier '=' constant.
+
+constant_definition_part ::= ['const' constant_definition ';'
+                 {constant_definition ';'}].
+
+constant_identifier ::= 'ID_const'.
+
+control_variable ::= entire_variable.
+
+domain_type ::= type_identifier.
+
+else_part ::= 'else' statement.
+
+entire_variable ::= variable_identifier.
+
+enumerated_type ::= '('identifier_list')'.
+
+expression ::= simple_expression [relational_operator simple_expression].
+
+(* Level 1 *)
+factor ::= variable_access | unsigned_constant | function_designator | 
+              set_constructor |  '('expression')' | 'not' factor.
+
+(* Level 0 *)
+(* factor ::= bound_identifier. *)
+
+field_designator ::= record_variable '.' field_specifier | field_designator_identifier.
+
+field_designator_identifier ::= 'ID_field_designator'.
+
+field_identifier ::= 'ID_field'.
+
+field_list ::= [(fixed_part [';'variant_part] | variant_part) [';']].
+
+field_specifier ::= field_identifier.
+
+file_type ::= 'file' 'of' component_type.
+
+file_variable ::= variable_access.
+
+final_value ::= expression.
+
+fixed_part ::= record_section {';' record_section}.
+
+for_statement ::= 'for' control_variable ':=' initial_value
+                ('to' | 'downto') final_value 'do' statement.
+
+formal_parameter_list ::= '(' formal_parameter_section 
+                           {';' formal_parameter_section}')'.
+
+(* Level 0 *)
+(* formal_parameter_section ::= value_parameter_specification
+                            | variable_parameter_specification
+                         | procedural_parameter_specification
+                              | functional_parameter_specification.
+*)
+
+(* Level 1 *)
+formal_parameter_section ::= conformant_array_parameter_specification.
+
+function_block ::= block.
+
+function_declaration ::= function_heading ';' directive
+                        | function_identification ';' function_block 
+                             | function_heading ';' function_block.
+
+function_designator ::= function_identifier [actual_parameter_list].
+
+
+function_heading ::= 'function' identifier [formal_parameter_list]
+                             ':' result_type.
+
+function_identification ::= 'function' function_identifier.
+
+function_identifier ::= 'ID_function'. 
+
+functional_parameter_specification ::= function_heading.
+
+goto_statement ::= 'goto' label.
+
+identified_variable ::= pointer_variable '^'.
+
+identifier_list ::= identifier {',' identifier}.
+
+if_statement ::= 'if' boolean_expression 'then' statement [else_part].
+
+index_expression ::= expression.
+
+index_type ::= ordinal_type.
+
+index_type_specification ::= identifier '..' identifier ':'
+              ordinal_type_identifier.
+
+indexed_variable ::= array_variable '[' index_expression {','
+               index_expression} ']'.
+
+initial_value ::= expression.
+
+label_declaration_part ::= ['label' label {',' label} ';'].
+
+member_designator ::= expression {'..' expression}.
+
+multiplying_operator ::= '*' | '/' | 'div' | 'mod' | 'and'.
+
+new_ordinal_type ::= enumerated_type | subrange_type.
+
+new_pointer_type ::= '^' domain_type.
+
+new_structured_type ::= ['packed'] unpacked_structured_type.
+
+new_type ::= new_ordinal_type | new_structured_type | new_pointer_type.
+
+ordinal_type ::= new_ordinal_type | ordinal_type_identifier.
+
+ordinal_type_identifier ::= type_identifier.
+
+packed_conformant_array_schema ::= 'packed' 'array' 
+'[' index_type_specification ']' 'of' type_identifier.
+
+pointer_type ::= new_pointer_type | pointer_type_identifier.
+
+pointer_type_identifier ::= type_identifier.
+
+pointer_variable ::= variable_access.
+
+procedural_parameter_specification ::= procedure_heading.
+
+procedure_and_function_declaration_part ::=
+      {(procedure_declaration | function_declaration)';'}.
+
+procedure_block ::= block.
+
+procedure_declaration ::= procedure_heading ';' directive
+       | procedure_identification ';' procedure_block
+       | procedure_heading ';' procedure_block.
+
+procedure_heading ::= 'procedure' identifier [formal_parameter_list].
+
+procedure_identification ::= 'procedure' procedure_identifier.
+
+procedure_identifier ::= 'ID_procedure'.
+
+procedure_statement  ::= procedure_identifier ([actual_parameter_list]
+           | read_parameter_list
+           | readln_parameter_list
+           | write_parameter_list
+           | writeln_parameter_list).
+
+program ::= program_heading ';' program_block '.'.
+
+program_block ::= block.
+
+program_heading ::= 'program' identifier
+           ['('program_parameters')'].
+
+program_parameters ::= identifier_list.
+
+read_parameter_list ::= '('[file_variable','] variable_access
+           {','variable_access}')'.
+
+readln_parameter_list ::= ['(' (file_variable | variable_access)
+           {','variable_access}')'].
+
+real_type_identifier ::= type_identifier.
+
+record_section ::= identifier_list ':' type_denoter.
+
+record_type ::= 'record' field_list 'end'.
+
+record_variable ::= variable_access.
+
+record_variable_list ::= record_variable {',' record_variable}.
+
+relational_operator ::= '=' | '<>' | '<' | '>' | '<=' | '>=' | 'in'.
+
+repeat_statement ::= 'repeat' statement_sequence 'until' boolean_expression.
+
+repetitive_statement ::= repeat_statement | while_statement | for_statement.
+
+result_type ::= simple_type_identifier | pointer_type_identifier.
+
+set_constructor ::= '[' [ member_designator { ',' member_designator } ] ']'.
+
+set_type ::= 'set' 'of' base_type.
+
+sign ::= '+' | '-'.
+
+signed_integer ::= [sign] unsigned_integer.
+
+signed_number ::= signed_integer | signed_real.
+
+signed_real ::= [sign] unsigned_real.
+
+simple_expression ::= [sign] term {adding_operator term}.
+
+simple_statement ::= (* empty_statement | *) 
+                     [ assignment_statement |
+                       procedure_statement | 
+                       goto_statement
+                     ].
+
+simple_type ::= ordinal_type | real_type_identifier.
+
+simple_type_identifier ::= type_identifier.
+
+statement ::= [label':'] (simple_statement | structured_statement).
+
+statement_part ::= compound_statement.
+
+statement_sequence ::= statement {';' statement}.
+
+structured_statement ::= compound_statement | conditional_statement
+            | repetitive_statement | with_statement.
+
+structured_type ::= new_structured_type | structured_type_identifier.
+
+structured_type_identifier ::= type_identifier.
+
+subrange_type ::= constant '..' constant.
+
+tag_field ::= identifier.
+
+tag_type ::= ordinal_type_identifier.
+
+term ::= factor {multiplying_operator factor}.
+
+type_definition ::= identifier '=' type_denoter.
+
+type_definition_part ::= ['type' type_definition ';' {type_definition';'}].
+
+type_denoter ::= type_identifier | new_type.
+
+type_identifier ::= 'ID_type'.
+
+unpacked_conformant_array_schema ::= 'array' '[' index_type_specification 
+           {';' index_type_specification}']'
+          'of' (type_identifier | conformant_array_schema).
+
+unpacked_structured_type ::= array_type | record_type | set_type | file_type.  
+
+unsigned_constant ::= unsigned_number | character_string | constant_identifier | 'nil'.
+
+unsigned_number ::= unsigned_integer | unsigned_real.
+
+value_conformant_array_specification ::= identifier_list ':' conformant_array_schema.
+
+value_parameter_specification ::= identifier_list ':' type_identifier.
+
+variable_access ::= entire_variable | component_variable |
+          identified_variable | buffer_variable.
+
+variable_conformant_array_specification ::= 'var' identifier_list ':' conformant_array_schema.
+
+variable_declaration ::= identifier_list ':' type_denoter.
+
+variable_declaration_part ::= ['var' variable_declaration ';'
+          {variable_declaration ';'}].
+
+variable_identifier ::= 'ID_variable'.
+
+variable_parameter_specification ::= 'var' identifier_list ':' type_identifier.
+
+variant ::= case_constant_list ':' '(' field_list ')'.
+
+variant_part ::= 'case' variant_selector 'of' variant {';' variant}.   
+
+variant_selector ::= [tag_field ':'] tag_type.
+
+while_statement ::= 'while' boolean_expression 'do' statement.
+
+with_statement ::= 'with' record_variable_list 'do' statement.
+
+write_parameter ::= expression [':'expression [':'expression]].
+
+write_parameter_list ::= '(' [file_variable ','] write_parameter
+          {','write_parameter}')'.
+
+writeln_parameter_list ::= ['(' (file_variable | write_parameter)
+          {','write_parameter}')'].
+

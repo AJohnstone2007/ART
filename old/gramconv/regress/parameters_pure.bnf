@@ -1,0 +1,20 @@
+!h1
+!b
+!g
+!i
+!s
+!y
+
+!v
+(* Regression: parameters with pure option on, so suppressed from output *)
+
+!p
+
+A(i1: t1 i2:t2)(s1:t3 s2:t4 s3:t5) ::= 'a'.
+
+B ::= A (x y z) (p q r) $ p = x $.
+
+
+
+
+

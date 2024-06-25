@@ -1,0 +1,142 @@
+; minitree.mvm - generated from 'testtree.m'
+
+ DATA 0x8000
+__MPP_DATA:
+ CODE 0x1000
+__MPP_CODE:
+ 
+ DATA
+a: WORD 1
+
+ CODE
+ ADD  __temp + 2 * 0, #3, #4 	;__temp + 2 * 0 := #3 + #4
+ CPY  a, __temp + 2 * 0 	;a := __temp + 2 * 0 
+ 
+ DATA
+b: WORD 1
+
+ CODE
+ CPY  b, #1 	;b := #1 
+
+ DATA
+__STR_0: STRING "a is "
+
+ CODE
+ PRTS __STR_0
+ PRTI a	;print integer
+
+ DATA
+__STR_1: STRING "\n"
+
+ CODE
+ PRTS __STR_1
+ MUL  __temp + 2 * 1, a, #2 	;__temp + 2 * 1 := a * #2
+ CPY  b, __temp + 2 * 1 	;b := __temp + 2 * 1 
+
+ DATA
+__STR_2: STRING "b is "
+
+ CODE
+ PRTS __STR_2
+ PRTI b	;print integer
+
+ DATA
+__STR_3: STRING ", -b is "
+
+ CODE
+ PRTS __STR_3
+ SUB  __temp + 2 * 2, 0, b 	;__temp + 2 * 2 := 0 - b
+ PRTI __temp + 2 * 2	;print integer
+
+ DATA
+__STR_4: STRING "\n"
+
+ CODE
+ PRTS __STR_4
+ PRTI a	;print integer
+
+ DATA
+__STR_5: STRING " cubed is "
+
+ CODE
+ PRTS __STR_5
+ EXP  __temp + 2 * 3, a, #3 	;__temp + 2 * 3 := a ** #3
+ PRTI __temp + 2 * 3	;print integer
+
+ DATA
+__STR_6: STRING "\n"
+
+ CODE
+ PRTS __STR_6
+ 
+ DATA
+z: WORD 1
+
+ CODE
+ CPY  z, a 	;z := a 
+__IF_7:
+ EQ   __temp + 2 * 4, z, a 	;__temp + 2 * 4 := z == a
+ BEQ  __temp + 2 * 4,__ELSE_7	;ifn __temp + 2 * 4 go to __ELSE_7 
+
+ DATA
+__STR_8: STRING "z equals a\n"
+
+ CODE
+ PRTS __STR_8
+ BRA  __FI_7	;go to __FI_7
+__ELSE_7:
+
+ DATA
+__STR_9: STRING "z does not equal a\n"
+
+ CODE
+ PRTS __STR_9
+__FI_7:
+ SUB  __temp + 2 * 5, a, #3 	;__temp + 2 * 5 := a - #3
+ CPY  z, __temp + 2 * 5 	;z := __temp + 2 * 5 
+__IF_10:
+ EQ   __temp + 2 * 6, z, a 	;__temp + 2 * 6 := z == a
+ BEQ  __temp + 2 * 6,__ELSE_10	;ifn __temp + 2 * 6 go to __ELSE_10 
+
+ DATA
+__STR_11: STRING "z equals a\n"
+
+ CODE
+ PRTS __STR_11
+ BRA  __FI_10	;go to __FI_10
+__ELSE_10:
+
+ DATA
+__STR_12: STRING "z does not equal a\n"
+
+ CODE
+ PRTS __STR_12
+__FI_10:
+ CPY  a, #3 	;a := #3 
+__DO_13:
+ GT   __temp + 2 * 7, a, #0 	;__temp + 2 * 7 := a > #0
+ BEQ  __temp + 2 * 7,__OD_13	;ifn __temp + 2 * 7 go to __OD_13 
+
+ DATA
+__STR_14: STRING "a is "
+
+ CODE
+ PRTS __STR_14
+ PRTI a	;print integer
+
+ DATA
+__STR_15: STRING "\n"
+
+ CODE
+ PRTS __STR_15
+ SUB  __temp + 2 * 8, a, #1 	;__temp + 2 * 8 := a - #1
+ CPY  a, __temp + 2 * 8 	;a := __temp + 2 * 8 
+ BRA  __DO_13	;go to __DO_13
+__OD_13:
+
+ HALT
+
+ DATA
+__temp: BLOCKW 9  ;declare array of temporaries
+
+ END __MPP_CODE

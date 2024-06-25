@@ -1,0 +1,20 @@
+!h1
+!b
+!g
+!i
+!s
+!y
+
+!v
+(* Regression: coalesce rule (after) *)
+
+A ::= 'z' A.
+
+A ::= 'x' A.
+
+A ::= 'z'.
+
+
+
+
+

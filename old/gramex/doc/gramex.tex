@@ -1,0 +1,301 @@
+\documentclass[11pt]{article}
+\newcommand{\tech}[1]{{\em #1}\marginpar{\em #1}}
+\newcommand{\lp}{\tt\em}
+\newcommand{\lt}{\tt}
+\newcommand{\us}{\_\,}
+\newcommand{\bnfexp}{$\mbox{::= }$}
+\newcommand{\bnfor}{$|$\ }
+
+\usepackage{rhultechreport,epsfig,moreverb}
+\title{{\lt gramex} - a tool for extracting grammar rules from typeset documents}
+\author{Adrian Johnstone}
+\begin{document}
+\makecstitle
+\thispagestyle{empty}
+\vspace*{1cm}
+\begin{center}\large\bfseries\sf Abstract\end{center}
+In the C language community there is a tradition of using a minimalist
+grammar specification format that is easy for humans to read, but not
+directly suitable for input to common parser generators. {\lt gramex}
+is a tool that reads plain-ASCII versions of these grammar
+specifications and outputs a more familiar Bison-like version.  {\tt
+gramex} has been used to extract grammars from the Kernighan and
+Ritchie ANSI-C book, the ANSI C++ standard and the Java Language
+Specification; and a special {\em Pascal} mode can be used to extract
+rules from the Pascal standards documents. An accompanying tool {\lt
+gramconv} can be used to convert {\lt gramex} generated files into
+other formats, and to perform certain grammar translations such as
+converting extended BNF into plain BNF.
+
+\vspace*{3ex}
+
+\noindent {\lt gramex} been built, run and tested using the Free
+Software Foundation's GNU {\lt g++} compiler version 3.3.3 running
+under Cygwin on Windows-XP.
+
+\vspace*{\fill}
+\begin{center}\large\bfseries\sf Typographical conventions\end{center}
+We use {\lt this font} to represent literal input fragments and {\lp
+this font} to represent input fragments which should be substituted
+with an application specific literal text.
+
+\vspace*{\fill}
+\begin{center}
+\fbox{\parbox{\textwidth}{This document is \copyright\,Adrian Johnstone
+2006, 2007, 2011.\\[1ex]
+Please send comments and error reports
+to the address on the title page or electronically
+to {\tt A.Johnstone@rhul.ac.uk}.
+}}
+\end{center}
+\clearpage
+\setcounter{page}{0}
+\pagenumbering{arabic}
+\section{Introduction}
+
+In the C language community there is a tradition of using a minimalist
+grammar specification format that is easy for humans to read, but not
+directly suitable for input to common parser generators.  In standards
+documents and some text books, different fonts are used to distinguish
+terminals and nonterminals, but this formatting information is lost in
+plain-ASCII versions of the documents. In addition, plain-English
+comments are sometimes used to specify hard-to-capture constraints on
+valid character and terminal sequences.
+
+{\lt gramex} is a tool that reads plain-ASCII versions of these
+grammar specifications and outputs a Bison-like~\cite{Bison}
+version. {\tt gramex} has been used to extract grammars from the
+Kernighan and Ritchie ANSI-C book, the ANSI C++ standard and the Java
+Language Specification.  An accompanying tool {\lt
+gramconv}~\cite{gramconv} can be used to convert {\lt gramex}
+generated files into other formats, and to perform certain grammar
+translations such converting extended BNF into plain BNF.
+
+\section{Downloading and using {\tt gramex}}
+The {\lt gramex} source code is a single file {\tt gramex.c} which may
+be downloaded from the RHUL Compiler Group's website under
+\verb+http://www.cs.rhul.ac.uk+.
+
+{\lt gramex} is written in ANSI-C and compiles under the Free Software
+Foundation's GNU {\lt g++} compiler using 
+\begin{quote}
+\verb|g++ -ansi -pedantic gramex.c|
+\end{quote}
+
+Input to {\tt gramex} should be an ASCII file containing the plain
+text version of the rules. Run the tool with a command like:
+
+\begin{quote}
+{\lt gramex} {\lp options} {\lp sourcefile}
+\end{quote}
+
+where {\lp sourcefile} is the name of the plain ASCII input, and
+{\lp options} may be zero or more of:
+\begin{quote}
+\begin{description}
+\item[{\lt -c}]  suppress comment (non-rule) lines
+\item[{\lt -e}]  treat [ ] and $\{ \}$ as EBNF meta symbols
+\item[{\lt -i}]  treat productions indented by more than four spaces
+\item[{\lt -p}]  process Pascal standard file (implies -e)
+as continuations
+\end{description}
+\end{quote}
+
+The translated output is sent to the console: use the output
+redirection operator (\verb+>+) to capture it to a file:
+\begin{quote}
+\verb+gramex -c myfile.raw > myfile.gex+
+\end{quote}
+
+\section{Rule extraction}
+Here is a fragment from the grammar included in the ANSI C++ standard.
+\begin{quote}
+\begin{tabbing}
+x\=xxxxx\=\kill
+          \>{\em exponent-part:}\\
+                \>\>{\tt e} {\em sign}$_{\mbox{\scriptsize\em opt}}$ {\tt digit-sequence}\\
+                \>\>{\tt E} {\em sign}$_{\mbox{\scriptsize\em opt}}$ {\tt digit-sequence}\\[2ex]
+          \>{\em sign:} {\footnotesize one of}\\
+                 \>\>{\tt +}\quad{\tt -}\\
+\end{tabbing}
+\end{quote}
+In this grammar format:
+\begin{itemize}
+\item grammar elements are delimited by whitespace;
+\item grammar elements representing terminals are written in a {\tt teletype} font;
+\item grammar elements representing nonterminals are written in an {\it italic} font;
+\item the first line of a new grammar rule contains a nonterminal name
+concatenated with a colon {\em :} as its first element, which may
+optionally be followed by the elements {\footnotesize one of} (no
+other elements may appear on the line);
+\item the ordinary rules, each successive line is a production; 
+\item for rules using the {\footnotesize one of} construction, each
+element is a production;
+\item a rule is terminated by either a blank line or the start of a
+new rule;
+\item elements may be suffixed by $_{\mbox{\scriptsize\em opt}}$ in
+which case they are optional; the production containing the optional
+element is intended to be duplicated once with the optional element
+and once without.
+\end{itemize}
+
+It is not hard to manually construct source files for, say, YACC from
+these kinds of typeset grammars, but in practice the process is rather
+error prone as humans are not very good at accurately transcribing
+punctuation-like characters.  Recently produced standards are usually
+available in electronic form as either Adobe Acrobat or HTML files,
+and we can use the appropriate viewers to select and copy grammar
+rules into a conventional text editor. The resulting ASCII files
+retain character values and indentation, but suppress font information.
+Here is the plain-ASCII version of the above extract.
+
+\begin{verbatim}
+     exponent-part:
+         e signopt digit-sequence
+         E signopt digit-sequence
+
+     sign: one of
+         +   -
+\end{verbatim}
+
+{\lt gramex} converts such fragments into a Bison-like format in which
+\begin{itemize}
+\item terminals are stropped with {\tt "} characters, 
+\item nonterminals are
+written with underscore (\verb+_+) characters instead of hyphens,
+\item productions are
+separated by vertical bars {\tt |} and terminated with semi-colons, and
+\item  optional parts are suffixed with the {\tt ?} optional regular
+operator. (Bison does not support regular expressions, but the
+accompanying tool {\lt gramconv} may be used to translate regular
+expressions into plain BNF rules.) 
+\end{itemize}
+The {\lt gramex} output for this
+example is:
+
+\begin{verbatim}
+     exponent_part:
+       "e" sign? digit_sequence |
+       "E" sign? digit_sequence ;
+
+     sign:
+       "+" | "-" ;
+\end{verbatim}
+
+\section{Other text}
+Grammar rules are often embedded in other text, and some standards use
+plain-English commands with the grammar to specify tricky
+constructs.
+
+Within rules, plain-English embedded commands are treated as
+productions which will generate unhelpful results that must be
+manually corrected.  
+
+Lines which {\lt gramex} does not think are part of valid grammar
+rules are copied to the output as comment lines prefixed by a double
+slash \verb+//+. 
+
+Occasionally, {\lt gramex} will encounter a comment line that has the
+general form of a rule start. The C++ standard contains several
+instances of text paragraphs that begin `Thus:', for instance. These
+lines are highlighted by being prefixed with \verb+//??+ It is
+important to review the whole output of a {\lt gramex} run before
+submitting it to further processing: lines preceded with \verb+//??+
+are particularly likely to need attention.
+
+The \verb+-c+ option causes {\lt gramex} to suppress all comment and
+blank lines from the output leaving a single blank line between the
+rules.
+
+\section{Extensions for the Java Language Specification}
+
+The Java Language Specification documents include two grammars: a
+`pedagogic' grammar sprinkled throughout the text which is intended to
+support a topic-led description of the language and the `development'
+grammar summarised in a late chapter which is intended to form the
+basis of development tools.
+
+The development grammar uses two extensions to the basic scheme
+employed in the ANSI C and ANSI C++ standards documents.
+\begin{enumerate}
+\item The [ ] and $\{ \}$ brackets stand for the optional and
+Kleene-closure (zero-or-many) operations.
+
+The \verb+-e+ option forces {\lt gramex} to treat these \verb+[+,
+\verb+]+, \verb+{+ and \verb+}+ characters as EBNF meta-characters
+instead of tokens. This of course leaves the problem of how to
+recognise literal brackets and braces in the grammar. The work-around
+is to preface these literals with some unusual prefix such
+as \verb+@!@+. {\lt gramex} will treat \verb+@!@[+ as just another
+terminal, outputting \verb+"@!@["+. A global search and replace may then
+be used in your favourite editor to convert the \verb+"@!@["+ tokens to
+\verb+"["+.
+
+\item Long productions are split over multiple lines by indenting the
+continuation lines.
+
+The {\tt -i} options causes {\tt gramex} to treat productions that are
+indented by more than four characters as continuation lines.
+
+\end{enumerate}
+
+\section{Extracting rules from Pascal standards}
+
+\section{Limitations}
+
+Since {\lt gramex} is dealing with plain-ASCII grammar rules which
+have been stripped of their formatting, some unavoidable ambiguities
+arise. In this section we have tried to list known problems which
+should be manually checked for.
+\begin{enumerate}
+\item When processing C-style standards
+{\lt gramex} decides whether an alphanumeric grammar element is
+a nonterminal or a terminal by looking at its list of valid left hand
+sides. In the ANSI C++ grammar, for instance, there is a rule for
+nonterminal {\em operator:}, but {\tt operator} is also a keyword of
+C so grammar element \fbox{operator} will always be interpreted as a
+nonterminal. For Pascal standards, the stropping conventions allow
+terminal and nonterminals to be directly recognised, so this problem
+does not arise.
+
+\item When extracting grammars using the {\tt -e} option, instances of
+\verb+[+, \verb+]+, \verb+{+ and \verb+}+ elements will always be
+treated as EBNF meta-characters.
+
+\item When extracting grammars using the {\tt -i} option, productions
+that are indented more than four spaces will be treated as
+continuation lines.
+
+\item When extracting grammars using the {\tt -i} option, a maximum of
+one continuation line is allowed per production, that is, no
+production may span more than two lines.
+\end{enumerate}
+
+
+\section{Implementation}
+{\lt gramex} is written in ANSI-C and may be compiled with standard C
+and C++ compilers. The main data structures are the input {\tt buffer}
+(declared line 26 and initialised in lines 215--249) and the {\tt
+lines} array which is declared on lines 28--34 and created at line
+256.
+
+The basic approach is to load the entire input
+into {\tt buffer}, count the number of lines in {\tt linecount} and
+then create {\tt lines}, initialising the {\tt start} fields to point
+to the first character in each line.
+
+Each line is annotated with a {\em kind}, such as blank, comment, rule
+start and so on. Kinds are represented by elements of the {\tt enum}
+declared in lines 23--24.
+
+Line kinds are computed in lines 271--350 in a series of passes. The
+output is produced by walking the lines array and outputting each line
+of input under the control of a {\tt switch} statement that tests the
+line kind at lines 358--416.
+
+{\footnotesize
+\listinginput{1}{gramex.c}
+}
+\bibliographystyle{alpha}
+\bibliography{adrian}
+\end{document}

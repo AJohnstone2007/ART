@@ -1,0 +1,103 @@
+$ make
+g++ -I./rdp_supp/ -Wmissing-prototypes -Wstrict-prototypes 
+    -fno-common -Wall -ansi -pedantic -c rdp.c
+g++ -I./rdp_supp/ -Wmissing-prototypes -Wstrict-prototypes 
+    -fno-common -Wall -ansi -pedantic -c rdp_aux.c
+g++ -I./rdp_supp/ -Wmissing-prototypes -Wstrict-prototypes 
+    -fno-common -Wall -ansi -pedantic -c ./rdp_supp/crash.c
+g++ -I./rdp_supp/ -Wmissing-prototypes -Wstrict-prototypes 
+     -fno-common -Wall -ansi -pedantic -c ./rdp_supp/scan.c
+g++ -I./rdp_supp/ -Wmissing-prototypes -Wstrict-prototypes 
+     -fno-common -Wall -ansi -pedantic -c ./rdp_supp/set.c
+g++ -I./rdp_supp/ -Wmissing-prototypes -Wstrict-prototypes 
+     -fno-common -Wall -ansi -pedantic -c ./rdp_supp/symbol.c
+g++ -I./rdp_supp/ -Wmissing-prototypes -Wstrict-prototypes 
+     -fno-common -Wall -ansi -pedantic -o ./rdp rdp.o rdp_aux.o crash.o scan.o set.o symbol.o
+./rdp -omini mini
+Warning: Production 'comment' is never referenced: no C code will be generated
+ Total: 0 errors, 1 warning
+g++ -I./rdp_supp/ -Wmissing-prototypes -Wstrict-prototypes 
+    -fno-common -Wall -ansi -pedantic -c mini.c
+g++ -I./rdp_supp/ -Wmissing-prototypes -Wstrict-prototypes 
+    -fno-common -Wall -ansi -pedantic -o ./mini mini.o crash.o scan.o set.o symbol.o
+./mini -v test
+
+Mini V1.20 (c) Adrian Johnstone 1994
+Generated on Nov 14 1994 at 08:16:03 and compiled on Nov 14 1994 at 08:16:21
+
+a is 7
+b is 14, -b is -14
+7
+ test.min: 0 errors, 0 warnings
+ test.min: 0 errors, 0 warnings
+./rdp -F -otoy toy
+Warning: Production 'comment' is never referenced: no C code will be generated
+Error: LL(1) violation: production 'dis_statement'
+contains null but first and follow sets both include: 'else'
+Error: LL(1) violation: production 'statement'
+contains null but first and follow sets both include: 'else'
+ Total: 2 errors, 1 warning
+Warning: Grammar is not LL(1) but -F switch set: writing output files
+g++ -I./rdp_supp/ -Wmissing-prototypes -Wstrict-prototypes 
+    -fno-common -Wall -ansi -pedantic -c toy.c
+g++ -I./rdp_supp/ -Wmissing-prototypes -Wstrict-prototypes 
+    -fno-common -Wall -ansi -pedantic -o ./toy toy.o crash.o scan.o set.o symbol.o -lm
+./toy -v test
+
+Toy V1.20 (c) Adrian Johnstone 1994
+Generated on Nov 14 1994 at 08:16:03 and compiled on Nov 14 1994 at 08:16:24
+
+
+Toy test program
+
+(If true) y is greater than x
+(If false) x is not greater than y
+(Repeat) x = 1
+(Repeat) x = 4
+(Repeat) x = 7
+(Repeat) x = 10
+(While) x = 13
+(While) x = 10
+(While) x = 7
+(While) x = 4
+(While) x = 1
+(For up) x = 1
+(For up) x = 4
+(For up) x = 7
+(For up) x = 10
+(For down) x = 12
+(For down) x = 9
+(For down) x = 6
+(For down) x = 3
+ Text mode: 0 errors, 0 warnings
+ Text mode: 0 errors, 0 warnings
+./rdp -opascal -F pascal
+Warning: Production 'comment' is never referenced: no C code will be generated
+Error: LL(1) violation: production 'statement'
+contains null but first and follow sets both include: 'else'
+ Total: 1 error, 1 warning
+Warning: Grammar is not LL(1) but -F switch set: writing output files
+g++ -I./rdp_supp/ -Wmissing-prototypes -Wstrict-prototypes 
+    -fno-common -Wall -ansi -pedantic -c pascal.c
+g++ -I./rdp_supp/ -Wmissing-prototypes -Wstrict-prototypes 
+    -fno-common -Wall -ansi -pedantic -o ./pascal pascal.o crash.o scan.o set.o symbol.o
+./pascal -v test
+
+Pascal parser V1.20 (generated) (c) Adrian Johnstone 1994
+Generated on Nov 14 1994 at 08:16:03 and compiled on Nov 14 1994 at 08:16:30
+
+ test.pas: 0 errors, 0 warnings
+./rdp -ordp_gen rdp
+Warning: Production 'comment' is never referenced: no C code will be generated
+ Total: 0 errors, 1 warning
+g++ -I./rdp_supp/ -Wmissing-prototypes -Wstrict-prototypes 
+    -fno-common -Wall -ansi -pedantic -c rdp_gen.c
+g++ -I./rdp_supp/ -Wmissing-prototypes -Wstrict-prototypes 
+    -fno-common -Wall -ansi -pedantic -o ./rdp_gen rdp_gen.o rdp_aux.o crash.o scan.o set.o symbol.o
+cp rdp_gen.c rdp_gen1.c
+./rdp_gen -ordp_gen rdp
+Warning: Production 'comment' is never referenced: no C code will be generated
+ Total: 0 errors, 1 warning
+diff -s rdp_gen.c rdp_gen1.c
+rm rdp_gen1.c
+bash$ 

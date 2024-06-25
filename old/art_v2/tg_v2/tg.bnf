@@ -1,0 +1,69 @@
+(* Test generator for ART *)
+USES("ctype.h")
+TEXT_SIZE(10000000)
+
+
+tests ::=  [* char tmp[1000]; FILE *f; *]
+           { [* int count = 1; *]
+             ID:filename [options:opt]:[*opt=NULL;*] string:grammar
+             [*
+                if ((f=fopen(text_force_filetype(filename, "art"), "r")) != NULL)
+                  text_message(TEXT_FATAL, "test '%s' already exists\n", filename);
+                text_redirect((f=fopen(text_force_filetype(filename, "art"), "w")));
+                text_printf("(* %s.art *)\n\nM()", filename);
+
+                char* startSymbol = grammar;
+                while (!(*startSymbol == 0 || (isalnum(*startSymbol) || *(startSymbol+1) == '_'))) { 
+		  if (*startSymbol == '(' && *(startSymbol+1) == '*') 
+                    while(!(*startSymbol == 0 || (*startSymbol == '*' && *(startSymbol+1) == ')'))) { 
+                      /* printf("Comment-skipping %c\n", *startSymbol); */
+                      startSymbol++; 
+                    } 
+                  /* printf("Initial-skipping %c\n", *startSymbol); */ 
+                  startSymbol++;	
+                }                
+
+                char* startSymbolSuccessor = startSymbol;
+                while (*startSymbolSuccessor != 0 && isalnum(*startSymbolSuccessor) || *startSymbolSuccessor == '_') 
+                  startSymbolSuccessor++;
+
+                char tmpChar = *startSymbolSuccessor;
+                *startSymbolSuccessor = 0;
+                text_printf("(%s)", startSymbol);
+                *startSymbolSuccessor = tmpChar;
+
+                if (opt != NULL)
+                  text_printf(" { %s }", opt);
+                text_printf("\n\n%s\n", grammar);
+                fclose(f);
+                text_redirect(stdout);
+             *]
+             [ 'accept'
+               { string:s
+               [*
+                 sprintf(tmp, "%s.acc_%i", filename, count++);
+                 text_redirect(f=fopen(tmp, "w"));
+                 text_printf("%s", s);
+                 fclose(f);
+                 text_redirect(stdout);
+               *]
+               }
+             ]
+             [ 'reject' { string:s
+               [*
+                 sprintf(tmp, "%s.rej_%i", filename, count++);
+                 text_redirect(f=fopen(tmp, "w"));
+                 text_printf("%s", s);
+                 fclose(f);
+                 text_redirect(stdout);
+               *]
+               }
+             ]
+           }.
+
+
+options:char* ::= COMMENT_VISIBLE('{' '}'):result.
+
+string:char* ::= STRING_ESC('$' '\\'):result.
+
+comment ::= COMMENT_NEST('(*' '*)').

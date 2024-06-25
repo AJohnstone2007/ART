@@ -1,0 +1,53 @@
+%TeXCAD Options
+%\grade{\off}
+%\emlines{\off}
+%\beziermacro{\on}
+%\reduce{\on}
+%\snapping{\on}
+%\quality{2}
+%\graddiff{.01}
+%\snapasp{1}
+%\zoom{7.9196}
+\unitlength 0.60mm % = 1.71pt
+\linethickness{0.4pt}
+\ifx\plotpoint\undefined\newsavebox{\plotpoint}\fi % GNUPLOT compatibility
+\begin{picture}(172,51)(0,0)
+\put(84,42){\makebox(0,0)[cc]{$A::=\cdot bA$}}
+\put(82,20){\makebox(0,0)[cc]{$S::=A\cdot b$}}
+\put(152,45){\makebox(0,0)[cc]{$A::=bA\cdot, \{b\}$}}
+\put(152,20){\makebox(0,0)[cc]{$S::=Ab\cdot, \{\$\}$}}
+\put(53,5){\makebox(0,0)[cc]{$S'::=S\cdot, \{\$\}$}}
+\put(84,37){\makebox(0,0)[cc]{$A::=\cdot, \{b\}$}}
+\put(17,23){\makebox(0,0)[cc]{$A::=\cdot, \{b\}$}}
+\put(17,37){\makebox(0,0)[cc]{$S::=\cdot Ab$}}
+\put(17,44){\makebox(0,0)[cc]{$S'::=\cdot S$}}
+\put(36,48){\makebox(0,0)[cc]{0}}
+\put(104,49){\makebox(0,0)[cc]{2}}
+\put(102,24){\makebox(0,0)[cc]{3}}
+\put(172,49){\makebox(0,0)[cc]{4}}
+\put(172,24){\makebox(0,0)[cc]{5}}
+\put(73,9){\makebox(0,0)[cc]{1}}
+\put(81.5,21){\oval(35,10)[]}
+\put(151.5,46){\oval(35,10)[]}
+\put(151.5,21){\oval(35,10)[]}
+\put(52.5,6){\oval(35,10)[]}
+\put(52.5,6){\oval(37,12)[]}
+\put(34,41){\vector(1,0){32}}
+\put(32,21){\vector(1,0){32}}
+\put(50,44){\makebox(0,0)[cc]{$b$}}
+\put(48,25){\makebox(0,0)[cc]{$A$}}
+\put(11,19){\vector(2,-1){23}}
+\put(101,46){\vector(1,0){33}}
+\put(117,49){\makebox(0,0)[cc]{$A$}}
+\put(103,17){\makebox(0,0)[cc]{$b$}}
+\put(17,11){\makebox(0,0)[cc]{$S$}}
+\put(83.5,42){\oval(35,18)[]}
+\put(84,47){\makebox(0,0)[cc]{$A::=b\cdot A $}}
+\put(17,30){\makebox(0,0)[cc]{$A::=\cdot bA$}}
+\put(17,34){\oval(34,30)[]}
+%\qbezvec(101,42)(139,22)(97,34)
+\put(97,34){\vector(-4,1){.12}}\qbezier(101,42)(139,22)(97,34)
+%\end
+\put(115,38){\makebox(0,0)[cc]{$b$}}
+\put(99,21){\vector(1,0){35}}
+\end{picture}

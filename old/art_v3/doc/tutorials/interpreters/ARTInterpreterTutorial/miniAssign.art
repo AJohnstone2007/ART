@@ -1,0 +1,54 @@
+(*******************************************************************************
+*
+* miniAssign.art - Adrian Johnstone 9 January 2016
+*
+*******************************************************************************)
+prelude {import java.util.HashMap;}
+
+support { HashMap<String, Integer> symbols = new HashMap<String, Integer>(); }
+
+statements ::= statement | statement statements  
+
+statement ::= ID '=' e0 ';' { symbols.put(ID1.v, e01.v); } |        (* assignment (variable write) *)
+              'print' '(' printElements ')' ';'                     (* print statement *)
+
+printElements ::= STRING_DQ { artText.printf("%s", STRING_DQ1.v); } | 
+                  STRING_DQ { artText.printf("%s", STRING_DQ1.v); } ',' printElements | 
+                  e0 { artText.printf("%d", e01.v); } | e0 { artText.printf("%d", e01.v); } ',' printElements  
+
+e0 <v:int> ::= e1 { e0.v = e11.v; } | 
+               e1 '>'  e1 { e0.v = e11.v >  e12.v ? 1 : 0; } |       (* Greater than *)
+               e1 '<'  e1 { e0.v = e11.v <  e12.v ? 1 : 0; } |       (* Less than *)
+               e1 '>=' e1 { e0.v = e11.v >= e12.v ? 1 : 0; } |       (* Greater than or equals*)
+               e1 '<=' e1 { e0.v = e11.v <= e12.v ? 1 : 0; } |       (* Less than or equals *)
+               e1 '==' e1 { e0.v = e11.v == e12.v ? 1 : 0; } |       (* Equal to *)
+               e1 '!=' e1 { e0.v = e11.v != e12.v ? 1 : 0; }         (* Not equal to *)
+
+e1 <v:int>  ::= e2 { e1.v = e21.v; } | 
+                e1 '+' e2 { e1.v = e11.v + e21.v; } |                (* Add *)
+                e1 '-' e2 { e1.v = e11.v - e21.v; }                  (* Subtract *)
+
+e2  <v:int> ::= e3 { e2.v= e31.v; } | 
+                e2 '*' e3 { e2.v = e21.v * e31.v; } |                (* Multiply *)
+                e2 '/' e3 { e2.v = e21.v / e31.v; } |                (* Divide *)
+                e2 '%' e3 { e2.v = e21.v % e31.v; }                  (* Mod *)
+
+e3  <v:int> ::= e4 {e3.v = e41.v; } | 
+                '+' e3 {e3.v = e41.v; } |                            (* Posite *)
+                '-' e3 {e3.v = -e41.v; }                             (* Negate *)
+
+e4  <v:int> ::= e5 { e4.v = e51.v; } | 
+                e5 '**' e4 {e4.v = (int) Math.pow(e51.v, e41.v); }   (* exponentiate *)
+
+e5  <v:int> ::= INTEGER {e5.v = INTEGER1.v; } |                      (* Integer literal *)
+                ID { e5.v = symbols.get(ID1.v); } |                  (* Variable read *)
+                '(' e1 { e5.v = e11.v; } ')'                         (* Parenthesised expression *)
+
+ID <leftExtent:int rightExtent:int lexeme:String v:String> ::= 
+  &ID {ID.lexeme = artLexeme(ID.leftExtent, ID.rightExtent); ID.v = artLexemeAsID(ID.leftExtent, ID.rightExtent); }  
+
+INTEGER <leftExtent:int rightExtent:int lexeme:String v:int> ::= 
+  &INTEGER {INTEGER.lexeme = artLexeme(INTEGER.leftExtent, INTEGER.rightExtent); INTEGER.v = artLexemeAsInteger(INTEGER.leftExtent, INTEGER.rightExtent); }  
+
+STRING_DQ <leftExtent:int rightExtent:int lexeme:String v:String> ::= 
+  &STRING_DQ {STRING_DQ.lexeme = artLexeme(STRING_DQ.leftExtent, STRING_DQ.rightExtent); STRING_DQ.v = artLexemeAsString(STRING_DQ.leftExtent, STRING_DQ.rightExtent); }  

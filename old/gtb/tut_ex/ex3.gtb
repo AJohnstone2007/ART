@@ -1,0 +1,21 @@
+(* ex3  Generating NFAs *)
+S ::=  A 'b' | 'a' 'd' .
+A ::=  A 'a' | # .
+
+(
+ex3_grammar := grammar[S]
+ex3_nfa := nfa[ex3_grammar lr 0]
+render[open["nfa.vcg"] ex3_nfa]
+render[open["rules.vcg"] ex3_grammar]
+
+ex3_dfa := dfa[ex3_nfa]
+render[open["dfa.vcg"] ex3_dfa]
+
+ex3_slr := dfa[nfa[ex3_grammar slr 1]]
+render[open["dfa1.vcg"] ex3_slr]
+
+render[open["nfa1.vcg"] nfa[ex3_grammar lr 1]]
+
+ex3_lalr := la_merge[dfa[nfa[ex3_grammar lr 1]]]
+render[open["la_dfa.vcg"] ex3_lalr]
+)

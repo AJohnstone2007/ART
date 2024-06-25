@@ -1,0 +1,106 @@
+# Makefile for RDP release version 1.00 Adrian Johnstone 18 February 1994
+
+###############################################################################
+# Configuration section: uncomment one of the following blocks
+
+# Configuration for gcc on Unix
+#CC	= gcc
+#OBJ = .o
+#EXE = 
+#DIFF = diff
+#RM = rm
+#CFLAGS	= -Wall -ansi -pedantic 
+#LINK = $(CC) $(CFLAGS) -lm -o ./
+# End of gcc on Unix configuration
+
+# Configuration for Borland C 3.1 on MS-DOS
+CC	= bcc
+OBJ = .obj
+EXE = .exe
+DIFF = fc
+RM = del
+CFLAGS	= -A -N -mh 
+LINK = $(CC) $(CFLAGS) -o.\\
+# End of Borland C 3.1 on MS-DOS configuration
+
+# End of configuration : don't alter anything below this line
+###############################################################################
+  
+# Standard macros
+
+RDP_SUPP = crash$(OBJ) scan$(OBJ) set$(OBJ) symbol$(OBJ)
+
+# Standard suffix rules
+
+.c.o: 
+	$(CC) $(CFLAGS) -c $*.c
+
+# default target: do everything
+
+all: toy_test pas_test gen_test
+
+# A chain of targets for making the bootstrapped rdp_gen family and testing
+rdp$(EXE): rdp$(OBJ) rdp_aux$(OBJ) $(RDP_SUPP)
+	$(LINK)rdp$(EXE) rdp$(OBJ) rdp_aux$(OBJ) $(RDP_SUPP)
+
+rdp_gen.c: rdp$(EXE) rdp.bnf
+	rdp -ordp_gen rdp
+
+rdp_gen$(EXE): rdp_gen$(OBJ) rdp_aux$(OBJ) $(RDP_SUPP)
+	$(LINK)rdp_gen$(EXE) rdp_gen$(OBJ) rdp_aux$(OBJ) $(RDP_SUPP)
+
+rdp_gena.c: rdp_gen$(EXE) rdp.bnf
+	rdp_gen -ordp_gena rdp
+
+rdp_gena$(EXE): rdp_gena$(OBJ) rdp_aux$(OBJ) $(RDP_SUPP)
+	$(LINK)rdp_gena$(EXE) rdp_gena$(OBJ) rdp_aux$(OBJ) $(RDP_SUPP)
+
+rdp_genb.c: rdp_gena$(EXE) rdp.bnf
+	rdp_gena -ordp_genb rdp
+
+gen_test: rdp_gena.c rdp_genb.c 
+	-@$(DIFF) rdp_gena.c rdp_genb.c
+
+# generate, compile and test the pascal parser
+
+pascal.c: rdp$(EXE) pascal.bnf
+# Need -F to override dangling else
+	rdp -opascal -F pascal		
+
+pascal$(EXE): pascal$(OBJ) $(RDP_SUPP)
+	$(LINK)pascal$(EXE) pascal$(OBJ) $(RDP_SUPP)
+
+pas_test: pascal$(EXE)
+	pascal -v test
+
+# generate, compile and test the toy parser
+
+toy.c: rdp$(EXE) toy.bnf
+	rdp -otoy toy
+
+toy$(EXE): toy$(OBJ) $(RDP_SUPP)
+	$(LINK)toy$(EXE) toy$(OBJ) $(RDP_SUPP)
+
+toy_test: toy$(EXE)
+	toy -v test
+
+# get rid of intermediate files
+
+clean:
+	-$(RM) *$(OBJ)
+	-$(RM) rdp_gen*.*
+	-$(RM) rdp_gen*
+	-$(RM) pascal.c
+	-$(RM) pascal.h
+	-$(RM) toy.c
+	-$(RM) toy.h
+
+# return to intial distribution state by deleting executables
+
+veryclean: clean
+	-$(RM) rdparser*
+	-$(RM) rdp$(EXE)
+	-$(RM) pascal$(EXE)
+	-$(RM) toy$(EXE)
+	-$(RM) *.dsk			
+	-$(RM) *.bak			

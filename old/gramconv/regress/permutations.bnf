@@ -1,0 +1,19 @@
+!h1
+!b
+!g
+!i
+!s
+!y
+
+!v
+(* Regression: permutations and alternates *)
+
+A ::= 'a' | 'b' | 'c' | 'd'. 
+
+B ::= 'a' || 'b' || 'c' || 'd'.
+
+
+
+
+
+

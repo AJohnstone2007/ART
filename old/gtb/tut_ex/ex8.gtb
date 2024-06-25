@@ -1,0 +1,16 @@
+(* ex8  GLR parsing *)
+S ::=  A 'b' .
+A ::=  'b' A | # .
+
+(
+ex8_grammar := grammar[S]
+ex8_nfa := nfa[ex8_grammar lr 1]
+render[open["nfa.vcg"] ex8_nfa]
+
+ex8_dfa := dfa[ex8_nfa]
+render[open["dfa.vcg"] ex8_dfa]
+
+gtb_verbose := true
+this_derivation := tomita_1_parse[ex8_dfa "bbb"]
+render[open["ssg.vcg"] this_derivation]
+)

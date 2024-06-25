@@ -1,0 +1,23 @@
+S ::= ~S 'a' | B . 
+B ::= B 'b' ~C | # | 'c' ~B .
+C ::= ~B | ~D .
+D ::= 'c' B 'c' .
+
+Z ::= 'x' ~Y 'z'.
+Y ::= 'y'.
+
+(
+write["\n" gtb_version " processing '" gtb_main_file_name "' on " date_time "\n\n"]
+this_grammar := grammar[S]
+
+(*
+tilde[this_grammar terminal]
+
+
+this_ah_table := ah_table[this_grammar]
+
+ah_recognise[this_ah_table "c c b c c a"]
+
+write["\n" CPU_time " CPU seconds elapsed\n\n"]
+
+)

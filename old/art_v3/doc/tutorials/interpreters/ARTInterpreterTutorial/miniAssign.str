@@ -1,0 +1,5 @@
+temp = 3+4*2;
+print("Initial result is ", temp, "\n");
+temp = temp + 1;
+print("Final result is ", temp, "\n");
+

@@ -1,0 +1,597 @@
+Start of provenance
+  
+ansi_c_89.raw - a grammar for the 1989 ANSI standard C language
+
+1. This grammar has been manually constructed from the 1989 ANSI C standard.
+
+2. You can process this file with the gramex tool to make something close
+to a Bison input file, and use the gramconv tool to convert EBNF
+constructs to pure BNF, and to translate to a variety of other formats.
+
+3. For tool and grammar downloads, see the Royal Holloway Compilers Group
+homepage under http://www.cs.rhul.ac.uk, or contact the author at
+A.Johnstone@rhul.ac.uk.
+
+4. Please don't change this file.
+
+        Adrian Johnstone and Elizabeth Scott, 28 August 2006
+
+End of provenance
+
+B.1 Lexical grammar
+
+B.1.1 Tokens
+
+token:
+  keyword
+  identifier
+  constant
+  string-literal
+  operator
+  punctuator
+
+preprocessing-token:
+  header-name
+  identifier
+  pp-number
+  character-constant
+  string-literal
+  operator
+  punctuator
+  each non-white-space character that cannot be one of the above
+
+B.1.2 Keywords
+
+keyword: one of
+  auto       double     int        struct
+  break      else       long       switch
+  case       enum       register   typedef
+  char       extern     return     union
+  const      float      short      unsigned
+  continue   for        signed     void
+  default    goto       sizeof     volatile
+  do         if         static     while
+
+B.1.3 Identifiers
+
+identifier:
+  nondigit
+  identifier nondigit
+  identifier digit
+
+nondigit: one of
+  _ a b c d e f g h i j k l m
+    n o p q r s t u v w x y z
+    A B C D E F G H I J K L M
+    N O P Q R S T U V W X Y Z
+
+digit: one of
+  0 1 2 3 4 5 6 7 8 9
+
+B.1.4 Constants
+
+constant:
+  floating-constant
+  integer-constant
+  enumeration-constant
+  character-constant
+
+floating-constant:
+  fractional-constant exponent-partopt floating-suffixopt
+  digit-sequence exponent-part floating-suffixopt
+
+fractional-constant:
+  digit-sequenceopt . digit-sequence
+  digit-sequence .   
+
+exponent-part:
+  e signopt digit-sequence
+  E signopt digit-sequence
+
+sign: one of
+  + -
+
+digit-sequence:
+  digit
+  digit-sequence digit
+
+floating-suffix: one of
+  f l F L
+
+integer-constant:
+  decimal-constant integer-suffixopt
+  octal-constant integer-suffixopt
+  hexadecimal-constant integer-suffixopt
+
+decimal-constant:
+  nonzero-digit
+  decimal-constant digit
+
+octal-constant:
+  0
+  octal-constant octal-digit
+
+hexadecimal-constant:
+  0x hexadecimal-digit
+  0X hexadecimal-digit
+  hexadecimal-constant hexadecimal-digit
+
+nonzero-digit: one of
+  1 2 3 4 5 6 7 8 9
+
+octal-digit: one of
+  0 1 2 3 4 5 6 7
+
+hexadecimal-digit: one of
+  0 1 2 3 4 5 6 7 8 9
+  a b c d e f
+  A B C D E F
+
+integer-suffix:
+  unsigned-suffix long-suffixopt
+  long-suffix unsigned-suffixopt
+
+unsigned-suffix: one of
+  u U
+
+long-suffix: one of
+  l L
+
+enumeration-constant:
+  identifier
+
+character-constant:
+  'c-char-sequence'
+  L'c-char-sequence'
+
+c-char-sequence:
+  c-char
+  c-char-sequence c-char
+
+c-char:
+  any member of the source character set except
+       the single quote ', backslash \, or new-line character
+  escape-sequence
+
+escape-sequence:
+  simple-escape-sequence
+  octal-escape-sequence
+  hexadecimal-escape-sequence
+
+simple-escape-sequence: one of
+  \' \" \? \\
+  \a \b \f \n \r \t \v
+
+octal-escape-sequence:
+  \ octal-digit
+  \ octal-digit octal-digit
+  \ octal-digit octal-digit octal-digit
+
+hexadecimal-escape-sequence:
+  \x hexadecimal-digit
+  hexadecimal-escape-sequence hexadecimal-digit
+
+B.1.5 String literals
+
+string-literal:
+  "s-char-sequenceopt"
+  L"s-char-sequenceopt"
+
+s-char-sequence:
+  s-char
+  s-char-sequence s-char
+
+s-char:
+  any member of the source character set except
+       the double-quote ", backslash \, or new-line character
+  escape-sequence
+
+B.1.6 Operators
+
+operator: one of
+  [ ] ( ) . ->
+  ++ -- & * + - ~ ! sizeof
+  / % << >> < > <= >= == != ^ | && ||
+  ? :
+  = *= /= %= += -= <<= >>= &= ^= |=
+  , # ##
+
+B.1.7 Punctuators
+
+punctuator: one of
+  [ ] ( ) { } * , : = ; ... #
+
+B.1.8 Header names
+
+header-name:
+  <h-char-sequence>
+  "q-char-sequence"
+
+h-char-sequence:
+  h-char
+  h-char-sequence h-char
+
+h-char:
+  any member of the source character set except
+       the new-line character and > 
+
+q-char-sequence:
+  q-char
+  q-char-sequence q-char
+
+q-char:
+  any member of the source character set except
+       the new-line character and "
+
+B.1.9 Preprocessing numbers
+
+pp-number:
+  digit
+  . digit
+  pp-number digit
+  pp-number nondigit
+  pp-number e sign
+  pp-number E sign
+  pp-number .
+
+B.2 Phrase structure grammar
+
+B.2.1 Expressions
+
+primary-expression:
+  identifier
+  constant
+  string-literal
+  ( expression )
+
+postfix-expression:
+  primary-expression
+  postfix-expression [ expression ]
+  postfix-expression ( argument-expression-listopt )
+  postfix-expression . identifier
+  postfix-expression -> identifier
+  postfix-expression ++
+  postfix-expression --
+
+argument-expression-list:
+  assignment-expression
+  argument-expression-list , assignment-expression
+
+unary-expression:
+  postfix-expression
+  ++ unary-expression
+  -- unary-expression
+  unary-operator cast-expression
+  sizeof unary-expression
+  sizeof ( type-name )
+
+unary-operator: one of
+  & * + - ~ !
+
+cast-expression:
+  unary-expression
+  ( type-name ) cast-expression
+
+multiplicative-expression:
+  cast-expression
+  multiplicative-expression * cast-expression
+  multiplicative-expression / cast-expression
+  multiplicative-expression % cast-expression
+
+additive-expression:
+  multiplicative-expression
+  additive-expression + multiplicative-expression
+  additive-expression - multiplicative-expression
+
+shift-expression:
+  additive-expression
+  shift-expression << additive-expression
+  shift-expression >> additive-expression
+
+relational-expression:
+  shift-expression
+  relational-expression < shift-expression
+  relational-expression > shift-expression
+  relational-expression <= shift-expression
+  relational-expression >= shift-expression
+
+equality-expression:
+  relational-expression
+  equality-expression == relational-expression
+  equality-expression != relational-expression
+
+AND-expression:
+  equality-expression
+  AND-expression & equality-expression
+
+exclusive-OR-expression:
+  AND-expression
+  exclusive-OR-expression ^ AND-expression
+
+inclusive-OR-expression:
+  exclusive-OR-expression
+  inclusive-OR-expression | exclusive-OR-expression
+
+logical-AND-expression:
+  inclusive-OR-expression
+  logical-AND-expression && inclusive-OR-expression
+
+logical-OR-expression:
+  logical-AND-expression
+  logical-OR-expression || logical-AND-expression
+
+conditional-expression:
+  logical-OR-expression
+  logical-OR-expression ? expression : conditional-expression
+
+assignment-expression:
+  conditional-expression
+  unary-expression assignment-operator assignment-expression
+
+assignment-operator: one of
+  = *= /= %= += -= <<= >>= &= ^= |=
+
+expression:
+  assignment-expression
+  expression , assignment-expression
+
+constant-expression:
+  conditional-expression
+
+B.2.2 Declarations
+
+declaration:
+  declaration-specifiers init-declarator-listopt ;
+
+declaration-specifiers:
+  storage-class-specifier declaration-specifiersopt
+  type-specifier declaration-specifiersopt
+  type-qualifier declaration-specifiersopt
+
+init-declarator-list:
+  init-declarator
+  init-declarator-list , init-declarator
+
+init-declarator:
+  declarator
+  declarator = initializer
+
+storage-class-specifier:
+  typedef
+  extern 
+  static
+  auto
+  register 
+
+type-specifier: one of
+  void 
+  char 
+  short 
+  int 
+  long 
+  float 
+  double 
+  signed
+  unsigned  
+  struct-or-union-specifier
+  enum-specifier
+  typedef-name
+
+struct-or-union-specifier:
+   struct-or-union identifieropt { struct-declaration-list }
+   struct-or-union identifier
+
+struct-or-union:
+  struct 
+  union
+
+struct-declaration-list:
+  struct-declaration
+  struct-declaration-list struct-declaration
+
+struct-declaration:
+  specifier-qualifier-list struct-declarator-list ;
+
+specifier-qualifier-list:
+  type-specifier specifier-qualifier-listopt
+  type-qualifier specifier-qualifier-listopt
+
+struct-declarator-list:
+  struct-declarator
+  struct-declarator-list , struct-declarator
+
+struct-declarator:
+  declarator
+  declaratoropt : constant-expression
+
+enum-specifier:
+  enum identifieropt { enumerator-list }
+  enum identifier
+
+enumerator-list:
+  enumerator
+  enumerator-list , enumerator
+
+enumerator:
+  enumeration-constant
+  enumeration-constant = constant-expression
+
+type-qualifier:
+  const 
+  volatile
+
+declarator:
+  pointeropt direct-declarator
+
+direct-declarator:
+  identifier
+  ( declarator )
+  direct-declarator [ constant-expressionopt ]
+  direct-declarator ( parameter-type-list )
+  direct-declarator ( identifier-listopt )
+
+pointer:
+  * type-qualifier-listopt
+  * type-qualifier-listopt pointer
+
+type-qualifier-list:
+  type-qualifier
+  type-qualifier-list type-qualifier
+
+parameter-type-list:
+  parameter-list
+  parameter-list , ...
+
+parameter-list:
+  parameter-declaration
+  parameter-list , parameter-declaration
+
+parameter-declaration:
+  declaration-specifiers declarator
+  declaration-specifiers abstract-declaratoropt
+
+identifier-list:
+  identifier
+  identifier-list , identifier
+
+type-name:
+  specifier-qualifier-list abstract-declaratoropt
+
+abstract-declarator:
+  pointer
+  pointeropt direct-abstract-declarator
+
+direct-abstract-declarator:
+  ( abstract-declarator  )
+  direct-abstract-declaratoropt  [ constant-expressionopt ]
+  direct-abstract-declaratoropt  ( parameter-type-listopt )
+
+typedef-name:
+  identifier
+
+initializer:
+  assignment-expression
+  { initializer-list }
+  { initializer-list , }
+
+initializer-list:
+  initializer
+  initializer-list , initializer
+
+B.2.3 Statements
+
+statement:
+  labeled-statement
+  compound-statement
+  expression-statement
+  selection-statement
+  iteration-statement
+  jump-statement
+
+labeled-statement:
+  identifier : statement
+  case constant-expression : statement
+  default : statement
+
+compound-statement:
+  { declaration-listopt statement-listopt }
+
+declaration-list:
+  declaration
+  declaration-list declaration
+
+statement-list:
+  statement
+  statement-list statement
+
+expression-statement:
+  expressionopt ;
+
+selection-statement:
+  if ( expression ) statement
+  if ( expression ) statement else statement
+  switch ( expression ) statement
+
+iteration-statement:
+  while ( expression ) statement
+  do statement while ( expression ) ;
+  for ( expressionopt ; expressionopt ; expressionopt ) statement
+
+jump-statement:
+  goto identifier ;
+  continue ;
+  break ;
+  return expressionopt ;
+
+B.2.4 External definitions
+
+translation-unit:
+  external-declaration
+  translation-unit external-declaration
+
+external-declaration:
+  function-definition
+  declaration
+
+function-definition:
+  declaration-specifiersopt declarator declaration-listopt compound-statement
+
+B.3 Preprocessing directives
+
+preprocessing-file:
+  groupopt
+
+group:
+  group-part
+  group group-part
+
+group-part:
+  pp-tokensopt new-line
+  if-section
+  control-line
+
+if-section:
+  if-group elif-groupsopt else-groupopt endif-line
+
+if-group:
+  # if constant-expression new-line groupopt
+  # ifdef identifier new-line groupopt
+  # ifndef identifier new-line groupopt
+
+elif-groups:
+  elif-group
+  elif-groups elif-group
+
+elif-group:
+  # elif constant-expression new-line groupopt
+
+else-group:
+  # else new-line groupopt
+
+endif-line:
+  # endif new-line
+
+control-line:
+  # include pp-tokens new-line
+  # define identifier replacement-list new-line
+  # define identifier lparen identifier-listopt ) replacement-list new-line
+  # undef identifier new-line
+  # line pp-tokens new-line
+  # error pp-tokensopt new-line
+  # pragma pp-tokensopt new-line
+  # new-line
+
+lparen:
+  the left-parenthesis character without preceding white space
+
+replacement-list:
+  pp-tokensopt
+
+pp-tokens:
+  preprocessing-token
+  pp-tokens preprocessing-token
+
+new-line:
+  the new-line character
+
+end of ansi_c_89.raw

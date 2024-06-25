@@ -1,0 +1,19 @@
+(* Regression: bad syntax for permutations and alternates *)
+
+!h1
+!b
+!g
+!i
+!s
+!y
+
+!v
+
+A ::= 'a' | 'b' | 'c' || 'd'.
+
+A ::= 'a' || 'b' || 'c' | 'd'.
+
+
+
+
+

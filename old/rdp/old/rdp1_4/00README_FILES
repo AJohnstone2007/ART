@@ -1,0 +1,61 @@
+File list for RDP version 1.4 dated 12 February 1995
+
+rdp_doc                documentation subdirectory
+rdp_supp               support library subdirectory
+rdp_test               test suite library 
+
+00files                list of files
+00readme               quick start instructions  
+ansi_c.bnf             grammar for ANSI C (unfinished)
+iso_pas.bnf            grammar for ISO Pascal (unfinished)
+makefile               makefile for various systems  
+mini.bnf               grammar for Mini
+miniplus.bnf           grammar for Miniplus
+nasm4.bnf              grammar for nasm4 assembler
+nasm4aux.c             auxiliary file for nasm4
+nasm4aux.h             auxiliary header for nasm4
+pascal.bnf             grammar for Pascal modified from yacc
+rdp.bnf                grammar for the rdp syste, 
+rdp.c                  machine generated rdp source
+rdp.exe                MS-DOS rdp executable
+rdp.h                  machine generated rdp header
+rdp.prj                Borland project file to build rdp
+rdparser.prj           Borland project file to build parsers
+rdp_aux.c              auxiliary file for rdp
+rdp_aux.h              auxiliary header for rdp
+rdp_gram.c             grammar checking routines for rdp
+rdp_gram.h             grammar checking header for rdp
+rdp_prnt.c             output routines for rdp
+rdp_prnt.h             output header for rdp
+test.min               test filefor mini parser
+test.mpl               test file for miniplus parser
+test.pas               test file for Pascal parser
+
+rdp_doc\rdp_supp.ps    support library user manual postscript source
+rdp_doc\rdp_user.ps    rdp user manual postscript source
+
+rdp_supp\memalloc.c    memory management routines
+rdp_supp\memalloc.h
+rdp_supp\scan.c        scanner support routines
+rdp_supp\scan.h
+rdp_supp\scanner.c     a hardwired scanner
+rdp_supp\set.c         set management routines
+rdp_supp\set.h
+rdp_supp\symbol.c      symbo0l table management routines
+rdp_supp\symbol.h
+rdp_supp\textio.c      text buffering routines 
+rdp_supp\textio.h
+
+rdp_test\makefile      makefile for test suite
+rdp_test\scantest.c    scanner test program
+rdp_test\scantest.ok   good output from scanner test
+rdp_test\settest.c     set test program
+rdp_test\settest.ok    good output from set test  
+rdp_test\symtest.c     symbol table test program
+rdp_test\symtest.ok    good output from symbol table test
+rdp_test\text.1        text file 1
+rdp_test\text.2        text file 2
+rdp_test\text.3        text file 3
+rdp_test\textout.ok    good output from redirected text test
+rdp_test\texttest.c    text buffering test program
+rdp_test\texttest.ok   good output from text test

@@ -1,0 +1,1956 @@
+(****************************************************************************
+*
+* GTB release 2.00 by Adrian Johnstone (a.johnstone@rhul.ac.uk) 1 Nov 2000
+*
+* ansi_c.gtb - an ANSI standard C grammar
+*
+* This file may be freely distributed. Please mail improvements to the author.
+*
+* Provenance: this grammar is a transcription of the rules in section A13 of
+* 'The C Programming Language' by Brian W Kernighan and Dennis M Ritchie,
+* second edition 1988 (Prentice Hall, ISBN 0-13-110362-8). 
+*
+* Optional productions have been expanded and a set of lexical rules created.
+*
+*****************************************************************************)
+
+(*
+THIS HAS HAD EVERY TERMINAL INSTANCE TERMINALISED except for identifier
+
+This is a version of c_ah.gtb which in turn is the original ANSI C grammar.
+Self embedding and right recursion have been removed so that AH style
+tries can be build. It is intended that this forms the grammar for
+the experiments reported in the AH paper sent to the Computer Journal.
+
+Recursion is broken at the head rather than the tail, in line with what
+was done for the CC04 paper. But for expression the recursion is
+broken at the tail instead, to see if this improves efficiency.
+
+Instances of conditional_expression were terminalised to make the
+construction smaller, not just to get rid of self embedding.
+*)
+
+(* Terminalised:
+declaration_specifiers
+direct_declarator
+statement_list
+statement
+pointer
+assignment_expression
+initializer_list
+conditional_expression
+cast_expression
+unary_expression 
+direct_abstract_declarator 
+argument_expression_list 
+specifier_qualifier_list 
+struct_declaration_list 
+
+*)
+
+
+translation_unit ::= ~external_declaration |
+                     ~translation_unit ~external_declaration.
+
+external_declaration ::= ~function_definition |
+                         ~declaration .
+
+function_definition ::= ~declaration_specifiers ~declarator ~declaration_list ~compound_statement |
+                                               ~declarator ~declaration_list ~compound_statement |
+                        ~declaration_specifiers ~declarator                  ~compound_statement |
+                                               ~declarator                  ~compound_statement .
+
+declaration ::= ~declaration_specifiers ~init_declarator_list ';' |
+                ~declaration_specifiers                      ';' .
+
+declaration_list ::= ~declaration |
+                     ~declaration_list ~declaration. 
+
+declaration_specifiers ::= ~storage_class_specifier ~declaration_specifiers |
+                           ~storage_class_specifier                        |
+
+                           ~type_specifier ~declaration_specifiers |
+                           ~type_specifier                        |
+
+                           ~type_qualifier ~declaration_specifiers |
+                           ~type_qualifier                        .
+
+storage_class_specifier ::= 'auto' |
+                            'register' |
+                            'static' |
+                            'extern' |
+                            'typedef'.
+
+type_specifier ::= 'void' |
+                   'char' |
+                   'short' |
+                   'int' |
+                   'long' |
+                   'float' |
+                   'double' |
+                   'signed' |
+                   'unsigned' |
+                   ~struct_or_union_specifier |
+                   ~enum_specifier |
+                   ~typedef_name.
+
+type_qualifier ::= 'const' |
+                   'volatile'.
+
+struct_or_union_specifier ::= ~struct_or_union identifier '{' ~struct_declaration_list '}' |
+                              ~struct_or_union            '{' ~struct_declaration_list '}' |
+                              ~struct_or_union identifier .
+                             
+struct_or_union ::= 'struct' |
+                    'union'.
+
+struct_declaration_list ::= ~struct_declaration |
+                            ~struct_declaration_list ~struct_declaration .
+
+init_declarator_list ::= ~init_declarator |
+                         ~init_declarator_list ',' ~init_declarator . 
+
+init_declarator ::= ~declarator  |
+                    ~declarator '=' ~initializer . 
+
+struct_declaration ::= ~specifier_qualifier_list ~struct_declarator_list ';'.
+
+specifier_qualifier_list ::= ~type_specifier ~specifier_qualifier_list |
+                             ~type_specifier                          |
+                             ~type_qualifier ~specifier_qualifier_list |
+                             ~type_qualifier                          .
+
+struct_declarator_list ::= ~struct_declarator |
+                           ~struct_declarator_list ',' ~struct_declarator. 
+
+struct_declarator ::= ~declarator |
+                      ~declarator ':' ~constant_expression |
+                                 ':' ~constant_expression . 
+
+enum_specifier ::= 'enum' identifier '{' ~enumerator_list '}' |
+                   'enum'            '{' ~enumerator_list '}' |
+                   'enum' identifier .
+
+enumerator_list ::= ~enumerator |
+                    ~enumerator_list ',' ~enumerator. 
+
+enumerator ::= identifier |
+               identifier '=' ~constant_expression . 
+
+declarator ::= ~pointer ~direct_declarator |
+                       ~direct_declarator .
+
+direct_declarator ::= identifier |
+                      '(' ~declarator ')' |
+                      ~direct_declarator  '[' ~constant_expression ']' |
+                      ~direct_declarator  '['                     ']' |
+                      ~direct_declarator  '(' ~parameter_type_list ')'  |
+                      ~direct_declarator  '(' ~identifier_list ')' |
+                      ~direct_declarator  '('                 ')' .
+
+pointer ::= '*' ~type_qualifier_list |
+            '*'                     |
+            '*' ~type_qualifier_list ~pointer |
+            '*'                     ~pointer . 
+
+type_qualifier_list ::= ~type_qualifier |
+                        ~type_qualifier_list ~type_qualifier. 
+
+parameter_type_list ::= ~parameter_list |
+                        ~parameter_list ',' '...'. 
+
+parameter_list ::= ~parameter_declaration |
+                   ~parameter_list ',' ~parameter_declaration . 
+
+parameter_declaration ::= ~declaration_specifiers ~declarator |
+                          ~declaration_specifiers ~abstract_declarator |
+                          ~declaration_specifiers                     . 
+
+identifier_list ::= identifier |
+                    ~identifier_list ',' identifier . 
+
+initializer ::= ~assignment_expression |
+                '{' ~initializer_list '}' |
+                '{' ~initializer_list ','  '}'. 
+
+initializer_list ::= ~initializer  |
+                     ~initializer_list ',' ~initializer. 
+
+type_name ::= ~specifier_qualifier_list ~abstract_declarator |
+              ~specifier_qualifier_list                     .
+
+abstract_declarator ::= ~pointer |
+                        ~pointer ~direct_abstract_declarator |
+                                ~direct_abstract_declarator . 
+
+ 
+direct_abstract_declarator ::= '(' ~abstract_declarator ')' |
+                                ~direct_abstract_declarator '[' ~constant_expression ']' |
+                                                           '[' ~constant_expression ']' |
+                                ~direct_abstract_declarator '['                     ']' |
+                                                           '['                     ']' |
+
+                                ~direct_abstract_declarator '(' ~parameter_type_list ')' |
+                                                           '(' ~parameter_type_list ')' |
+                                ~direct_abstract_declarator '('                     ')' |
+                                                           '('                     ')' .
+
+statement ::= ~labeled_statement |
+              ~expression_statement |
+              ~compound_statement |
+              ~selection_statement |
+              ~iteration_statement |
+              ~jump_statement .
+
+labeled_statement ::= identifier ':' ~statement |
+                      'case' ~constant_expression ':' ~statement |
+                      'default' ':' ~statement.
+
+expression_statement ::= ~expression ';' |
+                                    ';' .
+
+compound_statement ::= '{' ~declaration_list ~statement_list '}' |
+                       '{'                  ~statement_list '}' |
+                       '{' ~declaration_list                '}' |
+                       '{'                                 '}' .
+
+
+statement_list ::= ~statement |
+                   ~statement_list ~statement. 
+
+selection_statement ::= 'if' '(' ~expression ')' ~statement |
+                        'if' '(' ~expression ')' ~statement 'else' ~statement  |
+                        'switch' '(' ~expression ')' ~statement.
+
+iteration_statement ::= 'while' '(' ~expression ')' ~statement |
+                        'do' ~statement 'while' '(' ~expression ')' |
+                        'for' '(' ~expression ';' ~expression ';' ~expression ')' ~statement |
+                        'for' '(' ~expression ';' ~expression ';'            ')' ~statement |
+                        'for' '(' ~expression ';'            ';' ~expression ')' ~statement |
+                        'for' '(' ~expression ';'            ';'            ')' ~statement |
+                        'for' '('            ';' ~expression ';' ~expression ')' ~statement |
+                        'for' '('            ';' ~expression ';'            ')' ~statement |
+                        'for' '('            ';'            ';' ~expression ')' ~statement |
+                        'for' '('            ';'            ';'            ')' ~statement .
+
+jump_statement ::= 'goto' identifier ';' |
+                   'continue' ';' |
+                   'break' ';' |
+                   'return' ~expression ';' |
+                   'return'            ';'.
+
+expression ::= ~assignment_expression |
+               ~expression  ',' ~assignment_expression . 
+
+assignment_expression ::= ~conditional_expression  |
+                          ~unary_expression  ~assignment_operator ~assignment_expression .
+
+assignment_operator ::= '=' | '*=' | '/=' | '%=' | '+=' | '-=' | '<<=' | '>>=' | '&=' | '^=' | '|='.
+
+conditional_expression ::= ~logical_or_expression |
+                           ~logical_or_expression '?' ~expression ':' ~conditional_expression . 
+
+constant_expression ::= ~conditional_expression .
+
+logical_or_expression ::= ~logical_and_expression |
+                          ~logical_or_expression '||' ~logical_and_expression. 
+
+logical_and_expression ::= ~inclusive_or_expression |
+                           ~logical_and_expression '&&' ~inclusive_or_expression. 
+
+inclusive_or_expression ::= ~exclusive_or_expression |
+                            ~inclusive_or_expression '|' ~exclusive_or_expression. 
+
+exclusive_or_expression ::= ~and_expression |
+                            ~exclusive_or_expression '^' ~and_expression. 
+
+and_expression ::= ~equality_expression |
+                   ~and_expression '&' ~equality_expression . 
+
+equality_expression ::= ~relational_expression |
+                        ~equality_expression  '==' ~relational_expression  |
+                        ~equality_expression '!=' ~relational_expression. 
+
+relational_expression ::= ~shift_expression |
+                          ~relational_expression '<' ~shift_expression |
+                          ~relational_expression '>'  ~shift_expression |
+                          ~relational_expression '<='  ~shift_expression |
+                          ~relational_expression '>=' ~shift_expression  .
+
+shift_expression ::= ~additive_expression |
+                     ~shift_expression '<<' ~additive_expression  |
+                     ~shift_expression '>>' ~additive_expression. 
+
+additive_expression ::= ~multiplicative_expression |
+                        ~additive_expression '+' ~multiplicative_expression |
+                        ~additive_expression '-' ~multiplicative_expression.
+
+multiplicative_expression ::= ~cast_expression |
+                              ~multiplicative_expression '*' ~cast_expression |
+                              ~multiplicative_expression '/' ~cast_expression |
+                              ~multiplicative_expression '%' ~cast_expression . 
+
+cast_expression ::= ~unary_expression |
+                    '(' ~type_name ')' ~cast_expression .
+
+unary_expression ::= ~postfix_expression |
+                     '++' ~unary_expression |
+                     '--' ~unary_expression |
+                     ~unary_operator ~cast_expression |
+                     'sizeof' ~unary_expression |
+                     'sizeof' '(' ~type_name')' .
+
+unary_operator ::= '&' | '*' | '+' | '-' | '~' | '!'.
+
+postfix_expression ::= ~primary_expression |
+                       ~postfix_expression '[' ~expression ']' |
+                       ~postfix_expression '(' ~argument_expression_list ')' |
+                       ~postfix_expression '('                          ')' |
+                       ~postfix_expression '.' identifier |
+                       ~postfix_expression '->' identifier |
+                       ~postfix_expression '++' |
+                       ~postfix_expression '--'.  
+
+primary_expression ::= identifier |
+                       ~constant |
+                       ~string |
+                       '(' ~expression ')'.
+
+argument_expression_list ::= ~assignment_expression |
+                             ~argument_expression_list ',' ~assignment_expression .
+
+constant ::= ~integer_constant |
+             (*character_constant |*)
+             ~floating_constant |
+             ~enumeration_constant .
+
+(* Lexical producions *)
+identifier ::= 'ID' .
+string ::= 'STRING' | ~string 'STRING' .
+integer_constant ::= 'INTEGER' .
+character_constant ::= (* 'CHAR' *) 'STRING' .
+floating_constant ::= 'REAL' .
+
+(* Hack 1: the original grammar has a constant alternative for enumeration
+   constants: this looks redundant because primary_expresion has an identifier
+   alternative. We use a different keyword to avoid conflicts.
+*)
+enumeration_constant ::= 'ENUM_ID'. 
+
+(* Hack 2: a declaration starting with a typedef-defined type identifier
+   cannot be disambiguated unless the lexer returns a different token
+   for such identifiers. Here we use a different keyword *)
+typedef_name ::= 'ID' | 'TYPE_ID'.
+
+
+(* GTB script follows *)
+(
+
+STRING2 := "
+void ID ( void ) 
+{ 
+ID 
+( STRING 
+STRING 
+STRING 
+STRING 
+STRING 
+STRING 
+STRING 
+STRING 
+STRING 
+STRING 
+STRING 
+STRING 
+STRING 
+STRING 
+STRING 
+STRING 
+STRING 
+STRING 
+STRING 
+STRING 
+STRING 
+STRING 
+STRING 
+STRING 
+) ; 
+} 
+ID ID ; 
+unsigned long ID ; 
+char ID [ INTEGER ] , 
+* ID = ID , 
+ID [ INTEGER ] , 
+ID [ INTEGER ] = STRING ; 
+struct ID 
+{ 
+int ID : INTEGER , 
+ID : INTEGER , 
+ID : INTEGER , 
+ID : INTEGER , 
+ID : INTEGER , 
+ID : INTEGER , 
+ID : INTEGER ; 
+} ID ; 
+struct ID 
+{ 
+unsigned long ID , 
+ID ; 
+unsigned ID ; 
+struct ID * ID , 
+* ID ; 
+char ID ; 
+char ID ; 
+} * ID [ INTEGER ] ; 
+int ID ( char * ID , ... ) 
+{ 
+int ID ; 
+ID ID ; 
+( ( void ) ( ( ID ) = ( ID ) ( ( char * ) ( & ID ) + ( ( sizeof ( ID ) + sizeof ( int ) - INTEGER ) & ~ ( sizeof ( int ) - INTEGER ) ) ) ) ) ; 
+if ( ID . ID ) 
+ID = ID ( ID , ID ) ; 
+( ( void ) INTEGER ) ; 
+return ( ID ) ; 
+} 
+
+void ID ( struct ID * ID ) 
+{ 
+int ID = ID . ID ; 
+ID . ID = INTEGER ; 
+ID ( ID ) ; 
+ID . ID = ID ; 
+} 
+void ID ( char * * ID ) 
+{ 
+while ( * ++ ID != INTEGER ) 
+switch ( * ( ( * ID ) + INTEGER ) ) 
+{ 
+case STRING : 
+ID . ID = INTEGER ; 
+break ; 
+case STRING : 
+ID . ID = INTEGER ; 
+break ; 
+case STRING : 
+ID . ID = INTEGER ; 
+break ; 
+case STRING : 
+ID . ID = INTEGER ; 
+break ; 
+case STRING : 
+ID . ID = INTEGER ; 
+break ; 
+case STRING : 
+ID . ID = INTEGER ; 
+break ; 
+case STRING : 
+ID . ID = INTEGER ; 
+break ; 
+default : 
+ID ( ) ; 
+ID ( INTEGER ) ; 
+} ; 
+} 
+
+void ID ( void ) 
+{ 
+char ID , 
+ID = INTEGER ; 
+ID = ID ; 
+while ( ! ( ( ( & ID [ INTEGER ] ) ) -> ID & INTEGER ) && ( ID = ( ( -- ( ( ( & ID [ INTEGER ] ) ) -> ID ) >= INTEGER ) ? ( unsigned char ) ( * ( ( & ID [ INTEGER ] ) ) -> ID ++ ) : ID ( ( & ID [ INTEGER ] ) ) ) ) != STRING ) 
+{ 
+if ( ID ( ID , ID ) ) 
+ID ( STRING ) ; 
+ID ( ID ) ; 
+if ( ID > STRING && ID <= STRING ) 
+ID = ID ; 
+} 
+* ID = INTEGER ; 
+if ( ID - ID >= INTEGER ) 
+{ 
+ID ( STRING ) ; 
+* ID = INTEGER ; 
+} 
+} 
+unsigned ID ( char * ID ) 
+{ 
+char ID [ INTEGER ] = STRING ; 
+unsigned ID ; 
+ID ( ID , ID , sizeof ( ID ) ) ; 
+ID ( ID , ID , sizeof ( ID ) ) ; 
+for ( ID = STRING ; * ID != INTEGER ; ID ++ ) 
+if ( * ID >= STRING && * ID <= STRING ) 
+{ 
+if ( ID [ * ID - STRING ] == STRING ) 
+{ 
+ID [ * ID - STRING ] = ID ; 
+ID [ ID ++ - STRING ] = * ID ; 
+} 
+* ID = ID [ * ID - STRING ] ; 
+} 
+return ( ID - STRING ) ; 
+} 
+void ID ( void ) 
+{ 
+unsigned long ID = ID - ID ; 
+if ( ! ID . ID ) 
+ID ( STRING , ID ) ; 
+ID ( STRING ) ; 
+for ( ID = ID - ID ; ID > INTEGER ; ID -- ) 
+ID ( STRING ) ; 
+ID ( STRING ) ; 
+ID ( ID , INTEGER ) ; 
+} 
+char ID ( void ) ; 
+char ID ( void ) 
+{ 
+char ID = * ID , 
+ID = * ID == STRING ? INTEGER : 
+* ID == STRING ? INTEGER : 
+* ID == STRING ? ( ID ++ , ID ( ) ) : 
+( * ID >= STRING && * ID <= STRING ) ? 
+INTEGER & ( ID >> ( ( * ID ) - STRING ) ) : 
+( ID ( ) , INTEGER ) ; 
+if ( ID == STRING && * ID != STRING ) 
+ID ( ) ; 
+ID ++ ; 
+return ( ID ) ; 
+} 
+char ID ( void ) 
+{ 
+if ( * ID == STRING ) 
+{ 
+ID ++ ; 
+return ( ! ID ( ) ) ; 
+} 
+else 
+return ( ID ( ) ) ; 
+} 
+char ID ( void ) 
+{ 
+char ID = ID ( ) ; 
+while ( * ID == STRING ) 
+{ 
+ID ++ ; 
+ID &= ID ( ) ; 
+} return ( ID ) ; 
+} 
+char ID ( void ) 
+{ 
+char ID = ID ( ) ; 
+while ( * ID == STRING ) 
+{ 
+ID ++ ; 
+ID ^= ID ( ) ; 
+} return ( ID ) ; 
+} 
+char ID ( void ) 
+{ 
+char ID = ID ( ) ; 
+while ( * ID == STRING ) 
+{ 
+ID ++ ; 
+ID |= ID ( ) ; 
+} return ( ID ) ; 
+} 
+int ID ( struct ID * ID , struct ID * ID ) 
+{ 
+return ( ( ( ID -> ID | ID -> ID ) == ID -> ID ) && 
+( ID -> ID & ID -> ID ) == ( ID -> ID & ID -> ID ) ) ; 
+} 
+int ID ( struct ID * ID , struct ID * ID ) 
+{ 
+return ( ( ID -> ID & ID -> ID ) == ( ID -> ID & ID -> ID ) && ID -> ID == ID -> ID ) ; 
+} 
+int ID ( struct ID * * ID , unsigned long ID , unsigned long ID ) 
+{ 
+struct ID * ID = * ID , 
+* ID = ID ( sizeof ( * ID ) ) ; 
+if ( ID == INTEGER ) 
+{ 
+ID ( STRING ) ; 
+ID ( INTEGER ) ; 
+} 
+ID ( ID , INTEGER , sizeof ( struct ID ) ) ; 
+ID -> ID = ID ; 
+ID -> ID = ID ; 
+while ( ID != INTEGER && ! ID ( ID , ID ) ) 
+ID = ID -> ID ; 
+if ( ID == INTEGER ) 
+{ 
+ID -> ID = * ID ; 
+* ID = ID ; 
+return INTEGER ; 
+} 
+else 
+return INTEGER ; 
+} 
+struct ID * ID ( char * ID , unsigned ID , 
+int ID , unsigned long * ID ) 
+{ 
+struct ID * ID = INTEGER ; 
+unsigned ID ; 
+* ID = INTEGER ; 
+if ( ID == INTEGER ) 
+{ 
+ID ( & ID , INTEGER , ( ID = ID , ID ( ) ) ) ; 
+return ( ID ) ; 
+} 
+if ( ID ) 
+{ 
+for ( ID = INTEGER ; ID < ID ; ID ++ ) 
+ID ( STRING , ID [ ID ] ) ; 
+ID ( STRING ) ; 
+} 
+for ( ID = INTEGER ; ID <= ( INTEGER << ID ) - INTEGER ; ID ++ ) 
+{ 
+if ( ID ) 
+{ 
+unsigned long ID = ID , 
+ID = ID ; 
+while ( ID -- > INTEGER ) 
+{ 
+ID ( STRING , ID & INTEGER ) ; 
+ID = ID >> INTEGER ; 
+} 
+} 
+if ( ID = ID , ID ( ) ) 
+{ 
+ID ( & ID , ( INTEGER << ID ) - INTEGER , ID ) ; 
+( * ID ) ++ ; 
+if ( ID ) 
+ID ( STRING ) ; 
+} 
+else 
+{ 
+if ( ID ) 
+ID ( STRING ) ; 
+} 
+} 
+if ( ID == INTEGER ) 
+ID ( & ID , INTEGER , INTEGER ) ; 
+return ( ID ) ; 
+} 
+void ID ( void ) 
+{ 
+unsigned ID , 
+ID ; 
+ID ( STRING , ID [ INTEGER ] , ID [ INTEGER ] ) ; 
+for ( ID = INTEGER ; ID < INTEGER ; ID ++ ) 
+{ 
+if ( ID > INTEGER && ID < INTEGER ) 
+ID ( STRING , ID [ INTEGER ] ) ; 
+else 
+ID ( STRING ) ; 
+for ( ID = INTEGER ; ID < INTEGER ; ID ++ ) 
+{ 
+ID = ( ID > INTEGER ? ID ^ INTEGER : ID ) + ( ID > INTEGER ? ID ^ INTEGER : ID ) * INTEGER ; 
+ID ( STRING , ( ID = ID , ID ( ) ) ) ; 
+} 
+if ( ID > INTEGER ) 
+ID ( STRING , ID [ INTEGER ] ) ; 
+else 
+ID ( STRING ) ; 
+ID ( STRING ) ; 
+} 
+ID ( STRING , ID [ INTEGER ] , ID [ INTEGER ] ) ; 
+} 
+int ID ( struct ID * ID ) 
+{ 
+unsigned long ID = ID -> ID , 
+ID = ID -> ID ; 
+int ID = INTEGER ; 
+while ( ID != INTEGER ) 
+{ 
+if ( ID & INTEGER && ID & INTEGER ) 
+ID ++ ; 
+ID = ID >> INTEGER ; 
+ID = ID >> INTEGER ; 
+} 
+return ( ID ) ; 
+} 
+struct ID * ID ( struct ID * ID , unsigned ID , 
+unsigned long * ID ) 
+{ 
+struct ID * ID = INTEGER , 
+* ID [ INTEGER ] [ INTEGER ] ; 
+int ID , 
+ID = INTEGER ; 
+char ID ; 
+* ID = INTEGER ; 
+ID ( ID , INTEGER , sizeof ( ID ) ) ; 
+while ( ID != INTEGER ) 
+{ 
+ID ( & ID [ ID ] [ ID ( ID ) ] , 
+ID -> ID , ID -> ID ) ; 
+ID = ID -> ID ; 
+} 
+do 
+{ 
+struct ID * ID ; 
+ID = INTEGER ; 
+ID ( STRING ) ; 
+for ( ID = INTEGER ; ID <= ID ; ID ++ ) 
+{ 
+ID ( STRING , ID ) ; 
+ID ( ID [ ID ] [ ID ] ) ; 
+ID ( STRING ) ; 
+} 
+ID ( STRING ) ; 
+ID ( ID ) ; 
+ID ( STRING ) ; 
+for ( ID = INTEGER ; ID < ID ; ID ++ ) 
+{ 
+ID = ID [ ID ] [ ID ] ; 
+ID [ INTEGER - ID ] [ ID ] = INTEGER ; 
+while ( ID != INTEGER ) 
+{ 
+struct ID * ID = ID [ ID ] [ ID + INTEGER ] ; 
+while ( ID != INTEGER ) 
+{ 
+unsigned long ID = ID -> ID & ( ID -> ID ^ ID -> ID ) ; 
+if ( ID -> ID == ID -> ID && ID != INTEGER ) 
+{ 
+unsigned long ID = ID -> ID & ~ ID ; 
+while ( ( ID & INTEGER ) == INTEGER ) 
+ID = ID >> INTEGER ; 
+if ( ( ID >> INTEGER ) == INTEGER ) 
+{ 
+ID = INTEGER ; 
+ID ( ID ) ; 
+ID ( STRING ) ; 
+ID ( ID ) ; 
+ID ( STRING ) ; 
+ID ( & ID [ INTEGER - ID ] [ ID ] , ID , 
+ID == INTEGER ? INTEGER : ID -> ID ) ; 
+ID ( ID [ INTEGER - ID ] [ ID ] ) ; 
+ID ( STRING ) ; 
+( * ID ) ++ ; 
+ID -> ID = INTEGER ; 
+ID -> ID = INTEGER ; 
+} 
+} 
+ID = ID -> ID ; 
+} 
+if ( ! ID -> ID ) 
+{ 
+ID ( & ID , ID -> ID , ID -> ID ) ; 
+ID ( ID ) ; 
+ID ( STRING ) ; 
+} 
+ID = ID -> ID ; 
+} 
+} 
+ID = ID [ ID ] [ ID ] ; 
+while ( ID != INTEGER ) 
+{ 
+if ( ! ID -> ID ) 
+{ 
+ID ( & ID , ID -> ID , ID -> ID ) ; 
+ID ( ID ) ; 
+ID ( STRING ) ; 
+} 
+ID = ID -> ID ; 
+} 
+ID [ INTEGER - ID ] [ ID ] = INTEGER ; 
+ID = INTEGER - ID ; 
+} 
+while ( ID ) ; 
+return ( ID ) ; 
+} 
+int ID ( struct ID * ID , unsigned long * ID ) 
+{ 
+unsigned ID ; 
+unsigned long ID ; 
+* ID = INTEGER ; 
+for ( ID = INTEGER ; ID != INTEGER ; ID ++ , ID = ID -> ID ) 
+{ 
+( * ID ) ++ ; 
+ID -> ID = STRING - ID ; 
+if ( ID > INTEGER ) 
+return ( INTEGER ) ; 
+ID [ ID ] = ID ; 
+ID = ID -> ID ; 
+ID -> ID = INTEGER ; 
+while ( ID != INTEGER ) 
+{ 
+if ( ID & INTEGER ) 
+ID -> ID ++ ; 
+ID = ID >> INTEGER ; 
+} 
+} 
+return ( INTEGER ) ; 
+} 
+void ID ( struct ID * ID , struct ID * ID ) 
+{ 
+char ID = INTEGER ; 
+ID = ID ; 
+ID ( STRING ) ; 
+while ( ID != INTEGER ) 
+{ 
+struct ID * ID = ID ; 
+char ID = INTEGER ; 
+ID ( STRING ) ; 
+ID ( ID ) ; 
+ID ( STRING ) ; 
+if ( ID ) 
+ID = INTEGER ; 
+else 
+ID ( STRING ) ; 
+ID ( STRING ) ; 
+while ( ID != INTEGER ) 
+{ 
+if ( ( ID -> ID & ID -> ID ) == ( ID -> ID & ID -> ID ) ) 
+{ 
+if ( ID ) 
+ID = INTEGER ; 
+else 
+{ 
+ID ( STRING ) ; 
+ID ( STRING ) ; 
+} 
+ID ( ID ) ; 
+ID ( ID -> ID ) ; 
+} 
+ID = ID -> ID ; 
+} 
+ID ( STRING ) ; 
+ID ( STRING ) ; 
+ID = ID -> ID ; 
+} 
+* ID = INTEGER ; 
+} 
+
+void ID ( struct ID * ID ) 
+{ 
+while ( ID != INTEGER ) 
+{ 
+unsigned long ID = ID -> ID ; 
+unsigned ID = INTEGER ; 
+ID -> ID = INTEGER ; 
+while ( ID != INTEGER ) 
+{ 
+if ( ID & INTEGER ) 
+ID -> ID += ID [ ID ] -> ID ; 
+ID ++ ; 
+ID = ID >> INTEGER ; 
+} 
+ID = ID -> ID ; 
+} 
+} 
+struct ID * ID ( struct ID * ID , unsigned long * ID ) 
+{ 
+struct ID * ID = INTEGER ; 
+unsigned ID = INTEGER ; 
+* ID = INTEGER ; 
+while ( ID != INTEGER ) 
+{ 
+ID ( STRING ) ; 
+ID ( ID ) ; 
+ID ( STRING , ID -> ID ) ; 
+if ( ID -> ID < ID ) 
+{ 
+ID = ID -> ID ; 
+ID = ID ; 
+} 
+ID = ID -> ID ; 
+( * ID ) ++ ; 
+} 
+return ( ID ) ; 
+} 
+struct ID * ID ( struct ID * ID ) 
+{ 
+struct ID * ID = INTEGER ; 
+unsigned long ID = ID -> ID ; 
+unsigned ID = INTEGER ; 
+while ( ID != INTEGER ) 
+{ 
+if ( ID & INTEGER ) 
+ID ( & ID , ID [ ID ] -> ID , ID [ ID ] -> ID ) ; 
+ID ++ ; 
+ID = ID >> INTEGER ; 
+} 
+return ID ; 
+} 
+void ID ( struct ID * * ID ) 
+{ 
+static unsigned ID [ INTEGER * INTEGER ] , 
+ID , 
+ID , 
+ID ; 
+struct ID * ID = * ID , 
+* ID = INTEGER , 
+* ID = INTEGER ; 
+if ( ID == INTEGER ) 
+return ; 
+ID ( STRING ) ; 
+ID ( ID ) ; 
+ID ( STRING ) ; 
+ID = INTEGER ; 
+ID ( ID , INTEGER , sizeof ( ID ) ) ; 
+while ( ID != INTEGER ) 
+{ 
+unsigned long ID = ID -> ID , 
+ID = ID -> ID ; 
+ID = INTEGER ; 
+while ( ID != INTEGER ) 
+{ 
+if ( ID & INTEGER ) 
+if ( ID & INTEGER ) 
+ID [ ID ] ++ ; 
+else 
+ID [ ID + INTEGER ] ++ ; 
+ID = ID >> INTEGER ; 
+ID = ID >> INTEGER ; 
+ID ++ ; 
+} 
+ID = ID -> ID ; 
+} 
+for ( ID = INTEGER ; ID < INTEGER * INTEGER ; ID ++ ) 
+{ 
+if ( ID [ ID ] > INTEGER ) 
+ID ( STRING , 
+ID < INTEGER ? STRING : STRING , STRING + ( ID % INTEGER ) , 
+ID [ ID ] 
+) ; 
+if ( ID [ ID ] > ID ) 
+{ 
+ID = ID [ ID ] ; 
+ID = ID ; 
+} 
+} 
+if ( ID > INTEGER ) 
+{ 
+ID ( & ID , INTEGER << ( ID % INTEGER ) , 
+ID < INTEGER ? INTEGER : INTEGER ) ; 
+ID ( STRING ) ; 
+ID ( ID ) ; 
+ID ( STRING ) ; 
+ID = * ID ; 
+while ( ID != INTEGER ) 
+{ 
+struct ID * ID = ID ; 
+ID = ID -> ID ; 
+if ( ID ( ID , ID ) ) 
+{ 
+ID -> ID = ID -> ID & ~ ID -> ID ; 
+if ( ID -> ID != INTEGER ) 
+{ 
+ID -> ID = ID ; 
+ID = ID ; 
+} 
+} 
+else 
+{ 
+ID -> ID = ID -> ID ; 
+ID -> ID = ID ; 
+} 
+} 
+ID -> ID = ID ; 
+ID ( & ( ID -> ID ) ) ; 
+ID ( & ( ID -> ID ) ) ; 
+* ID = ID ; 
+} 
+} 
+void ID ( int ID , char * ID [ ] ) 
+{ 
+struct ID * ID , 
+* ID , 
+* ID , 
+* ID ; 
+unsigned long ID , 
+ID , 
+ID , 
+ID , 
+ID , 
+ID ; 
+unsigned ID , 
+ID ; 
+ID ID , 
+ID , 
+ID , 
+ID , 
+ID , 
+ID , 
+ID , 
+ID ; 
+* ID = INTEGER ; 
+ID ( ID ) ; 
+switch ( ID ( ID ) ) 
+; 
+while ( ! ( ( ( & ID [ INTEGER ] ) ) -> ID & INTEGER ) ) 
+{ 
+ID ( ) ; 
+ID = ID ( ) ; 
+if ( * ID == INTEGER ) 
+continue ; 
+ID ( STRING , ID ) ; 
+if ( ID = ID , ID ( ) , * ID != INTEGER ) 
+ID ( ) ; 
+ID = ID ( ID ) ; 
+ID = ID ( ) ; 
+ID = ID ( ID , ID , ID . ID , & ID ) ; 
+ID = ID ( ) - ID ; 
+ID ( STRING ) ; 
+ID ( ID ) ; 
+ID ( STRING ) ; 
+if ( ID . ID ) 
+ID ( ) ; 
+if ( ID . ID ) 
+{ 
+ID = ID ( ) ; 
+ID = ID ( ID , ID , & ID ) ; 
+ID = ID ( ) - ID ; 
+if ( ID . ID && ID ( ID , & ID ) ) 
+{ 
+ID = ID ( ) ; 
+ID ( ID , ID ) ; 
+ID = ID ( ) - ID ; 
+ID ( ID ) ; 
+ID ( STRING , ID ) ; 
+ID = ID ( ID ) ; 
+ID = ID ( ) ; 
+ID = ID ( ID , ID , INTEGER , & ID ) ; 
+ID = ID ( ) - ID ; 
+ID ( STRING ) ; 
+ID ( ID ) ; 
+ID ( STRING ) ; 
+ID = ID ( ) ; 
+ID = ID ( ID , ID , & ID ) ; 
+ID = ID ( ) - ID ; 
+ID ( STRING ) ; 
+ID ( ID ) ; 
+ID ( STRING ) ; 
+ID ( ID ) ; 
+ID = ID ( ID , & ID ) ; 
+ID ( STRING ) ; 
+ID ( ID ) ; 
+ID ( ID , ID , sizeof ( ID ) ) ; 
+ID = ID ( ID ) ; 
+ID ( STRING ) ; 
+ID ( ID ) ; 
+ID ( STRING ) ; 
+} 
+else ID = ID ; 
+} 
+if ( ID . ID ) 
+{ 
+ID = ID ( ) ; 
+ID ( & ID ) ; 
+ID = ID ( ) - ID ; 
+ID ( STRING ) ; 
+ID ( ID ) ; 
+ID ( STRING ) ; 
+} 
+ID ( STRING ) ; 
+ID ( ID ) ; 
+ID ( STRING ) ; 
+if ( ID . ID ) 
+{ 
+ID ( STRING , ID , ID == INTEGER ? STRING : STRING ) ; 
+if ( ID . ID ) 
+{ 
+ID ( STRING , ID , ID == INTEGER ? STRING : STRING ) ; 
+if ( ID . ID ) 
+{ 
+ID ( STRING , ID , ID == INTEGER ? STRING : STRING ) ; 
+ID ( STRING , ID , ID == INTEGER ? STRING : STRING ) ; 
+ID ( STRING , ID , ID == INTEGER ? STRING : STRING ) ; 
+ID ( STRING , ID , ID == INTEGER ? STRING : STRING ) ; 
+} 
+} 
+ID ( STRING ) ; 
+ID ( STRING , ( ( double ) ( ID ) / ( double ) REAL ) ) ; 
+if ( ID . ID ) 
+{ 
+ID ( STRING , ( ( double ) ( ID ) / ( double ) REAL ) ) ; 
+if ( ID . ID ) 
+{ 
+ID ( STRING , ( ( double ) ( ID ) / ( double ) REAL ) ) ; 
+ID ( STRING , ( ( double ) ( ID ) / ( double ) REAL ) ) ; 
+ID ( STRING , ( ( double ) ( ID ) / ( double ) REAL ) ) ; 
+} 
+} 
+else 
+ID ( STRING ) ; 
+if ( ID . ID ) 
+ID ( STRING , ID ) ; 
+ID ( STRING ) ; 
+ID ( STRING , ( ( double ) ( ID ( ) - ID ) / ( double ) REAL ) ) ; 
+} 
+} 
+} 
+"
+
+STRING := "
+void ID ( void ) 
+{ 
+ID 
+( STRING 
+STRING 
+STRING 
+STRING 
+STRING 
+STRING 
+STRING 
+STRING 
+STRING 
+STRING 
+STRING 
+STRING 
+STRING 
+STRING 
+STRING 
+STRING 
+STRING 
+STRING 
+STRING 
+STRING 
+STRING 
+STRING 
+STRING 
+STRING 
+) ; 
+} 
+ID ID ; 
+unsigned long ID ; 
+char ID [ INTEGER ] , 
+* ID = ID , 
+ID [ INTEGER ] , 
+ID [ INTEGER ] = STRING ; 
+struct ID 
+{ 
+int ID : INTEGER , 
+ID : INTEGER , 
+ID : INTEGER , 
+ID : INTEGER , 
+ID : INTEGER , 
+ID : INTEGER , 
+ID : INTEGER ; 
+} ID ; 
+struct ID 
+{ 
+unsigned long ID , 
+ID ; 
+unsigned ID ; 
+struct ID * ID , 
+* ID ; 
+char ID ; 
+char ID ; 
+} * ID [ INTEGER ] ; 
+int ID ( char * ID , ... ) 
+{ 
+int ID ; 
+ID ID ; 
+( ( void ) ( ( ID ) = ( ID ) ( ( char * ) ( & ID ) + ( ( sizeof ( ID ) + sizeof ( int ) - INTEGER ) & ~ ( sizeof ( int ) - INTEGER ) ) ) ) ) ; 
+if ( ID . ID ) 
+ID = ID ( ID , ID ) ; 
+( ( void ) INTEGER ) ; 
+return ( ID ) ; 
+} 
+void ID ( struct ID * ID ) 
+{ 
+unsigned long ID = ID -> ID , 
+ID = ID -> ID ; 
+char ID = STRING ; 
+if ( ID == INTEGER ) 
+{ 
+if ( ID < INTEGER ) 
+ID ( STRING , ID ) ; 
+} 
+else 
+while ( ID > INTEGER ) 
+{ 
+if ( ID & INTEGER ) 
+{ 
+if ( ! ( ID & INTEGER ) ) 
+ID ( STRING ) ; 
+ID ( STRING , ID [ ID - STRING ] ) ; 
+if ( ID > INTEGER ) 
+ID ( STRING ) ; 
+} 
+ID = ID >> INTEGER ; 
+ID = ID >> INTEGER ; 
+ID ++ ; 
+} 
+} 
+void ID ( struct ID * ID ) 
+{ 
+if ( ID == INTEGER ) 
+ID ( STRING ) ; 
+else 
+while ( ID != INTEGER ) 
+{ 
+ID ( ID ) ; 
+if ( ID -> ID != INTEGER ) 
+{ 
+ID ( STRING ) ; 
+ID ( ID -> ID ) ; 
+ID ( STRING ) ; 
+} 
+ID = ID -> ID ; 
+if ( ID != INTEGER ) 
+ID ( STRING ) ; 
+} 
+} 
+void ID ( struct ID * ID ) 
+{ 
+int ID = ID . ID ; 
+ID . ID = INTEGER ; 
+ID ( ID ) ; 
+ID . ID = ID ; 
+} 
+void ID ( char * * ID ) 
+{ 
+while ( * ++ ID != INTEGER ) 
+switch ( * ( ( * ID ) + INTEGER ) ) 
+{ 
+case STRING : 
+ID . ID = INTEGER ; 
+break ; 
+case STRING : 
+ID . ID = INTEGER ; 
+break ; 
+case STRING : 
+ID . ID = INTEGER ; 
+break ; 
+case STRING : 
+ID . ID = INTEGER ; 
+break ; 
+case STRING : 
+ID . ID = INTEGER ; 
+break ; 
+case STRING : 
+ID . ID = INTEGER ; 
+break ; 
+case STRING : 
+ID . ID = INTEGER ; 
+break ; 
+default : 
+ID ( ) ; 
+ID ( INTEGER ) ; 
+} ; 
+} 
+void ID ( char ID ) 
+{ 
+if ( ID > STRING && ID <= STRING && ID - ID < INTEGER ) 
+* ID ++ = ID ; 
+} 
+int ID ( char ID , char ID ) 
+{ 
+return ( ( ID >= STRING && ID <= STRING ) || ID == STRING || ID == STRING || ID == STRING ) && 
+( ( ID >= STRING && ID <= STRING ) || ID == STRING || ID == STRING || ID == STRING || ID == STRING ) ; 
+} 
+void ID ( void ) 
+{ 
+char ID , 
+ID = INTEGER ; 
+ID = ID ; 
+while ( ! ( ( ( & ID [ INTEGER ] ) ) -> ID & INTEGER ) && ( ID = ( ( -- ( ( ( & ID [ INTEGER ] ) ) -> ID ) >= INTEGER ) ? ( unsigned char ) ( * ( ( & ID [ INTEGER ] ) ) -> ID ++ ) : ID ( ( & ID [ INTEGER ] ) ) ) ) != STRING ) 
+{ 
+if ( ID ( ID , ID ) ) 
+ID ( STRING ) ; 
+ID ( ID ) ; 
+if ( ID > STRING && ID <= STRING ) 
+ID = ID ; 
+} 
+* ID = INTEGER ; 
+if ( ID - ID >= INTEGER ) 
+{ 
+ID ( STRING ) ; 
+* ID = INTEGER ; 
+} 
+} 
+unsigned ID ( char * ID ) 
+{ 
+char ID [ INTEGER ] = STRING ; 
+unsigned ID ; 
+ID ( ID , ID , sizeof ( ID ) ) ; 
+ID ( ID , ID , sizeof ( ID ) ) ; 
+for ( ID = STRING ; * ID != INTEGER ; ID ++ ) 
+if ( * ID >= STRING && * ID <= STRING ) 
+{ 
+if ( ID [ * ID - STRING ] == STRING ) 
+{ 
+ID [ * ID - STRING ] = ID ; 
+ID [ ID ++ - STRING ] = * ID ; 
+} 
+* ID = ID [ * ID - STRING ] ; 
+} 
+return ( ID - STRING ) ; 
+} 
+void ID ( void ) 
+{ 
+unsigned long ID = ID - ID ; 
+if ( ! ID . ID ) 
+ID ( STRING , ID ) ; 
+ID ( STRING ) ; 
+for ( ID = ID - ID ; ID > INTEGER ; ID -- ) 
+ID ( STRING ) ; 
+ID ( STRING ) ; 
+ID ( ID , INTEGER ) ; 
+} 
+char ID ( void ) ; 
+char ID ( void ) 
+{ 
+char ID = * ID , 
+ID = * ID == STRING ? INTEGER : 
+* ID == STRING ? INTEGER : 
+* ID == STRING ? ( ID ++ , ID ( ) ) : 
+( * ID >= STRING && * ID <= STRING ) ? 
+INTEGER & ( ID >> ( ( * ID ) - STRING ) ) : 
+( ID ( ) , INTEGER ) ; 
+if ( ID == STRING && * ID != STRING ) 
+ID ( ) ; 
+ID ++ ; 
+return ( ID ) ; 
+} 
+char ID ( void ) 
+{ 
+if ( * ID == STRING ) 
+{ 
+ID ++ ; 
+return ( ! ID ( ) ) ; 
+} 
+else 
+return ( ID ( ) ) ; 
+} 
+char ID ( void ) 
+{ 
+char ID = ID ( ) ; 
+while ( * ID == STRING ) 
+{ 
+ID ++ ; 
+ID &= ID ( ) ; 
+} return ( ID ) ; 
+} 
+char ID ( void ) 
+{ 
+char ID = ID ( ) ; 
+while ( * ID == STRING ) 
+{ 
+ID ++ ; 
+ID ^= ID ( ) ; 
+} return ( ID ) ; 
+} 
+char ID ( void ) 
+{ 
+char ID = ID ( ) ; 
+while ( * ID == STRING ) 
+{ 
+ID ++ ; 
+ID |= ID ( ) ; 
+} return ( ID ) ; 
+} 
+int ID ( struct ID * ID , struct ID * ID ) 
+{ 
+return ( ( ( ID -> ID | ID -> ID ) == ID -> ID ) && 
+( ID -> ID & ID -> ID ) == ( ID -> ID & ID -> ID ) ) ; 
+} 
+int ID ( struct ID * ID , struct ID * ID ) 
+{ 
+return ( ( ID -> ID & ID -> ID ) == ( ID -> ID & ID -> ID ) && ID -> ID == ID -> ID ) ; 
+} 
+int ID ( struct ID * * ID , unsigned long ID , unsigned long ID ) 
+{ 
+struct ID * ID = * ID , 
+* ID = ID ( sizeof ( * ID ) ) ; 
+if ( ID == INTEGER ) 
+{ 
+ID ( STRING ) ; 
+ID ( INTEGER ) ; 
+} 
+ID ( ID , INTEGER , sizeof ( struct ID ) ) ; 
+ID -> ID = ID ; 
+ID -> ID = ID ; 
+while ( ID != INTEGER && ! ID ( ID , ID ) ) 
+ID = ID -> ID ; 
+if ( ID == INTEGER ) 
+{ 
+ID -> ID = * ID ; 
+* ID = ID ; 
+return INTEGER ; 
+} 
+else 
+return INTEGER ; 
+} 
+struct ID * ID ( char * ID , unsigned ID , 
+int ID , unsigned long * ID ) 
+{ 
+struct ID * ID = INTEGER ; 
+unsigned ID ; 
+* ID = INTEGER ; 
+if ( ID == INTEGER ) 
+{ 
+ID ( & ID , INTEGER , ( ID = ID , ID ( ) ) ) ; 
+return ( ID ) ; 
+} 
+if ( ID ) 
+{ 
+for ( ID = INTEGER ; ID < ID ; ID ++ ) 
+ID ( STRING , ID [ ID ] ) ; 
+ID ( STRING ) ; 
+} 
+for ( ID = INTEGER ; ID <= ( INTEGER << ID ) - INTEGER ; ID ++ ) 
+{ 
+if ( ID ) 
+{ 
+unsigned long ID = ID , 
+ID = ID ; 
+while ( ID -- > INTEGER ) 
+{ 
+ID ( STRING , ID & INTEGER ) ; 
+ID = ID >> INTEGER ; 
+} 
+} 
+if ( ID = ID , ID ( ) ) 
+{ 
+ID ( & ID , ( INTEGER << ID ) - INTEGER , ID ) ; 
+( * ID ) ++ ; 
+if ( ID ) 
+ID ( STRING ) ; 
+} 
+else 
+{ 
+if ( ID ) 
+ID ( STRING ) ; 
+} 
+} 
+if ( ID == INTEGER ) 
+ID ( & ID , INTEGER , INTEGER ) ; 
+return ( ID ) ; 
+} 
+void ID ( void ) 
+{ 
+unsigned ID , 
+ID ; 
+ID ( STRING , ID [ INTEGER ] , ID [ INTEGER ] ) ; 
+for ( ID = INTEGER ; ID < INTEGER ; ID ++ ) 
+{ 
+if ( ID > INTEGER && ID < INTEGER ) 
+ID ( STRING , ID [ INTEGER ] ) ; 
+else 
+ID ( STRING ) ; 
+for ( ID = INTEGER ; ID < INTEGER ; ID ++ ) 
+{ 
+ID = ( ID > INTEGER ? ID ^ INTEGER : ID ) + ( ID > INTEGER ? ID ^ INTEGER : ID ) * INTEGER ; 
+ID ( STRING , ( ID = ID , ID ( ) ) ) ; 
+} 
+if ( ID > INTEGER ) 
+ID ( STRING , ID [ INTEGER ] ) ; 
+else 
+ID ( STRING ) ; 
+ID ( STRING ) ; 
+} 
+ID ( STRING , ID [ INTEGER ] , ID [ INTEGER ] ) ; 
+} 
+int ID ( struct ID * ID ) 
+{ 
+unsigned long ID = ID -> ID , 
+ID = ID -> ID ; 
+int ID = INTEGER ; 
+while ( ID != INTEGER ) 
+{ 
+if ( ID & INTEGER && ID & INTEGER ) 
+ID ++ ; 
+ID = ID >> INTEGER ; 
+ID = ID >> INTEGER ; 
+} 
+return ( ID ) ; 
+} 
+struct ID * ID ( struct ID * ID , unsigned ID , 
+unsigned long * ID ) 
+{ 
+struct ID * ID = INTEGER , 
+* ID [ INTEGER ] [ INTEGER ] ; 
+int ID , 
+ID = INTEGER ; 
+char ID ; 
+* ID = INTEGER ; 
+ID ( ID , INTEGER , sizeof ( ID ) ) ; 
+while ( ID != INTEGER ) 
+{ 
+ID ( & ID [ ID ] [ ID ( ID ) ] , 
+ID -> ID , ID -> ID ) ; 
+ID = ID -> ID ; 
+} 
+do 
+{ 
+struct ID * ID ; 
+ID = INTEGER ; 
+ID ( STRING ) ; 
+for ( ID = INTEGER ; ID <= ID ; ID ++ ) 
+{ 
+ID ( STRING , ID ) ; 
+ID ( ID [ ID ] [ ID ] ) ; 
+ID ( STRING ) ; 
+} 
+ID ( STRING ) ; 
+ID ( ID ) ; 
+ID ( STRING ) ; 
+for ( ID = INTEGER ; ID < ID ; ID ++ ) 
+{ 
+ID = ID [ ID ] [ ID ] ; 
+ID [ INTEGER - ID ] [ ID ] = INTEGER ; 
+while ( ID != INTEGER ) 
+{ 
+struct ID * ID = ID [ ID ] [ ID + INTEGER ] ; 
+while ( ID != INTEGER ) 
+{ 
+unsigned long ID = ID -> ID & ( ID -> ID ^ ID -> ID ) ; 
+if ( ID -> ID == ID -> ID && ID != INTEGER ) 
+{ 
+unsigned long ID = ID -> ID & ~ ID ; 
+while ( ( ID & INTEGER ) == INTEGER ) 
+ID = ID >> INTEGER ; 
+if ( ( ID >> INTEGER ) == INTEGER ) 
+{ 
+ID = INTEGER ; 
+ID ( ID ) ; 
+ID ( STRING ) ; 
+ID ( ID ) ; 
+ID ( STRING ) ; 
+ID ( & ID [ INTEGER - ID ] [ ID ] , ID , 
+ID == INTEGER ? INTEGER : ID -> ID ) ; 
+ID ( ID [ INTEGER - ID ] [ ID ] ) ; 
+ID ( STRING ) ; 
+( * ID ) ++ ; 
+ID -> ID = INTEGER ; 
+ID -> ID = INTEGER ; 
+} 
+} 
+ID = ID -> ID ; 
+} 
+if ( ! ID -> ID ) 
+{ 
+ID ( & ID , ID -> ID , ID -> ID ) ; 
+ID ( ID ) ; 
+ID ( STRING ) ; 
+} 
+ID = ID -> ID ; 
+} 
+} 
+ID = ID [ ID ] [ ID ] ; 
+while ( ID != INTEGER ) 
+{ 
+if ( ! ID -> ID ) 
+{ 
+ID ( & ID , ID -> ID , ID -> ID ) ; 
+ID ( ID ) ; 
+ID ( STRING ) ; 
+} 
+ID = ID -> ID ; 
+} 
+ID [ INTEGER - ID ] [ ID ] = INTEGER ; 
+ID = INTEGER - ID ; 
+} 
+while ( ID ) ; 
+return ( ID ) ; 
+} 
+int ID ( struct ID * ID , unsigned long * ID ) 
+{ 
+unsigned ID ; 
+unsigned long ID ; 
+* ID = INTEGER ; 
+for ( ID = INTEGER ; ID != INTEGER ; ID ++ , ID = ID -> ID ) 
+{ 
+( * ID ) ++ ; 
+ID -> ID = STRING - ID ; 
+if ( ID > INTEGER ) 
+return ( INTEGER ) ; 
+ID [ ID ] = ID ; 
+ID = ID -> ID ; 
+ID -> ID = INTEGER ; 
+while ( ID != INTEGER ) 
+{ 
+if ( ID & INTEGER ) 
+ID -> ID ++ ; 
+ID = ID >> INTEGER ; 
+} 
+} 
+return ( INTEGER ) ; 
+} 
+void ID ( struct ID * ID , struct ID * ID ) 
+{ 
+char ID = INTEGER ; 
+ID = ID ; 
+ID ( STRING ) ; 
+while ( ID != INTEGER ) 
+{ 
+struct ID * ID = ID ; 
+char ID = INTEGER ; 
+ID ( STRING ) ; 
+ID ( ID ) ; 
+ID ( STRING ) ; 
+if ( ID ) 
+ID = INTEGER ; 
+else 
+ID ( STRING ) ; 
+ID ( STRING ) ; 
+while ( ID != INTEGER ) 
+{ 
+if ( ( ID -> ID & ID -> ID ) == ( ID -> ID & ID -> ID ) ) 
+{ 
+if ( ID ) 
+ID = INTEGER ; 
+else 
+{ 
+ID ( STRING ) ; 
+ID ( STRING ) ; 
+} 
+ID ( ID ) ; 
+ID ( ID -> ID ) ; 
+} 
+ID = ID -> ID ; 
+} 
+ID ( STRING ) ; 
+ID ( STRING ) ; 
+ID = ID -> ID ; 
+} 
+* ID = INTEGER ; 
+} 
+void ID ( struct ID * ID ) 
+{ 
+ID ( STRING ) ; 
+while ( ID != INTEGER ) 
+{ 
+ID ( STRING , ID -> ID ) ; 
+ID ( ID ) ; 
+ID ( STRING , ID -> ID ) ; 
+ID = ID -> ID ; 
+} 
+} 
+void ID ( struct ID * ID ) 
+{ 
+while ( ID != INTEGER ) 
+{ 
+unsigned long ID = ID -> ID ; 
+unsigned ID = INTEGER ; 
+ID -> ID = INTEGER ; 
+while ( ID != INTEGER ) 
+{ 
+if ( ID & INTEGER ) 
+ID -> ID += ID [ ID ] -> ID ; 
+ID ++ ; 
+ID = ID >> INTEGER ; 
+} 
+ID = ID -> ID ; 
+} 
+} 
+struct ID * ID ( struct ID * ID , unsigned long * ID ) 
+{ 
+struct ID * ID = INTEGER ; 
+unsigned ID = INTEGER ; 
+* ID = INTEGER ; 
+while ( ID != INTEGER ) 
+{ 
+ID ( STRING ) ; 
+ID ( ID ) ; 
+ID ( STRING , ID -> ID ) ; 
+if ( ID -> ID < ID ) 
+{ 
+ID = ID -> ID ; 
+ID = ID ; 
+} 
+ID = ID -> ID ; 
+( * ID ) ++ ; 
+} 
+return ( ID ) ; 
+} 
+struct ID * ID ( struct ID * ID ) 
+{ 
+struct ID * ID = INTEGER ; 
+unsigned long ID = ID -> ID ; 
+unsigned ID = INTEGER ; 
+while ( ID != INTEGER ) 
+{ 
+if ( ID & INTEGER ) 
+ID ( & ID , ID [ ID ] -> ID , ID [ ID ] -> ID ) ; 
+ID ++ ; 
+ID = ID >> INTEGER ; 
+} 
+return ID ; 
+} 
+void ID ( struct ID * * ID ) 
+{ 
+static unsigned ID [ INTEGER * INTEGER ] , 
+ID , 
+ID , 
+ID ; 
+struct ID * ID = * ID , 
+* ID = INTEGER , 
+* ID = INTEGER ; 
+if ( ID == INTEGER ) 
+return ; 
+ID ( STRING ) ; 
+ID ( ID ) ; 
+ID ( STRING ) ; 
+ID = INTEGER ; 
+ID ( ID , INTEGER , sizeof ( ID ) ) ; 
+while ( ID != INTEGER ) 
+{ 
+unsigned long ID = ID -> ID , 
+ID = ID -> ID ; 
+ID = INTEGER ; 
+while ( ID != INTEGER ) 
+{ 
+if ( ID & INTEGER ) 
+if ( ID & INTEGER ) 
+ID [ ID ] ++ ; 
+else 
+ID [ ID + INTEGER ] ++ ; 
+ID = ID >> INTEGER ; 
+ID = ID >> INTEGER ; 
+ID ++ ; 
+} 
+ID = ID -> ID ; 
+} 
+for ( ID = INTEGER ; ID < INTEGER * INTEGER ; ID ++ ) 
+{ 
+if ( ID [ ID ] > INTEGER ) 
+ID ( STRING , 
+ID < INTEGER ? STRING : STRING , STRING + ( ID % INTEGER ) , 
+ID [ ID ] 
+) ; 
+if ( ID [ ID ] > ID ) 
+{ 
+ID = ID [ ID ] ; 
+ID = ID ; 
+} 
+} 
+if ( ID > INTEGER ) 
+{ 
+ID ( & ID , INTEGER << ( ID % INTEGER ) , 
+ID < INTEGER ? INTEGER : INTEGER ) ; 
+ID ( STRING ) ; 
+ID ( ID ) ; 
+ID ( STRING ) ; 
+ID = * ID ; 
+while ( ID != INTEGER ) 
+{ 
+struct ID * ID = ID ; 
+ID = ID -> ID ; 
+if ( ID ( ID , ID ) ) 
+{ 
+ID -> ID = ID -> ID & ~ ID -> ID ; 
+if ( ID -> ID != INTEGER ) 
+{ 
+ID -> ID = ID ; 
+ID = ID ; 
+} 
+} 
+else 
+{ 
+ID -> ID = ID -> ID ; 
+ID -> ID = ID ; 
+} 
+} 
+ID -> ID = ID ; 
+ID ( & ( ID -> ID ) ) ; 
+ID ( & ( ID -> ID ) ) ; 
+* ID = ID ; 
+} 
+} 
+void ID ( int ID , char * ID [ ] ) 
+{ 
+struct ID * ID , 
+* ID , 
+* ID , 
+* ID ; 
+unsigned long ID , 
+ID , 
+ID , 
+ID , 
+ID , 
+ID ; 
+unsigned ID , 
+ID ; 
+ID ID , 
+ID , 
+ID , 
+ID , 
+ID , 
+ID , 
+ID , 
+ID ; 
+* ID = INTEGER ; 
+ID ( ID ) ; 
+switch ( ID ( ID ) ) 
+; 
+while ( ! ( ( ( & ID [ INTEGER ] ) ) -> ID & INTEGER ) ) 
+{ 
+ID ( ) ; 
+ID = ID ( ) ; 
+if ( * ID == INTEGER ) 
+continue ; 
+ID ( STRING , ID ) ; 
+if ( ID = ID , ID ( ) , * ID != INTEGER ) 
+ID ( ) ; 
+ID = ID ( ID ) ; 
+ID = ID ( ) ; 
+ID = ID ( ID , ID , ID . ID , & ID ) ; 
+ID = ID ( ) - ID ; 
+ID ( STRING ) ; 
+ID ( ID ) ; 
+ID ( STRING ) ; 
+if ( ID . ID ) 
+ID ( ) ; 
+if ( ID . ID ) 
+{ 
+ID = ID ( ) ; 
+ID = ID ( ID , ID , & ID ) ; 
+ID = ID ( ) - ID ; 
+if ( ID . ID && ID ( ID , & ID ) ) 
+{ 
+ID = ID ( ) ; 
+ID ( ID , ID ) ; 
+ID = ID ( ) - ID ; 
+ID ( ID ) ; 
+ID ( STRING , ID ) ; 
+ID = ID ( ID ) ; 
+ID = ID ( ) ; 
+ID = ID ( ID , ID , INTEGER , & ID ) ; 
+ID = ID ( ) - ID ; 
+ID ( STRING ) ; 
+ID ( ID ) ; 
+ID ( STRING ) ; 
+ID = ID ( ) ; 
+ID = ID ( ID , ID , & ID ) ; 
+ID = ID ( ) - ID ; 
+ID ( STRING ) ; 
+ID ( ID ) ; 
+ID ( STRING ) ; 
+ID ( ID ) ; 
+ID = ID ( ID , & ID ) ; 
+ID ( STRING ) ; 
+ID ( ID ) ; 
+ID ( ID , ID , sizeof ( ID ) ) ; 
+ID = ID ( ID ) ; 
+ID ( STRING ) ; 
+ID ( ID ) ; 
+ID ( STRING ) ; 
+} 
+else ID = ID ; 
+} 
+if ( ID . ID ) 
+{ 
+ID = ID ( ) ; 
+ID ( & ID ) ; 
+ID = ID ( ) - ID ; 
+ID ( STRING ) ; 
+ID ( ID ) ; 
+ID ( STRING ) ; 
+} 
+ID ( STRING ) ; 
+ID ( ID ) ; 
+ID ( STRING ) ; 
+if ( ID . ID ) 
+{ 
+ID ( STRING , ID , ID == INTEGER ? STRING : STRING ) ; 
+if ( ID . ID ) 
+{ 
+ID ( STRING , ID , ID == INTEGER ? STRING : STRING ) ; 
+if ( ID . ID ) 
+{ 
+ID ( STRING , ID , ID == INTEGER ? STRING : STRING ) ; 
+ID ( STRING , ID , ID == INTEGER ? STRING : STRING ) ; 
+ID ( STRING , ID , ID == INTEGER ? STRING : STRING ) ; 
+ID ( STRING , ID , ID == INTEGER ? STRING : STRING ) ; 
+} 
+} 
+ID ( STRING ) ; 
+ID ( STRING , ( ( double ) ( ID ) / ( double ) REAL ) ) ; 
+if ( ID . ID ) 
+{ 
+ID ( STRING , ( ( double ) ( ID ) / ( double ) REAL ) ) ; 
+if ( ID . ID ) 
+{ 
+ID ( STRING , ( ( double ) ( ID ) / ( double ) REAL ) ) ; 
+ID ( STRING , ( ( double ) ( ID ) / ( double ) REAL ) ) ; 
+ID ( STRING , ( ( double ) ( ID ) / ( double ) REAL ) ) ; 
+} 
+} 
+else 
+ID ( STRING ) ; 
+if ( ID . ID ) 
+ID ( STRING , ID ) ; 
+ID ( STRING ) ; 
+ID ( STRING , ( ( double ) ( ID ( ) - ID ) / ( double ) REAL ) ) ; 
+} 
+} 
+} 
+"
+
+STRING1 := "
+const
+;
+"
+
+(*
+this_grammar := grammar[translation_unit] (*12720, 10105*)
+this_grammar := grammar[statement] (*1106, 835 *)
+this_grammar := grammar[pointer] (*12,11*)
+this_grammar := grammar[expression] (*165,133*)
+this_grammar := grammar[assignment_expression] (* 82, 66*)
+this_grammar := grammar[direct_abstract_declarator] (* 1661, 941 *)
+this_grammar := grammar[initializer_list] (*189, 147*)
+this_grammar := grammar[declaration_specifiers] (* 263, 210 *)
+this_grammar := grammar[direct_declarator] (* 598, 484 *)
+this_grammar := grammar[statement_list] (*2212, 1671 *)
+this_grammar := grammar[conditional_expression] (*1492484 edges, 1216001 reduction edges *) (* takes about 5 minutes to build*)
+this_grammar := grammar[cast_expression] (* 92,74 *)
+this_grammar := grammar[unary_expression] (* 73, 57 *)
+this_grammar := grammar[argument_expression_list] (* 165, 133 *)
+this_grammar := grammar[specifier_qualifier_list] (* 256, 203 *)
+*)
+
+(* Full ah trie   1,517,390 *)
+
+(* removing the tilde from conditional_expression in 
+assignment_expression means that the trie builder runs for
+at least 12 hours without finishing *)
+
+
+write["\n" gtb_version " processing '" gtb_main_file_name "' on " date_time "\n\n"]
+
+gdg_file := open["gdg.vcg"]
+
+
+this_grammar := grammar[translation_unit] 
+
+(*
+uncompressed_gdg := gdg[this_grammar]
+
+
+this_gdg := gdg_compress[uncompressed_gdg]
+*)
+
+(*
+this_gdg := gdg[this_grammar]
+*)
+
+(*
+gdg_analyse_bu[this_gdg 1]
+render[gdg_file this_gdg]
+close[gdg_file]
+*)
+
+tilde[this_grammar terminal]
+(*
+write[this_grammar]
+*)
+this_ah_table := ah_table[this_grammar]
+
+write["\n" CPU_time " CPU seconds elapsed\n\n"]
+
+
+ah_recognise[this_ah_table STRING]
+
+
+write["\n" CPU_time " CPU seconds elapsed\n\n"]
+)
+
+
+
+
+

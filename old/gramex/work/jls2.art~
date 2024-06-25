@@ -1,0 +1,160 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Arguments ::=  '(' '[' Expression '{' ',' Expression '}' ']' ')' ;
+ArgumentsOpt ::=  '[' Arguments ']' ;
+ArrayCreatorRest ::=  '[' '(' ']' BracketsOpt ArrayInitializer '|' Expression ']' '{' '[' Expression ']' '}' |  BracketsOpt ')' ;
+ArrayInitializer ::=  '{' '[' VariableInitializer '{' ',' VariableInitializer '}' '[' ',' ']' ']' '}' ;
+AssignmentOperator ::=  '=' |  '+=' |  '-=' |  '*=' |  '/=' |  '&=' |  '|' '=' |  '^=' |  '%=' |  '<<=' |  '>>=' |  '>>>=' ;
+BasicType ::=  'byte' |  'short' |  'char' |  'int' |  'long' |  'float' |  'double' |  'boolean' ;
+Block ::=  '{' BlockStatements '}' ;
+BlockStatement ::=  LocalVariableDeclarationStatement |  ClassOrInterfaceDeclaration |  '[' Identifier ':' ']' Statement ;
+BlockStatements ::=  '{' BlockStatement '}' ;
+BracketsOpt ::=  '{' '[' ']' '}' ;
+CatchClause ::=  'catch' '(' FormalParameter ')' Block ;
+Catches ::=  CatchClause '{' CatchClause '}' ;
+ClassBody ::=  '{' '{' ClassBodyDeclaration '}' '}' ;
+ClassBodyDeclaration ::=  ';' |  '[' 'static' ']' Block |  ModifiersOpt MemberDecl ;
+ClassCreatorRest ::=  Arguments '[' ClassBody ']' ;
+ClassDeclaration ::=  'class' Identifier '[' 'extends' Type ']' '[' 'implements' TypeList ']' ClassBody ;
+ClassOrInterfaceDeclaration ::=  ModifiersOpt '(' ClassDeclaration '|' InterfaceDeclaration ')' ;
+CompilationUnit ::=  '[' 'package' QualifiedIdentifier ';' ']' '{' ImportDeclaration '}' |  '{' TypeDeclaration '}' ;
+ConstantDeclarator ::=  Identifier ConstantDeclaratorRest ;
+ConstantDeclaratorRest ::=  BracketsOpt '=' VariableInitializer ;
+ConstantDeclaratorsRest ::=  ConstantDeclaratorRest '{' ',' ConstantDeclarator '}' ;
+ConstantExpression ::=  Expression ;
+ConstructorDeclaratorRest ::=  FormalParameters '[' 'throws' QualifiedIdentifierList ']' MethodBody ;
+Creator ::=  QualifiedIdentifier '(' ArrayCreatorRest '|' ClassCreatorRest ')' ;
+Expression ::=  Expression1 '[' AssignmentOperator Expression1 ']' ']' ;
+Expression1 ::=  Expression2 '[' Expression1Rest ']' ;
+Expression1Rest ::=  '[' '?' Expression ':' Expression1 ']' ;
+Expression2 ::=  Expression3 '[' Expression2Rest ']' ;
+Expression2Rest ::=  '{' Infixop Expression3 '}' |  Expression3 'instanceof' Type ;
+Expression3 ::=  PrefixOp Expression3 |  '(' 'Expr' '|' Type ')' Expression3 |  Primary '{' Selector '}' '{' PostfixOp '}' ;
+ForInit ::=  StatementExpression MoreStatementExpressions |  '[' 'final' ']' Type VariableDeclarators ;
+FormalParameter ::=  '[' 'final' ']' Type VariableDeclaratorId ;
+FormalParameters ::=  '(' '[' FormalParameter '{' ',' FormalParameter '}' ']' ')' ;
+ForUpdate ::=  StatementExpression MoreStatementExpressions ;
+Identifier ::=  'IDENTIFIER' ;
+IdentifierSuffix ::=  '[' '(' ']' BracketsOpt '.' 'class' '|' Expression ']' ')' |  Arguments |  '.' '(' 'class' '|' 'this' '|' 'super' Arguments '|' 'new' InnerCreator ')' ;
+ImportDeclaration ::=  'import' Identifier '{' '.' Identifier '}' '[' '.' '*' ']' ';' ;
+Infixop ::=  '|' '|' |  '&&' |  '|' |  '^' |  '&' |  '==' |  '!=' |  '<' |  '>' |  '<=' |  '>=' |  '<<' |  '>>' |  '>>>' |  '+' |  '-' |  '*' |  '/' |  '%' ;
+InnerCreator ::=  Identifier ClassCreatorRest ;
+InterfaceBody ::=  '{' '{' InterfaceBodyDeclaration '}' '}' ;
+InterfaceBodyDeclaration ::=  ';' |  ModifiersOpt InterfaceMemberDecl ;
+InterfaceDeclaration ::=  'interface' Identifier '[' 'extends' TypeList ']' InterfaceBody ;
+InterfaceMemberDecl ::=  InterfaceMethodOrFieldDecl |  'void' Identifier VoidInterfaceMethodDeclaratorRest |  ClassOrInterfaceDeclaration ;
+InterfaceMethodDeclaratorRest ::=  FormalParameters BracketsOpt '[' 'throws' QualifiedIdentifierList ']' ';' ;
+InterfaceMethodOrFieldDecl ::=  Type Identifier InterfaceMethodOrFieldRest ;
+InterfaceMethodOrFieldRest ::=  ConstantDeclaratorsRest ';' |  InterfaceMethodDeclaratorRest ;
+Literal ::=  'IntegerLiteral' |  'FloatingPointLiteral' |  'CharacterLiteral' |  'StringLiteral' |  'BooleanLiteral' |  'NullLiteral' ;
+LocalVariableDeclarationStatement ::=  '[' 'final' ']' Type VariableDeclarators ';' ;
+MemberDecl ::=  MethodOrFieldDecl |  'void' Identifier MethodDeclaratorRest |  Identifier ConstructorDeclaratorRest |  ClassOrInterfaceDeclaration ;
+MethodBody ::=  Block ;
+MethodDeclaratorRest ::=  FormalParameters BracketsOpt '[' 'throws' QualifiedIdentifierList ']' '(' |  MethodBody '|' ';' ')' ;
+MethodOrFieldDecl ::=  Type Identifier MethodOrFieldRest ;
+MethodOrFieldRest ::=  VariableDeclaratorRest |  MethodDeclaratorRest ;
+Modifier ::=  'public' |  'protected' |  'private' |  'static' |  'abstract' |  'final' |  'native' |  'synchronized' |  'transient' |  'volatile' |  'strictfp' ;
+ModifiersOpt ::=  '{' Modifier '}' ;
+MoreStatementExpressions ::=  '{' ',' StatementExpression '}' ;
+ParExpression ::=  '(' Expression ')' ;
+PostfixOp ::=  '++' |  '--' ;
+PrefixOp ::=  '++' |  '--' |  '!' |  '~' |  '+' |  '-' ;
+Primary ::=  '(' Expression ')' |  'this' '[' Arguments ']' |  'super' SuperSuffix |  Literal |  'new' Creator |  Identifier '{' '.' Identifier '}' '[' IdentifierSuffix ']' |  BasicType BracketsOpt '.class' |  'void.class' ;
+QualifiedIdentifier ::=  Identifier '{' '.' Identifier '}' ;
+QualifiedIdentifierList ::=  QualifiedIdentifier '{' ',' QualifiedIdentifier '}' ;
+Selector ::=  '.' Identifier '[' Arguments ']' |  '.' 'this' |  '.' 'super' SuperSuffix |  '.' 'new' InnerCreator |  '[' Expression ']' ;
+Statement ::=  Block |  'if' ParExpression Statement '[' 'else' Statement ']' |  'for' '(' 'ForInitOpt' ';' '[' Expression ']' ';' 'ForUpdateOpt' ')' Statement |  'while' ParExpression Statement |  'do' Statement 'while' ParExpression ';' |  'try' Block '(' Catches '|' '[' Catches ']' 'finally' Block ')' |  'switch' ParExpression '{' SwitchBlockStatementGroups '}' |  'synchronized' ParExpression Block |  'return' '[' Expression ']' ';' |  'throw' Expression ';' |  'break' '[' Identifier ']' |  'continue' '[' Identifier ']' |  ';' |  'ExpressionStatement' |  Identifier ':' Statement ;
+StatementExpression ::=  Expression ;
+SuperSuffix ::=  Arguments |  '.' Identifier '[' Arguments ']' ;
+SwitchBlockStatementGroup ::=  SwitchLabel BlockStatements ;
+SwitchBlockStatementGroups ::=  '{' SwitchBlockStatementGroup '}' ;
+SwitchLabel ::=  'case' ConstantExpression ':' |  'default' ':' ;
+Type ::=  Identifier '{' '.' Identifier '}' BracketsOpt |  BasicType ;
+TypeDeclaration ::=  ClassOrInterfaceDeclaration |  ';' ;
+TypeList ::=  Type '{' ',' Type '}' ;
+VariableDeclarator ::=  Identifier VariableDeclaratorRest ;
+VariableDeclaratorId ::=  Identifier BracketsOpt ;
+VariableDeclaratorRest ::=  BracketsOpt '[' '=' VariableInitializer ']' ;
+VariableDeclarators ::=  VariableDeclarator '{' ',' VariableDeclarator '}' ;
+VariableDeclaratorsRest ::=  VariableDeclaratorRest '{' ',' VariableDeclarator '}' ;
+VariableInitializer ::=  ArrayInitializer |  Expression ;
+VoidInterfaceMethodDeclaratorRest ::=  FormalParameters '[' 'throws' QualifiedIdentifierList ']' ';' ;
+VoidMethodDeclaratorRest ::=  FormalParameters '[' 'throws' QualifiedIdentifierList ']' '(' MethodBody '|' ';' ')' ;

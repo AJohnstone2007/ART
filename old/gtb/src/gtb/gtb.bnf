@@ -1,0 +1,189 @@
+(*****************************************************************************
+*
+* GTB version 2.5 by Adrian Johnstone (A.Johnstone@rhbnc.ac.uk) 1 November 2005
+*
+* gtb.bnf - grammar for Algol-60 style BNF (with lexer rules and semantic
+*           actions) and GTB script language
+*
+* This file may be freely distributed. Please mail improvements to the author.
+*
+*****************************************************************************)
+TITLE("GTB V2.5 (c) Adrian Johnstone 2000-2005")
+SUFFIX("gtb")
+MAX_ERRORS(0)
+MAX_WARNINGS(0)
+TREE([* struct script_symbols_data* symbol_table_entry; int tilde:1; *] [* /* No edge data */ *])
+PRE_PARSE([* script_initialise(rdp_sourcefilename); *])
+POST_PARSE([* script_process(rdp_tree); *])
+TEXT_SIZE(170000)
+USES("gtb_scr.h")
+
+PASSES(2)
+
+text    ::= rules
+            [ [* script_open_scope(); script_name_scope("main script scope"); *]@2
+              script
+              [* script_close_scope(); *]@2
+            ]:[* text_message(TEXT_FATAL, "no script found in '%s'\n", rdp_sourcefilename); *].
+
+(* BNF rules *)
+
+rules   ::= { rule }.
+
+rule    ::= [* script_open_scope(); *]@2          (* On second pass, open new scope for the rule *)
+            lhs_rule_name:name^^
+            [* script_name_scope(name); *]@2      (* On second pass, name the new scope *)
+
+            [* script_symbol_new(name); *]@1     (* On first pass, put rule name in global scope *)
+            '::='^ ( prod ) @ '|'^  '.'^
+            [* script_close_scope(); *]@2 .       (* On second pass, close the rule's scope *)
+
+prod ::= < rule_name |                    (* Nonterminal *)
+           keyword |
+           epsilon |
+           c_action |
+           character |
+           script                          (* Semantic action *)
+         > .
+
+(* Script tree builder *)
+
+script ::= '('^ {e1} ')'^.
+
+e1 ::= e2^^ [ '=='^^^ e2 ].        (* is *)
+
+e2 ::= e3^^ { '?'^^^ e3 |          (* select *)
+              '@'^^^ e3 }.         (* iterate *)
+
+e3 ::= e4   [ ':='^^ e3 |          (* assign (becomes) *)
+
+              '|='^^ e3 |          (* or-and-becomes *)
+              '&='^^ e3 |          (* and-and-becomes *)
+              '$='^^ e3 |          (* exor-and-becomes *)
+              '+='^^ e3 |          (* add-and-becomes *)
+              '-='^^ e3 |          (* subtract-and-becomes *)
+              '*='^^ e3 |          (* multiply-and-becomes *)
+              '/='^^ e3 |          (* divide-and-becomes *)
+              '%='^^ e3 |          (* modulo divide-and-becomes *)
+              '<<='^^ e3 |         (* shift left-and-becomes *)
+              '>>='^^ e3 |         (* shift right-and-becomes *)
+              '**='^^ e3 |         (* exponentiate-and-becomes *)
+
+              '=|'^^ e3 |          (* or-and-becomes-afterwards *)
+              '=&'^^ e3 |          (* and-and-becomes-afterwards *)
+              '=$'^^ e3 |          (* exor-and-becomes-afterwards *)
+              '=+'^^ e3 |          (* add-and-becomes-afterwards *)
+              '=-'^^ e3 |          (* subtract-and-becomes-afterwards *)
+              '=*'^^ e3 |          (* multiply-and-becomes-afterwards *)
+              '=/'^^ e3 |          (* divide-and-becomes-afterwards *)
+              '=%'^^ e3 |          (* modulo divide-and-becomes-afterwards *)
+              '=<<'^^ e3 |         (* shift left-and-becomes-afterwards *)
+              '=>>'^^ e3 |         (* shift right-and-becomes-afterwards *)
+              '=**'^^ e3           (* exponentiate-and-becomes-afterwards *)
+            ]:^^.
+
+e4 ::= e5^^ [ '>'^^^ e5  |         (* Greater than *)
+              '<'^^^ e5  |         (* Less than *)
+              '>='^^^ e5 |         (* Greater than or equal *)
+              '<='^^^ e5 |         (* Less than or equal *)
+              '='^^^ e5  |         (* Equal *)
+              '<>'^^^ e5           (* Not equal *)
+            ] .
+
+e5 ::= e6^^ {'|'^^^ e6 }.          (* Inclusive OR *)
+
+e6 ::= e7^^ {'&'^^^ e7 }.          (* AND *)
+
+e7 ::= e8^^ {'$'^^^ e8 }.          (* Exclusive OR *)
+
+e8 ::= e9^^ { '+'^^^ e9  |         (* Add *)
+              '-'^^^ e9            (* Subtract *)
+            } .
+
+e9 ::= e10^^ { '*'^^^ e10 |        (* Multiply *)
+               '/'^^^ e10 |        (* Divide *)
+               '%'^^^ e10          (* Modulo divide *)
+             } .
+
+e10 ::= e11^^ { '<<'^^^ e11 |      (* Shift left  *)
+  			       '>>'^^^ e11 }.     (* Shift right *)
+
+e11 ::= e12 [ '**'^^ e11 ]:^^.     (* Exponentiate *)
+
+(* Note overloaded monadic minus not allowed with no statement separator: use 0 - N instead *)
+e12 ::= e13^^ |
+       '~'^^ e12 .                 (* Complement *)
+
+e13 ::= e14^^ ['::' ID ] .         (* Cast *)
+
+e14 ::= identifier^^ |             (* (Optionally paramaterised) identifier *)
+        INTEGER^^  |               (* Integer literal *)
+        REAL^^ |                   (* Real literal *)
+        STRING_ESC('"' '\\')^^ |   (* String literal *)
+        script^^.                  (* Do-first script *)
+
+identifier:char * ::= ID:result^^ [* rdp_tree->symbol_table_entry = script_symbol_find(result); *]@2 [ '['^ < e1 > ']'^ ].
+
+rule_name:char* ::= [* int tilde = 0; *]
+                    [ '~' [* tilde = 1; *] ]
+                    ID:result^^ [* rdp_tree->symbol_table_entry = script_symbol_find(result);
+                                    if (rdp_tree->symbol_table_entry->value == NULL)
+                                    {
+                                      rdp_tree->symbol_table_entry->value = (script_value*) mem_calloc(1, sizeof(script_value));
+                                      rdp_tree->symbol_table_entry->value->type = SCRIPT_P_NONTERMINAL;
+                                      rdp_tree->symbol_table_entry->value->v_POINTER = rdp_tree;
+                                      rdp_tree->symbol_table_entry->read_only = 1;
+                                    }
+                                    rdp_tree->tilde = tilde;
+                                 *]@2 .
+
+lhs_rule_name:char* ::= (* copy of rule_name without tilde-ing. Ugly, I know. *)
+                        ID:result^^ [* rdp_tree->symbol_table_entry = script_symbol_find(result);
+                                    if (rdp_tree->symbol_table_entry->value == NULL)
+                                    {
+                                      rdp_tree->symbol_table_entry->value = (script_value*) mem_calloc(1, sizeof(script_value));
+                                      rdp_tree->symbol_table_entry->value->type = SCRIPT_P_NONTERMINAL;
+                                      rdp_tree->symbol_table_entry->value->v_POINTER = rdp_tree;
+                                      rdp_tree->symbol_table_entry->read_only = 1;
+                                    }
+                                 *]@2 .
+keyword ::= STRING_ESC('\'' '\\')^^ [* rdp_tree->symbol_table_entry = script_symbol_find("''");
+                                               if (rdp_tree->symbol_table_entry->value == NULL)
+                                               {
+                                                 rdp_tree->symbol_table_entry->value = (script_value*) mem_calloc(1, sizeof(script_value));
+                                                 rdp_tree->symbol_table_entry->value->type = SCRIPT_P_TERMINAL;
+                                                 rdp_tree->symbol_table_entry->read_only = 1;
+                                               }
+                                            *]@2.
+
+character ::=CHAR_ESC('`' '\\')^^ [* rdp_tree->symbol_table_entry = script_symbol_find("`");
+                                               if (rdp_tree->symbol_table_entry->value == NULL)
+                                               {
+                                                 rdp_tree->symbol_table_entry->value = (script_value*) mem_calloc(1, sizeof(script_value));
+                                                 rdp_tree->symbol_table_entry->value->type = SCRIPT_P_TERMINAL_ELEMENT;
+                                                 rdp_tree->symbol_table_entry->read_only = 1;
+                                               }
+                                            *]@2.
+
+c_action ::= COMMENT_VISIBLE ('[*' '*]')^^ [* rdp_tree->symbol_table_entry = script_symbol_find("`");
+                                               if (rdp_tree->symbol_table_entry->value == NULL)
+                                               {
+                                                 rdp_tree->symbol_table_entry->value = (script_value*) mem_calloc(1, sizeof(script_value));
+                                                 rdp_tree->symbol_table_entry->value->type = SCRIPT_P_C_ACTION;
+                                                 rdp_tree->symbol_table_entry->read_only = 1;
+                                               }
+                                            *]@2.
+
+epsilon ::= '#':pattern^^ [* rdp_tree->symbol_table_entry = script_symbol_find(pattern);
+                                               if (rdp_tree->symbol_table_entry->value == NULL)
+                                               {
+                                                 rdp_tree->symbol_table_entry->value = (script_value*) mem_calloc(1, sizeof(script_value));
+                                                 rdp_tree->symbol_table_entry->value->type = SCRIPT_P_EPSILON;
+                                                 rdp_tree->symbol_table_entry->read_only = 1;
+                                               }
+                          *]@2.
+
+comment ::= COMMENT_NEST('(*' '*)').
+
+(* End of gtb.bnf *)
+

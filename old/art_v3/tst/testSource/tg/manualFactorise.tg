@@ -1,0 +1,164 @@
+(* Data generation for SLE 2012 paper on FBNF *)
+
+(*
+fbnf1mul
+$S ::= `b `a `a | `c `a `a;$
+accept $caa$
+
+fbnf1fac
+$S ::= ( `b | `c ) `a `a;$
+accept $caa$
+
+fbnf1nt
+$S ::= X `a `a; X ::= `b | `c ;$
+accept $caa$
+
+
+
+fbnf2mul
+$S ::= A A  `a | 
+       A A  A `c |
+       A A `a `b; 
+
+A ::= `a `a;$  
+accept $aaaaa$
+
+fbnf2fac
+$S ::= A A ( `a | A `c | `a `b); A ::= `a `a;$  
+accept $aaaaa$
+
+fbnf2nt
+$S ::= A A X; A ::= `a `a; X ::= `a | A `c | `a `b; $  
+accept $aaaaa$
+
+
+
+fbnf3mul
+$S ::= `b  `a B B | B  `a B B; B ::= `b;$
+accept $babb$
+
+fbnf3fac
+$S ::= ( `b | B ) `a B B; B ::= `b;$
+accept $babb$
+
+fbnf3nt
+$S ::= X `a B B; B ::= `b; X ::= `b | B; $
+accept $babb$
+
+
+
+fbnf4mul
+$S ::=  `a `a  `b | A `a `b | A `b | `b; A ::= `a | #;$
+accept $aab$
+
+fbnf4fac
+$S ::= (`a `a | ( (A `a)? | (A)? ) ) `b; A ::= `a | #;$
+accept $aab$
+
+fbnf4nt
+$S ::= X `b; A ::= `a | #;
+X ::= `a `a | Y | Z  ;
+Y ::= A `a | #;
+Z ::= A | #;
+$
+accept $aab$
+
+
+
+fbnf5mul
+$S ::= `b `b  | `b `b  S ;$
+accept $bbbb$ $bbbbbbbbbbbbbbbbbbbb$ (* b^20 *)
+
+fbnf5fac
+$S ::= `b `b ( # | S );$
+accept $bbbb$ $bbbbbbbbbbbbbbbbbbbb$ (* b^20 *)
+
+fbnf5nt
+$S ::= `b `b X; X ::= # | S; $
+accept $bbbb$ $bbbbbbbbbbbbbbbbbbbb$ (* b^20 *)
+
+
+
+fbnf6mul
+$S ::= `b `b ( `c | S );$
+accept $bbbbbbbbbbbbbbbbbbbbc$ (* b^20c *)
+
+fbnf6fac
+$S ::= `b `b ( `c | S );$
+accept $bbbbbbbbbbbbbbbbbbbbc$ (* b^20c *)
+
+fbnf6nt
+$S ::= `b `b X; X ::= `c | S;$
+accept $bbbbbbbbbbbbbbbbbbbbc$ (* b^20c *)
+
+
+
+fbnf7mul
+$S ::= B `c | B S; B ::= `b  `b | `b `c;$
+accept $bbbbbbbbbbbbbbbbbbbbc$ (* b^20c *)
+
+fbnf7fac
+$S ::= B (`c | S); B ::= `b ( `b | `c);$
+accept $bbbbbbbbbbbbbbbbbbbbc$ (* b^20c *)
+
+fbnf7nt
+$S ::= B X; 
+X ::= `c | S;
+B ::= `b Y;
+Y ::= `b | `c;$
+accept $bbbbbbbbbbbbbbbbbbbbc$ (* b^20c *)
+
+
+fbnf7mul
+$S ::= B `c | B S; B ::= `b  `b | `b `c;$
+accept $bbbbbbbbbbbbbbbbbbbbc$ (* b^20c *)
+
+fbnf7fac
+$S ::= B (`c | S); B ::= `b ( `b | `c);$
+accept $bbbbbbbbbbbbbbbbbbbbc$ (* b^20c *)
+
+fbnf7nt
+$S ::= B X; 
+X ::= `c | S;
+B ::= `b Y;
+Y ::= `b | `c;$
+accept $bbbbbbbbbbbbbbbbbbbbc$ (* b^20c *)
+
+*)
+
+(* Added by AJ 17/12/15 *)
+fbnfscp1mul
+$S ::= A A `a `a | A A A `c | A A `a `b; A ::= `a `a;$
+accept $aaaaaa$
+
+(*
+fbnfscp1fac
+$S ::= A A ( `a ( `a | `b ) | A `c); A ::= `a `a;$
+accept $aaaaaa$
+*)
+
+fbnfscp1nt
+$S ::= A A X ; A ::= `a `a;
+X ::= `a Y| A `c;  Y ::= `a | `b;$
+accept $aaaaaa$
+
+fbnfscp2mul
+$S ::= `b `b  | `b `b  S ;$
+accept $bbbbbbbbbbbbbbbbbbbb$ (* b^20 *)
+$bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb$ (* b^50 *)
+
+(*
+fbnfscp2fac
+$S ::= `b `b ( # | S );$
+accept $bbbb$ $bbbbbbbbbbbbbbbbbbbb$ (* b^20 *)
+*)
+
+fbnfscp2nt
+$S ::= `b `b X; X ::= # | S; $
+accept 
+$bbbbbbbbbbbbbbbbbbbb$ (* b^20 *)
+$bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb$ (* b^50 *)
+
+fbnfsp3
+$ S ::= A `a; A ::= B `b; B ::= A `d | `d; $
+accept $dbdbdbdba$

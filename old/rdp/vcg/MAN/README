@@ -1,0 +1,6 @@
+This directory contains the UNIX manual pages of the VCG tool.
+For the MS Windows version, not all pages are useful: Only 
+vcg.man is useful (if you have nroff on your MSDOS computer)
+because the other tools are not yet converted to MSDOS.
+
+

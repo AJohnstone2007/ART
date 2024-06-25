@@ -1,0 +1,5 @@
+package uk.ac.rhul.cs.csle.artmusic;
+
+public enum ARTScale {
+  CHROMATIC, MAJOR, MINOR_NATURAL, MINOR_HARMONIC, MINOR_MELODIC_ASCENDING, MINOR_MELODIC_DESCENDING
+}

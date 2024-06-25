@@ -1,0 +1,28 @@
+LR symbol table
+0 !Illegal
+1 #
+2 $
+3 A
+4 S
+5 S!augmented
+
+LR state table
+18 0: 
+ R[0] R[1] R[2] {2}
+ S19
+ S20
+19 3: 
+ R[1] R[4] {2}
+ S21
+20 4: 
+ R[3] {2}
+21 3: 
+ R[5] {2}
+
+LR reduction table
+R[0] R9 |0|->5 S!augmented ::= . S Accepting
+R[1] R10 |0|->3 A ::= . #
+R[2] R11 |0|->4 S ::= . A A 
+R[3] R12 |1|->5 S!augmented ::= S . Accepting
+R[4] R13 |1|->4 S ::= A . A 
+R[5] R14 |2|->4 S ::= A A . 

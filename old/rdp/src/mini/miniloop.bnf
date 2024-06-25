@@ -1,0 +1,114 @@
+(*******************************************************************************
+*
+* RDP release 1.50 by Adrian Johnstone (A.Johnstone@rhbnc.ac.uk) 20 December 1997
+*
+* miniloop.bnf - a decorated mini loop grammar with single pass compiler semantics
+*
+* This file may be freely distributed. Please mail improvements to the author.
+*
+*******************************************************************************)
+TITLE("Miniloop compiler V1.50 (c) Adrian Johnstone 1997")
+SUFFIX("m")
+TREE
+PARSER(program)
+USES("ml_aux.h")
+TREE
+OUTPUT_FILE("miniloop.mvm")
+
+SYMBOL_TABLE(mini 101 31
+	     symbol_compare_string
+	     symbol_hash_string
+	     symbol_print_string
+	     [* char* id; *]
+	    )
+
+check_declared ::= [* if (symbol_lookup_key(mini, &dst, NULL) == NULL)
+		      {
+		        text_message(TEXT_ERROR, "Undeclared variable '%s'\n", dst);
+		        symbol_insert_key(mini, &dst, sizeof(char*), sizeof(mini_data));
+		      }
+	           *].
+
+program   ::=  [* emit_open(rdp_sourcefilename, rdp_outputfilename); *]
+               { [var_dec | statement] ';'} 
+               [* emit_close(); *].
+
+var_dec ::= 'int' ( ID:dst 
+                    [* emitf(" \n DATA\n%s: WORD 1\n\n CODE\n",dst); *]
+                    ['=' e0:left [* emit("CPY", "", dst, left, NULL); *] ] 
+                    [* symbol_insert_key(mini, &dst, sizeof(char*), sizeof(mini_data)); 
+                       if (*dst == '_' && *(dst+1) == '_')
+                         text_message(TEXT_ERROR_ECHO, "variable names must not begin with two underscores\n");
+                    *]
+                  )@','.                       (* Declaration *)
+
+statement ::= ID:dst check_declared
+              '=' e0:left [* emit("CPY", "", dst, left, NULL); *] |                                     (* Assignment *)
+
+              [* integer label = new_label(); *]        (* if statement *)
+              [* emitf("__IF_%lu:\n", label); *]
+              'if' e0:left
+              [* emitf(" BEQ  %s,__ELSE_%lu\t;ifn %s go to __ELSE_%lu \n",left,label,left, label); *]
+              'then' statement
+              [* emitf(" BRA  __FI_%lu\t;go to __FI_%lu\n__ELSE_%lu:\n", label, label, label); *]
+              [ 'else' statement ]
+              [* emitf("__FI_%lu:\n", label); *] |
+
+              [* integer label = new_label(); *]        (* while do statement *)
+              [* emitf("__DO_%lu:\n", label); *]
+              'while' e0:left
+              [* emitf(" BEQ  %s,__OD_%lu\t;ifn %s go to __OD_%lu \n",left,label,left, label); *]
+              'do' statement
+              [* emitf(" BRA  __DO_%lu\t;go to __DO_%lu\n__OD_%lu:\n", label, label, label); *] |
+
+              'print' '(' ( e0:left [* emit_print('I', left); *] |
+                            String:left [* emit_print('S', left); *]
+                          )@',' ')' |            (* print statement *)
+
+              'begin' (statement)@';' 'end'.  (* compound statement *)
+
+e0:char* ::= [* char* dst; *] e1:left [ [* dst = new_temporary(); *]
+               ('>' e1:right [* emit("GT ", ">", dst, left, right); *]  |  (* Greater than *)
+                '<' e1:right [* emit("LT ", "<", dst, left, right); *]  |  (* Less than *)
+                '>=' e1:right [* emit("GE ", ">=", dst, left, right); *]|  (* Greater than or equal *)
+                '<=' e1:right [* emit("LE ", ">=", dst, left, right); *]|  (* Less than or equal *)
+                '==' e1:right [* emit("EQ ", "==", dst, left, right); *]|  (* Equal *)
+                '!=' e1:right [* emit("NE ", "!=", dst, left, right); *]   (* Not equal *)
+               ) [* left = dst; *]
+             ] [* result = left; *].
+
+e1:char* ::= [* char* dst; *] e2:left { [* dst = new_temporary(); *]
+               ( '+' e2:right [* emit("ADD", "+", dst, left, right); *] |   (* Add *)
+                 '-' e2:right [* emit("SUB", "-", dst, left, right); *]     (* Subtract *)
+               )
+               [* left = dst; *]
+             } [* result = left; *].
+
+e2:char* ::= [* char* dst; *] e3:left { [* dst = new_temporary(); *]
+               ( '*' e3:right [* emit("MUL", "*", dst, left, right); *] |   (* Multiply *)
+                 '/' e3:right [* emit("DIV", "/", dst, left, right); *]     (* Divide *)
+               )
+               [* left = dst; *]
+             } [* result = left; *].
+
+e3:char* ::= [* int negate = 0; char* dst;*]
+
+             {('+'|'-' [* negate ^= 1; *])} e4:result (* Posite or negate *)
+             [* if (negate) {dst = new_temporary(); emit("SUB", "-", dst, "0", result); result = dst; } *].
+
+e4:char* ::= [* char *dst; *]
+             e5:left
+             [ [* dst = new_temporary(); *]
+               '**' e4:right [* emit("EXP", "**", dst, left, right);  *] (* Exponentiate *)
+               [* left = dst; *]
+             ] [* result = left; *].
+
+e5:char* ::= ID:dst check_declared [* result = dst; *] |           (* Variable access *)
+             INTEGER:val [* result = (char*) mem_malloc(12); sprintf(result, "#%lu", val); *] |      (* Numeric literal *)
+            '(' e1:result ')'.    (* Parenthesised expression *)
+
+comment ::= COMMENT_NEST('(*' '*)').  (* Comments: stripped by lexer *)
+String:char*  ::= STRING_ESC('"' '\\'):result.     (* Strings for print *)
+
+(* End of miniloop.bnf *)
+

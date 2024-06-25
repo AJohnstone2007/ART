@@ -1,0 +1,13 @@
+(* ex10 SPPF generation *)
+S ::=  T B .
+T ::=  T '+' T | 'a' | 'b' .
+B ::=  B B | 'c' | # .
+
+(
+ex10_grammar := grammar[S]
+
+ex10_dfa := dfa[nfa[ex10_grammar slr 1 nullable_reductions]]
+
+this_derivation := rnglr_parse[ex10_dfa "a+b+a"]
+render[open["ssg.vcg"] this_derivation]
+)

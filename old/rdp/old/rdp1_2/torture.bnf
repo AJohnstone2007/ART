@@ -1,0 +1,38 @@
+(* dummy start production that references all others to suppress warnings *)
+
+dummy ::= (* bad_list bad_null empty_prod empty_alt empty_last_alt *)
+          adrian bad_recurse bad_first bad_option bad_iteration
+          undefined_prod.
+
+(* EBNF syntax errors: uncomment to test syntax *)
+
+(*
+bad_list ::= 'a' <'b' 'c'> ''.
+
+bad_null ::= 'a' ''.
+
+empty_prod ::= .
+
+empty_alt ::= 'a' | 'b' | | 'c'.
+
+empty_last_alt ::= 'a' | 'b' | .
+*)
+
+(* Grammar errors *)
+
+adrian ::= 'a' _1 'b'.
+
+_1 ::= [* some chat *] [* and some more *].
+
+bad_recurse ::= 'a' | bad_recurse 'a' | 'b'.
+
+bad_first ::= 'a' 'b' | 'a' 'd'.
+
+bad_option ::= 'a' ['b' 'c'] 'b'.
+
+bad_iteration ::= 'a' {'b' 'c'} 'b'.
+
+undefined_prod ::= undefined.
+
+
+

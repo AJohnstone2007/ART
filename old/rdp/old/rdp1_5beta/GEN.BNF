@@ -1,0 +1,39 @@
+(*****************************************************************************
+*
+* generate.bnf - a string generator for bnf
+* (c) Elizabeth Scott and Adrian Johnstone 1996
+*
+*****************************************************************************)
+TITLE("Generate V1.00 (c) Elizabeth Scott and Adrian Johnstone 1996")
+SUFFIX("gen")
+BUILD_TREE
+PASSES(2)
+
+SYMBOL_TABLE(generate 101 31
+	     symbol_compare_string
+	     symbol_hash_string
+	     symbol_print_string
+	     [* char* id; scan_data *tree_node; *]
+	    )
+
+text ::= {rule}.
+
+rule ::= [* generate_data* this_rule; *]
+	 ruleName:name
+	 [* this_rule = generate_cast(symbol_find(generate, name, sizeof(char*),
+				      sizeof(generate_data), NULL,
+				      rdp_pass == 1 ? SYMBOL_NEW : SYMBOL_OLD)
+				     );
+	    this_rule->tree_node = (scan_data*) scan_parent;
+	 *]
+	 '::=' production { '|' production } '.' .
+
+production ::= { terminal |
+		 ruleName: name
+		 [* symbol_find(generate, name, sizeof(char*), sizeof(generate_data), NULL, SYMBOL_OLD); *]@2
+	       }.
+
+ruleName: char* ::= ID:result .
+
+terminal: char* ::= STRING('\''):result .
+

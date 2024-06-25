@@ -1,0 +1,1650 @@
+/*****************************************************************************
+*
+* gramconv version 2.1 by Adrian Johnstone (A.Johnstone@rhul.ac.uk) 21 August 2006
+*
+* gc_aux.c - auxilliary functions for grammar converter
+*
+* This file may be freely distributed. Please mail improvements to the author.
+*
+*****************************************************************************/
+#include <stdio.h>
+#include <ctype.h>
+
+#include "graph.h"
+#include "memalloc.h"
+#include "scan.h"
+#include "symbol.h"
+#include "textio.h"
+
+#include "gramconv.h"
+#include "gc_aux.h"
+
+/* Globals used to hold option information ************************************/
+int art_output = 0;
+int bison_output = 0;
+int gtb_output = 0;
+int iso_output = 0;
+int sdf_output = 0;
+int yacc_output = 0;
+int pure_grammar = 0;
+int terminalise = 0;
+int curly_parenthesis = 0;
+unsigned long halt_level = UINT_MAX;
+int vcg_output = 0;
+
+int parser_output = 0;
+int left_recursion_removal = 0;
+char *start_nonterminal = NULL;
+char *whitespace_nonterminal = NULL;
+
+int default_substitute = 0;
+int default_head_tail_expansion = 0;
+int default_multiply = 0;
+int default_left_recursive = 1;
+int default_right_recursive = 0;
+
+int lhs_count = 0;
+
+static int local_argc;
+static char **local_argv;
+
+/* Parameter block for write() functions **************************************/
+struct output_parameters {
+  unsigned sub_rule_number;
+  char *expands;
+  char *sequence;
+  char *end_of_rule;
+  char *keyword;
+  char *character;
+  char *epsilon;
+  char *action_open;
+  char *action_close;
+  char *comment_open;
+  char *comment_close;
+  char *paren_open;
+  char *paren_close;
+  char *opt_open;
+  char *opt_close;
+  char *positive_open;
+  char *positive_close;
+  char *kleene_open;
+  char *kleene_close;
+  char *ellipsis;
+}
+art_op = {1, "::=",   "",  ";", "'", "`", "#",  "$", "$", "(*", "*)", "(", ")", "(",  ")?",  "(",  ")+",  "(",  ")*", "..."},
+bison_op = {1, ":",   "",  ";", "\"", "`", "",  "$", "$", "/*", "*/", "(", ")", "(",  ")?",  "(",  ")+",  "(",  ")*", "..."},
+gtb_op   = {1, "::=", "",  ".", "'",  "`", "#", "$", "$", "(*", "*)", "(", ")", "[", "]",  "<", ">",  "{", "}", "..."},
+iso_op   = {1, "::=", ",", ".", "'",  "`", "",  "$", "$", "/*", "*/", "(", ")", "[", "]",  "<", ">",  "{", "}", "..."},
+sdf_op   = {1, ":",   "",  ";", "\"", "`", "",  "$", "$", "/*", "*/", "{", "}", "(", ")?", "(", ")+", "(", ")*", "..."},
+yacc_op  = {1, ":",   "",  ";", "\"", "`", "",  "$", "$", "/*", "*/", "(", ")", "(", ")?", "(", ")+", "(", ")*", "..."},
+*op = NULL;
+
+/* A dummy LC interpreter *****************************************************/
+int lc_execute(char *lc_string)
+{
+  return printf("lc_execute: %s\n", lc_string);
+}
+
+/* Auxilliary functions *******************************************************/
+int string_has_opt_suffix(char *name)
+{
+  int offset = strlen(name);
+
+  return *(name+offset - 3) == 'o' && *(name+offset - 2) == 'p' && *(name+offset - 1) == 't';
+}
+
+static char *gc_kind_string(enum gc_kind kind)
+{
+  switch (kind)
+  {
+    case EK_NONE: return "none";
+    case EK_ROOT: return "root";
+    case EK_SEQUENCE: return "sequence";
+    case EK_EPSILON: return "epsilon";
+    case EK_ELLIPSIS: return "ellipsis";
+    case EK_TERMINAL: return "terminal";
+    case EK_NONTERMINAL: return "nonterminal";
+    case EK_LHS_NONTERMINAL: return "lhs_nonterminal";
+    case EK_ITER: return "iter";
+    case EK_INVERT: return "invert";
+    case EK_DIFF: return "diff";
+    case EK_RANGE: return "range";
+    case EK_ACTION: return "action";
+    case EK_CHAR_SET: return "char_set";
+
+    default: text_message(TEXT_FATAL, "unknown node kind encountered in gc_kind_string();\n");
+             return "";
+  }
+}
+
+/* VCG output functions *******************************************************/
+static void vcg_print_pblocks(p_block *ab)
+{
+  if (ab == NULL)
+    return;
+  else
+    vcg_print_pblocks(ab->next);
+
+  text_printf(" %s", ab->id);
+
+  if (ab->type != NULL)
+    text_printf(":%s", ab->type);
+
+}
+
+static void vcg_print_char(int c)
+{
+  switch (c)
+  {
+    case '\"': text_printf("\\\""); break;
+    case '\\': text_printf("\\\\"); break;
+    default:
+      text_printf("%c", c);
+      break;
+  }
+}
+
+static void vcg_print_set_element(int i)
+{
+  if (isprint(i))
+  {
+    text_printf("`");
+    vcg_print_char(i);
+  }
+  else
+    text_printf("`\\\\%u", i);
+}
+
+static void vcg_print_rule_node(const void *node)
+{
+  rdp_tree_node_data *this_node = (rdp_tree_node_data *) node;
+
+  if (this_node->char_set != NULL)
+    text_printf("bordercolor:blue ");
+
+  switch (this_node->highlight)
+  {
+    case 0:
+      break;
+
+    case 1:
+     text_printf("color: red");
+     break;
+
+    case 2:
+     text_printf("color: orange");
+     break;
+
+    case 3:
+     text_printf("color: yellow");
+     break;
+
+    case 4:
+     text_printf("color: green");
+     break;
+
+    case 5:
+     text_printf("color: cyan");
+     break;
+
+    case 6:
+     text_printf("color: blue");
+     break;
+
+    case 7:
+     text_printf("color: magenta");
+     break;
+
+  }
+
+  switch (this_node->kind)
+  {
+    case EK_ROOT:
+      text_printf("shape:circle label:\"%u", graph_atom_number(this_node));
+      break;
+
+    case EK_ACTION:
+      text_printf("bordercolor:green label:\"%u: ", graph_atom_number(this_node));
+      text_print_C_string(this_node->id);
+      break;
+
+    case EK_TERMINAL:
+      text_printf("label:\"%u: '", graph_atom_number(this_node));
+      text_print_C_string(this_node->id);
+      text_printf("'");
+      break;
+
+    case EK_NONTERMINAL:
+      text_printf("label:\"%u: ", graph_atom_number(this_node));
+      text_print_C_string(this_node->id);
+      break;
+
+    case EK_LHS_NONTERMINAL:
+      /* color this nonterminal red if it is not the one in the rule_tree field of the symbol table record */
+      if (((nonterminals_data*) symbol_find(nonterminals, &this_node->id, sizeof(char*), sizeof(nonterminals_data), NULL, SYMBOL_ANY))->rules_tree != this_node)
+        text_printf("color:red ");
+
+      text_printf("label:\"%u: ", graph_atom_number(this_node));
+      text_print_C_string(this_node->id);
+      break;
+
+    case EK_ITER:
+      text_printf("bordercolor:magenta label:\"%u: %s %u %u", graph_atom_number(this_node), this_node->id, this_node->lo, this_node->hi);
+      break;
+
+    case EK_DIFF:
+      text_printf("label:\"%u: \\\\", graph_atom_number(this_node));
+      break;
+
+    case EK_OR:
+    case EK_PERMUTE:
+    case EK_SEQUENCE:
+    case EK_INVERT:
+    case EK_RANGE:
+    case EK_EPSILON:
+    case EK_ELLIPSIS:
+      text_printf("label:\"%u: %s", graph_atom_number(this_node), this_node->id);
+      break;
+
+    default:
+      text_printf("color:magenta label:\"?? %u: %s %u %u", graph_atom_number(this_node), this_node->id, this_node->lo, this_node->hi);
+  }
+
+  text_printf("\f02");
+  if (this_node->promotion == EP_UNDER)
+    text_printf(" ^_");
+
+  if (this_node->promotion == EP_OVER)
+    text_printf(" ^^");
+
+  if (this_node->left_recursive)
+    text_printf(" <");
+
+  if (this_node->right_recursive)
+    text_printf(" >");
+
+  if (this_node->multiply)
+    text_printf(" *");
+
+  if (this_node->head_tail_expansion)
+    text_printf(" |");
+
+  if (this_node->inherited != NULL)
+  {
+    text_printf("\n(");
+    vcg_print_pblocks(this_node->inherited);
+    text_printf(" )");
+  }
+
+  if (this_node->synthesized != NULL)
+  {
+    text_printf("\n(");
+    vcg_print_pblocks(this_node->synthesized);
+    text_printf(" )");
+  }
+
+  if (this_node->local != NULL)
+  {
+    text_printf("\n");
+    vcg_print_pblocks(this_node->local);
+    text_printf(" ");
+  }
+
+#if 0
+  if (this_node->matches_only_epsilon)
+    text_printf("\nmatch: only epsilon");
+
+  if (this_node->matches_character)
+    text_printf("\nmatch: character set");
+
+  if (this_node->matches_keyword)
+    text_printf("\nmatch: keyword");
+#endif
+
+  text_printf("\f31");
+
+  if (this_node->char_set != NULL)
+  {
+    text_printf("\n\f01{ ");
+    int i = 0;
+    while (i < 256)
+    {
+      if (set_includes_element(this_node->char_set, i))
+      {
+         vcg_print_set_element(i);
+
+         if (set_includes_element(this_node->char_set, i + 1) && set_includes_element(this_node->char_set, i + 2))
+         {
+           text_printf("..");
+           while (++i < 256 && set_includes_element(this_node->char_set, i))
+             ;
+           vcg_print_set_element(i - 1);
+         }
+         text_printf(" ");
+      }
+      i++;
+    }
+    text_printf("}\f31");
+  }
+
+  text_printf("\" horizontal_order:%u", graph_atom_number(node));
+}
+
+/* Grammar output functions ***************************************************/
+static void write_pblocks(p_block *ab)
+{
+  if (ab == NULL)
+    return;
+  else
+    write_pblocks(ab->next);
+
+  text_printf(" %s", ab->id);
+
+  if (ab->type != NULL)
+    text_printf(":%s", ab->type);
+}
+
+static void write_terminal(char* terminal, int yacc_flag)
+{
+  if (!yacc_flag)
+  {
+    text_printf("%s", op->keyword);
+    text_print_C_string(terminal);
+    text_printf("%s",  op->keyword);
+  }
+  else
+  {
+    text_printf("TOK_");
+    if (text_is_valid_C_id(terminal))
+      text_printf("%s", terminal);
+    else
+    {
+      char * c = terminal;
+
+      while (*c != 0)
+        text_printf("%i", *c++);
+
+      c = terminal;
+
+      text_printf(" %s", op->comment_open);
+      if (strcmp(c, op->comment_open)== 0) /* special case */
+        text_printf("comment open");
+      else if (strcmp(c, op->comment_close)== 0) /* special case */
+        text_printf("comment close");
+      else while (* c != 0)
+        text_printf("%c", * c++);
+
+      text_printf("%s", op->comment_close);
+    }
+  }
+}
+
+static void write_tree_rec(rdp_tree_node_data *this_node, unsigned pad_value, int yacc_flag)
+{
+  rdp_tree_node_data *left_child, *right_child = NULL;
+
+  void *first_edge = graph_next_out_edge(this_node);
+
+  left_child = (rdp_tree_node_data*) graph_destination(first_edge);
+
+  if (first_edge != NULL)
+    right_child = (rdp_tree_node_data*) graph_destination(graph_next_out_edge(first_edge));
+
+  switch (this_node->kind)
+  {
+    case EK_NONE:
+      text_printf("Internal error: unlabelled tree node\n");
+      break;
+
+    case EK_SEQUENCE:
+      write_tree_rec(left_child, pad_value, yacc_flag);
+      text_printf("%s%s", op->sequence, *op->sequence == '\0' ? "" : " ");
+      write_tree_rec(right_child, pad_value, yacc_flag);
+      break;
+
+    case EK_OR:
+      write_tree_rec(left_child, pad_value, yacc_flag);
+      text_printf(" |\n%*c", pad_value, ' ');
+      write_tree_rec(right_child, pad_value, yacc_flag);
+      break;
+
+    case EK_PERMUTE:
+      write_tree_rec(left_child, pad_value, yacc_flag);
+      text_printf(" ||\n%*c", pad_value, ' ');
+      write_tree_rec(right_child, pad_value, yacc_flag);
+      break;
+
+    case EK_EPSILON:
+      text_printf("%s ", op->epsilon);
+      break;
+
+    case EK_ELLIPSIS:
+      text_printf("%s ", op->ellipsis);
+      break;
+
+    case EK_TERMINAL:
+      write_terminal(this_node->id, yacc_flag);
+      text_printf(" ");
+      break;
+
+    case EK_NONTERMINAL:
+      if (terminalise && !this_node->nonterminal_symbol_table_entry->defined)
+        write_terminal(this_node->id, yacc_flag);
+      else
+      {
+        text_printf("%s", this_node->id);
+
+        if (!pure_grammar)
+        {
+          if (this_node->inherited != NULL)
+          {
+            text_printf("(");
+            write_pblocks(this_node->inherited);
+            text_printf(" )");
+          }
+
+          if (this_node->synthesized != NULL)
+          {
+            text_printf("(");
+            write_pblocks(this_node->synthesized);
+            text_printf(" )");
+          }
+        }
+      }
+
+      text_printf(" ");
+      break;
+
+    case EK_LHS_NONTERMINAL:
+      text_printf("Internal error: unexpected LHS nonterminal\n");
+      break;
+
+    case EK_ITER:
+      if (right_child != NULL || this_node->lo > 1 || this_node->hi > 1) /* diadic interator */
+      {
+        write_tree_rec(left_child, pad_value, yacc_flag);
+        text_printf("@ %u %u ", this_node->lo, this_node->hi);
+        write_tree_rec(right_child, pad_value, yacc_flag);
+      }
+      else
+      {
+        if (this_node->lo == 0 && this_node->hi == 0)
+          text_printf("%s ", op->kleene_open);
+        else if (this_node->lo == 0 && this_node->hi == 1)
+          text_printf("%s ", op->opt_open);
+        else if (this_node->lo == 1 && this_node->hi == 0)
+          text_printf("%s ", op->positive_open);
+        else if (this_node->lo == 1 && this_node->hi == 1)
+          text_printf("%s ", op->paren_open);
+
+        write_tree_rec(left_child, pad_value, yacc_flag);
+
+        if (this_node->lo == 0 && this_node->hi == 0)
+          text_printf("%s ", op->kleene_close);
+        else if (this_node->lo == 0 && this_node->hi == 1)
+          text_printf("%s ", op->opt_close);
+        else if (this_node->lo == 1 && this_node->hi == 0)
+          text_printf("%s ", op->positive_close);
+        else if (this_node->lo == 1 && this_node->hi == 1)
+          text_printf("%s ", op->paren_close);
+      }
+      break;
+
+    case EK_INVERT:
+      text_printf("~ ");
+      write_tree_rec(left_child, pad_value, yacc_flag);
+      break;
+
+    case EK_DIFF:
+      write_tree_rec(left_child, pad_value, yacc_flag);
+      text_printf("\\ ");
+      write_tree_rec(right_child, pad_value, yacc_flag);
+      break;
+
+    case EK_RANGE:
+      write_tree_rec(left_child, pad_value, yacc_flag);
+      text_printf(".. ");
+      write_tree_rec(right_child, pad_value, yacc_flag);
+      break;
+
+    case EK_ACTION:
+      text_printf("%s%s%s ", op->action_open, this_node->id, op->action_close);
+      break;
+
+    case EK_CHAR_SET:
+      text_printf("character set ");
+      break;
+
+    default:
+      text_printf("Internal error: illegal tree label\n");
+      break;
+  }
+
+  if (this_node->promotion == EP_UNDER)
+    text_printf("^_ ");
+
+  if (this_node->promotion == EP_OVER)
+    text_printf("^^ ");
+
+  if (this_node->left_recursive)
+    text_printf("!< ");
+
+  if (this_node->right_recursive)
+    text_printf("!> ");
+
+  if (this_node->substitute)
+    text_printf("!^ ");
+
+  if (this_node->multiply)
+    text_printf("!* ");
+
+  if (this_node->head_tail_expansion)
+    text_printf("!| ");
+}
+
+static void write_tree(rdp_tree_node_data *this_root, int yacc_flag)
+{
+  void *this_edge;
+
+  for (this_edge = graph_next_out_edge(this_root); this_edge != NULL; this_edge = graph_next_out_edge(this_edge))
+  {
+    rdp_tree_node_data *this_rule = (rdp_tree_node_data*) graph_destination(this_edge);
+
+    /* Now print this rule */
+    text_printf("%s", this_rule->id);
+
+    if (!pure_grammar)
+      if (this_rule->inherited != NULL)
+      {
+        text_printf("(");
+        write_pblocks(this_rule->inherited);
+        text_printf(" )");
+      }
+
+    if (!pure_grammar)
+      if (this_rule->synthesized != NULL)
+      {
+        text_printf("(");
+        write_pblocks(this_rule->synthesized);
+        text_printf(" )");
+      }
+
+    if (!pure_grammar)
+      if (this_rule->local != NULL)
+      {
+        write_pblocks(this_rule->local);
+      }
+
+    text_printf(" %s ", op->expands);
+
+    int pad_value = strlen(op->expands) + strlen(this_rule->id) + 2;
+
+    if (graph_next_out_edge(this_rule) == NULL)
+      text_printf("%s internal error: lhs nonterminal node has no tree */ ");
+    else
+      write_tree_rec((rdp_tree_node_data*) graph_destination(graph_next_out_edge(this_rule)), pad_value, yacc_flag);
+
+    text_printf("%s\n\n", op->end_of_rule);
+  }
+}
+
+static void write_grammar(void *rdp_tree, struct output_parameters *this_op, char *filename, int bison_flag, int yacc_flag, int art_flag)
+{
+  FILE *f = fopen(filename, "w");
+
+  if (f == NULL)
+    text_message(TEXT_FATAL, "unable to open file '%s' for writing\n", filename);
+
+  op = this_op;
+
+  text_redirect(f);
+
+  text_printf("%s Generated by gramconv V2.02 from '%s' on " __DATE__ " at " __TIME__ " %s\n", op->comment_open, rdp_sourcefilename, op->comment_close);
+  text_printf("%s Command line:", op->comment_open);
+
+  for (int temp = 0; temp < local_argc; temp++)
+    text_printf(" %s", local_argv[temp]);
+
+  text_printf(" %s\n\n", op->comment_close);
+
+  if (art_flag)
+    text_printf("%s()(%s)\n\n", text_extract_filename(rdp_sourcefilename), start_nonterminal);
+
+  if (yacc_flag)
+  {
+    terminals_data *this_terminal = (terminals_data*) symbol_next_symbol_in_scope(symbol_get_scope(terminals));
+
+    while (this_terminal != NULL)
+    {
+      text_printf("%%token ");
+      write_terminal(this_terminal->id, yacc_flag);
+      text_printf("\n");
+      this_terminal = (terminals_data*) symbol_next_symbol_in_scope(this_terminal);
+    }
+  }
+
+  if (bison_flag || yacc_flag)
+    text_printf("\n%%%%\n");
+
+  write_tree((rdp_tree_node_data*) graph_root(rdp_tree), yacc_flag);
+
+  /* Now output the undefined rules */
+  if (!terminalise)
+    for (nonterminals_data *this_nonterminal = (nonterminals_data*) symbol_next_symbol_in_scope(symbol_get_scope(nonterminals));
+         this_nonterminal != NULL;
+         this_nonterminal = (nonterminals_data*) symbol_next_symbol_in_scope(this_nonterminal))
+      if (!this_nonterminal->defined)
+        text_printf("\n%s %s %s%s%s %s %s undefined rule mapped to terminal %s\n",
+                    this_nonterminal->id, op->expands, op->keyword, this_nonterminal->id, op->keyword, op->end_of_rule, op->comment_open, op->comment_close);
+
+  if (bison_flag || yacc_flag)
+    text_printf("\n%%%%\n");
+
+  text_redirect(stdout);
+}
+
+/* Tree clone and delete functions ********************************************/
+/* Copy src tree onto dst such that the clone of src is dst */
+static rdp_tree_node_data *clone_tree(rdp_tree_node_data *src)
+{
+  rdp_tree_node_data* ret_node = (rdp_tree_node_data*) graph_insert_node(sizeof(rdp_tree_node_data), src);
+
+  memcpy(ret_node, src, sizeof(rdp_tree_node_data));
+
+  for (rdp_tree_edge_data *production_edge = (rdp_tree_edge_data*) graph_next_out_edge(src);
+       production_edge != NULL;
+       production_edge = (rdp_tree_edge_data*) graph_next_out_edge(production_edge))
+    graph_insert_edge(sizeof(rdp_tree_edge_data), clone_tree((rdp_tree_node_data*) graph_destination(production_edge)), ret_node);
+
+  return ret_node;
+}
+
+static void delete_tree(rdp_tree_node_data *src)
+{
+  for (rdp_tree_edge_data *production_edge = (rdp_tree_edge_data*) graph_next_out_edge(src);
+       production_edge != NULL;
+       production_edge = (rdp_tree_edge_data*) graph_next_out_edge(production_edge))
+    delete_tree((rdp_tree_node_data *) graph_destination(production_edge));
+
+  graph_delete_node(src);
+}
+
+/* Tree search and compare functions ******************************************/
+static rdp_tree_node_data *search_target;
+static int search_target_leftmost;
+static int search_target_rightmost;
+
+static int compare_empty_sequence(rdp_tree_node_data *this_node)
+{
+  return this_node->kind == EK_SEQUENCE && graph_next_out_edge(this_node) == NULL;
+}
+
+static int compare_substitute(rdp_tree_node_data *this_node)
+{
+  return this_node->kind == EK_NONTERMINAL && this_node->substitute;
+}
+
+static int compare_conditional(rdp_tree_node_data *this_node)
+{
+  return strcmp(this_node->id, "sub") == 0 && this_node->lo == 0 && this_node->hi == 1;
+}
+
+static int compare_epsilon(rdp_tree_node_data *this_node)
+{
+  return this_node->kind == EK_SEQUENCE;
+}
+
+static int compare_head_tail_expansion(rdp_tree_node_data *this_node)
+{
+  if (!this_node->head_tail_expansion)
+    return 0;
+
+  if (this_node->hi != 0)
+    return 0;
+
+  /* Now check to see if this node qualifies: there must be only one production in the rule */
+  rdp_tree_node_data *production_node = (rdp_tree_node_data*) graph_source(graph_next_in_edge(this_node));
+  rdp_tree_node_data *rule_node = (rdp_tree_node_data*) graph_source(graph_next_in_edge(production_node));
+
+  int production_count = 0;
+  for (void *this_edge = graph_next_out_edge(rule_node); this_edge != NULL; this_edge = graph_next_out_edge(this_edge))
+    production_count++;
+
+  if (production_count != 1)
+    return 0;
+
+  /* And of course this must be the first or the last production */
+
+  void * in_edge = graph_next_in_edge(this_node);
+  search_target_leftmost = graph_previous_out_edge(in_edge) == NULL;
+  search_target_rightmost = graph_next_out_edge(in_edge) == NULL;
+
+#if 0
+  text_printf("compare_head_tail at node %u, in edge %u, left % u, right %u\n",
+              graph_atom_number(this_node),
+              graph_atom_number(in_edge),
+              graph_atom_number(left),
+              graph_atom_number(right)
+              );
+#endif
+
+  return search_target_leftmost || search_target_rightmost;
+}
+
+static int compare_multiply(rdp_tree_node_data *this_node)
+{
+  return strcmp(this_node->id, "sub") == 0 && this_node->multiply && this_node->hi == 1;
+}
+
+static int compare_expand(rdp_tree_node_data *this_node)
+{
+  return strcmp(this_node->id, "sub") == 0;
+}
+
+static void gc_search_rec(rdp_tree_node_data *this_node, int(* compare)(rdp_tree_node_data *this_node))
+{
+  void *this_edge;
+
+  for (this_edge = graph_next_out_edge(this_node); search_target == NULL && this_edge != NULL; this_edge = graph_next_out_edge(this_edge))
+  {
+    rdp_tree_node_data* child_node = (rdp_tree_node_data*) graph_destination(this_edge);
+
+    if (compare(child_node))
+      search_target = child_node;
+    else
+      gc_search_rec(child_node, compare);
+  }
+}
+
+static void gc_search(rdp_tree_node_data *rdp_tree, int(* compare)(rdp_tree_node_data *this_node))
+{
+  void *this_nonterminal_edge;
+
+  search_target = NULL;
+
+  for (this_nonterminal_edge = graph_next_out_edge(rdp_tree); search_target == NULL && this_nonterminal_edge != NULL; this_nonterminal_edge = graph_next_out_edge(this_nonterminal_edge))
+    gc_search_rec((rdp_tree_node_data *) graph_destination(this_nonterminal_edge), compare);
+}
+
+/* Tree transformation phases, in execution order *****************************/
+static void gc_insert_explicit_hashes(rdp_tree_node_data *rdp_tree)
+{
+  while (1)
+  {
+    gc_search(rdp_tree, compare_empty_sequence);
+    if (search_target == NULL)
+      break;
+
+    rdp_tree_node_data* temp = (rdp_tree_node_data*) graph_insert_node(sizeof(rdp_tree_node_data), rdp_tree);
+    temp->id = "#";
+    temp->kind = EK_EPSILON;
+
+    graph_insert_edge(0, temp, search_target);
+  }
+}
+
+static void gc_semantic_check_test(char *lhs_nonterminal, enum gc_kind kind, int condition, char *message, rdp_tree_node_data *this_node)
+{
+  if ((this_node->kind == kind) && condition)
+    text_message(TEXT_ERROR, "in rule %s, %s node %u %s\n", lhs_nonterminal, gc_kind_string(kind), graph_atom_number(this_node), message);
+}
+
+static void gc_semantic_check_rec(rdp_tree_node_data *this_node, char* lhs_nonterminal)
+{
+  /* Recursive depth first search */
+  for (void *this_edge = graph_next_out_edge(this_node); this_edge != NULL; this_edge = graph_next_out_edge(this_edge))
+    gc_semantic_check_rec((rdp_tree_node_data*) graph_destination(this_edge), lhs_nonterminal);
+
+  /* Compute attributes of this node */
+  unsigned out_degree = 0;
+  for (void *this_edge = graph_next_out_edge(this_node); this_edge != NULL; this_edge = graph_next_out_edge(this_edge))
+    out_degree++;
+  int has_non_unit_iterator_bounds = this_node->hi > 1 || this_node->lo > 1;
+  int has_promotions = this_node->promotion != EP_NONE;
+  int has_translations = this_node->left_recursive || this_node->right_recursive || this_node->multiply || this_node->head_tail_expansion;
+  int has_parameters = (this_node->inherited != NULL) || (this_node->synthesized != NULL) || (this_node->local != NULL);
+
+  /* Checks that are independent of node kind */
+  if (this_node->kind == EK_NONE || this_node->kind > EK_CHAR_SET)
+    text_message(TEXT_ERROR, "node %u %s\n", graph_atom_number(this_node), "has unknown kind");
+
+  if (this_node->hi != 0 && this_node->hi < this_node->lo)
+    text_message(TEXT_ERROR, "%s node %u %s\n", gc_kind_string(this_node->kind), graph_atom_number(this_node), "has reversed iterator bounds");
+
+  /* Now systematically check all nodes and features, regardless of whether the parser should be able to construct such a case */
+  gc_semantic_check_test(lhs_nonterminal, EK_SEQUENCE, out_degree == 0, "has no children", this_node);
+  gc_semantic_check_test(lhs_nonterminal, EK_SEQUENCE, has_promotions, "has promotion flags", this_node);
+  gc_semantic_check_test(lhs_nonterminal, EK_SEQUENCE, has_translations, "has translation flags", this_node);
+  gc_semantic_check_test(lhs_nonterminal, EK_SEQUENCE, has_parameters, "has parameters", this_node);
+
+/* Add code for EK_SUBRULE, EK_EPSILON, EK_CHARACTER, EK_TERMINAL, EK_NONTERMINAL, EK_LHS_NONTERMINAL, EK_ITER, EK_DIFF, EK_RANGE, EK_ACTION, EK_CHAR_SET*/
+}
+
+static void gc_semantic_check(rdp_tree_node_data *root)
+{
+  for (void *this_edge = graph_next_out_edge(root); this_edge != NULL; this_edge = graph_next_out_edge(this_edge))
+  {
+    rdp_tree_node_data *lhs_nonterminal = (rdp_tree_node_data*) graph_destination(this_edge);
+    gc_semantic_check_rec(lhs_nonterminal, lhs_nonterminal->id);
+  }
+}
+
+static void gc_coalesce_multiple_instances(rdp_tree_node_data *rdp_tree)
+{
+  void *this_nonterminal_edge, *check_nonterminal_edge;
+
+  int merged;
+  do
+  {
+    merged = 0;
+    for (this_nonterminal_edge = graph_next_out_edge(rdp_tree); this_nonterminal_edge != NULL; this_nonterminal_edge = graph_next_out_edge(this_nonterminal_edge))
+    {
+      for (check_nonterminal_edge = graph_next_out_edge(this_nonterminal_edge); check_nonterminal_edge != NULL; check_nonterminal_edge = graph_next_out_edge(check_nonterminal_edge))
+      {
+         rdp_tree_node_data *this_nonterminal = (rdp_tree_node_data*) graph_destination(this_nonterminal_edge);
+         rdp_tree_node_data *check_nonterminal = (rdp_tree_node_data*) graph_destination(check_nonterminal_edge);
+
+         if (strcmp(this_nonterminal->id, check_nonterminal->id) == 0)
+         {
+           text_message(TEXT_WARNING, "multiple definitions for nonterminal '%s' merged\n", this_nonterminal->id);
+
+           /* make a new nonterminal for this pair of matches and connect to old nonterminals with a sequence node*/
+           rdp_tree_node_data *new_nonterminal = (rdp_tree_node_data*) graph_insert_node(sizeof(rdp_tree_node_data), rdp_tree);
+
+           memcpy(new_nonterminal, this_nonterminal, sizeof(rdp_tree_node_data));
+           graph_insert_edge(0, new_nonterminal, rdp_tree);
+
+           rdp_tree_node_data *new_or = (rdp_tree_node_data*) graph_insert_node(sizeof(rdp_tree_node_data), rdp_tree);
+           new_or->kind = EK_OR;
+           new_or->id = "|";
+           graph_insert_edge(0, new_or, new_nonterminal);
+           graph_insert_edge(0, this_nonterminal, new_or);
+           graph_insert_edge(0, check_nonterminal, new_or);
+
+           /* remake old nonterminals */
+           this_nonterminal->id = "(";
+           this_nonterminal->kind = EK_ITER;
+           this_nonterminal->lo = this_nonterminal->hi = 1;
+           graph_delete_edge(this_nonterminal_edge);
+
+           check_nonterminal->id = "(";
+           check_nonterminal->kind = EK_ITER;
+           check_nonterminal->lo = check_nonterminal->hi = 1;
+           graph_delete_edge(check_nonterminal_edge);
+           merged = 1;
+
+           ((nonterminals_data*) symbol_find(nonterminals, &new_nonterminal->id, sizeof(char*), sizeof(nonterminals_data), NULL, SYMBOL_ANY))->rules_tree = new_nonterminal;
+
+           goto restart;
+         }
+      }
+    }
+    restart:
+  }
+  while (merged);
+}
+
+static void gc_evaluate_sets_rec(char *lhs_nonterminal, rdp_tree_node_data *this_node)
+{
+  if (this_node == NULL)
+    return;
+
+  rdp_tree_node_data *left_child, *right_child = NULL;
+
+  void *first_edge = graph_next_out_edge(this_node);
+
+  left_child = (rdp_tree_node_data*) graph_destination(first_edge);
+
+  if (first_edge != NULL)
+    right_child = (rdp_tree_node_data*) graph_destination(graph_next_out_edge(first_edge));
+
+  gc_evaluate_sets_rec(lhs_nonterminal, left_child);
+  gc_evaluate_sets_rec(lhs_nonterminal, right_child);
+
+  int c;
+  switch (this_node->kind)
+  {
+    case EK_RANGE:
+      if (left_child->char_set != NULL && right_child->char_set != NULL)
+      {
+        if (this_node->char_set == NULL) this_node->char_set = (set_ *) mem_calloc(1, sizeof(set_));
+
+        set_clear(this_node->char_set);
+
+        for (c = *left_child->id; c <= *right_child->id; c++)
+          set_unite_element(this_node->char_set, c);
+      }
+      break;
+
+    case EK_NONTERMINAL:
+      if (this_node->nonterminal_symbol_table_entry->rules_tree &&          /* Watch out for undfined nonterminals! */
+          (this_node->nonterminal_symbol_table_entry)->rules_tree->char_set != NULL)
+      {
+        if (this_node->char_set == NULL) this_node->char_set = (set_ *) mem_calloc(1, sizeof(set_));
+        set_assign_set(this_node->char_set, this_node->nonterminal_symbol_table_entry->rules_tree->char_set);
+      }
+      break;
+
+    case EK_DIFF:
+      if (left_child->char_set != NULL && right_child->char_set != NULL)
+      {
+        if (this_node->char_set == NULL) this_node->char_set = (set_ *) mem_calloc(1, sizeof(set_));
+        set_assign_set(this_node->char_set, left_child->char_set);
+        set_difference_set(this_node->char_set, right_child->char_set);
+      }
+      break;
+
+    case EK_OR:
+      if (left_child->char_set != NULL && right_child->char_set != NULL)
+      {
+        if (this_node->char_set == NULL) this_node->char_set = (set_ *) mem_calloc(1, sizeof(set_));
+        set_assign_set(this_node->char_set, left_child->char_set);
+        set_unite_set(this_node->char_set, right_child->char_set);
+      }
+      break;
+
+    case EK_INVERT:
+      if (left_child->char_set != NULL)
+      {
+        if (this_node->char_set == NULL) this_node->char_set = (set_ *) mem_calloc(1, sizeof(set_));
+        set_assign_set(this_node->char_set, left_child->char_set);
+        set_invert(this_node->char_set, 256);
+      }
+      break;
+
+    case EK_ITER: /* parentheses: mondaic, hi = lo = 1 */
+      if (right_child == NULL && this_node->lo == 1 && this_node->hi == 1 && left_child->char_set != NULL)
+      {
+        printf("%u\n", graph_atom_number(this_node));
+        if (this_node->char_set == NULL) this_node->char_set = (set_ *) mem_calloc(1, sizeof(set_));
+        set_assign_set(this_node->char_set, left_child->char_set);
+      }
+      break;
+
+    case EK_LHS_NONTERMINAL:
+    case EK_EPSILON:
+    case EK_PERMUTE:
+    case EK_SEQUENCE:
+    case EK_ACTION:
+    case EK_TERMINAL:
+      /* Nothing to do */
+      break;
+
+    default:
+      text_redirect(stdout);
+      text_message(TEXT_FATAL, "internal error: unrecognised node kind in evaluate_sets_rec()\n");
+      break;
+  }
+}
+
+static void gc_evaluate_sets(rdp_tree_node_data *this_node)
+{
+  void *this_edge;
+  int changed = 1;
+  int cycles = 0;
+
+  while (changed)
+  {
+    changed = 0;
+
+    for (this_edge = graph_next_out_edge(this_node); this_edge != NULL; this_edge = graph_next_out_edge(this_edge))
+    {
+      rdp_tree_node_data *this_rule = (rdp_tree_node_data*) graph_destination(this_edge);
+      rdp_tree_node_data *child = (rdp_tree_node_data*) graph_destination(graph_next_out_edge(this_rule));
+
+      gc_evaluate_sets_rec(this_rule->id, child);
+
+      if (child->char_set != NULL)
+      {
+        if (this_rule->char_set == NULL) this_rule->char_set = (set_ *) mem_calloc(1, sizeof(set_));
+
+        if (set_compare_set(this_rule->char_set, child->char_set) != 0)
+        {
+          changed = 1;
+          set_assign_set(this_rule->char_set, child->char_set);
+        }
+      }
+    }
+  }
+  if (++cycles > lhs_count + 1)
+    text_message(TEXT_FATAL, "set evaluator has executed more phases than there are nonterminals: unstable recursion\n");
+}
+
+static void propogate_one(rdp_tree_node_data *this_node, rdp_tree_node_data *left_child)
+{
+  this_node->matches_character |= left_child->matches_character;
+  this_node->matches_keyword |= left_child->matches_keyword;
+  if (!this_node->matches_character && !this_node->matches_keyword)
+    this_node->matches_only_epsilon |= left_child->matches_only_epsilon;
+  else
+    this_node->matches_only_epsilon = 0;
+}
+
+static void propogate_two(rdp_tree_node_data *this_node, rdp_tree_node_data *left_child, rdp_tree_node_data *right_child)
+{
+  this_node->matches_character |= left_child->matches_character;
+  this_node->matches_character |= right_child->matches_character;
+  this_node->matches_keyword |= left_child->matches_keyword;
+  this_node->matches_keyword |= right_child->matches_keyword;
+  if (!this_node->matches_character && !this_node->matches_keyword)
+  {
+    this_node->matches_only_epsilon |= left_child->matches_only_epsilon;
+    this_node->matches_only_epsilon |= right_child->matches_only_epsilon;
+  }
+  else
+    this_node->matches_only_epsilon = 0;
+}
+
+static void gc_propogate_matches_rec(char *lhs_nonterminal, rdp_tree_node_data *this_node)
+{
+  if (this_node == NULL)
+    return;
+
+  if (this_node->char_set != NULL)
+  {
+    this_node->matches_only_epsilon = 0;
+    this_node->matches_character = 1;
+    this_node->matches_keyword = 0;
+    return;
+  }
+
+  rdp_tree_node_data *left_child, *right_child = NULL;
+
+  void *first_edge = graph_next_out_edge(this_node);
+
+  left_child = (rdp_tree_node_data*) graph_destination(first_edge);
+
+  if (first_edge != NULL)
+    right_child = (rdp_tree_node_data*) graph_destination(graph_next_out_edge(first_edge));
+
+  gc_propogate_matches_rec(lhs_nonterminal, left_child);
+  gc_propogate_matches_rec(lhs_nonterminal, right_child);
+
+  switch (this_node->kind)
+  {
+    case EK_RANGE:
+    case EK_DIFF:
+      break;
+
+    case EK_TERMINAL:
+      this_node->matches_only_epsilon = 0;
+      this_node->matches_character = 0;
+      this_node->matches_keyword = 1;
+      break;
+
+    case EK_ACTION:
+    case EK_EPSILON:
+      this_node->matches_only_epsilon = 1;
+      this_node->matches_character = 0;
+      this_node->matches_keyword = 0;
+      break;
+
+    case EK_NONTERMINAL:
+      this_node->matches_only_epsilon = this_node->nonterminal_symbol_table_entry->matches_only_epsilon;
+      this_node->matches_character = this_node->nonterminal_symbol_table_entry->matches_character;
+      this_node->matches_keyword = this_node->nonterminal_symbol_table_entry->matches_keyword;
+      break;
+
+    case EK_INVERT:
+      propogate_one(this_node, left_child);
+      break;
+
+    case EK_LHS_NONTERMINAL:
+      text_message(TEXT_FATAL, "internal error - gc_propogate_matches_rec encountered LHS nonterminal\n");
+      break;
+
+    case EK_PERMUTE:
+      propogate_two(this_node, left_child, right_child);
+      break;
+
+    case EK_SEQUENCE:
+      propogate_two(this_node, left_child, right_child);
+      break;
+
+    case EK_OR:
+      propogate_two(this_node, left_child, right_child);
+      break;
+
+    case EK_ITER: /* parentheses: mondaic, hi = lo = 1 */
+      if (right_child == NULL) /* monadic */
+        propogate_one(this_node, left_child);
+      else
+        propogate_two(this_node, left_child, right_child);
+      break;
+
+
+    default:
+      text_redirect(stdout);
+      text_message(TEXT_FATAL, "internal error: unrecognised node kind in evaluate_sets_rec()\n");
+      break;
+  }
+}
+
+static void gc_propogate_matches(rdp_tree_node_data *this_node)
+{
+  void *this_edge;
+  int changed = 1;
+  int cycles = 0;
+
+  while (changed)
+  {
+    changed = 0;
+
+    for (this_edge = graph_next_out_edge(this_node); this_edge != NULL; this_edge = graph_next_out_edge(this_edge))
+    {
+      rdp_tree_node_data *this_rule = (rdp_tree_node_data*) graph_destination(this_edge);
+      rdp_tree_node_data *child = (rdp_tree_node_data*) graph_destination(graph_next_out_edge(this_rule));
+
+      gc_propogate_matches_rec(this_rule->id, child);
+
+      if (child->matches_only_epsilon != this_rule->matches_only_epsilon ||
+          child->matches_character != this_rule->matches_character ||
+          child->matches_keyword != this_rule->matches_keyword)
+        changed = 1;
+
+      propogate_one(this_rule, child);
+
+#if PROPOGATE_ACROSS_NONTERMINALS
+      ((nonterminals_data*) this_rule->symbol_table_entry)->matches_only_epsilon = this_rule->matches_only_epsilon;
+      ((nonterminals_data*) this_rule->symbol_table_entry)->matches_character = this_rule->matches_character;
+      ((nonterminals_data*) this_rule->symbol_table_entry)->matches_keyword = this_rule->matches_keyword;
+#endif
+    }
+  }
+  if (++cycles > lhs_count + 1)
+    text_message(TEXT_FATAL, "match propogator has executed more phases than there are nonterminals: unstable recursion\n");
+}
+
+static void gc_substitute(rdp_tree_node_data *rdp_tree)
+{
+  while (1)
+  {
+    gc_search(rdp_tree, compare_substitute);
+    if (search_target == NULL)
+      break;
+
+    nonterminals_data* nonterminal_symbol = (nonterminals_data*) symbol_lookup_key(nonterminals, &search_target->id, NULL);
+    memcpy(search_target, nonterminal_symbol->rules_tree, sizeof(rdp_tree_node_data));
+    search_target->id = "sub";
+    search_target->multiply = 1;
+
+    for (rdp_tree_edge_data *production_edge = (rdp_tree_edge_data*) graph_next_out_edge(nonterminal_symbol->rules_tree);
+         production_edge != NULL;
+         production_edge = (rdp_tree_edge_data*) graph_next_out_edge(production_edge))
+      graph_insert_edge(sizeof(rdp_tree_edge_data), clone_tree((rdp_tree_node_data*) graph_destination(production_edge)), search_target);
+  }
+}
+
+static void gc_head_tail_expansion(rdp_tree_node_data *rdp_tree)
+{
+  while (1)
+  {
+    gc_search(rdp_tree, compare_head_tail_expansion);
+    if (search_target == NULL)
+      break;
+
+    printf("Debug: head_tail expansion found node %u %s %s\n", graph_atom_number(search_target), search_target_leftmost ? "left" : "", search_target_rightmost ? "right" : "");
+
+    search_target->head_tail_expansion = 0;
+
+    if (!(search_target_leftmost && search_target_rightmost))
+    {
+      rdp_tree_edge_data *search_target_in_edge = (rdp_tree_edge_data*) graph_next_in_edge(search_target);
+      rdp_tree_node_data *production_node = (rdp_tree_node_data*) graph_source(search_target_in_edge);
+      rdp_tree_edge_data *production_edge = (rdp_tree_edge_data*) graph_next_in_edge(production_node);
+      rdp_tree_node_data *rule_node = (rdp_tree_node_data*) graph_source(production_edge);
+
+      /* Make new production */
+      rdp_tree_node_data* new_production = (rdp_tree_node_data *) graph_insert_node(sizeof(rdp_tree_node_data), rule_node);
+      new_production->id = "seq";
+      graph_insert_edge(sizeof(rdp_tree_edge_data), new_production, rule_node);
+
+      /* Add clones subrule */
+      search_target->head_tail_expansion = 0;
+      rdp_tree_node_data *cloned_search_target = clone_tree(search_target);
+      cloned_search_target->lo = cloned_search_target->hi = 1;
+      graph_insert_edge(sizeof(rdp_tree_edge_data), cloned_search_target, new_production);
+
+      /* Add recursive call */
+      rdp_tree_node_data* rec_call = (rdp_tree_node_data *) graph_insert_node(sizeof(rdp_tree_node_data), rule_node);
+      rec_call->id = rule_node->id;
+      if (search_target_leftmost)
+        graph_insert_edge_after_final(sizeof(rdp_tree_edge_data), rec_call, new_production);
+      else
+        graph_insert_edge(sizeof(rdp_tree_edge_data), rec_call, new_production);
+
+      if (search_target->lo == 0)
+        delete_tree(search_target);
+      else
+      {
+        search_target->hi = search_target->lo = 1;
+      }
+    }
+  }
+}
+
+static void gc_multiply_out(rdp_tree_node_data *rdp_tree)
+{
+  while (1)
+  {
+    gc_search(rdp_tree, compare_multiply);
+    if (search_target == NULL)
+      break;
+
+    rdp_tree_edge_data *search_target_in_edge = (rdp_tree_edge_data*) graph_next_in_edge(search_target);
+    rdp_tree_node_data *production_node = (rdp_tree_node_data*) graph_source(search_target_in_edge);
+    rdp_tree_edge_data *production_edge = (rdp_tree_edge_data*) graph_next_in_edge(production_node);
+    rdp_tree_node_data *rule_node = (rdp_tree_node_data*) graph_source(production_edge);
+
+    graph_delete_edge(production_edge);
+
+    /* Now walk the productions under the search target and make a new production under rule_node for each one */
+    for (rdp_tree_edge_data* this_search_edge = (rdp_tree_edge_data*) graph_next_out_edge(search_target);
+         this_search_edge != NULL;
+         this_search_edge =(rdp_tree_edge_data*)  graph_next_out_edge(this_search_edge))
+    {
+      /* make new production under rule_node */
+      rdp_tree_node_data *new_production_node = (rdp_tree_node_data*) graph_insert_node(sizeof(rdp_tree_node_data), rule_node);
+      new_production_node->id = "seq";
+      graph_insert_edge(sizeof(rdp_tree_edge_data), new_production_node, rule_node);
+
+      /* Now walk the edges under production node, copying the prefix */
+      for (rdp_tree_edge_data *this_sequence_edge = (rdp_tree_edge_data*) graph_next_out_edge(production_node);
+           this_sequence_edge != search_target_in_edge;
+           this_sequence_edge = (rdp_tree_edge_data *) graph_next_out_edge(this_sequence_edge))
+        graph_insert_edge_after_final(sizeof(rdp_tree_edge_data), clone_tree((rdp_tree_node_data*) graph_destination(this_sequence_edge)), new_production_node);
+
+      /* Copy the tree under search_edge */
+      for (rdp_tree_edge_data *this_sequence_edge = (rdp_tree_edge_data*) graph_next_out_edge(graph_destination(this_search_edge));
+           this_sequence_edge != NULL;
+           this_sequence_edge = (rdp_tree_edge_data *) graph_next_out_edge(this_sequence_edge))
+        graph_insert_edge_after_final(sizeof(rdp_tree_edge_data), clone_tree((rdp_tree_node_data*) graph_destination(this_sequence_edge)), new_production_node);
+
+      /* Now walk the edges under production node, copying the suffix */
+      for (rdp_tree_edge_data *this_sequence_edge = (rdp_tree_edge_data*) graph_next_out_edge(search_target_in_edge);
+           this_sequence_edge != NULL;
+           this_sequence_edge = (rdp_tree_edge_data *) graph_next_out_edge(this_sequence_edge))
+        graph_insert_edge_after_final(sizeof(rdp_tree_edge_data), clone_tree((rdp_tree_node_data*) graph_destination(this_sequence_edge)), new_production_node);
+
+    }
+
+    /* Make a prefix/suffix rule for the case where we match epsilon */
+    if (search_target->lo == 0)
+    {
+      /* make new production under rule_node */
+      rdp_tree_node_data *new_production_node = (rdp_tree_node_data*) graph_insert_node(sizeof(rdp_tree_node_data), rule_node);
+      new_production_node->id = "seq";
+      graph_insert_edge(sizeof(rdp_tree_edge_data), new_production_node, rule_node);
+
+      /* Now walk the edges under production node, copying the prefix */
+      for (rdp_tree_edge_data *this_sequence_edge = (rdp_tree_edge_data*) graph_next_out_edge(production_node);
+           this_sequence_edge != search_target_in_edge;
+           this_sequence_edge = (rdp_tree_edge_data *) graph_next_out_edge(this_sequence_edge))
+        graph_insert_edge_after_final(sizeof(rdp_tree_edge_data), clone_tree((rdp_tree_node_data*) graph_destination(this_sequence_edge)), new_production_node);
+
+      /* Now walk the edges under production node, copying the suffix */
+      for (rdp_tree_edge_data *this_sequence_edge = (rdp_tree_edge_data*) graph_next_out_edge(search_target_in_edge);
+           this_sequence_edge != NULL;
+           this_sequence_edge = (rdp_tree_edge_data *) graph_next_out_edge(this_sequence_edge))
+        graph_insert_edge_after_final(sizeof(rdp_tree_edge_data), clone_tree((rdp_tree_node_data*) graph_destination(this_sequence_edge)), new_production_node);
+
+    }
+
+    delete_tree(production_node);
+  }
+}
+
+static void gc_expand(rdp_tree_node_data *rdp_tree)
+{
+  while (1)
+  {
+    rdp_tree_node_data* target_production, *target_rule, *cloned_search_target;
+
+    gc_search(rdp_tree, compare_expand);
+    if (search_target == NULL)
+      break;
+
+    /* find parent and grand parent */
+    target_production = (rdp_tree_node_data*) graph_source(graph_next_in_edge(search_target));
+    target_rule = (rdp_tree_node_data*) graph_source(graph_next_in_edge(target_production));
+
+    /* Make new subrule name */
+    search_target->id = (char*) mem_calloc(1, strlen(search_target->id) + 4 /* length of _sub string */ + 8 /* length of number */ + 1);
+    sprintf(search_target->id, "%s_sub%u", target_rule->id, op->sub_rule_number++);
+
+    /* Create table entry for new subrule */
+    nonterminals_data *this_nonterminal = (nonterminals_data*) symbol_lookup_key(nonterminals, &search_target->id, NULL);
+    if (this_nonterminal != NULL)
+      text_message(TEXT_FATAL, "original grammar contains rule %s which conflicts with a sub rule name: please rename\n", search_target->id);
+    this_nonterminal = ((nonterminals_data*) symbol_find(nonterminals, &search_target->id, sizeof(char*), sizeof(nonterminals_data), NULL, SYMBOL_ANY));
+
+    /* Create new nonterminal node in tree */
+    this_nonterminal->rules_tree = (rdp_tree_node_data*) graph_insert_node(sizeof(rdp_tree_node_data), rdp_tree);
+    this_nonterminal->rules_tree->id = search_target->id;
+
+    /* hi and lo counter processing */
+    if (!(search_target->lo == 0 || search_target->lo == 1))
+      text_message(TEXT_FATAL, "tree node %u has lo count of %u: must be zero or one\n", graph_atom_number(search_target), search_target->lo);
+    if (!(search_target->hi == 0 || search_target->hi == 1))
+      text_message(TEXT_FATAL, "tree node %u has hi count of %u: must be zero or one\n", graph_atom_number(search_target), search_target->hi);
+
+    this_nonterminal->rules_tree->hi = search_target->hi;
+    this_nonterminal->rules_tree->lo = search_target->lo;
+
+    /* recursion processing */
+    if (search_target->lo == 1 && search_target->hi == 0)  /* do we need to clone the original rule? */
+      cloned_search_target = clone_tree(search_target);
+
+    /* Stitch old subrule to the new nonterminal nodes, deleting old edges as we go */
+    graph_insert_edge(sizeof(rdp_tree_edge_data), this_nonterminal->rules_tree, rdp_tree);
+
+    rdp_tree_edge_data * this_production_edge = (rdp_tree_edge_data *) graph_next_out_edge(search_target);
+    while (this_production_edge != NULL)
+    {
+      graph_insert_edge(sizeof(rdp_tree_edge_data), graph_destination(this_production_edge), this_nonterminal->rules_tree);
+
+      rdp_tree_edge_data* old_production_edge = this_production_edge;
+      this_production_edge = (rdp_tree_edge_data *) graph_next_out_edge(this_production_edge);
+      graph_delete_edge(old_production_edge);
+    }
+
+    if (search_target->hi == 0)
+    {
+      for (rdp_tree_edge_data * this_production_edge = (rdp_tree_edge_data *) graph_next_out_edge(this_nonterminal->rules_tree);
+           this_production_edge != NULL;
+           this_production_edge = (rdp_tree_edge_data *) graph_next_out_edge(this_production_edge))
+      {
+        rdp_tree_node_data *recursive_node = (rdp_tree_node_data*) graph_insert_node(sizeof(rdp_tree_node_data), rdp_tree);
+        recursive_node->id = this_nonterminal->id;
+        recursive_node->hi = recursive_node->lo = 1;
+        if (search_target->left_recursive)
+          graph_insert_edge(sizeof(rdp_tree_edge_data), recursive_node, graph_destination(this_production_edge));
+        else if (search_target->right_recursive)
+          graph_insert_edge_after_final(sizeof(rdp_tree_edge_data), recursive_node, graph_destination(this_production_edge));
+      }
+
+      if (search_target->lo == 1)  /* stitch clone, deleting old edges as we go */
+      {
+        rdp_tree_edge_data * this_production_edge = (rdp_tree_edge_data *) graph_next_out_edge(cloned_search_target);
+
+        text_printf("this_nonterminal->rules_tree: node %u\n", graph_atom_number(this_nonterminal->rules_tree));
+        text_printf("clone_tree: node %u\n", graph_atom_number(cloned_search_target));
+
+        while (this_production_edge != NULL)
+        {
+          text_printf("this_production_edge: edge %u\n", graph_atom_number(this_production_edge));
+          graph_insert_edge(sizeof(rdp_tree_edge_data), graph_destination(this_production_edge), this_nonterminal->rules_tree);
+
+          rdp_tree_edge_data* old_production_edge = this_production_edge;
+          this_production_edge = (rdp_tree_edge_data *) graph_next_out_edge(this_production_edge);
+          graph_delete_edge(old_production_edge);
+        }
+        graph_delete_node(cloned_search_target);
+      }
+    }
+
+    /* Clean up counters in search target */
+    search_target->hi = search_target->lo = 1;
+    if (search_target->left_recursive || search_target->right_recursive)
+      this_nonterminal->rules_tree->hi = 1;
+
+    search_target->left_recursive = search_target->right_recursive = 0;
+  }
+}
+
+enum grd_kind {GRD_SCANNER, GRD_PARSER, GRD_EVALUATOR};
+
+static void gc_write_grd_rec(enum grd_kind kind, FILE *f, rdp_tree_node_data *this_node)
+{
+  if (this_node == NULL)
+    return;
+
+  rdp_tree_node_data *left_child, *right_child = NULL;
+
+  void *first_edge = graph_next_out_edge(this_node);
+
+  left_child = (rdp_tree_node_data*) graph_destination(first_edge);
+
+  if (first_edge != NULL)
+    right_child = (rdp_tree_node_data*) graph_destination(graph_next_out_edge(first_edge));
+
+  switch (this_node->kind)
+  {
+    case EK_TERMINAL:
+      text_printf("match_terminal(\"%s\") ", this_node->id);
+      break;
+
+    case EK_ACTION:
+      text_printf(", (%s) ) ", this_node->id);
+      break;
+
+    case EK_EPSILON:
+      text_printf(", (set_unite_element(matches, ci)) ");
+      break;
+
+    case EK_NONTERMINAL:
+      text_printf("%s() ");
+      break;
+
+    case EK_INVERT:
+      text_printf("match_not_terminal(\"%s\") ", this_node->id);
+      break;
+
+    case EK_SEQUENCE:
+      break;
+
+    case EK_PERMUTE:
+    case EK_OR:
+      break;
+
+    case EK_ITER: /* parentheses: mondaic, hi = lo = 1 */
+      break;
+
+    case EK_LHS_NONTERMINAL:
+    case EK_RANGE:
+    case EK_DIFF:
+    default:
+      text_redirect(stdout);
+      text_message(TEXT_FATAL, "internal error: unrecognised node kind in evaluate_sets_rec()\n");
+      break;
+  }
+}
+
+static void gc_write_grd(rdp_tree_node_data *root)
+{
+  FILE *grd_scanner;
+
+  if ((grd_scanner = fopen("grd_scanner.c", "w")) == NULL)
+    text_message(TEXT_FATAL, "unable to open file 'grd_scanner.c' for writing\n");
+
+  fprintf(grd_scanner,  "/* grd_scanner.cpp: generated by GT V2.01 from '%s' */\n\n", rdp_sourcefilename);
+
+  for (void *this_edge = graph_next_out_edge(root); this_edge != NULL; this_edge = graph_next_out_edge(this_edge))
+  {
+    rdp_tree_node_data *lhs_node = (rdp_tree_node_data*) graph_destination(this_edge);
+
+    if (lhs_node->nonterminal_symbol_table_entry->is_scanner_rule)
+    {
+      rdp_tree_node_data *child_node = (rdp_tree_node_data*) graph_destination(graph_next_out_edge(child_node));
+
+      gc_write_grd_rec(GRD_SCANNER, grd_scanner, lhs_node);
+    }
+  }
+
+  fclose(grd_scanner);
+}
+
+static int check_lr_sequence(rdp_tree_node_data *this_node, rdp_tree_node_data *lhs_node)
+{
+  while (this_node->kind == EK_SEQUENCE)
+    this_node = (rdp_tree_node_data *) graph_destination(graph_next_out_edge(this_node));
+
+  if (this_node->nonterminal_symbol_table_entry == lhs_node->nonterminal_symbol_table_entry)
+  {
+    this_node->highlight = 2;
+    return 1;
+  }
+}
+
+static void gc_eas_left_recursion_transform_rec(rdp_tree_node_data *this_node, int is_left_child)
+{
+  void *edge = graph_next_out_edge(this_node);
+  rdp_tree_node_data *left_child = (rdp_tree_node_data*) graph_destination(edge), *right_child = NULL;
+
+  static nonterminals_data *lhs;
+
+  if (edge != NULL)
+    right_child = (rdp_tree_node_data*) graph_destination(graph_next_out_edge(edge));
+
+  switch (this_node->kind)
+  {
+    case EK_ROOT: this_node->highlight = 2;
+      for (; edge != NULL; edge = graph_next_out_edge(edge))
+        gc_eas_left_recursion_transform_rec((rdp_tree_node_data*) graph_destination(edge), 0);
+      break;
+
+    case EK_LHS_NONTERMINAL:
+      this_node->highlight = 3;
+      lhs = this_node->nonterminal_symbol_table_entry;
+      gc_eas_left_recursion_transform_rec(left_child, 1);
+      break;
+
+    case EK_OR:
+      this_node->highlight = 4;
+      gc_eas_left_recursion_transform_rec(left_child, 1);
+      gc_eas_left_recursion_transform_rec(right_child, 0);
+      break;
+
+    case EK_SEQUENCE:
+      this_node->highlight = 5;
+      gc_eas_left_recursion_transform_rec(left_child, 1);
+      break;
+
+    case EK_NONTERMINAL:
+      {
+        this_node->highlight = 6;
+        if (this_node->nonterminal_symbol_table_entry == lhs)
+          this_node->highlight = 1;
+      }
+      break;
+
+    case EK_ITER:
+      if (this_node->lo == 0 && this_node->hi == 1)
+      {
+        this_node->highlight = 6;
+
+        rdp_tree_node_data *first_child_node = (rdp_tree_node_data*) graph_destination(graph_next_out_edge(this_node));
+
+        if (first_child_node->kind == EK_NONTERMINAL && first_child_node->nonterminal_symbol_table_entry == lhs)
+          this_node->highlight = 1;
+      }
+      else
+        this_node->highlight = 7;
+      break;
+
+    default:
+      this_node->highlight = 7;
+      break;
+  }
+
+#if 0
+  for (void *this_edge = graph_next_out_edge(root); this_edge != NULL; this_edge = graph_next_out_edge(this_edge))
+  {
+    /* First test this rule for left recursion */
+
+    int lr_node = 0;
+
+    rdp_tree_node_data *lhs_node = (rdp_tree_node_data*) graph_destination(this_edge);
+
+    rdp_tree_node_data *alt_node = (rdp_tree_node_data*) graph_destination(graph_next_out_edge(lhs_node));
+
+    while (alt_node->kind == EK_OR)
+    {
+      void *left_edge = graph_next_out_edge(alt_node);
+
+      alt_node->highlight2 = 1;
+
+      rdp_tree_node_data *left_child = (rdp_tree_node_data*) graph_destination(left_edge);
+
+      lr_node |= check_lr_sequence(left_child, lhs_node);
+
+      alt_node = (rdp_tree_node_data*) graph_destination(graph_next_out_edge(left_edge));
+    }
+
+    lr_node |= check_lr_sequence(alt_node, lhs_node);
+
+    if (lr_node)
+      text_printf("Rule '%s' has direct left recursion\n", lhs_node->id);
+  }
+#endif
+}
+
+void gc_post_parse(void *rdp_tree, int argc, char *argv[])
+{
+  local_argc = argc, local_argv= argv;
+
+  rdp_tree_node_data *root = (rdp_tree_node_data*) graph_root(rdp_tree);
+
+  symbol_sort_scope(terminals, symbol_get_scope(terminals));
+  symbol_sort_scope(nonterminals, symbol_get_scope(nonterminals));
+
+  gc_insert_explicit_hashes(root);
+
+  gc_semantic_check(root);
+
+  if (halt_level > 0)
+    gc_coalesce_multiple_instances(root);
+
+  if (left_recursion_removal)
+    gc_eas_left_recursion_transform_rec(root, 0);
+
+#if 1
+  if (halt_level > 1)
+    gc_substitute(root);
+  if (halt_level > 2)
+    gc_head_tail_expansion(root);
+  if (halt_level > 3)
+    gc_multiply_out(root);
+  if (halt_level > 4)
+    gc_expand(root);
+#endif
+
+  if (vcg_output)
+  {
+    FILE *vcg_file = fopen("gc.vcg", "w");
+
+    if (vcg_file == NULL)
+      text_message(TEXT_FATAL, "unable to open VCG file 'gt.vcg'\n");
+
+    text_redirect(vcg_file);
+    graph_vcg(rdp_tree, NULL, vcg_print_rule_node, NULL /*graph_vcg_diagnostic_edge*/);
+    fclose(vcg_file);
+    text_redirect(stdout);
+  }
+
+  if (art_output)
+    write_grammar(rdp_tree, &art_op, "gc.art", 0, 0, 1);
+
+  if (bison_output)
+    write_grammar(rdp_tree, &bison_op, "gc.by", 1, 0, 0);
+
+  if (gtb_output)
+    write_grammar(rdp_tree, &gtb_op, "gc.gtb", 0, 0, 0);
+
+  if (iso_output)
+    write_grammar(rdp_tree, &iso_op, "gc.iso", 0, 0, 0);
+
+  if (sdf_output)
+    write_grammar(rdp_tree, &sdf_op, "gc.sdf", 0, 0, 0);
+
+  if (yacc_output)
+    write_grammar(rdp_tree, &yacc_op, "gc.y", 0, 1, 0);
+
+  if (parser_output)
+  {
+    gc_evaluate_sets(root);
+    gc_propogate_matches(root);
+    gc_write_grd(root);
+  }
+}
+

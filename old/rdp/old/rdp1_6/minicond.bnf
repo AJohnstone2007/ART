@@ -1,0 +1,107 @@
+(*******************************************************************************
+*
+* RDP release 1.50 by Adrian Johnstone (A.Johnstone@rhbnc.ac.uk) 20 December 1997
+*
+* minicond.bnf - a decorated mini-conditional grammar with interpreter semantics
+*
+* This file may be freely distributed. Please mail improvements to the author.
+*
+*******************************************************************************)
+TITLE("Minicond interpreter V1.50 (c) Adrian Johnstone 1997")
+SUFFIX("m")
+USES("math.h")
+
+SYMBOL_TABLE(minicond 101 31
+             symbol_compare_string
+             symbol_hash_string
+             symbol_print_string
+             [* char* id; integer i; *]
+            )
+
+program   ::= {[var_dec(1) | statement(1)] ';'}.
+
+(* semantic rules - implemented as macros in the C code *)
+_insert(id)       ::= [* if (interpret) 
+                           symbol_insert_key(minicond, &id, sizeof(char*), 
+                                             sizeof(minicond_data)); 
+                      *].
+_lookup(id ret)   ::= [* {
+                           void * sym = symbol_lookup_key(minicond, &id, NULL);
+                           if (sym == NULL) /* not found! */
+                           {
+                             text_message(TEXT_ERROR_ECHO, "Undeclared variable, '%s'\n", id);
+                             sym = symbol_insert_key(minicond, &id, 
+                                                     sizeof(char*), sizeof(minicond_data));
+                           }
+                           ret = minicond_cast(sym)->i;
+                         }
+                       *].
+_update(id val)   ::= [* if (interpret)
+                         {
+                           void * sym = symbol_lookup_key(minicond, &id, NULL);
+                           if (sym == NULL) /* not found! */
+                           {
+                             text_message(TEXT_ERROR_ECHO, "Undeclared variable, '%s'\n", id);
+                             sym = symbol_insert_key(minicond, &id, 
+                                                     sizeof(char*), sizeof(minicond_data));
+                           }
+                           minicond_cast(sym)->i = val;
+                         }
+                      *].
+_and(dst a b)     ::= [* dst = a && b;  *].
+_and_not(dst a b) ::= [* dst = !a && b; *].
+_local_int(a)     ::= [* integer a; *].
+
+var_dec(interpret:integer) ::=
+  'int' ( ID:name _insert(name)                                  (* Declaration *)
+	  ['=' e0:val _update(name val) ]                        (* Initialisation *)
+	)@','.
+
+statement(interpret:integer) ::=
+  ID:name '=' e0:value _update(name value) |                     (* Assignment *) 
+
+  _local_int(flag)
+  'if' e0:cnd 'then' _and(flag cnd interpret) statement(flag)    (* if statement *)
+     [ 'else' _and_not(flag cnd interpret) statement(flag) ] |
+
+  'print' '(' ( e0:value [* if (interpret) printf("%li", value); *] | (* output *)
+		String:str [* if (interpret) printf("%s", str); *]
+	      )@','
+          ')'.
+
+e0:integer ::=
+  e1:result ['>' e1:right  [* result = result > right; *] |      (* Greater than *)
+	     '<' e1:right  [* result = result < right; *] |      (* Less than *)
+             '>=' e1:right [* result = result >= right; *] |     (* Greater than or equal *)
+	     '<=' e1:right [* result = result <= right; *] |     (* Less than or equal *)
+             '==' e1:right [* result = result == right; *] |     (* Equal *)
+             '!=' e1:right [* result = result != right; *] ].    (* Not equal *)
+
+e1:integer ::= e2:result {'+' e2:right [* result += right; *] |  (* Add *)
+                          '-' e2:right [* result -= right; *] }. (* Subtract *)
+
+e2:integer ::= e3:result {'*' e3:right [* result *= right; *] |  (* Multiply *)
+                          '/' e3:right                           (* Divide *) 
+                          [* if (result == 0)       
+                               text_message(TEXT_FATAL_ECHO, "Divide by zero attempted\n"); 
+                             else result /= right; 
+                          *] 
+                         }. 
+
+e3:integer ::= '+' e3:result |                                   (* Posite *)
+               '-' e3:result [* result = -result; *] |           (* Negate *)
+               e4:result.
+
+e4:integer ::= e5:result [ '**' e4:right                         (* Exponentiate *)
+                           [* result = (integer) pow((double) result, (double) right); *] 
+                         ].
+
+e5:integer ::= ID:name _lookup(name result) |                    (* Variable access *)
+               INTEGER:result |                                  (* Numeric literal *)
+               '(' e1:result ')'.                                (* Parenthesised expression *)
+
+comment    ::= COMMENT_NEST('(*' '*)').                          (* Comments *)
+
+String: char* ::= STRING_ESC('"' '\\'):result.                   (* Strings for print *)
+
+(* End of minicond.bnf *)

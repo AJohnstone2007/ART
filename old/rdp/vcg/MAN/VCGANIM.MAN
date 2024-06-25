@@ -1,0 +1,451 @@
+.Id SCCS-info %W% %E% 
+.Id $Id$
+.TH VCGANIM 3 1995/01/05 "Release 1.4" 
+.SH NAME
+vcganim \- interface for vcg animations
+.SH SYNOPSIS
+.LP
+.nf
+.ft B
+#include <vcg/vcganim.h>
+.ft
+.fi
+.LP
+.nf
+.BR "int vcg_init_X11_animation(" "state, wt, mt, fn, dn, cb, vb)"
+.ft B
+struct vcg_anim_stat *state;
+int wt;
+int mt;
+char *fn;
+char *dn;
+int cb;
+int vb;
+.fi
+.ft
+.fi
+.LP
+.nf
+.BR "int vcg_init_animation(" "state, wt, mt, fn, dp, cb, vb)"
+.ft B
+struct vcg_anim_stat *state;
+int wt;
+int mt;
+char *fn;
+Display *dp;
+int cb;
+int vb;
+.fi
+.ft
+.fi
+.LP
+.nf
+.BR "int vcg_animation_time(" "state)"
+.ft B
+struct vcg_anim_stat *state;
+.fi
+.ft
+.fi
+.LP
+.nf
+.BR "int vcg_animation_wait(" "state)"
+.ft B
+struct vcg_anim_stat *state;
+.fi
+.ft
+.fi
+.LP
+.nf
+.BR "int vcg_animation_call(" "state, geometry)"
+.ft B
+struct vcg_anim_stat *state;
+char *geometry;
+.fi
+.ft
+.fi
+.LP
+.nf
+.BR "int vcg_animation_send(" "state, lenght, [ , msgs \|.\|.\|. ])"
+.ft B  
+struct vcg_anim_stat *state;
+int lenght;
+int msgs;
+.fi
+.ft
+.fi
+.LP
+.nf
+.BR "int vcg_animation_sendwin(" "state, win)"
+.ft B
+struct vcg_anim_stat *state;
+Window win;
+.fi
+.SH DESCRIPTION
+The animation interface library of the VCG tool provides functions
+to call and communicate with the VCG tool.
+It works only for X11 applications because the communication is
+implemented by  XClientMessageEvents.
+.br
+.I vcg_init_X11_animation(
+state, wt, mt, fn, dn, cb, vb)
+initializes an application for the animation.
+It contacts the X11 display using the display name
+.I dn
+(note: 
+.I dn 
+can be NULL),
+sets the wait time 
+.I wt
+the VCG tool has to wait after each refresh,
+sets the maximal wait time  
+.I mt
+the application should wait for the answer of the VCG tool,
+the file name
+.I fn
+of the specification file,
+the callback mechanism
+.I cb
+and the verbose level
+.I vb.
+This function should be used if the application is not an 
+X11 program.
+.br
+If the application is an X11 program, it should do the X11 initialization
+itself and open an X11 display
+.I dp.
+In this case, it should call
+.I vcg_init_animation(
+state, wt, mt, fn, dp, cb, vb)
+in order to avoid that the X11 display is opened twice.
+.br
+The callback mechanism is the mechanism how the VCG tool announces 
+that the relayout is ready.
+The callback flag = 0 means that there is no special callback mechanism.
+The VCG tool touches the specification file
+.I fn
+which gets a new time stamp.
+The callback flag = 1 means that the VCG tool sends a ClientMessage
+to the application. 
+This makes sense only if the application itself is an X11 program.
+In this case we have a true bidirectional communication.
+The callback flag = 2 means that the VCG tool sends a signal
+.I SIGUSR1
+to the application.
+In this case we have a very restricted bidirectional communication.
+.br
+After initialization
+.I vcg_animation_call(
+state, geometry)
+calls the VCG tool with the first instance of the graph specification.
+.I geometry
+is the X11 geometry string passed to the VCG tool.
+It may be NULL.
+A VCG process is forked such that both the application and the VCG tool
+run concurrently.
+.br
+.I vcg_animation_time(
+state)
+checks the time stamp of the specification file.
+In callback mode 0,
+each time a new instance of the specification file is produced
+the time stamp should be checked.
+.br
+.I vcg_animation_wait(
+state)
+pauses until the time stamp of the specification file has changed.
+This is useful in callback mode 0
+to recognize that the VCG tool is ready with the
+visualization.
+.br
+.I vcg_animation_send(
+state, lenght, ...)
+sends a message of 
+.I lenght 
+to the VCG tool that was started by
+.I vcg_animation_call.
+The message is a sequence of at most 20 bytes.
+.br
+.I vcg_animation_sendwin(
+state, win)
+sends the id of an X11 window 
+.I win 
+to the VCG tool that was started by
+.I vcg_animation_call.
+This window is used as call back window (callback mode 1).
+
+.SH MESSAGES
+The following messages can be send by 
+.I vcg_animation_send. 
+.TP 15
+VCGREADY    
+indicate the processing of the last message is ready.
+.TP
+VCGRELOAD   
+reload the new instance of the specification file. 
+.TP
+VCGRELAYOUT
+relayout the graph. 
+.TP
+VCGREDRAW  
+redraw the VCG window. 
+.TP
+VCGCLOSE    
+close the VCG window. 
+.TP
+VCGOPEN     
+open  the VCG window. 
+.TP
+VCGEXIT    
+exit the VCG tool. 
+
+.SH RETURN VALUES
+On sucess, the functions return NULL.
+On failure, the functions return -1. 
+
+.SH EXAMPLE 1
+Application A is not an X11 application. No client back necessary. 
+The communication is done using the file 
+.I specfile.vcg.
+
+.br
+	#include <stdio.h>
+.br
+	#include <vcganim.h>
+.br 
+
+.br
+.I	...
+.br
+	struct vcg_anim_stat my_state;
+.br
+	FILE *f;
+.br
+.I	...
+.br
+
+.br
+	if (vcg_init_X11_animation(
+.br
+		&my_state,
+.br
+		1,       
+.br
+		60,     
+.br
+		"specfile.vcg", 
+.br
+		NULL,          
+.br
+		0,            
+.br
+		0            
+.br
+	   )) fatal_error(...);
+.br
+
+.br
+.I	...
+.br
+	f = fopen("specfile.vcg","w");
+.br
+.I	... create first graph and write into specfile.vcg ...
+.br
+	fsync(fileno(f)); fclose(f);
+.br
+	if (vcg_animation_time(&my_state)) fatal_error(...);
+.br
+	if (vcg_animation_call(
+.br
+		&my_state,
+.br
+		"300x300+30-30"		
+.br
+	   )) fatal_error(...);
+.br
+
+.br
+.I	...
+.br
+.I	/* Wait for the VCG tool */
+.br
+	if (vcg_animation_wait(&my_state)) fatal_error(...);
+.br
+	f = fopen("specfile.vcg","w");
+.br
+.I	... create next instance of graph ...
+.br
+.I	... and write into specfile.vcg ...
+.br
+	fsync(fileno(f)); fclose(f);
+.br
+	if (vcg_animation_time(&my_state)) 
+.br
+		fatal_error(...);
+.br
+	if (vcg_animation_send(&my_state, 1, VCGRELOAD)) 
+.br
+		fatal_error(...); 
+.br
+
+.br
+.I	... and so on ...
+.br
+
+.br
+.I	/* Finally we want to close the VCG window 
+.br
+.I	 * and exit the VCG tool 
+.br
+.I	 */
+.br
+
+.br
+.I	/* Wait for the VCG tool */
+.br
+	if (vcg_animation_wait(&my_state))        
+.br
+		fatal_error(...);
+.br
+	if (vcg_animation_send(&my_state, 1, VCGCLOSE)) 
+.br
+		fatal_error(...);
+.br
+	if (vcg_animation_send(&my_state, 1, VCGEXIT))  
+.br
+		fatal_error(...);
+
+
+.SH EXAMPLE 2
+Application B is an X11 application and has its own event dispatch loop. 
+The VCG tool answers with client back messages. 
+The communication is done using the file 
+.I specfile.vcg.
+
+.br
+	#include <stdio.h>
+.br
+	#include <vcganim.h>
+.br
+
+.br
+.I	...
+.br
+	struct vcg_anim_stat my_state;
+.br
+	FILE *f;
+.br
+
+.br
+.I	... initialization of X11 ...
+.br
+.I	... get the root display into the variable r_dsp ...
+.br
+.I	... get the frame window into the variable f_win ...
+.br
+.I	...
+.br
+	if (vcg_init_animation(
+.br
+		&my_state,       
+.br
+		1,		
+.br
+		60,	
+.br
+		"specfile.vcg",  
+.br
+		r_dsp,          
+.br
+		1,	
+.br
+		0  
+.br
+	   )) fatal_error(...);
+.br
+
+.br
+.I	...
+.br
+	f = fopen("specfile.vcg","w");
+.br
+.I	... create first graph and write into specfile.vcg ...
+.br
+	fsync(fileno(f)); fclose(f);
+.br
+	if (vcg_animation_call(
+.br
+		&my_state,
+.br
+		NULL	
+.br
+	   )) fatal_error(...);
+.br
+	vcg_animation_sendwin(&my_state, f_win);
+.br
+
+.br
+.I	...
+.br
+.I	... anywhere, we have the routine that reacts ...
+.br
+.I	... on a ClientBack, (message events ...
+.br 
+.I	... coming from the VCG Tool) ...
+.br
+
+.br
+	on_ClientMessageEvent()
+.br
+	{
+.br
+
+.br
+		f = fopen("specfile.vcg","w");
+.br
+
+.br
+.I		... create next instance of graph; 
+.br
+.I		... write into specfile.vcg ...
+.br
+
+.br
+		fsync(fileno(f)); fclose(f);
+.br
+
+.br
+		if (vcg_animation_send(&my_state, 1, VCGRELOAD)) 
+.br
+			fatal_error(...); 
+.br
+	}
+.br
+
+.br
+.I	...
+.fi
+
+
+.SH LINKING
+The application that uses these functions must be linked with
+.I -lvcg -lX11. 
+Note: if the library libvcg.a was installed by using a C++ compiler,
+it can only be called from C++ programs, but not from C programs.
+If the library was installed by using a C compiler, it can be called
+from C programs and C++ programs. For C++ programs, use the following
+include mechanism:
+.br
+	extern "C" {
+.br
+	#include <vcganim.h>
+.br
+	}
+
+.SH SEE ALSO
+vcg(1l) xvcg(1l) XClientMessageEvent(3)
+.SH BUGS
+Currently, no bugs are known.
+.SH AUTHOR
+Georg Sander, University of Saarland.
+
+

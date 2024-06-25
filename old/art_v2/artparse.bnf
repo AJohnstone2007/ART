@@ -1,0 +1,206 @@
+  (* art.bnf - ART V2.98 front end grammar (c) Adrian Johnstone 2009-2017 *)
+
+TITLE("ART V2.98 (c) Adrian Johnstone 2009-2016")
+USES("artaux.h")
+MAX_ERRORS(0)
+MULTIPLE_SOURCE_FILES
+TEXT_SIZE(100000)
+SUPPRESS_BUILT_IN_ARGUMENTS
+ARG_BLANK("\\nGrammar processing options - processing order is c/C, M, L, B")
+ARG_BOOLEAN(c artClosureRight "rewrite ()* and ()+ closures as right-recursive nonterminals")
+ARG_BOOLEAN(C artClosureLeft "rewrite ()* and ()+ closures as left-recursive nonterminals")
+ARG_BOOLEAN(M artMultiplyOut "multiply out EBNF brackets () and ()?")
+ARG_BOOLEAN(L artLeftFactor "syntactically left factor BNF")
+ARG_BOOLEAN(B artBracketToNonterminal "replace () brackets with nonterminals")
+ARG_BLANK("\\nGenerated parser and lexer mode options")
+ARG_BOOLEAN(U artClusteredGSS "use clustered GSS (default: do not use)")
+ARG_BOOLEAN(D artDelayPoppingDescriptors "enable delayed fetch of popping descriptors (default: treat all descriptors identically)")
+ARG_BOOLEAN(E artPredictivePops "enable predictive pops for nested do-firsts (default: EBNF standard pops throughout)")
+ARG_BOOLEAN(F artFIFODescriptors "use First-In, First-Out processing order for descriptors (default: use Last-In, first Out processing")
+ARG_STRING(g artTargetLanguageString "target language - one of: C++ Java C++_OLD (default: Java)")
+ARG_STRING(d artDespatchModeString   "despatch mode   - one of: dynamic static state fragment (default: fragment for Java; static for other languages)")
+ARG_STRING(s artSupportModeString    "support mode    - one of: BigFastSimple HashPool ObjectOriented (default: HashPool)")
+ARG_BOOLEAN(S artSuppressSemantics  "suppress instantiation of semantic actions into the L-attributed evaluator")
+ARG_NUMERIC(T artTreeLevel  "derivation tree level - one of: 0 (no tree generation), 1 (derivation tree), 2 (derivation tree showing GIFT annotations), 3 (Rewritten Derivation Tree [default])")
+ARG_BOOLEAN(e artEOSFollow "add End-Of-String ($) to all nonterminal follow sets")
+ARG_BOOLEAN(X artMGLL "MGLL parsing with ambiguous lexical input")
+ARG_BLANK("\\nGenerated GLL template optimisation control options")
+ARG_BOOLEAN(l artExploitDeterminism "use deterministic parsing on LL(1) deterministic parts of the grammar")
+ARG_BOOLEAN(p artSuppressPopGuard "suppress guard on pops (default: guard pops)")
+ARG_BOOLEAN(P artSuppressProductionGuard "suppress guard on productions (default: guard productions)")
+ARG_BOOLEAN(Q artSuppressNonterminalGuard "suppress guard on nonterminals (default: guard nonterminals)")
+ARG_BOOLEAN(t artTestRepeatNo "suppress calls to testRepeat() except for closures (default: use all calls to testRepeat())")
+ARG_BLANK("\\nParanoia options")
+ARG_BOOLEAN(m artWarnOnMultiple "issue warning if multiple right hand sides are found in the same module (default: do not issue warning)")
+ARG_BOOLEAN(w artErrorOnWirth "Wirth style EBNF metasymbols [] and {} generate error (default: on) add -w to ENABLE semantic actions and insertions")
+ARG_BOOLEAN(v artVerbose "output verbose diagnostic information")
+ARG_BOOLEAN(V artVersion "output version information and exit")
+ARG_BLANK("\\nOutput options")
+ARG_STRING(G artGrammarFormatString "print grammar in tool format - one of: antlr art bison dparser elkhound gtb rascal rdp rats spoofax sdf")
+ARG_STRING(n artParserName "output parser name (default: ARTGLLParser)")
+ARG_STRING(x artLexerName "output lexer name (default: ARTGLLLexer)")
+ARG_STRING(N artParserNamespace "output name space, package or module (default: none)")
+ARG_STRING(o artOutputDirectory "output directory (default: .)")
+
+TREE([* struct rdp_tree_node_data_struct *thisNode; // a back pointer to ourselves so that insertions carry their trees within themselves
+        enum artKind kind;                          // The flavour of this symbol - a copy is held in the tableEntry record if there is one
+        enum artFold fold;                          // the TIF status from ^ and ^^ in the tree
+        int nodeNumber;                             // intermediate form node number
+        int instanceNumber;                         // instance number for this element in a production to generate attribute name
+        const char* instanceName;                   // For a nonterminal with attributes or a names terminal, the instance name
+                                                    // For named nonterminals and terminals the instance name is that name
+                                                    // For unnamed nonterminals the instance name is node id concatentated with the instance number
+        int deleted:1;                              // Nodes to ignore
+
+        struct rdp_tree_node_data_struct *rightSibling;    // Direct link to the next right-sibling of this node. Null means there is no right-sibling
+
+        struct symbols_data_node *tableEntry;       // Link to symbol table entry for this node as created in modularity code
+        struct symbols_data_node *atomName;         // Link to symbol tale entry for the atom name given in a : expression in the RDT
+        struct symbols_data_node *gatherName;       // the gather nonterminal name given in a ! expression in the RDT
+        struct symbols_data_node *rangeUpperCharacterTerminal; // Top element of character enumeration
+
+        struct rdp_tree_node_data_struct *tearLink; // for nodes labelled 'tear', a link back to the node that is to be inserted
+
+        set_ first;                                 // First set of this node
+        set_ follow;                                // Follow set for this node: FOLLOW() if LHS node; INSTANCE_FOLLOW() for RHS nodes
+        set_ guard;                                 // Guard set for this node
+
+        rdp_tree_node_data_struct *lhsL;            // Left Hand Side nonterminal rule (pos nodes only)
+        rdp_tree_node_data_struct *niL;             // Nonterminal instance preceding slot (pos nodes only) - used in instanceOfs array
+        rdp_tree_node_data_struct *aL;              // if EoA(L) then E_r_n else L
+        rdp_tree_node_data_struct *nL;              // Slot after L
+        rdp_tree_node_data_struct *pL;
+
+        rdp_tree_node_data_struct *lrL;             // The L_r slot
+        rdp_tree_node_data_struct *erL;             // The E_r slot
+
+        bool isLHS;                                 // LHS node at level 2
+        bool isDelayed;                             // Delay evaluation at this node
+        bool isSPPFLabel;                           // Corresponds to an SPPF label in the generated parser
+        bool isCodeLabel;                           // Corresponds to a GOTO label in the generated parser
+        bool isTestRepeatLabel;                     // Corresponds to a testRepeat() label parameter in the generated parser
+        bool isAltLabel;                            // Corresponds to a GLL_A_ style label used in the alternate template
+        bool isRELabel;                             // Corresponds to a GLL_T_ style label used in the nullable bracket templates
+        bool isReferredLabel;                       // Corresponds to a label that is used in the aL, pL
+        bool isClosureLabel;                        // Corresponds to a label that is used in closure templates
+        bool isGiftLabel;                           // Corresponds to an element that has a GIFT operator
+        bool isPosSelector;                         // Is a POS node for which a selector set should be emitted
+        bool isPosParentLabel;                      // Labels a POS node which has semantics or insertions below it
+        bool isPopD;                                // Is popping descriptor
+        bool isPostPredictivePop;                   // Is after deep end of FGLL do-first bracket
+        bool isPredictivePop;                       // Is deep end of FGLL do-first bracket
+        bool isNullableBracket;                     // bracket body matches epsilon OR bracket is )? OR bracket is )*
+        bool isColon;                               // slot after a {}
+
+        bool isEoOP;                                // is End of Optional or Parenthesis (pos nodes only)
+        bool isEoA;                                 // is End of Alternate (pos nodes only)
+        bool isEoR;                                 // is End of Rule (pos nodes only)
+        bool isFiRx;                                 // + is First in Rule (pos nodes only) - modified in Auguest 2016 EBNF paper
+        bool isFiPC;                                // + is First in Positive Closure (pos nodes only) - added in Auguest 2016 EBNF paper
+
+        bool isEoD;                                 // is End of Sequence under Do first
+        bool isEoO;                                 // is End of Sequence under Optional
+        bool isEoP;                                 // is End of Sequence under Positive Closure
+        bool isEoK;                                 // is End of Sequence under Kleene Closure
+
+*] [* *])
+
+POST_PARSE([* artPostParse(rdp_tree); *])
+
+GLOBAL([* static int artLastParenthesisPosition = 0; *])
+
+text ::= { major }.
+
+major ::= identifier ( whitespace imports start options | ( deleter^^ | [ name ] [ attributes ] production^^ ) body ';'^ ) |
+          lexical^^ |
+          prelude^^ |
+          support^^ |
+          equation^^ .
+
+attributes ::= '<'^ { attribute } '>'^.
+
+attribute ::= identifier^^ ':'^ identifier .
+
+lexical ::= 'lexical'^ '('^ lexicalDisambiguator { ','^ lexicalDisambiguator } ')'^;
+
+lexicalDisambiguator ::= lexicalGroup [ ('>>>'^^ | '<<<'^^ ) | ('>'^^ | '>>'^^ | '<<'^^ | '^'^^) lexicalGroup ]:^^ .
+
+lexicalGroup ::= lexicalItem | '('^ lexicalItem {','^ lexicalItem} ')'^ .
+
+lexicalItem ::= fullNonterm^^ |
+           caseSensTerm^^ |
+           caseInsensTerm^^ |
+           charTerm^^ |
+           builtinTerm^^ .
+
+prelude ::= 'prelude'^ < annotation > .
+
+support ::= 'support'^ < annotation | attributes > .
+
+equation ::= equationLabel equationBody .
+
+equationBody ::= identifier '='^^ identifier.
+
+deleter ::= ':/='^ .
+production ::= '::='^ .
+
+imports ::= '('^ { import } ')'^ .
+import  ::=             importOp rewriteSet importRHS |  (* non LHS nonterminal *)
+            importLHS [ importOp rewriteSet importRHS ].
+
+importLHS ::= fullNonterm .  (* Note that a real importLHS may not have a module spec - semantic error check *)
+importOp ::= '<-' | '<=' | '<-*' | '<=*' .
+rewriteSet ::= [ '('^ {identifier} ')'^ ] .
+importRHS ::= fullNonterm .
+
+options ::= [ annotation ] .
+whitespace ::= [ import | < charTerm | builtinTerm | epsilon > ].
+start ::= '('^ [identifier] ')'^ .
+
+body ::= cat { '|'^ cat } .
+cat::= pos < abbrev pos > .
+
+pos ::= ['.' [ name ] ] { insertion | annotation } .
+insertion ::= '['^ [* if (artErrorOnWirth) text_message(TEXT_ERROR, "'[' character might be Wirth-style EBNF: add -w option to enable insertions\n"); *] cat ']'^ .
+
+annotation ::= COMMENT_NEST_VISIBLE('{' '}').
+abbrev ::= iter [ [* if (artLastParenthesisPosition != 0 && artLastParenthesisPosition + 1 != scan_column_number())
+                       text_message(TEXT_WARNING_ECHO, "postfix operator not contiguous with closing parenthesis\n"); *]
+                  ('*'^^ | '+'^^ | '?'^^)
+                ]:^^ .
+iter ::= diff [ '@'^  diff ]:^^.
+diff ::= unarynot [ '/'^ unarynot ]:^^ .
+unarynot ::=  ['~'^]:^^ elem.
+elem ::= ( epsilon^^ |
+           nonTerm^^ |
+           caseSensTerm^^ |
+           caseInsensTerm^^ |
+           charTerm^^ |
+           builtinTerm^^ |
+           insertTearName^^
+         ) [* artLastParenthesisPosition = 0; *]
+         [ name ] [delay] [gather] [ fold ] |
+         '('^ alt [* artLastParenthesisPosition = scan_column_number(); *] ')'^^ [ gather ] .
+
+alt ::= cat { '|'^ cat }:^^ .
+
+name ::= ':'^ identifier .
+delay ::= '<'^ .
+gather ::= '!'^ identifier.
+fold ::= '^_' | '^' | '^^' | '>' | '>>' .
+insertTearName ::= '%%'^ identifier .
+
+epsilon ::=  '#'^.
+
+identifier ::= ID^^ | STRING_ESC('$' '\\')^^ .
+nonTerm ::= identifier .
+fullNonterm ::= identifier^^ ['.'^ identifier ].
+equationLabel ::= STRING_ESC('%' '\\') .
+caseSensTerm ::= STRING_ESC('\'' '\\'):val [* if (*val == 0) text_message(TEXT_ERROR_ECHO, "empty case sensitive terminal\n"); *] .
+caseInsensTerm ::= STRING_ESC('"' '\\'):val [* if (*val == 0) text_message(TEXT_ERROR_ECHO, "empty case insensitive terminal\n"); *] .
+charTerm ::= CHAR_ESC('`' '\\') [ '..'^ CHAR_ESC('`' '\\') ].
+builtinTerm ::= '&'^ ID .
+
+comment1 ::= COMMENT_NEST('(*' '*)').
+comment2 ::= COMMENT_LINE('//').
+

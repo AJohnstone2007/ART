@@ -1,0 +1,14 @@
+a 
+$S ::= `a;$ 
+accept $a$ 
+reject $$ $aa$ $aaa$ $b$ $bb$ $bbb$ $c$ $cc$ $ccc$
+
+Sa_H 
+$S ::= S (`a)* | #;$ 
+accept $$ $a$ $aa$ $aaa$ $aaaa$ 
+reject $ab$
+
+Sa_a 
+$S ::=  S (`a) | `a;$ 
+accept $a$ $aa$ $aaa$ $aaaa$ 
+reject $$ $ab$

@@ -1,0 +1,232 @@
+(*****************************************************************************
+*
+* gramconv release 2.2 by Adrian Johnstone (A.Johnstone@rhul.ac.uk) 23 Feb 2012
+*
+* This file may be freely distributed. Please mail improvements to the author.
+*
+*****************************************************************************)
+TITLE("gramconv V2.2 (c) Adrian Johnstone 2006-2012")
+SUFFIX("bnf")
+TREE ([* unsigned lo;
+         unsigned hi;
+         enum gc_kind kind;
+
+         enum gc_promotion promotion;
+
+         int substitute:1;
+         int head_tail_expansion:1;
+         int multiply:1;
+         int left_recursive:1;
+         int right_recursive:1;
+
+         union {struct nonterminals_data_node *nonterminal_symbol_table_entry; struct terminals_data_node *terminal_symbol_table_entry;};
+
+         char *sub_rule_name;
+         unsigned sub_rule_number;
+
+         struct p_block *inherited;
+         struct p_block *synthesized;
+         struct p_block *local;
+
+         set_ *char_set;
+
+         int has_char_set_instance;
+
+         int matches_character:1;
+         int matches_keyword:1;
+         int matches_only_epsilon:1;
+         int matches_useless:1;
+
+         int highlight;
+      *] [* *] )
+
+POST_PARSE([* gc_post_parse(rdp_tree, argc, argv); *])
+USES("gc_aux.h")
+(*SUPPRESS_BUILT_IN_ARGUMENTS*)
+PASSES(2)
+TEXT_SIZE(100000)
+
+ARG_BLANK("")
+ARG_BLANK("Input styles")
+ARG_BOOLEAN(c curly_parenthesis "treat { } as ( ) rather than as Kleene closure")
+ARG_BLANK("")
+ARG_BLANK("EBNF to BNF translation control")
+ARG_NUMERIC(h halt_level "halt after phase <n>:\\n   -h0 parse\\n   -h1 coalesce\\n   -h2 sets\\n   -h3 substitute\\n   -h4 head/tail\\n   -h5 iterator\\n   -h6 multiply")
+ARG_BLANK("")
+ARG_BLANK("Output styles")
+ARG_BOOLEAN(a art_output "ART style output to gt.art")
+
+ARG_BOOLEAN(b bison_output "GNU Bison style output to gt.by")
+ARG_BOOLEAN(g gtb_output "GTB style output to gt.gtb")
+ARG_BOOLEAN(i iso_output "ISO-standard style output to gt.iso")
+ARG_BOOLEAN(s sdf_output "SDF style output to gt.sdf")
+ARG_BOOLEAN(y yacc_output "YACC style output to gt.y")
+ARG_BLANK("")
+ARG_BOOLEAN(p pure_grammar "pure grammar output: suppress lexical rules, actions, attributes and parameters from output")
+ARG_STRING(T start_nonterminal "use nonterminal <s> as start symbol")
+ARG_BOOLEAN(t terminalise "treat undefined nonterminals as terminals")
+ARG_BLANK("")
+ARG_BOOLEAN(v vcg_output "output internal grammar representation to gt.vcg")
+ARG_BLANK("")
+ARG_BLANK("Unsupported options for RHUL internal use only")
+ARG_BOOLEAN(L left_recursion_removal "remove direct left recursion using EAS transform")
+ARG_BOOLEAN(P parser_output "output grd_scanner.cpp, grd_parser.cpp, and rd_semantics.cpp for grammar with start rule <s>")
+ARG_STRING(W whitespace_nonterminal "use nonterminal <s> for whitespace rule")
+
+SYMBOL_TABLE(nonterminals 101 31
+             symbol_compare_string
+             symbol_hash_string
+             symbol_print_string
+             [* char* id;
+                int defined:1;
+                int used:1;
+                int is_scanner_rule;
+                int has_synthesized_attributes;
+                int has_inherited_attributes;
+                int has_local_attributes;
+                rdp_tree_node_data *rules_tree;
+                int matches_character:1;
+                int matches_keyword:1;
+                int matches_only_epsilon:1;
+                int matches_useless:1;
+             *]
+            )
+
+SYMBOL_TABLE(terminals 101 31
+             symbol_compare_string
+             symbol_hash_string
+             symbol_print_string
+             [* char* id; *]
+            )
+
+text ::= [* rdp_tree->kind = EK_ROOT; *]@2 { directive^ | immediate_action^ | rule } .
+
+directive ::= '!.'^ [* default_left_recursive = default_right_recursive = default_head_tail_expansion = default_multiply = 0; *] |
+              '!|'^ [* default_head_tail_expansion = 1; *] |
+              '!^'^ [* default_substitute = 1; *] |
+              '!*'^ [* default_multiply = 1; *] |
+              '!>'^ [* default_right_recursive = 1; default_left_recursive = 0; *] |
+              '!<'^ [* default_left_recursive = 1; default_right_recursive = 0; *] |
+
+              '!b'^ [* bison_output = 1; *] |
+              '!g'^ [* gtb_output = 1; *] |
+              '!i'^ [* iso_output = 1; *] |
+              '!s'^ [* sdf_output = 1; *] |
+              '!y'^ [* yacc_output = 1; *] |
+
+              '!p'^ [* pure_grammar = 1; *] |
+
+              '!c'^ [* curly_parenthesis = 1; *] |
+
+              '!h'^ INTEGER:value^ [* halt_level = value; *] |
+
+              '!v'^ [* vcg_output = 1; *] |
+
+              'P'^ [* parser_output = 1; *] |
+              '!S'^ ID:nonterminal_id [* start_nonterminal = nonterminal_id; *] |
+              '!W'^ ID:nonterminal_id [* whitespace_nonterminal = nonterminal_id; *] .
+
+rule ::= lhs_nonterminal^^ ( '::='^ | ':'^ | '::'^ | '='^ ) alternates ( '.'^ | ';'^) .
+
+
+alternates ::= sequence^^
+               [ < '|'^^^ [* rdp_tree->kind = EK_OR; *]@2 sequence [ '||'^ [* text_message(TEXT_ERROR_ECHO, "illegal mixing of | and || at the same level: use parentheses\n"); *] sequence ] > |
+                 < '||'^^^ [* rdp_tree->kind = EK_PERMUTE; *]@2 sequence [ '|'^ [* text_message(TEXT_ERROR_ECHO, "illegal mixing of | and || at the same level: use parentheses\n"); *] sequence ] >
+               ] .
+
+sequence ::=  [ iterator^^ { [','^^^ ]:^^^ [* rdp_tree->kind = EK_SEQUENCE; rdp_tree->id = ",,"; *]@2 iterator } ]:[* if (rdp_tree_update) { rdp_tree->kind = EK_EPSILON; rdp_tree->id = "#"; } *].
+
+iterator ::= set_diff^^ { '@'^^^  [* rdp_tree->kind = EK_ITER; rdp_tree->lo = 1; rdp_tree->hi = 0; *]@2
+                        [ INTEGER:x^ [* rdp_tree->hi = x; *]@2 [ INTEGER:y^ [* rdp_tree->lo = rdp_tree->hi; rdp_tree->hi = y; *]@2 ]
+                        ]
+                        set_diff } .
+
+set_diff ::= invert^^ { '\\'^^^ [* rdp_tree->kind = EK_DIFF; rdp_tree->lo = 1; rdp_tree->hi = 1; *]@2 invert }.
+
+invert ::= postfix ^^ | '~'^^ [* rdp_tree->kind = EK_INVERT; *]@2 invert.
+
+postfix ::= operand^^
+            { '?'^^^ [* rdp_tree->kind = EK_ITER; rdp_tree->lo = 0; rdp_tree->hi = 1; *]@2 |
+              '*'^^^ [* rdp_tree->kind = EK_ITER; rdp_tree->lo = 0; rdp_tree->hi = 0; *]@2 |
+              '+'^^^ [* rdp_tree->kind = EK_ITER; rdp_tree->lo = 1; rdp_tree->hi = 0; *]@2 |
+              '^_'^ [* rdp_tree->promotion = EP_UNDER; *]@2    |
+              '^^'^ [* rdp_tree->promotion = EP_OVER; *]@2     |
+              '!^'^ [* rdp_tree->substitute = 1; *]@2          |
+              '!|'^ [* rdp_tree->head_tail_expansion = 1; *]@2 |
+              '!*'^ [* rdp_tree->multiply = 1; *]@2            |
+              '!>'^ [* rdp_tree->right_recursive = 1; rdp_tree->left_recursive = 0; *]@2 |
+              '!<'^ [* rdp_tree->left_recursive = 1; rdp_tree->right_recursive = 0; *]@2
+            } .
+
+operand ::= '#'^^ [* rdp_tree->kind = EK_EPSILON; *]@2 |
+            '...'^^ [* rdp_tree->kind = EK_ELLIPSIS; *]@2 |
+            tree_action^^ |
+            '{'^ alternates^^ '}'^^^ [* rdp_tree->kind = EK_ITER; rdp_tree->lo = 0; rdp_tree->hi = 0; *]@2 |
+            '['^ alternates^^ ']'^^^ [* rdp_tree->kind = EK_ITER; rdp_tree->lo = 0; rdp_tree->hi = 1; *]@2 |
+            '<'^ alternates^^ '>'^^^ [* rdp_tree->kind = EK_ITER; rdp_tree->lo = 1; rdp_tree->hi = 0; *]@2 |
+            '('^ alternates^^ ')'^^^ [* rdp_tree->kind = EK_ITER; rdp_tree->lo = 1; rdp_tree->hi = 1; *]@2 |
+            range^^ .
+
+range ::= ( nonterminal^^ | terminal^^ )['..'^^^ [* rdp_tree->kind = EK_RANGE; rdp_tree->lo = 1; rdp_tree->hi = 1; *]@2 (nonterminal | terminal) ].
+
+terminal: terminals_data* ::= (STRING_ESC('\'' '\\'):name^^ | STRING_ESC('"' '\\'): name^^)
+                              [* result = (terminals_data*) symbol_find(terminals, &name, sizeof(char*), sizeof(terminals_data), NULL, SYMBOL_ANY); *]
+                              [* rdp_tree->kind = EK_TERMINAL; rdp_tree->lo = 1; rdp_tree->hi = 1; rdp_tree->terminal_symbol_table_entry = result; *]@2 .
+
+nonterminal: nonterminals_data* ::= ID: name^^ {'-' ID:extension^}
+                                    [* result = (nonterminals_data*) symbol_find(nonterminals, &name, sizeof(char*), sizeof(nonterminals_data), NULL, SYMBOL_ANY);
+                                       result->used = 1;
+                                    *]
+                                    [* rdp_tree->kind = EK_NONTERMINAL; rdp_tree->lo = 1; rdp_tree->hi = 1; rdp_tree->nonterminal_symbol_table_entry = result; *]@2
+                                    [* if (result->has_synthesized_attributes)
+                                       {
+                                    *]
+                                    arguments:a^ [* rdp_tree->synthesized = a; *]@2
+                                    [* } *]
+
+                                    [* if (result->has_inherited_attributes)
+                                       {
+                                    *]
+                                    arguments:a^ [* rdp_tree->inherited = rdp_tree->synthesized; rdp_tree->synthesized = a; *]@2
+                                    [* } *] .
+
+lhs_nonterminal: nonterminals_data* ::= ID: name^^ {'-' ID:extension^}
+                                        [* lhs_count++;
+                                           result = (nonterminals_data*) symbol_find(nonterminals, &name, sizeof(char*), sizeof(nonterminals_data), NULL, SYMBOL_ANY);
+                                           result->defined = 1;
+                                           result->rules_tree = rdp_tree;
+                                        *]
+                                        [* rdp_tree->kind = EK_LHS_NONTERMINAL; rdp_tree->lo = 1; rdp_tree->hi = 1; rdp_tree->nonterminal_symbol_table_entry = result; *]@2
+                                        [ '('^ parameters:p^ ')'^ [* result->has_synthesized_attributes = 1; *]@1 [* rdp_tree->synthesized = p; *]@2
+                                          [ '('^ parameters:p^ ')'^ [* result->has_inherited_attributes = 1; *] @1 [* rdp_tree->inherited = rdp_tree->synthesized; rdp_tree->synthesized = p; *]@2 ]
+                                          [ parameters:p^  [* result->has_local_attributes = 1; *] @1 [* rdp_tree->local = p; *]@2 ]
+                                        ].
+
+parameters:p_block* ::= [* result = NULL; *]
+                        < ID:id^ ':'^ ID:type^
+                          [* p_block *temp = (p_block*) mem_calloc(1, sizeof(p_block));
+                             temp->id = id;
+                             temp->type = type;
+                             temp->next = result;
+                             result = temp;
+                          *]@2
+                        >.
+
+arguments:p_block* ::= [* result = NULL; *]
+                       '('^ < ID:id^
+                              [* p_block *temp = (p_block*) mem_calloc(1, sizeof(p_block));
+                                 temp->id = id;
+                                 temp->next = result;
+                                 result = temp;
+                              *]@2
+                            >
+                       ')'^ .
+
+tree_action ::= STRING_ESC('$' '//')^^ [* rdp_tree->kind = EK_ACTION; *]@2 .
+
+immediate_action ::= STRING_ESC('$' '//'):lc^ [* lc_execute(lc); *] .
+
+comment1 ::= COMMENT_NEST('(*' '*)') .
+comment2 ::= COMMENT('/*' '*/') .
+comment3 ::= COMMENT_LINE('//') .
+

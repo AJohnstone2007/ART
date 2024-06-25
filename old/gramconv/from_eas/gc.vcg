@@ -1,0 +1,107 @@
+graph:{
+orientation:top_to_bottom
+edge.arrowsize:7
+edge.thickness:1
+display_edge_labels:yes
+arrowmode:free
+node.borderwidth:1
+node:{title:"1"label:"1: text0231" horizontal_order:1}
+edge:{sourcename:"1" targetname:"2"}
+edge:{sourcename:"1" targetname:"25"}
+edge:{sourcename:"1" targetname:"62"}
+edge:{sourcename:"1" targetname:"132"}
+node:{title:"132"label:"132: K0231" horizontal_order:132}
+edge:{sourcename:"132" targetname:"134"}
+node:{title:"134"label:"134: ~0231" horizontal_order:134}
+edge:{sourcename:"134" targetname:"135"}
+node:{title:"135"label:"135: 'while'0231" horizontal_order:135}
+node:{title:"62"label:"62: B0231" horizontal_order:62}
+edge:{sourcename:"62" targetname:"64"}
+node:{title:"64"label:"64: |0231" horizontal_order:64}
+edge:{sourcename:"64" targetname:"118"}
+edge:{sourcename:"64" targetname:"119"}
+node:{title:"119"bordercolor:magenta label:"119: ? 0 10231" horizontal_order:119}
+edge:{sourcename:"119" targetname:"127"}
+node:{title:"127"bordercolor:magenta label:"127: > 1 00231" horizontal_order:127}
+edge:{sourcename:"127" targetname:"126"}
+node:{title:"126"bordercolor:blue label:"126: `20231
+01{ `2 }31" horizontal_order:126}
+node:{title:"118"label:"118: |0231" horizontal_order:118}
+edge:{sourcename:"118" targetname:"104"}
+edge:{sourcename:"118" targetname:"105"}
+node:{title:"105"bordercolor:magenta label:"105: + 1 00231" horizontal_order:105}
+edge:{sourcename:"105" targetname:"113"}
+node:{title:"113"bordercolor:magenta label:"113: ] 0 10231" horizontal_order:113}
+edge:{sourcename:"113" targetname:"112"}
+node:{title:"112"bordercolor:blue label:"112: `c0231
+01{ `c }31" horizontal_order:112}
+node:{title:"104"label:"104: |0231" horizontal_order:104}
+edge:{sourcename:"104" targetname:"90"}
+edge:{sourcename:"104" targetname:"91"}
+node:{title:"91"bordercolor:magenta label:"91: * 0 00231" horizontal_order:91}
+edge:{sourcename:"91" targetname:"99"}
+node:{title:"99"bordercolor:magenta label:"99: ) 1 10231" horizontal_order:99}
+edge:{sourcename:"99" targetname:"98"}
+node:{title:"98"label:"98: B0231" horizontal_order:98}
+node:{title:"90"label:"90: |0231" horizontal_order:90}
+edge:{sourcename:"90" targetname:"76"}
+edge:{sourcename:"90" targetname:"77"}
+node:{title:"77"bordercolor:magenta label:"77: + 1 00231" horizontal_order:77}
+edge:{sourcename:"77" targetname:"85"}
+node:{title:"85"bordercolor:magenta label:"85: } 0 00231" horizontal_order:85}
+edge:{sourcename:"85" targetname:"84"}
+node:{title:"84"label:"84: B0231" horizontal_order:84}
+node:{title:"76"bordercolor:magenta label:"76: * 0 00231" horizontal_order:76}
+edge:{sourcename:"76" targetname:"72"}
+node:{title:"72"bordercolor:magenta label:"72: ] 0 10231" horizontal_order:72}
+edge:{sourcename:"72" targetname:"71"}
+node:{title:"71"label:"71: B0231" horizontal_order:71}
+node:{title:"25"label:"25: T0231" horizontal_order:25}
+edge:{sourcename:"25" targetname:"27"}
+node:{title:"27"label:"27: |0231" horizontal_order:27}
+edge:{sourcename:"27" targetname:"48"}
+edge:{sourcename:"27" targetname:"49"}
+node:{title:"49"bordercolor:magenta label:"49: } 0 00231" horizontal_order:49}
+edge:{sourcename:"49" targetname:"56"}
+node:{title:"56"label:"56: 'c'0231" horizontal_order:56}
+node:{title:"48"label:"48: |0231" horizontal_order:48}
+edge:{sourcename:"48" targetname:"34"}
+edge:{sourcename:"48" targetname:"35"}
+node:{title:"35"bordercolor:magenta label:"35: } 0 00231" horizontal_order:35}
+edge:{sourcename:"35" targetname:"42"}
+node:{title:"42"bordercolor:magenta label:"42: ? 0 10231" horizontal_order:42}
+edge:{sourcename:"42" targetname:"37"}
+node:{title:"37"bordercolor:blue label:"37: `b0231
+01{ `b }31" horizontal_order:37}
+node:{title:"34"label:"34: ~0231" horizontal_order:34}
+edge:{sourcename:"34" targetname:"28"}
+node:{title:"28"bordercolor:magenta label:"28: + 1 00231" horizontal_order:28}
+edge:{sourcename:"28" targetname:"30"}
+node:{title:"30"label:"30: 'a'0231" horizontal_order:30}
+node:{title:"2"label:"2: S0231" horizontal_order:2}
+edge:{sourcename:"2" targetname:"4"}
+node:{title:"4"label:"4: ,,0231" horizontal_order:4}
+edge:{sourcename:"4" targetname:"17"}
+edge:{sourcename:"4" targetname:"18"}
+node:{title:"18"label:"18: ~0231" horizontal_order:18}
+edge:{sourcename:"18" targetname:"19"}
+node:{title:"19"label:"19: B0231" horizontal_order:19}
+node:{title:"17"label:"17: \\0231" horizontal_order:17}
+edge:{sourcename:"17" targetname:"12"}
+edge:{sourcename:"17" targetname:"13"}
+node:{title:"13"bordercolor:blue label:"13: `d0231
+01{ `d }31" horizontal_order:13}
+node:{title:"12"label:"12: \\0231" horizontal_order:12}
+edge:{sourcename:"12" targetname:"8"}
+edge:{sourcename:"12" targetname:"9"}
+node:{title:"9"label:"9: T0231" horizontal_order:9}
+node:{title:"8"bordercolor:blue label:"8: ..0231
+01{ `a..`c }31" horizontal_order:8}
+edge:{sourcename:"8" targetname:"5"}
+edge:{sourcename:"8" targetname:"6"}
+node:{title:"6"bordercolor:blue label:"6: `c0231
+01{ `c }31" horizontal_order:6}
+node:{title:"5"bordercolor:blue label:"5: `a0231
+01{ `a }31" horizontal_order:5}
+
+}

@@ -1,0 +1,15 @@
+!h1
+!b
+!g
+!i
+!s
+!y
+
+!v
+(* Regression: some brackets *)
+
+A ::= 'a' ( 'b' 'c' | 'd' ) [ 'x'] <'y'> {'z'}. 
+
+
+
+

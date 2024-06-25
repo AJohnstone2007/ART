@@ -1,0 +1,11 @@
+TREE([* char *spare; *]) 
+(*PRUNE*)
+(*RECURSION_SEMANTICS*)
+
+T ::= L^ M .
+L ::= ('int'^^)0@1 #.
+K ::= ID^^ ['(' ((ID)@','):^ ')']:^ .
+M ::= K ['='^^ INTEGER]:^^ .
+
+
+

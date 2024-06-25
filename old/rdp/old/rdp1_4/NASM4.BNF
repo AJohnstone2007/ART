@@ -1,0 +1,195 @@
+(****************************************************************************
+*
+* RDP grammar for nasm4. (c) Adrian Johnstone 1994
+*
+*****************************************************************************)
+
+TITLE("nasm4 v1.0 - assembler for Nibbler-4")
+SUFFIX("n4")
+USES("nasm4aux.h")
+USES("math.h")
+PASSES(3)
+PRE_PARSE([* init(rdp__outputfilename); *])
+POST_PARSE([* quit(); *])
+OPTION("wn Set width of data bus (default 8)" [* sscanf(*argv + 2, "%u", &width);*])
+
+SYMBOL_TABLE(nasm4 101 31
+             symbol__compare_string
+             symbol__hash_string
+             symbol__print_string
+             [* integer val; *]
+            )
+
+unit    ::= [* emit_code = (rdp__pass == 3);        /* only emit code on pass 3 */
+               data_location = code_location = 0;  /* clear location counters */
+               location = &code_location;      /* make code counter current */
+            *]
+            { code } .
+
+code    ::= [* eprintf("%.5X ", *location); *]
+            [label] [instr] [COMMENT_LINE(';')] EOLN
+            [* eprintf("\n"); *].
+
+label   ::= ID:lab
+            [* if (symbol__lookup_key(nasm4, lab) == NULL)
+               last_label = symbol__insert_symbol(nasm4, lab);
+               nasm4__cast(last_label)->val = *location;
+            *].
+
+instr   ::= mondir | listdir | synth_monop | synth_nonop |
+
+            nonop |
+
+            monop reg:dst [* emit(dst); *] |
+
+            diop  reg:dst ','
+            (
+              reg:src [* emit(src); emit(dst); *] |
+              e1:k [* emit(0); emit(dst); emit(k); *]
+            )  |
+
+            brop reg:dst [* emit(dst); *] ',' e1:offset
+            [* offset = offset - (*location + 3);
+               if (offset > 2047 || offset < -2048)
+               text__message(TEXT__ERROR_ECHO, "Branch offset of \%i ($\%X) does not fit into twelve bits", offset, offset);
+               emit(offset>>8); multi_emit(offset & 0xFF, 2); *] |
+
+            lbrop reg:dst [* emit(dst); *] ',' e1:offset
+            [* offset = offset - (*location + 3);
+               if (offset > 2047 || offset < -2048)
+                 text__message(TEXT__ERROR_ECHO, "Branch offset of \%i ($\%X) does not fit into twelve bits", offset, offset);
+               emit(offset>>8); multi_emit(offset & 0xFF, 2); *] |
+
+            ldop reg:dst [* offset = 0; *] ',' [e1:offset] '[' reg:ptr ']'
+            [* emit(dst); emit(ptr);
+               if (!(ptr & 1))
+                multi_emit(offset, 4);
+               else
+                multi_emit(offset, 2); *] |
+
+            stop [*offset = 0; *] [e1:offset] '[' reg:ptr ']' ',' reg:dst
+            [* emit(ptr); emit(dst);
+               if (!(ptr & 1))
+                multi_emit(offset, 4);
+               else
+                multi_emit(offset, 2); *].
+
+synth_nonop ::= 'NOP' [* emit(1); emit(15); emit(15); *].
+
+synth_monop ::= 'CLR' reg:dst [* emit(1); emit(0); emit(dst); *] |
+                'INC' reg:dst [* emit(6); emit(1); emit(dst); *] |
+                'DEC' reg:dst [* emit(4); emit(1); emit(dst); *] |
+                'COM' reg:dst [* emit(3); emit(1); emit(dst); *] |
+                'BRA' e1:k    [* emit(0xE); emit(0); emit(0); emit(k); *] |
+                'BRN' e1:k    [* emit(0xE); emit(0); emit(1); emit(k); *] |
+                'BRAL' e1:k   [* emit(0xE); emit(8); emit(0); emit(k); *] |
+                'BRNL' e1:k   [* emit(0xE); emit(8); emit(1); emit(k); *].
+
+nonop       ::= 'RTE' [* emit(0xF); emit(0xF); emit(0); *].
+
+monop       ::= [* emit(0xF); *]
+                (
+                  'SPC' [* emit(0); *] | 'SEL' [* emit(1); *] |
+                  'SCR' [* emit(2); *] | 'SOR' [* emit(3); *] |
+                  'LSH' [* emit(4); *] | 'RSH' [* emit(5); *] |
+                  'ASH' [* emit(6); *] | 'NEG' [* emit(0xD); *] |
+                  'SXT' [* emit(0xE); *]
+                ).
+
+diop    ::= 'CPY' [* emit(0); *] | 'AND' [* emit(1); *] |
+            'OR'  [* emit(2); *] | 'XOR' [* emit(3); *] |
+            'ADD' [* emit(4); *] | 'ADC' [* emit(5); *] |
+            'SUB' [* emit(6); *] | 'SBB' [* emit(7); *] |
+            'MULU' [* emit(8); *] | 'MULS' [* emit(8); *] |
+            'DIVU' [* emit(9); *] | 'DIVS' [* emit(9); *].
+
+brop    ::= [* emit(0xE); *]
+            (
+              'BZ' [* emit(0); *] | 'BNZ' [* emit(1); *] |
+              'BLT' [* emit(2); *] | 'BLZ' [* emit(3); *] |
+              'BGT' [* emit(4); *] | 'BGZ' [* emit(5); *]
+            ).
+
+lbrop   ::= [* emit(0xE); *]
+            (
+              'BZL'  [* emit(8); *]   | 'BNZL' [* emit(9); *] |
+              'BLTL' [* emit(0xA); *] | 'BLZL' [* emit(0xB); *] |
+              'BGTL' [* emit(0xC); *] | 'BGZL' [* emit(0xD); *]
+            ).
+
+ldop    ::= 'LDS' [* emit(0xA); *] | 'LDL' [* emit(0xA); *].
+
+stop    ::= 'STS' [* emit(0xB); *] | 'STL' [* emit(0xB); *].
+
+mondir  ::= 'CODE' [* location = &code_location; *]
+            [ e1:n [* test_size(n,4); *location = n; *] ] |
+            'DATA' [* location = &data_location; *]
+            [ e1:n [* test_size(n,4); *location = n; *] ] |
+            'TFR' e1:n [* test_size(n,4); transfer = n; *] |
+            'EQU' e1:n [* nasm4__cast(last_label)->val = n; *] |
+            'EVEN' [* if (*location & 1) emit(15); *] |
+            'ODD'  [* if (!(*location & 1)) emit(15); *] |
+            'BLKN' e1:n [* *location += n; *] |
+            'BLKB' e1:n [* *location += 2 * n; *] |
+            'BLKW' e1:n [* *location += 4 * n; *] |
+            'BLKL' e1:n [* *location += 8 * n; *] .
+
+listdir ::= [* int prec; *]
+            ('DATN' [* prec = 1; *] | 'DATB' [* prec = 2; *] |
+             'DATW' [* prec = 4; *] | 'DATL' [* prec = 8; *]
+            )
+            < e1:n [* multi_emit2(n, prec); *] |
+
+                    STRING('"'):str
+
+                    [* while (*str != 0) *]
+                    [* multi_emit2(*str++, prec); *]
+            > ',' .
+
+reg:integer ::= 'R0' [* result = 0; *]   | 'R1' [* result = 1; *]   |
+                'R2' [* result = 2; *]   | 'R3' [* result = 3; *]   |
+                'R4' [* result = 4; *]   | 'R5' [* result = 5; *]   |
+                'R6' [* result = 6; *]   | 'R7' [* result = 7; *]   |
+                'R8' [* result = 8; *]   | 'R9' [* result = 9; *]   |
+                'R10' [* result = 10; *] | 'R11' [* result = 11; *] |
+                'R12' [* result = 12; *] | 'R13' [* result = 13; *] |
+                'R14' [* result = 14; *] | 'R15' [* result = 15; *].
+
+(* The following e... productions describe a conventional expression syntax
+         using mainly C-style operators *)
+
+e1:integer ::= e2:result {'>' e2:right  [* result = result > right; *] |  (* Greater than *)
+                          '<' e2:right  [* result = result < right; *] |  (* Less than *)
+                          '>=' e2:right [* result = result >= right; *] | (* Greater than or equal to *)
+                          '<=' e2:right [* result = result <= right; *] | (* Less than or equal to *)
+                          '==' e2:right [* result = result == right; *] | (* Equal to *)
+                          '!=' e2:right [* result = result != right; *] }.(* Not equal to *)
+
+e2:integer ::= e3:result {'^' e3:right  [* result ^= right; *]}.          (* Bitwise exclusive OR *)
+
+e3:integer ::= e4:result {'|' e4:right  [* result |= right; *]}.          (* Bitwise inclusive OR *)
+
+e4:integer ::= e5:result {'&' e5:right  [* result &= right; *]}.          (* Bitwise AND *)
+
+e5:integer ::= e6:result {'<<' e6:right [* result <<= right; *] |         (* Shift left  *)
+                          '>>' e6:right [* result >>= right; *] }.        (* Shift right *)
+
+e6:integer ::= e7:result {'+' e7:right  [* result += right; *] |          (* Add *)
+                          '-' e7:right  [* result -= right; *] }.         (* Subtract *)
+
+e7:integer ::= e8:result {'*' e8:right  [* result *= right; *] |          (* Divide *)
+                          '/' e8:right  [* result /= right; *] }.         (* Multiply *)
+
+e8:integer ::= e9:result {'**' e9:right [* result = (int) pow((float) result, (float) right); *]}. (* Exponentiate *)
+
+e9:integer ::= '+' e9:result |                                            (* Posite *)
+               '-' e9:result [* result = -result; *] |                    (* Negate *)
+               '~' e9:result [* result = ~result; *] |                    (* Bitwise complement *)
+               '!' e9:result [* result = !result; *] |                    (* Logical not *)
+               e0:result.
+
+e0:integer ::= ID:name
+               [* result = nasm4__cast(symbol__lookup_key(nasm4, name))->val; *] |     (* Variable *)
+               INTEGER:result |                                                                                                                                                               (* Numeric literal *)
+               '.' [* result = *location; *]|                             (* Program counter *)
+               '(' e1:result ')'.                                         (* Parenthesised expression *)

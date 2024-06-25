@@ -1,0 +1,77 @@
+(*******************************************************************************
+*
+* RDP release 1.50 by Adrian Johnstone (A.Johnstone@rhbnc.ac.uk) 20 December 1997
+*
+* minicalc.bnf - a decorated mini calculator grammar with interpreter semantics
+*
+* This file may be freely distributed. Please mail improvements to the author.
+*
+*******************************************************************************)
+TITLE("Minicalc interpreter V1.50 (c) Adrian Johnstone 1997")
+SUFFIX("m")
+USES("math.h")
+
+SYMBOL_TABLE(mini 101 31
+             symbol_compare_string
+             symbol_hash_string
+             symbol_print_string
+             [* char* id; integer i; *]
+            )
+
+program   ::= {[var_dec | statement ] ';' }.
+
+var_dec   ::= 'int'
+              ( ID:name [ '=' e1:val ]
+                [* mini_cast(symbol_insert_key(mini, &name, sizeof(char*), sizeof(mini_data)))
+                   ->i = val; 
+                *]
+              )@','.
+
+statement ::= ID:name
+              [* if (symbol_lookup_key(mini, &name, NULL) == NULL)
+                 {
+                   text_message(TEXT_ERROR, "Undeclared variable '%s'\n", name);
+                   symbol_insert_key(mini, &name, sizeof(char*), sizeof(mini_data));
+                 }
+              *]
+              '=' e1:val
+              [* mini_cast(symbol_lookup_key(mini, &name, NULL))->i = val; *] |
+
+              'print' '(' ( e1:val [* printf("%li", val); *] |
+                            String:str [* printf("%s", str); *]
+                          )@','
+                      ')'.
+
+e1:integer ::= e2:result {'+' e2:right [* result += right; *] |          (* Add *)
+                          '-' e2:right [* result -= right; *] }.         (* Subtract *)
+
+e2:integer ::= e3:result {'*' e3:right [* result *= right; *] |          (* Multiply *)
+                          '/' e3:right [* if (result == 0) 
+               text_message(TEXT_FATAL_ECHO, "Divide by zero attempted\n"); else result /= right; *] 
+                         }.                                              (* Divide *)
+
+e3:integer ::= '+' e3:result |                                           (* Posite *)
+               '-' e3:result [* result = -result; *] |                   (* Negate *)
+               e4:result.
+
+e4:integer ::= e5:result [ '**' e4:right 
+                           [* result = (integer) pow((double) result, (double) right); *] 
+                         ]                                               (* Exponentiate *).
+
+e5:integer ::= ID:name 
+               [* if (symbol_lookup_key(mini, &name, NULL) == NULL)
+                 {
+                   text_message(TEXT_ERROR, "Undeclared variable '%s'\n", name);
+                   symbol_insert_key(mini, &name, sizeof(char*), sizeof(mini_data));
+                 }
+              *]
+               [* result = mini_cast(symbol_lookup_key(mini, &name, NULL))->i; *] | (* Variable *)
+               INTEGER:result |                                          (* Numeric literal *)
+               '(' e1:result ')'.                                        (* Do-first *)
+
+comment    ::= COMMENT_NEST('(*' '*)').                                  (* Comments *)
+
+String: char * ::= STRING_ESC('"' '\\'):result.                          (* Strings for print *)
+
+(* End of minicalc.bnf *)
+

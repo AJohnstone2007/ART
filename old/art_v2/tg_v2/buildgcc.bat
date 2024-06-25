@@ -1,0 +1,1 @@
+g++ -Wwrite-strings -fpermissive -g -o tg -I ../current/art_v2 tg.cpp  ../current/art_v2/arg.cpp ../current/art_v2/graph.cpp ../current/art_v2/hist.cpp ../current/art_v2/memalloc.cpp ../current/art_v2/scan.cpp ../current/art_v2/scanner.cpp ../current/art_v2/set.cpp ../current/art_v2/symbol.cpp ../current/art_v2/textio.cpp 

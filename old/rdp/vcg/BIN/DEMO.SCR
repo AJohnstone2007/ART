@@ -1,0 +1,726 @@
+L CLEAR
+ODEMONSTRATION OF THE VCG TOOL
+O==========================================================================================================================
+O
+OWelcome to a tour around the VCG tool ...
+O
+OFirst of all: What is the VCG tool ?
+O
+OThe VCG tool is a graph visualization tool. It reads
+Oa textual specification of a graph (consisting of nodes
+Oand edges), calculates a layout of the graph, i.e.
+Oit positioned the edges and nodes in the plane, and
+Ofinally, it draws the graph in a window, allows to print it, etc.
+OIt was mainly developed as auxiliary tool for compiler
+Oconstruction, but there are many more applications. 
+O
+OPress 'Continue' button to continue ...
+L 
+OIn the following, we will show several visualizations
+Ofrom different applications. Not all features of the 
+OVCG tool can be demonstrated, but the important once.
+OPress 'Continue' button to continue ...
+L
+OThe keyboard commands of the VCG tool are:
+O        r                - show or hide the ruler
+O        f                - load another file (please, don't in this demo)
+O        g                - reload the same file
+O        l                - change layout parameters
+O        v                - change view parameters
+O        i, j, k          - show info fields of nodes
+O
+OScaling commands
+O        +  or =          - stretch          
+O        -  or _          - shrink           
+O        0                - (null) set scale factor to normal
+O        m                - set scaling factor to maximal aspect
+O
+OPress 'Continue' button to continue ...
+L
+OScrolling commands:
+O
+O        a                                   
+O      d   c (arrow keys) - scroll to the left/right/up/down
+O        b                                   
+O        o                - go to the origin (0,0) 
+O        p                - pick position with the mouse
+O        n                - position such that a node is centered
+O        e                - follow an edge (center target/source)
+O
+O
+OPress 'Continue' button to continue ...
+L
+OIf an error occurs during the load of a VCG specification, 
+Othe VCG tool shows the message in a text window. With the text sheet
+Oicon button (the second right button in the tool bar, the icon is
+Oa sheet of text), you can switch between the text and graphic output
+Oof the VCG tool.
+OCurrently, both graphic output and text output are empty.
+O
+OPress 'Continue' button to continue ...
+L CLEAR
+OExample from the sociology: Theory of civilisation
+O--------------------------------------------------------------------------------------------------------------------------
+OThis graph shows the dependencies between the     
+Oinvention of wheels, the modern comunism and the  
+Ocomputer science, etc.
+OThe following graph is scaled by some factor and
+Ouses the layoutalgorithm MINBACKWARD (-D0).
+OOther possible layoutalgorithms are MINDEPTH, MAXDEPTH
+Oand TREE (-D-, -D+ and -Dtree) and many more.
+O
+OPress 'Continue' button to continue ...
+E ../expl/civ.vcg
+L CLEAR
+OExample: Color test
+O--------------------------------------------------------------------------------------------------------------------------
+OThis examples shows the default colors that are available.
+OIf your X11/MsWindows installation has problems with colors, 
+Ouse the command line option -nocolors (later, when you start
+Othe VCG tool by hand). In this case, or if the display is 
+Omonochrom, you will not see the colors.
+OYou can also quit this demo and restart it, selection 'No Colors'
+Ofrom the menu.
+O
+OPress 'Continue' button to continue ...
+E ../expl/colors.vcg
+L CLEAR
+OExample: More Colors
+O--------------------------------------------------------------------------------------------------------------------------
+OThis examples show how to access to the color map.
+OUp to 256 colors can be used at the same time.
+OIt is even possible to replace the default colors by
+Oother red/green/blue values.
+O
+OPress 'Continue' button to continue ...
+E ../expl/morecol.vcg
+L
+OIf the text background is ugly, i.e. if the node color and the, 
+Otext background are different, then you have a lazy video graphics
+Oadapter, or a wrong video mode. Please select the View menu and 
+Odeselect the fast character drawing option. This will give 
+Obetter results, but it is slower. 
+O
+OPress 'Continue' button to continue ...
+L CLEAR
+OExample: Character set
+O--------------------------------------------------------------------------------------------------------------------------
+OThe VCG tool uses a fully scalable character set. This character
+Oset is compatible to the ISO Latin 1 PostScript Encoding Vector
+Oand contains the special national characters for the most
+OEuropean and North American countrys.
+OIf the computer system does not support 8 Bit character codes,
+Othe special characters can be accessed by ISO code escapes.
+OFor instance, \fi252 is the german umlaut ue.
+ONext, we will see the character set.
+O
+OEnlarge the graph using the + key or the corresponding menu item
+Oand scroll around (arrow keys) in this picture, to see the details.
+O
+OPress 'Continue' button to continue ...
+E ../expl/charset.vcg
+L CLEAR
+OExample: Loadable fonts
+O--------------------------------------------------------------------------------------------------------------------------
+OThere is a large collection of loadable, scalable fonts.
+OThese fonts are in the VCF format, which is a combination
+Oof Bitmap format and scalable format. The default font
+Ois hard coded and thus, it is very fast. The loadable fonts
+Oare not hard coded. Drawing with loadable fonts is a little
+Obit slower. However, the loadable fonts can be translated into
+OPostScript fonts during the PostScript printing, which gives
+Oa print output of high quality.
+OThe following font is an example of a loadable font. If you
+Odon't see the font but some error messages instead, you
+Oprobably forgot to set the environment variable VCGFONTS.
+O
+OPress 'Continue' button to continue ...
+E ../expl/ftest.vcg
+L CLEAR
+OExample: Icons
+O--------------------------------------------------------------------------------------------------------------------------
+OIt is possible to have icons in the node instead of text,
+Oor even additionally to the text. The label font should be bold
+Oto be readable in this case.
+OIcon drawing is sometimes slow, because icons must be rescaled
+Osometimes. But compare it to your favorite image processing system:
+Othis is probably slow, too.
+OThe next example show a family relation ship with icons. If you
+Odon't see the icons but some error messages instead, you
+Oprobably forgot to set the environment variable VCGICONS.
+O
+OPress 'Continue' button to continue ...
+E ../expl/itest.vcg
+L CLEAR
+OExample: Form test
+O--------------------------------------------------------------------------------------------------------------------------
+OThis examples shows the different forms of nodes and
+Oedges that  are available.
+ONodes can be stretched and shrinked individually,
+Owidth, height, textmode and border can be set to 
+Omany values. Edges can be dashed or dotted, at   
+Odifferent sizes with different arrow sizes.
+O
+OPress 'Continue' button to continue ...
+E ../expl/forms.vcg
+L CLEAR
+OExample: More forms
+O--------------------------------------------------------------------------------------------------------------------------
+OThis examples shows further forms of nodes and
+Oedges that  are available: boxes, ellipses, rhombs
+Oand triangles.
+O
+OPress 'Continue' button to continue ...
+E ../expl/forms2.vcg
+L CLEAR
+OExample: Ports and Arrow Modes
+O--------------------------------------------------------------------------------------------------------------------------
+OEdge arrows appear at the port of nodes. Port sharing
+Omeans that multiple edges may be adjacent to one port.
+OThis occurs, if the arrows of all these edges have the
+Osame visual appearance (size, color, ...).
+OIf we use port sharing, it is recommended to use only
+Oa fixed set of rotated arrows. Otherwise, the port looks
+Olike a thick spot since all arrows are differently rotated
+Oand overlap. This is the arrow mode 'fixed'.
+OIf we don't use port sharing, arrows can be rotated individually.
+OThis is the arrow mode 'free'.
+O
+OPress 'Continue' button to continue ...
+M
+L
+OFirst, we see port sharing with arrow mode fixed.
+OPress 'Continue' button to continue ...
+E ../expl/pshar1.vcg
+L
+ONext, we see port sharing with arrow mode free.
+OPress 'Continue' button to continue ...
+E ../expl/pshar3.vcg
+L
+ONext, we see no port sharing, arrow mode fixed.
+OPress 'Continue' button to continue ...
+E ../expl/pshar2.vcg
+L
+ONow, we see no port sharing, arrow mode free.
+OPress 'Continue' button to continue ...
+E ../expl/pshar4.vcg
+L CLEAR
+OExample: A diagram
+O--------------------------------------------------------------------------------------------------------------------------
+OThis examples shows the influences of different computer
+Osystems in the context of the development of the computer
+OXerox Star (see Johnson, Roberts, e.a.: The Xerox Star,
+Oa Retrospective, IEEE Computer; 11-29, Sept. 1989).
+OWe did some changes in the diagram in order to show the 
+Opossibilities of visualization, but not in order to 
+Oclarify information in the diagram.
+O
+OPress 'Continue' button to continue ...
+E ../expl/xerox.vcg
+L CLEAR
+OExample: A flow diagram
+O--------------------------------------------------------------------------------------------------------------------------
+OThis examples shows a funny flow diagram about the actions
+Oof a software maintainer if something does not work.
+OThe text is in german. If I tried to translate it, the gags
+Owould probably disappear.
+OOne speciality here: the centers of the nodes are aligned onto
+Oa raster by using the attributes xraster and yraster.
+OThus, we have many rectangular edges.
+O
+OPress 'Continue' button to continue ...
+E ../expl/softmain.vcg
+L CLEAR
+OExample: Orthogonal layout
+O--------------------------------------------------------------------------------------------------------------------------
+OFlowcharts look much better if all edges consist of
+Oorthogonal line segments. This is the orthogonal layout
+Oor manhatten layout.
+OFor the manhatten layout, we use a special method to
+Oplace the nodes: the priority method with the straight
+Oline detection. It is recommended to use these methods
+Owhen manhatten layout is switched on.
+O
+ONext, we see the previous flow diagram with manhattan layout.
+O
+OPress 'Continue' button to continue ...
+E ../expl/softmn2.vcg
+L CLEAR
+OExample: A control flow graph of a program
+O--------------------------------------------------------------------------------------------------------------------------
+OThis example shows the control flow graph of a program.
+OThe decision branches are formed by rhombs and bent nearedges.
+ONearedges are horizontal edges that constain the two adjacent
+Onodes to be placed directly neighbored at the same level.
+OBent nearedges are edges that are bent at the label, and
+Othe source node and the edge label form a near edge. This gives
+Othe typical appearance of decision branches.
+O
+OPress 'Continue' button to continue ...
+E ../expl/cfg.vcg
+L CLEAR
+OExample: Another control flow graph
+O--------------------------------------------------------------------------------------------------------------------------
+OThe next example shows another control flow graph.
+OHere, the bent nearedges are simulated by some nearedges and
+Oauxiliary nodes. Again, we use manhatten layout with the
+Opriority method and the straight line detection.
+O
+OPress 'Continue' button to continue ...
+E ../expl/flchrt.vcg
+L CLEAR
+OExample: Anchorpoint test
+O--------------------------------------------------------------------------------------------------------------------------
+OThis example shows how to use anchorpoints.
+OIt is possible to anchor an edge at each labelline
+Oof a node. Nodes representing structs look nice
+Oin this mode. Note but this restricts of course
+Othe usage of nearedges.
+OIf you select one of the submenus of the menu item
+ONode Information and then pick into the large node
+Oyou can see how to use background text.
+O
+OPress 'Continue' button to continue ...
+E ../expl/anchors.vcg
+L CLEAR
+OExample: More anchorpoints
+O--------------------------------------------------------------------------------------------------------------------------
+OThis example shows a list of C structs. It demonstrates
+Othe usage of anchorpoints for visualized debugging
+Oof data structures.
+O
+OPress 'Continue' button to continue ...
+E ../expl/structs.vcg
+L CLEAR
+OExample: Level test
+O--------------------------------------------------------------------------------------------------------------------------
+OThis examples shows how to use level specifications.
+OIt is possible to give the nodes arbitrary levels
+Ofor instance to place a node artificially on the top
+Oof the graph. Normally, the following would be layouted
+Oas a tree with the root at level 0. But we have specified
+Owhich nodes are at level 0, 1 and 2, such that the root
+Ois in the center.
+O
+OPress 'Continue' button to continue ...
+E ../expl/levels.vcg
+L CLEAR
+OExample: Horizantal layer sorting
+O--------------------------------------------------------------------------------------------------------------------------
+OThe VCG tool reorders the nodes in the levels to avoid
+Ocrossings. But sometimes, the writer of a graph specification
+Oknows a better order of the nodes into the levels.
+OHe can specify this by the attribute horizontal_order at
+Othe nodes. If all nodes of a level have this attribute,
+Othe reordering of this level is suppressed.
+OWarning: this feature works only for connected graphs.
+ONonconnected parts are layouted separately, such that
+Othe order of the nodes of a connected component is predictable,
+Oat a level, but not the order of all nodes at a level.
+OIs is recommended to use this feature only together with
+Olevel specifications, or at trees, where it is clear at
+Owhich level a node appears.             Press 'Continue' button to continue ...
+L
+ONext, we see a graph where we want to have the nodes
+Osorted at the levels in alphabethic order.
+OFirst, we see the original graph by the standard layout
+Oalgorithm. Here, the ordering at the levels is arbitrary.
+OAfter this, we see an example with the attribute horizontal_order
+Oon the same graph to yield an alphabethic ordering at the
+OLevels.
+OPress 'Continue' button to continue ...
+E ../expl/hunsort.vcg
+L
+ONow the same with specified horizontal order. This results in
+Othe alphabethic orderering, as wanted.
+OPress 'Continue' button to continue ...
+E ../expl/hsort.vcg
+L CLEAR
+OExample: Unary tree of depth 100
+O--------------------------------------------------------------------------------------------------------------------------
+OThis graph is very simple. All edges have class 2.
+OYou can try to hide the edges, expose them or to
+Ofold regions.
+O
+OThis graph contains 101 nodes and 100 edges.
+O
+OPress 'Continue' button to continue ...
+E ../expl/demo001.vcg 
+L CLEAR
+OExample: Binary tree of depth 5
+O--------------------------------------------------------------------------------------------------------------------------
+OThis graph is very simple. All edges have class 2.
+OAry-trees look very nice if we use a layout_downfactor.
+OHere, we used layout_downfactor: 8.
+O
+OThis graph contains 63 nodes and 62 edges.
+O
+OPress 'Continue' button to continue ...
+E ../expl/demo003.vcg
+L CLEAR
+OExample: Binary tree of depth 5
+O--------------------------------------------------------------------------------------------------------------------------
+OTo compare with, we show the same binary tree with
+Olayout_downfactor: 1.
+O
+OPress 'Continue' button to continue ...
+E ../expl/demo004.vcg
+L CLEAR
+OExample: Layout of trees
+O--------------------------------------------------------------------------------------------------------------------------
+OBeside the normal layout algorithm, there is a specialized
+Oalgorithm TREE, that lays out trees even without specifying
+Oa layout_downfactor.
+OThis specialized algorithm can be used for all graphs that
+Ocan be layouted like downward trees, i.e. their edges form
+Ounshared branches.
+OThis specialized algorithm is often faster than then normal.
+Oalgorithm with layout_downfactor.
+OFirst, we see a syntax tree by the standard layout algorithm.
+OAfter that, we see the same tree with the specialized
+Oalgorithm for trees.
+OThis graph contains 54 nodes and 53 edges.
+OPress 'Continue' button to continue ...
+E ../expl/tree1.vcg
+L
+ONow, the same with specialized algorithm for trees. 
+OPress 'Continue' button to continue ...
+E ../expl/tree1a.vcg
+L CLEAR
+OExample: More trees
+O--------------------------------------------------------------------------------------------------------------------------
+OTrees look very nice, if a special version of the manhatten
+Olayout method is used: the single line manhatten layout.
+OHere, all horizontal edge segments share the same
+Ohorizontal line. If the graph is not a tree, then this
+Owill confuse the user, since it might be not anymore clear,
+Owhich vertical lines are connected by the horizontal
+Oline. But for trees, it looks nice.
+OWe see the same syntax tree as before, but now, we use the
+Osingle line manhatten tree layout for the graph.
+OPress 'Continue' button to continue ...
+E ../expl/tree2.vcg
+L CLEAR
+OExample: Edge priorities
+O--------------------------------------------------------------------------------------------------------------------------
+OSometimes, we have a graph consisting of two intermixed
+Ographs. Or we have one basic graph and additionally, we have
+Oedges as annotations. In these cases, we want to recognize  
+Othe structure of the basic graph, but the structure is
+Ointerwoven with the additional edges. But the layout is based
+Oon all edges, which may result in visualizations where 
+Othe structure of the basic graph is not recognizable anymore.
+O
+OIn this case, edge priority comes in. We give the edges of
+Othe basic graph a higher priority. Then, the additional 
+Oannotation edges are neglected during the layout and are
+Odrawn rather ugly, but the basic graph is visualized nicely.
+OPress 'Continue' button to continue ...
+L
+ONext, we will see a tree (thick red edges) interwoven with some
+Oadditional edges. First, we show this graph by the standard
+Olayout algorithm, where the tree is not recognizable.
+OAfter this, we use priorities, and then we will recognize
+Othe tree structure.
+OPress 'Continue' button to continue ...
+E ../expl/annot1.vcg
+L
+ONow, the same graph with edge priorities, to see the tree structure.
+OPress 'Continue' button to continue ...
+E ../expl/annot2.vcg
+L CLEAR
+OExample: Fisheyes
+O--------------------------------------------------------------------------------------------------------------------------
+OLarge graphs have normally the disadvantage that we either
+Osee the whole graph but no details, because the graph is
+Oshrinked very much, or we see some details at the point of
+Ointerest but lose the overview of the entire graph structure,
+Obecause the window is too small. A good solution of this
+Oconflict is the fisheye view that distorts the graph such
+Othat the focus point is magnified while the remaining parts
+Oof the graph are demagnified smoothly such that the whole
+Ograph is visible.
+OPress 'Continue' button to continue ...
+L
+OA fisheye view is a coordinate transformation and has
+Osimiliarities with the corresponding photo camera lenses.
+O
+ONext, we will see a large graph. First, we show the graph
+Oby the standard view. Then, we see the same graph by the
+Ocartesian fisheye view. The focus point can be selected
+Ointeractively by the operation Pick Position.
+OThis graph contains 484 nodes and 924 edges.
+OPress 'Continue' button to continue ...
+E ../expl/fishex3c.vcg
+L
+ONow, the same with cartesian fisheye view.
+OBe patient! Fisheye drawing needs a lot of time.
+OWhen the graph is visible, press the key 'o' to center it
+Oin the VCG window.
+O
+OPress 'Continue' button to continue ...
+E ../expl/fishex3b.vcg
+L CLEAR
+OExample: Cartesian fisheyes and polar fisheyes
+O--------------------------------------------------------------------------------------------------------------------------
+OCartesian fisheyes transform the cartesian coordinate system
+Owhile polar fisheyes transform the polar coordinate system.
+OA polar fisheye can be seen as a mapping of the space onto a
+Ospheric ball. The polar fisheye does not preserve horizontal
+Oand vertical lines, while the cartesian fisheye does.
+ONote that fisheyes may introduce additional bendings of lines
+Oand crossings that do not appear in the plane view.
+OHowever, these effects are seldom and occur due to efficiency
+Oreasons.
+O
+OPress 'Continue' button to continue ...
+L
+ONext, we will see the same graph as before, but with polar fisheye view.
+OBe patient! Fisheye drawing needs a lot of time.
+OWhen the graph is visible, press the key 'o' to center it
+Oin the VCG window.
+O
+OPress 'Continue' button to continue ...
+E ../expl/fishex3a.vcg
+L CLEAR
+OExample: Fisheyes with fixed radius
+O--------------------------------------------------------------------------------------------------------------------------
+OIf not the whole graph but only a fixed area around the focus
+Opoint is of interest, we use the fisheyes with fixed radius.
+OThen, not the whole graph is visible but only the region around
+Othe focus point.
+OWhile for normal (self adaptable) fisheyes, the location of the
+Ofocus point moves in the window relatively to its movement in
+Othe graph, the focus point of the fisheyes with fixed radius is
+Oalways centered in the window.
+O
+OPress 'Continue' button to continue ...
+L
+ONext, we will see a graph with fisheyes of fixed radius. First,
+Owe show the graph by the cartesian fisheye view. Then, we see
+Othe graph again by the polar fisheye view.
+OBe patient! Fisheye drawing needs a lot of time.
+OWhen the graph is visible, press the key 'o' to center it
+Oin the VCG window.
+O
+OPress 'Continue' button to continue ...
+E ../expl/fishex2a.vcg
+L
+ONow, the same graph with polar fisheye view.
+OBe patient! Fisheye drawing needs a lot of time.
+OWhen the graph is visible, press the key 'o' to center it
+Oin the VCG window.
+O
+OPress 'Continue' button to continue ...
+E ../expl/fishex2b.vcg
+L CLEAR
+OExample: Another diagram
+O--------------------------------------------------------------------------------------------------------------------------
+OThis diagram (Gansner, Koutsofios, e.a.: A Technique
+Ofor Drawing Graphs; IEEE Trans. Soft. Eng. 19, 3, March 93)
+Oshows the dependencies of different shells.
+OHere we see a combination of features of the VCG tool.
+OFirst, the graph is made connected by 3 invisible edges.
+OThe priority of these edges is set to zero such that
+Othey do not influence the layout too much. As contrast,
+Othe layout_downfactor and layout_upfactor is set to 100.
+OThe attribute level is used to set the nodes at the
+Oappropriate time axis. The attribute horizontal_order
+Ois used to get the time axis at the left side of the
+Ograph. Further, we have used splines for the edges.
+OPress 'Continue' button to continue ...
+E ../expl/shells.vcg
+L CLEAR
+OExample: Ternary tree of depth 7
+O--------------------------------------------------------------------------------------------------------------------------
+ONow a first torture test. This graph is a ternary tree
+Owith about 3000 nodes and 3000 edges.
+OWe use the normal algorithm with downfactor: 8.
+OWe need about 20 seconds (on a Sparc ELC) to layout it.
+OWARNING: the visualization may fail on small computers
+O         because of memory exhausted.
+O
+OThis graph contains 3280 nodes and 3279 edges.
+OPress 'Continue' button to continue ...
+E ../expl/demo006.vcg
+L CLEAR
+OExample: Two level cross graph
+O--------------------------------------------------------------------------------------------------------------------------
+OThis is a torture test for bary centering.
+OThis graph is specified in an ugly format with a lot
+Oof unnecessary crossings. The tool removes these    
+Ocrossings.
+O
+OThis graph contains 1000 nodes and 1000 edges.
+OPress 'Continue' button to continue ...
+E ../expl/demo007.vcg
+L CLEAR
+OExample: Nearedge test
+O--------------------------------------------------------------------------------------------------------------------------
+OThis is a torture test for near edge layout.
+OThis tree is has a lot of near edges, i.e.  
+Oedges between nodes at the same level.
+OThe nodes of a near edge should be neighboured.
+O
+OThis graph contains 1115 nodes and 1114 edges.
+OPress 'Continue' button to continue ...
+E ../expl/demo009.vcg
+L CLEAR
+OExample: Complete graphs
+O--------------------------------------------------------------------------------------------------------------------------
+OThe complete graph has edges between all nodes.
+OIf we have n nodes, then we have about n*n/2 edges.
+OHere we test the speed of the VCG tool, because 
+Osuch graphs are very difficult to layout.
+OAn complete graph of 5 nodes is layouted very fast.
+O
+OThis graph contains 5 nodes and 10 edges.
+OPress 'Continue' button to continue ...
+E ../expl/demo010.vcg
+L CLEAR
+OExample: Complete graphs
+O--------------------------------------------------------------------------------------------------------------------------
+OAn complete graph of 10 nodes needs a few seconds.
+O
+OThis graph contains 10 nodes and 45 edges.
+OPress 'Continue' button to continue ...
+E ../expl/demo012.vcg
+L CLEAR
+OExample: Complete graphs
+O--------------------------------------------------------------------------------------------------------------------------
+OAn complete graph of 20 nodes needs about 25 seconds
+Oon a Sparc ELC.
+O
+OThis graph contains 20 nodes and 190 edges.
+OPress 'Continue' button to continue ...
+E ../expl/demo014.vcg
+L CLEAR
+OExample: Complete graphs
+O--------------------------------------------------------------------------------------------------------------------------
+OAn complete graph of 30 nodes needs about 110 seconds
+Oon a Sparc ELC.
+O
+OThis graph contains 30 nodes and 435 edges.
+OPress 'Continue' button to continue ...
+E ../expl/demo016.vcg
+L CLEAR
+OExample: Complete graphs
+O--------------------------------------------------------------------------------------------------------------------------
+OIf we have such complex graphs, it is often not necessary
+Oto have a nice layout, because the graphs are to large   
+Oto see all details at the same time.
+OIn this case, we set the fast flag (option -f) that reduces
+Othe number of iterations of various layout steps.
+ONext, we see the same complete graph of 30 nodes as before, however
+Onow the fast flag is set.
+OThen, we need only 15 seconds (compared to 100 seconds before),
+Obut the layout is very ugly.
+OPress 'Continue' button to continue ...
+E ../expl/demo017.vcg
+L CLEAR
+OExample: Intermediate representation of a compiler (HIR)
+O--------------------------------------------------------------------------------------------------------------------------
+OThe next example comes from the REAL WORLD.
+OIt shows the High Intermediate Representation (HIR)
+Oof a CLaX program. It is a syntax tree annotated by
+Otypes.
+OYou see the procedure declarations. The main module is
+Oactually folded (see the green triangle).
+OIf you select the menu point Hide edges, you will recognize
+Othat the edge classes are named in this example.
+OWe use the layout algorithm TREE.
+OThis graph contains 614 nodes and 613 edges.
+OPress 'Continue' button to continue ...
+E ../expl/tstree.vcg
+L CLEAR
+OExample: Intermediate representation of a compiler (CCMIR)
+O--------------------------------------------------------------------------------------------------------------------------
+OThe next example again comes from the REAL WORLD.
+OIt shows the Common Compare Medium Intermediate
+ORepresentation (CCMIR) of a very simple C program.
+OThis graph was generated by the ACE C frontend and a trivial
+Oadditional visualization engine. The edge classes 1-5
+Oare hidden, otherwise the layout would be to ugly.
+OThey can be exposed by menu selections.
+O
+OThis graph contains 66 nodes and 95 edges.
+OPress 'Continue' button to continue ...
+E ../expl/ccmir.vcg
+L
+OAnimation Demo
+O--------------------------------------------------------------------------------------------------------------------------
+ONow a small animation: We show a sequence of insertions
+Ointo a red black tree. The red black tree is a special
+Odata structure that must be balanced. We animate the
+Obalancing process.
+O
+OWARNING: Here, the timing is very critical. Maybe, the animation
+Odoes not work, because of a wrong timing. (In this case, the
+Oanimation was slower than expected). Anyway, this is the last
+Oexample. You don't miss something, if it crashes now.
+O
+OPress 'Continue' button to continue ...
+E ../expl/rbtree01.vcg
+S 3
+X ../expl/rbtree02.vcg
+S 3
+X ../expl/rbtree03.vcg
+S 3
+X ../expl/rbtree04.vcg
+S 3
+X ../expl/rbtree05.vcg
+S 3
+X ../expl/rbtree06.vcg
+S 3
+X ../expl/rbtree07.vcg
+S 3
+X ../expl/rbtree08.vcg
+S 3
+X ../expl/rbtree09.vcg
+S 3
+X ../expl/rbtree10.vcg
+S 3
+X ../expl/rbtree11.vcg
+S 3
+X ../expl/rbtree12.vcg
+S 3
+X ../expl/rbtree13.vcg
+S 3
+X ../expl/rbtree14.vcg
+S 3
+X ../expl/rbtree15.vcg
+S 3
+X ../expl/rbtree16.vcg
+S 3
+X ../expl/rbtree17.vcg
+S 3
+X ../expl/rbtree18.vcg
+S 3
+X ../expl/rbtree19.vcg
+S 3
+X ../expl/rbtree20.vcg
+S 3
+X ../expl/rbtree21.vcg
+S 3
+X ../expl/rbtree22.vcg
+S 3
+X ../expl/rbtree23.vcg
+S 3
+X ../expl/rbtree24.vcg
+S 3
+X ../expl/rbtree25.vcg
+S 3
+X ../expl/rbtree26.vcg
+L CLEAR
+OThis was the demonstration of the VCG tool.
+OI hope everything worked will.
+O
+OFor more information, please contact:
+O     Georg Sander
+O     FB 14 Informatik
+O     University of Saarland
+O     66041 Saarbruecken, Germany
+O     email: sander@cs.uni-sb.de
+O
+O
+OThe 'Quit' button finishes this demonstration ...

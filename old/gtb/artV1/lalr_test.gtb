@@ -1,0 +1,37 @@
+S ::= I.
+
+I ::= 'if' 'int' 'then' S else_clause.
+else_clause ::= # | 'else' S.
+ 
+
+
+
+
+(
+write["\n" gtb_version " processing '" gtb_main_file_name "' on " date_time "\n\n"]
+
+this_grammar := grammar[S]
+augment_grammar[this_grammar]
+write[open["rules.txt"] this_grammar]
+render[open["rules.vcg"] this_grammar]
+
+this_nfa := nfa[this_grammar lr 1 full_lookahead_sets normal_reductions]
+render[open["nfa.vcg"] this_nfa]
+
+this_dfa := dfa[this_nfa]
+
+
+render[open["dfa.vcg"] this_dfa]
+write[open["parse.tbl"] this_dfa]
+
+merged_dfa := la_merge[this_dfa]
+
+render[open["merged_dfa.vcg"] merged_dfa]
+write[open["merged_parse.tbl"] merged_dfa]
+
+dfa_statistics[merged_dfa]
+	
+write["\n" CPU_time " CPU seconds elapsed\n\n"]
+
+)
+

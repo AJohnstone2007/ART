@@ -1,0 +1,184 @@
+(*****************************************************************************
+*
+* RDP release 1.00 by Adrian Johnstone (adrian@dcs.rhbnc.ac.uk) 14 Feb 1994
+*
+* rdp.bnf - decorated rdp grammar
+*
+* This file may be freely distributed. Please mail improvements to the author.
+*
+*****************************************************************************)
+TITLE("Recursive descent parser generator V1.00 (generated)")
+SUFFIX("bnf")
+SHOW_SKIPS
+SET_SIZE(256)
+HASH_SIZE(101)
+HASH_PRIME(31)
+TAB_WIDTH(2)
+TEXT_SIZE(20000)
+MAX_ERRORS(30)
+MAX_WARNINGS(120)
+OUTPUT_FILE("rdparser")
+USES("rdp_aux.h")
+OPTION("e  Write out expanded bnf along with first and follow sets" "rdp__expanded = 1;")
+OPTION("F  Force creation of output files" "rdp__force = 1;")
+PRE_PROCESS("rdp__pre_process();")
+POST_PROCESS("rdp__post_process(rdp__outputfilename, rdp__force, rdp__base);")
+
+unit ::= { prod | dir} EOF.
+
+dir::= 'INCLUDE' '(' code: filename
+										 "if (scan__open_file(filename+1) == NULL)"
+										 "	 scan__error_echo(\"Include file '%s' not found\", filename+1);"
+								 ')' |
+			 (* List directives *)
+			 "struct rdp__string_list *temp = crash__malloc(sizeof(struct rdp__string_list), \"HELP node allocation\");"
+			 'OPTION' '(' code: s
+									"temp->str1 = s+1;"
+									"temp->next = rdp__dir_help;"
+									"rdp__dir_help = temp;"
+									code: s
+									"temp->str2 = s+1;"
+							')' |
+			 "struct rdp__string_list *temp = crash__malloc(sizeof(struct rdp__string_list), \"HELP node allocation\");"
+			 'USES' '(' code: s
+									"temp = crash__malloc(sizeof(struct rdp__string_list), \"INCLUDE node allocation\");"
+									"temp->str1 = s+1;"
+									"temp->next = rdp__dir_include;"
+									"rdp__dir_include = temp;"
+							 ')' |
+			 (* String directives *)
+			 'TITLE' '(' code: s "rdp__dir_title = s+1;" ')' |
+			 'SUFFIX' '(' code:s "rdp__dir_suffix = s+1;" ')' |
+			 'PRE_PROCESS' '(' code:s "rdp__dir_pre_process = s+1;" ')' |
+			 'POST_PROCESS' '(' code:s "rdp__dir_post_process = s+1;" ')' |
+			 'OUTPUT_FILE' '(' code:s "rdp__dir_output_file = s+1;" ')' |
+			 (* Numeric directives *)
+			 'PASSES' '(' NUMBER:n "rdp__dir_passes = n;" ')' |
+			 'SET_SIZE' '(' NUMBER:n "rdp__dir_set_size = n;" ')' |
+			 'HASH_SIZE' '(' NUMBER:n "rdp__dir_hash_size = n;" ')' |
+			 'HASH_PRIME' '(' NUMBER:n "rdp__dir_hash_prime = n;" ')' |
+			 'TAB_WIDTH' '(' NUMBER:n "rdp__dir_tab_width = n;" ')' |
+			 'TEXT_SIZE' '(' NUMBER:n "rdp__dir_text_size = n;" ')' |
+			 'MAX_ERRORS' '(' NUMBER:n "rdp__dir_max_errors = n;" ')' |
+			 'MAX_WARNINGS' '(' NUMBER:n "rdp__dir_max_warnings = n;" ')' |
+			 (* Boolean directives *)
+			 'HEX_DOLLAR' "rdp__dir_hex_dollar = 1;" |
+			 'CASE_INSENSITIVE' "rdp__dir_case_insensitive = 1;" |
+			 'SHOW_SKIPS' "rdp__dir_show_skips = 1;" .
+
+prod:symbol__* ::= "unsigned stars = 0;"
+								 "type = \"void\";"
+								 (ID:name|NEW_ID:name)
+								 "rdp__primary_id = name;"
+								 "rdp__component = 0;"
+								 "result = rdp__find(rdp__primary_id, K_PRIMARY, 0);"
+								 [':'(ID:type|NEW_ID:type) {'*' "stars++;" } ]
+								 '::=' alt:body
+								 "DATA(result, list) = body;"
+								 "DATA(result, been_defined) = 1;"
+								 "DATA(result, return_type) = type;"
+								 "DATA(result, return_type_stars) = stars;"
+								 "if (rdp__start_prod == NULL) rdp__start_prod = result;"
+								 '.'.
+
+alt:rdp__list* ::= "rdp__list*end = result = crash__calloc(sizeof(rdp__list), \"sequence list node\");"
+							< seq: body
+								 "end->next = crash__calloc(sizeof(rdp__list), \"alt list node\");"
+								 "end = end->next;"
+								 "end->production = rdp__find(scan__insert_subid(rdp__primary_id, rdp__component++), K_SEQUENCE, 1);"
+								 "DATA(end->production,list) = body;"
+							> '|' "result = result->next;".
+
+
+seq:rdp__list* ::= "rdp__list*end = result = crash__calloc(sizeof(rdp__list), \"sequence list node\");"
+							{ "ret_name = NULL;"
+								(item_ret:body [':'(ID:ret_name|NEW_ID:ret_name)] | item_inl: body)
+								"end->next = crash__calloc(sizeof(rdp__list), \"sequence list node\");"
+								"end = end->next;"
+								"end->production = body;"
+								"end->return_name = ret_name;"
+							}
+							"result = result->next;" .
+
+item_ret:symbol__* ::= ID:name "result = rdp__find(name, K_PRIMARY, 0);"
+															 "rdp__check_eoln(name);" |
+
+											 NEW_ID:name "result = rdp__find(name, K_PRIMARY, 0);" |
+
+											 token:name
+											 "rdp__check_token_valid(name);"
+											 "result = rdp__find(name, K_TOKEN, 0);" |
+
+											 'STRING' '(' token:name ')'
+											 "rdp__check_token_valid(name);"
+											 "result = rdp__find(name, K_TOKEN, 0);"
+											 "DATA(result, extended_class) = E_STRING;" |
+
+											 'STRING_ESC' '(' token:name token:quote ')'
+											 "rdp__check_token_valid(name);"
+											 "result = rdp__find(name, K_TOKEN, 0);"
+											 "DATA(result, extended_class) = E_STRING_ESC;"
+											 "DATA(result, close) = quote;" |
+
+											 'COMMENT' '(' token:name token:close ')'
+											 "rdp__check_token_valid(name);"
+											 "result = rdp__find(name, K_TOKEN, 0);"
+											 "DATA(result, extended_class) = E_COMMENT;"
+											 "DATA(result, close) = close;" |
+
+											 'COMMENT_NEST' '(' token:name token:close ')'
+											 "rdp__check_token_valid(name);"
+											 "result = rdp__find(name, K_TOKEN, 0);"
+											 "DATA(result, extended_class) = E_COMMENT_NEST;"
+											 "DATA(result, close) = close;" |
+
+											 'COMMENT_VISIBLE' '(' token:name token:close ')'
+											 "rdp__check_token_valid(name);"
+											 "result = rdp__find(name, K_TOKEN, 0);"
+											 "DATA(result, extended_class) = E_COMMENT_VISIBLE;"
+											 "DATA(result, close) = close;" |
+
+											 'COMMENT_NEST_VISIBLE' '(' token:name token:close ')'
+											 "rdp__check_token_valid(name);"
+											 "result = rdp__find(name, K_TOKEN, 0);"
+											 "DATA(result, extended_class) = E_COMMENT_NEST_VISIBLE;"
+											 "DATA(result, close) = close;" |
+
+											 'COMMENT_LINE' '(' token:name ')'
+											 "rdp__check_token_valid(name);"
+											 "result = rdp__find(name, K_TOKEN, 0);"
+											 "DATA(result, extended_class) = E_COMMENT_LINE;" |
+
+											 'COMMENT_LINE_VISIBLE' '(' token:name ')'
+											 "rdp__check_token_valid(name);"
+											 "result = rdp__find(name, K_TOKEN, 0);"
+											 "DATA(result, extended_class) = E_COMMENT_LINE_VISIBLE;".
+
+item_inl:symbol__* ::= code:name
+										 "result = rdp__find(name, K_CODE, 0);"
+										 "DATA(result, contains_null) = 1;" |
+
+										 '('alt:body')'
+										 "result = rdp__find(scan__insert_subid(rdp__primary_id, rdp__component++), K_DO_FIRST, 1);"
+										 "DATA(result, list) = body;" |
+
+										 '{'alt:body'}'
+										 "result = rdp__find(scan__insert_subid(rdp__primary_id, rdp__component++), K_ITERATION, 1);"
+										 "DATA(result, list) = body;"
+										 "DATA(result, contains_null) = 1;" |
+
+										 '['alt:body']'
+										 "result = rdp__find(scan__insert_subid(rdp__primary_id, rdp__component++), K_CONDITIONAL, 1);"
+										 "DATA(result, list) = body;"
+										 "DATA(result, contains_null) = 1;" |
+
+										 '<'alt:body'>' token:delimiter
+										 "result = rdp__find(scan__insert_subid(rdp__primary_id, rdp__component++), K_LIST, 1);"
+										 "DATA(result, list) = body;"
+										 "DATA(result, supplementary_token) = rdp__find(delimiter, K_TOKEN, 0);".
+
+code:char*  ::= STRING_ESC('"' '\\'):result .
+token:char* ::= STRING_ESC('\'' '\\'):result .
+comment     ::= COMMENT('(*' '*)').
+
+(* End of rdp.bnf *)

@@ -1,0 +1,15 @@
+
+alpha ::= `a..`z | `A..`z.
+digit ::= `0..`9.
+
+id ::= alpha { alpha | `_ | digit }.
+
+integer ::= <digit>.
+
+real ::= integer [ `. integer [ (`e|`E) integer ] ].
+
+string ::= `" { ~`" } `".
+
+comment ::= `\`\ {~`\n} \n.
+
+syntax ::= real | string | integer | id | comment.

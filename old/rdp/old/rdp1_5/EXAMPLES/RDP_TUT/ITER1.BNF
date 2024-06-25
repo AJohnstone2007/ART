@@ -1,0 +1,14 @@
+(* TREE *)
+
+E ::= ('a' | 'b' ) 0@0 ',' .
+
+    (***** iter1.bnf *****)
+
+
+
+(* if 0@0 then incorrectly accepts a,b,a,a,,
+   if 0@7 then incorrectly accepts a,b,a,a,,
+   if 3@0 finds error but also says iteration count too low
+   if 3@7 seems to be ok
+   doesn't seem to update 'count' properly
+*)

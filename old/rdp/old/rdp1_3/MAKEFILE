@@ -1,0 +1,185 @@
+# Makefile for RDP release version 1.30 Adrian Johnstone 28 Dec 1994
+
+###############################################################################
+# Configuration section: uncomment one of the following blocks
+
+# Configuration for gcc on Unix. Also works for g++ if you set CC = g++
+#CC      = gcc
+#OBJ     = .o
+#EXE     =
+#DIFF    = diff -s
+#RM      = rm
+#CP      = cp
+#SUPP_DIR = ./rdp_supp/
+#CFLAGS = -I$(SUPP_DIR) -Wmissing-prototypes -Wstrict-prototypes -fno-common -Wall -ansi -pedantic
+#LINK    = $(CC) $(CFLAGS) -o ./
+#MATHS   = -lm
+#HERE    = ./
+#OBJ_ONLY = -c
+# End of gcc on Unix configuration
+
+# Configuration for gcc on DOS. Also works for g++ if you set CC = g++
+#        Note: You can find diff,cp,rm etc by looking for DOSIX with archie
+#CC     = gcc
+#OBJ = .o
+#EXE =
+#DIFF = diff -b                 # assumes you have diff for dos
+#RM = rm                        # assumes you have rm for dos
+#CP = cp                        # assumes you have cp for dos
+#SUPP_DIR = ./rdp_supp/
+#CFLAGS = -I$(SUPP_DIR) -Wmissing-prototypes -Wstrict-prototypes -fno-common -Wall -ansi -pedantic
+#LINK = $(CC) $(CFLAGS) -o ./
+#MATHS = -lm
+#HERE = ./
+#COFF = coff2exe        # gcc util to add in DPMI => standalone .exe file
+#OBJ_ONLY = -c
+# End of gcc on DOS configuration
+
+# Configuration for Sun acc 2.0 on SunOS
+#CC     = acc
+#OBJ = .o
+#EXE =
+#DIFF = diff -s
+#RM = rm
+#CP = cp
+#SUPP_DIR = ./rdp_supp/
+#CFLAGS = -I$(SUPP_DIR) -Xa -vc
+#LINK = $(CC) $(CFLAGS) -o ./
+#MATHS = -lm
+#HERE = ./
+#OBJ_ONLY = -c
+# End of Sun acc 2.0 on SunOS configuration
+
+# Configuration for Borland C 3.1 on MS-DOS
+CC     = bcc
+OBJ    = .obj
+EXE    = .exe
+DIFF   = fc 
+RM     = del
+CP     = copy
+SUPP_DIR = .\rdp_supp\\
+CFLAGS = -I$(SUPP_DIR) -A -P -w -N -mh
+LINK   = $(CC) $(CFLAGS) -o.\\
+MATHS  =
+HERE   = .\\
+OBJ_ONLY = -c
+# End of Borland C 3.1 on MS-DOS configuration
+
+# Configuration for Microsoft 'C' Version 7.00 on MS-DOS using nmake
+#CC     = cl
+#OBJ    = .obj
+#EXE    = .exe
+#DIFF   = fc 
+#RM     = del
+#CP     = copy
+#SUPP_DIR = .\rdp_supp^\
+#CFLAGS = /AL /W4 /I $(SUPP_DIR)
+#LINK   = $(CC) $(CFLAGS) -o.^\
+#MATHS  =
+#HERE   = .^\
+#OBJ_ONLY = /c
+# End of Configuration for Microsoft 'C' Version 7.00 on MS-DOS using nmake
+
+# End of configuration : don't alter anything below this line
+###############################################################################
+
+# Standard macros
+
+RDP_SUPP = crash$(OBJ) scan$(OBJ) set$(OBJ) symbol$(OBJ)
+
+# Standard suffix rules
+
+.c$(OBJ):
+	$(CC) $(CFLAGS) $(OBJ_ONLY) $*.c
+
+# default target: do everything
+
+all: min_test mpl_test pas_test gen_test
+
+# Build the support modules: do this locally in case user wants debug options
+crash$(OBJ): $(SUPP_DIR)crash.h $(SUPP_DIR)crash.c
+	$(CC) $(CFLAGS) $(OBJ_ONLY) $(SUPP_DIR)crash.c
+
+set$(OBJ): $(SUPP_DIR)set.h $(SUPP_DIR)set.c
+	$(CC) $(CFLAGS) $(OBJ_ONLY) $(SUPP_DIR)set.c
+
+symbol$(OBJ): $(SUPP_DIR)symbol.h $(SUPP_DIR)symbol.c
+	$(CC) $(CFLAGS) $(OBJ_ONLY) $(SUPP_DIR)symbol.c
+
+scan$(OBJ): $(SUPP_DIR)scan.h $(SUPP_DIR)scan.c
+	$(CC) $(CFLAGS) $(OBJ_ONLY) $(SUPP_DIR)scan.c
+
+# compile distributed rdp
+rdp$(EXE): rdp$(OBJ) rdp_aux$(OBJ) $(RDP_SUPP)
+	$(LINK)rdp$(EXE) rdp$(OBJ) rdp_aux$(OBJ) $(RDP_SUPP)
+
+# generate and compile rdp_gen from rdp.bnf
+rdp_gen.c: rdp$(EXE) rdp.bnf
+	$(HERE)rdp -ordp_gen rdp
+
+rdp_gen$(EXE): rdp_gen$(OBJ) rdp_aux$(OBJ) $(RDP_SUPP)
+	$(LINK)rdp_gen$(EXE) rdp_gen$(OBJ) rdp_aux$(OBJ) $(RDP_SUPP)
+
+# run rdp.bnf through rdp_gen and diff to see if they are the same
+gen_test: rdp_gen$(EXE)
+	-$(CP) rdp_gen.c rdp_gen1.c
+	$(HERE)rdp_gen -ordp_gen rdp
+	-$(DIFF) rdp_gen.c rdp_gen1.c
+
+# generate, compile and test the pascal parser
+pascal.c: rdp$(EXE) pascal.bnf
+# Need -F to override dangling else
+	$(HERE)rdp -opascal -F pascal
+
+pascal$(EXE): pascal$(OBJ) $(RDP_SUPP)
+	$(LINK)pascal$(EXE) pascal$(OBJ) $(RDP_SUPP)
+
+pas_test: pascal$(EXE) test.pas
+	$(HERE)pascal -v test
+
+# generate, compile and test the mpl parser
+mpl.c: rdp$(EXE) mpl.bnf
+	$(HERE)rdp -F -ompl mpl
+
+mpl$(EXE): mpl$(OBJ) $(RDP_SUPP)
+	$(LINK)mpl$(EXE) mpl$(OBJ) $(RDP_SUPP) $(MATHS)
+
+mpl_test: mpl$(EXE) test.mpl
+	$(HERE)mpl -v test
+
+# generate, compile and test the mini parser
+mini.c: rdp$(EXE) mini.bnf
+	$(HERE)rdp -omini mini
+
+mini$(EXE): mini$(OBJ) $(RDP_SUPP)
+	$(LINK)mini$(EXE) mini$(OBJ) $(RDP_SUPP)
+
+min_test: mini$(EXE) test.min
+	$(HERE)mini -v test
+
+# get rid of intermediate files
+clean:
+	-$(RM) *$(OBJ)
+	-$(RM) rdp_gen*.*
+	-$(RM) pascal.c
+	-$(RM) pascal.h
+	-$(RM) mpl.c
+	-$(RM) mpl.h
+	-$(RM) mini.c
+	-$(RM) mini.h
+
+# return to intial distribution state by deleting executables
+veryclean: clean
+	-$(RM) rdparser.c
+	-$(RM) rdparser.h
+	-$(RM) rdparser$(EXE)
+	-$(RM) rdpgen.c
+	-$(RM) rdpgen.h
+	-$(RM) $(HERE)rdp$(EXE)
+	-$(RM) rdp_gen$(EXE)
+	-$(RM) pascal$(EXE)
+	-$(RM) mpl$(EXE)
+	-$(RM) mini$(EXE)
+	-$(RM) *.swp
+	-$(RM) *.dsk
+	-$(RM) *.bak

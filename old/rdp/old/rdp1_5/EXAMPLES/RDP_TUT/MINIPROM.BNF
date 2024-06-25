@@ -1,0 +1,29 @@
+TREE
+
+program   ::= {([var_dec | statement ]) ';' }.
+
+var_dec   ::= 'int' ( ID [ '=' e1 ] )@','.
+
+statement ::=  ID '='^^ e0 
+                | 'if'^^ e0 'then'^ statement [ 'else'^ statement ] 
+                | 'print' '(' ( e0 | String )@',' ')'.
+
+e0 ::=  e1 ['>'^^ e1 | '<'^^ e1 | '>='^^ e1 | '<='^^ e1 | '=='^^ e1 | '!='^^ e1 ]:^^.
+
+e1 ::= e2 {'+'^^ e2 | '-'^^ e2 }:^^ .
+
+e2 ::= e3 {'*'^^ e3 | '/'^^ e3 }:^^ .
+
+e3 ::= '+' e4 | '-' e4 | e4^^ .
+
+e4 ::= e5 ['^'^^ e4 ]:^^ .
+
+e5 ::= ID^^ | INTEGER^^ | '(' e1 ')' .
+
+comment ::= COMMENT_NEST('(*' '*)').   
+
+String ::= STRING_ESC('"' '\\') .    
+
+     (***** mini1.bnf *****)
+
+

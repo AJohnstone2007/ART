@@ -1,0 +1,207 @@
+manually built
+ (null file): Symbol table 'Test table 1': dump by hash bucket
+
+*** Bucket 0:
+*** Bucket 1:
+*** Bucket 2:
+manually built
+*** Bucket 3:
+*** Bucket 4:
+*** Bucket 5:
+*** Bucket 6:
+
+ (null file): Symbol table 'Test table 1' dump by scope chain
+
+Scope id 'Root'
+manually built
+
+ (null file): Symbol table 'Test table 1': dump by hash bucket
+
+*** Bucket 0:
+*** Bucket 1:
+*** Bucket 2:
+manually built
+manually built
+*** Bucket 3:
+*** Bucket 4:
+*** Bucket 5:
+*** Bucket 6:
+
+ (null file): Symbol table 'Test table 1' dump by scope chain
+
+Scope id 'Root'
+manually built
+manually built
+
+here
+Found another: here
+Found another: here
+Found another: here
+ (null file): 
+Symbol table `Test table 1' has 7 buckets and contains 12 symbols
+  3 buckets have 0 symbols
+  0 buckets have 1 symbol
+  3 buckets have 2 symbols
+  0 buckets have 3 symbols
+  0 buckets have 4 symbols
+  0 buckets have 5 symbols
+  1 bucket  has  6 symbols
+  0 buckets have 7 symbols
+  0 buckets have 8 symbols
+  0 buckets have 9 symbols
+  0 buckets have 10 symbols or more
+ (null file): 
+Mean list length is 1.714286
+ (null file): Symbol table 'Test table 1': dump by hash bucket
+
+*** Bucket 0:
+was
+was
+*** Bucket 1:
+and
+and
+*** Bucket 2:
+here
+here
+here
+here
+manually built
+manually built
+*** Bucket 3:
+adrian
+adrian
+*** Bucket 4:
+*** Bucket 5:
+*** Bucket 6:
+
+ (null file): Symbol table 'Test table 1' dump by scope chain
+
+Scope id 'nested scope'
+here
+and
+here
+was
+adrian
+
+Scope id 'Root'
+here
+and
+here
+was
+adrian
+manually built
+manually built
+
+ (null file): Symbol table 'Test table 1': dump by hash bucket
+
+*** Bucket 0:
+was
+was
+*** Bucket 1:
+and
+and
+*** Bucket 2:
+here
+here
+here
+here
+manually built
+manually built
+*** Bucket 3:
+adrian
+adrian
+*** Bucket 4:
+*** Bucket 5:
+*** Bucket 6:
+
+ (null file): Symbol table 'Test table 1' dump by scope chain
+
+Scope id 'nested scope'
+adrian
+and
+here
+here
+was
+
+Scope id 'Root'
+here
+and
+here
+was
+adrian
+manually built
+manually built
+
+ (null file): Symbol table 'Test table 1': dump by hash bucket
+
+*** Bucket 0:
+was
+was
+*** Bucket 1:
+and
+and
+*** Bucket 2:
+here
+here
+here
+here
+manually built
+*** Bucket 3:
+adrian
+adrian
+*** Bucket 4:
+*** Bucket 5:
+*** Bucket 6:
+
+ (null file): Symbol table 'Test table 1' dump by scope chain
+
+Scope id 'nested scope'
+adrian
+and
+here
+here
+was
+
+Scope id 'Root'
+here
+and
+here
+was
+adrian
+manually built
+manually built
+
+ (null file): Symbol table 'Test table 1': dump by hash bucket
+
+*** Bucket 0:
+was
+*** Bucket 1:
+and
+*** Bucket 2:
+here
+here
+manually built
+*** Bucket 3:
+adrian
+*** Bucket 4:
+*** Bucket 5:
+*** Bucket 6:
+
+ (null file): Symbol table 'Test table 1' dump by scope chain
+
+Scope id 'nested scope'
+adrian
+and
+here
+here
+was
+
+Scope id 'Root'
+here
+and
+here
+was
+adrian
+manually built
+manually built
+

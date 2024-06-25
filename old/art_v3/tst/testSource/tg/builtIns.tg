@@ -1,0 +1,318 @@
+(* ART Built-in tests *)
+
+(* Conventions for filenames
+
+S, T, U, V, W, X, Y, Z nonterminals
+a, b, c, d, e, f, g, h terminals
+
+_ |  alternation bar
+H #  (hash - epsilon)
+L (  (left parenthesis)
+R )  (right parenthesis)
+Q ?  (query)  
+P +  (positive)
+K *  (Kleene)
+I @  (Iterator)
+D \  (Difference)
+A &  (Built-in)
+*)
+
+(* Test &OCAML_LABEL_NAME at beginning of production *)
+AOCAMLLABELNAMEa
+$S ::= &OCAML_LABEL_NAME `a;$
+accept $st`ri'ng a$
+reject $0997 a$
+
+(* Test &OCAML_LABEL_NAME at end of production *)
+aAOCAMLLABELNAME
+$S ::= `a &OCAML_LABEL_NAME;$
+accept $a st`ri'ng$
+reject $a 0997$
+
+(* Test &OCAML_LABEL_NAME in middle of production *)
+aAOCAMLLABELNAMEa
+$S ::= `a &OCAML_LABEL_NAME `a;$
+accept $a st`ri'ng a$
+reject $a 0997 a$
+
+(* Test &OCAML_INFIX_SYMBOL at beginning of production *)
+AOCAMLINFIXSYMBOLa
+$S ::= &OCAML_INFIX_SYMBOL `a;$
+accept $+ a$
+reject $! a$
+
+(* Test &OCAML_INFIX_SYMBOL at end of production *)
+aAOCAMLINFIXSYMBOL
+$S ::= `a &OCAML_INFIX_SYMBOL;$
+accept $a +$
+reject $a !$
+
+(* Test &OCAML_INFIX_SYMBOL in middle of production *)
+aAOCAMLINFIXSYMBOLa
+$S ::= `a &OCAML_INFIX_SYMBOL `a;$
+accept $a + a$
+reject $a ! a$
+
+(* Test &OCAML_PREFIX_SYMBOL at beginning of production *)
+AOCAMLPREFIXSYMBOLa
+$S ::= &OCAML_PREFIX_SYMBOL `a;$
+accept $! a$
+reject $+ a$
+
+(* Test &OCAML_PREFIX_SYMBOL at end of production *)
+aAOCAMLPREFIXSYMBOL
+$S ::= `a &OCAML_PREFIX_SYMBOL;$
+accept $a !$
+reject $a +$
+
+(* Test &OCAML_PREFIX_SYMBOL in middle of production *)
+aAOCAMLPREFIXSYMBOLa
+$S ::= `a &OCAML_PREFIX_SYMBOL `a;$
+accept $a ! a$
+reject $a + a$
+
+(* Test &ID at beginning of production *)
+AIDa
+$S ::= &ID `a;$
+accept $_art1 a$
+reject $0dog a$
+
+(* Test &ID at end of production *)
+aAID
+$S ::= `a &ID;$
+accept $a _art1$
+reject $a 0dog$
+
+(* Test &ID in middle of production *)
+aAIDa
+$S ::= `a &ID `a;$
+accept $a _art1 a$
+reject $a 0dog a$
+
+(* Test &INTEGER at beginning of production *)
+AINTEGERa
+$S ::= &INTEGER `a;$
+accept $10 a$
+reject $string a$
+
+(* Test &INTEGER at end of production *)
+aAINTEGER
+$S ::= `a &INTEGER;$
+accept $a 10$
+reject $a string$
+
+(* Test &INTEGER in middle of production *)
+aAINTEGERa
+$S ::= `a &INTEGER `a;$
+accept $a 10 a$
+reject $a string a$
+
+(* Test &REAL at beginning of production *)
+AREALa
+$S ::= &REAL `a;$
+accept $5.3e2 a$
+reject $string a$
+
+(* Test &REAL at end of production *)
+aAREAL
+$S ::= `a &REAL;$
+accept $a 5.3e2$
+reject $a string$
+
+(* Test &REAL in middle of production *)
+aAREALa
+$S ::= `a &REAL `a;$
+accept $a 5.3e2 a$
+reject $a string a$
+
+(* Test &CHAR_SQ at beginning of production *)
+ACHAR_SQa
+$S ::= &CHAR_SQ `a;$
+accept $'a' a$
+reject $g a$
+
+(* Test &CHAR_SQ at end of production *)
+aACHAR_SQ
+$S ::= `a &CHAR_SQ;$
+accept $a 'a'$
+reject $a g$
+
+(* Test &CHAR_SQ in middle of production *)
+aACHARSQa
+$S ::= `a &CHAR_SQ `a;$
+accept $a 'a' a$
+reject $a g a$
+
+(* Test &STRING_SQ at beginning of production *)
+ASTRINGSQa
+$S ::= &STRING_SQ `a;$
+accept $'hello' a$
+reject $hello a$
+
+(* Test &STRING_SQ at end of production *)
+aASTRINGSQ
+$S ::= `a &STRING_SQ;$
+accept $a 'hello'$
+reject $a hello$
+
+(* Test &STRING_SQ in middle of production *)
+aASTRINGSQa
+$S ::= `a &STRING_SQ `a;$
+accept $a 'hello' a$
+reject $a hello a$
+
+(* Test &STRING_DQ at beginning of production *)
+ASTRINGDQa
+$S ::= &STRING_DQ `a;$
+accept $"hello" a$
+reject $hello a$
+
+(* Test &STRING_DQ at end of production *)
+aASTRINGDQ
+$S ::= `a &STRING_DQ;$
+accept $a "hello"$
+reject $a hello$
+
+(* Test &STRING_DQ in middle of production *)
+aASTRINGDQa
+$S ::= `a &STRING_DQ `a;$
+accept $a "hello" a$
+reject $a hello a$
+
+(* Test &STRING_BQ at beginning of production *)
+ASTRINGBQa
+$S ::= &STRING_BQ `a;$
+accept $`hello` a$
+reject $hello a$
+
+(* Test &STRING_BQ at end of production *)
+aASTRINGBQ
+$S ::= `a &STRING_BQ;$
+accept $a `hello`$
+reject $a hello$
+
+(* Test &STRING_BQ in middle of production *)
+aASTRINGBQa
+$S ::= `a &STRING_BQ `a;$
+accept $a `hello` a$
+reject $a hello a$
+
+(* Test &STRING_BB at beginning of production *)
+ASTRINGBBa
+$S ::= &STRING_BB `a;$
+accept $[[hello]] a$
+reject $hello a$
+
+(* Test &STRING_BB at end of production *)
+aASTRINGBB
+$S ::= `a &STRING_BB;$
+accept $a [[hello]]$
+reject $a hello$
+
+(* Test &STRING_BB in middle of production *)
+aASTRINGBBa
+$S ::= `a &STRING_BB `a;$
+accept $a [[hello]] a$
+reject $a hello a$
+
+(* Test &CHAR_BQ at beginning of production *)
+ACHARBQa
+$S ::= &CHAR_BQ `a;$
+accept $`a a$
+reject $bb a$
+
+(* Test &CHAR_BQ at end of production *)
+aACHARBQ
+$S ::= `a &STRING_BB;$
+accept $a `a$
+reject $a hello$
+
+(* Test &CHAR_BQ in middle of production *)
+aACHARBQa
+$S ::= `a &CHAR_BQ `a;$
+accept $a `a a$
+reject $a bb a$
+
+(* Test &WHITESPACE at beginning of production *)
+AWHITESPACEa
+$S ::= &WHITESPACE `a;$
+accept $          
+ a$
+reject $aaaaaaaa$
+
+(* Test &WHITESPACE at end of production *)
+aAWHITESPACE
+$S ::= `a &WHITESPACE;$
+accept $a        
+  $
+reject $aaaaaaaaaa$
+
+(* Test &WHITESPACE in middle of production *)
+aAWHITESPACEa
+$S ::= `a &WHITESPACE `a;$
+accept $a         
+        a$
+reject $aaaaaaaaaaaaaaa$
+
+(* Test &COMMENT_NEST_ART at beginning of production *)
+ACOMMENTNESTARTa
+$S ::= &COMMENT_NEST_ART `a;$
+accept $(* Hello (* World *) !! *)a$
+reject $  b   a$
+
+(* Test &COMMENT_NEST_ART at end of production *)
+aACOMMENTNESTART
+$S ::= `a &COMMENT_NEST_ART;$
+accept $a(* Hello (* World *) !! *)$
+reject $  b   a$
+
+(* Test &COMMENT_NEST_ART in middle of production *)
+aACOMMENTNESTARTa
+$S ::= `a &COMMENT_NEST_ART `a;$
+accept $a(* Hello (* World *) !! *)a$
+reject $a  b   a$
+
+(* Test &COMMENT_BLOCK_C at beginning of production *)
+ACOMMENTBLOCKCa
+$S ::= &COMMENT_BLOCK_C `a;$
+accept $/* Hello World !! */a$
+reject $  b   a$
+
+(* Test &COMMENT_BLOCK_C at end of production *)
+aACOMMENTBLOCKC
+$S ::= `a &COMMENT_BLOCK_C;$
+accept $a/* Hello World !! */$
+reject $  b   a$
+
+(* Test &COMMENT_BLOCK_C in middle of production *)
+aACOMMENTBLOCKCa
+$S ::= `a &COMMENT_BLOCK_C `a;$
+accept $a/* Hello World !! */a$
+reject $a  b   a$
+
+(* Test &COMMENT_LINE_C at beginning of production *)
+ACOMMENTLINECa
+$S ::= &COMMENT_LINE_C `a;$
+accept $// Hello World !! 
+a$
+reject $  b   a$
+
+(* Test &COMMENT_LINE_C at end of production *)
+aACOMMENTLINEC
+$S ::= `a &COMMENT_LINE_C;$
+accept $a// Hello World !! $
+reject $  b   a$
+
+(* Test &COMMENT_LINE_C in middle of production *)
+aACOMMENTLINECa
+$S ::= `a &COMMENT_LINE_C `a;$
+accept $a// Hello World !! 
+a$
+reject $a  b   a$
+
+(* Test string of built-ins *)
+AALL
+$S ::= &OCAML_LABEL_NAME &OCAML_INFIX_SYMBOL &OCAML_PREFIX_SYMBOL &ID &INTEGER &REAL &CHAR_SQ &STRING_SQ &STRING_DQ &STRING_BQ &STRING_BB &CHAR_BQ &WHITESPACE &COMMENT_NEST_ART &COMMENT_BLOCK_C &COMMENT_LINE_C;$
+accept $st`ri'ng + ! _art1 55 5.5 'a' 'hello' "hello" `hello` [[hello]] `a 
+   (* Hello (* World *) *) /* Hello World */ // Hello World$
+reject $aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa$

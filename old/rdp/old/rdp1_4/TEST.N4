@@ -1,0 +1,151 @@
+; test file for NASM4
+
+	DATA	0x200
+	DATW	0x0124
+
+			;a comment three tabs in
+
+alabel	;with a comment
+
+;test all opcodes
+
+
+	CODE    0x1000
+	CPY		R6,R5
+	CPY 	R6,2
+	AND 	R6,R5
+	AND 	R6,2
+	OR 	R6,R5
+	OR 	R6,2
+	XOR 	R6,R5
+	XOR 	R6,2
+	ADD 	R6,R5
+	ADD 	R6,2
+	ADC 	R6,R5
+	ADC 	R6,2
+	SUB 	R6,R5
+	SUB 	R6,2
+	SBB 	R6,R5
+	SBB 	R6,2
+	MULU  	R6,R5
+	MULS  	R6,9
+	DIVU  	R6,R5
+	DIVS  	R6,9
+
+	LDS	R6,9[R9]
+	LDL	R6,9[R8]
+	STS	9[R9],R6
+	STL	9[R8],R6
+
+;	BZ	R6, .-1
+;	BNZ	R6, .-1
+;	BLT	R6, .-1
+;	BLZ	R6, .-1
+;	BGT	R6, .-1
+;	BGZ	R6, .-1
+
+;	BZL	R6, .-1
+;	BNZL	R6, .-1
+;	BLTL	R6, .-1
+;	BLZL	R6, .-1
+;	BGTL	R6, .-1
+;	BGZL	R6, .-1
+
+	SPC	R6
+	SEL     R6
+	SCR	R6
+	SOR	R6
+
+	LSH     R6
+	RSH     R6
+	ASH     R6
+
+	NEG     R6
+	SXT     R6
+
+	RTE
+
+
+
+	INC	R6
+	DEC	R6
+	COM	R6
+	CLR	R6
+	BRA     6
+	BRN     6
+	BRAL    6
+	BRNL    6
+
+; test all register designators
+
+	ADD	R0,R1
+	ADD	R2,R3
+	ADD	R4,R5
+	ADD	R6,R7
+	ADD	R8,R9
+	ADD	R10,R11
+	ADD	R12,R13
+	ADD	R14,R15
+
+	DATA
+; test data directives
+	DATN	0x1
+	DATB	0x12
+	DATW	0x1234
+	DATL	0x12345678
+
+; test expression interpreter
+	DATB	3+4*5
+	DATB	(3+4)*5
+	DATB	3+(4*5)
+	DATB	(3+4)+1
+	DATB	3-4
+	DATB	3*4
+	DATB	12/5
+	DATB	8>>1
+	DATB	8<<1
+	DATB	-4
+	DATB	+4
+;	DATB	~4
+	DATL	(4**3)**2
+	DATL	4**(3**2)
+	DATL	4**3**2
+	DATB	2^7
+;	DATB	2|5
+	DATB	2&7
+	DATB	2>7
+	DATB	7>2
+	DATB	2<7
+	DATB	7<2
+	DATB	2>=7
+	DATB	2<=7
+	DATB	2==7
+	DATB	2==2
+	DATB	2!=7
+	DATB	2!=2
+
+	DATN	0x0,0x1,0x2,0x3,0x4,0x5,0x6,0x7
+	DATN	0x8,0x9,0xA,0xB,0xC,0xD,0xE,0xF
+
+	DATW	0xD,0xE,0xF
+
+;test data alignment
+
+	EVEN
+	ODD
+	DATN 	1
+	EVEN
+
+	ODD
+	DATN	2
+
+; test code and data directives
+	CODE
+
+	ADD	R6, R5
+
+	DATA
+	DATN	1
+
+	CODE
+	SUB	R6, R5

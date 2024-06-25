@@ -1,0 +1,119 @@
+start ::=
+'I have to break up with you because ' reason '. But let\'s still ' disclaimer '.'
+.
+
+reason ::=
+dubious_excuse |
+dubious_excuse ' , and also because ' reason
+.
+
+dubious_excuse ::=
+'my ' person ' doesn\'t like you' |
+'I\'m in love with ' another |
+'I haven\'t told you this before but ' harsh |
+'I didn\'t have the heart to tell you this when we were going out, but ' harsh |
+'you never ' romantic_with_me ' with me any more' |
+'you don\'t ' romantic ' any more' |
+'my ' someone ' said you were bad news'
+.
+
+person ::=
+'mother' |
+'father' |
+'dog Herbie' |
+'roomate' |
+'great aunt Mathilda' |
+'ex_boyfriend' |
+'new boyfriend'
+.
+
+another ::=
+'an alligator' |
+'the tree' |
+'the Winter Olympics mascot' |
+'your roomate' |
+'my new boyfriend' |
+'anyone but you'
+.
+
+harsh ::=
+'I never liked your ' personal |
+'I never liked your ' personal ' - I can\'t believe I was so desparate' |
+'your ' personal ' always secretly annoyed me' |
+peeve
+.
+
+personal ::=
+'insipid nicknames for me' |
+'dumb laugh' |
+'facial expressions' |
+'friends' |
+'dumb jokes' |
+'personality'
+.
+
+peeve ::=
+'I never liked anything about you' |
+'I can\'t believe I went out with you' |
+'you smell really bad' |
+'your nose is crooked' |
+'holding hands with you reminds me of raking autumn leaves' 
+.
+
+someone ::=
+'horoscope' |
+'parent' |
+'little bird' |
+'crystal' |
+person
+.
+
+somewhere ::=
+'Casablanca' |
+'Atlantis' |
+'Paris' |
+'Mars'
+.
+
+romantic ::=
+'Send me roses' |
+'look at me with a spark in your eyes' |
+'take me dancing' |
+'read me poems' |
+'take me to ' somewhere |
+'make me feel like your best friend'
+.
+
+romantic_with_me ::=
+'share your feelings' |
+'share your feelings, no matter how disgusting,' |
+'play snuggle bunnies' |
+'go to ' somewhere
+.
+
+disclaimer ::=
+'remember each other\'s names for several years' |
+'have warm cuddly memories sometime when we get nostalgic' |
+'be friends' |
+'call each other' |
+'think mean thoughts about each other\'s new SO\'s' |
+'keep in touch' |
+'go out once in a while' |
+'exchange Christmas presents' |
+'study together' |
+'flirt shamelessly' |
+'get drunk and say/do things we regret'
+.
+
+
+(
+this_grammar := grammar[start]
+generate[this_grammar 100 random sentential_forms]
+generate[this_grammar 100 random sentences]
+write["\nTotal " CPU_time " CPU seconds elapsed\n\n"]
+)
+
+
+
+
+

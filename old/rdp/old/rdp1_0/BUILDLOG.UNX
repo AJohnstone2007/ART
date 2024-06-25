@@ -1,0 +1,44 @@
+gcc -Wall -ansi -pedantic  -c rdp.c
+rdp.c:18: warning: `_stklen' initialized and declared `extern'
+gcc -Wall -ansi -pedantic  -c rdp_aux.c
+gcc -Wall -ansi -pedantic  -c crash.c
+gcc -Wall -ansi -pedantic  -c scan.c
+gcc -Wall -ansi -pedantic  -c set.c
+gcc -Wall -ansi -pedantic  -c symbol.c
+gcc -Wall -ansi -pedantic  -lm -o ./rdp rdp.o rdp_aux.o crash.o scan.o set.o symbol.o
+rdp -otoy toy
+gcc -Wall -ansi -pedantic  -c toy.c
+toy.c: In function `main':
+toy.c:670: warning: unused variable `force'
+gcc -Wall -ansi -pedantic  -lm -o ./toy toy.o crash.o scan.o set.o symbol.o
+toy -v test
+
+Toy V1.00 Feb 20 1994 15:50:08
+test.toy: toy interpreter OK
+ Text mode: 0 errors, 0 warnings
+rdp -opascal -F pascal		
+Error: ** Production 'statement__8' contains null but first /\ follow is not empty
+ Total: 1 error, 0 warnings
+gcc -Wall -ansi -pedantic  -c pascal.c
+pascal.c: In function `main':
+pascal.c:1760: warning: unused variable `force'
+gcc -Wall -ansi -pedantic  -lm -o ./pascal pascal.o crash.o scan.o set.o symbol.o
+pascal -v test
+
+Pascal parser V1.00 (generated) Feb 20 1994 15:50:12
+ test.pas: 0 errors, 0 warnings
+rdp -ordp_gen rdp
+gcc -Wall -ansi -pedantic  -c rdp_gen.c
+gcc -Wall -ansi -pedantic  -lm -o ./rdp_gen rdp_gen.o rdp_aux.o crash.o scan.o set.o symbol.o
+rdp_gen -ordp_gena rdp
+gcc -Wall -ansi -pedantic  -c rdp_gena.c
+gcc -Wall -ansi -pedantic  -lm -o ./rdp_gena rdp_gena.o rdp_aux.o crash.o scan.o set.o symbol.o
+rdp_gena -ordp_genb rdp
+
+< #include "rdp_gena.h"
+---
+> #include "rdp_genb.h"
+
+<                  "Usage: rdp_gena [options] sourcefile \n\n"
+---
+>                  "Usage: rdp_genb [options] sourcefile \n\n"

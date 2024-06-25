@@ -1,0 +1,204 @@
+# RDP release 1.40 by Adrian Johnstone (adrian@dcs.rhbnc.ac.uk) 30 Jan 1995
+
+###############################################################################
+# Configuration section: uncomment one of the following blocks for gcc, g++,
+# djgpp, acc on Sunos, Borland C++ or Microsoft C++.
+
+# Configuration for gcc on Unix. Also works for g++ if you set CC = g++
+#CC      = gcc
+#OBJ     = .o
+#EXE     =
+#DIFF    = diff -s
+#RM      = rm
+#CP      = cp
+#SUPP_DIR = ./rdp_supp/
+#CFLAGS = -I$(SUPP_DIR) -Wmissing-prototypes -Wstrict-prototypes -fno-common -Wall -ansi -pedantic -g
+#LINK    = $(CC) -o ./
+#MATHS   = -lm
+#HERE    = ./
+#OBJ_ONLY = -c
+# End of gcc on Unix configuration
+
+# Configuration for gcc on DOS using djpgg.
+# Note: You can find diff,cp,rm etc by looking for DOSIX with archie
+#CC     = gcc
+#OBJ = .o
+#EXE =
+#DIFF = diff -b                 # assumes you have diff for dos
+#RM = rm                        # assumes you have rm for dos
+#CP = cp                        # assumes you have cp for dos
+#SUPP_DIR = ./rdp_supp/
+#CFLAGS = -I$(SUPP_DIR) -Wmissing-prototypes -Wstrict-prototypes -fno-common -Wall -ansi -pedantic
+#LINK = $(CC) $(CFLAGS) -o ./
+#MATHS = -lm
+#HERE = ./
+#COFF = coff2exe        # gcc util to add in DPMI => standalone .exe file
+#OBJ_ONLY = -c
+# End of gcc on DOS configuration
+
+# Configuration for Sun acc 2.0 on SunOS
+#CC     = acc
+#OBJ = .o
+#EXE =
+#DIFF = diff -s
+#RM = rm
+#CP = cp
+#SUPP_DIR = ./rdp_supp/
+#CFLAGS = -I$(SUPP_DIR) -Xa -vc
+#LINK = $(CC) $(CFLAGS) -o ./
+#MATHS = -lm
+#HERE = ./
+#OBJ_ONLY = -c
+# End of Sun acc 2.0 on SunOS configuration
+
+# Configuration for Borland C 3.1 on MS-DOS
+CC     = bcc
+OBJ    = .obj
+EXE    = .exe
+DIFF   = fc 
+RM     = del
+CP     = copy
+SUPP_DIR = rdp_supp\\
+CFLAGS = -I$(SUPP_DIR) -A -P -w -N -mh
+LINK   = $(CC) -mh -o
+MATHS  =
+HERE   = 
+OBJ_ONLY = -c
+# End of Borland C 3.1 on MS-DOS configuration
+
+# Configuration for Microsoft C Version 7.00 on MS-DOS using nmake
+#CC     = cl
+#OBJ    = .obj
+#EXE    = .exe
+#DIFF   = fc 
+#RM     = del
+#CP     = copy
+#SUPP_DIR = .\rdp_supp^\
+#CFLAGS = /AL /W4 /I $(SUPP_DIR)
+#LINK   = $(CC) $(CFLAGS) -o.^\
+#MATHS  =
+#HERE   = .^\
+#OBJ_ONLY = /c
+# End of Configuration for Microsoft 'C' Version 7.00 on MS-DOS using nmake
+
+# End of configuration : don't alter anything below this line
+###############################################################################
+
+# Standard macros
+
+RDP_SUPP = memalloc$(OBJ) scan$(OBJ) scanner$(OBJ) set$(OBJ) symbol$(OBJ) textio$(OBJ)
+RDP_AUX = rdp_aux$(OBJ) rdp_gram$(OBJ) rdp_prnt$(OBJ)
+
+# Standard suffix rules
+
+.c$(OBJ):
+	$(CC) $(CFLAGS) $(OBJ_ONLY) $*.c
+
+# default target: do everything
+
+all: min_test mpl_test rdp_test pas_test nsm_test
+
+# Build the support modules: do this locally in case user wants debug options
+memalloc$(OBJ): $(SUPP_DIR)memalloc.h $(SUPP_DIR)memalloc.c
+	$(CC) $(CFLAGS) $(OBJ_ONLY) $(SUPP_DIR)memalloc.c
+
+scan$(OBJ): $(SUPP_DIR)scan.h $(SUPP_DIR)scan.c
+	$(CC) $(CFLAGS) $(OBJ_ONLY) $(SUPP_DIR)scan.c
+
+scanner$(OBJ): $(SUPP_DIR)scan.h $(SUPP_DIR)scanner.c
+	$(CC) $(CFLAGS) $(OBJ_ONLY) $(SUPP_DIR)scanner.c
+
+set$(OBJ): $(SUPP_DIR)set.h $(SUPP_DIR)set.c
+	$(CC) $(CFLAGS) $(OBJ_ONLY) $(SUPP_DIR)set.c
+
+symbol$(OBJ): $(SUPP_DIR)symbol.h $(SUPP_DIR)symbol.c
+	$(CC) $(CFLAGS) $(OBJ_ONLY) $(SUPP_DIR)symbol.c
+
+textio$(OBJ): $(SUPP_DIR)textio.h $(SUPP_DIR)textio.c
+	$(CC) $(CFLAGS) $(OBJ_ONLY) $(SUPP_DIR)textio.c
+
+# compile distributed rdp
+rdp$(EXE): rdp$(OBJ) $(RDP_AUX) $(RDP_SUPP)
+	$(LINK)rdp$(EXE) rdp$(OBJ) $(RDP_AUX) $(RDP_SUPP)
+
+# generate and compile rdp1 from rdp.bnf
+rdp1.c: rdp$(EXE) rdp.bnf
+	$(HERE)rdp -F -ordp1 rdp
+
+rdp1$(EXE): rdp1$(OBJ) $(RDP_AUX) $(RDP_SUPP)
+	$(LINK)rdp1$(EXE) rdp1$(OBJ) $(RDP_AUX) $(RDP_SUPP)
+
+# run rdp.bnf through rdp1 to make rdp2 and diff to see if they are the same
+rdp_test: rdp1$(EXE)
+	$(CP) rdp1.c rdp2.c
+	$(HERE)rdp1 -F -ordp1 rdp
+	-$(DIFF) rdp1.c rdp2.c
+
+# generate, compile and test the pascal parser
+pascal.c: rdp$(EXE) pascal.bnf
+# Need -F to override dangling else
+	$(HERE)rdp -opascal -F pascal
+
+pascal$(EXE): pascal$(OBJ) $(RDP_SUPP)
+	$(LINK)pascal$(EXE) pascal$(OBJ) $(RDP_SUPP)
+
+pas_test: pascal$(EXE) test.pas
+	$(HERE)pascal -v test
+
+# generate, compile and test the miniplus parser
+miniplus.c: rdp$(EXE) miniplus.bnf
+	$(HERE)rdp -F -ominiplus miniplus
+
+miniplus$(EXE): miniplus$(OBJ) $(RDP_SUPP)
+	$(LINK)miniplus$(EXE) miniplus$(OBJ) $(RDP_SUPP) $(MATHS)
+
+mpl_test: miniplus$(EXE) test.mpl
+	$(HERE)miniplus -v test
+
+# generate, compile and test the mini parser
+mini.c: rdp$(EXE) mini.bnf
+	$(HERE)rdp -omini mini
+
+mini$(EXE): mini$(OBJ) $(RDP_SUPP)
+	$(LINK)mini$(EXE) mini$(OBJ) $(RDP_SUPP)
+
+min_test: mini$(EXE) test.min
+	$(HERE)mini -v test
+
+# generate, compile and test the nasm4 assembler
+nasm4.c: rdp$(EXE) nasm4.bnf
+	$(HERE)rdp -F -onasm4 nasm4
+
+nasm4$(EXE): nasm4$(OBJ) nasm4aux$(OBJ) $(RDP_SUPP)
+	$(LINK)nasm4$(EXE) nasm4$(OBJ) nasm4aux$(OBJ) $(RDP_SUPP) $(MATHS)
+
+nsm_test: nasm4$(EXE) test.n4
+	$(HERE)nasm4 -v test
+
+# get rid of intermediate files
+clean:
+	-$(RM) *$(OBJ)
+	-$(RM) rdp1.*
+	-$(RM) rdp2.*
+	-$(RM) pascal.c
+	-$(RM) pascal.h
+	-$(RM) miniplus.c
+	-$(RM) miniplus.h
+	-$(RM) mini.c
+	-$(RM) mini.h
+	-$(RM) nasm4.c
+	-$(RM) nasm4.h
+	-$(RM) a.out
+
+# return to intial distribution state by deleting executables
+veryclean: clean
+	-$(RM) rdparser.c
+	-$(RM) rdparser.h
+	-$(RM) rdparser$(EXE)
+	-$(RM) pascal$(EXE)
+	-$(RM) miniplus$(EXE)
+	-$(RM) mini$(EXE)
+	-$(RM) nasm4$(EXE)
+	-$(RM) *.swp
+	-$(RM) *.dsk
+	-$(RM) *.bak

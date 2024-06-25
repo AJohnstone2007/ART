@@ -1,0 +1,13 @@
+!h1
+!b
+!g
+!i
+!s
+!y
+
+!v
+(* Regression: invert *)
+
+A ::= ~'0'.
+
+B ::= ~A | ~'z'.

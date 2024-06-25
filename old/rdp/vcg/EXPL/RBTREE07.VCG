@@ -1,0 +1,37 @@
+graph: { title:"test"
+         layoutalgorithm: tree
+  width: 640
+  height: 400
+  amax: 30
+  stretch: 36
+  shrink: 100
+         color: aquamarine
+         infoname 1 : "()"
+         infoname 2 : "()"
+         classname 1 : "()"
+         node: { title: "35864" label: "3" width:  34 height: 34 color: black textcolor: white bordercolor: white shape: box horizontal_order: 0 }
+         node: { title: "35992" label: "2" width:  34 height: 34 color: black textcolor: white bordercolor: white shape: box horizontal_order: 0 }
+         node: { title: "35960" label: "2" width:  34 height: 34 color: black textcolor: white bordercolor: white shape: box horizontal_order: 0 }
+         edge: { sourcename: "35992" targetname: "35960" color: black linestyle: solid thickness: 5 }
+         node: { title: "35800" label: "3" width:  34 height: 34 color: black textcolor: white bordercolor: white shape: box horizontal_order: 1 }
+         edge: { sourcename: "35992" targetname: "35800" color: black linestyle: solid thickness: 5 }
+         edge: { sourcename: "35864" targetname: "35992" color: black linestyle: solid thickness: 5 }
+         node: { title: "36056" label: "7" width:  34 height: 34 color: red textcolor: white bordercolor: white shape: rhomb horizontal_order: 1 }
+         node: { title: "35928" label: "5" width:  34 height: 34 color: black textcolor: white bordercolor: white shape: box horizontal_order: 0 }
+         node: { title: "35832" label: "5" width:  34 height: 34 color: black textcolor: white bordercolor: white shape: box horizontal_order: 0 }
+         edge: { sourcename: "35928" targetname: "35832" color: black linestyle: solid thickness: 5 }
+         node: { title: "35896" label: "7" width:  34 height: 34 color: black textcolor: white bordercolor: white shape: box horizontal_order: 1 }
+         edge: { sourcename: "35928" targetname: "35896" color: black linestyle: solid thickness: 5 }
+         edge: { sourcename: "36056" targetname: "35928" color: black linestyle: solid thickness: 5 }
+         node: { title: "36120" label: "8" width:  34 height: 34 color: black textcolor: white bordercolor: white shape: box horizontal_order: 1 }
+         node: { title: "36024" label: "8" width:  34 height: 34 color: black textcolor: white bordercolor: white shape: box horizontal_order: 0 }
+         edge: { sourcename: "36120" targetname: "36024" color: black linestyle: solid thickness: 5 }
+         node: { title: "36184" label: "15" width:  34 height: 34 color: red textcolor: white bordercolor: white shape: rhomb horizontal_order: 1 }
+         node: { title: "36088" label: "15" width:  34 height: 34 color: black textcolor: white bordercolor: white shape: box horizontal_order: 0 }
+         edge: { sourcename: "36184" targetname: "36088" color: black linestyle: solid thickness: 5 }
+         node: { title: "36152" label: "17" width:  34 height: 34 color: white textcolor: blue bordercolor: blue shape: triangle horizontal_order: 1 }
+         edge: { sourcename: "36184" targetname: "36152" color: black linestyle: solid thickness: 5 }
+         edge: { sourcename: "36120" targetname: "36184" color: red linestyle: dotted thickness: 5 }
+         edge: { sourcename: "36056" targetname: "36120" color: black linestyle: solid thickness: 5 }
+         edge: { sourcename: "35864" targetname: "36056" color: red linestyle: dotted thickness: 5 }
+}

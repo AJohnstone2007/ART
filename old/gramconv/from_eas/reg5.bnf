@@ -1,0 +1,10 @@
+S ::= 'a' A | ID $an action$ $ and another$ | $$ B .
+
+A ::=  | 'aa' A | .
+
+B ::= `a..`. | 'while' .
+
+ID ::= (alpha + )  
++ digit? .
+
+alpha ::= 'a' | 'b' | 'c' .

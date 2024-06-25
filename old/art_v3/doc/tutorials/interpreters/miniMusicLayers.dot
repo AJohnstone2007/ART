@@ -1,0 +1,9 @@
+digraph "Graph from GLL parser"{
+graph[ordering=out]
+node[fontname=Helvetica fontsize=9 shape=box height = 0 width = 0 margin= 0.04]
+"1" [label="miniMusic DSL interpreter"]
+"1"->"2"
+"2" [label="MiniMusicPlayer class"]
+"2"->"3"
+"3" [label="Java MIDI API classes"]
+}

@@ -1,0 +1,292 @@
+(* Multiplying out tests *)
+
+(* A - no flags *)
+LaR
+$S ::= (`a);$
+accept $a$
+reject $$ $aa$
+
+La_bR
+$S ::= (`a|`b);$
+accept $a$ $b$
+reject $$ $aa$ $bb$ $ba$ $ba$
+
+La_HR
+$S ::= (`a|#);$
+accept $a$ $$
+reject $aa$ $bb$ $ba$
+
+La_b_HR
+$S ::= (`a|`b|#);$
+accept $a$ $b$ $$
+reject $aa$ $bb$ $ba$
+
+aQ
+$S ::= `a?;$
+accept $a$ $$
+reject $aa$
+
+LaRQ
+$S ::= (`a)?;$
+accept $a$ $$
+reject $aa$
+
+La_bRQ
+$S ::= (`a|`b)?;$
+accept $a$ $b$ $$
+reject $aa$ $bb$ $ba$ $ba$
+
+La_HRQ
+$S ::= (`a|#)?;$
+accept $a$ $$
+reject $aa$ $bb$ $ba$ $ba$
+
+La_b_HRQ
+$S ::= (`a|`b|#)?;$
+accept $a$ $b$ $$
+reject $aa$ $bb$ $ba$ $ba$
+
+
+LaRb
+$S ::= (`a)`b;$
+accept $ab$
+reject $$ $b$ $aab$
+
+La_bRb
+$S ::= (`a|`b)`b;$
+accept $ab$ $bb$
+reject $$ $b$ $aa$ $abb$ $ba$ $ba$
+
+La_HRb
+$S ::= (`a|#)`b;$
+accept $ab$ $b$
+reject $$ $aa$ $bb$ $ba$
+
+La_b_HRb
+$S ::= (`a|`b|#)`b;$
+accept $ab$ $bb$ $b$
+reject $aa$ $ba$ $$
+
+aQb
+$S ::= `a?`b;$
+accept $ab$ $b$
+reject $aa$ $$
+
+LaRQb
+$S ::= (`a)?`b;$
+accept $ab$ $b$
+reject $aa$ $bb$ $$
+
+La_bRQb
+$S ::= (`a|`b)?`b;$
+accept $ab$ $bb$ $b$
+reject $aa$ $$ $ba$
+
+La_HRQb
+$S ::= (`a|#)?`b;$
+accept $ab$ $b$
+reject $aa$ $bb$ $ba$ $$
+
+La_b_HRQb
+$S ::= (`a|`b|#)?`b;$
+accept $ab$ $bb$ $b$
+reject $aa$ $$ $ba$
+
+aLaLb_cQRR
+$S ::= `a ( `a (`b|`c?) ); $
+accept $aab$ $aac$ $aa$
+reject $ab$
+
+(* B - multiplyOut *)
+LaRM {multiplyOut}
+$S ::= (`a);$
+accept $a$
+reject $$ $aa$
+
+La_bRM {multiplyOut}
+$S ::= (`a|`b);$
+accept $a$ $b$
+reject $$ $aa$ $bb$ $ba$ $ba$
+
+La_HRM {multiplyOut}
+$S ::= (`a|#);$
+accept $a$ $$
+reject $aa$ $bb$ $ba$
+
+La_b_HRM {multiplyOut}
+$S ::= (`a|`b|#);$
+accept $a$ $b$ $$
+reject $aa$ $bb$ $ba$
+
+aQM {multiplyOut}
+$S ::= `a?;$
+accept $a$ $$
+reject $aa$
+
+LaRQM {multiplyOut}
+$S ::= (`a)?;$
+accept $a$ $$
+reject $aa$
+
+La_bRQM {multiplyOut}
+$S ::= (`a|`b)?;$
+accept $a$ $b$ $$
+reject $aa$ $bb$ $ba$ $ba$
+
+La_HRQM {multiplyOut}
+$S ::= (`a|#)?;$
+accept $a$ $$
+reject $aa$ $bb$ $ba$ $ba$
+
+La_b_HRQM {multiplyOut}
+$S ::= (`a|`b|#)?;$
+accept $a$ $b$ $$
+reject $aa$ $bb$ $ba$ $ba$
+
+LaRbM {multiplyOut}
+$S ::= (`a)`b;$
+accept $ab$
+reject $$ $b$ $aab$
+
+La_bRbM {multiplyOut}
+$S ::= (`a|`b)`b;$
+accept $ab$ $bb$
+reject $$ $b$ $aa$ $abb$ $ba$ $ba$
+
+La_HRbM {multiplyOut}
+$S ::= (`a|#)`b;$
+accept $ab$ $b$
+reject $$ $aa$ $bb$ $ba$
+
+La_b_HRbM {multiplyOut}
+$S ::= (`a|`b|#)`b;$
+accept $ab$ $bb$ $b$
+reject $aa$ $ba$ $$
+
+aQbM {multiplyOut}
+$S ::= `a?`b;$
+accept $ab$ $b$
+reject $aa$ $$
+
+LaRQbM {multiplyOut}
+$S ::= (`a)?`b;$
+accept $ab$ $b$
+reject $aa$ $bb$ $$
+
+La_bRQbM {multiplyOut}
+$S ::= (`a|`b)?`b;$
+accept $ab$ $bb$ $b$
+reject $aa$ $$ $ba$
+
+La_HRQbM {multiplyOut}
+$S ::= (`a|#)?`b;$
+accept $ab$ $b$
+reject $aa$ $bb$ $ba$ $$
+
+La_b_HRQbM {multiplyOut}
+$S ::= (`a|`b|#)?`b;$
+accept $ab$ $bb$ $b$
+reject $aa$ $$ $ba$
+
+aLaLb_cQRRM {multiplyOut}
+$S ::= `a ( `a (`b|`c?) ); $
+accept $aab$ $aac$ $aa$
+reject $ab$
+
+(* C - multiplyOut and leftFactor*)
+LaRML {multiplyOut leftFactor}
+$S ::= (`a);$
+accept $a$
+reject $$ $aa$
+
+La_bRML {multiplyOut leftFactor}
+$S ::= (`a|`b);$
+accept $a$ $b$
+reject $$ $aa$ $bb$ $ba$ $ba$
+
+La_HRML {multiplyOut leftFactor}
+$S ::= (`a|#);$
+accept $a$ $$
+reject $aa$ $bb$ $ba$
+
+La_b_HRML {multiplyOut leftFactor}
+$S ::= (`a|`b|#);$
+accept $a$ $b$ $$
+reject $aa$ $bb$ $ba$
+
+aQML {multiplyOut leftFactor}
+$S ::= `a?;$
+accept $a$ $$
+reject $aa$
+
+LaRQML {multiplyOut leftFactor}
+$S ::= (`a)?;$
+accept $a$ $$
+reject $aa$
+
+La_bRQML {multiplyOut leftFactor}
+$S ::= (`a|`b)?;$
+accept $a$ $b$ $$
+reject $aa$ $bb$ $ba$ $ba$
+
+La_HRQML {multiplyOut leftFactor}
+$S ::= (`a|#)?;$
+accept $a$ $$
+reject $aa$ $bb$ $ba$ $ba$
+
+La_b_HRQML {multiplyOut leftFactor}
+$S ::= (`a|`b|#)?;$
+accept $a$ $b$ $$
+reject $aa$ $bb$ $ba$ $ba$
+
+LaRbML {multiplyOut leftFactor}
+$S ::= (`a)`b;$
+accept $ab$
+reject $$ $b$ $aab$
+
+La_bRbML {multiplyOut leftFactor}
+$S ::= (`a|`b)`b;$
+accept $ab$ $bb$
+reject $$ $b$ $aa$ $abb$ $ba$ $ba$
+
+La_HRbML {multiplyOut leftFactor}
+$S ::= (`a|#)`b;$
+accept $ab$ $b$
+reject $$ $aa$ $bb$ $ba$
+
+La_b_HRbML {multiplyOut leftFactor}
+$S ::= (`a|`b|#)`b;$
+accept $ab$ $bb$ $b$
+reject $aa$ $ba$ $$
+
+aQbML {multiplyOut leftFactor}
+$S ::= `a?`b;$
+accept $ab$ $b$
+reject $aa$ $$
+
+LaRQbML {multiplyOut leftFactor}
+$S ::= (`a)?`b;$
+accept $ab$ $b$
+reject $aa$ $bb$ $$
+
+La_bRQbML {multiplyOut leftFactor}
+$S ::= (`a|`b)?`b;$
+accept $ab$ $bb$ $b$
+reject $aa$ $$ $ba$
+
+La_HRQbML {multiplyOut leftFactor}
+$S ::= (`a|#)?`b;$
+accept $ab$ $b$
+reject $aa$ $bb$ $ba$ $$
+
+La_b_HRQbML {multiplyOut leftFactor}
+$S ::= (`a|`b|#)?`b;$
+accept $ab$ $bb$ $b$
+reject $aa$ $$ $ba$
+
+aLaLb_cQRRML {multiplyOut leftFactor}
+$S ::= `a ( `a (`b|`c?) ); $
+accept $aab$ $aac$ $aa$
+reject $ab$
+
+

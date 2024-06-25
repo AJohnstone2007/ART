@@ -1,0 +1,54 @@
+graph:{
+orientation:top_to_bottom
+edge.arrowsize:7
+edge.thickness:1
+display_edge_labels:yes
+arrowmode:free
+node.borderwidth:1
+node:{title:"-2"label:"program" horizontal_order:2 shape:ellipse }
+edge:{sourcename:"-2" targetname:"-4"}
+edge:{sourcename:"-2" targetname:"-30"}
+edge:{sourcename:"-2" targetname:"-66"}
+node:{title:"-66"label:"'if'" horizontal_order:66}
+edge:{sourcename:"-66" targetname:"-68"}
+edge:{sourcename:"-66" targetname:"-86"}
+edge:{sourcename:"-66" targetname:"-100"}
+node:{title:"-100"label:"'='" horizontal_order:100}
+edge:{sourcename:"-100" targetname:"-102"}
+edge:{sourcename:"-100" targetname:"-106"}
+node:{title:"-106"label:"INTEGER: 1" horizontal_order:106}
+node:{title:"-102"label:"a" horizontal_order:102}
+node:{title:"-86"label:"'='" horizontal_order:86}
+edge:{sourcename:"-86" targetname:"-88"}
+edge:{sourcename:"-86" targetname:"-92"}
+node:{title:"-92"label:"INTEGER: 0" horizontal_order:92}
+node:{title:"-88"label:"a" horizontal_order:88}
+node:{title:"-68"label:"'>'" horizontal_order:68}
+edge:{sourcename:"-68" targetname:"-70"}
+edge:{sourcename:"-68" targetname:"-80"}
+node:{title:"-80"label:"b" horizontal_order:80}
+node:{title:"-70"label:"a" horizontal_order:70}
+node:{title:"-30"label:"'if'" horizontal_order:30}
+edge:{sourcename:"-30" targetname:"-32"}
+edge:{sourcename:"-30" targetname:"-50"}
+node:{title:"-50"label:"'='" horizontal_order:50}
+edge:{sourcename:"-50" targetname:"-52"}
+edge:{sourcename:"-50" targetname:"-56"}
+node:{title:"-56"label:"INTEGER: 0" horizontal_order:56}
+node:{title:"-52"label:"a" horizontal_order:52}
+node:{title:"-32"label:"'=='" horizontal_order:32}
+edge:{sourcename:"-32" targetname:"-34"}
+edge:{sourcename:"-32" targetname:"-44"}
+node:{title:"-44"label:"INTEGER: 1" horizontal_order:44}
+node:{title:"-34"label:"a" horizontal_order:34}
+node:{title:"-4"label:"'int'" horizontal_order:4}
+edge:{sourcename:"-4" targetname:"-6"}
+edge:{sourcename:"-4" targetname:"-18"}
+node:{title:"-18"label:"b" horizontal_order:18}
+edge:{sourcename:"-18" targetname:"-22"}
+node:{title:"-22"label:"INTEGER: 1" horizontal_order:22}
+node:{title:"-6"label:"a" horizontal_order:6}
+edge:{sourcename:"-6" targetname:"-10"}
+node:{title:"-10"label:"INTEGER: 1" horizontal_order:10}
+
+}

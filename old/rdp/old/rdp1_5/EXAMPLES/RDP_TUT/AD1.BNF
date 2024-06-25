@@ -1,0 +1,7 @@
+S ::= E Y .
+Y ::= ['+' S ].
+E ::= T X.
+X ::= ['*' E ] .
+T ::= 'INTEGER' .
+comment ::= COMMENT('/*' '*/') .
+

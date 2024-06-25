@@ -1,0 +1,24 @@
+(* Test acceptence of strings that are too long *)
+
+S ::= 'a' | 'b' S 'a'.
+
+
+(
+
+STRING := "baa"
+
+
+(* Main Script *)
+this_grammar := grammar[S] 
+this_nfa := nfa[this_grammar slr 1 nullable_reductions]
+this_dfa := dfa[this_nfa]
+render[open["dfa.vcg"] this_dfa]
+
+this_derivation := rnglr_parse[this_dfa STRING]
+
+this_derivation := brnglr_parse[this_dfa STRING]
+render[open["s_brnglr.vcg"] this_derivation]
+
+write["\n" CPU_time " CPU seconds elapsed\n\n"]
+)
+

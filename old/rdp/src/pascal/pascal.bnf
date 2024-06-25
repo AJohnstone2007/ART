@@ -1,0 +1,81 @@
+(*****************************************************************************
+*
+* RDP release 1.50 by Adrian Johnstone (A.Johnstone@rhbnc.ac.uk) 20 December 1997
+*
+* pascal.bnf - standard pascal grammar with some extensions for Turbo-Pascal
+*
+* This file may be freely distributed. Please mail improvements to the author.
+*
+*****************************************************************************)
+TITLE("Pascal parser V1.50 (c) Adrian Johnstone 1997")
+SUFFIX("pas") 
+SHOW_SKIPS
+CASE_INSENSITIVE
+EPSILON_TREE
+
+prog           ::= 'program' ID [ '(' (ID)@',' ')' ] ';' block '.'.
+block          ::= { declaration } 'begin' statement {';' statement} 'end'.
+declaration    ::= label_dcl_part | const_dcl_part | type_dcl_part |
+                   var_dcl_part | proc_dcl_part.
+label_dcl_part ::= 'label' (INTEGER)@',' ';'.
+const_dcl_part ::= 'const' {ID '=' constant ';'}.
+constant       ::= ['+' | '-'] (unsigned_num | ID) | STRING('\'').
+unsigned_num   ::= INTEGER | REAL.
+type_dcl_part  ::= 'type' {ID '=' type ';'}.
+type           ::= simple_type | ['packed'] struct_type | '^' ID.
+simple_type    ::= '(' (ID)@',' ')' | constant ['..' constant].
+struct_type    ::= 'array' '[' (simple_type)@',' ']' 'of' type |
+                   'record' (*consider this a scope*) field_list 'end' |
+                   'set' 'of' simple_type |
+                   'file' 'of' type.
+field_list     ::= fixed_part [';' variant_part] | variant_part.
+fixed_part     ::= ([ (ID)@',' ':' type ])@';'.
+variant_part   ::= 'case' ID [':' ID] 'of' variants.
+variants       ::= ([ (case_label)@',' ':' '(' field_list ')' ])@';'.
+var_dcl_part   ::= 'var' { (ID)@',' ':' type ';'}.
+proc_dcl_part  ::= (proc_heading | func_heading) ';' body ';'.
+proc_heading   ::= 'procedure' ID formal_params .
+func_heading   ::= 'function' ID [ formal_params ':' ID ].
+body           ::= block | 'forward'.
+formal_params  ::= [ '(' (formal_p_sect)@';' ')' ] .
+formal_p_sect  ::= param_group | 'var' param_group | proc_heading | func_heading.
+param_group    ::= (ID)@',' ':' paramtype.
+paramtype      ::= ID |
+                   'array' '[' (index_spec)@';' ']' 'of' paramtype |
+                   'packed' 'array' '[' (index_spec)@';' ']' 'of' ID.
+index_spec     ::= ID '..' ID ':' ID.
+statement      ::= [ INTEGER ':' statement |
+                     'begin' (statement)@';' 'end' |
+                     variable (* call *) [':=' expression] |
+                     'goto' INTEGER |
+                     'if' expression 'then' statement [ 'else' statement ] |
+                     'case' expression 'of' (case_list_elem)@';'
+                       [ ('else' | 'default') statement ] {';'} 'end' |
+                     'while' expression 'do' statement |
+                     'repeat' (statement)@';' 'until' expression |
+                     'for' ID ':=' expression ( 'to' | 'downto' ) expression
+                       'do' statement |
+                     'with' (variable)@',' 'do' statement
+                   ].
+case_list_elem ::= [ (case_label)@',' ':' statement ].
+case_label     ::= constant ['..' constant].
+expression     ::= simple_expr {relational_op simple_expr}.
+relational_op  ::= '=' | '<' | '>' | '<=' | '>=' | '<>' | 'in'.
+simple_expr    ::= (term | '+' term | '-' term ) { add_op term}.
+add_op         ::= '+' | '-' | 'or'.
+term           ::= factor {mult_op factor}.
+mult_op        ::= '*' | '/' | 'div' | 'mod' | 'and'.
+factor         ::= variable (* ID or function *) |
+                   unsigned_lit |
+                   '(' expression ')' |
+                   '[' [ (expression ['..' expression])@',' ] ']' (*set*) |
+                   'not' factor.
+unsigned_lit   ::= unsigned_num | STRING('\'') | 'nil'.
+variable       ::= ID [actual_params]
+                   {'[' (expression)@',' ']'
+                   | '.' ID
+                   | '^'}.
+actual_params  ::= '(' (expression [':' expression [':' expression]])@',' ')'.
+comment        ::= COMMENT( '{' '}' ) COMMENT( '(*' '*)' ) .
+
+(* End of pascal.bnf *)

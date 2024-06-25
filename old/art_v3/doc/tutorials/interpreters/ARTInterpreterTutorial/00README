@@ -1,0 +1,52 @@
+This is the mini language series for ART V3. See the interpreter tutorial
+document interpreterTutorial.pdf for more information.
+
+--
+
+(1) miniSyntax.art contains just the BNF productions for a calculator
+language called from a print statement.
+
+(2) miniSyntaxRDT.art is miniSyntax.art with GIFT promotion operators
+to produce a simplified output tree (not discussed in the tutorial).
+
+(3) miniCalc is miniSyntax.art with attributes and actions to
+implement the semantics of a simple calculator.
+
+(4) miniAssign.art adds a simple symbol table, an assignment statement
+and variable access. The start symbol is statement which generates a
+sequence of statements.
+
+(5) miniIf.art adds an if statement and a compound statement to the
+rules for statement, which reverts to being the start symbol
+
+(6) miniWhile.art adds a while statement
+
+(7) miniCall.art adds procedure control flow, but there are no
+paramaters or any sort of type system. Variables and procedures are
+stored in separate hash tables.
+
+(8) miniMusic.art is a simple music player DSL based on miniCall.art
+which uses the Java MIDI synthesizer for output. Three support classes
+(Chord, Scale and MiniMusicPlayer) are used and need to be separately
+compiled.
+
+(9) cava.art is dynamically typed language using C/Java-like control
+flow syntax based on the ARTValue datatypes.
+
+There are also some Windows batch files to compile and run these
+examples. They are simple sequences of commands, and should easily
+convert to Your Favourite Shell.
+
+(a) tst.bat is a simple batch file which takes parameter %1; builds a
+parser from %1.art and runs it on %1.str. For each of the example
+language grammars x.art, there is a corresponding test file x.str
+
+(b) run.bat runs the most recently built parser on %1
+
+(c) showdot.bat is a batch file which uses graphviz/dot to write a
+.pdf file from %1.dot and then displays it using Windows' default
+viewer. You need graphviz installed for this to work.
+
+(d) all.bat builds and runs all of the examples.
+
+(e) clean.bat cleans up the intermediate files.

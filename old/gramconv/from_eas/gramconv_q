@@ -1,0 +1,8 @@
+reg5.bnf
+nothing in the char set parent  node 74
+
+
+reg7.bnf
+problems with the rule for S ::= `a..`c \ T \ `d ~B .
+and with  T ::= ~'a'+ .
+

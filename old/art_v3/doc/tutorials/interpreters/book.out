@@ -1,0 +1,40 @@
+\BOOKMARK [0][-]{chapter.1}{ART quick start}{}% 1
+\BOOKMARK [1][-]{section.1.1}{Parser generation workflow}{chapter.1}% 2
+\BOOKMARK [0][-]{chapter.2}{ART basics}{}% 3
+\BOOKMARK [1][-]{section.2.1}{Accepting and rejecting strings}{chapter.2}% 4
+\BOOKMARK [1][-]{section.2.2}{Using builtins}{chapter.2}% 5
+\BOOKMARK [1][-]{section.2.3}{Attributes and semantics}{chapter.2}% 6
+\BOOKMARK [1][-]{section.2.4}{The execution order of actions}{chapter.2}% 7
+\BOOKMARK [1][-]{section.2.5}{The artText object}{chapter.2}% 8
+\BOOKMARK [1][-]{section.2.6}{Attributes}{chapter.2}% 9
+\BOOKMARK [1][-]{section.2.7}{Computing values}{chapter.2}% 10
+\BOOKMARK [0][-]{chapter.3}{The mini languages}{}% 11
+\BOOKMARK [1][-]{section.3.1}{miniSyntax.art \205 mini core syntax}{chapter.3}% 12
+\BOOKMARK [1][-]{section.3.2}{miniCalc \205 a calculator}{chapter.3}% 13
+\BOOKMARK [1][-]{section.3.3}{miniAssign - adding variables}{chapter.3}% 14
+\BOOKMARK [1][-]{section.3.4}{Interlude \205 delayed attributes and flow control}{chapter.3}% 15
+\BOOKMARK [1][-]{section.3.5}{miniIf \205 adding conditional flow control}{chapter.3}% 16
+\BOOKMARK [1][-]{section.3.6}{miniWhile \205 adding loops}{chapter.3}% 17
+\BOOKMARK [1][-]{section.3.7}{miniCall - adding procedures}{chapter.3}% 18
+\BOOKMARK [0][-]{chapter.4}{Cava\205neither C nor Java}{}% 19
+\BOOKMARK [1][-]{section.4.1}{ARTValue \205 a built in dynamic type and operation system}{chapter.4}% 20
+\BOOKMARK [1][-]{section.4.2}{Implementing nested scope rules}{chapter.4}% 21
+\BOOKMARK [1][-]{section.4.3}{The Cava specification}{chapter.4}% 22
+\BOOKMARK [2][-]{subsection.4.3.1}{Whitespace handling}{section.4.3}% 23
+\BOOKMARK [0][-]{chapter.5}{miniMusic \205 a domain specific language for playing melodies}{}% 24
+\BOOKMARK [1][-]{section.5.1}{The miniMusic architecture}{chapter.5}% 25
+\BOOKMARK [1][-]{section.5.2}{miniMusic programs}{chapter.5}% 26
+\BOOKMARK [1][-]{section.5.3}{The miniMusic attribute grammar}{chapter.5}% 27
+\BOOKMARK [1][-]{section.5.4}{The MiniMusicPlayer classes}{chapter.5}% 28
+\BOOKMARK [0][-]{appendix.A}{Some background on attribute grammars}{}% 29
+\BOOKMARK [1][-]{section.A.1}{The formal attribute grammar game}{appendix.A}% 30
+\BOOKMARK [1][-]{section.A.2}{Attribute grammars in practice}{appendix.A}% 31
+\BOOKMARK [1][-]{section.A.3}{Attribute grammar subclasses}{appendix.A}% 32
+\BOOKMARK [1][-]{section.A.4}{Semantic actions in ART}{appendix.A}% 33
+\BOOKMARK [1][-]{section.A.5}{Syntax of attributes in ART}{appendix.A}% 34
+\BOOKMARK [2][-]{subsection.A.5.1}{Special attributes in ART}{section.A.5}% 35
+\BOOKMARK [1][-]{section.A.6}{Accessing user written code from actions in ART generated parsers}{appendix.A}% 36
+\BOOKMARK [1][-]{section.A.7}{A na\357ve model of attribute evaluation}{appendix.A}% 37
+\BOOKMARK [1][-]{section.A.8}{The representation of attributes within ART generated parsers}{appendix.A}% 38
+\BOOKMARK [1][-]{section.A.9}{The ART RD attribute evaluator}{appendix.A}% 39
+\BOOKMARK [0][-]{appendix.B}{Acknowledgements}{}% 40

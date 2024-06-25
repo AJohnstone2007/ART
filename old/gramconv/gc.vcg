@@ -1,0 +1,120 @@
+graph:{
+orientation:top_to_bottom
+edge.arrowsize:7
+edge.thickness:1
+display_edge_labels:yes
+arrowmode:free
+node.borderwidth:1
+node:{title:"1"color: orangeshape:circle label:"10231" horizontal_order:1}
+edge:{sourcename:"1" targetname:"2"}
+edge:{sourcename:"1" targetname:"11"}
+edge:{sourcename:"1" targetname:"27"}
+edge:{sourcename:"1" targetname:"41"}
+edge:{sourcename:"1" targetname:"68"}
+edge:{sourcename:"1" targetname:"118"}
+edge:{sourcename:"1" targetname:"185"}
+node:{title:"185"color: yellowlabel:"185: ZZ0231" horizontal_order:185}
+edge:{sourcename:"185" targetname:"187"}
+node:{title:"187"color: greenlabel:"187: |0231" horizontal_order:187}
+edge:{sourcename:"187" targetname:"193"}
+edge:{sourcename:"187" targetname:"194"}
+node:{title:"194"color: magentabordercolor:magenta label:"194: } 0 00231" horizontal_order:194}
+edge:{sourcename:"194" targetname:"201"}
+node:{title:"201"label:"201: ZZ0231" horizontal_order:201}
+node:{title:"193"color: magentalabel:"193: 'a'0231" horizontal_order:193}
+node:{title:"118"color: yellowlabel:"118: Y0231" horizontal_order:118}
+edge:{sourcename:"118" targetname:"120"}
+node:{title:"120"color: greenlabel:"120: |0231" horizontal_order:120}
+edge:{sourcename:"120" targetname:"161"}
+edge:{sourcename:"120" targetname:"162"}
+node:{title:"162"color: cyanlabel:"162: ,,0231" horizontal_order:162}
+edge:{sourcename:"162" targetname:"178"}
+edge:{sourcename:"162" targetname:"179"}
+node:{title:"179"label:"179: 'e'0231" horizontal_order:179}
+node:{title:"178"color: bluebordercolor:magenta label:"178: ] 0 10231" horizontal_order:178}
+edge:{sourcename:"178" targetname:"174"}
+node:{title:"174"label:"174: ,,0231" horizontal_order:174}
+edge:{sourcename:"174" targetname:"167"}
+edge:{sourcename:"174" targetname:"168"}
+node:{title:"168"label:"168: 'd'0231" horizontal_order:168}
+node:{title:"167"label:"167: Y0231" horizontal_order:167}
+node:{title:"161"color: greenlabel:"161: |0231" horizontal_order:161}
+edge:{sourcename:"161" targetname:"142"}
+edge:{sourcename:"161" targetname:"143"}
+node:{title:"143"color: cyanlabel:"143: ,,0231" horizontal_order:143}
+edge:{sourcename:"143" targetname:"154"}
+edge:{sourcename:"143" targetname:"155"}
+node:{title:"155"label:"155: 'd'0231" horizontal_order:155}
+node:{title:"154"color: redbordercolor:magenta label:"154: ] 0 10231" horizontal_order:154}
+edge:{sourcename:"154" targetname:"150"}
+node:{title:"150"label:"150: Y0231" horizontal_order:150}
+node:{title:"142"color: greenlabel:"142: |0231" horizontal_order:142}
+edge:{sourcename:"142" targetname:"134"}
+edge:{sourcename:"142" targetname:"135"}
+node:{title:"135"color: magentalabel:"135: 'c'0231" horizontal_order:135}
+node:{title:"134"color: greenlabel:"134: |0231" horizontal_order:134}
+edge:{sourcename:"134" targetname:"126"}
+edge:{sourcename:"134" targetname:"127"}
+node:{title:"127"color: magentalabel:"127: 'b'0231" horizontal_order:127}
+node:{title:"126"color: magentalabel:"126: 'a'0231" horizontal_order:126}
+node:{title:"68"color: yellowlabel:"68: X0231" horizontal_order:68}
+edge:{sourcename:"68" targetname:"70"}
+node:{title:"70"color: greenlabel:"70: |0231" horizontal_order:70}
+edge:{sourcename:"70" targetname:"105"}
+edge:{sourcename:"70" targetname:"106"}
+node:{title:"106"color: cyanlabel:"106: ,,0231" horizontal_order:106}
+edge:{sourcename:"106" targetname:"111"}
+edge:{sourcename:"106" targetname:"112"}
+node:{title:"112"label:"112: 'e'0231" horizontal_order:112}
+node:{title:"111"color: redlabel:"111: X0231" horizontal_order:111}
+node:{title:"105"color: greenlabel:"105: |0231" horizontal_order:105}
+edge:{sourcename:"105" targetname:"92"}
+edge:{sourcename:"105" targetname:"93"}
+node:{title:"93"color: cyanlabel:"93: ,,0231" horizontal_order:93}
+edge:{sourcename:"93" targetname:"98"}
+edge:{sourcename:"93" targetname:"99"}
+node:{title:"99"label:"99: 'd'0231" horizontal_order:99}
+node:{title:"98"color: redlabel:"98: X0231" horizontal_order:98}
+node:{title:"92"color: greenlabel:"92: |0231" horizontal_order:92}
+edge:{sourcename:"92" targetname:"84"}
+edge:{sourcename:"92" targetname:"85"}
+node:{title:"85"color: magentalabel:"85: 'c'0231" horizontal_order:85}
+node:{title:"84"color: greenlabel:"84: |0231" horizontal_order:84}
+edge:{sourcename:"84" targetname:"76"}
+edge:{sourcename:"84" targetname:"77"}
+node:{title:"77"color: magentalabel:"77: 'b'0231" horizontal_order:77}
+node:{title:"76"color: magentalabel:"76: 'a'0231" horizontal_order:76}
+node:{title:"41"color: yellowlabel:"41: B0231" horizontal_order:41}
+edge:{sourcename:"41" targetname:"43"}
+node:{title:"43"color: greenlabel:"43: |0231" horizontal_order:43}
+edge:{sourcename:"43" targetname:"60"}
+edge:{sourcename:"43" targetname:"61"}
+node:{title:"61"color: magentalabel:"61: 'z'0231" horizontal_order:61}
+node:{title:"60"color: cyanlabel:"60: ,,0231" horizontal_order:60}
+edge:{sourcename:"60" targetname:"54"}
+edge:{sourcename:"60" targetname:"55"}
+node:{title:"55"label:"55: 'y'0231" horizontal_order:55}
+node:{title:"54"color: cyanlabel:"54: ,,0231" horizontal_order:54}
+edge:{sourcename:"54" targetname:"48"}
+edge:{sourcename:"54" targetname:"49"}
+node:{title:"49"label:"49: 'x'0231" horizontal_order:49}
+node:{title:"48"color: redlabel:"48: B0231" horizontal_order:48}
+node:{title:"27"color: yellowlabel:"27: A0231" horizontal_order:27}
+edge:{sourcename:"27" targetname:"29"}
+node:{title:"29"color: cyanlabel:"29: ,,0231" horizontal_order:29}
+edge:{sourcename:"29" targetname:"34"}
+edge:{sourcename:"29" targetname:"35"}
+node:{title:"35"label:"35: 'b'0231" horizontal_order:35}
+node:{title:"34"color: magentalabel:"34: 'a'0231" horizontal_order:34}
+node:{title:"11"color: yellowlabel:"11: F0231" horizontal_order:11}
+edge:{sourcename:"11" targetname:"13"}
+node:{title:"13"color: greenlabel:"13: |0231" horizontal_order:13}
+edge:{sourcename:"13" targetname:"19"}
+edge:{sourcename:"13" targetname:"20"}
+node:{title:"20"color: bluelabel:"20: E0231" horizontal_order:20}
+node:{title:"19"color: magentalabel:"19: 'a'0231" horizontal_order:19}
+node:{title:"2"color: yellowlabel:"2: E0231" horizontal_order:2}
+edge:{sourcename:"2" targetname:"4"}
+node:{title:"4"color: redlabel:"4: E0231" horizontal_order:4}
+
+}

@@ -1,0 +1,1 @@
+print("Result is ", (30+4)*2, "\n");

@@ -1,0 +1,5 @@
+aa_bb_c
+$S ::= `a `a | `b `b | `c;$ 
+accept $aa$ $bb$ $c$
+reject $$ $a$ $aaa$ $b$ $bbb$ $cc$ $ccc$
+

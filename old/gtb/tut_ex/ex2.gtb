@@ -1,0 +1,27 @@
+(* ex2 Augmentation *)
+S ::=  E ';' .
+E ::= E '+' T | T .
+T ::= '0' | '1' .
+
+(
+ex2_grammar := grammar[S]
+render[open["rules1.vcg"] ex2_grammar]
+
+augment_grammar[ex2_grammar]
+render[open["rules2.vcg"] ex2_grammar]
+
+ex2_nfa := nfa[ex2_grammar lr 0]
+render[open["nfa.vcg"] ex2_nfa]
+
+ex2_dfa := dfa[nfa[ex2_grammar lr 0]]
+render[open["dfa.vcg"] ex2_dfa]
+
+ex2_grammar := grammar[S]
+ex2_dfa := dfa[nfa[ex2_grammar lr 0]]
+render[open["dfa.vcg"] ex2_dfa]
+write[open["parse.tbl"] ex2_dfa]
+
+gtb_verbose := true
+lr_parse[ex2_dfa "0+1;"]
+gtb_verbose := false
+)

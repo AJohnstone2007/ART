@@ -1,0 +1,43 @@
+S ::= 'a' S | 'a' 'b' | 'b' .
+
+(
+
+(* v1_4 script *)
+
+(*
+this_grammar := grammar[S] 
+write[this_grammar]
+this_nfa := fsa[this_grammar lr_1]
+add_nullable_accepting_states[this_nfa]
+this_dfa := subset_construction[this_nfa]
+table := parse_table[this_dfa]
+write[open["lrtbl"] table]
+*)
+
+(* Main script *)
+gtb_verbose := true
+this_grammar := grammar[S tilde_enabled] 
+
+write[this_grammar]
+(*
+render[open["rules.vcg"] this_grammar]
+render[open["gdg.vcg"] gdg[this_grammar]]
+*)
+
+(*
+this_nfa := nfa[this_grammar slr 1 singleton_lookahead_sets 
+nullable_reductions] 
+*)
+
+(*
+this_dfa := la_merge[dfa[this_nfa]]
+*)
+(*
+this_dfa := dfa[this_nfa]
+write[open["lrtbl"] this_dfa]
+*)(*
+this_derivation := brnglr_parse[this_dfa open["gtb_src_a.tok" read_text]]
+*)
+write["\nTotal " CPU_time " CPU seconds elapsed\n\n"]
+
+)

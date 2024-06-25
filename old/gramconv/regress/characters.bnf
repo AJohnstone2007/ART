@@ -1,0 +1,17 @@
+!h1
+!b
+!g
+!i
+!s
+!y
+
+!v
+(* Regression: characters *)
+
+A ::= `a | `b | `c `d `d | # .
+
+digit ::= `0.
+
+real1 ::= <`9> [`. <digit> ].
+
+nested ::= `a..`b \ (`a | `b).

@@ -1,0 +1,8 @@
+(* TREE *) 
+
+S ::= E:val [* printf("%i\n", val) ; *] .
+E:integer ::= INTEGER:result
+              {'-' INTEGER:val2^^^ [*result=result-val2;*] } .
+
+    (***** arith4.bnf *****)
+

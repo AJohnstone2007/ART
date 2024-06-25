@@ -1,0 +1,8745 @@
+(****************************************************************************
+*
+* GTB release 2.00 by Adrian Johnstone (a.johnstone@rhul.ac.uk) 1 Nov 2000
+*
+* ansi_c.gtb - an ANSI standard C grammar
+*
+* This file may be freely distributed. Please mail improvements to the author.
+*
+* Provenance: this grammar is a transcription of the rules in section A13 of
+* 'The C Programming Language' by Brian W Kernighan and Dennis M Ritchie,
+* second edition 1988 (Prentice Hall, ISBN 0-13-110362-8). 
+*
+* Optional productions have been expanded and a set of lexical rules created.
+*
+*****************************************************************************)
+
+(*
+
+THIS HAS BEEN USED TO GATHER PROFILING DATA ON THE TERMINALISATION SETS
+FOR THE sciPAPER 2005/6
+
+This is a version of c_ah.gtb which in turn is the original ANSI C grammar.
+Self embedding and right recursion have been removed so that AH style
+tries can be build. It is intended that this forms the grammar for
+the experiments reported in the AH paper sent to the Computer Journal.
+
+Recursion is broken at the head rather than the tail, in line with what
+was done for the CC04 paper. But for expression the recursion is
+broken at the tail instead, to see if this improves efficiency.
+
+Instances of conditional_expression were terminalised to make the
+construction smaller, not just to get rid of self embedding.
+*)
+
+(* Terminalised:
+declaration_specifiers
+direct_declarator
+statement_list
+statement
+pointer
+assignment_expression
+initializer_list
+conditional_expression
+cast_expression
+unary_expression 
+direct_abstract_declarator 
+argument_expression_list 
+specifier_qualifier_list 
+struct_declaration_list 
+
+*)
+
+
+translation_unit ::= external_declaration |
+                     translation_unit external_declaration.
+
+external_declaration ::= function_definition |
+                         declaration .
+
+function_definition ::= declaration_specifiers declarator declaration_list compound_statement |
+                                               declarator declaration_list compound_statement |
+                        declaration_specifiers declarator                  compound_statement |
+                                               declarator                  compound_statement .
+
+declaration ::= declaration_specifiers init_declarator_list ';' |
+                declaration_specifiers                      ';' .
+
+declaration_list ::= declaration |
+                     declaration_list declaration. 
+
+declaration_specifiers ::= storage_class_specifier ~declaration_specifiers |
+                           storage_class_specifier                        |
+
+                           type_specifier ~declaration_specifiers |
+                           type_specifier                        |
+
+                           type_qualifier ~declaration_specifiers |
+                           type_qualifier                        .
+
+storage_class_specifier ::= 'auto' |
+                            'register' |
+                            'static' |
+                            'extern' |
+                            'typedef'.
+
+type_specifier ::= 'void' |
+                   'char' |
+                   'short' |
+                   'int' |
+                   'long' |
+                   'float' |
+                   'double' |
+                   'signed' |
+                   'unsigned' |
+                   struct_or_union_specifier |
+                   enum_specifier |
+                   typedef_name.
+
+type_qualifier ::= 'const' |
+                   'volatile'.
+
+struct_or_union_specifier ::= struct_or_union identifier '{' struct_declaration_list '}' |
+                              struct_or_union            '{' struct_declaration_list '}' |
+                              struct_or_union identifier.
+                             
+struct_or_union ::= 'struct' |
+                    'union'.
+
+struct_declaration_list ::= struct_declaration |
+                            struct_declaration_list struct_declaration .
+
+init_declarator_list ::= init_declarator |
+                         init_declarator_list ',' init_declarator . 
+
+init_declarator ::= declarator  |
+                    declarator '=' initializer . 
+
+struct_declaration ::= specifier_qualifier_list struct_declarator_list ';'.
+
+specifier_qualifier_list ::= ~type_specifier ~specifier_qualifier_list |
+                             ~type_specifier                          |
+                             type_qualifier ~specifier_qualifier_list |
+                             type_qualifier                          .
+
+struct_declarator_list ::= struct_declarator |
+                           struct_declarator_list ',' struct_declarator. 
+
+struct_declarator ::= declarator |
+                      declarator ':' constant_expression |
+                                 ':' constant_expression . 
+
+enum_specifier ::= 'enum' identifier '{' enumerator_list '}' |
+                   'enum'            '{' enumerator_list '}' |
+                   'enum' identifier .
+
+enumerator_list ::= enumerator |
+                    enumerator_list ',' enumerator. 
+
+enumerator ::= identifier |
+               identifier '=' constant_expression . 
+
+declarator ::= pointer ~direct_declarator |
+                       ~direct_declarator .
+
+direct_declarator ::= identifier |
+                      '(' declarator ')' |
+                      direct_declarator  '[' constant_expression ']' |
+                      direct_declarator  '['                     ']' |
+                      direct_declarator  '(' parameter_type_list ')'  |
+                      direct_declarator  '(' identifier_list ')' |
+                      direct_declarator  '('                 ')' .
+
+pointer ::= '*' type_qualifier_list |
+            '*'                     |
+            '*' type_qualifier_list ~pointer |
+            '*'                     ~pointer . 
+
+type_qualifier_list ::= type_qualifier |
+                        type_qualifier_list type_qualifier. 
+
+parameter_type_list ::= parameter_list |
+                        parameter_list ',' '...'. 
+
+parameter_list ::= parameter_declaration |
+                   parameter_list ',' parameter_declaration . 
+
+parameter_declaration ::= declaration_specifiers declarator |
+                          declaration_specifiers abstract_declarator |
+                          declaration_specifiers                     . 
+
+identifier_list ::= identifier |
+                    identifier_list ',' identifier. 
+
+initializer ::= assignment_expression |
+                '{' ~initializer_list '}' |
+                '{' ~initializer_list ','  '}'. 
+
+initializer_list ::= ~initializer  |
+                     initializer_list ',' ~initializer. 
+
+type_name ::= specifier_qualifier_list abstract_declarator |
+              specifier_qualifier_list                     .
+
+abstract_declarator ::= pointer |
+                        pointer ~direct_abstract_declarator |
+                                ~direct_abstract_declarator . 
+
+ 
+direct_abstract_declarator ::= '(' abstract_declarator ')' |
+                                direct_abstract_declarator '[' constant_expression ']' |
+                                                           '[' constant_expression ']' |
+                                direct_abstract_declarator '['                     ']' |
+                                                           '['                     ']' |
+
+                                direct_abstract_declarator '(' parameter_type_list ')' |
+                                                           '(' parameter_type_list ')' |
+                                direct_abstract_declarator '('                     ')' |
+                                                           '('                     ')' .
+
+statement ::= ~labeled_statement |
+              expression_statement |
+              ~compound_statement |
+              ~selection_statement |
+              ~iteration_statement |
+              jump_statement .
+
+labeled_statement ::= identifier ':' ~statement |
+                      'case' constant_expression ':' ~statement |
+                      'default' ':' ~statement.
+
+expression_statement ::= expression ';' |
+                                    ';' .
+
+compound_statement ::= '{' declaration_list ~statement_list '}' |
+                       '{'                  ~statement_list '}' |
+                       '{' declaration_list                '}' |
+                       '{'                                 '}' .
+
+
+statement_list ::= ~statement |
+                   ~statement_list ~statement. 
+
+selection_statement ::= 'if' '(' expression ')' ~statement |
+                        'if' '(' expression ')' ~statement 'else' ~statement  |
+                        'switch' '(' expression ')' ~statement.
+
+iteration_statement ::= 'while' '(' expression ')' ~statement |
+                        'do' ~statement 'while' '(' expression ')' |
+                        'for' '(' expression ';' expression ';' expression ')' ~statement |
+                        'for' '(' expression ';' expression ';'            ')' ~statement |
+                        'for' '(' expression ';'            ';' expression ')' ~statement |
+                        'for' '(' expression ';'            ';'            ')' ~statement |
+                        'for' '('            ';' expression ';' expression ')' ~statement |
+                        'for' '('            ';' expression ';'            ')' ~statement |
+                        'for' '('            ';'            ';' expression ')' ~statement |
+                        'for' '('            ';'            ';'            ')' ~statement .
+
+jump_statement ::= 'goto' identifier ';' |
+                   'continue' ';' |
+                   'break' ';' |
+                   'return' expression ';' |
+                   'return'            ';'.
+
+expression ::= ~assignment_expression |
+               expression  ',' ~assignment_expression . 
+
+assignment_expression ::= ~conditional_expression  |
+                          ~unary_expression  assignment_operator ~assignment_expression .
+
+assignment_operator ::= '=' | '*=' | '/=' | '%=' | '+=' | '-=' | '<<=' | '>>=' | '&=' | '^=' | '|='.
+
+conditional_expression ::= logical_or_expression |
+                           logical_or_expression '?' ~expression ':' ~conditional_expression . 
+
+constant_expression ::= conditional_expression .
+
+logical_or_expression ::= logical_and_expression |
+                          logical_or_expression '||' logical_and_expression. 
+
+logical_and_expression ::= inclusive_or_expression |
+                           logical_and_expression '&&' inclusive_or_expression. 
+
+inclusive_or_expression ::= exclusive_or_expression |
+                            inclusive_or_expression '|' exclusive_or_expression. 
+
+exclusive_or_expression ::= and_expression |
+                            exclusive_or_expression '^' and_expression. 
+
+(* EXTRA ONES PUT IN HERE *)
+and_expression ::= ~equality_expression |
+                   and_expression '&' ~equality_expression . 
+
+equality_expression ::= relational_expression |
+                        equality_expression  '==' relational_expression  |
+                        equality_expression '!=' relational_expression. 
+
+relational_expression ::= shift_expression |
+                          relational_expression '<' shift_expression |
+                          relational_expression '>'  shift_expression |
+                          relational_expression '<='  shift_expression |
+                          relational_expression '>=' shift_expression  .
+
+shift_expression ::= additive_expression |
+                     shift_expression '<<' additive_expression  |
+                     shift_expression '>>' additive_expression. 
+
+additive_expression ::= multiplicative_expression |
+                        additive_expression '+' multiplicative_expression |
+                        additive_expression '-' multiplicative_expression.
+
+multiplicative_expression ::= cast_expression |
+                              multiplicative_expression '*' cast_expression |
+                              multiplicative_expression '/' cast_expression |
+                              multiplicative_expression '%' cast_expression . 
+
+cast_expression ::= ~unary_expression |
+                    '(' type_name ')' ~cast_expression .
+
+unary_expression ::= ~postfix_expression |
+                     '++' ~unary_expression |
+                     '--' ~unary_expression |
+                     unary_operator ~cast_expression |
+                     'sizeof' ~unary_expression |
+                     'sizeof' '(' type_name')' .
+
+unary_operator ::= '&' | '*' | '+' | '-' | '~' | '!'.
+
+postfix_expression ::= primary_expression |
+                       postfix_expression '[' expression ']' |
+                       postfix_expression '(' ~argument_expression_list ')' |
+                       postfix_expression '('                          ')' |
+                       postfix_expression '.' identifier |
+                       postfix_expression '->' identifier |
+                       postfix_expression '++' |
+                       postfix_expression '--'.  
+
+primary_expression ::= identifier |
+                       constant |
+                       string |
+                       '(' expression ')'.
+
+argument_expression_list ::= ~assignment_expression |
+                             argument_expression_list ',' ~assignment_expression .
+
+constant ::= integer_constant |
+             (*character_constant |*) (*WHY HAS THIS BEEN COMMENTED OUT?*)
+             floating_constant |
+             enumeration_constant .
+
+(* Lexical producions *)
+identifier ::= 'ID' .
+string ::= 'STRING' | string 'STRING' .
+integer_constant ::= 'INTEGER' .
+character_constant ::= (* 'CHAR' *) 'STRING' .
+floating_constant ::= 'REAL' .
+
+(* Hack 1: the original grammar has a constant alternative for enumeration
+   constants: this looks redundant because primary_expresion has an identifier
+   alternative. We use a different keyword to avoid conflicts.
+*)
+enumeration_constant ::= 'ENUM_ID'. 
+
+(* Hack 2: a declaration starting with a typedef-defined type identifier
+   cannot be disambiguated unless the lexer returns a different token
+   for such identifiers. Here we use a different keyword *)
+typedef_name ::= 'ID' (* This needs to be added for code which uses a typedef
+because of the limitations of the tokeniser *)
+                 | 'TYPE_ID'.
+
+
+(* GTB script follows *)
+(
+
+STRING := "
+void ID ( void ) 
+{ 
+ID 
+( STRING 
+STRING 
+STRING 
+STRING 
+STRING 
+STRING 
+STRING 
+STRING 
+STRING 
+STRING 
+STRING 
+STRING 
+STRING 
+STRING 
+STRING 
+STRING 
+STRING 
+STRING 
+STRING 
+STRING 
+STRING 
+STRING 
+STRING 
+STRING 
+) ; 
+} 
+ID ID ; 
+unsigned long ID ; 
+char ID [ INTEGER ] , 
+* ID = ID , 
+ID [ INTEGER ] , 
+ID [ INTEGER ] = STRING ; 
+struct ID 
+{ 
+int ID : INTEGER , 
+ID : INTEGER , 
+ID : INTEGER , 
+ID : INTEGER , 
+ID : INTEGER , 
+ID : INTEGER , 
+ID : INTEGER ; 
+} ID ; 
+struct ID 
+{ 
+unsigned long ID , 
+ID ; 
+unsigned ID ; 
+struct ID * ID , 
+* ID ; 
+char ID ; 
+char ID ; 
+} * ID [ INTEGER ] ; 
+int ID ( char * ID , ... ) 
+{ 
+int ID ; 
+ID ID ; 
+( ( void ) ( ( ID ) = ( ID ) ( ( char * ) ( & ID ) + ( ( sizeof ( ID ) + sizeof ( int ) - INTEGER ) & ~ ( sizeof ( int ) - INTEGER ) ) ) ) ) ; 
+if ( ID . ID ) 
+ID = ID ( ID , ID ) ; 
+( ( void ) INTEGER ) ; 
+return ( ID ) ; 
+} 
+void ID ( struct ID * ID ) 
+{ 
+unsigned long ID = ID -> ID , 
+ID = ID -> ID ; 
+char ID = STRING ; 
+if ( ID == INTEGER ) 
+{ 
+if ( ID < INTEGER ) 
+ID ( STRING , ID ) ; 
+} 
+else 
+while ( ID > INTEGER ) 
+{ 
+if ( ID & INTEGER ) 
+{ 
+if ( ! ( ID & INTEGER ) ) 
+ID ( STRING ) ; 
+ID ( STRING , ID [ ID - STRING ] ) ; 
+if ( ID > INTEGER ) 
+ID ( STRING ) ; 
+} 
+ID = ID >> INTEGER ; 
+ID = ID >> INTEGER ; 
+ID ++ ; 
+} 
+} 
+void ID ( struct ID * ID ) 
+{ 
+if ( ID == INTEGER ) 
+ID ( STRING ) ; 
+else 
+while ( ID != INTEGER ) 
+{ 
+ID ( ID ) ; 
+if ( ID -> ID != INTEGER ) 
+{ 
+ID ( STRING ) ; 
+ID ( ID -> ID ) ; 
+ID ( STRING ) ; 
+} 
+ID = ID -> ID ; 
+if ( ID != INTEGER ) 
+ID ( STRING ) ; 
+} 
+} 
+void ID ( struct ID * ID ) 
+{ 
+int ID = ID . ID ; 
+ID . ID = INTEGER ; 
+ID ( ID ) ; 
+ID . ID = ID ; 
+} 
+void ID ( char * * ID ) 
+{ 
+while ( * ++ ID != INTEGER ) 
+switch ( * ( ( * ID ) + INTEGER ) ) 
+{ 
+case STRING : 
+ID . ID = INTEGER ; 
+break ; 
+case STRING : 
+ID . ID = INTEGER ; 
+break ; 
+case STRING : 
+ID . ID = INTEGER ; 
+break ; 
+case STRING : 
+ID . ID = INTEGER ; 
+break ; 
+case STRING : 
+ID . ID = INTEGER ; 
+break ; 
+case STRING : 
+ID . ID = INTEGER ; 
+break ; 
+case STRING : 
+ID . ID = INTEGER ; 
+break ; 
+default : 
+ID ( ) ; 
+ID ( INTEGER ) ; 
+} ; 
+} 
+void ID ( char ID ) 
+{ 
+if ( ID > STRING && ID <= STRING && ID - ID < INTEGER ) 
+* ID ++ = ID ; 
+} 
+int ID ( char ID , char ID ) 
+{ 
+return ( ( ID >= STRING && ID <= STRING ) || ID == STRING || ID == STRING || ID == STRING ) && 
+( ( ID >= STRING && ID <= STRING ) || ID == STRING || ID == STRING || ID == STRING || ID == STRING ) ; 
+} 
+void ID ( void ) 
+{ 
+char ID , 
+ID = INTEGER ; 
+ID = ID ; 
+while ( ! ( ( ( & ID [ INTEGER ] ) ) -> ID & INTEGER ) && ( ID = ( ( -- ( ( ( & ID [ INTEGER ] ) ) -> ID ) >= INTEGER ) ? ( unsigned char ) ( * ( ( & ID [ INTEGER ] ) ) -> ID ++ ) : ID ( ( & ID [ INTEGER ] ) ) ) ) != STRING ) 
+{ 
+if ( ID ( ID , ID ) ) 
+ID ( STRING ) ; 
+ID ( ID ) ; 
+if ( ID > STRING && ID <= STRING ) 
+ID = ID ; 
+} 
+* ID = INTEGER ; 
+if ( ID - ID >= INTEGER ) 
+{ 
+ID ( STRING ) ; 
+* ID = INTEGER ; 
+} 
+} 
+unsigned ID ( char * ID ) 
+{ 
+char ID [ INTEGER ] = STRING ; 
+unsigned ID ; 
+ID ( ID , ID , sizeof ( ID ) ) ; 
+ID ( ID , ID , sizeof ( ID ) ) ; 
+for ( ID = STRING ; * ID != INTEGER ; ID ++ ) 
+if ( * ID >= STRING && * ID <= STRING ) 
+{ 
+if ( ID [ * ID - STRING ] == STRING ) 
+{ 
+ID [ * ID - STRING ] = ID ; 
+ID [ ID ++ - STRING ] = * ID ; 
+} 
+* ID = ID [ * ID - STRING ] ; 
+} 
+return ( ID - STRING ) ; 
+} 
+void ID ( void ) 
+{ 
+unsigned long ID = ID - ID ; 
+if ( ! ID . ID ) 
+ID ( STRING , ID ) ; 
+ID ( STRING ) ; 
+for ( ID = ID - ID ; ID > INTEGER ; ID -- ) 
+ID ( STRING ) ; 
+ID ( STRING ) ; 
+ID ( ID , INTEGER ) ; 
+} 
+char ID ( void ) ; 
+char ID ( void ) 
+{ 
+char ID = * ID , 
+ID = * ID == STRING ? INTEGER : 
+* ID == STRING ? INTEGER : 
+* ID == STRING ? ( ID ++ , ID ( ) ) : 
+( * ID >= STRING && * ID <= STRING ) ? 
+INTEGER & ( ID >> ( ( * ID ) - STRING ) ) : 
+( ID ( ) , INTEGER ) ; 
+if ( ID == STRING && * ID != STRING ) 
+ID ( ) ; 
+ID ++ ; 
+return ( ID ) ; 
+} 
+char ID ( void ) 
+{ 
+if ( * ID == STRING ) 
+{ 
+ID ++ ; 
+return ( ! ID ( ) ) ; 
+} 
+else 
+return ( ID ( ) ) ; 
+} 
+char ID ( void ) 
+{ 
+char ID = ID ( ) ; 
+while ( * ID == STRING ) 
+{ 
+ID ++ ; 
+ID &= ID ( ) ; 
+} return ( ID ) ; 
+} 
+char ID ( void ) 
+{ 
+char ID = ID ( ) ; 
+while ( * ID == STRING ) 
+{ 
+ID ++ ; 
+ID ^= ID ( ) ; 
+} return ( ID ) ; 
+} 
+char ID ( void ) 
+{ 
+char ID = ID ( ) ; 
+while ( * ID == STRING ) 
+{ 
+ID ++ ; 
+ID |= ID ( ) ; 
+} return ( ID ) ; 
+} 
+int ID ( struct ID * ID , struct ID * ID ) 
+{ 
+return ( ( ( ID -> ID | ID -> ID ) == ID -> ID ) && 
+( ID -> ID & ID -> ID ) == ( ID -> ID & ID -> ID ) ) ; 
+} 
+int ID ( struct ID * ID , struct ID * ID ) 
+{ 
+return ( ( ID -> ID & ID -> ID ) == ( ID -> ID & ID -> ID ) && ID -> ID == ID -> ID ) ; 
+} 
+int ID ( struct ID * * ID , unsigned long ID , unsigned long ID ) 
+{ 
+struct ID * ID = * ID , 
+* ID = ID ( sizeof ( * ID ) ) ; 
+if ( ID == INTEGER ) 
+{ 
+ID ( STRING ) ; 
+ID ( INTEGER ) ; 
+} 
+ID ( ID , INTEGER , sizeof ( struct ID ) ) ; 
+ID -> ID = ID ; 
+ID -> ID = ID ; 
+while ( ID != INTEGER && ! ID ( ID , ID ) ) 
+ID = ID -> ID ; 
+if ( ID == INTEGER ) 
+{ 
+ID -> ID = * ID ; 
+* ID = ID ; 
+return INTEGER ; 
+} 
+else 
+return INTEGER ; 
+} 
+struct ID * ID ( char * ID , unsigned ID , 
+int ID , unsigned long * ID ) 
+{ 
+struct ID * ID = INTEGER ; 
+unsigned ID ; 
+* ID = INTEGER ; 
+if ( ID == INTEGER ) 
+{ 
+ID ( & ID , INTEGER , ( ID = ID , ID ( ) ) ) ; 
+return ( ID ) ; 
+} 
+if ( ID ) 
+{ 
+for ( ID = INTEGER ; ID < ID ; ID ++ ) 
+ID ( STRING , ID [ ID ] ) ; 
+ID ( STRING ) ; 
+} 
+for ( ID = INTEGER ; ID <= ( INTEGER << ID ) - INTEGER ; ID ++ ) 
+{ 
+if ( ID ) 
+{ 
+unsigned long ID = ID , 
+ID = ID ; 
+while ( ID -- > INTEGER ) 
+{ 
+ID ( STRING , ID & INTEGER ) ; 
+ID = ID >> INTEGER ; 
+} 
+} 
+if ( ID = ID , ID ( ) ) 
+{ 
+ID ( & ID , ( INTEGER << ID ) - INTEGER , ID ) ; 
+( * ID ) ++ ; 
+if ( ID ) 
+ID ( STRING ) ; 
+} 
+else 
+{ 
+if ( ID ) 
+ID ( STRING ) ; 
+} 
+} 
+if ( ID == INTEGER ) 
+ID ( & ID , INTEGER , INTEGER ) ; 
+return ( ID ) ; 
+} 
+void ID ( void ) 
+{ 
+unsigned ID , 
+ID ; 
+ID ( STRING , ID [ INTEGER ] , ID [ INTEGER ] ) ; 
+for ( ID = INTEGER ; ID < INTEGER ; ID ++ ) 
+{ 
+if ( ID > INTEGER && ID < INTEGER ) 
+ID ( STRING , ID [ INTEGER ] ) ; 
+else 
+ID ( STRING ) ; 
+for ( ID = INTEGER ; ID < INTEGER ; ID ++ ) 
+{ 
+ID = ( ID > INTEGER ? ID ^ INTEGER : ID ) + ( ID > INTEGER ? ID ^ INTEGER : ID ) * INTEGER ; 
+ID ( STRING , ( ID = ID , ID ( ) ) ) ; 
+} 
+if ( ID > INTEGER ) 
+ID ( STRING , ID [ INTEGER ] ) ; 
+else 
+ID ( STRING ) ; 
+ID ( STRING ) ; 
+} 
+ID ( STRING , ID [ INTEGER ] , ID [ INTEGER ] ) ; 
+} 
+int ID ( struct ID * ID ) 
+{ 
+unsigned long ID = ID -> ID , 
+ID = ID -> ID ; 
+int ID = INTEGER ; 
+while ( ID != INTEGER ) 
+{ 
+if ( ID & INTEGER && ID & INTEGER ) 
+ID ++ ; 
+ID = ID >> INTEGER ; 
+ID = ID >> INTEGER ; 
+} 
+return ( ID ) ; 
+} 
+struct ID * ID ( struct ID * ID , unsigned ID , 
+unsigned long * ID ) 
+{ 
+struct ID * ID = INTEGER , 
+* ID [ INTEGER ] [ INTEGER ] ; 
+int ID , 
+ID = INTEGER ; 
+char ID ; 
+* ID = INTEGER ; 
+ID ( ID , INTEGER , sizeof ( ID ) ) ; 
+while ( ID != INTEGER ) 
+{ 
+ID ( & ID [ ID ] [ ID ( ID ) ] , 
+ID -> ID , ID -> ID ) ; 
+ID = ID -> ID ; 
+} 
+do 
+{ 
+struct ID * ID ; 
+ID = INTEGER ; 
+ID ( STRING ) ; 
+for ( ID = INTEGER ; ID <= ID ; ID ++ ) 
+{ 
+ID ( STRING , ID ) ; 
+ID ( ID [ ID ] [ ID ] ) ; 
+ID ( STRING ) ; 
+} 
+ID ( STRING ) ; 
+ID ( ID ) ; 
+ID ( STRING ) ; 
+for ( ID = INTEGER ; ID < ID ; ID ++ ) 
+{ 
+ID = ID [ ID ] [ ID ] ; 
+ID [ INTEGER - ID ] [ ID ] = INTEGER ; 
+while ( ID != INTEGER ) 
+{ 
+struct ID * ID = ID [ ID ] [ ID + INTEGER ] ; 
+while ( ID != INTEGER ) 
+{ 
+unsigned long ID = ID -> ID & ( ID -> ID ^ ID -> ID ) ; 
+if ( ID -> ID == ID -> ID && ID != INTEGER ) 
+{ 
+unsigned long ID = ID -> ID & ~ ID ; 
+while ( ( ID & INTEGER ) == INTEGER ) 
+ID = ID >> INTEGER ; 
+if ( ( ID >> INTEGER ) == INTEGER ) 
+{ 
+ID = INTEGER ; 
+ID ( ID ) ; 
+ID ( STRING ) ; 
+ID ( ID ) ; 
+ID ( STRING ) ; 
+ID ( & ID [ INTEGER - ID ] [ ID ] , ID , 
+ID == INTEGER ? INTEGER : ID -> ID ) ; 
+ID ( ID [ INTEGER - ID ] [ ID ] ) ; 
+ID ( STRING ) ; 
+( * ID ) ++ ; 
+ID -> ID = INTEGER ; 
+ID -> ID = INTEGER ; 
+} 
+} 
+ID = ID -> ID ; 
+} 
+if ( ! ID -> ID ) 
+{ 
+ID ( & ID , ID -> ID , ID -> ID ) ; 
+ID ( ID ) ; 
+ID ( STRING ) ; 
+} 
+ID = ID -> ID ; 
+} 
+} 
+ID = ID [ ID ] [ ID ] ; 
+while ( ID != INTEGER ) 
+{ 
+if ( ! ID -> ID ) 
+{ 
+ID ( & ID , ID -> ID , ID -> ID ) ; 
+ID ( ID ) ; 
+ID ( STRING ) ; 
+} 
+ID = ID -> ID ; 
+} 
+ID [ INTEGER - ID ] [ ID ] = INTEGER ; 
+ID = INTEGER - ID ; 
+} 
+while ( ID ) ; 
+return ( ID ) ; 
+} 
+int ID ( struct ID * ID , unsigned long * ID ) 
+{ 
+unsigned ID ; 
+unsigned long ID ; 
+* ID = INTEGER ; 
+for ( ID = INTEGER ; ID != INTEGER ; ID ++ , ID = ID -> ID ) 
+{ 
+( * ID ) ++ ; 
+ID -> ID = STRING - ID ; 
+if ( ID > INTEGER ) 
+return ( INTEGER ) ; 
+ID [ ID ] = ID ; 
+ID = ID -> ID ; 
+ID -> ID = INTEGER ; 
+while ( ID != INTEGER ) 
+{ 
+if ( ID & INTEGER ) 
+ID -> ID ++ ; 
+ID = ID >> INTEGER ; 
+} 
+} 
+return ( INTEGER ) ; 
+} 
+void ID ( struct ID * ID , struct ID * ID ) 
+{ 
+char ID = INTEGER ; 
+ID = ID ; 
+ID ( STRING ) ; 
+while ( ID != INTEGER ) 
+{ 
+struct ID * ID = ID ; 
+char ID = INTEGER ; 
+ID ( STRING ) ; 
+ID ( ID ) ; 
+ID ( STRING ) ; 
+if ( ID ) 
+ID = INTEGER ; 
+else 
+ID ( STRING ) ; 
+ID ( STRING ) ; 
+while ( ID != INTEGER ) 
+{ 
+if ( ( ID -> ID & ID -> ID ) == ( ID -> ID & ID -> ID ) ) 
+{ 
+if ( ID ) 
+ID = INTEGER ; 
+else 
+{ 
+ID ( STRING ) ; 
+ID ( STRING ) ; 
+} 
+ID ( ID ) ; 
+ID ( ID -> ID ) ; 
+} 
+ID = ID -> ID ; 
+} 
+ID ( STRING ) ; 
+ID ( STRING ) ; 
+ID = ID -> ID ; 
+} 
+* ID = INTEGER ; 
+} 
+void ID ( struct ID * ID ) 
+{ 
+ID ( STRING ) ; 
+while ( ID != INTEGER ) 
+{ 
+ID ( STRING , ID -> ID ) ; 
+ID ( ID ) ; 
+ID ( STRING , ID -> ID ) ; 
+ID = ID -> ID ; 
+} 
+} 
+void ID ( struct ID * ID ) 
+{ 
+while ( ID != INTEGER ) 
+{ 
+unsigned long ID = ID -> ID ; 
+unsigned ID = INTEGER ; 
+ID -> ID = INTEGER ; 
+while ( ID != INTEGER ) 
+{ 
+if ( ID & INTEGER ) 
+ID -> ID += ID [ ID ] -> ID ; 
+ID ++ ; 
+ID = ID >> INTEGER ; 
+} 
+ID = ID -> ID ; 
+} 
+} 
+struct ID * ID ( struct ID * ID , unsigned long * ID ) 
+{ 
+struct ID * ID = INTEGER ; 
+unsigned ID = INTEGER ; 
+* ID = INTEGER ; 
+while ( ID != INTEGER ) 
+{ 
+ID ( STRING ) ; 
+ID ( ID ) ; 
+ID ( STRING , ID -> ID ) ; 
+if ( ID -> ID < ID ) 
+{ 
+ID = ID -> ID ; 
+ID = ID ; 
+} 
+ID = ID -> ID ; 
+( * ID ) ++ ; 
+} 
+return ( ID ) ; 
+} 
+struct ID * ID ( struct ID * ID ) 
+{ 
+struct ID * ID = INTEGER ; 
+unsigned long ID = ID -> ID ; 
+unsigned ID = INTEGER ; 
+while ( ID != INTEGER ) 
+{ 
+if ( ID & INTEGER ) 
+ID ( & ID , ID [ ID ] -> ID , ID [ ID ] -> ID ) ; 
+ID ++ ; 
+ID = ID >> INTEGER ; 
+} 
+return ID ; 
+} 
+void ID ( struct ID * * ID ) 
+{ 
+static unsigned ID [ INTEGER * INTEGER ] , 
+ID , 
+ID , 
+ID ; 
+struct ID * ID = * ID , 
+* ID = INTEGER , 
+* ID = INTEGER ; 
+if ( ID == INTEGER ) 
+return ; 
+ID ( STRING ) ; 
+ID ( ID ) ; 
+ID ( STRING ) ; 
+ID = INTEGER ; 
+ID ( ID , INTEGER , sizeof ( ID ) ) ; 
+while ( ID != INTEGER ) 
+{ 
+unsigned long ID = ID -> ID , 
+ID = ID -> ID ; 
+ID = INTEGER ; 
+while ( ID != INTEGER ) 
+{ 
+if ( ID & INTEGER ) 
+if ( ID & INTEGER ) 
+ID [ ID ] ++ ; 
+else 
+ID [ ID + INTEGER ] ++ ; 
+ID = ID >> INTEGER ; 
+ID = ID >> INTEGER ; 
+ID ++ ; 
+} 
+ID = ID -> ID ; 
+} 
+for ( ID = INTEGER ; ID < INTEGER * INTEGER ; ID ++ ) 
+{ 
+if ( ID [ ID ] > INTEGER ) 
+ID ( STRING , 
+ID < INTEGER ? STRING : STRING , STRING + ( ID % INTEGER ) , 
+ID [ ID ] 
+) ; 
+if ( ID [ ID ] > ID ) 
+{ 
+ID = ID [ ID ] ; 
+ID = ID ; 
+} 
+} 
+if ( ID > INTEGER ) 
+{ 
+ID ( & ID , INTEGER << ( ID % INTEGER ) , 
+ID < INTEGER ? INTEGER : INTEGER ) ; 
+ID ( STRING ) ; 
+ID ( ID ) ; 
+ID ( STRING ) ; 
+ID = * ID ; 
+while ( ID != INTEGER ) 
+{ 
+struct ID * ID = ID ; 
+ID = ID -> ID ; 
+if ( ID ( ID , ID ) ) 
+{ 
+ID -> ID = ID -> ID & ~ ID -> ID ; 
+if ( ID -> ID != INTEGER ) 
+{ 
+ID -> ID = ID ; 
+ID = ID ; 
+} 
+} 
+else 
+{ 
+ID -> ID = ID -> ID ; 
+ID -> ID = ID ; 
+} 
+} 
+ID -> ID = ID ; 
+ID ( & ( ID -> ID ) ) ; 
+ID ( & ( ID -> ID ) ) ; 
+* ID = ID ; 
+} 
+} 
+void ID ( int ID , char * ID [ ] ) 
+{ 
+struct ID * ID , 
+* ID , 
+* ID , 
+* ID ; 
+unsigned long ID , 
+ID , 
+ID , 
+ID , 
+ID , 
+ID ; 
+unsigned ID , 
+ID ; 
+ID ID , 
+ID , 
+ID , 
+ID , 
+ID , 
+ID , 
+ID , 
+ID ; 
+* ID = INTEGER ; 
+ID ( ID ) ; 
+switch ( ID ( ID ) ) 
+; 
+while ( ! ( ( ( & ID [ INTEGER ] ) ) -> ID & INTEGER ) ) 
+{ 
+ID ( ) ; 
+ID = ID ( ) ; 
+if ( * ID == INTEGER ) 
+continue ; 
+ID ( STRING , ID ) ; 
+if ( ID = ID , ID ( ) , * ID != INTEGER ) 
+ID ( ) ; 
+ID = ID ( ID ) ; 
+ID = ID ( ) ; 
+ID = ID ( ID , ID , ID . ID , & ID ) ; 
+ID = ID ( ) - ID ; 
+ID ( STRING ) ; 
+ID ( ID ) ; 
+ID ( STRING ) ; 
+if ( ID . ID ) 
+ID ( ) ; 
+if ( ID . ID ) 
+{ 
+ID = ID ( ) ; 
+ID = ID ( ID , ID , & ID ) ; 
+ID = ID ( ) - ID ; 
+if ( ID . ID && ID ( ID , & ID ) ) 
+{ 
+ID = ID ( ) ; 
+ID ( ID , ID ) ; 
+ID = ID ( ) - ID ; 
+ID ( ID ) ; 
+ID ( STRING , ID ) ; 
+ID = ID ( ID ) ; 
+ID = ID ( ) ; 
+ID = ID ( ID , ID , INTEGER , & ID ) ; 
+ID = ID ( ) - ID ; 
+ID ( STRING ) ; 
+ID ( ID ) ; 
+ID ( STRING ) ; 
+ID = ID ( ) ; 
+ID = ID ( ID , ID , & ID ) ; 
+ID = ID ( ) - ID ; 
+ID ( STRING ) ; 
+ID ( ID ) ; 
+ID ( STRING ) ; 
+ID ( ID ) ; 
+ID = ID ( ID , & ID ) ; 
+ID ( STRING ) ; 
+ID ( ID ) ; 
+ID ( ID , ID , sizeof ( ID ) ) ; 
+ID = ID ( ID ) ; 
+ID ( STRING ) ; 
+ID ( ID ) ; 
+ID ( STRING ) ; 
+} 
+else ID = ID ; 
+} 
+if ( ID . ID ) 
+{ 
+ID = ID ( ) ; 
+ID ( & ID ) ; 
+ID = ID ( ) - ID ; 
+ID ( STRING ) ; 
+ID ( ID ) ; 
+ID ( STRING ) ; 
+} 
+ID ( STRING ) ; 
+ID ( ID ) ; 
+ID ( STRING ) ; 
+if ( ID . ID ) 
+{ 
+ID ( STRING , ID , ID == INTEGER ? STRING : STRING ) ; 
+if ( ID . ID ) 
+{ 
+ID ( STRING , ID , ID == INTEGER ? STRING : STRING ) ; 
+if ( ID . ID ) 
+{ 
+ID ( STRING , ID , ID == INTEGER ? STRING : STRING ) ; 
+ID ( STRING , ID , ID == INTEGER ? STRING : STRING ) ; 
+ID ( STRING , ID , ID == INTEGER ? STRING : STRING ) ; 
+ID ( STRING , ID , ID == INTEGER ? STRING : STRING ) ; 
+} 
+} 
+ID ( STRING ) ; 
+ID ( STRING , ( ( double ) ( ID ) / ( double ) REAL ) ) ; 
+if ( ID . ID ) 
+{ 
+ID ( STRING , ( ( double ) ( ID ) / ( double ) REAL ) ) ; 
+if ( ID . ID ) 
+{ 
+ID ( STRING , ( ( double ) ( ID ) / ( double ) REAL ) ) ; 
+ID ( STRING , ( ( double ) ( ID ) / ( double ) REAL ) ) ; 
+ID ( STRING , ( ( double ) ( ID ) / ( double ) REAL ) ) ; 
+} 
+} 
+else 
+ID ( STRING ) ; 
+if ( ID . ID ) 
+ID ( STRING , ID ) ; 
+ID ( STRING ) ; 
+ID ( STRING , ( ( double ) ( ID ( ) - ID ) / ( double ) REAL ) ) ; 
+} 
+} 
+} 
+"
+
+STRINGA := "
+char 
+* ID ,  
+* * ID ,  
+* ID = STRING ;  
+
+int 
+ID = INTEGER ,  
+ID = INTEGER ,  
+ID ,  
+ID ;  
+
+int ID = INTEGER ;  
+
+char * ID = STRING 
+STRING STRING STRING STRING STRING STRING STRING STRING 
+STRING STRING STRING STRING STRING 
+****** 69 tokens
+
+STRING 
+STRING STRING STRING STRING STRING STRING STRING STRING 
+STRING STRING STRING STRING STRING STRING STRING STRING 
+STRING STRING STRING STRING STRING STRING STRING STRING 
+STRING STRING STRING STRING STRING STRING STRING STRING 
+STRING STRING STRING STRING STRING STRING STRING STRING 
+STRING STRING STRING STRING STRING STRING STRING STRING 
+STRING STRING STRING STRING STRING STRING STRING STRING 
+STRING STRING ; 
+
+
+ 
+static int ID = INTEGER ; 
+
+ID * ID ; 
+
+ID * ID ( char * ID , ID * ID ) 
+{ 
+if ( ID ) 
+{ 
+ID * ID = ( ID * ) ID ( sizeof ( ID ) , ID ) ; 
+if ( ID != ID ) 
+ID -> ID = ID ; 
+else 
+ID ( ID , ID , sizeof ( ID ) ) ; 
+return ID ; 
+} 
+else 
+return ID ; 
+} 
+
+ID * ID ( char * ID , ID * ID ) 
+{ 
+if ( ID ) 
+{ 
+ID = ( ID * ) ID ( sizeof ( ID ) , ID ) ; 
+if ( ID != ID ) 
+ID -> ID = ID ; 
+else 
+ID ( ID , ID , sizeof ( ID ) ) ; 
+
+( ( ID * ) ID ( sizeof ( ID ) , ID , ID ) ) -> ID = INTEGER ; 
+return ID ; 
+} 
+else 
+return ID ; 
+} 
+
+ID * ID ( char * ID , ID * ID ) 
+{ 
+if ( ID ) 
+{ 
+ID * ID = ( ID * ) ID ( sizeof ( ID ) , sizeof ( ID ) , ID ) ; 
+if ( ID != ID ) 
+ID -> ID = ID ; 
+else 
+ID ( ID , ID , sizeof ( ID ) ) ; 
+
+( ( ID * ) ID ( ID ) ) -> ID = INTEGER ; 
+
+return ID ; 
+} 
+else 
+return ID ; 
+} 
+
+
+ 
+static void ID ( void ) 
+{ 
+ID ( STRING , STRING , ID  , ID ) ; 
+ID ( STRING , ID , ID  , ID ) ; 
+ID ( STRING , ID , ID  , ID ) ; 
+ID ( STRING , ID , ID  , ID ) ; 
+ID ( STRING , ID , ID  , ID ) ; 
+ID ( STRING , ID , ID  , ID ) ; 
+ID ( STRING , ID , ID  , ID ) ; 
+ID ( STRING , ID , ID  , ID ) ; 
+ID ( STRING , STRING , ID  , ID ) ; 
+ID ( STRING , ID , ID  , ID ) ; 
+ID ( STRING , STRING , ID  , ID ) ; 
+ID ( STRING , ID , ID  , ID ) ; 
+ID ( STRING , ID , ID  , ID ) ; 
+ID ( STRING , ID , ID  , ID ) ; 
+ID ( STRING , ID , ID  , ID ) ; 
+ID ( STRING , ID , ID  , ID ) ; 
+ID ( STRING , ID , ID  , ID ) ; 
+ID ( STRING , ID , ID  , ID ) ; 
+ID ( STRING , ID , ID  , ID ) ; 
+ID ( STRING , ID , ID  , ID ) ; 
+ID ( STRING , ID , ID  , ID ) ; 
+ID ( STRING , ID , ID  , ID ) ; 
+ID ( STRING , ID , ID  , ID ) ; 
+ID ( STRING , ID , ID  , ID ) ; 
+ID ( STRING , ID , ID  , ID ) ; 
+ID ( STRING , ID , ID  , ID ) ; 
+ID ( STRING , ID , ID  , ID ) ; 
+ID ( STRING , ID , ID  , ID ) ; 
+ID ( STRING , ID , ID  , ID ) ; 
+ID ( STRING , ID , ID  , ID ) ; 
+ID ( STRING , ID , ID  , ID ) ; 
+ID ( STRING , ID , ID  , ID ) ; 
+ID ( STRING , ID , ID  , ID ) ; 
+ID ( STRING , ID , ID  , ID ) ; 
+ID ( STRING , ID , ID  , ID ) ; 
+ID ( STRING , ID , ID  , ID ) ; 
+ID ( STRING , ID , ID  , ID ) ; 
+ID ( STRING , ID , ID  , ID ) ; 
+ID ( STRING , ID , ID  , ID ) ; 
+ID ( STRING , ID , ID  , ID ) ; 
+ID ( STRING , ID , ID  , ID ) ; 
+ID ( STRING , ID , ID  , ID ) ; 
+ID ( STRING , ID , ID  , ID ) ; 
+ID ( STRING , ID , ID  , ID ) ; 
+ID ( STRING , ID , ID  , ID ) ; 
+ID ( STRING , ID , ID  , ID ) ; 
+ID ( STRING , ID , ID  , ID ) ; 
+ID ( STRING , ID , ID  , ID ) ; 
+ID ( STRING , ID , ID  , ID ) ; 
+ID ( STRING , ID , ID  , ID ) ; 
+ID ( STRING , ID , ID  , ID ) ; 
+ID ( STRING , ID , ID  , ID ) ; 
+ID ( STRING , ID , ID  , ID ) ; 
+ID ( STRING , ID , ID  , ID ) ; 
+ID ( STRING , ID , ID  , ID ) ; 
+ID ( STRING , STRING , ID  , ID ) ; 
+ID ( STRING , ID , ID  , ID ) ; 
+ID ( STRING , ID , ID  , ID ) ; 
+ID ( STRING , ID , ID  , ID ) ; 
+} 
+
+ 
+
+ID ID = ID ; 
+ID ID = ID ; 
+ID ID = ID ; 
+ID ID = ID ; 
+ID ID = ID ; 
+ID ID = ID ; 
+ID ID = ID ; 
+ID ID = ID ; 
+ID ID = ID ; 
+ID ID = ID ; 
+ID ID = ID ; 
+ID ID = ID ; 
+ID ID = ID ; 
+ID ID = ID ; 
+ID ID = ID ; 
+ID ID = ID ; 
+ID ID = ID ; 
+ID ID = ID ; 
+ID ID = ID ; 
+ID ID = ID ; 
+ID ID = ID ; 
+ID ID = ID ; 
+ID ID = ID ; 
+ID ID = ID ; 
+ID ID = ID ; 
+ID ID = ID ; 
+ID ID = ID ; 
+ID ID = ID ; 
+ID ID = ID ; 
+ID ID = ID ; 
+ID ID = ID ; 
+ID ID = ID ; 
+ID ID = ID ; 
+ID ID = ID ; 
+ID ID = ID ; 
+ID ID = ID ; 
+ID ID = ID ; 
+ID ID = ID ; 
+ID ID = ID ; 
+ID ID = ID ; 
+ID ID = ID ; 
+ID ID = ID ; 
+ID ID = ID ; 
+ID ID = ID ; 
+ID ID = ID ; 
+ID ID = ID ; 
+ID ID = ID ; 
+ID ID = ID ; 
+ID ID = ID ; 
+ID ID = ID ; 
+ID ID = ID ; 
+ID ID = ID ; 
+ID ID = ID ; 
+ID ID = ID ; 
+ID ID = ID ; 
+ID ID = ID ; 
+ID ID = ID ; 
+ID ID = ID ; 
+ID ID = ID ; 
+ID ID = ID ; 
+ID ID = ID ; 
+ID ID = ID ; 
+ID ID = ID ; 
+ID ID = ID ; 
+ID ID = ID ; 
+ID ID = ID ; 
+ID ID = ID ; 
+ID ID = ID ; 
+ID ID = ID ; 
+ID ID = ID ; 
+ID ID = ID ; 
+ID ID = ID ; 
+ID ID = ID ; 
+ID ID = ID ; 
+ID ID = ID ; 
+ID ID = ID ; 
+ID ID = ID ; 
+ID ID = ID ; 
+ID ID = ID ; 
+
+ 
+
+static void ID ( void ) 
+{ 
+ID ( & ID , ID , ID ) ; 
+ID ( & ID , ID , ID , ID , ID  , ID  , ID  , ID ) ; 
+ID ( & ID , ID , ID , ID , ID , ID  , ID  , 
+ID  , ID  , ID  , ID ) ; 
+ID ( & ID , ID , ID , ID , ID  , ID  , ID  , ID ) ; 
+ID ( & ID , ID , ID , ID , ID , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , ID  , 
+ID  , ID ) ; 
+ID ( & ID , ID , ID , ID , ID  , ID  , ID  , ID ) ; 
+ID ( & ID , ID , ID , ID , ID , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , ID ) ; 
+ID ( & ID , ID , ID , ID , ID  , ID  , ID  , ID ) ; 
+ID ( & ID , ID , ID , ID , ID , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , ID  , ID ) ; 
+ID ( & ID , ID , ID , ID , ID  , ID  , ID ) ; 
+ID ( & ID , ID , ID , ID , ID , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , ID  , ID ) ; 
+ID ( & ID , ID , ID , ID , ID  , ID  , ID ) ; 
+ID ( & ID , ID , ID , ID , ID , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , ID  , 
+ID  , ID ) ; 
+ID ( & ID , ID , ID , ID , ID  , ID  , ID  , ID ) ; 
+ID ( & ID , ID , ID , ID , ID , ID  , ID  , 
+ID  , ID  , ID  , ID  , ID ) ; 
+ID ( & ID , ID , ID , ID , ID  , ID  , ID  , ID ) ; 
+ID ( & ID , ID , ID , ID , ID , ID  , ID  , 
+ID  , ID  , ID  , ID  , ID  , 
+ID  , ID ) ; 
+ID ( & ID , ID , ID , ID , ID  , ID  , ID  , ID ) ; 
+ID ( & ID , ID , ID , ID , ID , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , ID  , ID ) ; 
+ID ( & ID , ID , ID , ID , ID  , ID  , ID  , ID ) ; 
+ID ( & ID , ID , ID , ID , ID , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID ) ; 
+ID ( & ID , ID , ID , ID , ID  , ID  , ID  , ID ) ; 
+ID ( & ID , ID , ID , ID , ID , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , ID ) ; 
+ID ( & ID , ID , ID , ID , ID  , ID  , ID  , ID ) ; 
+ID ( & ID , ID , ID , ID , ID , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , ID  , ID ) ; 
+ID ( & ID , ID , ID , ID , ID  , ID  , ID  , ID ) ; 
+ID ( & ID , ID , ID , ID , ID , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , ID  , 
+ID  , ID ) ; 
+ID ( & ID , ID , ID , ID , ID  , ID  , ID  , ID ) ; 
+ID ( & ID , ID , ID , ID , ID , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , ID ) ; 
+ID ( & ID , ID , ID , ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID ) ; 
+ID ( & ID , ID , ID , ID , ID , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , ID  , 
+ID  , ID ) ; 
+ID ( & ID , ID , ID , ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID ) ; 
+ID ( & ID , ID , ID  , ID  , ID  , ID  , 
+ID  , ID ) ; 
+ID ( & ID , ID , ID  , ID  , ID ) ; 
+ID ( & ID , ID  , ID  , ID ) ; 
+ID ( & ID , ID , ID , ID , ID  , ID  , ID  , ID ) ; 
+ID ( & ID , ID , ID , ID , ID  , ID  , ID  , ID ) ; 
+ID ( & ID , ID , ID , ID , ID  , ID  , ID ) ; 
+ID ( & ID , ID , ID , ID , ID  , ID  , ID ) ; 
+ID ( & ID , ID , ID , ID , ID  , ID  , ID  , ID ) ; 
+ID ( & ID , ID  , ID  , ID ) ; 
+ID ( & ID , ID , ID , ID , ID  , ID  , ID  , ID ) ; 
+ID ( & ID , ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID ) ; 
+ID ( & ID , ID , ID , ID , ID  , ID  , ID  , ID ) ; 
+ID ( & ID , ID  , ID  , ID  , ID  , 
+ID  , ID  , ID ) ; 
+ID ( & ID , ID , ID , ID , ID  , ID  , ID  , ID ) ; 
+ID ( & ID , ID , ID , ID , ID  , ID  , ID  , ID ) ; 
+ID ( & ID , ID , ID , ID , ID  , ID  , ID  , ID ) ; 
+ID ( & ID , ID , ID , ID , ID  , ID  , ID  , ID ) ; 
+ID ( & ID , ID  , ID  , ID ) ; 
+ID ( & ID , ID , ID , ID , ID  , ID  , ID  , ID ) ; 
+ID ( & ID , ID  , ID  , ID  , ID ) ; 
+ID ( & ID , ID , ID , ID , ID  , ID  , ID  , ID ) ; 
+ID ( & ID , ID , ID , ID , ID  , ID  , ID  , ID ) ; 
+ID ( & ID , ID , ID , ID , ID  , ID  , ID  , ID ) ; 
+ID ( & ID , ID , ID  , ID ) ; 
+ID ( & ID , ID , ID  , ID  , ID  , ID  , 
+ID  , ID ) ; 
+ID ( & ID , ID , ID  , ID  , ID  , ID  , 
+ID  , ID ) ; 
+ID ( & ID , ID , ID  , ID  , ID  , ID  , 
+ID  , ID ) ; 
+ID ( & ID , ID , ID  , ID  , ID  , ID  , 
+ID  , ID ) ; 
+ID ( & ID , ID , ID  , ID ) ; 
+ID ( & ID , ID , ID , ID , ID  , ID  , ID  , ID ) ; 
+ID ( & ID , ID , ID , ID , ID  , ID  , ID  , ID ) ; 
+ID ( & ID , ID , ID  , ID ) ; 
+ID ( & ID , ID , ID  , ID ) ; 
+ID ( & ID , ID , ID  , ID ) ; 
+ID ( & ID , ID , ID  , ID ) ; 
+ID ( & ID , ID , ID , ID , ID  , ID  , ID  , ID ) ; 
+ID ( & ID , ID , ID , ID , ID  , ID  , ID  , ID ) ; 
+ID ( & ID , ID , ID  , ID  , ID ) ; 
+ID ( & ID , ID , ID  , ID ) ; 
+ID ( & ID , ID , ID , ID  , ID  , ID ) ; 
+ID ( & ID , ID , ID  , ID ) ; 
+ID ( & ID , ID , ID , ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , ID ) ; 
+ID ( & ID , ID , ID  , ID ) ; 
+ID ( & ID , ID , ID  , ID ) ; 
+ID ( & ID , ID , ID , ID , ID , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , ID  , 
+ID  , ID ) ; 
+ID ( & ID , ID , ID  , ID  , ID ) ; 
+ID ( & ID , ID , ID ) ; 
+} 
+
+ 
+static void ID ( ID * ID ) ; 
+static void ID ( ID * ID ) ; 
+static void ID ( ID * ID ) ; 
+static void ID ( ID * ID ) ; 
+static void ID ( ID * ID ) ; 
+static void ID ( ID * ID ) ; 
+static void ID ( ID * ID ) ; 
+static void ID ( ID * ID ) ; 
+static void ID ( ID * ID ) ; 
+static void ID ( ID * ID ) ; 
+static void ID ( ID * ID ) ; 
+static void ID ( ID * ID ) ; 
+static void ID ( ID * ID ) ; 
+static void ID ( ID * ID ) ; 
+static void ID ( ID * ID ) ; 
+static char * ID ( ID * ID ) ; 
+static void ID ( ID * ID ) ; 
+static void ID ( ID * ID ) ; 
+static void ID ( ID * ID ) ; 
+static char * ID ( ID * ID ) ; 
+static void ID ( ID * ID ) ; 
+static void ID ( ID * ID ) ; 
+void ID ( ID * ID ) ; 
+
+ 
+static void ID ( ID * ID ) 
+{ 
+{ 
+if ( ID ) { ID -> ID = STRING ; ID -> ID = INTEGER ; } 
+ID ( ID ) ; 
+if ( ID ( ID , ID  , ID ) ) 
+{  
+while ( INTEGER ) 
+{ 
+{ 
+if ( ID ) ID ( ID , ID ) ; 
+ID ( ID , ID  , & ID ) ; 
+ID ( ) ; 
+ID ( ID ( STRING , ID ) ) ; 
+} 
+break ;  
+} 
+}  
+else 
+{ 
+ 
+if ( ID ) { ID * ID = ID ( ID , ID ) ; ID -> ID = ID ; ID -> ID = ID ; } 
+} 
+ID ( ID , & ID , & ID ) ; 
+} 
+} 
+
+static void ID ( ID * ID ) 
+{ 
+{ 
+if ( ID ) { ID -> ID = STRING ; ID -> ID = INTEGER ; } 
+ID ( ID ) ; 
+if ( ID ( ID , & ID , ID ) ) 
+{  
+while ( INTEGER ) 
+{ 
+{ 
+if ( ID ( ID , ID  , ID ) ) 
+{ 
+if ( ID ) ID ( ID , ID ) ; 
+ID ( ID , ID  , & ID ) ; 
+ID ( ) ; 
+ID ( ID ( STRING , ID ) ) ; 
+} 
+else 
+if ( ID ( ID , ID  , ID ) ) 
+{ 
+if ( ID ) ID ( ID , ID ) ; 
+ID ( ID , ID  , & ID ) ; 
+ID ( ) ; 
+ID ( ID ( STRING , ID ) ) ; 
+} 
+else 
+ID ( ID , & ID , & ID ) ; 
+} 
+if ( ! ID ( ID , & ID , ID ) ) break ; 
+} 
+}  
+else 
+{ 
+ 
+if ( ID ) { ID * ID = ID ( ID , ID ) ; ID -> ID = ID ; ID -> ID = ID ; } 
+} 
+ID ( ID , & ID , & ID ) ; 
+} 
+} 
+
+static void ID ( ID * ID ) 
+{ 
+{ 
+ID ( ID ( STRING , ID ) ) ; 
+if ( ID ( ID , ID  , ID ) ) 
+{  
+while ( INTEGER ) 
+{ 
+{ 
+if ( ID ) ID ( ID , ID , sizeof ( ID ) ) ; 
+ID ( ID , ID  , & ID ) ; 
+ID ( ) ; 
+ID ( ID ( STRING , ID ) ) ; 
+} 
+break ;  
+} 
+}  
+else 
+{ 
+ 
+if ( ID ) { ID -> ID = ID ; ID -> ID = ID ; } 
+} 
+ID ( ID , & ID , & ID ) ; 
+} 
+} 
+
+static void ID ( ID * ID ) 
+{ 
+{ 
+if ( ID ( ID , & ID , ID ) ) 
+{ 
+if ( ID ) { ID -> ID = STRING ; ID -> ID = INTEGER ; } 
+ID ( ID ) ; 
+} 
+else 
+if ( ID ( ID , ID  , ID ) ) 
+{ 
+if ( ID ) ID ( ID , ID , sizeof ( ID ) ) ; 
+ID ( ID , ID  , & ID ) ; 
+ID ( ) ; 
+ID ( ID ( STRING , ID ) ) ; 
+} 
+else 
+ID ( ID , & ID , & ID ) ; 
+ID ( ID , & ID , & ID ) ; 
+} 
+} 
+
+static void ID ( ID * ID ) 
+{ 
+{ 
+if ( ID ) { ID -> ID = STRING ; ID -> ID = INTEGER ; } 
+ID ( ID ) ; 
+if ( ID ( ID , ID  , ID ) ) 
+{  
+while ( INTEGER ) 
+{ 
+{ 
+if ( ID ) ID ( ID , ID ) ; 
+ID ( ID , ID  , & ID ) ; 
+ID ( ) ; 
+if ( ID ) ID ( ID , ID ) ; 
+ID ( ID , ID , & ID ) ; 
+ID ( ) ; 
+} 
+break ;  
+} 
+}  
+else 
+{ 
+ 
+if ( ID ) { ID * ID = ID ( ID , ID ) ; ID -> ID = ID ; ID -> ID = ID ; } 
+} 
+ID ( ID , & ID , & ID ) ; 
+} 
+} 
+
+static void ID ( ID * ID ) 
+{ 
+{ 
+if ( ID ( ID , ID , ID ) ) 
+{ 
+if ( ID ) { ID -> ID = STRING ; ID -> ID = INTEGER ; } 
+ID ( ID ) ; 
+} 
+else 
+if ( ID ( ID , ID , ID ) ) 
+{ 
+if ( ID ) ID ( ID , ID , sizeof ( ID ) ) ; 
+ID ( ID , ID , & ID ) ; 
+ID ( ) ; 
+} 
+else 
+if ( ID ( ID , ID , ID ) ) 
+{ 
+if ( ID ) ID ( ID , ID , sizeof ( ID ) ) ; 
+ID ( ID , ID , & ID ) ; 
+ID ( ) ; 
+} 
+else 
+if ( ID ( ID , ID  , ID ) ) 
+{ 
+if ( ID ) ID ( ID , ID , sizeof ( ID ) ) ; 
+ID ( ID , ID  , & ID ) ; 
+ID ( ) ; 
+} 
+else 
+if ( ID ( ID , ID  , ID ) ) 
+{ 
+if ( ID ) { ID -> ID = STRING ; ID -> ID = INTEGER ; } 
+ID ( ID ) ; 
+} 
+else 
+ID ( ID , & ID , & ID ) ; 
+ID ( ID , & ID , & ID ) ; 
+} 
+} 
+
+static void ID ( ID * ID ) 
+{ 
+{ 
+if ( ID ) { ID -> ID = STRING ; ID -> ID = INTEGER ; } 
+ID ( ID ) ; 
+if ( ID ( ID , & ID , ID ) ) 
+{  
+while ( INTEGER ) 
+{ 
+{ 
+if ( ID ( ID , ID  , ID ) ) 
+{ 
+if ( ID ) ID ( ID , ID ) ; 
+ID ( ID , ID  , & ID ) ; 
+ID ( ) ; 
+ID ( ID ( STRING , ID ) ) ; 
+} 
+else 
+if ( ID ( ID , ID  , ID ) ) 
+{ 
+if ( ID ) ID ( ID , ID ) ; 
+ID ( ID , ID  , & ID ) ; 
+ID ( ) ; 
+ID ( ID ( STRING , ID ) ) ; 
+} 
+else 
+ID ( ID , & ID , & ID ) ; 
+} 
+if ( ! ID ( ID , & ID , ID ) ) break ; 
+} 
+}  
+else 
+{ 
+ 
+if ( ID ) { ID * ID = ID ( ID , ID ) ; ID -> ID = ID ; ID -> ID = ID ; } 
+} 
+ID ( ID , & ID , & ID ) ; 
+} 
+} 
+
+static void ID ( ID * ID ) 
+{ 
+{ 
+ID ( ID ( STRING , ID ) ) ; 
+if ( ID ( ID , & ID , ID ) ) 
+{  
+while ( INTEGER ) 
+{ 
+{ 
+if ( ID ( ID , ID  , ID ) ) 
+{ 
+if ( ID ) ID ( ID , ID , sizeof ( ID ) ) ; 
+ID ( ID , ID  , & ID ) ; 
+ID ( ) ; 
+ID ( ID ( STRING , ID ) ) ; 
+} 
+else 
+if ( ID ( ID , ID  , ID ) ) 
+{ 
+if ( ID ) ID ( ID , ID , sizeof ( ID ) ) ; 
+ID ( ID , ID  , & ID ) ; 
+ID ( ) ; 
+ID ( ID ( STRING , ID ) ) ; 
+} 
+else 
+if ( ID ( ID , ID  , ID ) ) 
+{ 
+if ( ID ) ID ( ID , ID , sizeof ( ID ) ) ; 
+ID ( ID , ID  , & ID ) ; 
+ID ( ) ; 
+ID ( ID ( STRING , ID ) ) ; 
+} 
+else 
+if ( ID ( ID , ID  , ID ) ) 
+{ 
+if ( ID ) ID ( ID , ID , sizeof ( ID ) ) ; 
+ID ( ID , ID  , & ID ) ; 
+ID ( ) ; 
+ID ( ID ( STRING , ID ) ) ; 
+} 
+else 
+if ( ID ( ID , ID  , ID ) ) 
+{ 
+if ( ID ) ID ( ID , ID , sizeof ( ID ) ) ; 
+ID ( ID , ID  , & ID ) ; 
+ID ( ) ; 
+ID ( ID ( STRING , ID ) ) ; 
+} 
+else 
+if ( ID ( ID , ID  , ID ) ) 
+{ 
+if ( ID ) ID ( ID , ID , sizeof ( ID ) ) ; 
+ID ( ID , ID  , & ID ) ; 
+ID ( ) ; 
+ID ( ID ( STRING , ID ) ) ; 
+} 
+else 
+if ( ID ( ID , ID  , ID ) ) 
+{ 
+if ( ID ) ID ( ID , ID , sizeof ( ID ) ) ; 
+ID ( ID , ID  , & ID ) ; 
+ID ( ) ; 
+ID ( ID ( STRING , ID ) ) ; 
+} 
+else 
+if ( ID ( ID , ID  , ID ) ) 
+{ 
+if ( ID ) ID ( ID , ID , sizeof ( ID ) ) ; 
+ID ( ID , ID  , & ID ) ; 
+ID ( ) ; 
+ID ( ID ( STRING , ID ) ) ; 
+} 
+else 
+if ( ID ( ID , ID  , ID ) ) 
+{ 
+if ( ID ) ID ( ID , ID , sizeof ( ID ) ) ; 
+ID ( ID , ID  , & ID ) ; 
+ID ( ) ; 
+ID ( ID ( STRING , ID ) ) ; 
+} 
+else 
+if ( ID ( ID , ID  , ID ) ) 
+{ 
+if ( ID ) ID ( ID , ID , sizeof ( ID ) ) ; 
+ID ( ID , ID  , & ID ) ; 
+ID ( ) ; 
+ID ( ID ( STRING , ID ) ) ; 
+} 
+else 
+if ( ID ( ID , ID  , ID ) ) 
+{ 
+if ( ID ) ID ( ID , ID , sizeof ( ID ) ) ; 
+ID ( ID , ID  , & ID ) ; 
+ID ( ) ; 
+ID ( ID ( STRING , ID ) ) ; 
+} 
+else 
+if ( ID ( ID , ID  , ID ) ) 
+{ 
+if ( ID ) ID ( ID , ID , sizeof ( ID ) ) ; 
+ID ( ID , ID  , & ID ) ; 
+ID ( ) ; 
+ID ( ID ( STRING , ID ) ) ; 
+} 
+else 
+if ( ID ( ID , ID  , ID ) ) 
+{ 
+if ( ID ) ID ( ID , ID , sizeof ( ID ) ) ; 
+ID ( ID , ID  , & ID ) ; 
+ID ( ) ; 
+ID ( ID ( STRING , ID ) ) ; 
+} 
+else 
+if ( ID ( ID , ID  , ID ) ) 
+{ 
+if ( ID ) ID ( ID , ID , sizeof ( ID ) ) ; 
+ID ( ID , ID  , & ID ) ; 
+ID ( ) ; 
+ID ( ID ( STRING , ID ) ) ; 
+} 
+else 
+if ( ID ( ID , ID  , ID ) ) 
+{ 
+if ( ID ) ID ( ID , ID , sizeof ( ID ) ) ; 
+ID ( ID , ID  , & ID ) ; 
+ID ( ) ; 
+ID ( ID ( STRING , ID ) ) ; 
+} 
+else 
+if ( ID ( ID , ID  , ID ) ) 
+{ 
+if ( ID ) ID ( ID , ID , sizeof ( ID ) ) ; 
+ID ( ID , ID  , & ID ) ; 
+ID ( ) ; 
+ID ( ID ( STRING , ID ) ) ; 
+} 
+else 
+if ( ID ( ID , ID  , ID ) ) 
+{ 
+if ( ID ) ID ( ID , ID , sizeof ( ID ) ) ; 
+ID ( ID , ID  , & ID ) ; 
+ID ( ) ; 
+ID ( ID ( STRING , ID ) ) ; 
+} 
+else 
+if ( ID ( ID , ID  , ID ) ) 
+{ 
+if ( ID ) ID ( ID , ID , sizeof ( ID ) ) ; 
+ID ( ID , ID  , & ID ) ; 
+ID ( ) ; 
+ID ( ID ( STRING , ID ) ) ; 
+} 
+else 
+if ( ID ( ID , ID  , ID ) ) 
+{ 
+if ( ID ) ID ( ID , ID , sizeof ( ID ) ) ; 
+ID ( ID , ID  , & ID ) ; 
+ID ( ) ; 
+ID ( ID ( STRING , ID ) ) ; 
+} 
+else 
+if ( ID ( ID , ID  , ID ) ) 
+{ 
+if ( ID ) ID ( ID , ID , sizeof ( ID ) ) ; 
+ID ( ID , ID  , & ID ) ; 
+ID ( ) ; 
+ID ( ID ( STRING , ID ) ) ; 
+} 
+else 
+if ( ID ( ID , ID  , ID ) ) 
+{ 
+if ( ID ) ID ( ID , ID , sizeof ( ID ) ) ; 
+ID ( ID , ID  , & ID ) ; 
+ID ( ) ; 
+ID ( ID ( STRING , ID ) ) ; 
+} 
+else 
+if ( ID ( ID , ID  , ID ) ) 
+{ 
+if ( ID ) ID ( ID , ID , sizeof ( ID ) ) ; 
+ID ( ID , ID  , & ID ) ; 
+ID ( ) ; 
+ID ( ID ( STRING , ID ) ) ; 
+} 
+else 
+if ( ID ( ID , ID  , ID ) ) 
+{ 
+if ( ID ) ID ( ID , ID , sizeof ( ID ) ) ; 
+ID ( ID , ID  , & ID ) ; 
+ID ( ) ; 
+ID ( ID ( STRING , ID ) ) ; 
+} 
+else 
+ID ( ID , & ID , & ID ) ; 
+} 
+break ;  
+} 
+}  
+else 
+{ 
+ 
+if ( ID ) { ID -> ID = ID ; ID -> ID = ID ; } 
+} 
+ID ( ID , & ID , & ID ) ; 
+} 
+} 
+
+static void ID ( ID * ID ) 
+{ 
+{ 
+if ( ID ) { ID -> ID = STRING ; ID -> ID = INTEGER ; } 
+ID ( ID ) ; 
+if ( ID ( ID , & ID , ID ) ) 
+{  
+while ( INTEGER ) 
+{ 
+{ 
+if ( ID ( ID , ID  , ID ) ) 
+{ 
+if ( ID ) ID ( ID , ID ) ; 
+ID ( ID , ID  , & ID ) ; 
+ID ( ) ; 
+ID ( ID ( STRING , ID ) ) ; 
+} 
+else 
+if ( ID ( ID , ID  , ID ) ) 
+{ 
+if ( ID ) ID ( ID , ID ) ; 
+ID ( ID , ID  , & ID ) ; 
+ID ( ) ; 
+ID ( ID ( STRING , ID ) ) ; 
+} 
+else 
+if ( ID ( ID , ID  , ID ) ) 
+{ 
+if ( ID ) ID ( ID , ID ) ; 
+ID ( ID , ID  , & ID ) ; 
+ID ( ) ; 
+ID ( ID ( STRING , ID ) ) ; 
+} 
+else 
+if ( ID ( ID , ID  , ID ) ) 
+{ 
+if ( ID ) ID ( ID , ID ) ; 
+ID ( ID , ID  , & ID ) ; 
+ID ( ) ; 
+ID ( ID ( STRING , ID ) ) ; 
+} 
+else 
+if ( ID ( ID , ID  , ID ) ) 
+{ 
+if ( ID ) ID ( ID , ID ) ; 
+ID ( ID , ID  , & ID ) ; 
+ID ( ) ; 
+ID ( ID ( STRING , ID ) ) ; 
+} 
+else 
+if ( ID ( ID , ID  , ID ) ) 
+{ 
+if ( ID ) ID ( ID , ID ) ; 
+ID ( ID , ID  , & ID ) ; 
+ID ( ) ; 
+ID ( ID ( STRING , ID ) ) ; 
+} 
+else 
+ID ( ID , & ID , & ID ) ; 
+} 
+break ;  
+} 
+}  
+else 
+{ 
+ 
+if ( ID ) { ID * ID = ID ( ID , ID ) ; ID -> ID = ID ; ID -> ID = ID ; } 
+} 
+ID ( ID , & ID , & ID ) ; 
+} 
+} 
+
+static void ID ( ID * ID ) 
+{ 
+{ 
+if ( ID ) { ID -> ID = STRING ; ID -> ID = INTEGER ; } 
+ID ( ID ) ; 
+if ( ID ( ID , ID  , ID ) ) 
+{  
+while ( INTEGER ) 
+{ 
+{ 
+if ( ID ) ID ( ID , ID ) ; 
+ID ( ID , ID  , & ID ) ; 
+ID ( ) ; 
+ID ( ID ( STRING , ID ) ) ; 
+} 
+if ( ! ID ( ID , ID  , ID ) ) break ; 
+} 
+}  
+else 
+{ 
+ 
+if ( ID ) { ID * ID = ID ( ID , ID ) ; ID -> ID = ID ; ID -> ID = ID ; } 
+} 
+ID ( ID , & ID , & ID ) ; 
+} 
+} 
+
+static void ID ( ID * ID ) 
+{ 
+{ 
+if ( ID ) { ID -> ID = STRING ; ID -> ID = INTEGER ; } 
+ID ( ID ) ; 
+if ( ID ( ID , ID  , ID ) ) 
+{  
+while ( INTEGER ) 
+{ 
+{ 
+if ( ID ) ID ( ID , ID ) ; 
+ID ( ID , ID  , & ID ) ; 
+ID ( ) ; 
+ID ( ID ( STRING , ID ) ) ; 
+} 
+if ( ! ID ( ID , ID  , ID ) ) break ; 
+} 
+}  
+else 
+{ 
+ 
+if ( ID ) { ID * ID = ID ( ID , ID ) ; ID -> ID = ID ; ID -> ID = ID ; } 
+} 
+ID ( ID , & ID , & ID ) ; 
+} 
+} 
+
+static void ID ( ID * ID ) 
+{ 
+{ 
+if ( ID ) { ID -> ID = STRING ; ID -> ID = INTEGER ; } 
+ID ( ID ) ; 
+if ( ID ( ID , ID  , ID ) ) 
+{  
+while ( INTEGER ) 
+{ 
+{ 
+if ( ID ) ID ( ID , ID ) ; 
+ID ( ID , ID  , & ID ) ; 
+ID ( ) ; 
+ID ( ID ( STRING , ID ) ) ; 
+} 
+if ( ! ID ( ID , ID  , ID ) ) break ; 
+} 
+}  
+else 
+{ 
+ 
+if ( ID ) { ID * ID = ID ( ID , ID ) ; ID -> ID = ID ; ID -> ID = ID ; } 
+} 
+ID ( ID , & ID , & ID ) ; 
+} 
+} 
+
+static void ID ( ID * ID ) 
+{ 
+{ 
+if ( ID ) { ID -> ID = STRING ; ID -> ID = INTEGER ; } 
+ID ( ID ) ; 
+if ( ID ( ID , & ID , ID ) ) 
+{  
+while ( INTEGER ) 
+{ 
+{ 
+if ( ID ( ID , ID  , ID ) ) 
+{ 
+if ( ID ) ID ( ID , ID ) ; 
+ID ( ID , ID  , & ID ) ; 
+ID ( ) ; 
+ID ( ID ( STRING , ID ) ) ; 
+} 
+else 
+if ( ID ( ID , ID  , ID ) ) 
+{ 
+if ( ID ) ID ( ID , ID ) ; 
+ID ( ID , ID  , & ID ) ; 
+ID ( ) ; 
+ID ( ID ( STRING , ID ) ) ; 
+} 
+else 
+ID ( ID , & ID , & ID ) ; 
+} 
+if ( ! ID ( ID , & ID , ID ) ) break ; 
+} 
+}  
+else 
+{ 
+ 
+if ( ID ) { ID * ID = ID ( ID , ID ) ; ID -> ID = ID ; ID -> ID = ID ; } 
+} 
+ID ( ID , & ID , & ID ) ; 
+} 
+} 
+
+static void ID ( ID * ID ) 
+{ 
+{ 
+if ( ID ) { ID -> ID = STRING ; ID -> ID = INTEGER ; } 
+ID ( ID ) ; 
+if ( ID ( ID , & ID , ID ) ) 
+{  
+while ( INTEGER ) 
+{ 
+{ 
+if ( ID ( ID , ID  , ID ) ) 
+{ 
+if ( ID ) ID ( ID , ID ) ; 
+ID ( ID , ID  , & ID ) ; 
+ID ( ) ; 
+ID ( ID ( STRING , ID ) ) ; 
+} 
+else 
+if ( ID ( ID , ID  , ID ) ) 
+{ 
+if ( ID ) ID ( ID , ID ) ; 
+ID ( ID , ID  , & ID ) ; 
+ID ( ) ; 
+ID ( ID ( STRING , ID ) ) ; 
+} 
+else 
+if ( ID ( ID , ID  , ID ) ) 
+{ 
+if ( ID ) ID ( ID , ID ) ; 
+ID ( ID , ID  , & ID ) ; 
+ID ( ) ; 
+ID ( ID ( STRING , ID ) ) ; 
+} 
+else 
+ID ( ID , & ID , & ID ) ; 
+} 
+if ( ! ID ( ID , & ID , ID ) ) break ; 
+} 
+}  
+else 
+{ 
+ 
+if ( ID ) { ID * ID = ID ( ID , ID ) ; ID -> ID = ID ; ID -> ID = ID ; } 
+} 
+ID ( ID , & ID , & ID ) ; 
+} 
+} 
+
+static void ID ( ID * ID ) 
+{ 
+char * ID ; 
+{ 
+if ( ID ) ID ( ID , ID , sizeof ( ID ) ) ; 
+ID ( ID , ID  , & ID ) ; 
+ID = ID -> ID ; 
+ID ( ) ; 
+if ( ID == INTEGER ) { \ 
+ID -> ID = ID ( ID ) ; \ 
+if ( ID -> ID -> ID == ID ) \ 
+{ \ 
+ID -> ID -> ID = ( ID * ) ID ( INTEGER , sizeof ( ID ) ) ; \ 
+ID -> ID -> ID -> ID = ID ; \ 
+ID -> ID -> ID = INTEGER ; \ 
+} \ 
+\ 
+} 
+ID ( ID , & ID , & ID ) ; 
+} 
+} 
+
+static char * ID ( ID * ID ) 
+{ 
+char * ID ; 
+{ 
+if ( ID ) ID ( ID , ID , sizeof ( ID ) ) ; 
+ID ( ID , ID , & ID ) ; 
+ID = ID -> ID ; 
+ID ( ) ; 
+if ( ID == INTEGER ) { \ 
+ID -> ID = ID ( ID ) ; \ 
+} 
+if ( ID ( ID , ID  , ID ) ) 
+{  
+while ( INTEGER ) 
+{ 
+{ 
+ID ( ID , ID  , & ID ) ; 
+ID ( ) ; 
+{  
+while ( INTEGER ) 
+{ 
+ID ( ID , & ID , & ID ) ; 
+{ 
+ID ( ID ( STRING , ID ) ) ; 
+} 
+if ( ! ID ( ID , & ID , ID ) ) break ; 
+} 
+}  
+ID ( ID , ID  , & ID ) ; 
+ID ( ) ; 
+} 
+break ;  
+} 
+}  
+else 
+{ 
+ 
+if ( ID ) { ID * ID = ID ( ID , ID ) ; ID -> ID = ID ; ID -> ID = ID ; } 
+} 
+ID ( ID , & ID , & ID ) ; 
+} 
+return ID ; 
+} 
+
+static void ID ( ID * ID ) 
+{ 
+{ 
+if ( ID ) ID ( ID , ID , sizeof ( ID ) ) ; 
+ID ( ID , ID  , & ID ) ; 
+ID ( ) ; 
+if ( ID == INTEGER ) { \ 
+ID -> ID = ID ( STRING ) ; \ 
+if ( ID -> ID -> ID == ID ) \ 
+{ \ 
+ID -> ID -> ID = ( ID * ) ID ( INTEGER , sizeof ( ID ) ) ; \ 
+ID -> ID -> ID -> ID = ID ; \ 
+ID -> ID -> ID = INTEGER ; \ 
+} \ 
+\ 
+} 
+ID ( ID , & ID , & ID ) ; 
+} 
+} 
+
+static void ID ( ID * ID ) 
+{ 
+{ 
+{  
+while ( INTEGER ) 
+{ 
+ID ( ID , & ID , & ID ) ; 
+{ 
+if ( ID ( ID , & ID , ID ) ) 
+{ 
+ID ( ID ( STRING , ID ) ) ; 
+} 
+else 
+if ( ID ( ID , ID  , ID ) ) 
+{ 
+ID ( ID ( STRING , ID ) ) ; 
+} 
+else 
+if ( ID ( ID , ID  , ID ) ) 
+{ 
+ID ( ID ( STRING , ID ) ) ; 
+} 
+else 
+if ( ID ( ID , ID  , ID ) ) 
+{ 
+if ( ID ) ID ( ID , ID ) ; 
+ID ( ID , ID  , & ID ) ; 
+ID ( ) ; 
+} 
+else 
+if ( ID ( ID , ID  , ID ) ) 
+{ 
+ID ( ID ( STRING , ID ) ) ; 
+} 
+else 
+ID ( ID , & ID , & ID ) ; 
+} 
+if ( ! ID ( ID , & ID , ID ) ) break ; 
+} 
+}  
+ID ( ID , & ID , & ID ) ; 
+} 
+} 
+
+static void ID ( ID * ID ) 
+{ 
+char * ID ; 
+{ 
+if ( ID == INTEGER ) { \ 
+ID ( ) ; \ 
+} 
+if ( ID ) { ID -> ID = STRING ; ID -> ID = INTEGER ; } 
+ID = ID ( ID ) ; 
+if ( ID == INTEGER ) { \ 
+ID ( ID ) ; \ 
+} if ( ID == INTEGER ) { \ 
+ID ( ID ) ; \ 
+} 
+ID ( ID , ID  , & ID ) ; 
+ID ( ) ; 
+{  
+while ( INTEGER ) 
+{ 
+ID ( ID , & ID , & ID ) ; 
+{ 
+ID ( ID ( STRING , ID ) ) ; 
+} 
+if ( ID -> ID != ID  ) break ; 
+ID ( ) ; 
+} 
+}  
+ID ( ID , ID  , & ID ) ; 
+ID ( ) ; 
+if ( ID == INTEGER ) { \ 
+ID ( ) ; \ 
+} 
+ID ( ID , & ID , & ID ) ; 
+} 
+} 
+
+static char * ID ( ID * ID ) 
+{ 
+char * ID ; 
+{ 
+if ( ID ( ID , ID  , ID ) ) 
+{  
+while ( INTEGER ) 
+{ 
+{ 
+if ( ID ) ID ( ID , ID ) ; 
+ID ( ID , ID  , & ID ) ; 
+ID ( ) ; 
+} 
+break ;  
+} 
+}  
+else 
+{ 
+ 
+if ( ID ) { ID * ID = ID ( ID , ID ) ; ID -> ID = ID ; ID -> ID = ID ; } 
+} 
+if ( ID ) ID ( ID , ID , sizeof ( ID ) ) ; 
+ID ( ID , ID , & ID ) ; 
+ID = ID -> ID ; 
+ID ( ) ; 
+if ( ID == INTEGER ) { \ 
+ID -> ID = ID ( ID ) ; \ 
+if ( ID -> ID -> ID == ID ) \ 
+{ \ 
+ID -> ID -> ID = ( ID * ) ID ( INTEGER , sizeof ( ID ) ) ; \ 
+ID -> ID -> ID -> ID = ID ; \ 
+ID -> ID -> ID -> ID = ID ; \ 
+ID -> ID -> ID = INTEGER ; \ 
+} \ 
+\ 
+} 
+if ( ID ( ID , ID  , ID ) ) 
+{  
+while ( INTEGER ) 
+{ 
+{ 
+ID ( ID , ID  , & ID ) ; 
+ID ( ) ; 
+{  
+while ( INTEGER ) 
+{ 
+ID ( ID , & ID , & ID ) ; 
+{ 
+ID ( ID ( STRING , ID ) ) ; 
+} 
+if ( ! ID ( ID , & ID , ID ) ) break ; 
+} 
+}  
+ID ( ID , ID  , & ID ) ; 
+ID ( ) ; 
+} 
+break ;  
+} 
+}  
+else 
+{ 
+ 
+if ( ID ) { ID * ID = ID ( ID , ID ) ; ID -> ID = ID ; ID -> ID = ID ; } 
+} 
+ID ( ID , & ID , & ID ) ; 
+} 
+return ID ; 
+} 
+
+static void ID ( ID * ID ) 
+{ 
+{ 
+if ( ID ( ID , & ID , ID ) ) 
+{  
+while ( INTEGER ) 
+{ 
+{ 
+ID ( ID ( STRING , ID ) ) ; 
+} 
+if ( ! ID ( ID , & ID , ID ) ) break ; 
+} 
+}  
+else 
+{ 
+ 
+if ( ID ) { ID * ID = ID ( ID , ID ) ; ID -> ID = ID ; ID -> ID = ID ; } 
+} 
+ID ( ID , & ID , & ID ) ; 
+} 
+} 
+
+static void ID ( ID * ID ) 
+{ 
+{ 
+ID ( ID , ID  , & ID ) ; 
+ID ( ) ; 
+if ( ID ( ID , & ID , ID ) ) 
+{  
+while ( INTEGER ) 
+{ 
+{ 
+ID ( ID ( STRING , ID ) ) ; 
+} 
+if ( ! ID ( ID , & ID , ID ) ) break ; 
+} 
+}  
+else 
+{ 
+ 
+if ( ID ) { ID * ID = ID ( ID , ID ) ; ID -> ID = ID ; ID -> ID = ID ; } 
+} 
+ID ( ID , ID  , & ID ) ; 
+ID ( ) ; 
+ID ( ID , & ID , & ID ) ; 
+} 
+} 
+
+void ID ( ID * ID ) 
+{ 
+{ 
+ID ( ID ( STRING , ID ) ) ; 
+if ( ID ( ID , ID  , ID ) ) 
+{  
+while ( INTEGER ) 
+{ 
+{ 
+if ( ID == INTEGER ) { \ 
+ID ( ) ; ID ( STRING ) ; \ 
+} 
+ID ( ID ( STRING , ID ) ) ; 
+if ( ID == INTEGER ) { \ 
+ID ( ) ; \ 
+} 
+} 
+break ;  
+} 
+}  
+else 
+{ 
+ 
+if ( ID ) { ID * ID = ID ( ID , ID ) ; ID -> ID = ID ; ID -> ID = ID ; } 
+ID ( ID , STRING , ID ) ; 
+} 
+ID ( ID , & ID , & ID ) ; 
+} 
+} 
+
+int ID ( int ID , char * ID [ ] ) 
+{ 
+ID ID , ID = ID ( ) ; 
+int 
+ID = INTEGER ,  
+ID = INTEGER ,  
+ID = INTEGER ,  
+ID = INTEGER ,  
+
+ID = INTEGER ;  
+
+unsigned long ID = INTEGER ;  
+
+unsigned long ID = INTEGER ;  
+
+char * ID = ID ;  
+
+ID * ID = ( ID * ) ID ( STRING ) ;  
+ID * ID ; 
+
+ID ( STRING ID STRING STRING ) ; 
+
+ID ( STRING ) ; 
+ID ( STRING , STRING , & ID ) ; 
+ID ( STRING , STRING , & ID ) ; 
+ID ( STRING , STRING , & ID ) ; 
+ID ( STRING , STRING , & ID ) ; 
+ID ( STRING , STRING , & ID ) ; 
+ID ( STRING , STRING , & ID ) ; 
+ID ( STRING , STRING , & ID ) ; 
+ID ( STRING , STRING , & ID ) ; 
+ID ( STRING , STRING , & ID ) ; 
+ID ( STRING , STRING , & ID ) ; 
+
+ID = ID ( ID , ID ) ; 
+
+ 
+for ( ID = INTEGER ; ID [ ID ] != ID ; ID ++ ) 
+ID [ ID ] = ID ( ID [ ID ] , STRING ) ; 
+
+if ( ID ) 
+{ 
+ID [ INTEGER ] = STRING ; 
+ID = STRING ; 
+ID [ INTEGER ] = ID ;  
+
+} 
+if ( ( ID = ID [ INTEGER ] ) == ID ) 
+ID ( STRING ) ; 
+
+if ( ID [ INTEGER ] != ID ) 
+ID ( ID , STRING ) ; 
+ID ( ID , INTEGER , INTEGER , ( int ) ID ) ; 
+ID ( INTEGER , INTEGER , INTEGER , ID , ID ) ; 
+if ( ID ) 
+ID ( ) ; 
+ID ( ) ; 
+ID ( ) ; 
+ID ( ID ) ; 
+if ( ID ) 
+ID ( STRING ID STRING ) ; 
+for ( ID = INTEGER ; ID <= ID ; ID ++ ) 
+{ 
+ID = ID == ID ; 
+ID ( ID || ( ID && ID == ID ) ) ; 
+
+for ( ID = INTEGER ; ( ID = ID [ ID ] ) != ID ; ID ++ ) 
+{ 
+if ( ID ( ID ) == ID ) 
+ID ( STRING ) ; 
+
+ID ( ) ; 
+ID ( ) ; 
+
+ID ( ID = ID ( STRING , ID ) ) ;  
+if ( ID ( ) != INTEGER ) 
+ID ( ID , STRING , ID ( ) == INTEGER ? STRING : STRING , ID ) ;  
+ID ( ID , sizeof ( ID ) ) ; 
+} 
+} 
+
+ID = ID [ INTEGER ] ;  
+
+ID ( ID , ID ) ; 
+if ( ID != ID ) 
+{ 
+ID * ID ; 
+
+if ( * ID == STRING )  
+ID = STRING ; 
+ID = ID ( ( ID = ID ( ID , STRING ) ) , STRING ) ; 
+
+if ( ID == ID ) 
+ID ( ID , STRING , ID ) ; 
+
+if ( ID ) 
+ID ( ID , STRING , ID ) ; 
+
+ID ( ID ) ; 
+ID ( ID , ID , ID , ID ) ; 
+ID ( ID ) ; 
+ID ( ID ) ; 
+} 
+
+ID ( ID ) ; 
+if ( ID ) 
+{ 
+ID ( INTEGER ) ; 
+ID ( ) ; 
+
+} 
+ID ( ) ; 
+if ( ID ) 
+{ 
+ID = ID ( ) ; 
+ID ( ID , STRING , ( ( double ) ( ID - ID ) ) / ID ) ; 
+} 
+return ID ; 
+} 
+
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+ 
+ 
+ 
+ 
+
+typedef struct ID { unsigned ID ; ID ID ; } ID ; 
+
+typedef struct ID { ID ID ; 
+struct ID * ID ; 
+} ID ; 
+
+static void * ID ; 
+static ID ID = ID ; 
+static ID ID = ID ; 
+
+static ID * ID ( int ID , ID * ID , ID * ID , ID * ID ) 
+{ 
+ID ID = { INTEGER , ID } ; 
+ID * ID ; 
+
+ 
+ID ( STRING , 
+ID -> ID , 
+ID -> ID ) ; 
+ID ( ID , ID , INTEGER ) ; 
+ID ( STRING ) ; 
+ 
+
+ID . ID = ID -> ID ; 
+ID ( & ID . ID , ID ) ; 
+
+ID = ( ID * ) ID ( ID , & ID , ID ) ; 
+
+if ( ID == ID )  
+{ 
+void * ID ; 
+
+ID = ( ID * ) ID ( ID , 
+& ID , 
+sizeof ( ID ) , 
+sizeof ( ID ) ) ; 
+
+ID -> ID = ( ID * ) ID ( sizeof ( ID ) , ID -> ID ) ; 
+ID -> ID -> ID . ID = ID -> ID ; 
+ID ( & ID -> ID -> ID . ID , ID ) ; 
+
+if ( ID == ID -> ID -> ID ) 
+ID ( ID -> ID , ID -> ID ) ; 
+
+ID ( & ID -> ID , ID ( ID -> ID ) ) ; 
+
+for ( ID = ID ( ID -> ID ) ; 
+ID != ID ; 
+ID = ID ( ID ) ) 
+{ 
+ID * ID = ( ID * ) ID ( ID ) ; 
+void * ID ; 
+
+ID * ID = ( ID * ) ID ( sizeof ( ID ) , ID -> ID ) ; 
+
+( ( ID * ) ID ( sizeof ( ID ) , ID , ID -> ID ) ) -> ID = 
+ID ( ID -> ID -> ID , ID , ID ) ; 
+
+ID -> ID . ID = ID ; 
+ID ( & ID -> ID . ID , ID ) ; 
+
+ 
+ID ( STRING ) ; 
+ID ( ID , ID , INTEGER ) ; 
+ID ( STRING ) ; 
+ 
+
+for ( ID = ID ( ID ) ; 
+ID != ID ; 
+ID = ID ( ID ) ) 
+{ 
+ID * ID = ( ID * ) ID ( ID ) ; 
+
+if ( ID -> ID -> ID != ID ) 
+{ 
+ID * ID = ( ID * ) ID ( sizeof ( ID ) , ID -> ID ) ; 
+ID * ID = ( ID * ) ID ( sizeof ( ID ) , ID , ID ) ; 
+
+ 
+ID ( STRING ) ; 
+ID ( ID , ID , INTEGER ) ; 
+ID ( STRING ) ; 
+ 
+
+ID -> ID . ID = ID ; 
+ID ( & ID -> ID . ID , ID ) ; 
+
+ID -> ID = ID -> ID ; 
+
+if ( ID -> ID -> ID == ID ) 
+{  
+
+if ( ID == ID ) 
+( ( ID * ) ID ( sizeof ( ID ) , ID ( ID , ID , ID -> ID , & ID ) , ID ) ) -> ID = 
+ID ( ID -> ID -> ID , ID , ID ) ; 
+else if ( ID == ID ) 
+{ 
+ID ID = ID ; 
+
+ID ( & ID , & ID -> ID -> ID ) ; 
+ID ( & ID , & ID ) ; 
+
+( ( ID * ) ID ( sizeof ( ID ) , ID ( ID , ID , ID -> ID , & ID ) , ID ) ) -> ID = 
+ID ( ID -> ID -> ID , ID , ID ) ; 
+
+ID ( & ID ) ; 
+} 
+else if ( ID == ID ) 
+{ 
+ID ID = ID ; 
+ID ID = ID ; 
+unsigned * ID ; 
+unsigned * ID ; 
+void * ID ; 
+int ID = INTEGER ; 
+
+ 
+for ( ID = ID ( ID ) ; ID != ID ; ID = ID ( ID ) ) 
+{ 
+ID ( & ID , & ( ( ID * ) ID ( ID ) ) -> ID -> ID ) ; 
+if ( ! ID ( & ( ( ID * ) ID ( ID ) ) -> ID -> ID , ID ) ) 
+{ 
+ID = INTEGER ; 
+break ; 
+} 
+} 
+
+if ( ID ) 
+ID ( & ID , ID ) ; 
+
+ID = ID ( & ID ) ; 
+for ( ID = ID ; 
+* ID != ID ; 
+ID ++ ) 
+{ 
+ID * ID = ID ( ID -> ID -> ID , * ID ) ; 
+
+ID ( & ID , * ID ) ; 
+
+if ( ID -> ID == ID || ID -> ID == ID ) 
+( ( ID * ) ID ( sizeof ( ID ) , ID ( ID , ID , ID -> ID , & ID ) , ID ) ) -> ID = 
+ID ( ID -> ID -> ID , ID , ID ) ; 
+} 
+ID ( & ID ) ; 
+ID ( ID ) ; 
+} 
+} 
+ID = ID ; 
+} 
+} 
+ID ( & ID -> ID , ID ( ID ) ) ; 
+} 
+ 
+ID ( STRING ) ; 
+ 
+} 
+ 
+else 
+ID ( STRING ) ; 
+ 
+
+return ID -> ID ; 
+} 
+
+ID * ID ( ID * ID , enum ID ID ) 
+{ 
+ID * ID = ( ID * ) ID ( INTEGER , sizeof ( ID ) ) ; 
+ID ID = ID ; 
+
+ID -> ID = ID ( ID ) ; 
+ID -> ID = ID ; 
+ID -> ID = ID ; 
+
+ID ( ID -> ID -> ID , ID , ID ) -> ID = ID ; 
+
+ID -> ID = ID ( STRING ) ; 
+
+ID = ID ( STRING , INTEGER , INTEGER , ID , ID , ID ) ; 
+
+if ( ID == ID ) 
+{  
+unsigned ID ; 
+
+ID ( & ID , ID ) ;  
+
+for ( ID = INTEGER ; ID < ID ( ID ) ; ID ++ ) 
+if ( ID ( ID -> ID , ID ) -> ID == ID ) 
+ID ( & ID , ID ) ; 
+
+ID ( & ID , ID ) ; 
+} 
+
+if ( ID == ID ) 
+{  
+unsigned ID ; 
+
+ID ( & ID , ID ) ;  
+
+for ( ID = INTEGER ; ID < ID ( ID ) ; ID ++ ) 
+if ( ID ( ID -> ID , ID ) -> ID == ID ) 
+ID ( & ID , ID ) ; 
+} 
+
+ID ( & ID , ID ) ; 
+
+ID ( ID , ID , ID -> ID -> ID , & ID ) ; 
+
+ID ( ID -> ID ) ; 
+ID ( ID ) ; 
+ID ( & ID ) ; 
+
+return ID ; 
+} 
+
+ 
+static void * ID ; 
+
+static ID * ID ( int ID , ID * ID , ID * ID ) 
+{ 
+
+} 
+
+ID * ID ( ID * ID , int ID ) 
+{ 
+ID * ID = ( ID * ) ID ( INTEGER , sizeof ( ID ) ) ; 
+
+ID -> ID = ID ( ID ) ; 
+ID -> ID = ID ; 
+
+ID ( ID -> ID -> ID , ID , ID ) -> ID = ID ; 
+
+ID -> ID = ID ( STRING ) ; 
+
+ID = ID ( STRING , INTEGER , INTEGER , ID , ID , ID ) ; 
+
+ID ( ID , ID , ID -> ID -> ID ) ; 
+
+ID ( ID -> ID ) ; 
+
+return ID ; 
+} 
+
+ 
+
+static ID * ID ; 
+
+void ID ( const void * ID ) 
+{ 
+if ( ID -> ID == ID )  
+ID ( STRING , ID ) ;  
+} 
+
+void ID ( const void * ID ) 
+{ 
+ID * ID = ( ID * ) ID ; 
+
+ID ( STRING , ID ( ID ) ) ; 
+
+switch ( ID -> ID ) 
+{ 
+case ID : 
+{ 
+unsigned * ID , 
+* ID = ID ( & ( ID -> ID . ID -> ID ) ) ; 
+
+for ( ID = ID ; * ID != ID ; ID ++ ) 
+{ 
+ID * ID = ( ID * ) ( ID ( ID -> ID -> ID ) [ * ID ] ) ; 
+
+if ( ! ID ( & ID -> ID -> ID , ID ( ID ) ) ) 
+{ 
+ID ( STRING , * ID ) ; 
+ID ( ID -> ID . ID , INTEGER ) ; 
+
+ID ( STRING ) ; 
+ID ( & ID -> ID . ID , ID , INTEGER ) ; 
+ID ( STRING ) ; 
+
+if ( ID ( & ID -> ID -> ID , ID ( ID ) ) ) 
+ID ( STRING , ID ( ID -> ID . ID ) ) ; 
+} 
+} 
+} 
+break ; 
+
+case ID : 
+{ 
+unsigned * ID , 
+* ID = ID ( & ( ID -> ID . ID -> ID ) ) ; 
+
+for ( ID = ID ; * ID != ID ; ID ++ ) 
+{ 
+ID ( STRING , * ID ) ; 
+ID ( ( ID * ) ( ID ( ID -> ID -> ID ) [ * ID ] ) , INTEGER ) ; 
+} 
+} 
+break ; 
+
+case ID : 
+{ 
+if ( ID ( & ID -> ID , ID ( ID ) ) ) 
+ID ( STRING , ID -> ID . ID -> ID -> ID ) ; 
+else 
+ID ( ID -> ID . ID , INTEGER ) ; 
+
+ID ( STRING ) ; 
+ID ( & ID -> ID . ID , ID , INTEGER ) ; 
+ID ( STRING ) ; 
+} 
+break ; 
+
+default : 
+ID ( ID , STRING ) ; 
+} 
+
+ID ( STRING ) ; 
+
+ID ( STRING , 
+ID ( & ID -> ID , ID ( ID ) ) ? STRING : 
+ID ( & ID -> ID , ID ( ID ) ) ? STRING : STRING ) ; 
+} 
+
+void ID ( const void * ID ) 
+{ 
+ID * ID = ( ID * ) ID ; 
+
+if ( ID ( & ID -> ID , ID ( ( ID * ) ID ( ID ) ) ) ) 
+ID ( STRING ) ; 
+else if ( ID ( & ID -> ID , ID ( ( ID * ) ID ( ID ) ) ) ) 
+ID ( STRING ) ; 
+else 
+{ 
+ID ( STRING ) ; 
+ID ( ID -> ID ) ; 
+ID ( STRING ) ; 
+} 
+} 
+
+void ID ( ID * ID , ID * ID ) 
+{ 
+ID * ID = ID ( ) ; 
+
+ID ( ID ) ; 
+ID = ID ; 
+ID ( ID -> ID ) ; 
+ID ( ID -> ID , ID , ID , ID ) ; 
+ID ( ID ) ; 
+} 
+
+ID * ID ( ID * ID ) 
+{ 
+return ID ; 
+} 
+
+typedef struct ID 
+{ 
+ID * ID ; 
+struct ID * ID ; 
+} ID ; 
+
+static ID ID = ID ; 
+static ID ID = ID ; 
+static ID ID = ID ; 
+static ID ID = ID ; 
+static ID ID = ID ; 
+
+static void ID ( ID * ID ) 
+{ 
+ID * ID ; 
+
+if ( ID ( & ( ID -> ID . ID ) ) != INTEGER ) 
+{ 
+ID ( & ID , & ( ID -> ID . ID ) ) ; 
+return ; 
+} 
+
+if ( ID ( & ID , ID ( ID ) ) ) 
+return ; 
+
+ID ( & ID , ID ( ID ) ) ; 
+
+for ( ID = ( ID * ) ID ( ID ) ; 
+ID != ID ; 
+ID = ( ID * ) ID ( ID ) ) 
+if ( ID -> ID -> ID == ID ) 
+ID ( ( ID * ) ID ( ID ) ) ; 
+} 
+
+ 
+static void ID ( ID * ID , unsigned ID ) 
+{ 
+unsigned ID ;  
+unsigned ID ;  
+
+ 
+ID ( STRING , ID ) ; 
+ID ( & ID , ID , INTEGER ) ; 
+ID ( STRING ) ; 
+ 
+
+ 
+for ( ID = INTEGER , ID = INTEGER ; ID < ID . ID ; ID ++ )  
+{ 
+unsigned ID ;  
+unsigned ID = ID . ID [ ID ] ;  
+
+for ( ID = INTEGER ; ID < INTEGER ; ID <<= INTEGER )  
+{ 
+if ( ( ID & ID ) != INTEGER )  
+{ 
+ID * ID ; 
+
+for ( ID = ( ID * ) ID ( ID ( ID -> ID ) [ ID ] ) ; 
+ID != ID ; 
+ID = ( ID * ) ID ( ID ) ) 
+if ( ID -> ID -> ID == ID ) 
+{ 
+ID * ID = ( ID * ) ID ( ID ) ; 
+
+if ( ID ( & ID -> ID . ID ) != INTEGER ) 
+ID ( & ID , & ( ( ( ID * ) ID ( ID ) ) -> ID . ID ) ) ; 
+else 
+{ 
+ID ( & ID ) ; 
+ID ( ID ) ; 
+ID ( & ID , & ID ) ; 
+} 
+
+} 
+} 
+ID ++ ; 
+} 
+} 
+} 
+
+ 
+static ID * ID ( void * ID , ID * * ID , ID * ID ) 
+{ 
+ID * ID = ( ID * ) ID ( ID , & ID , ID ) ; 
+
+ 
+ID ( STRING ) ; 
+ID ( & ID , ID , INTEGER ) ; 
+ID ( STRING ) ; 
+if ( ID == ID ) 
+ID ( STRING ) ; 
+else 
+ID ( STRING ) ; 
+ 
+
+if ( ID == ID ) 
+{ 
+ID * ID = ( ID * ) ID ( INTEGER , sizeof ( ID ) ) ; 
+ID ID = ID ; 
+
+ 
+ID ( & ID , & ID ) ; 
+
+ 
+ID = ( ID * ) ID ( ID , & ID , sizeof ( ID ) , sizeof ( ID ) ) ; 
+
+ 
+ID -> ID = ( ID * ) ID ( sizeof ( ID ) , ID -> ID ) ; 
+ID -> ID -> ID . ID = ID ; 
+
+ 
+ID -> ID = ID ; 
+ID -> ID = * ID ; 
+* ID = ID ; 
+
+ 
+ID ( & ID , & ID ) ; 
+if ( ID ( & ID ) != INTEGER ) 
+ID ( & ID -> ID , ID ( ID -> ID ) ) ; 
+} 
+
+return ID ; 
+} 
+
+ID * ID ( ID * ID ) 
+{ 
+ID * ID ; 
+
+for ( ID = ( ID * ) ID ( ID -> ID ) ; ID != ID ; ID = ( ID * ) ID ( ID ) ) 
+if ( ID ( & ID -> ID , ID ( ID ) ) ) 
+{ 
+ID * ID ; 
+ID * ID = ID ; 
+
+do 
+{ 
+ 
+for ( ID = ( ID * ) ID ( ID ) ; 
+ID != ID && ID -> ID -> ID == ID ; 
+ID = ( ID * ) ID ( ID ) ) 
+; 
+
+ 
+if ( ID != ID ) 
+{ 
+if ( ID ( & ID -> ID -> ID , ID ) ) 
+{ 
+ID = ( ID * ) ID ( ID ) ; 
+ID ( & ID -> ID , ID ( ID ) ) ; 
+} 
+else 
+ID = ID ;  
+} 
+} 
+while ( ID != ID ) ; 
+} 
+return ID ; 
+} 
+
+struct ID { ID * ID ; unsigned ID ; } ; 
+
+int ID ( const void * ID , const void * ID ) 
+{ 
+struct ID * ID = ( struct ID * ) ID ; 
+struct ID * ID = ( struct ID * ) ID ; 
+
+if ( ID -> ID < ID -> ID ) 
+return - INTEGER ; 
+else if ( ID -> ID == ID -> ID ) 
+return INTEGER ; 
+else 
+return INTEGER ; 
+} 
+
+ID * ID ( ID * ID ) 
+{ 
+ID * ID = ( ID * ) ID ( INTEGER , sizeof ( ID ) ) ; 
+
+ID ID = ID ( ) , ID ; 
+ID * ID = ID ; 
+void * ID ; 
+ID * ID ; 
+unsigned ID ;  
+unsigned ID ;  
+unsigned ID = ID ( ID -> ID ) ; 
+ID * ID = ID ; 
+ID * ID = ID ; 
+
+ 
+ID ( STRING , ID ) ; 
+for ( ID = INTEGER ; ID <= ID ; ID ++ ) 
+{ 
+ID * ID = ( ID * ) ID ( ID -> ID ) [ ID ] ; 
+ID ( STRING , ID , ID ) ; 
+if ( ID != ID ) 
+{ 
+if ( ID ( & ID -> ID , ID ( ID ) ) ) 
+ID ( STRING , ID -> ID . ID -> ID -> ID ) ; 
+else 
+ID ( ID -> ID . ID , INTEGER ) ; 
+} 
+else ID ( STRING ) ; 
+ID ( STRING ) ; 
+} 
+ 
+
+ID = ID ( ) ; 
+ID ( ID , STRING , ( ( double ) ( ID - ID ) ) / ID ) ; 
+
+ 
+ID -> ID = ID ( STRING ) ; 
+ID -> ID = ID ( ID -> ID ) ; 
+ID -> ID = ID -> ID ; 
+ID -> ID = ID ; 
+ID -> ID = ID ( ID ) ; 
+ID = ID ( STRING , INTEGER , INTEGER , ID , ID , ID ) ; 
+
+ 
+ID ( & ID , ID ) ; 
+ID ( & ID , ID ) ; 
+ID ( & ID , ID ) ; 
+ID ( & ID , ID ( ID -> ID ) - INTEGER ) ; 
+ID ( & ID , ID ) ; 
+
+ 
+ID ( & ID , & ID -> ID ) ; 
+
+ 
+{ 
+unsigned ID = INTEGER ; 
+unsigned * ID = ID ( ID -> ID , INTEGER ) ; 
+struct ID * ID ; 
+
+ID = ID ( ) ; 
+ID ( ID , STRING , ( ( double ) ( ID - ID ) ) / ID ) ; 
+
+ 
+for ( ID = ( ID * ) ID ( ID -> ID ) ; ID != ID ; ID = ( ID * ) ID ( ID ) ) 
+if ( ID ( & ID -> ID , ID ( ID ) ) ) 
+ID ++ ; 
+
+ID ( STRING , ID ) ; 
+
+ 
+ID = ( struct ID * ) ID ( ID * sizeof ( struct ID ) ) ; 
+
+ 
+ID = INTEGER ; 
+for ( ID = ( ID * ) ID ( ID -> ID ) ; ID != ID ; ID = ( ID * ) ID ( ID ) ) 
+if ( ID ( & ID -> ID , ID ( ID ) ) ) 
+{ 
+ID [ ID ] . ID = ID ; 
+ID [ ID ] . ID = ID [ ID ( ID ) ] ; 
+ID ++ ; 
+} 
+
+ 
+ID ( ID ) ; 
+
+ 
+ID ( ID , ID , sizeof ( struct ID ) , ID ) ; 
+
+ID ( & ID ) ; 
+ID ( & ID ) ; 
+
+for ( ID = ( ID * ) ID ( ID -> ID ) ; ID != ID ; ID = ( ID * ) ID ( ID ) ) 
+if ( ID ( & ID -> ID , ID ( ID ) ) ) 
+{ 
+ID ( & ID ) ; 
+ID ( ID ) ; 
+ID ( ID , ID ( & ID ) ) ; 
+ID ( ID , ID ( & ID ) ) ; 
+ID ( & ID -> ID . ID , & ID ) ; 
+} 
+} 
+
+ID = ID ( ) ; 
+ID ( ID , STRING , ( ( double ) ( ID - ID ) ) / ID ) ; 
+
+ 
+ 
+ID ( STRING , ID , ID == INTEGER ? STRING : STRING ) ; 
+
+ID ( STRING , ID * sizeof ( unsigned * ) ) ; 
+ID ( STRING , ( ID ( ID ) - ID ( ID , INTEGER ) ) * sizeof ( unsigned ) ) ; 
+ID ( STRING , ID ( ID ) * sizeof ( unsigned ) ) ; 
+ID ( ID ) ; 
+
+ID ( STRING , ID * sizeof ( ID ) ) ; 
+ID ( STRING , ID ( ID ) ) ; 
+ID ( ID ) ; 
+ 
+ID ( & ID ) ; 
+ID ( & ID ) ; 
+
+ 
+ID ( & ID , & ( ( ( ID * ) ID ( ID -> ID ) ) -> ID . ID ) ) ;  
+ID ( ID -> ID , ID ( ID , & ID , ID ) -> ID ) ; 
+
+while ( ID != ID ) 
+{ 
+ 
+ID * ID = ID ; 
+ID ID = ID -> ID -> ID ; 
+ID = ID -> ID ; 
+
+ 
+ID ( & ID ) ; 
+for ( ID = INTEGER , ID = INTEGER ; ID < ID . ID ; ID ++ )  
+{ 
+unsigned ID ;  
+unsigned ID = ID . ID [ ID ] ;  
+
+for ( ID = INTEGER ; ID < INTEGER ; ID <<= INTEGER )  
+{ 
+if ( ( ID & ID ) != INTEGER )  
+{ 
+ID * ID ; 
+
+for ( ID = ( ID * ) ID ( ID ( ID -> ID ) [ ID ] ) ; 
+ID != ID ; 
+ID = ( ID * ) ID ( ID ) ) 
+ID ( & ID , ID -> ID -> ID ) ; 
+} 
+ID ++ ; 
+} 
+} 
+
+ 
+ID ( & ID , ID ) ; 
+
+ 
+for ( ID = INTEGER , ID = INTEGER ; ID < ID . ID ; ID ++ )  
+{ 
+unsigned ID ;  
+unsigned ID = ID . ID [ ID ] ;  
+
+for ( ID = INTEGER ; ID < INTEGER ; ID <<= INTEGER )  
+{ 
+if ( ( ID & ID ) != INTEGER )  
+{ 
+ID ( & ID ) ; 
+ID ( & ID , & ID ) ; 
+
+ID ( ID , ID ) ; 
+
+( ( ID * ) ID ( sizeof ( ID ) , 
+ID ( ID , & ID , ID ) -> ID , 
+ID -> ID -> ID ) ) -> ID = ID ( ID -> ID -> ID , ID ) ; 
+} 
+ID ++ ; 
+} 
+} 
+ID ( ID ) ; 
+} 
+
+ID ( ID -> ID ) ; 
+
+ID = ID ( ) ; 
+ID ( ID , STRING , ( ( double ) ( ID - ID ) ) / ID ) ; 
+
+return ID ; 
+} 
+
+typedef struct ID { ID ID ; 
+struct ID * ID ; 
+struct ID * ID ; 
+} ID ; 
+
+static ID * ID ( void * ID , ID ID , ID * ID ) 
+{ 
+ID * ID ; 
+
+ID = ( ID * ) ID ( ID , & ID , ID ) ; 
+
+ 
+ID ( STRING ) ; 
+ID ( & ID , ID , INTEGER ) ; 
+ID ( STRING ) ; 
+if ( ID == ID ) 
+ID ( STRING ) ; 
+else 
+ID ( STRING ) ; 
+ 
+
+if ( ID == ID ) 
+{ 
+ID ID = ID ; 
+
+ID ( & ID , & ID ) ; 
+
+ 
+ID = ( ID * ) ID ( ID , & ID , sizeof ( ID ) , sizeof ( ID ) ) ; 
+
+ 
+ID -> ID = ( ID * ) ID ( sizeof ( ID ) , ID -> ID ) ; 
+ID -> ID -> ID . ID = ( ID * ) ID ; 
+} 
+
+return ID ; 
+} 
+
+ID * ID ( void * ID , ID * ID , ID * ID ) 
+{ 
+static ID ID = ID ; 
+unsigned * ID = ID ( & ID -> ID . ID -> ID ) ; 
+unsigned * ID = ID ; 
+
+ID ( & ID ) ; 
+
+while ( * ID != ID ) 
+{ 
+ID * ID = ( ID * ) ID ( ID -> ID -> ID ) [ * ID ++ ] ; 
+
+if ( ! ID ( & ID -> ID , ID ( ID ) ) ) 
+{ 
+ 
+ID ( STRING , ID ( ID -> ID ) , ID ( ID ) ) ; 
+ 
+
+ID ( & ID , ID ( ID -> ID . ID ) ) ; 
+} 
+} 
+ID ( ID ) ; 
+
+return ID ( ID , ID , ID ) ; 
+} 
+
+ID * ID ( ID * ID ) 
+{ 
+
+void * ID ; 
+ID * ID ; 
+ID * ID ; 
+ID * ID = ( ID * ) ID ( INTEGER , sizeof ( ID ) ) ; 
+
+ 
+ 
+ID -> ID = ID ( STRING ) ; 
+ID -> ID = ID ( ID -> ID ) ; 
+ID -> ID = ID ( ID -> ID ) ; 
+ID -> ID = ID -> ID ; 
+ID -> ID = ID ; 
+ID = ID ( STRING , INTEGER , INTEGER , ID , ID , ID ) ; 
+
+ 
+for ( ID = ( ID * ) ID ( ID -> ID ) ; ID != ID ; ID = ( ID * ) ID ( ID ) ) 
+{ 
+ID * ID = ID ( ID , ID , ID ) ; 
+
+ 
+ID ( STRING , ID ( ID ) ) ; 
+ 
+
+if ( ID ( & ID -> ID , ID ( ID ) ) ) 
+ID ( & ID -> ID , ID ( ID -> ID ) ) ; 
+
+if ( ID ( ID ) == INTEGER ) 
+ID ( ID -> ID , ID -> ID ) ; 
+} 
+
+ 
+for ( ID = ( ID * ) ID ( ID -> ID ) ; 
+ID != ID ; 
+ID = ( ID * ) ID ( ID ) ) 
+{ 
+ID * ID = ID ( ID , ID , ID ) -> ID ; 
+
+for ( ID = ( ID * ) ID ( ID ) ; 
+ID != ID ; 
+ID = ( ID * ) ID ( ID ) ) 
+{ 
+ID * ID = ID ( ID , ( ID * ) ID ( ID ) , ID ) -> ID ; 
+ID * ID ; 
+int ID = INTEGER ; 
+
+for ( ID = ( ID * ) ID ( ID ) ; ID != ID ; ID = ( ID * ) ID ( ID ) ) 
+if ( ID ( ID ) == ID && ID -> ID -> ID == ID -> ID -> ID ) 
+{ 
+ID = INTEGER ; 
+break ; 
+} 
+
+if ( ! ID ) 
+( ( ID * ) ID ( sizeof ( ID ) , ID , ID ) ) -> ID = ID -> ID ; 
+} 
+} 
+
+ 
+ID ( ID -> ID ) ; 
+
+return ID ; 
+} 
+
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+ID * ID ( ID * ID ) 
+{ 
+void * ID ; 
+ID * ID = ( ID * ) ID ( INTEGER , sizeof ( ID ) ) ; 
+ID * * ID = ( ID * * ) ID ( ID ( ID ) , sizeof ( ID * ) ) ; 
+
+ID -> ID = ID ( STRING ) ; 
+
+ID -> ID = ID ( ID ) ; 
+
+ 
+for ( ID = ID ( ID ( ID -> ID ) ) ; 
+ID != ID ; 
+ID = ID ( ID ) ) 
+{ 
+ID * ID = ( ID * ) ID ( ID ) ; 
+
+ID * ID = ( ID * ) ID ( sizeof ( ID ) , ID -> ID ) ; 
+
+ID -> ID = ID -> ID ; 
+ID [ ID -> ID -> ID ] = ID ; 
+
+if ( ID == ID -> ID -> ID ) 
+ID ( ID -> ID , ID ) ; 
+} 
+
+ 
+for ( ID = ID ( ID ( ID -> ID ) ) ; 
+ID != ID ; 
+ID = ID ( ID ) ) 
+{ 
+ID * ID = ( ID * ) ID ( ID ) ; 
+void * ID ; 
+
+for ( ID = ID ( ID ) ; 
+ID != ID ; 
+ID = ID ( ID ) ) 
+{ 
+ID * ID = ( ID * ) ID ( ID ) ; 
+void * ID ; 
+
+for ( ID = ID ( ID ) ; 
+ID != ID ; 
+ID = ID ( ID ) ) 
+{ 
+ID * ID = ( ID * ) ID ( ID ) ; 
+
+if ( ID -> ID -> ID == ID ) 
+{ 
+ID * ID = ID [ ID -> ID -> ID ] ; 
+ID * ID = ID [ ID -> ID -> ID ] ; 
+void * ID ; 
+int ID = INTEGER ; 
+
+ID ( ID , ID , void ) 
+if ( ID ( ID ) == ID ) 
+{ 
+ID = INTEGER ; 
+break ; 
+} 
+
+if ( ! ID ) 
+ID ( INTEGER , ID , ID ) ; 
+} 
+} 
+} 
+} 
+ID ( ID ) ; 
+
+return ID ; 
+} 
+
+static unsigned * ID ; 
+static ID * ID ; 
+
+static void ID ( const void * ID ) 
+{ 
+ID * ID = ( ID * ) ID ; 
+
+ID ( STRING , ID -> ID -> ID , ID [ ID ( ID ) ] , ID [ ID ( ID ) ] ) ; 
+} 
+
+void ID ( ID * ID , ID * ID ) 
+{ 
+
+ID = ID ; 
+ID = ID ( ID -> ID , INTEGER ) ; 
+
+ID ( ID ) ; 
+ID ( ID -> ID , ID , ID , ID ) ; 
+ID ( ID ) ; 
+
+ID ( ID ) ; 
+} 
+
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+static int ID ( ID * ID , unsigned * ID ) 
+{ 
+int ID = INTEGER ; 
+
+while ( * ID != INTEGER ) 
+ID |= ID ( ID -> ID , * ID ++ ) -> ID == ID ; 
+
+return ID ; 
+} 
+
+static void ID ( ID * ID , unsigned * ID , unsigned ID , int ID ) 
+{ 
+unsigned ID = INTEGER ; 
+
+if ( * ID == INTEGER ) 
+{ 
+if ( ID ) 
+ID ( STRING ) ; 
+else 
+ID ( STRING , ID ) ; 
+} 
+else 
+while ( * ID != INTEGER ) 
+if ( ID ) 
+{ 
+ID += ID ( STRING , ID ( ID -> ID , * ID ++ ) -> ID ) ; 
+
+if ( ID > ID - INTEGER && & ID != INTEGER ) 
+{ 
+ID ( STRING ) ; 
+ID = INTEGER ; 
+} 
+} 
+else 
+{ 
+ID ( ID ) ; 
+ID += ID ( * ID ++ ) ; 
+ID ( STRING ) ; 
+} 
+
+ID ( STRING ) ; 
+} 
+
+void ID ( ID * ID , unsigned long ID , int ID ) 
+{ 
+typedef struct ID 
+{ 
+unsigned * ID ; 
+struct ID * ID ; 
+} ID ; 
+ID * ID = ( ID * ) ID ( INTEGER , sizeof ( ID ) ) ; 
+ID * ID = ID ; 
+ID * ID ; 
+unsigned long ID = INTEGER ; 
+
+ID ( STRING , ID ? STRING : STRING ) ; 
+
+ 
+ID -> ID = ( unsigned * ) ID ( INTEGER , sizeof ( unsigned ) ) ; 
+* ( ID -> ID ) = ID -> ID -> ID ; 
+
+do 
+{ 
+ID = ID ; 
+
+ 
+if ( ! ( ID ( ID , ID -> ID ) && ! ID ) ) 
+{ 
+ID ( STRING , ID ++ ) ; 
+ID ( ID , ID -> ID , INTEGER , ! ID ) ; 
+} 
+
+ 
+if ( ID ( ID , ID -> ID ) ) 
+{ 
+unsigned * ID = ID -> ID ; 
+ID ID = INTEGER , 
+ID = INTEGER ; 
+unsigned ID ; 
+void * ID , 
+* ID ; 
+
+ 
+while ( ID ( ID -> ID , * ID ++ ) -> ID != ID ) 
+ID ++ ; 
+
+ID = ID -> ID [ ID ] ; 
+
+ 
+while ( * ID ++ != INTEGER ) 
+ID ++ ; 
+
+ 
+for ( ID = ID ( ID ( ID -> ID , ID ) -> ID ) ; 
+ID != ID ; 
+ID = ID ( ID ) 
+) 
+{ 
+unsigned ID = INTEGER ; 
+ID ID ; 
+unsigned * ID , 
+* ID ; 
+
+ 
+for ( ID = ID ( ID ( ID ) ) ; 
+ID != ID ; 
+ID = ID ( ID ) 
+) 
+if ( ( ( ID * ) ID ( ID ) ) -> ID -> ID != ID ) 
+ID ++ ; 
+
+ 
+ID -> ID = ( ID * ) ID ( INTEGER , sizeof ( ID ) ) ; 
+ID = ID -> ID ; 
+
+ 
+ID -> ID = ( unsigned * ) ID ( ID + ID + ID + INTEGER , sizeof ( unsigned ) ) ; 
+
+ 
+for ( ID = INTEGER , ID = ID -> ID , ID = ID -> ID ; 
+ID < ID ; 
+ID ++ ) 
+* ID ++ = * ID ++ ; 
+
+ 
+for ( ID = ID ( ID ( ID ) ) ; 
+ID != ID ; 
+ID = ID ( ID ) 
+) 
+{ 
+ID * ID = ( ID * ) ID ( ID ) ; 
+
+if ( ID -> ID -> ID != ID ) 
+* ID ++ = ID -> ID -> ID ; 
+} 
+
+ 
+for ( ID = INTEGER , ID ++ ; 
+ID < ID ; 
+ID ++ ) 
+* ID ++ = * ID ++ ; 
+} 
+} 
+
+ 
+ID = ID -> ID ; 
+ID ( ID -> ID ) ; 
+ID ( ID ) ; 
+} 
+while ( ID != ID && ( ID == INTEGER || ID <= ID ) ) ; 
+} 
+
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+ 
+ 
+
+ 
+static ID * ID ; 
+
+ID * ID ( void * ID , char * ID , int ID ) 
+{ 
+ID * ID ; 
+struct ID { int ID ; char * ID ; } ID ; 
+
+ID . ID = ID ; 
+ID . ID = ID ; 
+
+if ( ( ID = ( ID * ) ID ( ID , & ID , ID ) ) == ID ) 
+{ 
+ID = ( ID * ) ID ( ID , & ID , sizeof ( struct ID ) , sizeof ( ID ) ) ; 
+ID -> ID = ID ( ID ) ; 
+} 
+
+return ID ; 
+} 
+
+ID * ID ( void * ID , unsigned ID ) 
+{ 
+ 
+ID * ID ; 
+
+for ( ID = ( ID * ) ID ( ID ( ID ) ) ; 
+ID != ID ; 
+ID = ( ID * ) ID ( ID ) 
+) 
+if ( ID -> ID == ID ) 
+return ID ; 
+
+return ID ; 
+} 
+
+int ID ( ID * ID ) 
+{ 
+if ( ID == ID ) 
+return ID ( STRING ) ; 
+else 
+return ID ( STRING , ID -> ID == ID ? STRING : STRING , 
+ID -> ID , 
+ID -> ID == ID ? STRING : STRING 
+) ; 
+} 
+
+void ID ( ID * ID , unsigned ID , int ID ) 
+{ 
+unsigned ID = ID ( ID ) ; 
+unsigned ID ; 
+int ID = INTEGER ; 
+
+for ( ID = ID ; ID < ID ; ID ++ ) 
+{ 
+ID * ID = ID ( ID -> ID , ID ) ; 
+
+if ( ID != ID ) 
+{ 
+if ( ID -> ID != ID && ! ID ) 
+{ 
+if ( ID ) 
+ID ( STRING ) ; 
+ID = INTEGER ; 
+} 
+if ( ID ) 
+ID ( STRING , ID ) ; 
+else 
+ID ( STRING , ID ) ; 
+
+ID ( ID ) ; 
+ID ( STRING ) ; 
+} 
+} 
+} 
+
+static void ID ( ID * ID ) 
+{ 
+void * ID , 
+* ID , 
+* ID ; 
+ID * ID , 
+* ID ; 
+
+for ( ID = ID ( ( ID * ) ID ( ID -> ID ) ) ; 
+ID != ID ; 
+ID = ID ( ID ) ) 
+{ 
+ID = ( ID * ) ID ( ID ) ; 
+
+ID ( ID -> ID ) ; 
+
+ID ( STRING ) ; 
+
+for ( ID = ID ( ID ) ; 
+ID != ID ; 
+ID = ID ( ID ) ) 
+{ 
+ID = ( ID * ) ID ( ID ) ; 
+
+for ( ID = ID ( ID ) ; 
+ID != ID ; 
+ID = ID ( ID ) ) 
+{ 
+ID ( STRING ) ; 
+ID ( ( ( ID * ) ID ( ID ) ) -> ID ) ; 
+} 
+
+if ( ID ( ID ) == ID ) 
+ID ( STRING ) ; 
+else ID ( STRING ) ; 
+} 
+} 
+} 
+
+static void ID ( ID * ID ) 
+{ 
+ID * ID ; 
+ID ID = ID ; 
+
+ID ( & ID , & ( ID -> ID ) ) ; 
+ID ( & ID , ID ( ID ) - INTEGER ) ; 
+ID ( & ID , ID , ID , ID , ID ) ; 
+
+ID ( STRING ) ; 
+ID ( ID , ID -> ID , INTEGER ) ; 
+ID ( STRING ) ; 
+ID ( ID , ID , INTEGER ) ; 
+ID ( STRING ) ; 
+
+ID ( & ID ) ; 
+
+for ( ID = ( ID * ) ID ( ID ( ID -> ID ) ) ; 
+ID != ID ; 
+ID = ( ID * ) ID ( ID ) ) 
+if ( ID -> ID == ID || ID -> ID == ID ) 
+{ 
+ID ( STRING ) ; 
+ID ( ID ) ; 
+ID ( STRING ) ; 
+ID ( ID , ID -> ID , INTEGER ) ; 
+ID ( STRING ) ; 
+ID ( ID ) ; 
+ID ( STRING ) ; 
+ID ( ID , ID -> ID , INTEGER ) ; 
+ID ( STRING ) ; 
+} 
+} 
+
+ 
+static int ID ( ID * ID , int ID ) 
+{ 
+if ( ID ( ID , ID ) ) 
+return INTEGER ; 
+
+ID ( ID , ID ) ; 
+return INTEGER ; 
+} 
+
+static int ID ( ID * ID , ID * ID ) 
+{ 
+if ( ID ( ID , ID ) ) 
+return INTEGER ; 
+
+ID ( ID , ID ) ; 
+return INTEGER ; 
+} 
+ 
+
+static ID * ID ( ID * ID ) 
+{ 
+ID * ID = ( ID * ) ID ( sizeof ( ID ) , ID ) ; 
+
+ID ( INTEGER , ID , ID ) ; 
+
+return ID ; 
+} 
+
+static void ID ( ID * ID ) 
+{ 
+ 
+ID * ID ; 
+
+ 
+unsigned ID = ID + INTEGER ; 
+
+ 
+ID ( ID -> ID , ID ( ID -> ID ) ) ; 
+
+ 
+for ( ID = ( ID * ) ID ( ID ( ID -> ID ) ) ; 
+ID != ID ; 
+ID = ( ID * ) ID ( ID ) ) 
+if ( ID -> ID == ID ) 
+ID -> ID = ID ++ ;  
+
+ 
+for ( ID = ( ID * ) ID ( ID ( ID -> ID ) ) ; 
+ID != ID ; 
+ID = ( ID * ) ID ( ID ) ) 
+if ( ID -> ID == ID ) 
+ID -> ID = ID ++ ;  
+} 
+
+static ID * ID ( ID * ID ) 
+{ 
+ID * ID = ID -> ID -> ID ; 
+void * ID = ID ( ID ) ; 
+ID * ID = ( ID * ) ID ( ID ) ; 
+void * ID = ( ID * ) ID ( ID ) ; 
+ID * ID = ( ID * ) ID ( ID ) ; 
+
+if ( ID -> ID -> ID == ID && 
+ID ( ID ) == ID && 
+ID ( ID ) == ID ) 
+return ID ; 
+else 
+{ 
+char * ID ; 
+ID * ID = ( ID * ) ID ( sizeof ( ID ) , ID -> ID ) ; 
+ID * ID = ( ID * ) ID ( sizeof ( ID ) , ID -> ID ) ; 
+ID * ID = ( ID * ) ID ( sizeof ( ID ) , ID -> ID ) ; 
+
+ID ( INTEGER , ID , ID ( ID -> ID ) ) ; 
+ID ( INTEGER , ID , ID ) ; 
+ID ( INTEGER , ID , ID ) ; 
+
+ID = ( char * ) ID ( ID ( ID -> ID -> ID ) + ID ( ID ) + INTEGER , sizeof ( char ) ) ; 
+ID ( ID ( ID , ID -> ID -> ID ) , ID ) ; 
+ID -> ID = ID ( ID -> ID , ID , ID ) ; 
+ID -> ID -> ID = ID ; 
+
+ID -> ID = ID -> ID ; 
+
+ID -> ID = ID -> ID ; 
+
+return ID ; 
+} 
+} 
+
+static void ID ( ID * ID , ID * ID ) 
+{ 
+void * ID , 
+* ID ; 
+
+if ( ID ( ID , ID -> ID -> ID ) ) 
+return ; 
+
+
+ID ( ID , ID -> ID -> ID ) ; 
+
+for ( ID = ID ( ID ) ; 
+ID != ID ; 
+ID = ID ( ID ) ) 
+for ( ID = ID ( ID ( ID ) ) ; 
+ID != ID ; 
+ID = ID ( ID ) ) 
+{ 
+ID * ID = ( ID * ) ID ( ID ) ; 
+
+if ( ID -> ID -> ID == ID ) 
+{ 
+if ( ID -> ID -> ID != ID ) 
+ID ( ID -> ID -> ID , ID ) ; 
+else 
+ID ( ID , STRING , ID -> ID -> ID , ID -> ID -> ID ) ; 
+} 
+else if ( ID -> ID -> ID == ID ) 
+ID ( ID , ID -> ID -> ID ) ; 
+else 
+ID ( ID , ID ) ; 
+} 
+} 
+
+static void ID ( ID * ID ) 
+{ 
+int ID ; 
+
+do 
+{ 
+void * ID ; 
+
+ID = INTEGER ; 
+
+for ( ID = ID ( ID ( ID -> ID ) ) ; 
+ID != ID ; 
+ID = ID ( ID ) ) 
+{ 
+void * ID ; 
+ID * ID = ( ID * ) ID ( ID ) ; 
+
+for ( ID = ID ( ID ) ; 
+ID != ID ; 
+ID = ID ( ID ) ) 
+{ 
+void * ID ; 
+ID ID = ID ;  
+int ID = INTEGER ;  
+ID * ID = ( ID * ) ID ( ID ) ; 
+ID ( & ID , ID ) ;  
+
+ 
+for ( ID = ID ( ID ) ; 
+ID != ID ; 
+ID = ID ( ID ) ) 
+{ 
+ID * ID = ( ID * ) ID ( ID ) ; 
+
+ 
+switch ( ID -> ID -> ID ) 
+{ 
+case ID : 
+ID = INTEGER ; 
+ID ( & ID , ID -> ID -> ID ) ; 
+ID |= ID ( & ID -> ID -> ID , ID -> ID -> ID ) ; 
+break ; 
+case ID : 
+if ( ID ( & ( ID -> ID -> ID ) , ID ) )  
+{ 
+ID ( & ID , & ( ID -> ID -> ID ) ) ; 
+ID ( & ID , ID ) ; 
+} 
+else 
+{ 
+ID = INTEGER ; 
+ID ( & ID , & ( ID -> ID -> ID ) ) ; 
+} 
+ID ( & ID , ID -> ID -> ID ) ; 
+break ; 
+} 
+if ( ID ) 
+ID |= ID ( & ( ID -> ID -> ID ) , ID ) ; 
+} 
+ID |= ID ( & ( ID -> ID -> ID ) , & ID ) ; 
+
+if ( ID )  
+ID |= ID ( & ( ID -> ID -> ID ) , ID ) ; 
+} 
+} 
+} 
+while ( ID ) ; 
+} 
+
+static void ID ( ID * ID ) 
+{ 
+ID * ID ; 
+int ID ;  
+
+for ( ID = ( ID * ) ID ( ID ( ID -> ID ) ) ; 
+ID != ID ; 
+ID = ( ID * ) ID ( ID ) ) 
+ID ( & ID -> ID ) ; 
+
+ID ( & ID -> ID -> ID , ID ) ;  
+
+do 
+{ 
+ID = INTEGER ; 
+
+ 
+for ( ID = ( ID * ) ID ( ID ( ID -> ID ) ) ; 
+ID != ID ; 
+ID = ( ID * ) ID ( ID ) ) 
+{ 
+ID * ID = ID -> ID ; 
+
+if ( ID != ID && ID ( & ( ID -> ID ) ) != INTEGER  ) 
+{ 
+void * ID ; 
+
+for ( ID = ID ( ID ) ; 
+ID != ID ; 
+ID = ID ( ID ) ) 
+{ 
+ID * ID = ID ( ID ) ; 
+void * ID ; 
+
+for ( ID = ID ( ID ) ; 
+ID != ID ; 
+ID = ID ( ID ) ) 
+{ 
+void * ID ; 
+int ID = INTEGER ; 
+ID * ID = ID ( ID ) ; 
+
+for ( ID = ID ( ID ) ; 
+ID && ID != ID ; 
+ID = ID ( ID ) ) 
+{ 
+ID * ID = ID ( ID ) ; 
+ID ID = ID ; 
+
+ID ( & ID , & ID -> ID -> ID ) ; 
+ID ( & ID , ID -> ID -> ID ) ; 
+if ( ID ( & ID , ID ) ) 
+ID ( & ID , ID ) ; 
+else 
+ID = INTEGER ; 
+ID |= ID ( & ID -> ID -> ID , & ID ) ; 
+ID ( & ID ) ; 
+} 
+
+if ( ID ) 
+ID |= ID ( & ( ID -> ID -> ID ) , & ID -> ID ) ; 
+} 
+} 
+} 
+} 
+} 
+while ( ID ) ; 
+} 
+
+ID * ID ( ID * ID , ID * ID ) 
+{ 
+ID * ID ; 
+ID * ID = ( ID * ) ID ( INTEGER , sizeof ( ID ) ) ; 
+unsigned ID = INTEGER ; 
+unsigned ID = INTEGER ; 
+
+ID -> ID = ID ( STRING , INTEGER , INTEGER , ID , ID , ID ) ; 
+ID ( ID -> ID , ID , ID ) -> ID = ID ; 
+ID ( ID -> ID , ID , ID ) -> ID = ID ; 
+ID ( ID -> ID , ID , ID ) -> ID = ID ; 
+
+ID ( & ( ID ( ID -> ID , ID , ID ) -> ID ) , ID ) ; 
+ID -> ID = ID ( STRING ) ; 
+ID ( ID -> ID , ( ID * ) ID ( sizeof ( ID ) , ID -> ID ) ) ; 
+
+ 
+for ( ID = ( ID * ) ID ( ID ) ; ID != ID ; ID = ( ID * ) ID ( ID ) ) 
+{ 
+ID * ID = ( ID * ) ID ( ID ) ; 
+void * ID ; 
+ID * ID = ( ID * ) ID ( ( ID * ) ID ( ID -> ID ) ) ; 
+
+ID -> ID = ID ( ID -> ID , ID -> ID , ID ) ; 
+ID -> ID -> ID = ID ; 
+
+if ( ID ( ID -> ID , ID -> ID ) == INTEGER ) 
+ID -> ID = ID -> ID ; 
+
+ID ++ ; 
+
+for ( ID = ID ( ID ) ; 
+ID != ID ; 
+ID = ID ( ID ) ) 
+{ 
+ID * ID = ( ID * ) ID ( ID ) ; 
+void * ID ; 
+ID * ID = ID ( ID ) ; 
+
+ID ++ ; 
+
+for ( ID = ID ( ID ) ; 
+ID != ID ; 
+ID = ID ( ID ) ) 
+{ 
+ID * ID = ( ID * ) ID ( ID ) ; 
+ID * ID = ID ( ID ) ; 
+
+switch ( ID -> ID -> ID -> ID ) 
+{ 
+case ID : 
+ID -> ID = ID ( ID -> ID , ID -> ID , ID ) ; 
+break ; 
+case ID : 
+ID -> ID = ID ( ID -> ID , ID -> ID , ID ) ; 
+break ; 
+case ID : 
+ID -> ID = ID ( ID -> ID , ID , ID ) ; 
+break ; 
+default : 
+ID ( ID , STRING ) ; 
+} 
+} 
+} 
+} 
+
+ID ( STRING , ID , ID ) ; 
+ID ( ID ) ; 
+
+ID ( ID ) ; 
+
+ID ( ID -> ID -> ID , & ( ID -> ID ) ) ; 
+
+ID ( ) ; 
+
+ID ( ID ) ; 
+ID ( ID ) ; 
+
+return ID ; 
+} 
+
+unsigned ID ( ID * ID ) 
+{ 
+unsigned ID = INTEGER ; 
+ID * ID ; 
+
+for ( ID = ( ID * ) ID ( ID ( ID -> ID ) ) ; 
+ID != ID ; 
+ID = ( ID * ) ID ( ID ) 
+) 
+if ( ID -> ID > ID ) 
+ID = ID -> ID ; 
+
+return ID + INTEGER ; 
+} 
+
+ID * ID ( ID * ID ) 
+{ 
+return ID ;  
+} 
+
+int ID ( ID * ID ) 
+{ 
+ID * ID , 
+* ID ; 
+
+if ( ID -> ID == ID )  
+ID = ID ; 
+else 
+ 
+ID = ( ID * ) ID ( ID ( ID ) ) ; 
+
+ID = ( ID * ) ID ( ID ( ID ) ) ; 
+
+if ( ID == ID ) 
+return INTEGER ; 
+else if ( ID -> ID && ID -> ID -> ID == ID ) 
+return INTEGER ; 
+else 
+return INTEGER ; 
+} 
+
+ID * ID ( ID * ID ) 
+{ 
+ID * ID , 
+* ID ; 
+
+if ( ID -> ID == ID )  
+ID = ID ; 
+else 
+ 
+ID = ( ID * ) ID ( ID ( ID ) ) ; 
+
+ID = ( ID * ) ID ( ID ( ID ) ) ; 
+
+if ( ID == ID ) 
+return ID ; 
+else 
+return ID -> ID ; 
+} 
+
+ID * ID ( ID * ID ) 
+{ 
+void * ID ; 
+
+if ( ID == ID ) 
+return ID ; 
+
+if ( ID -> ID == ID )  
+ID = ID ( ID ) ; 
+else 
+ID = ID ( ID ( ID ) ) ; 
+
+if ( ID == ID ) 
+return ID ; 
+else 
+return ( ID * ) ID ( ID ) ; 
+} 
+
+void ID ( ID * ID , ID * ID ) 
+{ 
+ID ( ID ) ; 
+
+if ( ID == ID ) 
+ID ( ID , ID ) ; 
+else 
+{ 
+ID * ID = ID ( ID ) ; 
+
+if ( ID == ID ) 
+ID ( ID , ID ) ; 
+else 
+while ( ID != ID ) 
+{ 
+ID ( ID , & ID -> ID -> ID ) ; 
+if ( ! ID ( & ID -> ID -> ID , ID ) ) 
+{ 
+ID ( ID , ID ) ; 
+break ; 
+} 
+ID = ID ( ID ) ; 
+} 
+} 
+} 
+
+int ID ( ID * ID ) 
+{ 
+ID * ID , 
+* ID ; 
+int ID = INTEGER ; 
+
+if ( ID -> ID == ID )  
+{ 
+ID = ID ; 
+ID = INTEGER ; 
+} 
+else 
+ 
+ID = ( ID * ) ID ( ID ( ID ) ) ; 
+
+ID = ( ID * ) ID ( ID ( ID ) ) ; 
+
+if ( ID == ID ) 
+return INTEGER ; 
+else if ( ID -> ID && ID -> ID -> ID == ID ) 
+return INTEGER ; 
+else 
+return ID ; 
+} 
+
+void ID ( ID * ID , int ID ) 
+{ 
+ID * ID , 
+* ID ; 
+void * ID ; 
+
+if ( ID -> ID == ID )  
+ID = ID ; 
+else 
+ 
+ID = ( ID * ) ID ( ID ( ID ) ) ; 
+
+ID = ( ID * ) ID ( ID ( ID ) ) ; 
+
+if ( ID == ID ) 
+ID ( STRING ) ; 
+else 
+ID ( ID -> ID ) ; 
+ID ( STRING ) ; 
+
+if ( ID -> ID == ID )  
+if ( ID ) 
+ID ( STRING ) ; 
+else 
+ID ( STRING ) ; 
+
+for ( ID = ID ( ID ) ; 
+ID != ID ; 
+ID = ID ( ID ) ) 
+{ 
+ID * ID = ( ID * ) ID ( ID ) ; 
+
+ID ( ID -> ID ) ; 
+ID ( STRING ) ; 
+
+if ( ID == ID ) 
+if ( ID ) 
+ID ( STRING ) ; 
+else 
+ID ( STRING ) ; 
+} 
+
+} 
+
+static void ID ( const void * ID ) 
+{ 
+ID * ID = ( ID * ) ID ; 
+
+if ( ID -> ID == ID ) 
+ID ( STRING , ID ( ID ) ) ; 
+else 
+switch ( ID -> ID -> ID ) 
+{ 
+case ID : 
+case ID : 
+ID ( STRING , ID ( ID ) ) ; 
+ID ( ID -> ID ) ; 
+ID ( STRING ) ; 
+break ; 
+case ID : 
+ID ( STRING , ID ( ID ) , ID -> ID -> ID ) ; 
+break ; 
+default : 
+ID ( ID ) ; 
+ID ( ID , STRING ) ; 
+break ; 
+} 
+
+ID ( STRING , ID ( ID ) ) ; 
+} 
+
+void ID ( ID * ID , ID * ID ) 
+{ 
+ID * ID = ID ( ) ; 
+ID * ID = ID ( STRING , STRING ) ; 
+
+ID ( ID ) ; 
+ID ( STRING ) ; 
+ID ( ID , INTEGER , INTEGER ) ; 
+ID ( STRING ) ; 
+ID ( ID ) ; 
+ID ( STRING ) ; 
+ID ( ID ) ; 
+ID ( ID ) ; 
+ID ( ID ) ; 
+ID ( ID -> ID , ID , ID , ID ) ; 
+ID ( ID ) ; 
+ID ( ID ) ; 
+} 
+
+int ID ( const unsigned ID ) 
+{ 
+return ID ( ID ( ID -> ID , ID ) ) ; 
+} 
+
+void ID ( ID * ID ) 
+{ 
+ID = ID ; 
+} 
+ 
+ 
+ 
+ 
+
+ 
+ 
+ 
+ 
+ 
+
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+ 
+ 
+
+unsigned ID ; 
+unsigned ID ; 
+char * ID ; 
+char * * ID ; 
+
+ID * ID ; 
+
+static void * ID ; 
+static void * ID ; 
+static ID * ID ; 
+
+static ID ID = ID ; 
+static ID ID = ID ; 
+static ID ID = ID ; 
+static ID ID = ID ; 
+static ID ID = ID ; 
+
+static ID ID ( ID * ID , int ID ) ; 
+
+char * ID ( char * ID )  
+{ 
+return ID ( ( char * ) ID ( ID ( ID ) + INTEGER ) , ID ) ; 
+} 
+
+ID * ID ( char * ID ) 
+{ 
+return ( ID * ) ID ( ID , & ID , sizeof ( char * ) , sizeof ( ID ) , ID , ID ) ; 
+} 
+
+void ID ( void ) 
+{ 
+ID ( ID , ID ) ; 
+} 
+
+void ID ( char * ID ) 
+{ 
+ID ( ID , ID ) ; 
+} 
+
+void ID ( void ) 
+{ 
+ID ( ID ( ID ) ) ; 
+ID ( ID , ID ) ; 
+} 
+
+static char * ID ( int ID ) 
+{ 
+switch ( ID ) 
+{ 
+case ID : return STRING ; 
+case ID : return STRING ; 
+case ID : return STRING ; 
+case ID : return STRING ; 
+case ID : return STRING ; 
+case ID : return STRING ; 
+case ID : return STRING ; 
+case ID : return STRING ; 
+case ID : return STRING ; 
+case ID : return STRING ; 
+case ID : return STRING ; 
+case ID : return STRING ; 
+case ID : return STRING ; 
+case ID : return STRING ; 
+case ID : return STRING ; 
+case ID : return STRING ; 
+case ID : return STRING ; 
+case ID : return STRING ; 
+case ID : return STRING ; 
+default : return STRING ; 
+} 
+} 
+
+static void ID ( ID ID ) 
+{ 
+switch ( ID . ID ) 
+{ 
+case ID : ID ( STRING , ID . ID ? STRING : STRING , ID ( ID . ID ) ) ; break ; 
+case ID : ID ( STRING , ID . ID , ID ( ID . ID ) ) ; break ; 
+case ID : ID ( STRING , ID . ID , ID ( ID . ID ) ) ; break ; 
+case ID : ID ( STRING , ID . ID , ID ( ID . ID ) ) ; break ; 
+case ID : ID ( STRING , ID . ID , ID . ID , ID ( ID . ID ) ) ; break ; 
+case ID : ID ( STRING , ID . ID , ID ( ID . ID ) ) ; break ; 
+default : ID ( STRING , ID ( ID . ID ) ) ; 
+} 
+} 
+
+static void ID ( ID * ID , ID ID ) 
+{ 
+switch ( ID . ID ) 
+{ 
+case ID : ID ( ID , STRING , ID . ID ? STRING : STRING ) ; break ; 
+case ID : ID ( ID , STRING , ID . ID ) ; break ; 
+case ID : ID ( ID , STRING , ID . ID ) ; break ; 
+case ID : ID ( ID , STRING , ID . ID ) ; break ; 
+case ID : ID ( ID , STRING , ID . ID ) ; break ; 
+case ID : ID ( ID , STRING , ID . ID ) ; break ; 
+case ID : ID ( ID , ID . ID ) ; break ; 
+case ID : ID ( ID , ID . ID ) ; break ; 
+case ID : ID ( ID , ID . ID ) ; break ; 
+case ID : ID ( ID , ID . ID ) ; break ; 
+case ID : ID ( ID , ID . ID ) ; break ; 
+default : ID ( ID , STRING , ID ( ID . ID ) ) ; 
+} 
+} 
+
+static void ID ( ID * ID , ID ID , int ID ) 
+{ 
+switch ( ID . ID ) 
+{ 
+case ID : ID ( ID , ID . ID , ID ) ; break ; 
+default : ID ( ID , ID ) ; 
+} 
+} 
+
+static void ID ( ID * ID , ID ID ) 
+{ 
+switch ( ID . ID ) 
+{ 
+case ID : ID ( ID , ID . ID ) ; break ; 
+default : 
+ID ( STRING ) ; 
+ID . ID = ID ; 
+} 
+} 
+
+ID ID ( ID * ID , int ID ) 
+{ 
+ID ID ; 
+
+ID . ID = ID ; 
+
+if ( ID == ID ) 
+ID ( STRING ) ; 
+else if ( ID -> ID == ID ) 
+ID ( STRING , ID -> ID ) ; 
+else if ( ID -> ID -> ID == ID ) 
+ID ( STRING , ID -> ID ) ; 
+else if ( ID -> ID -> ID -> ID == ID ) 
+{ 
+ 
+ID ( STRING , ID -> ID ) ; 
+ 
+ID = ID -> ID -> ID -> ID ( ID , ID ) ; 
+} 
+else 
+{ 
+ 
+ID ( STRING , ID -> ID ) ; 
+ID ( ID ) ; 
+ID ( STRING ) ; 
+ 
+ID ( & ID , ID -> ID -> ID , sizeof ( ID ) ) ; 
+} 
+
+return ID ; 
+} 
+
+static void ID ( ID * ID , ID ID ) 
+{ 
+
+ 
+ID ( STRING , ID -> ID ) ; 
+ID ( ID ) ; 
+ID ( STRING ) ; 
+ 
+
+if ( ID == ID ) 
+ID ( STRING ) ; 
+else if ( ID -> ID == ID ) 
+ID ( STRING , ID -> ID ) ; 
+else if ( ID -> ID -> ID == ID ) 
+{ 
+ID -> ID -> ID = ( ID * ) ID ( INTEGER , sizeof ( ID ) ) ; 
+ID ( ID -> ID -> ID , & ID , sizeof ( ID ) ) ; 
+} 
+else if ( ID . ID != ID -> ID -> ID -> ID ) 
+{ 
+ID ( STRING ) ; 
+ID ( ID ) ; 
+ID ( STRING , ID -> ID ) ; 
+ID ( * ( ID -> ID -> ID ) ) ; 
+ID ( STRING ) ; 
+} 
+else 
+ID ( ID -> ID -> ID , & ID , sizeof ( ID ) ) ; 
+} 
+
+static int ID ( void * * ID , ID * ID , ID ID , char * ID , int ID ) 
+{ 
+if ( * ID == ID ) 
+{ 
+if ( ID != ID ) 
+ID ( ID , STRING , ID ) ; 
+ID -> ID = ID ; 
+return INTEGER ; 
+} 
+
+* ID = ID ( ( ID * ) ID ( * ID ) , ID ) ; 
+
+if ( ID -> ID != ID ) 
+{ 
+if ( ID != ID ) 
+{ 
+ID ( ID , STRING , 
+ID , 
+ID ( ID ) , 
+ID ( ID -> ID ) ) ; 
+} 
+ID -> ID = ID ; 
+return INTEGER ; 
+} 
+
+* ID = ID ( * ID ) ; 
+return INTEGER ; 
+} 
+
+static ID ID ( void * ID , int ID ) 
+{ 
+ID ID ; 
+void * ID = ID ( ID ) ; 
+ID ID ; 
+int ID = ID ; 
+char * ID ; 
+
+ID . ID = ID ; 
+
+if ( ID ) 
+{ 
+ID ( & ID , & ID , ID , STRING , ID ) ; 
+ID = ID . ID ; 
+
+if ( ID ( & ID , & ID , ID , ID , ID ) ) 
+ID = ID . ID ; 
+
+ID . ID = ID ; 
+
+ID . ID = ID ; 
+
+switch ( ID ) 
+{ 
+case ID : ID . ID = ID ( ID , STRING ) ; break ; 
+case ID : ID . ID = ID ( ID , STRING ) ; break ; 
+case ID : ID . ID = ID ( ID , STRING ) ; break ; 
+case ID : ID . ID = ID ( ID , STRING ) ; break ; 
+case ID : ID ( ID , STRING ) ; 
+default : ID ( ID , STRING ) ; 
+} 
+
+if ( ID . ID == ID ) 
+ID ( ID , STRING , ID ) ; 
+} 
+
+return ID ; 
+} 
+
+static ID ID ( void * ID , int ID ) 
+{ 
+void * ID = ID ( ID ) ; 
+ID ID ; 
+ID * ID = ID ; 
+
+ID . ID = ID ; 
+
+if ( ID ) 
+{ 
+if ( ID ( & ID , & ID , ID , ID , ID ) ) 
+ID = ID . ID ; 
+
+for ( ; ID != ID ; ID = ID ( ID ) ) 
+ID ( ID , ID = ID ( ( ID * ) ID ( ID ) , ID ) ) ; 
+} 
+
+return ID ; 
+} 
+
+static ID ID ( void * ID , int ID ) 
+{ 
+void * ID = ID ( ID ) ; 
+ID ID ; 
+ID * ID = ID ; 
+
+ID . ID = ID ; 
+
+if ( ID ) 
+{ 
+if ( ID ( & ID , & ID , ID , ID , ID ) ) 
+ID = ID . ID ; 
+
+for ( ; ID != ID ; ID = ID ( ID ) ) 
+ID ( ID , ID = ID ( ( ID * ) ID ( ID ) , ID ) , INTEGER ) ; 
+} 
+
+return ID ; 
+} 
+
+static ID ID ( void * ID , int ID ) 
+{ 
+void * ID = ID ( ID ) ; 
+ID ID ; 
+ID * ID = ID ; 
+
+ID . ID = ID ; 
+
+if ( ID ) 
+{ 
+if ( ID ( & ID , & ID , ID , ID , ID ) ) 
+ID = ID . ID ; 
+
+for ( ; ID != ID ; ID = ID ( ID ) ) 
+ID ( ID , ID = ID ( ( ID * ) ID ( ID ) , ID ) , INTEGER ) ; 
+} 
+
+return ID ; 
+} 
+
+static ID ID ( void * ID , int ID ) 
+{ 
+void * ID = ID ( ID ) ; 
+ID ID ; 
+ID * ID = ID ; 
+
+ID . ID = ID ; 
+
+if ( ID ) 
+{ 
+if ( ID ( & ID , & ID , ID , ID , ID ) ) 
+ID = ID . ID ; 
+
+for ( ; ID != ID ; ID = ID ( ID ) ) 
+ID ( ID , ID = ID ( ( ID * ) ID ( ID ) , ID ) ) ; 
+} 
+
+return ID ; 
+} 
+
+static ID ID ( void * ID , int ID ) 
+{ 
+ID ID ; 
+
+ID . ID = ID ; 
+if ( ID ) 
+ID . ID = ( ( ID * ) ID ) -> ID ; 
+
+return ID ; 
+} 
+
+static ID ID ( void * ID , int ID ) 
+{ 
+ID ID ; 
+void * ID = ID ( ID ) ; 
+ID ID ; 
+
+ID . ID = ID ; 
+
+if ( ID ) 
+{ 
+ID ( & ID , & ID , ID , STRING , ID ) ; 
+
+ID . ID = ID ; 
+ID . ID = ID ( ID , ( ID * ) ( ID . ID ) ) ; 
+} 
+
+return ID ; 
+} 
+
+static ID ID ( void * ID , int ID ) 
+{ 
+ID ID ; 
+void * ID = ID ( ID ) ; 
+ID ID ; 
+
+ID . ID = ID ; 
+
+if ( ID ) 
+{ 
+ID ( & ID , & ID , ID , STRING , ID ) ; 
+
+ID . ID = ID ; 
+ID . ID = ID ( ID . ID ) ; 
+} 
+
+return ID ; 
+} 
+
+static ID ID ( void * ID , int ID ) 
+{ 
+ID ID ; 
+ID * ID ; 
+unsigned ID ; 
+void * ID = ID ( ID ) ; 
+int ID = INTEGER ; 
+
+if ( ID ) 
+{ 
+ID ( & ID , & ID , ID , STRING , ID ) ; 
+ID = ID . ID ; 
+
+ID ( & ID , & ID , ID , STRING , ID ) ; 
+ID = ID . ID ; 
+
+if ( ID ( & ID , & ID , ID , STRING , ID ) ) 
+switch ( ID . ID ) 
+{ 
+case ID : ID = INTEGER ; break ; 
+case ID : ID = INTEGER ; break ; 
+case ID : ID ( ID , STRING ) ; break ; 
+case ID : ID ( ID , STRING ) ; break ; 
+default : ID ( ID , STRING ) ; 
+} 
+
+ID ( ID , ID , ID ) ; 
+} 
+
+ID . ID = ID ; 
+return ID ; 
+} 
+
+static ID ID ( void * ID , int ID ) 
+{ 
+ID ID ; 
+void * ID = ID ( ID ) ; 
+ID ID ; 
+ID * ID ; 
+
+ID . ID = ID ; 
+
+if ( ID ) 
+{ 
+ID ( & ID , & ID , ID , STRING , ID ) ; 
+ID = ID . ID ; 
+
+ID ( & ID , & ID , ID , STRING , ID ) ; 
+
+switch ( ID . ID ) 
+{ 
+case ID : 
+case ID : 
+ID ( ID , STRING ) ; 
+
+case ID : 
+case ID : 
+case ID : 
+ID ( ID , STRING ) ; 
+
+case ID : 
+ID ( ID , STRING ) ; 
+
+case ID : 
+case ID : 
+case ID : 
+ID . ID = ID ; 
+ID . ID = ID ( ID , ( enum ID ) ID . ID ) ; 
+break ; 
+
+case ID : 
+ID . ID = ID ; 
+ 
+break ; 
+
+default : ID ( ID , STRING ) ; 
+} 
+} 
+
+return ID ; 
+} 
+
+static ID ID ( void * ID , int ID ) 
+{ 
+ID ID ; 
+void * ID = ID ( ID ) ; 
+ID ID ; 
+
+ID . ID = ID ; 
+
+if ( ID ) 
+{ 
+ID ( & ID , & ID , ID , STRING , ID ) ; 
+
+ID . ID = ID ; 
+ID . ID = ID ( ID . ID ) ; 
+} 
+
+return ID ; 
+} 
+
+static ID ID ( void * ID , int ID ) 
+{ 
+ID ID ; 
+void * ID = ID ( ID ) ; 
+ID ID ; 
+
+ID . ID = ID ; 
+
+if ( ID ) 
+{ 
+ID ( & ID , & ID , ID , STRING , ID ) ; 
+
+ID . ID = ID ; 
+ID . ID = ID ( ID . ID ) ; 
+} 
+
+return ID ; 
+} 
+
+static ID ID ( void * ID , int ID ) 
+{ 
+ID ID ; 
+void * ID = ID ( ID ) ; 
+ID ID ; 
+
+ID . ID = ID ; 
+
+if ( ID ) 
+{ 
+ID ( & ID , & ID , ID , STRING , ID ) ; 
+
+ID . ID = ID ; 
+ID . ID = ID ( ID . ID ) ; 
+} 
+
+return ID ; 
+} 
+
+static ID ID ( void * ID , int ID ) 
+{ 
+ID ID ; 
+void * ID = ID ( ID ) ; 
+ID ID ; 
+
+ID . ID = ID ; 
+if ( ID ) 
+{ 
+ID ( & ID , & ID , ID , STRING , ID ) ; 
+
+ID . ID = ID ; 
+ID . ID = ID ( ID . ID , INTEGER ) ; 
+} 
+
+return ID ; 
+} 
+
+static ID ID ( void * ID , int ID ) 
+{ 
+ID ID ; 
+void * ID = ID ( ID ) ; 
+ID ID ; 
+
+ID . ID = ID ; 
+if ( ID ) 
+{ 
+ID ( & ID , & ID , ID , STRING , ID ) ; 
+
+ID . ID = ID ; 
+ID . ID = ID ( ID . ID , INTEGER ) ; 
+} 
+
+return ID ; 
+} 
+
+static ID ID ( void * ID , int ID ) 
+{ 
+ID ID ; 
+ID * ID ; 
+void * ID = ID ( ID ) ; 
+ID ID ; 
+
+ID . ID = ID ; 
+if ( ID ) 
+{ 
+ID ( & ID , & ID , ID , STRING , ID ) ; 
+ID = ID . ID ; 
+
+ID ( & ID , & ID , ID , STRING , ID ) ; 
+
+ID . ID = ID ; 
+ID . ID = ID ( ID , ID . ID ) ; 
+} 
+
+return ID ; 
+} 
+
+static ID ID ( void * ID , int ID ) 
+{ 
+ID ID ; 
+ID * ID ; 
+void * ID = ID ( ID ) ; 
+ID ID ; 
+ID ID = { INTEGER } ; 
+
+ID . ID = ID ; 
+if ( ID ) 
+{ 
+ID ( & ID , & ID , ID , STRING , ID ) ; 
+ID = ID . ID ; 
+
+ID ( & ID , & ID , ID , STRING , ID ) ; 
+
+if ( ID != ID ) 
+ID ( & ID , & ID , ID , STRING , ID ) ; 
+
+ID . ID = ID ; 
+ID . ID = ID ( ID , ID . ID , INTEGER , ID . ID ) ; 
+} 
+
+return ID ; 
+} 
+
+static ID ID ( void * ID , int ID ) 
+{ 
+ID ID ; 
+ID * ID ; 
+void * ID = ID ( ID ) ; 
+ID ID ; 
+ID ID = { INTEGER } ; 
+
+ID . ID = ID ; 
+if ( ID ) 
+{ 
+ID ( & ID , & ID , ID , STRING , ID ) ; 
+ID = ID . ID ; 
+
+ID ( & ID , & ID , ID , STRING , ID ) ; 
+
+if ( ID != ID ) 
+ID ( & ID , & ID , ID , STRING , ID ) ; 
+
+ID . ID = ID ; 
+ID . ID = ID ( ID , ID . ID , INTEGER , ID . ID ) ; 
+} 
+
+return ID ; 
+} 
+
+static ID ID ( void * ID , int ID ) 
+{ 
+ID ID ; 
+ID * ID ; 
+void * ID = ID ( ID ) ; 
+ID ID ; 
+ID ID = { INTEGER } ; 
+
+ID . ID = ID ; 
+if ( ID ) 
+{ 
+ID ( & ID , & ID , ID , STRING , ID ) ; 
+ID = ID . ID ; 
+
+ID ( & ID , & ID , ID , STRING , ID ) ; 
+
+if ( ID != ID ) 
+ID ( & ID , & ID , ID , STRING , ID ) ; 
+
+ID . ID = ID ; 
+ID . ID = ID ( ID , ID . ID , INTEGER , ID . ID ) ; 
+} 
+
+return ID ; 
+} 
+
+static ID ID ( void * ID , int ID ) 
+{ 
+ID ID ; 
+
+if ( ID ) 
+ID . ID = ( ( ID * ) ID ) -> ID ; 
+ID . ID = ID ; 
+ID . ID = ID ( ) ; 
+
+return ID ; 
+} 
+
+static ID ID ( void * ID , int ID ) 
+{ 
+ID ID ; 
+
+if ( ID ) 
+ID . ID = ( ( ID * ) ID ) -> ID ; 
+ID . ID = ID ; 
+ID . ID = ( float ) ( ID ( ) / ID ) ; 
+
+return ID ; 
+} 
+
+void ID ( char * ID , ID ( * ID ) ( void * ID , int ID ) ) 
+{ 
+ID * ID = ID ( ID ) ; 
+
+ID -> ID = INTEGER ; 
+
+ID -> ID = ( ID * ) ID ( INTEGER , sizeof ( ID ) ) ; 
+ID -> ID -> ID = ID ; 
+ID -> ID -> ID = ID ; 
+} 
+
+void ID ( char * ID , char * ID ) 
+{ 
+ID * ID = ID ( ID ) ; 
+
+ID -> ID = INTEGER ; 
+
+ID -> ID = ( ID * ) ID ( INTEGER , sizeof ( ID ) ) ; 
+ID -> ID -> ID = ID ; 
+ID -> ID -> ID = ID ; 
+} 
+
+void ID ( char * ID , int ID ) 
+{ 
+ID * ID = ID ( ID ) ; 
+
+ID -> ID = INTEGER ; 
+
+ID -> ID = ( ID * ) ID ( INTEGER , sizeof ( ID ) ) ; 
+ID -> ID -> ID = ID ; 
+ID -> ID -> ID = ID ; 
+} 
+
+void ID ( char * ID , int ID ) 
+{ 
+ID * ID = ID ( ID ) ; 
+
+ID -> ID = INTEGER ; 
+
+ID -> ID = ( ID * ) ID ( INTEGER , sizeof ( ID ) ) ; 
+ID -> ID -> ID = ID ; 
+ID -> ID -> ID = ID ; 
+} 
+
+void ID ( char * ID , ID * ID ) 
+{ 
+ID * ID = ID ( ID ) ; 
+
+ID -> ID = INTEGER ; 
+
+ID -> ID = ( ID * ) ID ( INTEGER , sizeof ( ID ) ) ; 
+ID -> ID -> ID = ID ; 
+ID -> ID -> ID = ID ; 
+} 
+
+void ID ( char * ID ) 
+{ 
+ID * ID = ID ( ID ) ; 
+
+ID -> ID = INTEGER ; 
+
+ID -> ID = ( ID * ) ID ( INTEGER , sizeof ( ID ) ) ; 
+ID -> ID -> ID = ID ; 
+
+ID = ID ; 
+} 
+
+void ID ( char * ID ) 
+{ 
+ID = ID ( STRING , INTEGER , INTEGER , ID , ID , ID ) ; 
+ID = ID ( ID ) ; 
+
+ID ( STRING ) ; 
+
+ 
+ID ( STRING , ID ) ; 
+ID ( STRING , ID ) ; 
+ID ( STRING , ID ) ; 
+ID ( STRING , ID ) ; 
+ID ( STRING , ID ) ; 
+ID ( STRING , ID ) ; 
+
+ 
+ID ( STRING , ID ) ; 
+ID ( STRING , ID ) ; 
+ID ( STRING , ID ) ; 
+ID ( STRING , ID ) ; 
+ID ( STRING , ID ) ; 
+ID ( STRING , ID ) ; 
+ID ( STRING , ID ) ; 
+
+ 
+ID ( STRING , ID ) ; 
+ID ( STRING , ID ) ; 
+ID ( STRING , ID ) ; 
+ID ( STRING , ID ) ; 
+ID ( STRING , ID ) ; 
+ID ( STRING , ID ) ; 
+ID ( STRING , ID ) ; 
+ID ( STRING , ID ) ; 
+ID ( STRING , ID ) ; 
+ID ( STRING , ID ) ; 
+ID ( STRING , ID ) ; 
+ID ( STRING , ID ) ; 
+ID ( STRING , ID ) ; 
+
+ 
+ID ( STRING , ID ) ; 
+ID ( STRING , ID ) ; 
+ID ( STRING , ID ) ; 
+ID ( STRING , ID ) ; 
+
+ 
+ID ( STRING , ID ) ; 
+ID ( STRING , ID ) ; 
+ID ( STRING , ID ) ; 
+ID ( STRING , ID ) ; 
+ID ( STRING , ID ) ; 
+ID ( STRING , ID ) ; 
+ID ( STRING , ID ) ; 
+ID ( STRING , ID ) ; 
+ID ( STRING , ID ) ; 
+ID ( STRING , ID ) ; 
+
+ 
+ID ( STRING , INTEGER ) ; 
+ID ( STRING , INTEGER ) ; 
+ID ( STRING , STRING ) ; 
+ID ( STRING , ID ) ;  
+ID ( STRING , ID ) ;  
+
+ 
+ID ( STRING , ID ) ;  
+ID ( STRING , ID ) ;  
+} 
+
+static void ID ( void * ID , char * ID ) 
+{ 
+ID * ID = ID ( ID , STRING ) ; 
+
+if ( ID == ID ) 
+ID ( ID , STRING , ID ) ; 
+
+ID ( ID ) ; 
+ID ( ID , ID , ID , ID ) ; 
+ID ( ID ) ; 
+ID ( ID ) ; 
+} 
+
+ 
+static unsigned long ID ( ID * ID , int ID ) 
+{ 
+unsigned long ID = INTEGER ; 
+
+if ( ID ( ID -> ID , STRING ) == INTEGER ) 
+{ 
+ 
+unsigned long ID = ID ( ( ID * ) ID ( ID ( ID ( ID ) ) ) , INTEGER ) ; 
+
+ 
+unsigned long ID = ID ( ( ID * ) ID ( ID ( ID ) ) , ID ) ; 
+
+ 
+if ( ID ) 
+ID ( STRING , ID + INTEGER ) ; 
+
+ 
+ID ( ( ID * ) ID ( ID ( ID ( ID ) ) ) , ID ) ; 
+
+ID = ID + ID + INTEGER ; 
+} 
+else if ( ID ( ID -> ID , STRING ) == INTEGER ) 
+{ 
+ 
+unsigned long ID = ID ( ( ID * ) ID ( ID ( ID ( ID ) ) ) , INTEGER ) ; 
+
+ 
+unsigned long ID = ID ( ( ID * ) ID ( ID ( ID ) ) , ID ) ; 
+
+ 
+if ( ID ) 
+ID ( STRING , ID + INTEGER ) ; 
+
+ 
+ID ( ( ID * ) ID ( ID ( ID ( ID ) ) ) , ID ) ; 
+
+ 
+if ( ID ) 
+ID ( STRING , ID + ID + INTEGER ) ; 
+
+ID = ID + ID + INTEGER ; 
+} 
+else 
+{  
+void * ID ; 
+int ID = ID ( ID -> ID , STRING ) == INTEGER ; 
+ 
+
+ 
+if ( ID ) 
+{ 
+ID ++ ; 
+
+if ( ID ) 
+ID ( STRING ) ; 
+} 
+
+for ( ID = ID ( ID ) ; ID != ID ; ID = ID ( ID ) ) 
+ID += ID ( ( ID * ) ID ( ID ) , ID ) ; 
+
+if ( ID ) 
+{ 
+ID ++ ; 
+
+if ( ID ) 
+ID ( STRING ) ; 
+else 
+ID ( STRING , ID -> ID ) ; 
+} 
+} 
+
+ 
+if ( ID ) 
+ID ( STRING , ID ) ; 
+ 
+
+return ID ; 
+} 
+
+static ID ID ( ID * ID , int ID ) 
+{ 
+ 
+void * ID ; 
+
+ID ID , ID , ID ; 
+
+ID * ID = ID ; 
+ID * ID = ID ; 
+
+if ( ID ( ID ) != ID ) 
+{ 
+ID = ( ID * ) ID ( ID ( ID ) ) ; 
+
+if ( ID ( ID ( ID ) ) != ID ) 
+ID = ( ID * ) ID ( ID ( ID ( ID ) ) ) ; 
+} 
+
+ID . ID = ID ;  
+
+if ( ID == ID )  
+return ID ; 
+
+if ( ID ( & ID , ID -> ID ) ) 
+ID = ID ( ID , ID ) ; 
+
+if ( ID ( & ID , ID -> ID ) ) 
+ID = ID ( ID , ID ) ; 
+
+ 
+ID ( STRING , ID -> ID ) ; 
+if ( ID -> ID != ID ) 
+ID ( STRING , ID -> ID ) ; 
+
+ID ( STRING , ID ? STRING : STRING ) ; 
+ID ( STRING , ID == ID ? STRING : ID -> ID ) ; 
+if ( ID != ID ) 
+if ( ID -> ID != ID ) 
+ID ( STRING , ID -> ID ) ; 
+ID ( STRING , ID == ID ? STRING : ID -> ID , ID == ID ? ID : ID -> ID ) ; 
+if ( ID != ID ) 
+if ( ID -> ID != ID ) 
+ID ( STRING , ID -> ID ) ; 
+ID ( STRING ) ; 
+ 
+
+if ( ID ( & ID , ID -> ID ) && ( ID . ID != ID . ID ) ) 
+ID ( ID , STRING , ID -> ID ) ; 
+
+switch ( ID -> ID ) 
+{ 
+ 
+case INTEGER  : 
+for ( ID = ID ( ID ) ; ID != ID ; ID = ID ( ID ) ) 
+ID = ID ( ( ID * ) ID ( ID ) , ID ) ; 
+break ; 
+
+case ID  :  
+ID = ID ( ID , ID ) ; 
+
+ID . ID = ID ; 
+
+if ( ID . ID != ID ) 
+ID ( STRING ) ; 
+else 
+ID = ID ( ID , ID && ID . ID ) ; 
+break ; 
+
+case ID  :  
+ID = ID ( ID , ID ) ; 
+
+ID . ID = ID ; 
+
+if ( ID . ID != ID ) 
+ID ( STRING ) ; 
+else 
+while ( ID && ID . ID ) 
+{ 
+ID = ID ( ID , ID && ID . ID ) ; 
+ID = ID ( ID , ID ) ; 
+} 
+break ; 
+
+ 
+case ID  :  
+ID . ID = ID ; 
+ID . ID = ( char * ) ( ID -> ID ) ; 
+break ; 
+
+case ID :  
+ID = ID ( ID , ID ) ; 
+break ; 
+
+case ID :  
+ID . ID = ID ; 
+ID . ID = ID -> ID . ID ; 
+break ; 
+
+case ID :  
+ID . ID = ID ; 
+ID . ID = ( float ) ( ID -> ID . ID ) ; 
+break ; 
+
+ 
+ 
+ 
+ 
+
+ 
+ 
+
+ 
+ 
+ID ( ID  ) 
+ID ( ID ) 
+ID ( ID ) 
+ID ( ID ) 
+ID 
+ 
+
+ 
+case ID  : 
+ID ( & ID , & ID , sizeof ( ID ) ) ; 
+break ; 
+
+ 
+ 
+ID ( ID  ) 
+ID ( ID , ID ) 
+ID ( ID , ID ) 
+ID ( ID , ID ) 
+ID ( ID , ID ) 
+ID ( ID , ID ) 
+case ID : ID . ID = ID ( ID . ID , ID . ID ) ID INTEGER ; break ; 
+ID 
+ 
+
+ 
+ID ( ID  ) 
+ID ( ID , ID ) 
+ID ( ID , ID ) 
+ID ( ID , ID ) 
+ID ( ID , ID ) 
+ID ( ID , ID ) 
+case ID : ID . ID = ID ( ID . ID , ID . ID ) ID INTEGER ; break ; 
+ID 
+ 
+
+ 
+ID ( ID  ) 
+ID ( ID , ID ) 
+ID ( ID , ID ) 
+ID ( ID , ID ) 
+ID ( ID , ID ) 
+ID ( ID , ID ) 
+case ID : ID . ID = ID ( ID . ID , ID . ID ) ID INTEGER ; break ; 
+ID 
+ 
+
+ 
+ID ( ID  ) 
+ID ( ID , ID ) 
+ID ( ID , ID ) 
+ID ( ID , ID ) 
+ID ( ID , ID ) 
+ID ( ID , ID ) 
+case ID : ID . ID = ID ( ID . ID , ID . ID ) ID INTEGER ; break ; 
+ID 
+ 
+
+ 
+ID ( ID  ) 
+ID ( ID , ID ) 
+ID ( ID , ID ) 
+ID ( ID , ID ) 
+ID ( ID , ID ) 
+ID ( ID , ID ) 
+case ID : ID . ID = ID ( ID . ID , ID . ID ) ID INTEGER ; break ; 
+ID 
+ 
+
+ 
+ID ( ID  ) 
+ID ( ID , ID ) 
+ID ( ID , ID ) 
+ID ( ID , ID ) 
+ID ( ID , ID ) 
+ID ( ID , ID ) 
+case ID : ID . ID = ID ( ID . ID , ID . ID ) ID INTEGER ; break ; 
+ID 
+ 
+
+ 
+ 
+ID ( ID  ) 
+ID ( ID  ) 
+ID ( ID  ) 
+ID ( ID , ID ) 
+ID ( ID , ID ) 
+ID ( ID , ID ) 
+ID 
+ 
+
+ 
+ID ( ID  ) 
+ID ( ID  ) 
+ID ( ID  ) 
+ID ( ID , ID ) 
+ID ( ID , ID ) 
+ID ( ID , ID ) 
+ID 
+ 
+
+ 
+ID ( ID  ) 
+ID ( ID  ) 
+ID ( ID  ) 
+ID ( ID , ID ) 
+ID ( ID , ID ) 
+ID ( ID , ID ) 
+ID 
+ 
+
+ 
+ID ( ID  ) 
+ID ( ID  ) 
+ID ( ID  ) 
+ID ( ID , ID ) 
+ID ( ID , ID ) 
+ID ( ID , ID ) 
+ID 
+ 
+
+ 
+ID ( ID  ) 
+ID ( ID  ) 
+ID ( ID  ) 
+ID ( ID , ID ) 
+ID ( ID , ID ) 
+ID ( ID , ID ) 
+ID 
+ 
+
+ 
+ID ( ID  ) 
+ID ( ID  ) 
+ID ( ID  ) 
+ID ( ID , ID ) 
+ID ( ID , ID ) 
+ID 
+ 
+
+ 
+ID ( ID  ) 
+ID ( ID  ) 
+ID ( ID  ) 
+ID ( ID , ID ) 
+ID ( ID , ID ) 
+ID ( ID , ID ) 
+ID 
+ 
+
+ 
+ID ( ID  ) 
+ID ( ID  ) 
+ID ( ID  ) 
+ID ( ID , ID ) 
+ID ( ID , ID ) 
+ID ( ID , ID ) 
+ID 
+ 
+
+ 
+ID ( ID  ) 
+ID ( ID  ) 
+ID ( ID  ) 
+ID ( ID , ID ) 
+ID ( ID , ID ) 
+ID 
+ 
+
+ 
+ID ( ID  ) 
+ID ( ID  ) 
+ID ( ID  ) 
+ID ( ID , ID ) 
+ID ( ID , ID ) 
+ID 
+ 
+
+ 
+ID ( ID  ) 
+ID ( ID  ) 
+ID ( ID  ) 
+case ID : ID . ID = ( int ) ID ( ( double ) ID . ID , ( double ) ID . ID ) ; break ; 
+case ID : ID . ID = ( unsigned ) ID ( ( double ) ID . ID , ( double ) ID . ID ) ; break ; 
+case ID : ID . ID = ( float ) ID ( ( double ) ID . ID , ( double ) ID . ID ) ; break ; 
+ID 
+ 
+} 
+
+ 
+if ( ID && ID ( & ID , ID -> ID ) ) 
+ID ( ID , ID ) ; 
+else if ( ID && ID ( & ID , ID -> ID ) ) 
+{ 
+ID = ID ( ID , ID ) ; 
+ID ( ID , ID ) ; 
+ID = ID ; 
+} 
+ 
+ID ( STRING ) ; 
+ID ( ID ) ; 
+ID ( STRING ) ; 
+ 
+
+return ID ; 
+} 
+
+void ID ( void * ID ) 
+{ 
+ID * ID = ( ID * ) ID ( ID ( ID ( ID ( ID ) ) ) ) ; 
+ID ID ; 
+
+ID = ( ID * ) ID ( ID ( ID ( ID ) ) ) ; 
+ID ( ID , STRING ) ; 
+
+
+ID ( & ID , 
+ID  , 
+
+ID  , 
+
+ID  , 
+
+ID  , 
+
+ID  , 
+
+ID  , 
+
+ID  , 
+
+ID  , 
+
+ID  , 
+
+ID  , 
+
+ID  , 
+
+
+ID  , 
+ID  , 
+ID  , 
+ID  , 
+ID  , 
+ID  , 
+ID ) ; 
+
+ID ( & ID , 
+ID  , 
+ID  , 
+ID  , 
+
+ID  , 
+ID  , 
+ID  , 
+
+ID  , 
+ID  , 
+ID  , 
+
+ID  , 
+ID  , 
+ID  , 
+
+ID  , 
+ID  , 
+ID  , 
+
+ID  , 
+ID  , 
+ID  , 
+
+ID  , 
+ID  , 
+ID  , 
+
+ID  , 
+ID  , 
+ID  , 
+
+ID  , 
+ID  , 
+ID  , 
+
+ID  , 
+ID  , 
+ID  , 
+
+ID  , 
+ID  , 
+ID  , 
+
+ID  , 
+ID  , 
+ID  , 
+ID  , 
+ID  , 
+ID  , 
+
+ID  , 
+ID ) ; 
+
+ID ( & ID , 
+ID  , 
+ID  , 
+ID  , 
+
+ID  , 
+ID  , 
+ID  , 
+
+ID  , 
+ID  , 
+ID  , 
+
+ID  , 
+ID  , 
+ID  , 
+
+ID  , 
+ID  , 
+ID  , 
+
+ID  , 
+ID  , 
+ID  , 
+
+ID  , 
+ID  , 
+ID  , 
+
+ID  , 
+ID  , 
+ID  , 
+
+ID  , 
+ID  , 
+ID  , 
+
+ID  , 
+ID  , 
+ID  , 
+
+ID  , 
+ID  , 
+ID  , 
+
+ID  , 
+
+ID  , 
+ID  , 
+ID  , 
+ID  , 
+ID  , 
+ID  , 
+ID ) ; 
+
+ID ( & ID , 
+ID  , 
+
+ID  , 
+
+ID  , 
+
+ID  , 
+
+ID  , 
+
+ID  , 
+
+ID  , 
+
+ID  , 
+
+ID  , 
+
+ID  , 
+
+ID  , 
+
+ID  , 
+ID ) ; 
+
+ID ( & ID , 
+ID  , 
+
+ID  , 
+
+ID  , 
+
+ID  , 
+
+ID  , 
+
+ID  , 
+
+ID  , 
+
+ID  , 
+
+ID  , 
+
+ID  , 
+
+ID  , 
+ID ) ; 
+
+if ( ID ( ID ) == ID ) 
+ID ( ID , STRING ) ; 
+
+ 
+
+ID = ID ( ID , INTEGER ) ; 
+} 
+
+
+void ID ( void ) 
+{ 
+if ( ID ( ) != INTEGER ) 
+{ 
+ID ( STRING ) ; 
+ID ( ID , STRING , ID ( ) == INTEGER ? STRING : STRING , ID ) ; 
+} 
+} 
+
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+ 
+
+ 
+ 
+
+ 
+ 
+ 
+ 
+
+ 
+if ( ID == ID ) \ 
+{ \ 
+ID ( STRING ) ; \ 
+return INTEGER ; \ 
+} 
+
+ 
+
+char * ID ( int ID ) 
+{ 
+switch ( ID ) 
+{ 
+case ID : 
+return STRING ; 
+case ID : 
+return STRING ; 
+case ID : 
+return STRING ; 
+case ID : 
+return STRING ; 
+case ID : 
+return STRING ; 
+case ID : 
+return STRING ; 
+case ID : 
+return STRING ; 
+case ID : 
+return STRING ; 
+case ID : 
+return STRING ; 
+default : 
+return STRING ; 
+} 
+} 
+
+void ID ( ID * ID , ID * ID ) 
+{ 
+if ( ID ( ID -> ID . ID ) ) 
+{ 
+ID ( STRING , ID ( ID ) ) ; 
+ID ( ID -> ID . ID , INTEGER ) ; 
+ID ( STRING ) ; 
+ID ( & ID -> ID . ID , ID , INTEGER ) ; 
+ID ( STRING , 
+ID ( ID -> ID . ID ) ? STRING : STRING , 
+ID ( & ID -> ID , ID ( ID ) ) ? STRING : STRING 
+) ; 
+} 
+else 
+{ 
+ID ( STRING , ID ( ID ) , ID -> ID . ID -> ID -> ID ) ; 
+ID ( & ID -> ID . ID , ID , INTEGER ) ; 
+ID ( STRING ) ; 
+} 
+
+} 
+
+static void ID ( ID * ID , int ID , unsigned ID ) 
+{ 
+if ( ID == INTEGER ) 
+ID ( STRING ) ; 
+else if ( ID > INTEGER ) 
+{ 
+unsigned ID = ID ( ID -> ID [ ID ] . ID ) ; 
+
+ID ( STRING , ID ( & ID -> ID , ID ) ? STRING : STRING , ID ) ; 
+} 
+else 
+{ 
+if ( ID < ID -> ID ) 
+ID ( STRING , - ID ) ; 
+else 
+ID ( STRING , - ID ) ; 
+} 
+} 
+
+typedef struct ID 
+{ 
+ID * ID ; 
+ID * ID ; 
+} ID ; 
+
+typedef struct ID 
+{ 
+ID ID ; 
+unsigned ID ; 
+} ID ; 
+
+static void * ID ; 
+static unsigned ID ; 
+
+unsigned ID ( ID * ID , ID * ID ) 
+{ 
+ID ID ; 
+ID * ID ; 
+
+ 
+ID ( STRING ) ; 
+ID ( ID , ID , INTEGER ) ; 
+ID ( STRING ) ; 
+ID ( ID , ID , INTEGER ) ; 
+ID ( STRING ) ; 
+ 
+
+ID . ID = ID ; 
+ID . ID = ID ; 
+ID = ( ID * ) ID ( ID , & ID , ID ) ; 
+
+if ( ID == ID )  
+{ 
+ID * ID = ( ID * ) ID ( INTEGER , sizeof ( ID ) ) ; 
+ID * ID = ( ID * ) ID ( INTEGER , sizeof ( ID ) ) ; 
+
+ID ( ID , ID ) ; 
+ID ( ID , ID ) ; 
+
+ID . ID = ID ; 
+ID . ID = ID ; 
+
+ID = ( ID * ) ID ( ID , & ID , sizeof ( ID ) , sizeof ( ID ) ) ; 
+ID -> ID = ID ; 
+ID += ID ( ID ) ; 
+ID += ID ( ID ) ; 
+ID += INTEGER ;  
+ 
+ID ( STRING ) ; 
+ID ( ID , ID ) ; 
+ID ( STRING ) ; 
+ 
+} 
+ 
+else 
+ID ( STRING ) ; 
+ 
+
+return ID -> ID ; 
+} 
+
+ 
+typedef enum ID {  ID , 
+ ID , 
+ ID , 
+ ID , 
+ ID , 
+ ID , 
+ ID , 
+ ID , 
+ ID , 
+ ID 
+} ID ; 
+
+static int ID [ ID ] = { STRING , STRING , STRING , STRING , STRING , STRING , STRING , STRING , STRING } ; 
+
+static void ID ( ID * ID , ID * ID , ID * ID , unsigned ID , ID * ID , ID * ID , ID * ID , int ID ) 
+{ 
+unsigned ID = ID ( ID ) ; 
+unsigned ID = ID ( ID ) ; 
+
+* ID = ID ; 
+
+if ( ID + ID == INTEGER )  
+* ID = ID ; 
+else if ( ID + ID == INTEGER )  
+* ID = ID ; 
+else if ( ID > INTEGER && ID > INTEGER )  
+* ID = ID ; 
+else 
+{ 
+unsigned * ID = ID ( & ID -> ID . ID -> ID ) ; 
+unsigned ID = ID ( & ID -> ID . ID -> ID ) ; 
+unsigned ID = INTEGER ; 
+unsigned ID = INTEGER ; 
+ID * ID = ID -> ID ; 
+void * ID = ID -> ID -> ID ; 
+int ID ; 
+
+if ( ID ( ID ) == ID ) 
+ID ( ID ) ; 
+
+if ( ID ( ID ) == ID ) 
+ID ( ID ) ; 
+
+ 
+ 
+
+ 
+for ( ID = INTEGER ; ID < ID ; ID ++ ) 
+if ( ID ( ID ( ID [ ID ] ) ) && 
+ID ( & ID -> ID , ID [ ID ] ) && 
+ID ( & ( ID ( ID [ ID ] ) -> ID . ID ) , ID ) ) 
+{ 
+ID ++ ; 
+
+if ( ID ( ID ( ID [ ID ] ) ) ) 
+ID ++ ; 
+} 
+
+if ( ID > INTEGER ) 
+* ID = ID ; 
+
+ 
+
+ 
+
+ 
+ 
+{ 
+unsigned * ID = ( unsigned * ) ID ( ID , sizeof ( unsigned ) ) ; 
+ID * * ID = ( ID * * ) ID ( ID , sizeof ( ID * ) ) ; 
+ID * * ID = ( ID * * ) ID ( ID , sizeof ( ID * ) ) ; 
+ID * ID = ( ID * ) ID ( ID , sizeof ( ID ) ) ; 
+ID * ID = ( ID * ) ID ( ID , sizeof ( ID ) ) ; 
+int ID = INTEGER ; 
+unsigned ID = INTEGER ; 
+unsigned ID ; 
+int ID = INTEGER ; 
+
+for ( ID = INTEGER ; ID < ID ; ID ++ ) 
+{ 
+ID * ID = ID ( ID [ ID ] ) ; 
+ID * ID = ID ( ID [ ID ] ) ; 
+
+if ( ID ( ID ) ) 
+ID [ ID ] = INTEGER ; 
+else if ( ID ( ID ) == INTEGER ) 
+ID [ ID ] = INTEGER ; 
+else 
+ID [ ID ] = ID - INTEGER ; 
+
+if ( ID ( ID ) ) 
+{ 
+ID * ID = ID ( ID ) ; 
+
+ID [ ID ] = ID ( ID ) ; 
+
+if ( ID != ID ) 
+{ 
+ID [ ID ] = ID -> ID ; 
+
+if ( ID [ ID ] -> ID == ID ) 
+ID [ ID ] = ID ; 
+} 
+
+ID ( & ID [ ID ] , ID ) ; 
+ID ( & ID [ ID ] , ID ) ; 
+} 
+} 
+
+while ( ID ) 
+{ 
+int ID , ID ; 
+
+ID = INTEGER ; 
+
+for ( ID = INTEGER ; ID < ID ; ID ++ ) 
+{ 
+if ( ID ( ID ( ID [ ID ] ) ) ) 
+for ( ID = INTEGER ; ID < ID ; ID ++ ) 
+if ( ID ( ID ( ID [ ID ] ) ) && ! ID ( ID ( ID [ ID ] ) ) ) 
+if ( ID [ ID ] == ID [ ID ] ) 
+{ 
+if ( ID ( & ID [ ID ] , ID ) ) 
+ID ( & ID [ ID ] , & ( ID ( ID [ ID ] ) -> ID . ID ) ) ; 
+
+if ( ID ( & ID [ ID ] , & ( ID ( ID [ ID ] ) -> ID . ID ) ) ) 
+if ( ID [ ID ] > ID [ ID ] + INTEGER ) 
+{ 
+ID [ ID ] = ID [ ID ] + INTEGER ; 
+ID = INTEGER ; 
+} 
+} 
+} 
+} 
+
+ 
+for ( ID = INTEGER ; ID < ID ; ID ++ ) 
+if ( ID ( ID ( ID [ ID ] ) ) && 
+ID ( & ID -> ID , ID [ ID ] ) && 
+ID ( & ( ID ( ID [ ID ] ) -> ID . ID ) , ID ) ) 
+{ 
+if ( ID [ ID ] == INTEGER ) 
+{ 
+ID ++ ; 
+ID = ID ; 
+} 
+} 
+
+ 
+for ( ID = INTEGER ; ID < ID ; ID ++ ) 
+if ( ID ( ID ( ID [ ID ] ) ) ) 
+{ 
+if ( ID != ID ) 
+if ( ID ( & ID [ ID ] , ID ) ) 
+ID = INTEGER ; 
+} 
+
+if ( ! ID && ID < INTEGER ) 
+{ 
+unsigned * ID = ID ( ID ) ; 
+unsigned * ID = ID ; 
+
+* ID = ID ; 
+if ( ID ) 
+{ 
+ID ( STRING , ID ( ID ) ) ; 
+ID ( ID ( ID -> ID -> ID , ID ) ) ; 
+ID ( STRING , ID ( ID ( ID [ ID ] ) ) ) ; 
+ID ( ID , ID ( ID [ ID ] ) ) ; 
+} 
+
+while ( * ID != ID ) 
+{ 
+if ( ID ) 
+ID ( STRING , ID ( ID [ * ID ] . ID ) ) ; 
+
+if ( ID [ * ID ] . ID != ID ( ID [ ID ] ) ) 
+{ 
+if ( ID ) 
+ID ( STRING ) ; 
+ID ( ID , * ID ) ; 
+} 
+else 
+if ( ID ) 
+ID ( STRING ) ; 
+
+ID ++ ; 
+} 
+
+ID ( ID ) ; 
+} 
+else if ( ID ) 
+{ 
+ 
+ID ( STRING , ID ( ID ) ) ; 
+ID ( ID ( ID -> ID -> ID , ID ) ) ; 
+ID ( STRING , 
+ID , 
+ID , 
+ID == INTEGER ? STRING : STRING , 
+ID , 
+ID == INTEGER ? STRING : STRING ) ; 
+
+
+for ( ID = INTEGER ; ID < ID ; ID ++ ) 
+{ 
+if ( ID != ID ) 
+if ( ID [ ID ] == ID - INTEGER ) 
+ID ( STRING ) ; 
+else 
+ID ( STRING , ID [ ID ] ) ; 
+
+ 
+if ( ID [ ID ] != ID ) 
+{ 
+ID ( ID [ ID ] ) ; 
+ID ( STRING ) ; 
+
+ID ( STRING ) ; 
+ID ( & ID [ ID ] , ID , INTEGER ) ; 
+ID ( STRING ) ; 
+
+if ( ID [ ID ] != ID ) 
+{ 
+ID ( ID [ ID ] ) ; 
+ID ( STRING ) ; 
+ID ( & ID [ ID ] , ID , INTEGER ) ; 
+ID ( STRING ) ; 
+} 
+else 
+ID ( STRING ) ; 
+} 
+else 
+ID ( STRING ) ; 
+ 
+ID ( ID , ID ( ID [ ID ] ) ) ; 
+} 
+
+ID ( STRING , ID == INTEGER ? STRING : STRING , ID , ID == INTEGER ? STRING : STRING ) ; 
+
+if ( ID == INTEGER ) 
+ID ( ID , ID ( ID [ ID ] ) ) ; 
+
+for ( ID = INTEGER ; ID < ID ; ID ++ ) 
+if ( ID ( ID ( ID [ ID ] ) ) ) 
+{ 
+if ( ID != ID ) 
+if ( ID ( & ID [ ID ] , ID ) ) 
+{ 
+ID ( ID ( ID -> ID -> ID , ID ) ) ; 
+ID ( STRING ) ; 
+ID ( ID , ID ( ID [ ID ] ) ) ; 
+} 
+} 
+} 
+
+for ( ID = INTEGER ; ID < ID ; ID ++ ) 
+{ 
+ID ( & ID [ ID ] ) ; 
+ID ( & ID [ ID ] ) ; 
+} 
+
+ID ( ID ) ; 
+ID ( ID ) ; 
+ID ( ID ) ; 
+ID ( ID ) ; 
+ID ( ID ) ; 
+} 
+ 
+ID ( ID ) ; 
+} 
+
+} 
+
+ID * ID ( ID * ID , int ID ) 
+{ 
+ID * ID ; 
+ID * ID = ( ID * ) ID ( INTEGER , sizeof ( ID ) ) ; 
+ID * ID ; 
+ID * ID ; 
+ID ID = ID ; 
+ID ID ; 
+
+ID -> ID = ID ( ID -> ID ) ; 
+ID -> ID = ID ( ID ) ; 
+ID -> ID = ID ( ID -> ID ) + INTEGER ; 
+ID -> ID = ID -> ID ; 
+
+ID ( STRING , ID ( ID -> ID ) , ID -> ID * ( ID -> ID - INTEGER ) ) ; 
+
+if ( ID -> ID * ID -> ID == INTEGER ) 
+ID ( ID , STRING ) ; 
+else 
+{ 
+ID ID = ID ( ID -> ID -> ID -> ID ) + INTEGER ; 
+ID * ID = ( ID * ) ID ( ID , sizeof ( ID ) ) ; 
+ID ID = ID ; 
+ID ID = ID ; 
+
+ 
+ID -> ID = ID ( ID ( ID -> ID ) ) ; 
+
+ 
+ID = ( ID * ) ID ( ID -> ID -> ID ) ; 
+ID = ( ID * ) ID ( ID ) ; 
+while ( ID != ID ) 
+{ 
+
+ID = ( ID * ) ID ( ID ) ; 
+if ( ID ( & ID -> ID -> ID , ID ( ID ) ) ) 
+ID ( & ID -> ID , ID ( ID -> ID . ID ) ) ; 
+
+ID = ( ID * ) ID ( ID ) ; 
+
+if ( ID != ID ) 
+if ( ID -> ID -> ID == ID )  
+ID = ( ID * ) ID ( ID ) ; 
+} 
+
+ 
+for ( ID -> ID = INTEGER ; 
+ID ( ID -> ID -> ID -> ID , ID -> ID ) -> ID == ID ; 
+ID -> ID ++ ) 
+; 
+
+ 
+ID -> ID = INTEGER ; 
+ID ( ID -> ID -> ID , ID , ID ) 
+if ( ID ( & ID -> ID -> ID , ID ( ID ) ) ) 
+if ( ID [ ID ( ID -> ID . ID ) ] == INTEGER ) 
+{ 
+ID [ ID ( ID -> ID . ID ) ] = ID -> ID ++ ; 
+} 
+
+ 
+{ 
+unsigned ID ; 
+for ( ID = INTEGER ; ID < ID ; ID ++ ) 
+ID ( STRING , ID , ID [ ID ] ) ; 
+} 
+ 
+
+ 
+ID -> ID = ( ID * ) ID ( ID -> ID , sizeof ( ID ) ) ; 
+
+ID ( ID -> ID -> ID , ID , ID ) 
+if ( ID ( & ID -> ID -> ID , ID ( ID ) ) ) 
+{ 
+ID * ID ; 
+int ID = ID [ ID ( ID -> ID . ID ) ] ; 
+
+ID -> ID [ ID ] . ID = ID -> ID . ID ; 
+
+if ( ID -> ID . ID -> ID == ID )  
+ID = ID -> ID . ID ; 
+else 
+{ 
+void * ID ; 
+ID = ( ID * ) ID ( ID ( ID -> ID . ID ) ) ; 
+
+ID -> ID [ ID ] . ID = INTEGER ; 
+for ( ID = ID ( ID ) ; ID != ID && ID ( ID ) != ID -> ID . ID ; ID = ID ( ID ) ) 
+ID -> ID [ ID ] . ID += INTEGER ; 
+} 
+
+ID -> ID [ ID ] . ID = ( ( ID * ) ID ( ID ( ID ) ) ) -> ID ; 
+} 
+
+ID = ID ( STRING , INTEGER , INTEGER , ID , ID , ID ) ; 
+ID = INTEGER ;  
+
+ID -> ID = ( int * * ) ID ( ID -> ID * ID -> ID , sizeof ( int * ) ) ; 
+
+if ( ID ) 
+ID -> ID = ( unsigned * ) ID ( ID -> ID * ID -> ID , sizeof ( unsigned ) ) ; 
+
+for ( ID = ( ID * ) ID ( ID -> ID ) ; ID != ID ; ID = ( ID * ) ID ( ID ) )  
+{ 
+unsigned ID ; 
+
+for ( ID = INTEGER ; ID < ID -> ID ; ID ++ )  
+{ 
+ID * ID ; 
+
+ 
+ID ( & ID ) ; 
+for ( ID = ( ID * ) ID ( ID ) ; ID != ID ; ID = ( ID * ) ID ( ID ) )  
+if ( ID -> ID -> ID == ID ) 
+ID ( & ID , ID ( ID ( ID ) ) ) ; 
+
+ 
+ID ( & ID ) ; 
+if ( ID ( & ID -> ID , ID ( ID ) ) && ! ID ( & ID , ID ( ID ) ) ) 
+{ 
+unsigned * ID , 
+* ID = ID ( & ( ID -> ID . ID -> ID ) ) ; 
+
+for ( ID = ID ; * ID != ID ; ID ++ ) 
+if ( ID ( & ID -> ID -> ID , ID ( ( ( ID * ) ID ( ID -> ID -> ID ) [ * ID ] ) ) ) ) 
+if ( ID ( & ( ( ID * ) ID ( ID -> ID -> ID ) [ * ID ] ) -> ID . ID , ID ) ) 
+ID ( & ID , ID [ ID ( ( ( ID * ) ID ( ID -> ID -> ID ) [ * ID ] ) -> ID . ID ) ] ) ; 
+} 
+
+if ( ID ) 
+ID ( ID -> ID , ID , ID , ID , & ID , & ID , & ID , INTEGER ) ; 
+
+ 
+if ( ID ( & ID ) != INTEGER || ID ( & ID ) != INTEGER ) 
+ID ( & ID , & ID ) ; 
+} 
+} 
+
+ 
+ID -> ID = ID ; 
+ID -> ID = ( int * ) ID ( ID , sizeof ( int ) ) ; 
+
+for ( ID = ( ID * ) ID ( ID ( ID ) ) ; ID != ID ; ID = ( ID * ) ID ( ID ) ) 
+{ 
+unsigned * ID , 
+* ID ; 
+int * ID = ID -> ID + ID -> ID ; 
+
+ 
+ID = ID ( ID -> ID . ID ) ; 
+for ( ID = ID ; * ID != ID ; ID ++ ) 
+* ID ++ = - ( * ID ) ; 
+ID ( ID ) ; 
+
+ 
+ID = ID ( ID -> ID . ID ) ; 
+for ( ID = ID ; * ID != ID ; ID ++ ) 
+* ID ++ = * ID ; 
+ID ( ID ) ; 
+
+ 
+* ID = INTEGER ; 
+} 
+
+ 
+for ( ID = ( ID * ) ID ( ID -> ID ) ; ID != ID ; ID = ( ID * ) ID ( ID ) )  
+{ 
+unsigned ID ; 
+
+for ( ID = INTEGER ; ID < ID -> ID ; ID ++ )  
+{ 
+ID * ID ; 
+
+ 
+ID ( & ID ) ; 
+for ( ID = ( ID * ) ID ( ID ) ; ID != ID ; ID = ( ID * ) ID ( ID ) )  
+if ( ID -> ID -> ID == ID ) 
+ID ( & ID , ID ( ID ( ID ) ) ) ; 
+
+ 
+ID ( & ID ) ; 
+if ( ID ( & ID -> ID , ID ( ID ) ) && ! ID ( & ID , ID ( ID ) ) ) 
+{ 
+unsigned * ID , 
+* ID = ID ( & ( ID -> ID . ID -> ID ) ) ; 
+
+for ( ID = ID ; * ID != ID ; ID ++ ) 
+if ( ID ( & ID -> ID -> ID , ID ( ( ( ID * ) ID ( ID -> ID -> ID ) [ * ID ] ) ) ) ) 
+if ( ID ( & ( ( ID * ) ID ( ID -> ID -> ID ) [ * ID ] ) -> ID . ID , ID ) ) 
+ID ( & ID , ID [ ID ( ( ( ID * ) ID ( ID -> ID -> ID ) [ * ID ] ) -> ID . ID ) ] ) ; 
+} 
+
+if ( ID ) 
+ID ( ID -> ID , ID , ID , ID , & ID , & ID , & ID , INTEGER ) ; 
+
+ 
+if ( ID ( & ID ) != INTEGER || ID ( & ID ) != INTEGER ) 
+* ( ID -> ID + ( ID ( ID ) * ID -> ID ) + ID ) = ID -> ID + ID ( & ID , & ID ) ; 
+else 
+* ( ID -> ID + ( ID ( ID ) * ID -> ID ) + ID ) = ID -> ID ; 
+
+if ( ID ) 
+* ( ID -> ID + ( ID ( ID ) * ID -> ID ) + ID ) = ID ; 
+} 
+} 
+ 
+ 
+{ 
+unsigned ID ; 
+unsigned ID = INTEGER ; 
+
+ID ( STRING ) ; 
+
+for ( ID = INTEGER ; ID < ID ; ID ++ ) 
+{ 
+ID ( STRING , ID , ID -> ID [ ID ] ) ; 
+if ( ID == INTEGER ) 
+{ 
+ID += ID -> ID [ ID ] ; 
+ID ( STRING , ID ) ; 
+} 
+else 
+{ 
+ID ( ID -> ID [ ID ] , INTEGER ) ; 
+ID -- ; 
+} 
+ID ( STRING ) ; 
+} 
+
+ID ( STRING ) ; 
+for ( ID = INTEGER ; ID < ID -> ID ; ID ++ ) 
+{ 
+unsigned ID ; 
+
+ID ( STRING , ID ) ; 
+for ( ID = INTEGER ; ID < ID -> ID ; ID ++ ) 
+ID ( STRING , * ( ID -> ID + ( ID * ID -> ID ) + ID ) ) ; 
+ID ( STRING ) ; 
+} 
+} 
+ 
+
+ID ( ID ) ; 
+ID ( & ID ) ; 
+ID ( & ID ) ; 
+} 
+
+ID ( & ID ) ; 
+
+return ID ; 
+} 
+
+void ID ( ID * ID , ID * ID ) 
+{ 
+unsigned ID ; 
+unsigned ID ; 
+unsigned ID ; 
+unsigned ID = ID -> ID -> ID -> ID -> ID ; 
+int ID = INTEGER ; 
+int * ID ; 
+
+ID * ID = ID ( ) ; 
+
+ID ( ID ) ; 
+
+ID ( STRING ID STRING , ID ( ID -> ID ) ) ; 
+ID ( ) ; 
+ID ( STRING , ID ) ; 
+
+ID ( STRING ) ; 
+ID ( ID -> ID -> ID , INTEGER , INTEGER ) ; 
+
+ID ( STRING ) ; 
+for ( ID = INTEGER ; ID < ID -> ID ; ID ++ ) 
+{ 
+ID ( STRING , 
+ID ( ID -> ID [ ID ] . ID ) , 
+ID -> ID [ ID ] . ID , 
+ID -> ID [ ID ] . ID -> ID ) ; 
+
+ID ( ID -> ID [ ID ] . ID , INTEGER ) ; 
+ID ( STRING ) ; 
+} 
+
+ID ( STRING , ID -> ID ) ; 
+ID ( STRING ) ; 
+ID ( & ID -> ID , ID , INTEGER ) ; 
+ID ( STRING ) ; 
+
+ 
+ID ( STRING ) ; 
+for ( ID = ID ; ID < ID -> ID ; ID ++ ) 
+{ 
+if ( ID == ID -> ID ) 
+ID ( STRING ) ; 
+if ( ID != ID ) 
+ID ( STRING , ID ) ; 
+} 
+ID ( STRING ) ; 
+
+ 
+ID ( STRING ) ; 
+for ( ID = ID ; ID < ID -> ID ; ID ++ ) 
+{ 
+if ( ID == ID -> ID ) 
+ID ( STRING ) ; 
+if ( ID != ID ) 
+{ 
+char ID [ INTEGER ] = { INTEGER } ; 
+char * ID = ID ( ID -> ID -> ID -> ID , ID ) -> ID ; 
+
+ID ( ID , ID , INTEGER ) ; 
+
+ID ( STRING , ID ) ; 
+} 
+} 
+ID ( STRING ) ; 
+
+ 
+ID ( STRING ) ; 
+for ( ID = ID ; ID < ID -> ID ; ID ++ ) 
+{ 
+if ( ID == ID -> ID ) 
+ID ( STRING ) ; 
+if ( ID != ID ) 
+ID ( STRING ) ; 
+} 
+ID ( STRING ) ; 
+
+
+for ( ID = INTEGER ; ID < ID -> ID ; ID ++ ) 
+{ 
+ID ( STRING , ID ) ; 
+for ( ID = ID ; ID < ID -> ID ; ID ++ ) 
+{ 
+ID = ID ( ID , ID , ID ) ; 
+
+if ( ID == ID -> ID ) 
+ID ( STRING ) ; 
+
+if ( ID != ID ) 
+if ( ! ( * ID == INTEGER || * ( ID + INTEGER ) == INTEGER ) ) 
+ID ( STRING , ID ++ ) ; 
+else 
+ID ( ID , * ID , ID ) ; 
+} 
+ID ( STRING ) ; 
+} 
+
+ID ( STRING ) ; 
+
+if ( ID <= INTEGER ) 
+ID ( STRING ) ; 
+else 
+{ 
+ID = INTEGER ; 
+for ( ID = INTEGER ; ID < ID -> ID ; ID ++ ) 
+{ 
+for ( ID = ID ; ID < ID -> ID ; ID ++ ) 
+{ 
+ID = ID ( ID , ID , ID ) ; 
+
+if ( ID != ID ) 
+if ( ! ( * ID == INTEGER || * ( ID + INTEGER ) == INTEGER ) ) 
+{ 
+ID ( STRING , ID ++ ) ; 
+
+while ( * ID != INTEGER ) 
+ID ( ID , * ID ++ , ID ) ; 
+
+ID ( STRING ) ; 
+} 
+} 
+} 
+} 
+ID ( ID ) ; 
+} 
+
+ 
+static int ID ; 
+static char ID [ ID ] ; 
+static int ID ; 
+
+void ID ( ID * ID ) 
+{ 
+while ( ID ( ID ) && ID != 
+****** 32638 tokens
+&& ID != STRING && ID != STRING ) 
+ID = ID ( ID ) ; 
+} 
+
+void ID ( ID * ID ) 
+{ 
+while ( ID != 
+****** 32668 tokens
+&& ID != STRING && ID != STRING ) 
+ID = ID ( ID ) ; 
+
+ID = ID ( ID ) ; 
+
+ID ( ID ) ; 
+} 
+
+void ID ( ID * ID ) 
+{ 
+while ( ID != 
+****** 32710 tokens
+&& ID != STRING ) 
+ID = ID ( ID ) ; 
+
+ID = ID ( ID ) ; 
+
+ID ( ID ) ; 
+} 
+
+void ID ( ID * ID ) 
+{ 
+char * ID = ID ; 
+
+ID ( ID ) ; 
+
+while ( ID - ID < ID - INTEGER && ! ID ( ID ) && ID != 
+****** 32773 tokens
+) 
+{ 
+* ID ++ = ( char ) ID ; 
+ID = ID ( ID ) ; 
+} 
+
+* ID = INTEGER ; 
+
+ID ( ID ) ; 
+} 
+
+void ID ( ID * ID ) 
+{ 
+int ID = INTEGER ; 
+
+ID = INTEGER ; 
+
+while ( ID == STRING ) 
+{ 
+ID ^= INTEGER ; 
+ID = ID ( ID ) ; 
+} 
+
+ID ( ID ) ; 
+
+while ( ID ( ID ) ) 
+{ 
+ID = ID * INTEGER + ID - STRING ; 
+ID = ID ( ID ) ; 
+} 
+
+if ( ID ) 
+ID *= - INTEGER ; 
+
+ID ( ID ) ; 
+} 
+
+
+void ID ( ID * ID , ID * ID ) 
+{ 
+int * ID = ( int * ) ID ( ID ( ID -> ID -> ID -> ID -> ID ) + INTEGER , sizeof ( int ) ) ; 
+int * ID = ( int * ) ID ( INTEGER , sizeof ( int ) ) ; 
+
+ID = ID ( ID ) ; 
+while ( ID ( ID , STRING ) != INTEGER && ID != 
+****** 32967 tokens
+) 
+{ 
+ID ( ID ) ; 
+
+ID ( ID ) ; 
+} 
+
+ID ( ID ) ; 
+ID ( ID ) ; 
+ID ( ID ) ; 
+
+while ( INTEGER ) 
+{ 
+int ID ; 
+int ID ; 
+
+ID ( ID ) ; 
+ID = ID ; 
+if ( ID == INTEGER )  
+break ; 
+
+ID ( ID ) ; 
+ID = INTEGER ; 
+
+while ( ID != STRING && ID != 
+****** 33042 tokens
+) 
+{ 
+int ID = INTEGER ; 
+int * ID ; 
+
+while ( ID ( ID ) || ID == STRING || ID == STRING || ID == STRING || ID == STRING || ID == STRING ) 
+{ 
+if ( ID == STRING || ID == STRING || ID == STRING || ID == STRING ) 
+ID = ID ( ID ) ;  
+
+ID ( ID ) ; 
+
+ID [ ID ++ ] = ID ; 
+} 
+
+ID ( ID ) ; 
+
+if ( ID > INTEGER ) 
+{ 
+ID = ( int * ) ID ( ID + INTEGER , sizeof ( int ) ) ; 
+ID ( ID , ID , ID * sizeof ( int ) ) ; 
+* ( ID -> ID + ( ID * ID -> ID ) + ID ) = ID ; 
+} 
+else 
+* ( ID -> ID + ( ID * ID -> ID ) + ID ) = ID ; 
+
+ID ++ ; 
+} 
+
+ID ( ID ) ; 
+} 
+
+ID ( ID ) ; 
+} 
+
+void ID ( ID * ID , ID * ID , int ID ) 
+{ 
+unsigned ID ; 
+unsigned ID ; 
+unsigned ID ; 
+int ID ; 
+int ID ; 
+int * ID ; 
+ID * ID = ID -> ID -> ID ; 
+ID * ID = ID -> ID ; 
+ID * ID ; 
+unsigned ID = INTEGER ; 
+
+ID * ID = ID ( ) ; 
+
+ID ( ID -> ID ) ; 
+
+ID ( ID ) ; 
+
+ID ( STRING ID STRING , ID ( ID -> ID ) ) ; 
+ID ( ) ; 
+ID ( STRING , ID ) ; 
+
+if ( ! ID ) 
+{ 
+ID ( STRING ) ; 
+for ( ID = INTEGER ; ID < ID -> ID ; ID ++ ) 
+{ 
+ID ( STRING , ID ) ; 
+ID ( ID ( ID -> ID -> ID -> ID , ID ) ) ; 
+} 
+
+ID ( STRING ) ; 
+if ( ID ( ID -> ID -> ID ) == ID ) 
+ID ( ID -> ID -> ID ) ; 
+
+ID = ID ( ID -> ID -> ID ) ; 
+
+for ( ID = INTEGER ; ID < ID ; ID ++ ) 
+{ 
+ID * ID = ( ID * ) ID ( ID -> ID -> ID ) [ ID ] ; 
+
+if ( ID != ID && ID ( ID ) ) 
+{ 
+ID ( STRING , ID ( ID ) ) ; 
+ID ( ID , INTEGER ) ; 
+ID ( STRING , ID ( ID ) ? STRING : STRING ) ; 
+} 
+} 
+
+ID ( STRING ) ; 
+ID ( ID -> ID , ID , ID ) 
+ID ( ID , ID ) ; 
+
+ID ( STRING ) ; 
+ID ( ID -> ID , ID , ID ) 
+{ 
+ID ( STRING , ID ( ID ) ) ; 
+ID ( & ID -> ID . ID -> ID , ID , INTEGER ) ; 
+ID ( STRING ) ; 
+} 
+} 
+
+ID ( STRING ) ; 
+for ( ID = INTEGER ; ID < ID -> ID ; ID ++ ) 
+{ 
+ID ( STRING , 
+ID , 
+ID -> ID [ ID ] . ID , 
+ID -> ID [ ID ] . ID -> ID , 
+ID ( ID -> ID [ ID ] . ID ) ) ; 
+
+ID ( ID -> ID [ ID ] . ID , INTEGER ) ; 
+ID ( STRING ) ; 
+} 
+
+ID ( STRING , ID -> ID ) ; 
+
+ID ( STRING ) ; 
+ID ( & ID -> ID , ID , INTEGER ) ; 
+ID ( STRING ) ; 
+
+ID ( STRING ) ; 
+for ( ID = ID ; ID < ID -> ID ; ID ++ ) 
+ID ( STRING , ID ) ; 
+
+ID ( STRING ) ; 
+
+for ( ID = ID ; ID < ID -> ID ; ID ++ ) 
+{ 
+ID * ID = ID ( ID -> ID -> ID -> ID , ID ) ; 
+
+ID ( STRING ) ; 
+ID ( ID ) ; 
+if ( ID == INTEGER && ID -> ID != ID ) 
+ID = ID ; 
+} 
+
+if ( ! ID ) 
+ID = ID -> ID ; 
+
+ID ( STRING ) ; 
+
+for ( ID = INTEGER ; ID < ID -> ID ; ID ++ ) 
+{ 
+ID ( STRING , ID ) ; 
+for ( ID = ID ; ID < ID ; ID ++ ) 
+{ 
+int ID = INTEGER ; 
+ID = ID ( ID , ID , ID ) ; 
+
+if ( ID -> ID != ID ) 
+ID ( STRING , ID [ ( * ( ID -> ID + ( ID * ID -> ID ) + ID ) ) ] ) ; 
+else 
+ID ( STRING ) ; 
+
+while ( * ID != INTEGER ) 
+{ 
+if ( ID ) 
+ID = INTEGER ; 
+else 
+ID ( STRING ) ; 
+
+ID ( STRING , * ID ++ ) ; 
+} 
+} 
+ID ( STRING ) ; 
+} 
+
+if ( ID -> ID != ID ) 
+{ 
+ID ( STRING ) ; 
+for ( ID = ID ; ID < ID ; ID ++ ) 
+ID ( STRING , ID ) ; 
+
+ID ( STRING ) ; 
+
+for ( ID = ID ; ID < ID ; ID ++ ) 
+{ 
+ID ( STRING ) ; 
+ID ( ID ( ID -> ID -> ID -> ID , ID ) ) ; 
+} 
+
+ID ( STRING ) ; 
+
+for ( ID = INTEGER ; ID < ID -> ID ; ID ++ ) 
+{ 
+ID ( STRING , ID ) ; 
+for ( ID = ID ; ID < ID ; ID ++ ) 
+ID ( STRING , ( * ( ID -> ID + ( ID * ID -> ID ) + ID ) ) ) ; 
+ID ( STRING ) ; 
+} 
+} 
+
+ID ( ID ) ; 
+} 
+
+static char * ID ; 
+static ID ; 
+static char * ID ; 
+static int ID = INTEGER ; 
+
+static void ID ( char * ID , ID * ID ) 
+{ 
+ID = INTEGER ; 
+ID = ID ; 
+
+ID = ID ( STRING ) -> ID -> ID ; 
+
+if ( * ID != INTEGER ) 
+ID = ID ( ID -> ID , ID , ID ) -> ID ; 
+
+ID ( STRING , * ID == INTEGER ? STRING : ID , ID ) ; 
+} 
+
+static int ID ( ID * ID ) 
+{ 
+ID * ID , 
+* ID ; 
+int ID = INTEGER ; 
+
+if ( ! ID ( * ID ) && * ID != INTEGER ) 
+{ 
+while ( ! ID ( * ID ) && * ID != INTEGER ) 
+ID ++ ; 
+if ( ID != INTEGER ) 
+{ 
+if ( * ID == INTEGER ) 
+return ID ; 
+else 
+return ID ; 
+} 
+} 
+
+while ( ! ID ( * ID ) && * ID != INTEGER ) 
+ID ++ ; 
+
+if ( * ID == INTEGER ) 
+{ 
+ 
+ID ( STRING ) ; 
+ 
+return ID ; 
+} 
+
+for ( ID = ( ID * ) ID ( ID ( ID -> ID -> ID -> ID ) ) ; 
+ID != ID ; 
+ID = ( ID * ) ID ( ID ) ) 
+if ( ID -> ID == ID ) 
+{ 
+int ID = ID ( ID -> ID ) ; 
+
+if ( ID ( ID -> ID , ID , ID ) == INTEGER && ID > ID ) 
+{ 
+ID = ID ; 
+ID = ID ; 
+} 
+} 
+
+if ( ID > INTEGER ) 
+{ 
+ 
+ID ( STRING , ID -> ID , ID -> ID ) ; 
+ 
+ID += ID ; 
+return ID -> ID ; 
+} 
+else 
+{ 
+ 
+ID ( STRING ) ; 
+ 
+return ID ; 
+} 
+} 
+
+ID * ID ( ID * ID , char * ID ) 
+{ 
+ 
+unsigned ID = INTEGER ; 
+unsigned ID = INTEGER ; 
+unsigned ID = INTEGER ; 
+ 
+int * ID = ( int * ) ID ( INTEGER ) ; 
+int * ID = ID ; 
+int ID ; 
+ID * ID = ( ID * ) ID ( INTEGER , sizeof ( ID ) ) ; 
+
+ID -> ID = ID ; 
+
+ID ( ID , STRING , ID ) ; 
+
+ID ( ID , ID -> ID -> ID ) ; 
+
+ID ( ID ) ; 
+
+* ++ ID = INTEGER ; 
+
+while ( INTEGER ) 
+{ 
+int * ID = * ( ID -> ID + ( * ID * ID -> ID ) + ID ) ; 
+
+if ( * ID == INTEGER ) 
+{ 
+ID ( ID , STRING ) ; 
+ID ( ID ) ; 
+return ( ID ) ; 
+} 
+
+ 
+{ 
+int * ID ; 
+
+ID ( STRING , * ( ID + INTEGER ) ) ; 
+for ( ID = ID + INTEGER ; ID <= ID ; ID += INTEGER ) 
+ID ( STRING , * ID , ID ( ID -> ID -> ID , * ID ) -> ID , * ( ID + INTEGER ) ) ; 
+ID ( STRING , * ID ) ; 
+} 
+ 
+
+if ( * ID < INTEGER )  
+{ 
+* ++ ID = ID ; 
+* ++ ID = - * ID ; 
+ 
+ID ( STRING , ID - ID ) ; 
+ID ++ ; 
+if ( ID - ID > ID ) 
+ID = ID - ID ; 
+ 
+ID ( ID ) ; 
+}  
+else 
+{ 
+ID * ID = & ( ID -> ID [ * ID ] ) ; 
+unsigned ID = ID ( ID -> ID ) ; 
+unsigned ID = ID -> ID -> ID ; 
+int ID ; 
+
+if ( ID ( & ID -> ID , ID ) ) 
+{ 
+ID ( ID , STRING ) ; 
+ 
+ID ( STRING , ID , ID , ID ) ; 
+ 
+ID -> ID = INTEGER ; 
+ID ( ID ) ; 
+return ( ID ) ; 
+} 
+
+ID -= ID -> ID * INTEGER ; 
+ID = - * ( * ( ID -> ID + ( * ID * ID -> ID ) + ID ) ) ;  
+ 
+ID ( STRING , ID , ID -> ID * INTEGER , * ID , ID ) ; 
+ 
+* ++ ID = ID ; 
+* ++ ID = ID ; 
+ 
+ID ( STRING , ID -> ID , ID - ID ) ; 
+ID ++ ; 
+if ( ID - ID > ID ) 
+ID = ID - ID ; 
+ 
+} 
+} 
+} 
+
+enum ID 
+{ 
+ID , ID , ID , ID , ID 
+} ; 
+
+typedef struct ID 
+{ 
+struct ID * ID ; 
+struct ID * ID ; 
+} ID ; 
+
+typedef struct ID 
+{ 
+unsigned ID ; 
+enum ID ID ; 
+struct ID * ID ; 
+unsigned ID ; 
+unsigned ID ; 
+} ID ; 
+
+typedef struct ID 
+{ 
+unsigned ID ; 
+unsigned ID ; 
+} ID ; 
+
+static ID * ID = ID ; 
+static ID * ID = ID ; 
+static ID * ID = ID ; 
+static int ID ; 
+
+void ID ( ID * ID , void * ID ) 
+{ 
+ID * ID ; 
+ID * ID ; 
+ID * ID = ID ( ) ; 
+unsigned ID = INTEGER ; 
+unsigned ID = INTEGER ; 
+unsigned ID = INTEGER ; 
+unsigned ID = INTEGER ; 
+unsigned ID = INTEGER ; 
+ID * ID = ID ; 
+ID * ID = ID ; 
+
+ID ( & ID ) ; 
+ID ( & ID ) ; 
+
+ID ( ID ) ; 
+
+for ( ID = ( ID * ) ID ( ID ) ; ID != ID ; ID = ( ID * ) ID ( ID ) ) 
+{ 
+if ( ID < ID -> ID ) 
+ID = ID -> ID ; 
+
+
+switch ( ID -> ID ) 
+{ 
+case ID : 
+ID ( ID , ID -> ID ) ; 
+ID ++ ; 
+break ; 
+
+case ID : 
+ID ( ID , ID -> ID ) ; 
+ID ++ ; 
+break ; 
+
+case ID : 
+ID ( ID , ID -> ID ) ; 
+ID ++ ; 
+break ; 
+} 
+
+for ( ID = ( ID * ) ID ( ID ) ; ID != ID ; ID = ( ID * ) ID ( ID ) ) 
+{ 
+ID ++ ; 
+
+ID ( ID , ID -> ID ) ; 
+} 
+} 
+
+ID = ( ID + INTEGER ) / INTEGER ; 
+
+ID ( STRING , 
+ID , ID == INTEGER ? STRING : STRING , 
+ID , ID == INTEGER ? STRING : STRING , 
+ID , ID == INTEGER ? STRING : STRING , 
+ID , ID == INTEGER ? STRING : STRING , 
+ID - INTEGER , ID - INTEGER == INTEGER ? STRING : STRING ) ; 
+
+ID ( STRING , ID ) ; 
+
+ID ( STRING ) ; 
+ID ( ID ) ; 
+ID ( STRING , ID ( ID ) ) ; 
+
+ID ( STRING ) ; 
+ID ( ID ) ; 
+ID ( STRING , ID ( ID ) ) ; 
+
+ID ( STRING ) ; 
+ID ( ID ) ; 
+ID ( STRING , ID ( ID ) ) ; 
+ID ( STRING , ID ( ID ) ) ; 
+
+ID ( STRING ) ; 
+ID ( ID ) ; 
+ID ( STRING , ID ( ID ) ) ; 
+ID ( STRING , ID ( ID ) ) ; 
+
+ID ( STRING ) ; 
+ID ( ID ) ; 
+ID ( STRING , ID ( ID ) ) ; 
+ID ( STRING , ID ( ID ) ) ; 
+
+ID ( & ID ) ; 
+ID ( & ID ) ; 
+ID ( & ID ) ; 
+ID ( & ID ) ; 
+ID ( & ID ) ; 
+
+ID ( ID ) ; 
+} 
+
+static ID * ID ; 
+
+void ID ( const void * ID ) 
+{ 
+ID ( STRING , ID ) ;  
+} 
+
+void ID ( const void * ID ) 
+{ 
+ID * ID = ( ID * ) ID ; 
+
+ID ( STRING , ID -> ID ) ; 
+
+switch ( ID -> ID ) 
+{ 
+case ID : 
+ID ( STRING ) ; 
+break ; 
+case ID : 
+ID ( STRING ) ; 
+break ; 
+case ID : 
+ID ( STRING , ID -> ID , ID -> ID ) ; 
+break ; 
+case ID : 
+case ID : 
+ID ( STRING , ID ( ID -> ID -> ID -> ID -> ID , ID -> ID ) -> ID , ID -> ID ) ; 
+break ; 
+default : 
+ID ( STRING ) ; 
+break ; 
+} 
+} 
+
+void ID ( const void * ID ) 
+{ 
+ID * ID = ( ID * ) ID ; 
+
+if ( ID -> ID != INTEGER ) 
+{ 
+ID ( STRING ) ; 
+ID ( ID ( ID -> ID -> ID -> ID -> ID , ID -> ID ) ) ; 
+ID ( STRING , ID -> ID ) ; 
+} 
+} 
+
+void ID ( ID * ID , ID * ID ) 
+{ 
+ID * ID = ID ( ) ; 
+
+ID ( ID ) ; 
+ID = ID ; 
+ID ( ID -> ID , ID , ID , ID ) ; 
+ID ( ID ) ; 
+} 
+
+ 
+if ( ID == ID ) \ 
+{ \ 
+ID ( STRING ) ; \ 
+return ID ; \ 
+} 
+
+ 
+{ \ 
+ID ( STRING , ID , ID ( ID -> ID -> ID -> ID , ID ) -> ID ) ; \ 
+ID -> ID = ID ; \ 
+ID -> ID = ID ; \ 
+ID -> ID = ID ; \ 
+ID -> ID = ID ; \ 
+ID -> ID = ID ; \ 
+\ 
+ID ( ID , ID ) ; \ 
+ID ( ID , ID ) ; \ 
+\ 
+if ( ++ ID == ID ) \ 
+ID = ID ; \ 
+\ 
+if ( ID == ID ) \ 
+ID ( ID , STRING ) ; \ 
+\ 
+if ( ID >= ID ) \ 
+{ \ 
+if ( ID < ID - ID ) \ 
+ID = ID - ID ; \ 
+} \ 
+else \ 
+{ \ 
+if ( ID < ID - ( ID - ID ) ) \ 
+ID = ID - ( ID - ID ) ; \ 
+} \ 
+} 
+
+ID * ID ( ID * ID , char * ID , int ID , int ID ) 
+{ 
+typedef struct ID 
+{ 
+ID * ID ; 
+unsigned ID ; 
+unsigned ID ; 
+unsigned ID ; 
+ID * ID ; 
+} ID ; 
+
+ID * ID ; 
+ID * ID ; 
+ID * ID ; 
+ID * ID ; 
+
+ID * * ID ;  
+ID * * ID ;  
+ID * * ID ;  
+int ID ;  
+int ID ;  
+int ID ;  
+int ID = INTEGER ; 
+unsigned ID = ID -> ID ; 
+unsigned ID = INTEGER ;  
+ID * ID ;  
+
+
+ 
+ 
+if ( ID == INTEGER ) 
+ID = INTEGER ; 
+
+ID = ID ( ID , sizeof ( ID ) ) ;  
+ID = ID + ID ;  
+ID = ID ;  
+ID = ID ;  
+
+ID ( STRING , ID , ID ? STRING : STRING , ID ) ; 
+ID ( & ID -> ID , ID , INTEGER ) ; 
+ID ( STRING ) ; 
+
+ 
+ID = ( ID * * ) ID ( ID , sizeof ( ID * ) ) ; 
+ID = ( ID * * ) ID ( ID , sizeof ( ID * ) ) ; 
+ID = ( ID * * ) ID ( ID , sizeof ( ID * ) ) ; 
+
+ 
+ID = ( ID * ) ID ( INTEGER , sizeof ( ID ) ) ; 
+ID -> ID = ID ; 
+ID -> ID = ID ( STRING ) ; 
+ID ( ID -> ID , ID ( sizeof ( ID ) , ID -> ID ) ) ; 
+( ( ID * ) ID ( ID -> ID ) ) -> ID = ID ; 
+
+ 
+ID [ ID -> ID ] = ( ID * ) ID ( sizeof ( ID ) , ID -> ID ) ; 
+ID [ ID -> ID ] -> ID = ID -> ID ; 
+ID [ ID -> ID ] -> ID = ID ; 
+ID [ ID -> ID ] -> ID = ID ; 
+
+ 
+ID ( sizeof ( ID ) , ID ( ID -> ID ) , ID [ ID -> ID ] ) ; 
+
+ 
+ID ( ID , ID -> ID -> ID ) ; 
+ID ( ID ) ; 
+
+ 
+ID ( & ID ) ; 
+ID ( & ID ) ; 
+ID ( & ID ) ; 
+ID = - INTEGER ; 
+
+ 
+do 
+{ 
+ 
+ 
+for ( ID = ID - INTEGER ; ID > INTEGER ; ID -- ) 
+if ( ID [ ID ] != ID ) 
+{ 
+int * ID = ID ( ID , ID , ID ) ; 
+
+if ( * ID == INTEGER ) 
+{ 
+ID [ ID ] = ID ;  
+ID ( STRING , ID , INTEGER ) ; 
+} 
+else 
+{ 
+while ( * ID < INTEGER )  
+{ 
+ID ++ ; 
+ID ( STRING , ID , INTEGER ) ; 
+} 
+
+while ( * ID > INTEGER ) 
+if ( ID ( & ID -> ID , ID ( ID -> ID [ * ID ] . ID ) ) ) 
+{ 
+ID = INTEGER ; 
+ID ( STRING , ID ( ID -> ID [ * ID ] . ID ) , INTEGER ) ; 
+ID ++ ; 
+} 
+else 
+{ 
+ID * ID = & ( ID -> ID [ * ID ] ) ; 
+unsigned ID = ID -> ID * INTEGER ; 
+unsigned ID = ID -> ID -> ID ; 
+
+ID * ID = ID [ ID ] ; 
+ID * ID ; 
+
+ID ( STRING , ID ( ID -> ID [ * ID ] . ID ) , INTEGER ) ; 
+
+for ( ID = ( ID * ) ID ( ID ) ; ID != ID ; ID = ( ID * ) ID ( ID ) ) 
+{ 
+ID ( ID , ID ) ; 
+ID ( ID , ID , ID , ID , ID ) ; 
+} 
+ID ++ ; 
+} 
+} 
+} 
+
+ 
+while ( ID != ID ) 
+{ 
+int ID ; 
+unsigned ID ; 
+ID * ID ; 
+int * ID ; 
+unsigned ID = ID -> ID ; 
+unsigned ID = ID -> ID ; 
+unsigned ID = ID -> ID ; 
+ID * ID = ID -> ID ; 
+ID * ID = ( ID * ) ID ( ID ) ;  
+ID * ID = ID -> ID ; 
+ID * ID ; 
+ID * ID ; 
+
+ID ( STRING , ID , ID ) ; 
+ID ( STRING , ID - ID , INTEGER ) ; 
+
+ 
+if ( ++ ID == ID ) 
+ID = ID ; 
+
+ 
+while ( ID > INTEGER ) 
+{ 
+ID * ID ; 
+
+ID -- ; 
+
+ID = ( ID * ) ID ( ID ) ; 
+ID -> ID ++ ; 
+ID -> ID ++ ; 
+ID = ( ID * ) ID ( ID ) ; 
+ID ( STRING , ID , ID -> ID ) ; 
+
+ 
+if ( ID != ID ) 
+for ( ID = ( ID * ) ID ( ID ) ; ID != ID ; ID = ( ID * ) ID ( ID ) ) 
+ID ( ID , ID , ID , ID , ID ) ; 
+} 
+
+ID ( STRING , ID -> ID , INTEGER ) ; 
+
+ 
+ID = - * ( ID ( ID , ID -> ID , ID ) ) ; 
+ID ( STRING , ID , INTEGER ) ; 
+ID = ID [ ID ] ; 
+if ( ID == ID ) 
+{ 
+ID ( STRING , ID , INTEGER ) ; 
+ID = ( ID * ) ID ( sizeof ( ID ) , ID -> ID ) ; 
+ID -> ID = ID ; 
+ID -> ID = ID ; 
+ID -> ID = ID ; 
+ID [ ID ] = ID ; 
+
+ 
+ID = INTEGER ; 
+} 
+else 
+{  
+void * ID ; 
+
+for ( ID = ID ( ID ) ; ID != ID ; ID = ID ( ID ) ) 
+{ 
+ID * ID = ( ID * ) ID ( ID ) ; 
+void * ID ; 
+
+for ( ID = ID ( ID ) ; ID != ID ; ID = ID ( ID ) ) 
+if ( ID ( ID ) == ID ) 
+goto ID ; 
+} 
+
+ 
+ID = INTEGER ; 
+} 
+
+ 
+ 
+ 
+ID = ( ID * ) ID ( sizeof ( ID ) , ID -> ID ) ; 
+ID -> ID = ID ; 
+ID -> ID = ID ; 
+if ( ID -> ID == ID -> ID ) 
+ID -> ID = ID -> ID ; 
+else 
+ID -> ID = ID -> ID - INTEGER ; 
+
+ID ( sizeof ( ID ) , ID , ID ) ; 
+ID = ( ID * ) ID ( sizeof ( ID ) , ID , ID ) ; 
+ 
+ID = ( ID * ) ID ( sizeof ( ID ) , ID , ID ) ; 
+ 
+
+ 
+ID = ID ( ID , ID , ID ) ; 
+
+while ( * ID < INTEGER ) 
+ID ++ ; 
+
+while ( * ID > INTEGER ) 
+if ( ID ( & ID -> ID , ID ( ID -> ID [ * ID ] . ID ) ) ) 
+{ 
+ID = INTEGER ; 
+ID ( STRING , ID ( ID -> ID [ * ID ] . ID ) , INTEGER ) ; 
+ID ++ ; 
+} 
+else 
+{ 
+ID * ID = & ( ID -> ID [ * ID ] ) ; 
+unsigned ID = ID -> ID * INTEGER ; 
+unsigned ID = ID -> ID -> ID ; 
+
+ 
+
+ID ( STRING , ID ( ID -> ID [ * ID ] . ID ) , INTEGER ) ; 
+if ( ! ( ID && 
+ID -> ID == ID -> ID  && 
+ID != INTEGER ) )  
+if ( ID || ID != INTEGER ) 
+{ 
+ID ( ID , ID ) ; 
+ID ( ID , ID , ID , ID , ID ) ; 
+} 
+
+ID ++ ;  
+} 
+ID : ; 
+
+} 
+
+ 
+ 
+ID ( ID , INTEGER , sizeof ( ID * ) * ID ) ;  
+ID ( ID , INTEGER , sizeof ( ID * ) * ID ) ;  
+
+ 
+for ( ID = INTEGER ; ID < ID ; ID ++ ) 
+{ 
+if ( ID [ ID ] != ID ) 
+{ 
+int * ID = ID ( ID , ID [ ID ] -> ID , ID ) ; 
+
+while ( * ID < INTEGER ) 
+{ 
+ID * * ID = & ID [ - * ID ] ; 
+ID * * ID = & ID [ - * ID ] ; 
+
+if ( * ID == ID ) 
+{ 
+ID ( STRING , - * ID , INTEGER ) ; 
+
+* ID = ( ID * ) ID ( sizeof ( ID ) , ID -> ID ) ; 
+( * ID ) -> ID = - * ID ; 
+( * ID ) -> ID = ID ; 
+( * ID ) -> ID = ID + INTEGER ; 
+
+* ID = ( ID * ) ID ( sizeof ( ID ) , ID -> ID ) ; 
+( * ID ) -> ID = ID ; 
+( * ID ) -> ID = ID ; 
+( * ID ) -> ID = ID + INTEGER ; 
+
+ID ( sizeof ( ID ) , * ID , * ID ) ; 
+} 
+ID ++ ; 
+} 
+} 
+} 
+
+if ( ID [ INTEGER ] != ID ) ID = INTEGER ; 
+
+ 
+for ( ID = INTEGER , ID = INTEGER ; ID < ID ; ID ++ ) 
+{ 
+if ( ID [ ID ] != ID ) 
+{ 
+int * ID = ID ( ID , ID [ ID ] -> ID , ID ) ; 
+
+if ( * ID < INTEGER ) 
+{ 
+ID ( STRING , - * ID , INTEGER ) ; 
+ID = INTEGER ; 
+ID ( sizeof ( ID ) , ID [ ID ] , ID [ - * ID ] ) ; 
+} 
+} 
+ID [ ID ] = ID [ ID ] ; 
+} 
+
+ 
+ID ( STRING , ID , INTEGER ) ; 
+ID ( ID ) ; 
+ID += INTEGER ; 
+} 
+while ( ID ) ; 
+
+if ( ID ) ID ( STRING ) ; else ID ( STRING ) ; 
+
+ 
+ID ( ID , ID -> ID ) ; 
+
+ 
+ID ( ID ) ; 
+ID ( ID ) ; 
+ID ( ID ) ; 
+
+return ID ; 
+} 
+
+ID * ID ( ID * ID , char * ID , int ID , int ID ) 
+{ 
+typedef struct ID 
+{ 
+ID * ID ; 
+unsigned ID ; 
+unsigned ID ; 
+unsigned ID ; 
+ID * ID ; 
+} ID ; 
+
+ID * ID ; 
+ID * ID ; 
+ID * ID ; 
+ID * ID ; 
+
+ID * * ID ;  
+ID * * ID ;  
+int ID ;  
+int ID ;  
+int ID ;  
+unsigned ID = ID -> ID ; 
+unsigned ID = INTEGER ;  
+ID * ID ;  
+int ID = INTEGER ; 
+
+
+ 
+ 
+if ( ID == INTEGER ) 
+ID = INTEGER ; 
+
+ID = ( ID * ) ID ( ID , sizeof ( ID ) ) ;  
+ID = ID + ID ;  
+ID = ID ;  
+ID = ID ;  
+
+ID ( STRING , ID , ID ? STRING : STRING , ID ) ; 
+ID ( & ID -> ID , ID , INTEGER ) ; 
+ID ( STRING ) ; 
+
+ 
+ID = ( ID * * ) ID ( ID , sizeof ( ID * ) ) ; 
+ID = ( ID * * ) ID ( ID , sizeof ( ID * ) ) ; 
+
+ 
+ID = ( ID * ) ID ( INTEGER , sizeof ( ID ) ) ; 
+ID -> ID = ID ; 
+ID -> ID = ID ( STRING ) ; 
+ID ( ID -> ID , ID ( sizeof ( ID ) , ID -> ID ) ) ; 
+( ( ID * ) ID ( ID -> ID ) ) -> ID = ID ; 
+
+ 
+ID [ ID -> ID ] = ( ID * ) ID ( sizeof ( ID ) , ID -> ID ) ; 
+ID [ ID -> ID ] -> ID = ID -> ID ; 
+ID [ ID -> ID ] -> ID = ID ; 
+ID [ ID -> ID ] -> ID = ID ; 
+
+ 
+ID ( sizeof ( ID ) , ID ( ID -> ID ) , ID [ ID -> ID ] ) ; 
+
+ 
+ID ( ID , ID -> ID -> ID ) ; 
+ID ( ID ) ; 
+
+ 
+ID ( & ID ) ; 
+ID ( & ID ) ; 
+ID ( & ID ) ; 
+ID = - INTEGER ; 
+
+ 
+do 
+{ 
+ 
+ 
+for ( ID = ID - INTEGER ; ID > INTEGER ; ID -- ) 
+if ( ID [ ID ] != ID ) 
+{ 
+int * ID = ID ( ID , ID , ID ) ; 
+
+if ( * ID == INTEGER ) 
+{ 
+ID [ ID ] = ID ;  
+ID ( STRING , ID , INTEGER ) ; 
+} 
+else 
+{ 
+while ( * ID < INTEGER )  
+{ 
+ID ++ ; 
+ID ( STRING , ID , INTEGER ) ; 
+} 
+
+while ( * ID > INTEGER ) 
+if ( ID ( & ID -> ID , ID ( ID -> ID [ * ID ] . ID ) ) ) 
+{ 
+/ / ID = INTEGER ; 
+ID ( STRING , ID ( ID -> ID [ * ID ] . ID ) , INTEGER ) ; 
+ID ++ ; 
+} 
+else 
+{ 
+ID * ID = & ( ID -> ID [ * ID ] ) ; 
+unsigned ID = ID -> ID ; 
+unsigned ID = ID -> ID -> ID ; 
+
+ID * ID = ID [ ID ] ; 
+ID * ID ; 
+
+ID ( STRING , ID ( ID -> ID [ * ID ] . ID ) , INTEGER ) ; 
+
+for ( ID = ( ID * ) ID ( ID ) ; ID != ID ; ID = ( ID * ) ID ( ID ) ) 
+{ 
+ID ( ID , ID ) ; 
+ID ( ID , ID , ID , ID , ID ) ; 
+} 
+ID ++ ; 
+} 
+} 
+} 
+
+ 
+while ( ID != ID ) 
+{ 
+int ID ; 
+unsigned ID ; 
+ID * ID ; 
+int * ID ; 
+unsigned ID = ID -> ID ; 
+unsigned ID = ID -> ID ; 
+unsigned ID = ID -> ID ; 
+ID * ID = ID -> ID ; 
+ID * ID = ( ID * ) ID ( ID ) ;  
+ID * ID = ID -> ID ; 
+ID * ID ; 
+
+ID ( STRING , ID , ID ) ; 
+ID ( STRING , ID - ID , INTEGER ) ; 
+
+ 
+if ( ++ ID == ID ) 
+ID = ID ; 
+
+ 
+while ( ID > INTEGER ) 
+{ 
+ID * ID ; 
+
+ID -- ; 
+
+ID = ( ID * ) ID ( ID ) ; 
+if ( ID ( ID ) != ID )  
+{ 
+ID -> ID ++ ; 
+ID -> ID ++ ; 
+} 
+ID = ( ID * ) ID ( ID ) ; 
+ID ( STRING , ID , ID -> ID ) ; 
+
+ 
+if ( ID != ID ) 
+for ( ID = ( ID * ) ID ( ID ) ; ID != ID ; ID = ( ID * ) ID ( ID ) ) 
+ID ( ID , ID , ID , ID , ID ) ; 
+} 
+
+ID ( STRING , ID -> ID , INTEGER ) ; 
+
+ 
+ID = - * ( ID ( ID , ID -> ID , ID ) ) ; 
+ID ( STRING , ID , INTEGER ) ; 
+ID = ID [ ID ] ; 
+if ( ID == ID ) 
+{ 
+ID ( STRING , ID , INTEGER ) ; 
+ID = ( ID * ) ID ( sizeof ( ID ) , ID -> ID ) ; 
+ID -> ID = ID ; 
+ID -> ID = ID ; 
+ID -> ID = ID ; 
+ID [ ID ] = ID ; 
+
+ 
+ID = INTEGER ; 
+} 
+else 
+{  
+void * ID ; 
+
+for ( ID = ID ( ID ) ; ID != ID ; ID = ID ( ID ) ) 
+if ( ID ( ID ) == ID ) 
+goto ID ; 
+
+ 
+ID = INTEGER ; 
+} 
+
+ 
+ID = ( ID * ) ID ( sizeof ( ID ) , ID , ID ) ; 
+ID -> ID = ID ; 
+
+ 
+ID = ID ( ID , ID , ID ) ; 
+
+while ( * ID < INTEGER ) 
+ID ++ ; 
+
+while ( * ID > INTEGER ) 
+if ( ID ( & ID -> ID , ID ( ID -> ID [ * ID ] . ID ) ) ) 
+{ 
+ID ( STRING , ID ( ID -> ID [ * ID ] . ID ) , INTEGER ) ; 
+ID ++ ; 
+} 
+else 
+{ 
+ID * ID = & ( ID -> ID [ * ID ] ) ; 
+unsigned ID = ID -> ID ; 
+unsigned ID = ID -> ID -> ID ; 
+
+ 
+ID ( STRING , ID ( ID -> ID [ * ID ] . ID ) , INTEGER ) ; 
+if ( ! ( ID && 
+ID -> ID == ID -> ID  && 
+ID != INTEGER ) )  
+if ( ID || ID != INTEGER ) 
+{ 
+ID ( ID , ID ) ; 
+ID ( ID , ID , ID , ID , ID ) ;  
+} 
+
+ID ++ ;  
+} 
+ID : ; 
+
+} 
+
+ 
+
+ 
+ID ( ID , INTEGER , sizeof ( ID * ) * ID ) ;  
+
+ 
+for ( ID = INTEGER , ID = INTEGER ; ID < ID ; ID ++ ) 
+{ 
+if ( ID [ ID ] != ID ) 
+{ 
+int * ID = ID ( ID , ID [ ID ] -> ID , ID ) ; 
+
+while ( * ID < INTEGER ) 
+{ 
+ID * * ID = & ID [ - * ID ] ; 
+
+if ( * ID == ID ) 
+{ 
+ID ( STRING , - * ID , ID ) ; 
+
+ID = INTEGER ; 
+
+* ID = ( ID * ) ID ( sizeof ( ID ) , ID -> ID ) ; 
+( * ID ) -> ID = - * ID ; 
+( * ID ) -> ID = ID ; 
+( * ID ) -> ID = ID + INTEGER ; 
+} 
+
+( ( ID * ) ID ( sizeof ( ID ) , ID [ ID ] , * ID ) ) -> ID = ID ; 
+
+ID ++ ; 
+} 
+} 
+} 
+
+if ( ID ) 
+{ 
+ 
+for ( ID = INTEGER ; ID < ID ; ID ++ ) 
+ID [ ID ] = ID [ ID ] ; 
+
+ 
+ID ( STRING , ID , INTEGER ) ; 
+ID ( ID ) ; 
+ID += INTEGER ; 
+} 
+} 
+while ( ID ) ; 
+
+ 
+ID ( STRING , ID , INTEGER ) ; 
+
+if ( ID != ID ) 
+{ 
+ID ( STRING , INTEGER , INTEGER ) ; 
+} 
+else 
+{ 
+for ( ID = INTEGER ; ID < ID ; ID ++ ) 
+{ 
+int * ID ; 
+
+ID = ID ( ID , ID , ID ) ; 
+
+while ( * ID > INTEGER ) 
+{ 
+if ( ID ( & ID -> ID , ID ( ID -> ID [ * ID ] . ID ) ) ) 
+{ 
+ID = INTEGER ; 
+ID ( STRING , ID ( ID -> ID [ * ID ] . ID ) , ID ) ; 
+} 
+ID ++ ; 
+} 
+} 
+} 
+
+if ( ID ) ID ( STRING ) ; else ID ( STRING ) ; 
+
+ 
+ID ( ID , ID -> ID ) ; 
+
+ 
+ID ( ID ) ; 
+ID ( ID ) ; 
+
+return ID ; 
+} 
+
+ 
+ 
+ 
+
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+
+ 
+ 
+
+ 
+ 
+
+ 
+enum 
+{ 
+ID = ID , 
+ID  = ID , ID  , ID  , ID  , ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , ID  , ID  , ID  , ID  , ID  , 
+ID  , ID  , ID  , 
+ID 
+} ; 
+
+ 
+
+typedef struct ID 
+{ 
+ID 
+struct ID * ID ; 
+} ID ; 
+typedef struct ID 
+{ 
+int ID ; 
+ 
+} ID ; 
+
+ 
+ 
+void ID ( ID * ID ) ; 
+
+
+
+ 
+
+ 
+ 
+ 
+ 
+
+enum ID { ID , ID , ID , ID } ; 
+
+typedef struct ID { ID ID ; 
+struct ID * ID ; 
+} ID ; 
+
+typedef struct ID 
+{ 
+enum ID ID ; 
+enum ID ID ; 
+struct ID * ID ; 
+struct ID * ID ; 
+void * ID ; 
+ID ID ; 
+ID ID ; 
+} ID ; 
+
+typedef struct ID { 
+ID * ID ; 
+ID ID ; 
+ID ID ; 
+} ID ; 
+
+typedef struct ID { 
+ID * ID ; 
+} ID ; 
+
+typedef struct ID { 
+union { 
+ID ID ; 
+ID ID ; 
+} ; 
+} ID ; 
+
+typedef struct ID { 
+ID * ID ; 
+} ID ; 
+
+
+ID * ID ( ID * ID ) ; 
+ID * ID ( ID * ID , enum ID ID ) ; 
+ID * ID ( ID * ID , enum ID ID ) ; 
+ID * ID ( ID * ID ) ; 
+ID * ID ( ID * ID ) ; 
+ID * ID ( ID * ID ) ; 
+void ID ( ID * ID , ID * ID ) ; 
+ 
+
+ 
+ 
+ 
+
+typedef struct ID 
+{ 
+ID * ID ; 
+} ID ; 
+
+typedef struct ID 
+{ 
+void * ID ; 
+struct ID * ID ; 
+} ID ; 
+
+ID * ID ( ID * ID ) ; 
+void ID ( ID * ID , ID * ID ) ; 
+ 
+
+ 
+ 
+ 
+void ID ( ID * ID , unsigned long ID , int ID ) ; 
+ 
+
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+ 
+typedef struct ID 
+{ 
+struct ID * ID ; 
+} ID ; 
+
+typedef struct ID 
+{ 
+int ID ; 
+char * ID ; 
+unsigned ID ; 
+ID * ID ; 
+ID ID ; 
+ID ID ; 
+} ID ; 
+
+typedef struct ID 
+{ 
+void * ID ; 
+ID * ID ; 
+void * ID ; 
+ID ID ; 
+} ID ; 
+
+unsigned ID ( ID * ID ) ; 
+ID * ID ( ID * ID , ID * ID ) ; 
+ID * ID ( ID * ID ) ; 
+ID * ID ( void * ID , char * ID , int ID ) ; 
+ID * ID ( void * ID , unsigned ID ) ; 
+int ID ( ID * ID ) ; 
+int ID ( const unsigned ID ) ; 
+int ID ( ID * ID ) ; 
+int ID ( ID * ID ) ; 
+ID * ID ( ID * ID ) ; 
+ID * ID ( ID * ID ) ; 
+void ID ( ID * ID , ID * ID ) ; 
+void ID ( ID * ID , int ID ) ; 
+void ID ( ID * ID , unsigned ID , int ID ) ; 
+void ID ( ID * ID ) ; 
+void ID ( ID * ID , ID * ID ) ; 
+ 
+
+ 
+ 
+ 
+
+ 
+
+typedef enum ID 
+{ 
+ID , 
+ID , 
+ID , 
+ID 
+} ID ; 
+
+typedef enum ID 
+{ 
+ID , 
+ID , 
+ID , 
+ID , 
+ID , 
+ID , 
+ID , 
+ID , 
+ID , 
+ID , 
+ID , 
+ID , 
+ID , 
+ID , 
+ID , 
+ID , 
+ID , 
+ID , 
+ID , 
+ID , 
+ID 
+} ID ; 
+
+typedef enum ID 
+{ 
+ID , 
+ID , 
+ID , 
+ID , 
+ID , 
+ID , 
+ID , 
+ID , 
+ID , 
+ID , 
+ID , 
+ID , 
+ID , 
+ID , 
+ID , 
+ID , 
+ID , 
+ID , 
+ID 
+} ID ; 
+
+typedef struct ID 
+{ 
+struct ID * ID ; 
+ID ID ; 
+union { 
+int ID : INTEGER ; 
+unsigned ID ; 
+int ID ; 
+float ID ; 
+char ID ; 
+char * ID ; 
+void * ID ; 
+struct ID * ID ; 
+struct ID * ID ; 
+ID * ID ; 
+struct ID * ID ; 
+struct ID * ID ; 
+struct ID * ID ; 
+void * ID ; 
+struct ID ( * ID ) ( void * ID , int ID ) ; 
+} ; 
+} ID ; 
+
+ 
+typedef struct ID 
+{ 
+char * ID ;  
+int ID : INTEGER ;  
+ID * ID ; 
+} ID ; 
+
+void ID ( void ) ;  
+void ID ( void ) ;  
+void ID ( char * ID ) ;  
+void ID ( void ) ;  
+void ID ( char * ID ) ;  
+void ID ( void * ID ) ;  
+ID ID ( ID * ID , int ID ) ; 
+char * ID ( char * ID ) ;  
+ID * ID ( char * ID ) ;  
+ 
+
+ 
+ 
+ 
+
+typedef struct ID 
+{ 
+ID * ID ; 
+unsigned ID ; 
+ID * ID ; 
+} ID ; 
+
+typedef struct ID 
+{ 
+ID * ID ; 
+unsigned * ID ; 
+int * * ID ; 
+int * ID ; 
+unsigned ID ; 
+unsigned ID ; 
+unsigned ID ; 
+unsigned ID ; 
+ID * ID ; 
+unsigned ID ; 
+unsigned ID ; 
+ID ID ; 
+int ID ; 
+ID ID ; 
+} ID ; 
+
+typedef struct ID 
+{ 
+int ID ; 
+void * ID ; 
+struct ID * ID ; 
+} ID ; 
+
+ID * ID ( struct ID * ID , int ID ) ; 
+ID * ID ( ID * ID , char * ID ) ; 
+ID * ID ( ID * ID , char * ID , int ID , int ID ) ; 
+ID * ID ( ID * ID , char * ID , int ID , int ID ) ; 
+void ID ( ID * ID , ID * ID ) ; 
+void ID ( ID * ID , ID * ID , int ID ) ; 
+void ID ( ID * ID , ID * ID ) ; 
+void ID ( ID * ID , ID * ID ) ; 
+ 
+"
+(*
+this_grammar := grammar[translation_unit] (*12720, 10105*)
+this_grammar := grammar[statement] (*1106, 835 *)
+this_grammar := grammar[pointer] (*12,11*)
+this_grammar := grammar[expression] (*165,133*)
+this_grammar := grammar[assignment_expression] (* 82, 66*)
+this_grammar := grammar[direct_abstract_declarator] (* 1661, 941 *)
+this_grammar := grammar[initializer_list] (*189, 147*)
+this_grammar := grammar[declaration_specifiers] (* 263, 210 *)
+this_grammar := grammar[direct_declarator] (* 598, 484 *)
+this_grammar := grammar[statement_list] (*2212, 1671 *)
+this_grammar := grammar[conditional_expression] (*1492484 edges, 1216001 reduction edges *) (* takes about 5 minutes to build*)
+this_grammar := grammar[cast_expression] (* 92,74 *)
+this_grammar := grammar[unary_expression] (* 73, 57 *)
+this_grammar := grammar[argument_expression_list] (* 165, 133 *)
+this_grammar := grammar[specifier_qualifier_list] (* 256, 203 *)
+*)
+
+(* Full ah trie   1,517,390 *)
+
+(* removing the tilde from conditional_expression in 
+assignment_expression means that the trie builder runs for
+at least 12 hours without finishing *)
+
+
+write["\n" gtb_version " processing '" gtb_main_file_name "' on " date_time "\n\n"]
+
+gdg_file := open["gdg.vcg"]
+gdg_comp := open["gdg_comp.vcg"]
+nfa_file := open["nfa.vcg"]
+dfa_file := open["dfa.vcg"]
+
+(*
+table_export_file := open["lr1.tbx"]
+table_export_file_new := open["lr1.tb2"]
+table_import_file := open["lr1.tbi" old_text_file]
+*)
+lr1_table_file := open["lr1.tbl"]
+lalr1_table_file := open["lalr1.tbl"]
+ssg_file := open["ssg.vcg"]
+
+
+this_grammar := grammar[translation_unit tilde_enabled] 
+(*
+write[this_grammar]
+*)
+
+(* gtb.v2 *)
+(*
+write["\nStart NFA construction: total " CPU_time " CPU seconds elapsed\n\n"]
+this_nfa := nfa[this_grammar unrolled 0 normal_reductions]
+write["\nStart NFA write: total " CPU_time " CPU seconds elapsed\n\n"]
+write[nfa_file this_nfa]
+
+write["\nStart DFA construction: total " CPU_time " CPU seconds elapsed\n\n"]
+this_dfa := dfa[this_nfa]
+write["\nStart DFA write: total " CPU_time " CPU seconds elapsed\n\n"]
+write[dfa_file this_dfa]
+*)
+
+(*
+this_nfa := nfa[this_grammar lr 1] (* use with rnglr_parse *)
+
+this_nfa := nfa[this_grammar lr 1 terminal_lookahead_sets singleton_lookahead_sets] (* use with farshi_parse *)
+*)
+
+(*
+this_dfa := dfa[this_nfa] 
+dfa_statistics[this_dfa]
+write[open["parse.tbl"] this_dfa]
+*)
+
+(*
+merged_dfa := la_merge[this_dfa] 
+
+dfa_statistics[merged_dfa]
+write[open["m_parse.tbl"] merged_dfa]
+*)
+
+
+(*
+gdg_analyse[this_gdg]
+*)
+
+(*
+compressed_gdg := gdg_compress[this_gdg]
+write[gdg_comp compressed_gdg]
+
+gdg_analyse[compressed_gdg]
+*)
+
+
+
+(* AH bits *)
+
+tilde[this_grammar terminal]
+(* write_concise[this_grammar] *)
+
+this_gdg := gdg[this_grammar]
+write[gdg_file this_gdg]
+
+(*
+prefix_grammar := ah_automaton[this_grammar]
+*)
+(* write[prefix_grammar] *)
+
+
+this_ah_table := ah_table[this_grammar]
+
+write["\nTotal " CPU_time " CPU seconds elapsed\n\n"]
+
+ah_recognise[this_ah_table STRINGA]
+
+
+
+(*
+(* GDG analysis *)
+
+this_gdg := gdg[this_grammar]
+
+(*
+gdg_analyse_fast[this_gdg prune_break_sets_by_table delete_break_sets  0 10000000]
+*)
+(* did for 0-16 found 33,662 retained sets, pruned from 724,000, in 222.5CPUs *)
+(* 7,101,308 break sets in about 4 hours not swapping *)
+(* 8,464,411 break sets in about 12 hours not swapping *)
+
+
+gdg_analyse_fast[this_gdg prune_break_sets_by_table delete_break_sets 12]
+
+
+(*
+gdg_analyse_bu[this_gdg 1]
+*)
+
+render[gdg_file this_gdg]
+close[gdg_file]
+*)
+
+write["\nTotal " CPU_time " CPU seconds elapsed\n\n"]
+
+)
+
+
+
+
+

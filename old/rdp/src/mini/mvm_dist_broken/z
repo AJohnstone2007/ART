@@ -1,0 +1,145 @@
+******: 
+0000                       1: ; minitree.mvm - generated from 'testtree.m'
+0000                       2: 
+0000                       3:  DATA 0x8000
+8000                       4: __MPP_DATA:
+8000                       5:  CODE 0x1000
+1000                       6: __MPP_CODE:
+1000                       7:  
+1000                       8:  DATA
+8000 0001                  9: a: WORD 1
+8002                      10: 
+8002                      11:  CODE
+1000 0100807400030004     12:  ADD  __temp + 2 * 0, #3, #4    ;__temp + 2 * 0 := #3 + #4
+1008 0C1180008074         13:  CPY  a, __temp + 2 * 0         ;a := __temp + 2 * 0 
+100E                      14:  
+100E                      15:  DATA
+8002 0001                 16: b: WORD 1
+8004                      17: 
+8004                      18:  CODE
+100E 0C0180020001         19:  CPY  b, #1     ;b := #1 
+1014                      20: 
+1014                      21:  DATA
+8004 612069732000         22: __STR_0: STRING "a is "
+800A                      23: 
+800A                      24:  CODE
+1014 0F0100008004         25:  PRTS __STR_0
+101A 101100008000         26:  PRTI a ;print integer
+1020                      27: 
+1020                      28:  DATA
+800A 0A00                 29: __STR_1: STRING "\n"
+800C                      30: 
+800C                      31:  CODE
+1020 0F010000800A         32:  PRTS __STR_1
+1026 0310807680000002     33:  MUL  __temp + 2 * 1, a, #2     ;__temp + 2 * 1 := a * #2
+102E 0C1180028076         34:  CPY  b, __temp + 2 * 1         ;b := __temp + 2 * 1 
+1034                      35: 
+1034                      36:  DATA
+800C 622069732000         37: __STR_2: STRING "b is "
+8012                      38: 
+8012                      39:  CODE
+1034 0F010000800C         40:  PRTS __STR_2
+103A 101100008002         41:  PRTI b ;print integer
+1040                      42: 
+1040                      43:  DATA
+8012 2C202D6220697320     44: __STR_3: STRING ", -b is "
+801B                      45: 
+801B                      46:  CODE
+1040 0F0100008012         47:  PRTS __STR_3
+1046 0211807800008002     48:  SUB  __temp + 2 * 2, 0, b      ;__temp + 2 * 2 := 0 - b
+104E 101100008078         49:  PRTI __temp + 2 * 2    ;print integer
+1054                      50: 
+1054                      51:  DATA
+801B 0A00                 52: __STR_4: STRING "\n"
+801D                      53: 
+801D                      54:  CODE
+1054 0F010000801B         55:  PRTS __STR_4
+105A 101100008000         56:  PRTI a ;print integer
+1060                      57: 
+1060                      58:  DATA
+801D 2063756265642069     59: __STR_5: STRING " cubed is "
+8028                      60: 
+8028                      61:  CODE
+1060 0F010000801D         62:  PRTS __STR_5
+1066 0510807A80000003     63:  EXP  __temp + 2 * 3, a, #3     ;__temp + 2 * 3 := a ** #3
+106E 10110000807A         64:  PRTI __temp + 2 * 3    ;print integer
+1074                      65: 
+1074                      66:  DATA
+8028 0A00                 67: __STR_6: STRING "\n"
+802A                      68: 
+802A                      69:  CODE
+1074 0F0100008028         70:  PRTS __STR_6
+107A                      71:  
+107A                      72:  DATA
+802A 0001                 73: z: WORD 1
+802C                      74: 
+802C                      75:  CODE
+107A 0C11802A8000         76:  CPY  z, a      ;z := a 
+1080                      77: __IF_7:
+1080 0611807C802A8000     78:  EQ   __temp + 2 * 4, z, a      ;__temp + 2 * 4 := z == a
+1088 0E11109A807C         79:  BEQ  __temp + 2 * 4,__ELSE_7   ;ifn __temp + 2 * 4 go to __ELSE_7 
+108E                      80: 
+108E                      81:  DATA
+802C 7A20657175616C73     82: __STR_8: STRING "z equals a\n"
+8038                      83: 
+8038                      84:  CODE
+108E 0F010000802C         85:  PRTS __STR_8
+1094 0E0110A00000         86:  BRA  __FI_7    ;go to __FI_7
+109A                      87: __ELSE_7:
+109A                      88: 
+109A                      89:  DATA
+8038 7A20646F6573206E     90: __STR_9: STRING "z does not equal a\n"
+804C                      91: 
+804C                      92:  CODE
+109A 0F0100008038         93:  PRTS __STR_9
+10A0                      94: __FI_7:
+10A0 0210807E80000003     95:  SUB  __temp + 2 * 5, a, #3     ;__temp + 2 * 5 := a - #3
+10A8 0C11802A807E         96:  CPY  z, __temp + 2 * 5         ;z := __temp + 2 * 5 
+10AE                      97: __IF_10:
+10AE 06118080802A8000     98:  EQ   __temp + 2 * 6, z, a      ;__temp + 2 * 6 := z == a
+10B6 0E1110C88080         99:  BEQ  __temp + 2 * 6,__ELSE_10  ;ifn __temp + 2 * 6 go to __ELSE_10 
+10BC                     100: 
+10BC                     101:  DATA
+804C 7A20657175616C73    102: __STR_11: STRING "z equals a\n"
+8058                     103: 
+8058                     104:  CODE
+10BC 0F010000804C        105:  PRTS __STR_11
+10C2 0E0110CE0000        106:  BRA  __FI_10   ;go to __FI_10
+10C8                     107: __ELSE_10:
+10C8                     108: 
+10C8                     109:  DATA
+8058 7A20646F6573206E    110: __STR_12: STRING "z does not equal a\n"
+806C                     111: 
+806C                     112:  CODE
+10C8 0F0100008058        113:  PRTS __STR_12
+10CE                     114: __FI_10:
+10CE 0C0180000003        115:  CPY  a, #3     ;a := #3 
+10D4                     116: __DO_13:
+10D4 0810808280000000    117:  GT   __temp + 2 * 7, a, #0     ;__temp + 2 * 7 := a > #0
+10DC 0E1111088082        118:  BEQ  __temp + 2 * 7,__OD_13    ;ifn __temp + 2 * 7 go to __OD_13 
+10E2                     119: 
+10E2                     120:  DATA
+806C 612069732000        121: __STR_14: STRING "a is "
+8072                     122: 
+8072                     123:  CODE
+10E2 0F010000806C        124:  PRTS __STR_14
+10E8 101100008000        125:  PRTI a ;print integer
+10EE                     126: 
+10EE                     127:  DATA
+8072 0A00                128: __STR_15: STRING "\n"
+8074                     129: 
+8074                     130:  CODE
+10EE 0F0100008072        131:  PRTS __STR_15
+10F4 0210808480000001    132:  SUB  __temp + 2 * 8, a, #1     ;__temp + 2 * 8 := a - #1
+10FC 0C1180008084        133:  CPY  a, __temp + 2 * 8         ;a := __temp + 2 * 8 
+1102 0E0110D40000        134:  BRA  __DO_13   ;go to __DO_13
+1108                     135: __OD_13:
+1108                     136: 
+1108 0011                137:  HALT
+110A                     138: 
+110A                     139:  DATA
+8074                     140: __temp: BLOCKW 9  ;declare array of temporaries
+8086                     141: 
+8086 *1000               142:  END __MPP_CODE
+******: Transfer address 00001000
+******: 0 errors and 0 warnings

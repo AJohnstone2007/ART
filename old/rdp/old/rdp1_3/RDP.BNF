@@ -1,0 +1,238 @@
+(*****************************************************************************
+*
+* RDP release 1.30 by Adrian Johnstone (adrian@dcs.rhbnc.ac.uk) 28 Dec 1994
+*
+* rdp.bnf - decorated rdp grammar
+*
+* This file may be freely distributed. Please mail improvements to the author.
+*
+*****************************************************************************)
+TITLE("Recursive descent parser generator V1.30 (c) Adrian Johnstone 1994")
+SUFFIX("bnf")
+SHOW_SKIPS
+SET_SIZE(300)  (* Increase this if you run out of spare tokens when running RDP *)
+PASSES(2)
+HASH_SIZE(101)
+HASH_PRIME(31)
+TAB_WIDTH(8)
+TEXT_SIZE(23000)
+MAX_ERRORS(30)
+MAX_WARNINGS(120)
+OUTPUT_FILE("rdparser")
+USES("rdp_aux.h")
+
+OPTION("e  Write out expanded BNF along with first and follow sets" [* rdp__expanded = 1; *])
+OPTION("E  Add production name to error messages in generated parser" [* rdp__error_production_name = 1; *])
+OPTION("F  Force creation of output files" [* rdp__force = 1; *])
+OPTION("p  Make parser only (omit semantic actions from generated code)" [* rdp__parser_only = 1; *])
+OPTION("")
+OPTION("You can contact the author (Adrian Johnstone) at:")
+OPTION("")
+OPTION("Computer Science Department, Royal Holloway, University of London")
+OPTION("Egham, Surrey, TW20 0EX UK. Email: adrian@dcs.rhbnc.ac.uk")
+
+PRE_PARSE([* rdp__pre_parse(); *])
+POST_PARSE([* rdp__post_parse(rdp__outputfilename, rdp__force, rdp__base); *])
+
+unit ::= { prod | dir}.
+
+dir::= 'INCLUDE' '(' code: filename
+                     [* if (scan__open_file(filename+1) == NULL)
+			   scan__error_echo("Include file '%s' not found", filename+1);
+		      *]@2
+                 ')' |
+
+       (* List directives *)
+       [* rdp__string_list *temp; *]
+       [* temp = (rdp__string_list *) crash__malloc(sizeof(rdp__string_list), "HELP node allocation"); *]@2
+       'OPTION' '(' String: s [* temp->str1 = s+1;
+				 temp->str2 = NULL;
+				 temp->next = rdp__dir_help;
+				 rdp__dir_help = temp;
+			      *]@2
+		    [ code: s [* temp->str2 = s+1; *]@2 ]
+                ')' |
+       [* rdp__string_list *temp; *]
+       [* temp = (rdp__string_list*) crash__malloc(sizeof(rdp__string_list), "HELP node allocation"); *]@2
+       'USES' '(' String: s
+		  [*temp = (rdp__string_list*) crash__malloc(sizeof(rdp__string_list), "INCLUDE node allocation");
+		    temp->str1 = s+1;
+		    temp->next = rdp__dir_include;
+		    rdp__dir_include = temp;
+		  *]@2
+	       ')' |
+
+       (* String directives *)
+       'TITLE' '(' String: s [* rdp__dir_title = s+1; *]@2 ')' |
+       'SUFFIX' '(' String:s [* rdp__dir_suffix = s+1; *]@2 ')' |
+       'PRE_PARSE' '(' code:s [* rdp__dir_pre_parse = s+1; *]@2 ')' |
+       'POST_PARSE' '(' code:s [* rdp__dir_post_parse = s+1; *]@2 ')' |
+       'OUTPUT_FILE' '(' String:s [* rdp__dir_output_file = s+1; *]@2 ')' |
+
+       (* Numeric directives *)
+       'PASSES' '(' INTEGER:n [* rdp__dir_passes = (unsigned) n; *]@2 ')' |
+       'SET_SIZE' '(' INTEGER:n [* rdp__dir_set_size = (unsigned) n; *]@2 ')' |
+       'HASH_SIZE' '(' INTEGER:n [* rdp__dir_hash_size = (unsigned) n; *]@2 ')' |
+       'HASH_PRIME' '(' INTEGER:n [* rdp__dir_hash_prime = (unsigned) n; *]@2 ')' |
+       'TAB_WIDTH' '(' INTEGER:n [* rdp__dir_tab_width = (unsigned) n; *]@2 ')' |
+       'TEXT_SIZE' '(' INTEGER:n [* rdp__dir_text_size = (unsigned) n; *]@2 ')' |
+       'MAX_ERRORS' '(' INTEGER:n [* rdp__dir_max_errors = (unsigned) n; *]@2 ')' |
+       'MAX_WARNINGS' '(' INTEGER:n [* rdp__dir_max_warnings = (unsigned) n; *]@2 ')' |
+
+       (* Boolean directives *)
+       'INTERPRETER' [* rdp__dir_interpreter = 1; *]@2 |
+       'CASE_INSENSITIVE' [* rdp__dir_case_insensitive = 1; *]@2 |
+       'SHOW_SKIPS' [* rdp__dir_show_skips = 1; *]@2 .
+
+prod:symbol__* ::= [* unsigned stars = 0; type = "void"; *]
+		   (* On first pass, must be a NEW_ID *)
+		   (NEW_ID:name |
+		    ID:name [* scan__error_echo("Doubly defined production '%s'", name); *]@1 |
+		    ALT_ID:name [* scan__error_echo("Doubly defined production '%s'", name); *]@1
+		   )
+
+		   [* rdp__primary_id = name; rdp__component = 0;
+		      result = rdp__find(rdp__primary_id, K_PRIMARY);
+		      if (rdp__start_prod == NULL)
+		      {
+			rdp__start_prod = result;
+			DATA(result, call_count)++;
+		      }
+		   *]
+
+		   ['(' [* result->token = P_ALT_ID; *] (* make this a parameterised production *)
+			{ [* rdp__param_list *param = NULL; type = "void"; *]
+			  (NEW_ID:name | ID:name) [ ':' (NEW_ID:type | ID:type) ]
+			  [* param = (rdp__param_list* ) crash__calloc(sizeof(rdp__param_list), "parameter list node");
+			     param->id = name;
+			     param->type = type;
+			     param->next = DATA(result,params);
+			     DATA(result,params) = param;
+			  *]@1
+			}
+
+		    ')'
+		   ]
+
+		   [':'(ID:type|NEW_ID:type) {'*' [* stars++; *] } ]
+		   '::=' alt:body [* DATA(result, list) = body;
+				     DATA(result, been_defined) = 1;
+				     DATA(result, return_type) = type;
+				     DATA(result, return_type_stars) = stars;
+				  *]@2
+		   '.'.
+
+alt:rdp__list* ::= [* rdp__list* end; *]
+		   [* end = result = (rdp__list*) crash__calloc(sizeof(rdp__list), "alt list header node"); *]@2
+		   < seq: body [* end->next = (rdp__list*) crash__calloc(sizeof(rdp__list), "alt list node");
+				  end = end->next;
+				  end->production = rdp__find(scan__insert_subid(rdp__primary_id, rdp__component++), K_SEQUENCE);
+				  DATA(end->production, call_count)++;
+				  DATA(end->production,list) = body;
+			       *]@2
+		   > '|' [* result = result->next; *]@2 . (* could dispose header here *)
+
+
+seq:rdp__list* ::= [* rdp__list* end; *]
+		   [* end = result = (rdp__list*) crash__calloc(sizeof(rdp__list), "sequence list header node"); *]@2
+
+		   (* must be at least one item in a sequence *)
+		   [* ret_name = NULL; *]@2
+		   (item_ret:body [':'(ID:ret_name|NEW_ID:ret_name)] | item_inl: body)
+		   [* end->next = (rdp__list*) crash__calloc(sizeof(rdp__list), "sequence list node");
+		      end = end->next;
+		      end->production = body;
+		      end->actuals = DATA(body, actuals);
+		      end->return_name = ret_name;
+		   *]@2
+
+		   (* wish we had a positive closure operator! *)
+		   { [* ret_name = NULL; *]@2
+		     (item_ret:body [':'(ID:ret_name|NEW_ID:ret_name)] | item_inl: body)
+		     [* end->next = (rdp__list*) crash__calloc(sizeof(rdp__list), "sequence list node");
+			end = end->next;
+			end->production = body;
+			end->actuals = DATA(body, actuals);
+			end->return_name = ret_name;
+		     *]@2
+		   } [* result = result->next; *]@2 . (* could dispose header here *)
+
+item_ret:symbol__* ::= ID:name [* result = rdp__find(name, K_PRIMARY);
+				  rdp__check_eoln(name);
+				  DATA(result, call_count)++; /* increment call count */
+				  DATA(result, actuals) = NULL;
+			       *]@2 |
+
+		       ALT_ID:name [* result = rdp__find(name, K_PRIMARY);
+				      rdp__check_eoln(name);
+				      DATA(result, actuals) = NULL;
+				      DATA(result, call_count)++; /* increment call count */
+				   *]@2
+
+		       '('
+			   { [* rdp__param_list *param = NULL; *]
+			     (NEW_ID:name | ID:name)
+			     [* param = (rdp__param_list* ) crash__calloc(sizeof(rdp__param_list), "parameter list node");
+				param->id = name;
+				param->next = DATA(result,actuals);
+				DATA(result,actuals) = param;
+			     *]@2
+			   }
+
+		       ')' |
+
+		       NEW_ID:name [* scan__error_echo("Unknown production '%s'", name); *]@2 |
+
+
+		       token:name [* rdp__check_token_valid(name);
+				     result = rdp__find(name, K_TOKEN);
+				     DATA(result, call_count)++; /* increment call count */
+				  *]@2 |
+
+		       'STRING' '(' token:name ')' [* result = rdp__find_extended(name, NULL, E_STRING); *]@2 |
+		       'STRING_ESC' '(' token:name token:quote ')' [* result = rdp__find_extended(name, quote, E_STRING_ESC); *]@2 |
+		       'COMMENT' '(' token:name token:close ')' [* result = rdp__find_extended(name, close, E_COMMENT); *]@2 |
+		       'COMMENT_VISIBLE' '(' token:name token:close ')' [* result = rdp__find_extended(name, close, E_COMMENT_VISIBLE); *]@2 |
+		       'COMMENT_NEST' '(' token:name token:close ')' [* result = rdp__find_extended(name, close, E_COMMENT_NEST); *]@2 |
+		       'COMMENT_NEST_VISIBLE' '(' token:name token:close ')' [* result = rdp__find_extended(name, close, E_COMMENT_NEST_VISIBLE); *]@2 |
+		       'COMMENT_LINE' '(' token:name ')' [* result = rdp__find_extended(name, NULL, E_COMMENT_LINE); *]@2 |
+		       'COMMENT_LINE_VISIBLE' '(' token:name ')' [* result = rdp__find_extended(name, NULL, E_COMMENT_LINE_VISIBLE); *]@2 .
+
+item_inl:symbol__* ::= code:name
+		     [* result = rdp__find(name, K_CODE);
+			DATA(result, contains_null) = 1;
+			DATA(result, call_count)++; /* increment call count */
+		     *]@2
+		     [ '@' INTEGER:pass [* DATA(result, code_pass) = (unsigned) pass; *]@2 ] |
+
+		     '('alt:body')'
+		     [* result = rdp__find(scan__insert_subid(rdp__primary_id, rdp__component++), K_DO_FIRST);
+			DATA(result, list) = body;
+			DATA(result, call_count)++;
+		     *]@2 |
+
+		     '{'alt:body'}'
+		     [* result = rdp__find(scan__insert_subid(rdp__primary_id, rdp__component++), K_ITERATION);
+			DATA(result, list) = body; DATA(result, contains_null) = 1;
+			DATA(result, call_count)++;
+		     *]@2 |
+
+		     '['alt:body']'
+		     [* result = rdp__find(scan__insert_subid(rdp__primary_id, rdp__component++), K_CONDITIONAL);
+			DATA(result, list) = body; DATA(result, contains_null) = 1;
+			DATA(result, call_count)++;
+		     *]@2 |
+
+		     '<'alt:body'>' token:delimiter
+		     [* result = rdp__find(scan__insert_subid(rdp__primary_id, rdp__component++), K_LIST);
+			DATA(result, list) = body;
+			DATA(result, supplementary_token) = rdp__find(delimiter, K_TOKEN);
+			DATA(result, call_count)++;
+		     *]@2 .
+
+token:char*  ::= STRING_ESC('\'' '\\'):result .
+String:char* ::= STRING_ESC('"' '\\'):result .
+code:char*   ::= COMMENT_VISIBLE('[*' '*]'):result .
+comment      ::= COMMENT('(*' '*)').
+
+(* End of rdp.bnf *)

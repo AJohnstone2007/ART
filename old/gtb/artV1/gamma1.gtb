@@ -1,0 +1,20 @@
+S ::= 'b' | S S | S S S .
+
+
+
+(
+this_grammar := grammar[S]
+this_nfa := nfa[this_grammar lr 1 nullable_reductions]
+render[open["nfa.vcg"] this_nfa]
+write[this_grammar]
+lr1_dfa := dfa[this_nfa]
+render[open["dfa.vcg"] lr1_dfa]
+write[open["dfa.tbl"] lr1_dfa]
+this_derivation := brnglr_parse[lr1_dfa "
+bbbbbb
+"]
+render[open["s_brnglr.vcg"] this_derivation]
+write["\n" CPU_time " CPU seconds elapsed\n\n"]
+
+)
+

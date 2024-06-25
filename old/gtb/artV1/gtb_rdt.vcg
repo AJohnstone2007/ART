@@ -1,0 +1,90 @@
+graph:{
+orientation:top_to_bottom
+edge.arrowsize:7
+edge.thickness:1
+display_edge_labels:yes
+arrowmode:free
+node.borderwidth:1
+node:{title:"1"label:"text" horizontal_order:1 shape:ellipse }
+edge:{sourcename:"1" targetname:"2" horizontal_order:999}
+edge:{sourcename:"1" targetname:"22" horizontal_order:998}
+node:{title:"22"label:"script" horizontal_order:22 shape:ellipse }
+edge:{sourcename:"22" targetname:"25" horizontal_order:997}
+edge:{sourcename:"22" targetname:"130" horizontal_order:996}
+edge:{sourcename:"22" targetname:"171" horizontal_order:995}
+edge:{sourcename:"22" targetname:"222" horizontal_order:994}
+edge:{sourcename:"22" targetname:"250" horizontal_order:993}
+edge:{sourcename:"22" targetname:"277" horizontal_order:992}
+node:{title:"277"label:"write" horizontal_order:277}
+edge:{sourcename:"277" targetname:"280" horizontal_order:991}
+edge:{sourcename:"277" targetname:"293" horizontal_order:990}
+edge:{sourcename:"277" targetname:"307" horizontal_order:989}
+node:{title:"307"label:"' CPU seconds elapsed\n\n'" horizontal_order:307}
+node:{title:"293"label:"CPU_time" horizontal_order:293}
+node:{title:"280"label:"'\nTotal '" horizontal_order:280}
+node:{title:"250"label:"write" horizontal_order:250}
+edge:{sourcename:"250" targetname:"253" horizontal_order:988}
+node:{title:"253"label:"this_grammar" horizontal_order:253}
+node:{title:"222"label:"':='" horizontal_order:222}
+edge:{sourcename:"222" targetname:"224" horizontal_order:987}
+edge:{sourcename:"222" targetname:"236" horizontal_order:986}
+node:{title:"236"label:"true" horizontal_order:236}
+node:{title:"224"label:"gtb_verbose" horizontal_order:224}
+node:{title:"171"label:"write" horizontal_order:171}
+edge:{sourcename:"171" targetname:"174" horizontal_order:985}
+edge:{sourcename:"171" targetname:"187" horizontal_order:984}
+edge:{sourcename:"171" targetname:"201" horizontal_order:983}
+node:{title:"201"label:"' CPU seconds elapsed\n\n'" horizontal_order:201}
+node:{title:"187"label:"CPU_time" horizontal_order:187}
+node:{title:"174"label:"'\nTotal '" horizontal_order:174}
+node:{title:"130"label:"':='" horizontal_order:130}
+edge:{sourcename:"130" targetname:"132" horizontal_order:982}
+edge:{sourcename:"130" targetname:"144" horizontal_order:981}
+node:{title:"144"label:"grammar" horizontal_order:144}
+edge:{sourcename:"144" targetname:"147" horizontal_order:980}
+node:{title:"147"label:"S" horizontal_order:147}
+node:{title:"132"label:"this_grammar" horizontal_order:132}
+node:{title:"25"label:"write" horizontal_order:25}
+edge:{sourcename:"25" targetname:"28" horizontal_order:979}
+edge:{sourcename:"25" targetname:"41" horizontal_order:978}
+edge:{sourcename:"25" targetname:"55" horizontal_order:977}
+edge:{sourcename:"25" targetname:"68" horizontal_order:976}
+edge:{sourcename:"25" targetname:"82" horizontal_order:975}
+edge:{sourcename:"25" targetname:"95" horizontal_order:974}
+edge:{sourcename:"25" targetname:"109" horizontal_order:973}
+node:{title:"109"label:"'\n\n'" horizontal_order:109}
+node:{title:"95"label:"date_time" horizontal_order:95}
+node:{title:"82"label:"'\' on '" horizontal_order:82}
+node:{title:"68"label:"gtb_main_file_name" horizontal_order:68}
+node:{title:"55"label:"' processing \''" horizontal_order:55}
+node:{title:"41"label:"gtb_version" horizontal_order:41}
+node:{title:"28"label:"'\n'" horizontal_order:28}
+node:{title:"2"label:"rules" horizontal_order:2 shape:ellipse }
+edge:{sourcename:"2" targetname:"3" horizontal_order:972}
+edge:{sourcename:"2" targetname:"11" horizontal_order:971}
+edge:{sourcename:"2" targetname:"15" horizontal_order:970}
+node:{title:"15"label:"B" horizontal_order:15}
+edge:{sourcename:"15" targetname:"17" horizontal_order:969}
+edge:{sourcename:"15" targetname:"20" horizontal_order:968}
+node:{title:"20"label:"prod" horizontal_order:20 shape:ellipse }
+edge:{sourcename:"20" targetname:"21" horizontal_order:967}
+node:{title:"21"label:"'d'" horizontal_order:21}
+node:{title:"17"label:"prod" horizontal_order:17 shape:ellipse }
+edge:{sourcename:"17" targetname:"18" horizontal_order:966}
+node:{title:"18"label:"A" horizontal_order:18}
+node:{title:"11"label:"A" horizontal_order:11}
+edge:{sourcename:"11" targetname:"13" horizontal_order:965}
+node:{title:"13"label:"prod" horizontal_order:13 shape:ellipse }
+edge:{sourcename:"13" targetname:"14" horizontal_order:964}
+node:{title:"14"label:"'a'" horizontal_order:14}
+node:{title:"3"label:"S" horizontal_order:3}
+edge:{sourcename:"3" targetname:"5" horizontal_order:963}
+node:{title:"5"label:"prod" horizontal_order:5 shape:ellipse }
+edge:{sourcename:"5" targetname:"6" horizontal_order:962}
+edge:{sourcename:"5" targetname:"8" horizontal_order:961}
+edge:{sourcename:"5" targetname:"10" horizontal_order:960}
+node:{title:"10"label:"'c'" horizontal_order:10}
+node:{title:"8"label:"B" horizontal_order:8}
+node:{title:"6"label:"A" horizontal_order:6}
+
+}

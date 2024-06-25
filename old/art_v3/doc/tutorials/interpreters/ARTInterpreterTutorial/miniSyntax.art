@@ -1,0 +1,40 @@
+(*******************************************************************************
+*
+* miniSyntax.art - Adrian Johnstone 9 January 2016
+*
+*******************************************************************************)
+statement ::= 'print' '(' printElements ')' ';'   (* print statement *)
+
+printElements ::= STRING_DQ | 
+                  STRING_DQ ',' printElements | 
+                  e0 | e0 ',' printElements  
+
+e0 ::= e1 | 
+       e1 '>'  e1 |       (* Greater than *)
+       e1 '<'  e1 |       (* Less than *)
+       e1 '>=' e1 |       (* Greater than or equals*)
+       e1 '<=' e1 |       (* Less than or equals *)
+       e1 '==' e1 |       (* Equal to *)
+       e1 '!=' e1         (* Not equal to *)
+
+e1  ::= e2 | 
+        e1 '+' e2 |       (* Add *)
+        e1 '-' e2         (* Subtract *)
+
+e2  ::= e3 | 
+        e2 '*' e3 |       (* Multiply *)
+        e2 '/' e3 |       (* Divide *)
+        e2 '%' e3         (* Mod *)
+
+e3  ::= e4 | 
+        '+' e3 |          (* Posite *)
+        '-' e3            (* Negate *)
+
+e4  ::= e5 | 
+        e5 '**' e4        (* exponentiate *)
+
+e5  ::= INTEGER |         (* Integer literal *)
+        '(' e1 ')'        (* Parenthesised expression *)       
+
+STRING_DQ ::= &STRING_DQ  
+INTEGER ::= &INTEGER  

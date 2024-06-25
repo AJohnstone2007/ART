@@ -1,0 +1,480 @@
+translation_unit ::= external_declaration |
+                     translation_unit external_declaration.
+
+external_declaration ::= function_definition |
+                         declaration .
+
+function_definition ::= declaration_specifiers A1 |
+                        declarator A3 |
+                        declaration_specifiers A4 |
+                        declarator compound_statement .
+
+
+A1 ::= declarator A2.
+A2 ::= declaration_list compound_statement .
+A3 ::= declaration_list compound_statement .
+A4 ::= declarator compound_statement .
+
+
+declaration ::= declaration_specifiers A5|
+                declaration_specifiers  ';' .
+
+A5 ::= init_declarator_list ';' .
+
+declaration_list ::= declaration |
+                     declaration_list declaration. 
+
+declaration_specifiers ::= storage_class_specifier declaration_specifiers |
+                           storage_class_specifier                        |
+
+                           type_specifier declaration_specifiers |
+                           type_specifier                        |
+
+                           type_qualifier declaration_specifiers |
+                           type_qualifier                        .
+
+storage_class_specifier ::= 'auto' |
+                            'register' |
+                            'static' |
+                            'extern' |
+                            'typedef'.
+
+type_specifier ::= 'void' |
+                   'char' |
+                   'short' |
+                   'int' |
+                   'long' |
+                   'float' |
+                   'double' |
+                   'signed' |
+                   'unsigned' |
+                   struct_or_union_specifier |
+                   enum_specifier |
+                   typedef_name.
+
+type_qualifier ::= 'const' |
+                   'volatile'.
+
+struct_or_union_specifier ::= struct_or_union A6 |
+                              struct_or_union  A8 |
+                              struct_or_union identifier.
+                             
+A6 ::= identifier A7 .
+A7 ::= '{' A8 .
+A8 ::= struct_declaration_list '}' .
+A9 ::=  '{' A10 .
+A10 ::= struct_declaration_list '}' .
+
+struct_or_union ::= 'struct' |
+                    'union'.
+
+struct_declaration_list ::= struct_declaration |
+                            struct_declaration_list struct_declaration .
+
+init_declarator_list ::= init_declarator |
+                         init_declarator_list A11 .
+A11 ::= ',' init_declarator . 
+
+init_declarator ::= declarator  |
+                    declarator A12 .
+A12 ::= '=' initializer . 
+
+struct_declaration ::= specifier_qualifier_list A13 .
+A13 ::= struct_declarator_list ';'.
+
+specifier_qualifier_list ::= type_specifier specifier_qualifier_list |
+                             type_specifier                          |
+                             type_qualifier specifier_qualifier_list |
+                             type_qualifier                          .
+
+struct_declarator_list ::= struct_declarator |
+                           struct_declarator_list A14 .
+A14 ::= ',' struct_declarator. 
+
+struct_declarator ::= declarator |
+                      declarator A15 |
+                      ':' constant_expression . 
+
+A15 ::= ':' constant_expression .
+
+enum_specifier ::= 'enum' A16 |
+                   'enum' A19 |
+                   'enum' identifier .
+
+A16 ::= identifier A17 .
+A17 ::= '{' A18 .
+A18 ::= enumerator_list '}' .
+A19 ::= '{' A20 .
+A20 ::= enumerator_list '}' .
+
+enumerator_list ::= enumerator |
+                    enumerator_list A21 .
+A21 ::= ',' enumerator. 
+
+enumerator ::= identifier |
+               identifier A22 .
+A22 ::= '=' constant_expression . 
+
+declarator ::= pointer direct_declarator |
+                       direct_declarator .
+
+direct_declarator ::= identifier |
+                      '(' A23 |
+                      direct_declarator  A24 |
+                      direct_declarator  A26 |
+                      direct_declarator  A27 |
+                      direct_declarator  A29 |
+                      direct_declarator  A31 .
+
+A23 ::= declarator ')' .
+A24 ::= '[' A25 .
+A25 ::= constant_expression ']' .
+A26 ::= '['                     ']' .
+A27 ::= '(' A28 .
+A28 ::= parameter_type_list ')'  .
+A29 ::= '(' A30 .
+A30 ::= identifier_list ')' .
+A31 ::= '('                 ')' .
+
+
+pointer ::= '*' type_qualifier_list |
+            '*'                     |
+            '*' A32 |
+            '*'                     pointer . 
+
+A32 ::= type_qualifier_list pointer .
+
+type_qualifier_list ::= type_qualifier |
+                        type_qualifier_list type_qualifier. 
+
+parameter_type_list ::= parameter_list |
+                        parameter_list A33 .
+
+A33 ::= ',' '...'. 
+
+parameter_list ::= parameter_declaration |
+                   parameter_list A34 .
+A34 ::= ',' parameter_declaration . 
+
+parameter_declaration ::= declaration_specifiers declarator |
+                          declaration_specifiers abstract_declarator |
+                          declaration_specifiers                     . 
+
+identifier_list ::= identifier |
+                    identifier_list A35 .
+A35 ::= ',' identifier. 
+
+initializer ::= assignment_expression |
+                '{' A36 |
+                '{' A37 .
+
+A36 ::= initializer_list '}' .
+A37 ::= initializer_list A38 .
+A38 ::= ','  '}'. 
+
+initializer_list ::= initializer  |
+                     initializer_list A39 .
+A39 ::= ',' initializer. 
+
+type_name ::= specifier_qualifier_list abstract_declarator |
+              specifier_qualifier_list                     .
+
+abstract_declarator ::= pointer |
+                        pointer direct_abstract_declarator |
+                                direct_abstract_declarator . 
+
+ 
+direct_abstract_declarator ::= '(' A40 |
+                                direct_abstract_declarator A41 |
+                                '[' A43 |
+                                direct_abstract_declarator A44 |
+                                '['   ']' |
+
+                                direct_abstract_declarator A45 |
+                                '(' A47 |
+                                direct_abstract_declarator A48 |
+                                '('    ')' .
+
+A40 ::= abstract_declarator ')' .
+A41 ::= '[' A42 .
+A42 ::= constant_expression ']' .
+A43 ::= constant_expression ']' .
+A44 ::= '['  ']' .
+A45 ::= '(' A46 .
+A46 ::= parameter_type_list ')' .
+A47 ::= parameter_type_list ')' .
+A48 ::= '('                     ')' .
+
+
+statement ::= labeled_statement |
+              expression_statement |
+              compound_statement |
+              selection_statement |
+              iteration_statement |
+              jump_statement .
+
+labeled_statement ::= identifier A47 |
+                      'case' A48 |
+                      'default' A50.
+
+A47 ::= ':' statement .
+A48 ::= constant_expression A49 .
+A49 ::= ':' statement .
+A50 ::= ':' statement.
+
+expression_statement ::= expression ';' |
+                                    ';' .
+
+compound_statement ::= '{' A51 |
+                       '{' A53 |
+                       '{' A54 |
+                       '{'   '}' .
+
+A51 ::= declaration_list A52 .
+A52 ::= statement_list '}' .
+A53 ::=  statement_list '}' .
+A54 ::= declaration_list  '}' .
+
+
+
+statement_list ::= statement |
+                   statement_list statement. 
+
+selection_statement ::= 'if' A55 |
+                        'if' A58 |
+                        'switch' A63 .
+
+A63 ::= '(' A64 .
+A64 ::= expression A65 .
+A65 ::= ')' statement.
+A58 ::= '(' A59 .
+A59 ::= expression A60.
+A60 ::= ')' A61 .
+A61 ::= statement A62 .
+A62 ::= 'else' statement .
+A55 ::= '(' A56 .
+A56 ::= expression A57 .
+A57 ::= ')' statement .
+
+iteration_statement ::= 'while' A66 |
+                        'do' A69 |
+                        'for' A73 |
+                        'for' A80 |
+                        'for' A86 |
+                        'for' A93 |
+                        'for' A98 |
+                        'for' A104 |
+                        'for' A109 |
+                        'for' A114 .
+
+A114 ::= '('  A115 .
+A115 ::= ';' A116 .
+A116 ::= ';' A117 .
+A117 ::= ')' statement .
+A109 ::= '('   A110 .
+A110 ::= ';'  A111 .
+A111 ::= ';' A112 .
+A112 ::= expression A113 .
+A113 ::= ')' statement .
+A104 ::= '('  A105 .
+A105 ::= ';' A106 .
+A106 ::= expression A107 .
+A107 ::= ';' A108 .
+A108 ::= ')' statement .
+A98 ::= '(' A99 .
+A99 ::= ';' A100 .
+A100 ::= expression A101 .
+A101 ::= ';' A102 .
+A102 ::= expression A103 .
+A103 ::= ')' statement .
+A93 ::= '(' A94 .
+A94 ::= expression A95 .
+A95 ::= ';' A96 .
+A96 ::= ';' A97 .
+A97 ::= ')' statement .
+A86 ::= '(' A87 .
+A87 ::= expression A89 .
+A89 ::= ';' A90 .
+A90 ::= ';' A91 .
+A91 ::= expression A92 .
+A92 ::= ')' statement .
+A80 ::= '(' A81 .
+A81 ::= expression A82 .
+A82 ::= ';' A83 .
+A83 ::= expression A84 .
+A84 ::= ';' A85 .
+A85 ::= ')' statement .
+A73 ::= '(' A74 .
+A74 ::= expression A75 .
+A75 ::= ';' A76 .
+A76 ::= expression A77 .
+A77 ::= ';' A78 .
+A78 ::= expression A79 .
+A79 ::= ')' statement .
+A69 ::= statement A70 .
+A70 ::= 'while' A71 .
+A71 ::= '(' A72 .
+A72 ::= expression ')' .
+A66 ::= '(' A67 .
+A67 ::= expression A68 .
+A68 ::= ')' statement .
+
+
+
+jump_statement ::= 'goto' A118 |
+                   'continue' ';' |
+                   'break' ';' |
+                   'return' A119 |
+                   'return'            ';'.
+
+A118 ::= identifier ';' .
+A119 ::= expression ';' .
+
+expression ::= assignment_expression |
+               expression  A120 .
+A120 ::= ',' assignment_expression . 
+
+assignment_expression ::= conditional_expression  |
+                          unary_expression  A121 .
+A121 ::= assignment_operator assignment_expression .
+
+assignment_operator ::= '=' | '*=' | '/=' | '%=' | '+=' | '-=' | '<<=' | '>>=' | '&=' | '^=' | '|='.
+
+conditional_expression ::= logical_or_expression |
+                           logical_or_expression A122 .
+A122 ::= '?' A123 .
+A123 ::= expression A124 .
+A124 ::= ':' conditional_expression. 
+
+constant_expression ::= conditional_expression.
+
+logical_or_expression ::= logical_and_expression |
+                          logical_or_expression A125 .
+A125 ::= '||' logical_and_expression. 
+
+logical_and_expression ::= inclusive_or_expression |
+                           logical_and_expression A126 .
+A126 ::= '&&' inclusive_or_expression. 
+
+inclusive_or_expression ::= exclusive_or_expression |
+                            inclusive_or_expression A127 .
+A127 ::= '|' exclusive_or_expression. 
+
+exclusive_or_expression ::= and_expression |
+                            exclusive_or_expression A128 .
+A128 ::= '^' and_expression. 
+
+and_expression ::= equality_expression |
+                   and_expression A129 .
+A129 ::= '&' equality_expression . 
+
+equality_expression ::= relational_expression |
+                        equality_expression  A130 |
+                        equality_expression A131 .
+A130 ::= '==' relational_expression  .
+A131 ::= '!=' relational_expression. 
+
+relational_expression ::= shift_expression |
+                          relational_expression A132 |
+                          relational_expression A133 |
+                          relational_expression A134 |
+                          relational_expression A135 .
+A132 ::= '<' shift_expression .
+A133 ::= '>'  shift_expression .
+A134 ::= '<='  shift_expression .
+A135 ::= '>=' shift_expression  .
+
+shift_expression ::= additive_expression |
+                     shift_expression A136 |
+                     shift_expression A137 .
+A136 ::= '<<' additive_expression  .
+A137 ::= '>>' additive_expression. 
+
+additive_expression ::= multiplicative_expression |
+                        additive_expression A138 |
+                        additive_expression A139 .
+A138 ::= '+' multiplicative_expression .
+A139 ::= '-' multiplicative_expression.
+
+multiplicative_expression ::= cast_expression |
+                              multiplicative_expression A140 |
+                              multiplicative_expression A141 |
+                              multiplicative_expression A142 .
+A140 ::= '*' cast_expression .
+A141 ::= '/' cast_expression .
+A142 ::= '%' cast_expression . 
+
+
+cast_expression ::= unary_expression |
+                    '(' A143 .
+A143 ::= type_name A144 .
+A144 ::= ')' cast_expression.
+
+unary_expression ::= postfix_expression |
+                     '++' unary_expression |
+                     '--' unary_expression |
+                     unary_operator cast_expression |
+                     'sizeof' unary_expression |
+                     'sizeof' A145 .
+A145 ::= '(' A146 .
+A146 ::= type_name')' .
+
+unary_operator ::= '&' | '*' | '+' | '-' | '~' | '!'.
+
+postfix_expression ::= primary_expression |
+                       postfix_expression A147 |
+                       postfix_expression A149 |
+                       postfix_expression A151 |
+                       postfix_expression A152 |
+                       postfix_expression A153 |
+                       postfix_expression '++' |
+                       postfix_expression '--'.  
+A147 ::= '[' A148 .
+A148 ::= expression ']' .
+A149 ::= '(' A150 .
+A150 ::= argument_expression_list ')' .
+A151 ::= '('  ')' .
+A152 ::= '.' identifier .
+A153 ::= '->' identifier .
+
+primary_expression ::= identifier |
+                       constant |
+                       string |
+                       '(' A154 .
+A154 ::= expression ')'.
+
+argument_expression_list ::= assignment_expression |
+                             argument_expression_list A155 .
+A155 ::= ',' assignment_expression .
+
+constant ::= integer_constant |
+             character_constant |
+             floating_constant |
+             enumeration_constant .
+
+
+identifier ::= 'ID' .
+string ::= 'STRING' | string 'STRING' .
+integer_constant ::= 'INTEGER' .
+character_constant ::=  'STRING' .
+floating_constant ::= 'REAL' .
+
+
+enumeration_constant ::= 'ENUM_ID'. 
+
+typedef_name ::= 'ID' | 'TYPE_ID'.
+
+(
+(* Main script *)
+
+write["\n" gtb_version " processing '" 
+gtb_main_file_name "' on " date_time "\n\n"]
+gtb_verbose := true
+this_grammar := grammar[translation_unit tilde_enabled] 
+this_nfa := nfa[this_grammar lr 1 nullable_reductions] 
+unmerged_dfa := dfa[this_nfa]
+this_dfa := la_merge[unmerged_dfa]
+
+this_derivation := rnglr_parse[this_dfa open["rdp_full.tok" read_text]]
+
+)

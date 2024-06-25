@@ -1,0 +1,102 @@
+(*******************************************************************************
+*
+* RDP release 1.50 by Adrian Johnstone (A.Johnstone@rhbnc.ac.uk) 20 December 1997
+*
+* pretty_c.bnf - a pretty printer for ANSI C
+*
+* This file may be freely distributed. Please mail improvements to the author.
+*
+* This grammar illustrates a rather different approach to writing language
+* parsers. Instead of trying to exactly define the language with the
+* grammar we try and find a simple grammar that accepts the language, and
+* also allow it to accept lots of incorrect strings. The rationale is that
+* a pretty printer does not need to check a program for syntax errors
+* because a conventional compiler will be used subsequently to do that.
+* As a result we end up with a very flat, loose grammar
+*
+*******************************************************************************)
+TITLE("C pretty printer V1.50 (c) Adrian Johnstone 1997")
+SUFFIX("c")
+PARSER(program)
+OUTPUT_FILE("pretty.c")
+TEXT_SIZE(100_000)
+USES("pr_c_aux.h")
+
+ARG_NUMERIC(i indent_size "Number of spaces per indent level: 0 means use tabs (default 2)")
+ARG_NUMERIC(c comment_start "Preferred start column for trailing comments (default 30)")
+
+program ::= [* enum kinds kind;
+               long unsigned line, column;
+               pretty_open(rdp_sourcefilename, rdp_outputfilename);
+            *]
+            {
+              [* line = scan_line_number(); column = scan_column_number(); *]
+              (
+                comment: lexeme        [* kind = K_COMMENT;        *] |
+                string: lexeme         [* kind = K_STRING;         *] |
+                character: lexeme      [* kind = K_CHARACTER;      *] |
+                block_open: lexeme     [* kind = K_BLOCK_OPEN;     *] |
+                block_close: lexeme    [* kind = K_BLOCK_CLOSE;    *] |
+                preprocessor: lexeme   [* kind = K_PREPROCESSOR;   *] |
+                monadic: lexeme        [* kind = K_MONADIC;        *] |
+                diadic: lexeme         [* kind = K_DIADIC;         *] |
+                open_bracket: lexeme   [* kind = K_OPEN_BRACKET;   *] |
+                close_bracket: lexeme  [* kind = K_CLOSE_BRACKET;  *] |
+                item: lexeme           [* kind = K_ITEM;           *] |
+                field_delim: lexeme    [* kind = K_FIELD_DELIM;    *] |
+                punctuation: lexeme    [* kind = K_PUNCTUATION;    *] |
+                keyword: lexeme        [* kind = K_KEYWORD;        *] |
+                keyword_indent: lexeme [* kind = K_KEYWORD_INDENT; *] |
+                EOLN: lexeme           [* kind = K_EOLN;           *]
+              )
+              [* pretty_print(lexeme, kind, column, line); *]
+            }
+            [* pretty_close(rdp_sourcefilename, rdp_outputfilename); *].
+
+comment: char* ::= COMMENT_VISIBLE('/*' '*/'):result.
+
+preprocessor: char* ::= COMMENT_LINE_VISIBLE('#'):result.
+
+monadic: char* ::= '!':result | '++':result | '--':result | '~':result .
+
+diadic: char* ::= '&&':result | '&':result | '^':result | '|':result |
+                  '||':result | '%':result | '*':result | '/':result |
+                  '+':result | '-':result | '<<':result | '>>':result |
+                  '<':result | '<=':result | '==':result | '>':result |
+                  '>=':result | '?':result | '!=':result | '%=':result |
+                  '&=':result | '*=':result | '+=':result | '-=':result |
+                  '/=':result | '=':result | '^=':result | '|=':result |
+                  '<<=':result | '>>=':result | '\\':result.
+
+block_open: char* ::= '{':result.
+
+block_close: char* ::= '}':result.
+
+open_bracket: char* ::= '(':result | '[':result.
+
+close_bracket: char* ::= ')':result | ']':result.
+
+item: char* ::= ([* result = SCAN_CAST->id; *] (INTEGER | REAL)) |
+                ID:result | '...':result .
+
+string: char* ::= STRING_ESC('"''\\'):result.
+
+character:char* ::= STRING_ESC('\'''\\'): result.
+
+field_delim: char* ::= '->':result | '.':result.
+
+punctuation: char* ::= ':':result | ';':result | ',': result.
+
+keyword: char* ::= 'auto':result | 'break':result | 'case':result |
+                   'char':result | 'const':result | 'continue':result |
+                   'default':result | 'double':result | 'enum':result |
+                   'extern':result | 'float':result | 'goto':result |
+                   'int':result | 'long':result | 'register':result |
+                   'return':result | 'short':result | 'signed':result |
+                   'sizeof':result | 'static':result | 'struct':result |
+                   'typedef':result | 'union':result | 'unsigned':result | 
+                   'void':result | 'volatile':result.
+
+keyword_indent: char* ::= 'do':result | 'else':result | 'for':result |
+                          'if':result | 'switch':result | 'while':result.
+

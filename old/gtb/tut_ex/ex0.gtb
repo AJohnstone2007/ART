@@ -1,0 +1,11 @@
+(* ex0.gtb *)
+S ::= B A 'a' | B B .
+A ::= B 'b' A B | 'a' .
+B ::= S 'a' 'a' | # | D .
+D ::= 'd' .
+(
+gdg_file := open["gdg.vcg"]
+ex0_gdg := gdg[grammar[S]]
+render[gdg_file ex0_gdg]
+close[gdg_file]
+)

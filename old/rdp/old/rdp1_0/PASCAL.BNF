@@ -1,0 +1,147 @@
+(*****************************************************************************
+*
+* RDP release 1.00 by Adrian Johnstone (adrian@dcs.rhbnc.ac.uk) 14 Feb 1994
+*
+* pascal.bnf - standard pascal grammar with some extensions for Turbo-Pascal
+*
+* This file may be freely distributed. Please mail improvements to the author.
+*
+*****************************************************************************)
+TITLE("Pascal parser V1.00 (generated)")
+SUFFIX("pas")
+SHOW_SKIPS
+CASE_INSENSITIVE
+SET_SIZE(150)
+
+program	::= 'program' NEW_ID [ '(' <NEW_ID>',' ')' ] ';' block '.'.
+
+block	::= { declaration } 'begin' <statement>';' 'end'.
+
+declaration	::= label_dcl_part
+		| const_dcl_part
+		| type_dcl_part
+		| var_dcl_part
+		| proc_dcl_part
+		.
+
+label_dcl_part	::= 'label' <NUMBER>',' ';'.
+
+const_dcl_part	::= 'const' {NEW_ID '=' constant ';'}.
+
+constant	::= (unsigned_num | NEW_ID)
+		| '+' (unsigned_num | NEW_ID)
+		| '-' (unsigned_num | NEW_ID)
+		| STRING('\'').
+
+unsigned_num	::= NUMBER ['.' NUMBER].
+
+type_dcl_part	::= 'type' {NEW_ID '=' type ';'}.
+
+type		::= simple_type
+		| 'packed' struct_type
+		| struct_type
+		| '^' NEW_ID    (*check forward reference semantics*).
+
+simple_type	::= '(' <NEW_ID>',' ')'
+		| constant ['..' constant].
+
+struct_type	::= 'array' '[' <simple_type>',' ']' 'of' type
+		| 'record' (*consider this a scope*) field_list 'end'
+		| 'set' 'of' simple_type
+		| 'file' 'of' type.
+
+field_list	::= fixed_part [';' variant_part] | variant_part.
+
+fixed_part	::= <[ <NEW_ID>',' ':' type ]>';'.
+
+variant_part	::= 'case' NEW_ID [':' NEW_ID] 'of' variants.
+
+variants	::= <[ case_label_list ':' '(' field_list ')' ]> ';'.
+
+var_dcl_part	::= 'var' { <NEW_ID>',' ':' type ';'}.
+
+proc_dcl_part	::= (proc_heading | func_heading) ';' body ';'.
+
+proc_heading	::= 'procedure' NEW_ID [ formal_params ].
+
+func_heading	::= 'function' NEW_ID [ function_form ].
+
+function_form	::=  [ formal_params ':' NEW_ID ].
+
+body		::= block | 'forward'.
+
+formal_params	::= [ '(' <formal_p_sect> ';' ')' ] .
+
+formal_p_sect	::= param_group
+		| 'var' param_group
+		| proc_heading
+		| func_heading.
+
+param_group	::= <NEW_ID>',' ':' paramtype.
+
+paramtype	::= NEW_ID
+		| 'array' '[' index_specs ']' 'of' paramtype
+		| 'packed' 'array' '[' index_spec ']' 'of' NEW_ID.
+
+index_specs	::= <index_spec> ';'.
+
+index_spec	::= NEW_ID '..' NEW_ID ':' NEW_ID.
+
+statement	::=	NUMBER ':' statement
+							| 'begin' <statement>';' 'end'
+							| variable (* call *) [':=' expression	(* assignment: must test for fn_ID *)]
+							| 'goto' NUMBER
+							| 'if' expression 'then' statement [ 'else' statement ]
+							| 'case' expression 'of' case_list [ ('else' | 'default') statement ] 'end'
+							| 'while' expression 'do' statement
+							| 'repeat' <statement>';' 'until' expression
+							| 'for' NEW_ID ':=' expression ( 'to' | 'downto' ) expression 'do' statement
+							| 'with' rec_var_list 'do' statement.
+
+case_list	::= <case_list_elem>';'.
+
+case_list_elem	::= [ case_label_list ':' [statement] ].
+
+case_label_list	::= <case_label>','.
+
+case_label	::= constant ['..' constant].
+
+rec_var_list	::= <record_var>','.
+
+expression	::= simple_expr {relational_op simple_expr}.
+
+relational_op	::= '=' | '<' | '>' | '<=' | '>=' | '<>' | 'in'.
+
+simple_expr	::= (term | '+' term | '-' term ) { add_op term}.
+
+add_op		::= '+' | '-' | 'or'.
+
+term		::= factor {mult_op factor}.
+
+mult_op		::= '*' | '/' | 'div' | 'mod' | 'and'.
+
+factor		::= variable		(* sybsumes functions which look like ID's *)
+		| unsigned_lit
+		| '(' expression ')'
+(*	| function_call		*)
+		| '[' [ <expression ['..' expression]> ',' ] ']' (* set *)
+		| 'not' factor
+		.
+
+unsigned_lit	::= unsigned_num
+		| STRING('\'')			(*type is char if len=1*)
+		| 'nil'.
+
+
+variable	::= NEW_ID [actual_params] {'[' expressions ']' | '.' NEW_ID | '^'}.
+
+actual_params	::= '(' <expression [':' expression	[':' expression]]> ',' ')'.
+
+expressions	::= <expression> ','.
+
+record_var	::= variable.
+
+comment ::= COMMENT( '{' '}').
+
+(* End of pascal.bnf *)
+

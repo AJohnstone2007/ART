@@ -1,0 +1,171 @@
+# SCCS-info %W% %E% 
+#
+# /*--------------------------------------------------------------------*/
+# /*                                                                    */
+# /*              VCG : Visualization of Compiler Graphs                */
+# /*              --------------------------------------                */
+# /*                                                                    */
+# /*   file:         Makefile                                           */
+# /*   version:      1.00.00                                            */
+# /*   creation:     1.4.1993                                           */
+# /*   author:       I. Lemke  (...-Version 0.99.99)                    */
+# /*                 G. Sander (Version 1.00.00-...)                    */  
+# /*                 Universitaet des Saarlandes, W-66041 Saarbruecken  */
+# /*                 ESPRIT Project #5399 Compare                       */
+# /*   description:  Makefile for the fonts                             */
+# /*   status:       in work                                            */
+# /*                                                                    */
+# /*--------------------------------------------------------------------*/
+# 
+# $Id$
+#
+# $Log$
+#
+
+#========================= CHANGE AREA =========================
+
+# Please update the change area according to your system, if you
+# want to call this Makefile directly
+
+# where the fonts go
+# VFONTDIR   = /RW/esprit/users/sander/pub/lib/vcg/fonts/
+VFONTDIR   = /RW/esprit/users/sander/pub/lib/vcg/fonts/
+
+#-------------------------- Tools ------------------------------
+
+# Install software. You can use /bin/cp instead of /bin/install.
+# For directories:
+# INSTALLDIR = /bin/install -d -m 755
+INSTALLDIR = echo
+
+# For fonts:
+# Assume that you want to install a file called dummy.
+INSTALLDATA = /bin/install -m 644 dummy dummydir/dummy
+
+# RCS check out shellscript
+CHECKOUT = co
+
+# RCS check edit shellscript
+CHECKEDIT = ce
+
+# RCS check in shellscript
+CHECKIN  = ci 
+
+# MakeDepend (should understand the -f option)
+DEPEND   = makedepend
+
+# Remove File
+RM       = /bin/rm 
+
+# Change mode
+CHMOD	= chmod
+
+# Stream editor
+SED      = sed
+
+# Touch file
+# TOUCH    = touch
+TOUCH = /bin/touch
+
+#==================== END OF CHANGE AREA ======================
+
+
+#-------------------------- Files ------------------------------
+
+# Font - Files
+FONTFILES = courB08.vcf courB10.vcf courB12.vcf courB14.vcf	\
+	courB18.vcf courB24.vcf courBO08.vcf courBO10.vcf	\
+	courBO12.vcf courBO14.vcf courBO18.vcf courBO24.vcf	\
+	courO08.vcf courO10.vcf courO12.vcf courO14.vcf		\
+	courO18.vcf courO24.vcf courR08.vcf courR10.vcf		\
+	courR12.vcf courR14.vcf courR18.vcf courR24.vcf		\
+	helvB08.vcf helvB10.vcf helvB12.vcf helvB14.vcf		\
+	helvB18.vcf helvB24.vcf helvBO08.vcf helvBO10.vcf	\
+	helvBO12.vcf helvBO14.vcf helvBO18.vcf helvBO24.vcf	\
+	helvO08.vcf helvO10.vcf helvO12.vcf helvO14.vcf		\
+	helvO18.vcf helvO24.vcf helvR08.vcf helvR10.vcf		\
+	helvR12.vcf helvR14.vcf helvR18.vcf helvR24.vcf		\
+	symb08.vcf symb10.vcf symb12.vcf symb14.vcf		\
+	symb18.vcf symb24.vcf					\
+	timB08.vcf timB10.vcf timB12.vcf timB14.vcf		\
+	timB18.vcf timB24.vcf timBI08.vcf timBI10.vcf		\
+	timBI12.vcf timBI14.vcf timBI18.vcf timBI24.vcf		\
+	timI08.vcf timI10.vcf timI12.vcf timI14.vcf		\
+	timI18.vcf timI24.vcf timR08.vcf timR10.vcf		\
+	timR12.vcf timR14.vcf timR18.vcf timR24.vcf		\
+	ncenB08.vcf ncenB10.vcf ncenB12.vcf ncenB14.vcf		\
+	ncenB18.vcf ncenB24.vcf ncenBI08.vcf ncenBI10.vcf	\
+	ncenBI12.vcf ncenBI14.vcf ncenBI18.vcf ncenBI24.vcf	\
+	ncenI08.vcf ncenI10.vcf ncenI12.vcf ncenI14.vcf		\
+	ncenI18.vcf ncenI24.vcf ncenR08.vcf ncenR10.vcf		\
+	ncenR12.vcf ncenR14.vcf ncenR18.vcf ncenR24.vcf
+
+# Files that help to make a test
+TESTFILES = README maketest fulltest test.vcg
+
+SOURCES	= $(FONTFILES) $(TESTFILES) 
+
+#-------------------------- Rules ------------------------------
+
+all: install 
+
+test:
+	-$(CHMOD) 755 maketest
+	-$(SHELL) fulltest
+
+
+$(FONTFILES):
+	echo "$@ is missing!"
+
+
+$(TESTFILES):
+	$(CHECKOUT) $@
+
+
+# We do not install everything but only the useful tools
+#
+install: $(FONTFILES) 
+	-$(INSTALLDIR) $(VFONTDIR)
+	for i in $(FONTFILES);\
+	do \
+	m=`echo $(INSTALLDATA) | $(SED) -e "s|dummydir|$(VFONTDIR)|g" |\
+		 $(SED) -e "s/dummy/$$i/g"`; \
+	echo $$m; $$m; \
+	done
+
+
+makefiles: Makefile
+
+# Cleanup rules
+#
+clean: makefiles
+	$(TOUCH) core
+	$(RM) -f core test1.vcg
+
+veryclean: clean targetclean 
+
+targetclean: makefiles
+
+distclean: veryclean targetclean
+	$(TOUCH) core
+	$(RM) -f core test1.vcg
+
+# Auxiliary rules
+#
+depend: 
+
+checkout: Makefile $(TESTFILES)
+
+checkedit: Makefile
+	$(CHECKEDIT) $(TESTFILES)
+
+checkin: Makefile
+	$(CHECKIN) $(TESTFILES)
+
+tar: Makefile $(SOURCES)
+	tar -cf fonts.tar Makefile $(SOURCES)
+
+dist: tar 
+
+# DO NOT DELETE THIS LINE -- make depend depends on it.
+

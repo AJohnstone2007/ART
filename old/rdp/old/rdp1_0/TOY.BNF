@@ -1,0 +1,73 @@
+(*****************************************************************************
+*
+* RDP release 1.00 by Adrian Johnstone (adrian@dcs.rhbnc.ac.uk) 14 Feb 1994
+*
+* toy.bnf - decorated toy grammar with interpreter semantics
+*
+* This file may be freely distributed. Please mail improvements to the author.
+*
+*****************************************************************************)
+TITLE("Toy V1.00")
+SUFFIX("toy")
+USES("math.h")
+TEXT_MODE
+
+program ::= [var_dec] [statement] EOF.
+
+var_dec ::= 'int'
+						<NEW_ID:name "symbol__insert_id(name)->token=P_ID;"					       (* variable declaration *)
+						 ['=' e1:value "symbol__lookup_id(name)->number=value;"]>',' ';'.	 (* optional initialisation *)
+
+
+(* This is the full version of statement with semantic actions added *)
+statement ::= ID:name '=' e1:value "symbol__lookup_id(name)->number = value;" | (* assignment *)
+							'begin' <statement>';' 'end' |																	 (* compound statement *)
+							( 'write':token | 'writeln':token )															 (* write(ln) statement *)
+							['(' < e1:value "printf(\"%i\",value);" |
+										 string:str "printf(\"%s\", str+1);"
+									 >','
+							 ')'
+							] "if (token == T_writeln) printf(\"\\n\");".
+
+(* The following e... productions describe a conventional expression syntax
+	 using mainly C-style operators *)
+e1:int ::= e2:result {'>' e2:right  "result = result > right;" |  (* Greater than *)
+											'<' e2:right  "result = result < right;" |  (* Less than *)
+											'>=' e2:right "result = result >= right;" | (* Greater than or equal to *)
+											'<=' e2:right "result = result <= right;" | (* Less than or equal to *)
+											'==' e2:right "result = result == right;" | (* Equal to *)
+											'!=' e2:right "result = result != right;" }.(* Not equal to *)
+
+e2:int ::= e3:result {'$' e3:right "result ^= right;"}.           (* Bitwise exclusive OR *)
+
+e3:int ::= e4:result {'|' e4:right "result |= right;"}.           (* Bitwise inclusive OR *)
+
+e4:int ::= e5:result {'^' e5:right "result ^= right;"}.           (* Bitwise exclusive OR *)
+
+e5:int ::= e6:result {'&' e6:right "result &= right;"}.           (* Bitwise AND *)
+
+e6:int ::= e7:result {'<<' e7:right "result <<= right;" |         (* Shift left  *)
+											'>>' e7:right "result >>= right;" }.        (* Shift right *)
+
+e7:int ::= e8:result {'+' e8:right "result += right;" |           (* Add *)
+											'-' e8:right "result -= right;" }.          (* Subtract *)
+
+e8:int ::= e9:result {'*' e9:right "result *= right;" |           (* Divide *)
+											'/' e9:right "result /= right;" }.          (* Multiply *)
+
+e9:int ::= e10:result {'**' e10:right "result = (int) pow((float) result, (float) right);"}. (* Exponentiate *)
+
+e10:int ::= '+' e10:result |                                      (* Posite *)
+						'-' e10:result "result = -result;" |					        (* Negate *)
+						'~' e10:result "result = ~result;" |					        (* Bitwise complement *)
+						'!' e10:result "result = !result;" |					        (* Logical not *)
+						e0:result.
+
+e0:int ::= ID:name "result = symbol__lookup_id(name)->number;" |   (* Variable *)
+					 NUMBER:result |																				(* Numeric literal *)
+					 '(' e1:result ')'.                                     (* Parenthesised expression *)
+
+comment ::= COMMENT_NEST ('(*' '*)').
+string:char* ::= STRING_ESC('"' '\\'):result.
+
+(* End of toy.bnf *)

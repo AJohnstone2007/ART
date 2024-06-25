@@ -1,0 +1,9 @@
+S ::= S1 | 'print' '(' [String][S1] ')' .
+S1 ::= E Y .
+Y ::= ['+' S1 ].
+E ::= T X.
+X ::= ['*' E ] .
+T ::= INTEGER .
+String ::= STRING_ESC('"' '\\') .
+
+

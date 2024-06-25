@@ -1,0 +1,230 @@
+(****************************************************************************
+*
+* GTB release 2.00 by Adrian Johnstone (a.johnstone@rhul.ac.uk) 1 Nov 2000
+*
+* ansi_c.gtb - an ANSI standard C grammar
+*
+* This file may be freely distributed. Please mail improvements to the author.
+*
+* Provenance: this grammar is a transcription of the rules in section A13 of
+* 'The C Programming Language' by Brian W Kernighan and Dennis M Ritchie,
+* second edition 1988 (Prentice Hall, ISBN 0-13-110362-8). 
+*
+* Optional productions have been expanded and a set of lexical rules created.
+*
+*****************************************************************************)
+
+translation_unit ::= external_declaration .
+
+external_declaration ::= function_definition .
+
+function_definition ::= type_specifier direct_declarator declaration compound_statement |
+                                                direct_declarator declaration compound_statement |
+                        type_specifier direct_declarator    compound_statement |
+                                              direct_declarator    compound_statement .
+
+declaration ::= type_specifier init_declarator ';' |
+                type_specifier                     ';' .
+
+declaration_list ::= declaration .
+
+declaration_specifiers ::= 
+                           type_specifier       .
+
+
+type_specifier ::= 'int' .
+
+
+
+struct_declaration_list ::= struct_declaration .
+
+init_declarator_list ::= init_declarator .
+
+init_declarator ::= declarator  |
+                    declarator '=' initializer . 
+
+struct_declaration ::= ~specifier_qualifier_list declarator ';'.
+
+specifier_qualifier_list ::= type_specifier ~specifier_qualifier_list |
+                             type_specifier                          .
+
+struct_declarator_list ::= struct_declarator .
+
+struct_declarator ::= declarator .
+
+enumerator_list ::= enumerator .
+
+enumerator ::= identifier |
+               identifier '=' constant_expression . 
+
+declarator ::=  ~direct_declarator .
+
+direct_declarator ::= identifier |
+                      '(' declarator ')' |
+                      direct_declarator  '(' parameter_type_list ')'  |
+                      direct_declarator  '(' identifier_list ')' |
+                      direct_declarator  '('                 ')' .
+
+type_qualifier_list ::= type_qualifier |
+                        type_qualifier_list type_qualifier. 
+
+parameter_type_list ::= parameter_list .
+
+parameter_list ::= parameter_declaration .
+
+parameter_declaration ::= declaration_specifiers declarator |
+                          declaration_specifiers abstract_declarator |
+                          declaration_specifiers                     . 
+
+identifier_list ::= identifier .
+
+initializer ::= assignment_expression |
+                '{' ~initializer_list '}' .
+
+initializer_list ::= initializer .
+
+type_name ::= ~specifier_qualifier_list abstract_declarator |
+              ~specifier_qualifier_list                     .
+
+abstract_declarator ::= 
+                                ~direct_abstract_declarator . 
+
+ 
+direct_abstract_declarator ::= '(' abstract_declarator ')' |
+                                direct_abstract_declarator '(' parameter_type_list ')' |
+                                                           '(' parameter_type_list ')' |
+                                direct_abstract_declarator '('                     ')' |
+                                                           '('                     ')' .
+
+statement ::= 
+              expression_statement |
+              compound_statement .
+
+
+expression_statement ::= expression ';' |
+                                    ';' .
+
+compound_statement ::= '{' declaration_list ~statement_list '}' |
+                       '{'                  ~statement_list '}' |
+                       '{' declaration_list                '}' |
+                       '{'                                 '}' .
+
+
+statement_list ::= statement |
+                   statement_list statement. 
+
+expression ::= assignment_expression .
+
+assignment_expression ::= ~conditional_expression  |
+                          unary_expression  assignment_operator ~assignment_expression .
+
+assignment_operator ::= '=' .
+
+conditional_expression ::= logical_or_expression .
+
+constant_expression ::= ~conditional_expression .
+
+logical_or_expression ::= logical_and_expression .
+
+logical_and_expression ::= inclusive_or_expression .
+
+inclusive_or_expression ::= exclusive_or_expression .
+
+exclusive_or_expression ::= and_expression .
+
+and_expression ::= equality_expression .
+
+equality_expression ::= relational_expression |
+                        equality_expression  '==' relational_expression  |
+                        equality_expression '!=' relational_expression. 
+
+relational_expression ::= shift_expression |
+                          relational_expression '<' shift_expression |
+                          relational_expression '>'  shift_expression |
+                          relational_expression '<='  shift_expression |
+                          relational_expression '>=' shift_expression  .
+
+shift_expression ::= additive_expression |
+                     shift_expression '<<' additive_expression  |
+                     shift_expression '>>' additive_expression. 
+
+additive_expression ::= multiplicative_expression |
+                        additive_expression '+' multiplicative_expression |
+                        additive_expression '-' multiplicative_expression.
+
+multiplicative_expression ::= cast_expression |
+                              multiplicative_expression '*' cast_expression |
+                              multiplicative_expression '/' cast_expression |
+                              multiplicative_expression '%' cast_expression . 
+
+cast_expression ::= unary_expression |
+                    '(' type_name ')' ~cast_expression .
+
+unary_expression ::= postfix_expression |
+                     '++' ~unary_expression |
+                     '--' ~unary_expression |
+                     unary_operator ~cast_expression |
+                     'sizeof' ~unary_expression |
+                     'sizeof' '(' type_name')' .
+
+unary_operator ::= '&' | '*' | '+' | '-' | '~' | '!'.
+
+postfix_expression ::= primary_expression |
+                       postfix_expression '(' ~argument_expression_list ')' |
+                       postfix_expression '('                          ')' .
+
+primary_expression ::= identifier |
+                       constant |
+                       string |
+                       '(' ~expression ')'.
+
+argument_expression_list ::= assignment_expression .
+
+constant ::= integer_constant |
+             (*character_constant |*) 
+             floating_constant |
+             enumeration_constant .
+
+(* Lexical producions *)
+identifier ::= 'ID' .
+string ::= 'STRING' | string 'STRING' .
+integer_constant ::= 'INTEGER' .
+character_constant ::= 'STRING' .
+floating_constant ::= 'REAL' .
+
+(* Hack 1: the original grammar has a constant alternative for enumeration
+   constants: this looks redundant because primary_expresion has an identifier
+   alternative. We use a different keyword to avoid conflicts.
+*)
+enumeration_constant ::= 'ENUM_ID'. 
+
+(* Hack 2: a declaration starting with a typedef-defined type identifier
+   cannot be disambiguated unless the lexer returns a different token
+   for such identifiers. Here we use a different keyword *)
+typedef_name ::= 'ID' 
+                 | 'TYPE_ID'.
+
+
+(
+(* Main script *)
+
+write["\n" gtb_version " processing '" 
+gtb_main_file_name "' on " date_time "\n\n"]
+
+this_grammar := grammar[translation_unit tilde_enabled] 
+
+(*this_derivation := earley_parse[this_grammar open["bool.tok" read_text]]*)
+
+this_derivation := earley_parse[this_grammar "int ID ( int ID ) { ID = ID ; } "]
+
+(*ri_recognise[this_grammar open["bool.tok" read_text]]*)
+
+(*ri_recognise[this_grammar "void ID ( ) { } "]*)
+
+write["\nTotal " CPU_time " CPU seconds elapsed\n\n"]
+)
+
+
+
+
+

@@ -1,0 +1,111 @@
+(* Test generation for ART *)
+
+(* Conventions for filenames
+
+S, T, U, V, W, X, Y, Z nonterminals
+a, b, c, d, e, f, g, h terminals
+
+_ |  alternation bar
+H #  (hash - epsilon)
+L (  (left parenthesis)
+R )  (right parenthesis)
+Q ?  (query)  
+P +  (positive)
+K *  (Kleene)
+I @  (Iterator)
+D \  (Difference)
+*)
+
+(* Kleene closure of `a using right left and right recursion *)
+aS_H 
+$S ::= `a S | #;$ 
+accept $$ $a$ $aa$ $aaa$ $aaaa$ 
+reject $ab$
+
+Sa_H 
+$S ::= S `a | #;$ 
+accept $$ $a$ $aa$ $aaa$ $aaaa$ 
+reject $ab$
+
+(* Positive closure of `a using left and right recursion *)
+aS_a 
+$S ::=  `a S | `a;$ 
+accept $a$ $aa$ $aaa$ $aaaa$ 
+reject $$ $ab$
+
+Sa_a 
+$S ::=  S `a | `a;$ 
+accept $a$ $aa$ $aaa$ $aaaa$ 
+reject $$ $ab$
+
+(* Parentheses *)
+LcR
+$S ::= (`c);$
+accept $c$
+reject $cc$
+
+bLaR
+$S ::= `b(`a);$
+accept $ba$
+reject $a$ $baa$
+
+bLaRc
+$S ::= `b(`a)`c;$
+accept $bac$
+reject $a$ $baa$ $bc$
+
+aLb_cRd
+$S ::= `a ( `b | `c ) `d;$
+accept $abd$ $acd$
+reject $$ $abcd$ $ad$
+
+aLb_HRd
+$S ::= `a ( `b | # ) `d;$
+accept $abd$ $ad$
+reject $$ $abcd$ $acd$
+
+(* Optionals *)
+
+aLb_cRNd
+$S ::= `a ( `b | `c )? `d;$
+accept $abd$ $acd$ $ad$
+reject $$ $abcd$
+
+aLb_HRNd
+$S ::= `a ( `b | # )? `d;$
+accept $abd$ $ad$ 
+reject $$ $abcd$
+
+(* Closures *)
+
+LaRK
+$S ::= (`a)*;$
+accept $$ $a$ $aa$ $aaa$ $aaaa$
+reject $b$
+
+LaRP
+$S ::= (`a)+;$
+accept $a$ $aa$ $aaa$ $aaaa$
+reject $$ $b$
+
+La_bRK
+$S ::= (`a|`b)*;$
+accept $$ $a$ $aa$ $aaa$ $b$ $b$ $bb$ $aba$ $bab$ $aab$ $bba$
+reject $c$
+
+La_bRP
+$S ::= (`a|`b)+;$
+accept $a$ $aa$ $aaa$ $b$ $b$ $bb$ $aba$ $bab$ $aab$ $bba$
+reject $$ $c$
+
+
+La_HRK
+$S ::= (`a|#)*;$
+accept $$ $a$ $aa$ $aaa$ 
+reject $c$
+
+
+La_HRP
+$S ::= (`a|#)+;$
+accept $$ $a$ $aa$ $aaa$ 
+reject $c$

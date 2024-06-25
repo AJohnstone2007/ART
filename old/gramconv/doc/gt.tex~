@@ -1,0 +1,127 @@
+\documentstyle[rhultechreport]{article}
+\title{{\tt ebnf2bnf} quick guide}
+\author{Adrian Johnstone}
+\begin{document}
+\makecstitle
+\section{Introduction}
+{\tt ebnf2bnf} is a standalone tool for transforming grammars in EBNF
+into BNF. There can be no canonical translation from EBNF to BNF since
+different parser generators demand grammars with different
+chacteristics. The main goal of {\tt ebnf2bnf} is to allow generally
+available published grammars (especially grammars from language
+standards documents) to be transformed into grammars suitable for use
+with standard tools in a way that is semi-automatic {\em and}
+documented. 
+
+\subsection{The need for flexible translation}
+In general, EBNF constructs such as Kleene closure (the
+'star' operator in regular expressions, or curly-braces in Wirth-style
+grammars) can be translated into BNF in several ways, and 
+it turns out that the best translation to use certainly
+depends on the expected use of the grammar and may depend on
+particular local features of the grammar. For instance, recursive descent
+parser generators cannot usually accept left recursive definitions,
+since left recursion leads to non-termination, yet bottom up parser
+generators show performance improvements if left recursion is used in
+preference to right recursion.
+
+\section{Overall flow}
+
+
+
+\appendix
+\section{An {\tt rdp} grammar for {\tt ebnf2bnf}}
+{\footnotesize
+\begin{verbatim}
+
+(*****************************************************************************
+*
+* GTB release 2.00 by Adrian Johnstone (A.Johnstone@rhul.ac.uk) 1 Nov 2000
+*
+* This file may be freely distributed. Please mail improvements to the author.
+*
+*****************************************************************************)
+TITLE("EBNF2BNF V2.00 (c) Adrian Johnstone 2003")
+SUFFIX("bnf")
+TREE ([* unsigned lo;
+         unsigned hi;
+         int is_terminal:1;
+         int multiply:1;
+         int left_recursive:1;
+         int right_recursive:1;
+         int head_tail_expansion:1;
+         char *sub_rule_name;
+         unsigned sub_rule_number;
+      *] [* *] )
+POST_PARSE([* ebnf2bnf_post_parse(rdp_tree, rdp_sourcefilename, rdp_outputfilename); *])
+USES("ebnf_aux.h")
+(* SUPPRESS_BUILT_IN_ARGUMENTS *)
+PASSES(2)
+TEXT_SIZE(100000)
+
+ARG_BOOLEAN(c curly_parenthesis "Treat {...} as (...) rather than as Kleene closure")
+ARG_BLANK("")
+ARG_BOOLEAN(b bison_output "GNU bison compatible output")
+ARG_BOOLEAN(g gtb_output "gtb compatible output (default)")
+ARG_BOOLEAN(y yacc_output "YACC compatible output")
+ARG_BLANK("")
+ARG_NUMERIC(h halt_level "halt after phase <n>: 0 parse 1 coalesce 2 reg-sub 3 iterator 4 epsilon 5 substitute 6 head/tail 7 multiply 8 expand")
+ARG_BLANK("")
+ARG_BOOLEAN(v vcg_tree "output VCG tree to ebnf2bnf.vcg")
+
+SYMBOL_TABLE(nonterminals 101 31
+             symbol_compare_string
+             symbol_hash_string
+             symbol_print_string
+             [* char* id; int defined; rdp_tree_node_data *rules_tree; int multiply_all:1; *]
+            )
+
+SYMBOL_TABLE(terminals 101 31
+             symbol_compare_string
+             symbol_hash_string
+             symbol_print_string
+             [* char* id; *]
+            )
+
+text ::= { rule |
+           '!.'^ [* default_left_recursive = default_right_recursive = default_head_tail_expansion = default_multiply = 0; *]@2 |
+           '!>'^ [* default_right_recursive = 1; default_left_recursive = 0; *]@2 |
+           '!<'^ [* default_left_recursive = 1; default_right_recursive = 0; *]@2 |
+           '!|'^ [* default_head_tail_expansion = 1; *]@2 |
+           '!*'^ [* default_multiply = 1; *]@2 |
+           '!c'^ [* curly_parenthesis = 1; *]@2 |
+           '!b'^ [* bison_output = 1; *]@2 |
+           '!g'^ [* gtb_output = 1; *]@2 |
+           '!y'^ [* yacc_output = 1; *]@2 |
+           '!v'^ [* vcg_tree = 1; *]@2 |
+           '!h'^ INTEGER:value^ [* halt_level = value; *]@2
+         }.
+
+rule ::= nonterminal^^ ( '::='^ | ':'^ | '='^ ) productions ( '.'^ | ';'^) .
+
+productions ::= permutation { '|'^^ permutation }:^^ .
+
+permutation ::= sequence { '||'^^ sequence }:^^ .
+
+sequence ::= '#' | < iterator > .
+
+iterator ::= postfix [ [INTEGER] '@'^^ [INTEGER] iterator ]:^^ .
+
+postfix  ::= operand^^ { '?'^^^ | '*'^^^ | '+'^^^ }.
+
+operand  ::= nonterminal^^ |
+             terminal^^ |
+             subrule^^.
+
+subrule  ::= '('^ productions ')'^ |
+             '{'^ productions '}'^ |
+             '['^ productions ']'^ |
+             '<'^ productions '>'^ .
+
+nonterminal: nonterminals_data* ::= ID: name^^ [* result = (nonterminals_data*) symbol_find(nonterminals, &name, sizeof(char*), sizeof(nonterminals_data), NULL, SYMBOL_ANY); *].
+terminal: terminals_data* ::= (STRING_ESC('\'' '\\'):name^^ | STRING_ESC('"' '\\'): name^^) [* result = (terminals_data*) symbol_find(terminals, &name, sizeof(char*), sizeof(terminals_data), NULL, SYMBOL_ANY); *] .
+comment ::= COMMENT_LINE('//') .
+
+\end{verbatim}
+}
+\end{document}

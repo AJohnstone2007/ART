@@ -1,0 +1,41 @@
+(*****************************************************************************
+*
+* RDP release 1.10 by Adrian Johnstone (adrian@dcs.rhbnc.ac.uk) 13 Mar 1994
+*
+* test.toy - a piece of Toy to test the Toy interpreter
+*
+* This file may be freely distributed. Please mail improvements to the author.
+*
+*****************************************************************************)
+int x = 1, y = 3, z = 12;
+
+begin
+
+writeln; writeln("Toy test program"); writeln;
+
+if y>x then writeln("(If true) y is greater than x")
+else writeln("(If false) y is not greater than x");
+
+if y<x then writeln("(If true) x is greater than y")
+else writeln("(If false) x is not greater than y");
+
+repeat
+	writeln("(Repeat) x = ",x);
+	x = x + y
+until x>z;
+
+while x>0 do
+	begin
+		writeln("(While) x = ",x);
+		x = x - y
+	end;
+
+for x=1 to 12 by 3 do
+	writeln("(For up) x = ",x);
+
+for x=$C to 1 by -3 do
+	writeln("(For down) x = ",x)
+
+end
+
+(* End of test.toy *)

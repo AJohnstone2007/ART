@@ -1,0 +1,12 @@
+(* ex6  LR(1) automata *)
+S ::=  'a' A 'a' | 'a' A 'b' | 'b' A B .
+A ::=  'a' .
+B ::=  'a' | 'b' .
+
+(
+ex6_nfa := nfa[grammar[S] lr 1]
+render[open["nfa.vcg"] ex6_nfa]
+
+ex6_nfa := nfa[grammar[S] lr 1 singleton_lookahead_sets]
+render[open["nfa1.vcg"] ex6_nfa]
+)

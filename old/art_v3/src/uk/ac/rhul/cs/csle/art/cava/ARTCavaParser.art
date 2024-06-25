@@ -1,0 +1,436 @@
+(*****************************************************************************************************************************
+*
+* ARTCavaParser.art - Adrian Johnstone August 2017
+*
+* A dynamically typed language which uses ART's value types
+*
+* Developed by Adrian Johnstone with support from:
+*
+* Leverhulme Trust project grant RPG-2013-396 
+*       'Notions and notations; Babbage's Language of Thought'
+*
+* and
+*
+* EPSRC project EP/I032509/1 
+*       'PLanCompS: Programming Language Components and Specifications'
+*
+******************************************************************************************************************************)
+
+(* Prelude material **********************************************************************************************************)
+
+whitespace WHITESPACE COMMENT_BLOCK_C COMMENT_LINE_C
+
+whitespace &WHITESPACE
+whitespace &COMMENT_BLOCK_C
+whitespace &COMMENT_LINE_C 
+
+prelude{
+import uk.ac.rhul.cs.csle.art.cava.*;
+}
+
+support 
+{ 
+  ARTValueDespatcher despatcher = new ARTValueDespatcher();
+
+  // Some constants
+  final ARTValueIntegerArbitrary NULLAddress = new ARTValueIntegerArbitrary(0);
+  final ARTValueUndefined        UNDEFINED = new ARTValueUndefined(); 
+  final ARTValueNull             NULL = new ARTValueNull(); 
+  final ARTValueVoid             VOID = new ARTValueVoid(); 
+  final ARTValueInteger32        ZERO = new ARTValueInteger32(0); 
+  final ARTValueInteger32        ONE = new ARTValueInteger32(1); 
+  final ARTValueBoolean          TRUE = new ARTValueBoolean(true); 
+  final ARTValueBoolean          FALSE = new ARTValueBoolean(false); 
+
+  // Predefined I/O streams
+  ARTValueStreamPrint stdout = new ARTValueStreamPrint(System.out, "stdout");
+
+  // Environment, store, and store address allocation
+  ARTValueEnvironment env = new ARTValueEnvironment(); 
+  ARTValueMap store = new ARTValueMap();
+  ARTValueStoreAddress nextFreeStoreAddress = new ARTValueStoreAddress(store, 1); // Zero reserved for NULL address
+
+  // Create a binding in an environment
+  void bindVariable(ARTValueEnvironment env, ARTValue id, ARTValue value) throws ARTException {
+//    System.out.println("Binding " + id + " to " + value);     
+    if (env.contains(id).equals(TRUE)) throw new ARTException("attempt to rebind variable " + id);
+    env.insertKey(id, value);
+  }
+
+  // Allocate an element of the store and initialise it
+  ARTValueStoreAddress storeAllocate(ARTValue value) throws ARTException {
+    ARTValueStoreAddress ret = nextFreeStoreAddress;
+    store.insertKey(nextFreeStoreAddress, value); nextFreeStoreAddress = nextFreeStoreAddress.inc(); 
+    return ret;
+  }
+
+ // Find a variable in the current environment and update it
+  void storeVariable(ARTValueEnvironment env, ARTValue id, ARTValue value) throws ARTException {
+//    System.out.println("Storing " + value + " in variable " + id);     
+    if (env.contains(id).equals(FALSE)) { 
+//      System.out.println("In store, binding " + id + " to store address " + nextFreeStoreAddress);     
+      bindVariable(env, id, nextFreeStoreAddress); store.insertKey(nextFreeStoreAddress, UNDEFINED); nextFreeStoreAddress = nextFreeStoreAddress.inc(); 
+    }
+    if (!(env.valueKey(id) instanceof ARTValueStoreAddress)) throw new ARTException("attempt to assign value to non-store binding"); 
+    store.update(env.valueKey(id), value);
+  }
+
+  ARTValue dereferenceVariable(ARTValueEnvironment env, ARTValue id) throws ARTException {
+//    System.out.println("Dereferencing " + id);     
+    if (env.contains(id).equals(FALSE)) throw new ARTException("undefined variable " + id);
+    ARTValue ret = env.valueKey(id);
+//    System.out.println(id + " dereferenced to binding " + ret);     
+    if (ret instanceof ARTValueStoreAddress) {
+      ret = store.valueKey(ret);
+//      System.out.println(id + " dereferenced to store value " + ret);     
+    }
+    return ret;
+  }
+}
+
+(* Command grammar  **********************************************************************************************************)
+
+text ::= { System.out.println("Standard Cava interpreter"); } 
+         statements 
+         { despatcher.close(); 
+           System.out.println("Final environment" + env);
+           System.out.println("Final store" + store);
+         }
+
+statements ::= 
+  statement 
+| statement  statements
+
+statement ::= expr ';'  
+
+| 'if' expr statement< elseOpt<             (* if statement *)
+  { if (expr1.v.equals(TRUE)) artEvaluate(statement.statement1, statement1); 
+    else                      artEvaluate(statement.elseOpt1, elseOpt1);
+  }
+
+| 'while' expr<  statement<                   (* while statement *)
+  { try {
+      artEvaluate(statement.expr1, expr1); 
+      while (expr1.v.equals(TRUE)) {
+        try { artEvaluate(statement.statement1, statement1); } catch (ARTCavaSignalContinue s) {}
+        artEvaluate(statement.expr1, expr1); 
+      }
+    } catch (ARTCavaSignalBreak s) {}
+  }  
+
+| 'for' '(' expr< ';' expr< ';' expr< ')' statement< (* for statement *)
+  { artEvaluate(statement.expr1, expr1);        // perform initialisation
+    artEvaluate(statement.expr2, expr2);        // perform first test
+    while (expr2.v.equals(TRUE)) { 
+      artEvaluate(statement.statement1, statement1);
+      artEvaluate(statement.expr3, expr3);      // perform increment 
+      artEvaluate(statement.expr2, expr2);      // perform test 
+    }  
+  }         
+
+| '{' statements '}'                                 (* compound statement *)
+
+| 'class' ID statements                              (* class extending Object *)
+
+| 'class' ID 'extends' ID statements                 (* class extending class *)
+
+| 'class' ID 'with' ID statements                    (* class with mixin class *)
+
+elseOpt ::= 
+  'else' statement
+| #     
+
+(* End of command grammar ****************************************************************************************************)
+
+
+(* Environment and store access ***********************************************************************************************)
+
+bindVariableAccess <v:ARTValue> ::= ID  { bindVariable(env, ID1.v, bindVariableAccess.v); }
+
+assignVariableAccess <v:ARTValue> ::= ID  { storeVariable(env, ID1.v, assignVariableAccess.v); }
+
+(* Expression grammar *********************************************************************************************************)
+
+expr <v:ARTValue> ::= seq    { expr.v = seq1.v; }
+
+seq <v:ARTValue> ::=
+  seq_                       { seq.v = seq_1.v; } 
+| seq ';;' seq_               { seq.v = seq_1.v; } 
+ 
+seq_ <v:ARTValue> ::= bind     { seq_.v = bind1.v; }
+
+bind <v:ARTValue> ::=
+  bind_                { bind.v = bind_1.v; } 
+| bindVariableAccess< '=' bind_        { bind.v = bind_1.v; bindVariableAccess1.v = bind_1.v; artEvaluate(bind.bindVariableAccess1, bindVariableAccess1); }
+
+bind_ <v:ARTValue> ::= assign { bind_.v = assign1.v; }
+
+assign <v:ARTValue> ::=
+  assign_               { assign.v = assign_1.v; }
+| assignVariableAccess< ':=' assign_ { assign.v = assign_1.v; assignVariableAccess1.v = assign_1.v; artEvaluate(assign.assignVariableAccess1, assignVariableAccess1); } (* assignment *)
+| ID '+='   assign      { assign.v = assign1.v.add(store.valueKey(env.valueKey(ID1.v))); }           
+| ID '-='   assign      { assign.v = assign1.v.sub(store.valueKey(env.valueKey(ID1.v))); }           
+| ID '*='   assign      { assign.v = assign1.v.mul(store.valueKey(env.valueKey(ID1.v))); }           
+| ID '/='   assign      { assign.v = assign1.v.div(store.valueKey(env.valueKey(ID1.v))); }           
+| ID '%='   assign      { assign.v = assign1.v.mod(store.valueKey(env.valueKey(ID1.v))); }           
+| ID '&='   assign      { assign.v = assign1.v.land(store.valueKey(env.valueKey(ID1.v))); }           
+| ID '^='   assign      { assign.v = assign1.v.lxor(store.valueKey(env.valueKey(ID1.v))); }           
+| ID '|='   assign      { assign.v = assign1.v.lor(store.valueKey(env.valueKey(ID1.v))); }           
+| ID '<<='  assign      { assign.v = assign1.v.lsh(store.valueKey(env.valueKey(ID1.v))); }           
+| ID '>>='  assign      { assign.v = assign1.v.rsh(store.valueKey(env.valueKey(ID1.v))); }           
+| ID '>>>=' assign      { assign.v = assign1.v.ash(store.valueKey(env.valueKey(ID1.v))); }           
+
+assign_ <v:ARTValue> ::= lambda { assign_.v = lambda1.v; }
+
+lambda <v:ARTValue> ::= (* Make procedure *)
+  lambda_                                  { lambda.v = lambda_1.v; } 
+| "\\" '(' formals ')' '{' statements< '}' { lambda.v = new ARTValueProcedure(formals1.v, lambda.statements1); }   
+| "\\" '{' statements< '}'                 { lambda.v = new ARTValueProcedure(null, lambda.statements1); }   
+
+lambda_ <v:ARTValue> ::= iter { lambda_.v = iter1.v; }
+
+iter <v:ARTValue> ::=   (* Iteration *)
+  iter_                 { iter.v = iter_1.v; }
+| iter_ '@' iter        { iter.v = iter_1.v; } (* TO DO *) 
+| iter_ '@' iter '!!' iter { iter.v = iter_1.v; } (* TO DO *)
+
+iter_ <v:ARTValue> ::= sel { iter_.v = sel1.v; }
+
+sel <v:ARTValue> ::=    (* Selection *)
+  sel_                  { sel.v = sel_1.v; }
+| sel_ '?' sel          { sel.v = sel_1.v; } (* TO DO *) 
+| sel_ '?' sel '!!' sel { sel.v = sel_1.v; } (* TO DO *)
+
+sel_ <v:ARTValue> ::= cnd { sel_.v = cnd1.v; }
+
+cnd <v:ARTValue> ::=    (* logical implies/conditional = NOT left OR right *)
+  cnd_                  { cnd.v = cnd_1.v; } 
+| cnd '=>' cnd_         { cnd.v = cnd1.v.cnd(cnd_1.v); } 
+
+cnd_ <v:ARTValue> ::= lor { cnd_.v = lor1.v; }
+
+lor <v:ARTValue> ::=    (* logical inclusive OR (disjunction) *)
+  lor_                  { lor.v = lor_1.v; } 
+| lor '||' lor_         { lor.v = lor1.v.lor(lor_1.v); } 
+
+lor_ <v:ARTValue> ::= lxor { lor_.v = lxor1.v; }
+
+lxor <v:ARTValue> ::=   (* logical exclusive OR *)
+  lxor_                 { lxor.v = lxor_1.v; } 
+| lxor '^^' lxor_       { lxor.v = lxor1.v.lxor(lxor_1.v); } 
+
+lxor_ <v:ARTValue> ::= land { lxor_.v = land1.v; }
+
+land <v:ARTValue> ::=   (* logical AND (conjunction) *)
+  land_                 { land.v = land_1.v; } 
+| land_ '&&' land       { land.v = land1.v.land(land_1.v); } 
+
+land_ <v:ARTValue> ::= bor { land_.v = bor1.v; }
+
+bor <v:ARTValue> ::=    (* bitwise inclusive OR *)
+  bor_                  { bor.v = bor_1.v; } 
+| bor '|' bor_          { bor.v = bor1.v.bor(bor_1.v); } 
+
+bor_ <v:ARTValue> ::= bxor { bor_.v = bxor1.v; }
+
+bxor <v:ARTValue> ::=   (* bitwise exclusive OR *)
+  bxor_                 { bxor.v = bxor_1.v; } 
+| bxor '^' bxor_        { bxor.v = bxor1.v.bxor(bxor_1.v); } 
+
+bxor_ <v:ARTValue> ::= band { bxor_.v = band1.v; }
+
+band <v:ARTValue> ::=   (* bitwise AND *)
+  band_                 { band.v = band_1.v; } 
+| band '&' band_        { band.v = band1.v.band(band_1.v); } 
+
+band_ <v:ARTValue> ::= equ { band_.v = equ1.v; }
+
+equ <v:ARTValue> ::=    (* equality *)
+  equ_                  { equ.v = equ_1.v; } 
+| equ_ '==' equ_        { equ.v = equ_1.v.eq(equ_2.v); }    (* equal *) 
+| equ_ '!=' equ_        { equ.v = equ_1.v.ne(equ_2.v); }    (* not equal *)
+
+equ_ <v:ARTValue> ::= rel    { equ_.v = rel1.v; }
+
+rel <v:ARTValue> ::=    (* relational *)
+  rel_                  { rel.v = rel_1.v; } 
+| rel_ '>=' rel_        { rel.v = rel_1.v.ge(rel_2.v); }    (* Greater than *)
+| rel_ '>' rel_         { rel.v = rel_1.v.gt(rel_2.v); }    (* Greater *)
+| rel_ '<=' rel_        { rel.v = rel_1.v.le(rel_2.v); }    (* Less than *)
+| rel_ '<' rel_         { rel.v = rel_1.v.lt(rel_2.v); }    (* Less *)
+
+rel_ <v:ARTValue> ::= cat { rel_.v = cat1.v; }
+
+cat <v:ARTValue> ::=    (* list concatenation *)
+  cat_                  { cat.v = cat_1.v; } 
+| cat '::' cat_          { cat.v = cat1.v.cat(cat_1.v); }         (* Concatenate *)
+
+cat_ <v:ARTValue> ::= range { cat_.v = range1.v; }
+
+range <v:ARTValue> ::=  (* list generation over ordinal types *)
+  range_                { range.v = range_1.v; } 
+| range_ '..' range_    { range.v = range_1.v.range(range_2.v); } (* Generate range list *)
+
+range_ <v:ARTValue> ::= shift { range_.v = shift1.v; }
+
+shift <v:ARTValue> ::=  (* bitwise shifts and rotates *)
+  shift_                { shift.v = shift_1.v; } 
+| shift  '<<' shift_    { if (shift1.v instanceof ARTValueStreamPrint) 
+                            shift.v = shift1.v.output(shift_1.v);  
+                          else shift.v = shift1.v.lsh(shift_1.v); }   (* Left shift *)
+| shift  '>>' shift_    { if (shift1.v instanceof ARTValueStreamPrint ) 
+                            shift.v = shift1.v.input(shift_1.v);  
+                          else shift.v = shift1.v.rsh(shift_1.v); }   (* Right shift *)
+| shift  '<<|' shift_   { shift.v = shift1.v.rol(shift_1.v); }   (* Rotate left *)
+| shift  '>>|' shift_   { shift.v = shift1.v.ror(shift_1.v); }   (* Rotate right *)
+| shift  '>>>' shift_   { shift.v = shift1.v.ash(shift_1.v); }   (* Arithmetic shift *)
+
+shift_ <v:ARTValue> ::= add { shift_.v = add1.v; }
+
+add <v:ARTValue> ::=    (* addition and subtraction *)
+  add_                  { add.v = add_1.v; } 
+| add '+' add_          { add.v = add1.v.add(add_1.v); }         (* Add *)
+| add '-' add_          { add.v = add1.v.sub(add_1.v); }         (* Subtract *)
+
+add_ <v:ARTValue> ::= mul { add_.v = mul1.v; }
+
+mul <v:ARTValue> ::=    (* multiplication, division and remainder *)
+  mul_                  { mul.v = mul_1.v; } 
+| mul '*' mul_          { mul.v = mul1.v.mul(mul_1.v); }         (* Multiply *)
+| mul '/' mul_          { mul.v = mul1.v.div(mul_1.v); }         (* Divide *)
+| mul '%' mul_          { mul.v = mul1.v.mod(mul_1.v); }         (* Remainder *)
+
+mul_ <v:ARTValue> ::= exp { mul_.v = exp1.v; }
+
+exp <v:ARTValue> ::=    (* exponentitation *)
+  exp_                  { exp.v = exp_1.v; } 
+| exp '**' exp_         { exp.v = exp1.v.exp(exp_1.v); }         (* Exponentiate *)
+
+exp_ <v:ARTValue> ::= op { exp_.v = op1.v; }
+
+op <v:ARTValue> ::=     (* unary operators, includind constructors for built in types *)
+  op_                   { op.v = op_1.v; } 
+| '+' op                { op.v = op1.v; }                       (* Posite *)
+| '++' op               { op.v = op1.v.add(ONE); }              (* Preincrement *)
+| op '++'               { op.v = op1.v.add(ONE); }              (* Postincrement *)
+| '-' op                { op.v = op1.v.neg(); }                 (* Negate *)
+| '--' op               { op.v = op1.v.sub(ONE); }              (* Predecrement *)
+| op '--'               { op.v = op1.v.sub(ONE); }              (* Postdecrement *)
+| '!' op                { op.v = op1.v.lnot(); }                (* Logical invert *)
+| '~' op                { op.v = op1.v.bnot(); }                (* Bitwise invert *) 
+| '_'                                                           (* nonbinding metavariable *)
+| 'null'                { op.v= NULL; }                                                 (* null literal *)
+| 'undefined'           { op.v= UNDEFINED; }                                            (* undefined literal *)
+| 'true'                { op.v = TRUE;}                                                 (* Boolean literal true *) 
+| 'false'               { op.v = FALSE;}                                                (* Boolean literal false *)
+| INTEGER               { op.v = INTEGER1.v; }                                          (* Integer literal *)
+| REAL                  { op.v = REAL1.v; }                                             (* Real literal *)
+| STRING_SQ             { op.v = STRING_SQ1.v; }                                        (* Character literal *)
+| STRING_DQ             { op.v = STRING_DQ1.v; }                                        (* String literal *)
+| ID                    { op.v = dereferenceVariable(env, ID1.v); }                     (* Variable access *)
+| ID '('                                                        (* Procedure call *)
+  { actuals1.v = new ARTValueEnvironment(((ARTValueProcedure) dereferenceVariable(env, ID1.v)).parameters(), null); } 
+    actuals (* Collect actuals and reset environment to new 'stack frame' *)
+    { actuals1.v.setParent(env); env = actuals1.v; } 
+  ')' 
+  { ARTAT_ART_statements attributes = new ARTAT_ART_statements(); /* Now call the procedure */
+    try { artEvaluate(((ARTValueProcedure) dereferenceVariable(env, ID1.v)).getBody(), attributes); } 
+      catch (ARTCavaSignalReturn s) { op.v = s.getValue(); }
+      catch (ARTCavaSignalYield s)  { op.v = s.getValue(); } /* In this implementation, treat yield as return */
+    env = env.getParent();  /* Reset stack frame */
+  }
+| 'break'       { if (true) throw new ARTCavaSignalBreak(); } (* The redundant if(true) is added so as to defeat Java's control flow analysis *)
+| 'continue'    { if (true) throw new ARTCavaSignalContinue(); }
+| 'return'      { if (true) throw new ARTCavaSignalReturn(UNDEFINED); }
+| 'return' expr { if (true) throw new ARTCavaSignalReturn(expr1.v); }
+| 'yield' expr  { if (true) throw new ARTCavaSignalYield(UNDEFINED); }
+| 'yield' expr  { if (true) throw new ARTCavaSignalYield(expr1.v); }
+| 'input' '(' ')' { /* op.v = stdin.scanRich(); */ }
+| 'output' '(' expr ')' { op.v = expr1.v; stdout.output(expr1.v); }
+| 'cin'   { /* op.v = new ARTValueStream(System.in, "stdin"); */ }                           (* Standard output stream *)
+| 'cout'  { op.v = stdout; } (* Standard output stream *)                                    (* Standard input stream *) 
+| 'despatch' expr ',' expr { op.v = despatcher.despatch(expr1.v, expr2.v); } (* backend call *)
+
+(* ARTValue_ constructors below this line *)
+(*
+| 'Array' '(' expr ')' { op.v = new ARTValueArray(expr1.v); }                                (* Array constructor *)
+| 'Boolean' '(' expr ')' { op.v = new ARTValueBoolean(expr1.v); }                            (* Boolean constructor *)
+| 'Character' '(' expr ')' { op.v = new ARTValueCharacter(expr1.v); }                        (* Character constructor *)
+| 'Complex64' '(' expr ',' expr ')' { op.v = new ARTValueComplex64(expr1.v); }               (* Complex constructor *)
+| 'ComplexArbitrary' '(' expr ',' expr ')' { op.v = new ARTValueComplexArbitrary(expr1.v); } (* ComplexArbitrary constructor *)
+| 'Integer32' '(' expr ')' { op.v = new ARTValueInteger32(expr1.v); }                        (* Integer32 constructor *)
+| 'IntegerArbitrary' '(' expr ')' { op.v = new ARTValueIntegerArbitrary(expr1.v); }          (* IntegerArbitrary constructor *)
+| 'List' '(' expr ')' { op.v = new ARTValueList(expr1.v); }                                  (* List constructor *)
+| 'Map' '(' expr ')' { op.v = new ARTValueMap(expr1.v); }                                    (* Map constructor *)
+| 'Procedure' '(' formals ')' '{' statements< '}' 
+  { op.v = new ARTValueValueProcedure(formals1.v, op.statements1); }                         (* Procedure constructor *)
+| 'Rational32' '(' expr ')' { op.v = new ARTValueRational32(expr1.v); }                      (* Rational32 constructor *)
+| 'RationalArbitrary' '(' expr ')' { op.v = new ARTValueRationalArbitrary(expr1.v); }        (* RationalArbitrary constructor *)
+| 'Real64' '(' expr ')' { op.v = new ARTValueReal64(expr1.v); }                              (* Real64 constructor *)
+| 'RealArbitrary' '(' expr ')' { op.v = new ARTValueRealArbitrary(expr1.v); }                (* RealArbitrary constructor *)
+| 'Record' '(' expr ')' { op.v = new ARTValueRecord(expr1.v); }                              (* Record constructor *)
+| 'Set'  '(' expr ')' { op.v = new ARTValueSet(expr1.v); }                                   (* Set constructor *)
+| 'Stream' '(' expr ')' { op.v = new ARTValueStream(expr1.v); }                              (* Stream constructor *)
+| 'String' '(' expr ')' { op.v = new ARTValueString(expr1.v); }                              (* String constructor *)
+| 'Term' '(' expr ')' { op.v = new ARTValueTerm(expr1.v); }                                  (* Term constructor *)
+| 'Tuple' '(' expr ')' { op.v = new ARTValueTuple(expr1.v); }                                (* Tuple constructor *)
+*)
+op_ <v:ARTValue> ::= doFirst { op_.v = doFirst1.v; }
+
+doFirst <v:ARTValue> ::=
+  '(' expr ')'        { doFirst.v = expr1.v; } 
+
+(* End of expression grammar *************************************************************************************************)
+
+(* Formal and actual argument handling ***************************************************************************************)
+
+formals<v:ARTValueEnvironment> ::= 
+  #                             { formals.v = new ARTValueEnvironment(); }
+| ID                            { formals.v = new ARTValueEnvironment(); storeVariable(formals.v, ID1.v, UNDEFINED); }
+| ID ',' formals                { formals.v = formals1.v;                        storeVariable(formals.v, ID1.v, UNDEFINED); }
+| ID '=' expr             { formals.v = new ARTValueEnvironment(); storeVariable(formals.v, ID1.v, expr1.v); } 
+| ID '=' expr ',' formals { formals.v = formals1.v;                        storeVariable(formals.v, ID1.v, expr1.v); }
+
+actuals<v:ARTValueEnvironment> ::= 
+  unnamedActuals { actuals.v.updateOrdered(unnamedActuals1.v); }
+| unnamedActuals { actuals.v.updateOrdered(unnamedActuals1.v); }  ',' { namedActuals1.v = actuals.v; } namedActuals 
+|                                                                     { namedActuals1.v = actuals.v; } namedActuals
+
+unnamedActuals<v:ARTValueList> ::=   // synthesize a list of arguments
+  #                       { unnamedActuals.v = new ARTValueList(); // Empty list }
+| expr                    { unnamedActuals.v = new ARTValueList(); unnamedActuals.v.insert(storeAllocate(expr1.v)); // Allocate and load at end of list } 
+| expr ',' unnamedActuals { unnamedActuals.v = unnamedActuals1.v;  unnamedActuals.v.insert(storeAllocate(expr1.v)); } 
+
+namedActuals<v:ARTValueEnvironment> ::= 
+  # 
+| ID '=' expr { storeVariable(namedActuals.v, ID1.v, expr1.v); } 
+| ID '=' expr { storeVariable(namedActuals.v, ID1.v, expr1.v); } ',' { namedActuals1.v = namedActuals.v; } namedActuals
+
+(* End of formal and actual argument handling ********************************************************************************)
+
+(* Lexical syntax ************************************************************************************************************)
+
+ID <leftExtent:int rightExtent:int lexeme:String v:ARTValueString> ::= 
+  &ID^ {ID.lexeme = artLexeme(ID.leftExtent, ID.rightExtent); 
+  ID.v = new ARTValueString(artLexemeAsID(ID.leftExtent, ID.rightExtent)); }  
+
+INTEGER <leftExtent:int rightExtent:int lexeme:String v:ARTValueInteger32> ::= 
+  &INTEGER^ { INTEGER.lexeme = artLexeme(INTEGER.leftExtent, INTEGER.rightExtent); 
+  INTEGER.v = new ARTValueInteger32(artLexemeAsInteger(INTEGER.leftExtent, INTEGER.rightExtent)); }  
+
+REAL <leftExtent:int rightExtent:int lexeme:String v:ARTValueReal64> ::= 
+  &REAL^ { REAL.lexeme = artLexeme(REAL.leftExtent, REAL.rightExtent); 
+  REAL.v = new ARTValueReal64(artLexemeAsReal(REAL.leftExtent, REAL.rightExtent)); }  
+
+STRING_SQ <leftExtent:int rightExtent:int lexeme:String v:ARTValueCharacter> ::= 
+  &STRING_SQ^ { STRING_SQ.lexeme = artLexeme(STRING_SQ.leftExtent, STRING_SQ.rightExtent); 
+  STRING_SQ.v = 
+  new ARTValueCharacter(artLexemeAsString(STRING_SQ.leftExtent, STRING_SQ.rightExtent).charAt(0)); }  
+
+STRING_DQ <leftExtent:int rightExtent:int lexeme:String v:ARTValueString> ::= 
+  &STRING_DQ^ { STRING_DQ.lexeme = artLexeme(STRING_DQ.leftExtent, STRING_DQ.rightExtent); 
+  STRING_DQ.v = 
+  new ARTValueString(artLexemeAsString(STRING_DQ.leftExtent, STRING_DQ.rightExtent)); }  
+
+(* End of lexical syntax *****************************************************************************************************)
+

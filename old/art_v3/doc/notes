@@ -1,0 +1,1188 @@
+
+
+POP issues (18/12/15 arising from SCP paper resubmission)
+
+classical GLL should change to match what we do in popClustered() so
+that the test overhead on the base node can be removed.
+
+
+
+
+Lexical grammar notes
+
+Hmm. At what stage should we create the lexical grammar? It must be after processing the lexical declarations, but we run therisk of building a lexer for bits of thegrammar that are not induced... on the other hand, modularity is completely broken, so perhaps we should delay that for later
+
+
+Compose internal grammar rule that takes kleene closure over all terminals and 
+insert function hook
+
+Generate lexical grammar and output parser - no integration
+
+Make a pseudo terminal for each lexical nonterminal, and rewrite grammar tree to use those pseudo terminals
+
+
+Notes on table initialisation
+
+1. Create a single initialisation function for each nonterminal
+
+2. Write a new initialiser that 
+
+2. Move all allocations to the top of table Initialiser
+
+
+
+
+
+Notes on next jobs
+
+Change pool to re-use blocks
+
+Try modifying LUT output so that each nonterminal is done in sequence rather than scanning the whole tree; then break up as for strings
+
+
+Notes on descriptors
+
+There is no need to put the sppf node into the descriptor since its
+label can be inferred from the GSS node, the label and the
+index. However, we do this so as to 'cache' the node and avoid the
+computation associated with mapping a label to a node in
+implementations where the real node exists. In BFS we could probably
+drop this, or we could imagine a limited BFS in which the SPPF nodes
+are held in an nxnx|t| array of booleans.
+
+Why are there only n^3 edges - because there can only be n pack nodes,
+each of which has maximum two edges.
+
+Notes on the new lexer front end that accomodates CTS's
+
+
+
+Now that simple string and sets are so close, add a command line argument to test harness to switch between simple and sets
+
+Add command line option to select one of three terminal templates:
+
+(i) put all successors into descriptors (Adrian's test version)
+
+(ii) if there is one successor, process immediately, otherwise put all successors into descriptors (the version in the paper)
+
+(iii) run through successors, remember first one that passes selector set and put rest into descriptors. Process the remebered one.
+
+In these cases, U varies.
+
+!!!! Issue: not doing selector test before finding descriptors
+
+Notes on lexer/parser split induction
+
+1. Any nonterminal with a 'xyz' or "pqr" on the RHS is a NLN
+
+2. Any nonterminal with only `x on the RHS is a LN
+
+(NB nonterminals with mixed ('', "") and ` are NLN
+
+3. Remaining nonterminals must have RHS made up of # and nonterminals only. Of these, only those appearing on the RHS of a NLN
+
+
+ln  alpha ::= `a ...
+ln  digit ::= `0 ...
+
+?   id::= alpha (alpha | digit)*
+
+ln number = digit+ (`. digit+)
+
+nln gets ::= ':='
+
+nln getsChar ::= `: `=
+
+nln assign1 ::= id ':=' number  co-existence with := makes id ln
+
+assign2 ::= id gets number
+
+assign3 ::= id getschar number  definite problem
+
+
+
+
+Notes on memory allocation
+
+The pool is an array of pool blocks
+
+Each pool block is a power of 2 bytes in size
+
+const poolBlockInitialCount = 1024;
+const poolAddressOffset = 16; // poolAddressOffset must be a power of 2
+const poolBlockSize = 1 << poolAddressOffset;
+const poolAddressMask = poolBlockSize - 1;
+
+int** pool;
+
+int poolBlockCount; // Total number of available pool blocks
+int poolBlockTop; // Current allocation point: block number
+int poolOffsetTop; // Current allocation point: offset
+
+pool is a pointer to an array of pointers of length poolBlockCount
+poolBlockTop and poolOffsetTop start at zero
+
+Each allocation checks to see if it will fit into the block; if not a new block 
+is allocatted
+
+Clearing the pool, then 
+
+for (int i = 0; i <= poolBlockTop; i++)
+  memset(pool[i], 0, poolBlockSize);
+
+
+
+
+Re-add csharp AST
+Crashed on -n10
+
+
+Changes for SCP paper
+
+1. Suppress GSS hash table?
+
+2. Change pop element for RGLL back to a pair
+
+Only store SPPF label in descriptor so that it is directly available
+without indirection.
+
+The same thing is true for the pop set:
+
+
+Suppress test in findGSSNodeClustered()
+
+NOTE: if GSSEDGES fo not need to be tested for, then we don'd need a
+hash table for GSSEdges: major speed up available.
+
+Done in C++, not yet done in Java
+
+Hash functions
+
+Sumarise keys for each table
+There are 8 tables:
+
+sppfNode	3	label, leftExtent, rightExtent 11 + 15 + 15 = 41
+sppfPackNode	3	parent, label, pivot x + 11 + 15
+gssNode		2	label, level 11 + 15
+gssEdge		3	sppfNode, source, destination x + y + z	
+popElement	3	gssNode/nonterminal, unused/index, sppfNode
+descriptor	4	label, gssNode, index, sppfNode
+testRepeatElement4	label, gssNode, index, sppfNode
+clusterElement	2	nonterminal, index
+
+Token lengths almost all fit in 15 bits: 
+
+gtb_src 36827
+rdp_full 26551
+twitter 3402
+life 1479
+
+ANSI_C has 1545 labels - 11 bits
+
+Add to display: texttop; ART_LABEL_EXTENT
+
+Summarise range elements for each key
+Use a lookup table of primes?
+
+Cardinalities for C++ grammar running on gtb_src
+
+Tabe                  K              2K              putative prime ~= 2K
+sppfNode	      561,139	     1,122,278	     1,122,281
+sppfPackNode	      562,843	     1,125,686 	     1,125,679
+gssNode		      1,270,903	     2,541,806	     2,541,811
+gssEdge		      6,392,785	     12,785,570	     12,785,579
+popElement	      1,110,400	     2,220,800	     2,220,839
+descriptor	      13,061,222     26,122,444	     26,122,469
+testRepeatElement     0		     0		     
+clusterElement	      523,510	     1,047,020	     1,047,031
+
+For paper
+
+JLS1 NOT JLS2
+ANSI-C
+ANSI-C++
+C#
+
+
+Notes on compiler performance and hash tables
+
+Headline results: when set to 64K hash tables, Borland is 3-4% slower than Java which is 11-12% slower than optimised g++
+Hash functions are not working at all well, so there is a big performance gain to be had.
+
+
+Tasks
+0. Remove all fragmentation code
+
+Set Fragment tests to vacuous - all runs weel but some tests are missing - which ones?
+
+Clustering problems - Sa_a, Sa_H and SLaSR_H are rejecting acceptables
+
+1. Understand popClustered and the source of the labels therein
+
+-E -U breaks since popclustered is picking up the wrong label
+Liz has a trivial broken example ex4_4 for -U - debug
+
+Probably popClustered not getting nonterminal + k
+
+Estimate - half a day?
+
+
+
+5. Locate a working COBOL grammar and test string, perhaps within GTB
+
+Estinate two hours
+
+Found cobol.art and cobol.str in \csle\dev\art\work\hash\data\newgrammars
+
+After removal of *, runs through art OK but bcc32 hangs in resulting grammar
+Put g++into ctst.bat to try with GNU
+Now runs, but rejects string at symbol 188 which is Integer
+
+On the face of it that should work though
+
+Checked and the working ART grammar is the GTB grammar with . changed to ; at the end of the lines
+
+However, GTB was BNF only. The original grammar is EBNF, and should be reconverted ab initio.
+
+See vc_cobol_1_0.bnf
+
+6. Add old cpp statistics to log file
+
+Note: at the moment the statistics are computed and printed by a
+utility function in the container class. Move its local variables to
+be class variables of class container, and give access vis
+parser->sppf. Horrible, but we are in a hurry,
+
+Estimate 1 hourleft
+
+7. Put pagefaults back in for C - g++ only
+
+--
+
+Notes on fragmentation
+
+Put all of the code for a nonterminal in one method
+
+Descriptor fetcher needs a switch statement that gies to the nonterminal, passing the label as a parameter. Each nonterminal metod then starts with a switch statement that selects the code block.
+
+Good backwards compatability, and can measure the overhead in C
+
+--
+
+Grammars with parentheses generate unreachable code because of the
+final jump - use isPostPredictivePop to filter the instances out.
+
+aS_a correct in a but rejects aa with -E (and not with -E -p)
+
+
+Added isPosSelector attribute which is presently computed for all pos nodes except the rightmost
+
+
+3. Add early pop code
+
+
+The following files crash in Java when clustering - tracing errors - node 84!
+
+fbnf4nt.acc_1
+fbnf5fac.acc_2
+fbnf5mul.acc_2
+fbnf5nt.acc_1
+fbnf5nt.acc_2
+fbnf6fac.acc_1
+fbnf6mul.acc_1
+fbnf6nt.acc_1
+fbnf7fac.acc_1
+fbnf7mul.acc_1
+fbnf7nt.acc_1
+La_b_HRQb.acc_2
+La_b_HRQb.acc_3
+left3_L.acc_1
+left3_L.acc_2
+
+The following grammars are wholly missing from both Java and C++ in clustered mode since EBNF clustering is not yet implemented
+
+aIb
+aILbR
+aLb_LcPRNd
+attest1
+attest2
+attest3
+HHKH
+HK
+HKaHQ
+HP
+LaILbRR
+LaRK
+LaRP
+La_bRK
+La_bRP
+La_HRK
+La_HRP
+
+
+
+
+Notes on Liz's 'red arrow algorithm'
+
+From Liz's email:
+
+Here is an algorithm which will construct the 'red' arrows in an SPPF.
+
+ Each SPPF node u, including the packed nodes, has three associated sets:
+ a set ST_u of start nodes,
+ a set EN_u of end nodes, and
+ a set RE_u of red edges.
+
+
+ Basically the edges of a parent nonterminal or intermediate node are
+ the edges of its (grand)children, together with edges from the end
+ nodes of the left (grand)child to the start nodes of the right
+ (grand)child.
+
+In fact, we have to be a bit careful because of the packed nodes.
+
+ Here is a formal definition.
+
+ For a leaf node u we have ST_u={u}=EN{u} and RE_u={} (empty)
+
+ For a packed node u with two children y and z, ST_u=ST_y, EN_u=EN_z
+ and RE_u is the union of RE_y and RE_z together with additional edges
+ from each element of EN_y to each element of ST_z.
+
+ For a packed node u with one child y, ST_u=ST_y, EN_u=EN_y, and RE_u=RE_y
+
+ For an internal node u with packed node children x_1, ..., x_n we have
+
+ ST_u is the union of ST_x_i, for i=1 ... n
+ EN_u is the union of EN_x_i, for i=1 ... n
+ RE_u is the union of RE_x_i, for i=1 ... n
+
+ Then final set of red edges are the red edges of the root node of the SPPF and the final set of start nodes are the start nodes of the root.
+
+ I think that the red edges defined as above have the properties that
+ starting with a start node (i.e. a leaf of the form (a,0,k) ) and
+ following a chain of red edges (of the root node) to its end gives a
+ sequence which corresponds to the yield of a derivation tree embedded
+ in the SPPF, and conversely the yields of all derivation trees
+ embedded in the SPPF can be found in this way.
+
+ It is straightforwad to convert the red edges to a graph which we
+ should be able to prove is a sublattice of the lattice of
+ tokenisations. It would also be good to prove that the sulattice is
+ exactly the set of paths through the full lattice which correspond to
+ token strings which are sentences in the grammar. I think this should
+ be straightforward once we have a proper formal definition of the
+ parser which builds the extended form of SPPF.
+
+!!! Start symbol must have $ in follow set otherwise pop doesn't work; we need to make this dynamic.
+
+
+SDF drops all but ambiguous symbol nodes - their diamond node is the residual 
+symbol node - all the other nodes are pack nodes. Need to understand their list
+nodes.
+
+For garbage collection, split hash tables by arity (size) and maintain
+a free list for each
+
+Notes on lexer structures
+
+inputString[0..n] characters: inputString[n]=0 (EOSCHAR)
+A slot number k represents the slot before character index k
+Therefore we have slots 0..n+1
+
+rightExtent[0..n] - entry i contains the rightExtent of the token in token[i]
+token[0..n] - entry i contains the token with extent i..rightExtent[i]
+0 is illegal
+
+Token check then continues to look in token[i]; i = rightExtent[i]
+When looking at derivation trees, the pivot of the pacj node under a
+symbol node is the LEFTMOST extent of the RIGHTMOST child. Another way
+of saying this is that the yield of the rightmost child is the
+substring to the right of the pivot.
+
+
+Problem in old CPP
+
+When compiled with g++, the GSS rendering segv's because the string
+label for ART__DUMMY has been bashed by a memory error. But, codeguard
+does not show the problem. Ouch.
+
+Hack fix by putting constant string in.
+
+--
+
+Notes on compilation of switch statements in Java
+
+Opcode and branch table:
+
+1   op
+0-3 pad bytes to align on four byte boundary
+4   default branch
+4   min index
+4   max index
+(high - low + 1) * 4 branch offsets
+
+Despatcher branches in ART
+
+For small switches, each branch is 
+
+1  aload_0 [this]
+3  invokevirtual GLLParser.FRAG_ART__ansi_c__translation_unit_2() : void [3361]
+3  goto 104
+
+For large, each branch is
+
+1    30496  aload_0 [this]
+3    30497  invokevirtual GLLParser.FRAG_ART__Cobol__Abbreviated_combined_relation_conditions_2_2() : void [22987]
+5    30500  goto_w 65525
+
+So, for big parsers we need 9 + 4 = 13 bytes per label
+
+For COBOL, we have 4925 labels.
+
+64K/13 is 5041, so COBOL very close to the limit
+
+Notes on table initialisation
+
+Need some clverness for LHS initialisation - all children of a LHS are in a block in the enumeration
+
+
+ART open issues
+
+In -Gsdf:
+
+(i) if the first alternate of a rule is # then the output is malformed
+
+(ii) The module name must match the filename.
+
+(iii) Currently the output adds the line "imports basic/Whitespace" - this probably shouldn't happen unless the whitespace builtin is specified
+
+Add -Ggtb processing code as small modification of ART
+
+
+
+Notes on degrees of freedom in GLL parsers
+
+Support functions:
+ObjectOriented
+BFS
+  BFSSparse
+poolHashUninlined
+poolHash
+  poolHashAsymptote
+
+Support Unicode - what about sets?
+
+Add builtins to new backend
+
+
+Lexer models
+
+1 - longest match lexer function returns prioritised single token per string Llm {(Tlm,l)}
+
+Llm is run over entire character string to produce a single token string before parsing
+
+2 - remove selector sets from parser so that all descriptors that could be created are always created. The template for terminal directly tests each terminal.
+
+This is like having an individual lexer for each pattern; there may be overlapping computation
+
+3a - a 'full' lexer Lf  which returns all of the lexemes that start at this point {(Ti, li), (Tk, lk), ...}
+
+    note if some lj=lm then the token must be in patterns j and m
+
+    testSelect() calls Lf and proceeds as before
+
+3b - testSelect() has a cache of Lf(i) for some input position i so it i scalled `	 at most once per input pointer position
+
+4 - Each instance of testSelect() has its own lexer function Li 
+    The intention is that the individual Li's are cheaper to compute because the DFA or other mechanism only has to test against a subset of terminals
+
+
+How should the lexers be made: ideally, a DFA constructed as per Thompson's construction and the subset construction
+                               in the first instance, just iterate through the patterns 
+
+So, 1 is done.
+
+Need to write a sinple version of Lf, and also try the suppression if tests - testSelect() just become a function that returns true?
+
+
+----
+
+Modularity
+
+<=* seems not to be working
+
+Why is whitespace wrapping not using both nonterminals
+
+
+Now, <=* passes a reriteset, and only mains in the rewrite set are being added. Why?
+
+Because it has already been rewritten. Scan the old tree, not the new one!
+
+
+Whitespace
+----------
+
+Defaults should model Liz's worlview, that is no whitespace declarations instantaites &WHITESPACE. We can turn whitespace off altogether with a vacuous import.
+
+
+-i asserts inline lexing. Default is to use lexical preprocessing.
+
+To provide compatibility with -i, the longest match lexer should make a call to whitespace after builtins, 'x' and "x" terminals but not after `x terminals
+Tricky question: what about first slot?
+
+Initialisation: attempt to lex a symbol. If nothing works, do a whitespace lex and then continue. NOT DONE YET
+
+Inline lexing NOT DONE YET
+
+
+<=* seems not to be working
+
+Why is whitespace wrapping not using both nonterminals
+
+
+Now, <=* passes a reriteset, and only mains in the rewrite set are being added. Why?
+
+Because it has already been rewritten. Scan the old tree, not the new one!
+
+---
+Colour intermediate nodes cyan in SPPF's
+
+Remove ambiguity and reachable flags from nodes
+
+Size a structure, then make an array of booleans for reachability
+
+Change brackets to [] on intermediates on text output
+
+Produce 
+
+1. Full SPF including those bits of tree tht fail - annotate red
+
+2. Top down SPPF
+
+3. Full SPPF without intermediates
+
+4. Top down SPPF without intermediates
+
+
+
+
+Ali observes
+
+checking arity and looking across the breadth in a depth first manner
+
+gets to the operator first
+
+wildcards cause performance problems: leading wildcard or trailing OK, but one on each end in a recursive nonterminal causes all kinds of problems.
+
+
+
+
+
+A. Things that are broken
+
+0. ART_L__ labels should be ART__L_
+
+1. `a 'a' gets double declaration: need three kinds of ART_T_ labels
+We need a variant of PrintLabel that takes into account the KIND, and
+we also need to go bck to the older more compact form where we pass in
+the node rather than the fields.
+
+Old version: getSkipLoopNode and getLoopBaseNode are both implemented as 
+
+findSPPFNode(artLabel parentLabel, artLabel childLabel, artLabel *currentToken) 
+
+How does this work?
+
+See paper.
+
+getSkipLoopNode(L, i) says:
+y = findSPPFNode(bL, i, i)
+if NOT y has child labelled (L, i), create such a child and give it a child labelled (#, i, i)
+return y
+
+get LoopBaseNode(L, i) says
+y = findSPPFnode(L, i, i)
+if NOT y has child labelled (sL, i), create such a child and give it a child labelled (#, i, i)
+return y
+
+So:
+a call getSkipLoopNode(L, i) translates to findSPPFNode(bL, L, i)
+a call to getLoopBaseNode(L, i) translated to findSPPFNode(L, sL, i)
+
+CHANGES IN NEW VERSION OF THE PAPER
+
+ 
+
+1. Deletion of getLoopBaseNode() and deletion of getSkipLoopNode() support functions
+
+These support functions are no longer used
+
+2. New support function getBaseNode()
+
+getBaseNode(L, M, i)
+if eoR(L) then  t:= lhs(L) else t := L fi
+if there does not exist an SPPF node y labelled (t,i,i) then create one fi
+if y does not have a child labelled (M,i) then create one with child labelled (#,i,i) fi
+return y
+
+which translates to Adrian-speak
+
+findSPPFNode(eor(L) ? lhs(L) : L, M, i) 
+
+3. Deletion of sL and bL
+
+The attributes sL and bL are no longer used
+
+4. Template for (v)*, v=>*#
+Note: for r base or bracketed, L_r is the slot before r, and E_r is the slot after r
+r is the regular expression, v is the body: in the code r is iftNode and v is bodyNode (the child of iftNode)
+
+c_N:=getSkipLoopNode(L_r, c_I) replaced by c_N:=getBaseNode(E_r, L_r, c_I) 
+which translates to findSPPFNode(eor(E_r) ? lhs(E_r) : E_r, L_r, c_i) 
+and then to findSPPFNode(iftNode->erL->EoR ? iftNode->erL->lhsL : iftnode->erL, iftNode->lrL, currentToken)
+
+and
+
+c_N:=getLoopBaseNode(E_v, c_I) replaced by c_N:=getBaseNode(E_v, L_r, c_I) 
+which translates to findSPPFNode(eor(E_v) ? lhs(E_v) : E_v, L_r, c_i) 
+and then to findSPPFNode(bodyNode->erL->EoR ? bodyNode->erL->lhsL : bodynode->erL, iftNode->lrL, currentToken)
+
+5. Template for (v)+, v=>*#
+Note: for r base or bracketed, L_r is the slot before r, and E_r is the slot after r
+r is the regular expression, v is the body: in the code r is iftNode and v is bodyNode (the child of iftNode)
+
+c_N := getLoopBaseNode(E_v, c_I)  replaced by c_N := getBaseNode(E_v, L_r, c_I)
+which translates to findSPPFNode(eor(E_v) ? lhs(E_v) : E_v, L_r, c_i) 
+and then to findSPPFNode(bodyNode->erL->EoR ? bodyNode->erL->lhsL : bodyNode->erL, iftNode->lrL, currentToken)
+
+
+
+--------------------------------------------------------------
+ALGORITHM IMPLEMENTATION NOTES HERE
+--------------------------------------------------------------
+Summary implementation notes for ART - * means tested by AJ
+
+1. Regular expression classes
+
+There are four classes of regular expression: BASE, BRACKETED,
+CONCATENATED and ALTERNATED.
+
+BASE: 
+epsilon: #
+terminal: a \in (T U N)
+
+BRACKETED: r unrestricted 
+do-first: (r)
+positive-closure: <r> or (r)+
+optional: [r] or (r)?
+Kleene-closure: {r} or (r)*
+
+CONCATENATED: r BASE or r BRACKETED
+r_1 r_2 ... r_n n>1, r_i is a base or bracketed regular expression
+
+ALTERNATED: r not ALTERNATED
+r_1 | r_2 | ... | r_n n>1 
+
+3. Slots
+
+A slot is any position immediately before or immediately after a base
+or bracketed expression on the RHS of a grammar rule. In
+addition, there is a dummy slot $. 
+
+4. Slots related to regular expressions
+
+For r base or bracketed, L_r is the slot before r, and E_r is the slot after r
+For r concatenated r_1 r_2 ... r_n, L_r is the slot L_r_1 and E_r is E_r_n
+For r alternated r_1 | r_2 | ... | r_n, L_r is $ and E_r is E_r_n
+
+5. Slot properties
+
+In the theory paper, these label->label functions f(L) return L for the undefined cases. 
+It is an informal theorem that we are not using any of the undefined cases.
+In the implementation, we test this theorem by having node->f(L) return NULL for the undefined cases.
+Future changes that breach the informal theorem should then core dump: we would need to improve the definitions at that point.
+
+Of type boolean:
+* eoOP(L): a(L) is X ::= u(v.)t or X::= u(v.)?t
+* eoR(L): L is at the end of a production (or production rule in Liz's terminology).
+* EoA(L): L is of the form r_1 | r_2 . | ... | r_n or L is of the form r_1 | r_2 | ... | r_n .
+
+(not needed for implemetation)
++unit(L) (i) s::=\alpha.\beta s.t. \alpha is a terminal, nonterminal or epsilon AND \beta is EMPTY, or 
+        (ii) s::= (\alpha' . \beta') or [\alpha' . \beta'] or r1 | ... | \alpha' . \beta' | ... r where \alpha' . \beta' is unit 
+
+In my terms, this means a unit grammar element with no ancestor cats between the singleton and either the root or an enclosing closure
+
+(not needed for implemetation)
++fiRE(L) (i) s::=\alpha.\beta s.t. \alpha is a terminal, nonterminal or epsilon, or 
+        (ii) s::= (\alpha' . \beta') or [\alpha' . \beta'] or r1 | ... | \alpha' . \beta' | ... r where \alpha' . \beta' is fiRE
+
++fiR(L) s::=\alpha.\beta s.t. fiRE(L), p(L) is not EoR and L is not of the form X::= A.\beta with A nullable
+        (Major change from previous fiR(L))
+
++fiC(L) X ::= \alpha < \tau1 .\tau2> \beta and \tau1.\tau2 is fiRE. 
+
+Of type Label:
+
+* lhs(L) is the LHS nonterminal for the rule containing L
+
++ b(L): slot before L - added in August 2016 EBNF paper
+
+* n(L): slot after L
+
+* a(L): if EoA(L) then E_r_n else L
+
++ s(L): only used in defintion of q, so not needed (see below)
+
+* p(L): if eoOP(L) then p(nL) else // Note eoOP takes priority over eoA
+        if EoA(L) then p(aL) else L
+
++ q(L): not used in parsers - not implemented (see EBNF paper for definition)
+
+
+6. First sets for regular expressions
+
+* Epsilon
+first(#) = {#}
+
+* a \in T
+first(a) = {a}
+
+* Nonterminal: A ::= r_1 | r_2 | ... | r_n
+first(A) = first(r_1) U first(r_2) U ... U first(r_n)
+
+* Do-first: r = (s) 
+first(r) = first(s)
+
+* Optional: r = (s)?
+first(r) = first(s) U #
+
+* Positive-closure: r = (s)+
+first(r) = first(s)
+
+* Kleene-closure: r = (s)*
+first(r) = first(s) U #
+
+* Concatenated: r = r_1 r_2 ... r_n
+first(r) = (first(r_1) \ #) U first(r_2..r_n)    if # \in r_1
+           first(r_1)                            otherwise
+
+* Alternated: r_1 | r_2 | ... | r_n 
+first(r) = first(r_1) U first(r_2) U ... first(r_n)
+
+7. First sets for EBNF slots
+
+* first(.r) = first(r)
+* first(r.) = { # }
+
+For expressions of the form t.m where tm is a regular expession
+
+* first(t.m) where t.m = (t'.m') = first( t'.m' )
+
+* first( (t'.m')? ) = first( t'.m' )
+
+* first( (t'.m')* ) = first( (t'.m')+ )
+                    = first( t'.m') U first( t'm' ) if # \in first(t'.m')
+                    = first (t'.m') otherwise
+
+For expressions of the form r_1 r_2 ... . r_i ... r_n where r_i = t'.m'
+* first(t.m) = (first(t'.m') \ #) U first (r_i+1 ... r_n) if # \in first(t'.m')
+               = first(t'.m') otherwise
+
+For expressions of the form r_1 | ... | r_i | ... | r_n where r_i = t.m
+* first(t'.m') = first( t'm') 
+
+8. Follow sets for EBNF
+  
+* follow( X ::= \alpha Y . \beta)
+  = ( first (\alpha Y. \beta) \ #) U follow(X) if # \in first(\beta)
+  = first (\alpha Y. \beta)                    otherwise 
+ 
+* follow (Y) is the union of all sets follow(X ::= \alpha Y. \beta)
+
+ follow(S) contains $ (end of String) 
+
+9. Support functions
+
+(a) Test
+
+boolean testSelect(a, Y, r) return a \in first(r) or (# in first(r) and a \in follow(Y)) 
+comment: should be statically computed into the tree
+
+boolean testRepeat(T, u, i, w)
+if (T, u, i, w) \in TR return true else {
+  insert (T, u, i, w) into TR 
+  return false
+}
+
+(b) GSS construction
+
+(i) findDescriptor_add(L, u, i, w) if (L, u, i, w) \not\in U then insert(L, u, i, w) into both U and R
+
+(ia) findDescriptorReduced(L, k, i) if (L, k, i) \not\in U then insert(L, k, i) into both U and R
+
+(ii) pop(u, i, z) // u is GSSnode, i is currentTokenIndex, z is currentSPPFnode
+       if (not u = u_0) then 
+         insert(u,z) into P
+
+         for each edge (u, w, v) 
+           y := lookupSPPF(u.label, w, z)
+           findDescriptor(u.label, v, i, y)
+
+(iia) popReduced(A, k, i, z) // A is nonterminal       
+              if (A, k, z) \not\in P
+          insert (A, k, z) into P
+          for each GSS node u = ( (!L = _ ::= _ A . _), k) 
+            for each edge (u, !w, !v)
+              findDescriptor_add(L, v.level, i, getSPPFNode(L, w, z))
+
+(iia-imp) popClustered(A, k, i, z) (* Adrian's clustered implementation *)
+    if (A, k, z) \not\in P {
+      insert (A, k, z) into P
+      c = findCluster(A, k)
+        for each GSS node u = ( (!L = _ ::= _ A . _), k) {
+        for each edge (u, !w, !v) {
+          findDescriptor_add(L, v.level, i, getSPPFNode(L, w, z))
+          add w to poplist of c
+
+(iib) popMGLL(u, e, z)  - e is a pair(a, j) or (sym(e), extent(e))
+        if u != u_0 {
+          left (L, k) be the label of u
+          add (u, sym(e), z) to P
+          for each edge (U, w, v) {
+            findDescriptor_add(L, v, e, getSPPFNode(L,w,z))
+
+(iii) findGSSNode_create(L, u, i, w)
+  v := lookupGSS(L, i) // Returns NULL if (L, i) is not in the GSS, otherwise  returns the GSS node labelled (L, i)
+  if v = NULL then v := addtoGSS(L, i) fi
+
+  if there is not an edge from v to u labelled w then
+     create an edge from v to u labelled w
+     for each (v, z) in P do add(L, u, z.rightExtent, getNodeP(L, w, z)) od
+  fi
+  return v
+
+(iii-1) findGSSNodeReduced1(L, k, i, w)
+         Let L be of the form B ::= \tau A . \mu
+         if (L, w, k) \not\in C
+           if there is not already a GSS node labelled (L, i)
+             create a GSS node v labelled (L, i)
+             for all (t, x, i) \in C with t.lhs = A do
+               if w = dummyNode then j:=k else j = x.rightExtent
+               let f be the GSS node labelled (t, j)
+               add an edge labelled x from f to v               
+           insert (L, w, k) into C
+         let v be the GSS node labelled (L, i)
+         for each GSS node u with a label of the form ( Y ::= \alpha B. \beta, k)
+           if there is not an edge from v to u labelled w
+             create an edge from v to u labelled w
+             for all (A, i, z) \in P
+               findDescriptor(L, i, z.rightExtent, getNode(L, w, z))
+
+HARD TESTS: find all elements in C with a particular LHS - add 'same LHS' field
+HARD TESTS: find all GSS nodes with a particular nonterminal and index
+IDEA: link 'supernode' in GSS node circularly
+
+(iii-2) findGSSNodeReduced2(L, k, i, w)
+         Let L be of the form B ::= \tau A . \mu
+         if (L, w, k) \not\in C
+           if there is not already a GSS node labelled (L, i)
+             create a GSS node v labelled (L, i)
+             for all (t, x, i) \in C with t.lhs = A do
+               if w = dummyNode then j:=k else j = x.rightExtent
+               let f be the GSS node labelled (t, j)
+               add an edge labelled x from f to v               
+           insert (L, w, k) into C
+         let v be the GSS node labelled (L, i) 
+         needCP := true
+         for each GSS node u with a label of the form ( Y ::= \alpha B. \beta, k)
+           if there is an edge from v to u labelled w
+             needCP := false
+         else
+             create an edge from v to u labelled w
+         if needCP
+           for all (A, i, z) \in P
+             findDescriptor(L, i, z.rightExtent, getNode(L, w, z))
+
+(iii-3) findGSSNodeReduced3(L, k, i, w)
+         let slot(L) = B ::= _ A . _
+         if lookupGSSNode(L, i) = null 
+           v' = lookupGSSNode(_ ::= _ A . _, i)
+           v = createGSSNode(L, i)
+           if (v' != null)
+             for all lookupGSSEdge(f, x, v')
+               create an edge(f, x, v)              
+
+         needCP := true
+         for all u = lookupGSSNode(_ ::= _ B . _, k)
+           if lookupGSSEdge(u, w, v) != null
+             needCP := false
+           else
+             createGSSEdge (u, w, v)  
+         if needCP
+           for all (_, i, z) \in P
+             findDescriptor(L, i, z.rightExtent, lookupSPPfNode(L, w, z))
+
+(iii-4) findGSSNodeReduced4(L, k, i, w) (* from the GLLBoth paper *)
+         let slot(L) = !B ::= _ !A . _
+         if lookupGSSNode(L, i) = null 
+           v' = lookupGSSNode(_ ::= _ A . _, i)
+           v = createGSSNode(L, i)
+           if (v' != null)
+             for all lookupGSSEdge(!f, !x, v')
+               createGSSedge(f, x, v)              
+
+         u' = lookupGSSNode( _ ::= _ B. _, k)
+         if lookupGSSEdge(v, w, u') = null
+           for all u = lookupGSSNode(_ ::= _ B. _, k)
+             createGSSedge(v, w, u)
+
+           for all (A, i, !z) \in P
+             findDescriptor(L, k, z.rightExtent, lookupSPPfNode(L, w, z))
+
+(iii-5) findGSSNodeReduced4(L, k, i, w) (* from the SCP FRGLL paper - test removed*)
+         let slot(L) = !B ::= _ !A . _
+         if lookupGSSNode(L, i) = null 
+           v' = lookupGSSNode(_ ::= _ A . _, i)
+           v = createGSSNode(L, i)
+           if (v' != null)
+             for all lookupGSSEdge(!f, !x, v')
+               createGSSedge(f, x, v)              
+
+         for all u = lookupGSSNode(_ ::= _ B. _, k)
+           createGSSedge(v, w, u)
+
+         for all (A, i, !z) \in P
+           findDescriptor(L, k, z.rightExtent, lookupSPPfNode(L, w, z))
+
+(iii-4imp) findGSSNodeReduced4(L, k, i, w) (* Adrian's cluster implementation *)
+         (* Find (lookup, and if necessary create) the clusters for the nonterminal to be called and for the LHS nonterminal *)
+         let slot(L) = !B ::= _ !A . _
+         c = findCluster(A, i)
+         d = findCluster(B, k) 
+
+         (* Make the GSS node v, add it to the nodelist of c, and add to v any inedges that have already been created for c *)
+         if lookupGSSNode(L, i) = null 
+           v = createGSSNode(L, i)
+           add v to the node list of c
+           (* This loop creates actual GSS edges; it can be omitted without breaking the algorithm because the cluster inedge captures the information *)
+           for all inedges to c (!f, !x, _)
+             createGSSedge(f, x, v)          
+
+         (* Add the specific edge for this push; and add this to the LHS cluster inedge list *)
+         let !u' be the first element on the nodelist of d
+         if lookupGSSEdge(v, w, u') = null  
+	   add (v, w) to the inedge list of d
+           (* This loop creates actual GSS edges; it can be omitted without breaking the algorithm because the cluster inedge captures the information *)
+           for all u in node list of d
+             createGSSedge(v, w, u)
+
+           (* Look for contingent pops, and create associated descriptors *)
+           for all !z on pop list of c
+             findDescriptor(L, k, z.rightExtent, lookupSPPfNode(L, w, z))
+
+(iii-5imp) findGSSNodeReduced4(L, k, i, w) (* Adrian's cluster implementation of iii-5 AFTER LIZ'S PROPOSED CHANGES which are in the SCP RFGLL paper*)
+         (* Find (lookup, and if necessary create) the clusters for the nonterminal to be called and for the LHS nonterminal *)
+         let slot(L) = !B ::= _ !A . _
+         c = findCluster(A, i)
+         d = findCluster(B, k) 
+
+         (* Make the GSS node v, add it to the nodelist of c, and add to v any inedges that have already been created for c *)
+         if lookupGSSNode(L, i) = null 
+           v = createGSSNode(L, i)
+           add v to the node list of c
+           (* This loop creates actual GSS edges; it can be omitted without breaking the algorithm because the cluster inedge captures the information *)
+           for all inedges to c (!f, !x, _)
+             createGSSedge(f, x, v)          
+
+         (* Add the specific edge for this push; and add this to the LHS cluster inedge list *)
+//         let !u' be the first element on the nodelist of d
+//         if lookupGSSEdge(v, w, u') = null  
+
+	   add (v, w) to the inedge list of d
+
+           (* This loop creates actual GSS edges; it can be omitted without breaking the algorithm because the cluster inedge captures the information *)
+           for all u in node list of d
+             createGSSedge(v, w, u)
+
+           (* Look for contingent pops, and create associated descriptors *)
+           for all !z on pop list of c
+             findDescriptor(L, k, z.rightExtent, lookupSPPfNode(L, w, z))
+
+(b) SPPF construction - note final convention: left child is called w, and right child is called z
+
+sppfNODE findSPPF(L, i, j) 
+  y := lookupSPPF(L, i, j) // Returns NULL if (L, i, j) is not in the SPPF, otherwise  returns the SPPF node labelled (L, i, j) 
+  if y = NULL then y := addtoSPPF(L, i, j) fi 
+  return y
+
+(i) Epsilon: (getNodeE) findSPPFNode(i) -> findSPPF(#, i, i)
+
+(ii) Terminal: (getNodeT) findSPPFNode(a, i) -> findSPPF(a, i, i + 1)
+
+(iii) Other: findSPPFNode(L, w, z) // This is the inlining of getNode and getNodeRest in the EBNF paper
+  if FiR(L) return z;
+
+  j := if w = dummynode then z.leftExtent else w.leftExtent fi
+
+  if EoR(p(L)) t:= lhs(L) else t:=p(L) fi
+
+  y := findSPPF(t, j, z.rightIndex)
+
+  if (FiPC(L)) && w != dummyNode && z.leftExtent == j then L' := L: else L' := L fi
+
+  if (y does not have a child labelled (L', k) then 
+     create child x of y labelled (L' k)
+     if w != dummyNode then create left child of x labelled w fi
+     create right child of x labelled z
+
+  return y
+
+(iv) findSPPFBaseNodeOld(L, M, i, w) 
+  // L is parentLabel M is childLabel, i is currentTokenIndex and w is leftChild
+  if EoR(p(L)) t:= lhs(L) else if EoOP(L) t:=p(L) else t:=a(L) fi fi
+
+  j := if w != dummyNode then w.leftExtent else i fi
+    
+  y = findSPPF(t, j, i)	
+
+  M' := if fiPC(M) && w != dummyNode && j == i  then M; else M: fi
+
+  if y does not have a child labelled (M',  i))
+    create one with right child labelled (#, i, i) and left child w // note w == dummyNode encodes no left child in Adrian's rep 
+
+  return y 
+
+(iv) findSPPFBaseNode(L, M, i, w) 
+  // New version 30/8/16
+  // j := if w != dummyNode then w.leftExtent else i fi
+  //
+  // y = findSPPF(L, j, i)
+  //
+  // M' := if fiPC(M) && w != dummyNode && j == i then M; else M fi
+  //
+  // if y does not have a child labelled (M', i))
+  // create one with right child labelled (#, i, i) and left child w // note w == dummyNode encodes no left child in Adrian's rep
+  //
+  // return y
+
+
+(c) Finite static visible functions used in SPPF support routines (implemented as lookup tables)
+
+lhs(L)
+p(L)
+a(L)
+eOoP(L)
+eoR(L)
+eor(p(L))
+
+10. Templates - modified to suit August 2016 EBNF paper
+
+(a) Productions of nonterminal Y: code(Y ::= a_1 | ... | a_p) is
+
+if testSelect(I[c_I], Y, a_1) findDescriptor_add(L_a_1, c_u, c_I, $)
+...
+if testSelect(I[c_I], Y, a_p) findDescriptor_add(L_a_p, c_u, c_I, $)
+goto despatch
+
+L_a_1: code(a_1, Y, #); if(I[c_I] \in follow(Y)) pop(c_u, c_I, c_N); goto despatch
+...
+L_a_p: code(a_p, Y, #); if(I[c_I] \in follow(Y)) pop(c_u, c_I, c_N); goto despatch
+
+(b) Base regular expressions: code(r)
+
+(i) r is epsilon #: code(#^j) is 
+c_R := findSPPFNodeE(c_I)  c_N := findSPPFNode(E_r, c_N, c_R)
+
+(ii) r is a terminal a: code(a^j) is
+c_R := findSPPFNodeT(a, c_I)  c_I = c_I + 1  c_N := findSPPFNode(E_r, c_N, c_R)
+
+(iii) r in a nonterminal Y: code(Y^j) is
+C_u = findGSSNode_create(E_r, c_N) goto J_Y  E_r:
+
+/* r is the whole regular expression, s is the body */
+
+(iv) r is a bracketed expression (s): code(r) is code(s)
+
+(v) r is a bracketed expression [s] and s *=> #: code (r) is
+if testSelect(I[c_I], E_r) {
+  c_t :=getBaseNode(E_s, E_r, c_I)
+  findDescriptor_add(E_r, c_u, c_I, c_t);
+  testRepeat(T_r, c_u, c_I, c_t)
+}
+code(s);
+if (testRepeat(T_r, c_u, c_I, c_N) goto despatch;
+E_r:
+
+(vi) r is a bracketed expression [s] and not s *=> #: code (r) is
+if testSelect(I[c_I], E_r) {
+  c_r := findSPPFNodeE(c_I)
+  c_t := findSPPFNode(E_r, c_N, c_r)
+  findDescriptor_add(E_r, c_u, c_I, c_t)
+}
+if not testSelect(I[c_I], L_s) goto despatch
+code(s)
+E_r:
+
+
+(vii) r is a bracketed expression <s> and not s *=> #: code (r) is
+c_u := findGSSNode_create(E_r, c_u, c_I, c_N)
+c_N := dummyNode
+C_r: if not testSelect(I[c_I], L_s) goto despatch
+code(s)
+if testSelect(I[c_I], E_r) pop(c_U, c_I, c_N)
+goto C_r
+E_r:
+
+(viii) r is a bracketed expression <s> and s *=> #: code (r) is
+c_u := findGSSNode_create(E_r, c_u, c_I, c_N)
+c_N := dummyNode
+C_r: if testRepeat(T_r, c_u, c_I, c_N) goto despatch
+if not testSelect(I[c_I], L_s) goto despatch
+code(s)
+if testSelect(I[c_I], E_r) pop(c_U, c_I, c_N)
+goto C_r
+E_r:
+
+(ix) r is a bracketed expression {s} and not s *=> #: code (r) is
+c_u := findGSSNode_create(E_r, c_u, c_I, c_N)
+
+if testSelect(I[c_I], E_r) { c_N := findSPPFNodeE(c_I)  pop(c_u, c_I, c_N) }
+c_N := dummyNode
+C_r: if not testSelect(I[c_I], L_s) goto despatch
+code(s)
+if testSelect(I[c_I], E_r) pop(c_U, c_I, c_N)
+goto C_r
+E_r:
+
+(x) r is a bracketed expression {s} and s *=> #: code (r) is
+c_u := findGSSNode_create(E_r, c_u, c_I, c_N)
+c_N := getBaseNode(E_s, E_r, c_I, dummyNode)
+C_r: if testRepeat(T_r, c_u, c_I, c_N) goto despatch
+if not testSelect(I[c_I], L_s) goto despatch
+code(s)
+if testSelect(I[c_I], E_r) pop(c_U, c_I, c_N)
+goto C_r
+E_r:
+
+(xi) r is a concatenated expression r_1...r_d: code(r) is
+code(r_1)
+if not testSelect(I[c_I], L_r_2) goto despatch
+code(r_2, X, r3..r_d\beta)
+...
+if not testSelect(I[c_I], L_r_d) goto despatch
+code(r_d, X, \beta)
+
+(xii) r is an alternated expression r_1 | ... | r_d: code (r) is
+if testSelect(I[c_I], L_r_1) findDescriptor_add(L_r_1, c_u, c_I, c_N)
+...
+if testSelect(I[c_I], L_r_2) findDescriptor_add(L_r_d, c_u, c_I, c_N)
+goto despatch
+
+L_r_1: code (r_1) goto A_r
+...
+L_r_d-1: code (r_d-1) goto A_r
+L_r_d: code (r_d)
+A_r: if testRepeat(T_r, c_u, c_I, c_N) goto despatch
+

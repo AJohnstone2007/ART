@@ -1,0 +1,14 @@
+
+mvmsim v1.5 - simulator for mvm
+
+Load address 1000 0C01000A007B
+Load address 1006 10110000000A
+Load address 100C 0011
+Load address 100E *1000
+
+1000 CPY  000A, 007B, 0000 -> 007B  
+1006 PRTI 0000, 007B, 0000 -> 0000  123
+100C HALT 0000, 0000, 0000 -> 0000   -- Halted --
+
+
+0.006 CPU seconds used, 3 MVM instructions executed

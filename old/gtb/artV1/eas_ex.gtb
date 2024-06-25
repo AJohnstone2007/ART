@@ -1,0 +1,22 @@
+S ::= A A 'a' | S 'b' B | #.
+A ::= S B | B S 'b'.
+B ::= 'd' B | 'd' | #.
+
+(
+write["\n" gtb_version " processing '" gtb_main_file_name "' on " date_time "\n\n"]
+
+gtb_verbose := true
+this_grammar := grammar[S]
+write[open["rules.txt"] this_grammar]
+render[open["rules.vcg"] this_grammar]
+
+this_nfa := nfa[this_grammar lr 0 full_lookahead_sets nullable_reductions]
+render[open["nfa.vcg"] this_nfa]
+this_dfa := dfa[this_nfa]
+render[open["dfa.vcg"] this_dfa]
+
+
+
+write["\n" CPU_time " CPU seconds elapsed\n\n"]
+
+)

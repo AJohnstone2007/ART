@@ -1,0 +1,38 @@
+graph:{
+orientation:top_to_bottom
+edge.arrowsize:7
+edge.thickness:1
+display_edge_labels:yes
+arrowmode:free
+node.borderwidth:1
+node:{title:"-2"label:"program" horizontal_order:2 shape:ellipse }
+edge:{sourcename:"-2" targetname:"-4"}
+edge:{sourcename:"-2" targetname:"-10"}
+node:{title:"-10"label:"'begin'" horizontal_order:10}
+edge:{sourcename:"-10" targetname:"-12"}
+edge:{sourcename:"-10" targetname:"-32"}
+node:{title:"-32"label:"'='" horizontal_order:32}
+edge:{sourcename:"-32" targetname:"-34"}
+edge:{sourcename:"-32" targetname:"-36"}
+node:{title:"-36"label:"'-'" horizontal_order:36}
+edge:{sourcename:"-36" targetname:"-38"}
+edge:{sourcename:"-36" targetname:"-46"}
+node:{title:"-46"label:"INTEGER: 1" horizontal_order:46}
+node:{title:"-38"label:"b" horizontal_order:38}
+node:{title:"-34"label:"b" horizontal_order:34}
+node:{title:"-12"label:"'='" horizontal_order:12}
+edge:{sourcename:"-12" targetname:"-14"}
+edge:{sourcename:"-12" targetname:"-16"}
+node:{title:"-16"label:"'+'" horizontal_order:16}
+edge:{sourcename:"-16" targetname:"-18"}
+edge:{sourcename:"-16" targetname:"-26"}
+node:{title:"-26"label:"b" horizontal_order:26}
+node:{title:"-18"label:"a" horizontal_order:18}
+node:{title:"-14"label:"a" horizontal_order:14}
+node:{title:"-4"label:"'int'" horizontal_order:4}
+edge:{sourcename:"-4" targetname:"-6"}
+edge:{sourcename:"-4" targetname:"-8"}
+node:{title:"-8"label:"b" horizontal_order:8}
+node:{title:"-6"label:"a" horizontal_order:6}
+
+}

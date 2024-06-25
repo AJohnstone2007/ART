@@ -1,0 +1,37 @@
+start ::= 'Dear' soonToBeEx ','  thanks dump wishes .
+
+soonToBeEx ::= 'John' | 'Jane' | 'Juno' .
+
+thanks ::= 'Thank you for the' occasion 'present' optionalCake '.' .
+
+occasion ::= 'Christmas' | 'birthday' | 'random-act-of-kindness' .
+
+optionalCake ::= # | 'and the cake that you' cakeOrigin '- it is in' cakeDisposition .
+
+cakeOrigin ::= 'baked' | 'bought' | 'stole' .
+
+cakeDisposition ::= 'credible' | 'edible' | 'the' 'bin' .
+
+dump ::= 'Sadly I have become obsessed with' obsession 'and so I won\'t be able to continue as your' thing '.'.
+
+obsession ::= 'steam engines' | 'bunnies' | 'corporate raiding' .
+
+thing ::= 'snuggle bunny' | 'drinking partner' | 'housekeeper' .
+
+wishes ::= 'I hope you soon get' outcomes '.' .
+
+outcomes ::= outcome | outcome 'and' outcome .
+
+outcome ::= 'a' 'life' | 'a' 'wife' | 'your just deserts' .
+
+(
+this_grammar := grammar[start]
+generate[this_grammar 100000 random sentences]
+write["\nTotal " CPU_time " CPU seconds elapsed\n\n"]
+
+)
+
+
+
+
+

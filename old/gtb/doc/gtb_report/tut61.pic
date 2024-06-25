@@ -1,0 +1,63 @@
+%TeXCAD Picture [tut61.pic]. Options:
+%\grade{\on}
+%\emlines{\off}
+%\epic{\off}
+%\beziermacro{\on}
+%\reduce{\on}
+%\snapping{\on}
+%\quality{8.00}
+%\graddiff{0.01}
+%\snapasp{1}
+%\zoom{11.3137}
+\unitlength 1mm % = 2.85pt
+\linethickness{0.4pt}
+\ifx\plotpoint\undefined\newsavebox{\plotpoint}\fi % GNUPLOT compatibility
+\begin{picture}(110,24)(0,0)
+\put(3,17){\circle{5.66}}
+\put(26,17){\circle{5.66}}
+\put(39,17){\circle{5.66}}
+\put(59,17){\circle{5.66}}
+\put(49,5){\circle{5.66}}
+\put(3,4){\circle{5.66}}
+\put(3,17){\makebox(0,0)[cc]{0}}
+\put(26,17){\makebox(0,0)[cc]{2}}
+\put(18,10){\makebox(0,0)[cc]{3}}
+\put(39,17){\makebox(0,0)[cc]{4}}
+\put(59,17){\makebox(0,0)[cc]{5}}
+\put(78,18){\makebox(0,0)[cc]{7}}
+\put(49,5){\makebox(0,0)[cc]{6}}
+\put(3,4){\makebox(0,0)[cc]{1}}
+\put(6,17){\vector(1,0){17}}
+\put(5,15){\vector(3,-2){9}}
+%\vector(39,14)(46,5)
+\put(46,5){\vector(3,-4){.07}}\multiput(39,14)(.03365385,-.04326923){208}{\line(0,-1){.04326923}}
+%\end
+%\vector(52,5)(59,14)
+\put(59,14){\vector(3,4){.07}}\multiput(52,5)(.03365385,.04326923){208}{\line(0,1){.04326923}}
+%\end
+\put(42,17){\vector(1,0){14}}
+%\vector(15,7)(7,4)
+\put(7,4){\vector(-3,-1){.07}}\multiput(15,7)(-.0898876,-.0337079){89}{\line(-1,0){.0898876}}
+%\end
+\put(3,4){\circle{8}}
+\put(78,16){\makebox(0,0)[cc]{pop}}
+\put(7,10){\makebox(0,0)[cc]{$c$}}
+\put(12,3){\makebox(0,0)[cc]{${\cal R}2$}}
+\put(49,20){\makebox(0,0)[cc]{${\cal R}4$}}
+\put(69,20){\makebox(0,0)[cc]{$a$}}
+\put(57,6){\makebox(0,0)[cc]{${\cal R}3$}}
+\put(14,19){\makebox(0,0)[cc]{$a$}}
+%\qbezvec(26,20)(15.5,24)(3,20)
+\put(3,20){\vector(-3,-1){.07}}\qbezier(26,20)(15.5,24)(3,20)
+%\end
+\put(93,11){\makebox(0,0)[cc]{${\cal R}1$}}
+\put(25,22){\makebox(0,0)[cc]{$p(4)$}}
+\put(39,8){\makebox(0,0)[cc]{$b$}}
+\put(18,8){\makebox(0,0)[cc]{pop}}
+%\qbezvec(82,17)(110,-1)(6,1)
+\put(6,1){\vector(-1,0){.07}}\qbezier(82,17)(110,-1)(6,1)
+%\end
+\put(18.5,9){\oval(9,6)[]}
+\put(77.5,17){\oval(9,6)[]}
+\put(62,17){\vector(1,0){11}}
+\end{picture}

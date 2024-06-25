@@ -1,0 +1,16 @@
+(* ex16  removing self embedding *)
+S ::= A .
+A ::= ~E ~E ~B C .
+B ::= 'a' A E 'a' | # .
+C ::= 'a' ~D .
+D ::= C ~D 'a' | # .
+E ::= A S | # .
+
+(
+ex16_grammar := grammar[S tilde_enabled] 
+(*tilde[ex16_grammar terminal]*)
+ex16_gdg := gdg[ex16_grammar]
+
+cycle_break_sets[ex16_gdg retain_break_sets 2]
+render[open["gdg.vcg"] ex16_gdg]
+)

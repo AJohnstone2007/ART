@@ -1,0 +1,78 @@
+gramex  issues
+--------------
+
+Comparing files cpp_prd97.tmp and CPP.OUT
+
+***** cpp_prd97.tmp
+header_name:
+  "<" h_char_sequence ">" |
+  "\"" q_char_sequence "\"" ;
+h_char_sequence:
+***** CPP.OUT
+header_name:
+  "<h-char-sequence>" |
+  "\"q-char-sequence\"" ;
+h_char_sequence:
+*****
+
+
+***** cpp_prd97.tmp
+character_literal:
+  "'" c_char_sequence "'" |
+  "L" "'" c_char_sequence "'" ;
+c_char_sequence:
+***** CPP.OUT
+character_literal:
+  "'c-char-sequence'" |
+  "L'c-char-sequence'" ;
+c_char_sequence:
+*****
+
+
+***** cpp_prd97.tmp
+string_literal:
+  "\"" s_char_sequence? "\""  |
+  "L" "\"" s_char_sequence? "\"" ;
+s_char_sequence:
+***** CPP.OUT
+string_literal:
+  "\"s-char-sequenceopt\"" |
+  "L\"s-char-sequenceopt\"" ;
+s_char_sequence:
+*****
+
+
+***** cpp_prd97.tmp
+  "#" "define" identifier replacement_list new_line |
+  "#" "define" identifier lparen "identifier_list"? ")" replacement_list new_line |
+  "#" "undef" identifier new_line |
+***** CPP.OUT
+  "#" "define" identifier replacement_list new_line |
+  "#" "define" identifier lparen "identifier-list"? ")" replacement_list new_line |
+  "#" "undef" identifier new_line |
+*****
+
+
+
+ALSO NOT THAT RULES NOW HAVE     nonterminal:       not        nonterminal : 
+
+
+
+gramconv issues
+---------------
+
+I used  gramex  to generate cpp.out
+This has the same format as cpp_prd97.eas
+From the latter I produced cpp_grdp.bnf
+We then run cpp_grdp.bnf through gramconv to generate gc.gtb
+
+This generates errors when run through rdp
+   114: Error 1 (gc.gtb) Unexpected character 0x5C '\' in source file
+
+also gc.gtb has '''  not  '\''   and   '\a'  not  '\\a'  etc.
+
+Do   fc gc.gtb tmp.gtb   to see the chnages needed to get it through rdp.
+
+
+
+

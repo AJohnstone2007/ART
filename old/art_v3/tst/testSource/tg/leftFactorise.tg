@@ -1,0 +1,44 @@
+(* Left factorisation test *)
+
+left1
+$S ::= `a `a `b | `a `a `c; $
+accept $aab$ $aac$
+reject $ab$
+
+left1_L {leftFactor}
+$S ::= `a `a `b | `a `a `c; $
+accept $aab$ $aac$
+reject $ab$
+
+left2
+$S ::= `x `a `b | `y `a `c; $
+accept $xab$ $yac$
+reject $xac$
+
+left2_L {leftFactor}
+$S ::= `x `a `b | `y `a `c; $
+accept $xab$ $yac$
+reject $xac$
+
+left3
+$S ::= `a? `a `b | `a? `a `c; $
+accept $aab$ $aac$ $ab$ $ac$
+reject $abc$
+
+left3_L {leftFactor}
+$S ::= `a? `a `b | `a? `a `c; $
+accept $aab$ $aac$ $ab$ $ac$
+reject $abc$
+
+left4
+$S ::= `a  | `a `b; $
+accept $a$ $ab$ 
+reject $aa$
+
+left4_L {leftFactor}
+$S ::= `a  | `a `b;$
+accept $a$ $ab$ 
+reject $aa$
+
+
+

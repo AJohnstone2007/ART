@@ -1,0 +1,50 @@
+%TeXCAD Options
+%\grade{\off}
+%\emlines{\off}
+%\beziermacro{\on}
+%\reduce{\on}
+%\snapping{\on}
+%\quality{2}
+%\graddiff{.01}
+%\snapasp{1}
+%\zoom{11.2000}
+\unitlength 0.60mm % = 1.71pt
+\linethickness{0.4pt}
+\ifx\plotpoint\undefined\newsavebox{\plotpoint}\fi % GNUPLOT compatibility
+\begin{picture}(133,50)(0,0)
+\put(46,24){\makebox(0,0)[cc]{$S::=\cdot E;$}}
+\put(83,24){\makebox(0,0)[cc]{$E::=\cdot E+T$}}
+\put(120,24){\makebox(0,0)[cc]{$E::=\cdot T$}}
+\put(46,5){\makebox(0,0)[cc]{$S::=E\cdot ;$}}
+\put(41,40){\framebox(10,10)[cc]{$S$}}
+\put(96,40){\framebox(10,10)[cc]{$E$}}
+\put(46,40){\vector(0,-1){11}}
+\put(11,19){\vector(0,-1){9}}
+\put(46,19){\vector(0,-1){9}}
+\put(43,34){\makebox(0,0)[cc]{$\epsilon$}}
+\put(8,15){\makebox(0,0)[cc]{$S$}}
+\put(43,15){\makebox(0,0)[cc]{$E$}}
+\put(11,24){\makebox(0,0)[cc]{$S'::=\cdot S$}}
+\put(11,5){\makebox(0,0)[cc]{$S'::=\cdot S$}}
+\put(6,40){\framebox(10,10)[cc]{$S'$}}
+\put(11,40){\vector(0,-1){11}}
+\put(8,34){\makebox(0,0)[cc]{$\epsilon$}}
+%\bezvec{120}(22,25)(24.67,35)(41,45)
+\put(41,45){\vector(3,2){.12}}\bezier{120}(22,25)(24.67,35)(41,45)
+%\end
+\put(27,28){\makebox(0,0)[cc]{$\epsilon$}}
+\put(11,24){\oval(22,10)[]}
+\put(11,5){\oval(22,10)[]}
+\put(46,24){\oval(30,10)[]}
+\put(46,5){\oval(30,10)[]}
+%\qbezvec(61,25)(71.5,37)(96,45)
+\put(96,45){\vector(3,1){.12}}\qbezier(61,25)(71.5,37)(96,45)
+%\end
+\put(78,35){\makebox(0,0)[cc]{$\epsilon$}}
+\put(87,35){\makebox(0,0)[cc]{$\epsilon$}}
+\put(115,36){\makebox(0,0)[cc]{$\epsilon$}}
+\put(99,40){\vector(-3,-2){16}}
+\put(103,40){\vector(2,-1){22}}
+\put(120,24){\oval(26,10)[]}
+\put(83,24){\oval(34,10)[]}
+\end{picture}

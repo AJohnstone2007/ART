@@ -1,0 +1,4 @@
+S ::= INTEGER E .
+E ::= '+' E | '-' E | ';' .
+
+(***** function.bnf *****)

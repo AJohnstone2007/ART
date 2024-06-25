@@ -1,0 +1,248 @@
+\typeout{Standard style for RHUL reports, released 27 July 1993, Adrian Johnstone, modified for SLE book 07 January 2017}
+
+% modify sectional heading to use \sf\bfseries and hang back into LH margin
+
+\def\section{\@startsection {section}{1}{-\leftmargin}{-3.5ex plus-1ex minus
+    -.2ex}{2.3ex plus.2ex}{\reset@font\Large\sf\bfseries}}
+\def\subsection{\@startsection{subsection}{2}{-\leftmargin}{-3.25ex plus-1ex
+    minus-.2ex}{1.5ex plus.2ex}{\reset@font\Large\sf\bfseries}}
+\def\subsubsection{\@startsection{subsubsection}{3}{-\leftmargin}{-3.25ex plus
+    -1ex minus-.2ex}{1.5ex plus.2ex}{\reset@font\large\sf\bfseries}}
+\def\paragraph{\@startsection
+    {paragraph}{4}{-\leftmargin}{3.25ex plus1ex minus.2ex}{-1em}{\reset@font
+    \normalsize\sf\bfseries}}
+\def\subparagraph{\@startsection
+     {subparagraph}{4}{\parindent}{3.25ex plus1ex minus
+     .2ex}{-1em}{\reset@font\normalsize\sf\bfseries}}
+
+% modify chapter heading to use \sf\bfseries
+
+\def\@makechapterhead#1{%
+  \vspace*{50\p@}%
+  {\parindent \z@ \raggedright
+    \ifnum \c@secnumdepth >\m@ne
+     \hspace*{-\leftmargin} \huge \sf \bfseries %\@chapapp{} 
+\thechapter
+%    \par
+%    \vskip 20\p@ 
+\fi
+%     \hspace*{-\leftmargin} \huge \sf \bfseries
+    \hspace*{1em}#1\par
+    \nobreak
+    \vskip 40\p@
+    \thispagestyle{empty}
+  }}
+
+\def\@makeschapterhead#1{%
+  \vspace*{50\p@}%
+  {\parindent \z@ \raggedright
+     \hspace*{-\leftmargin} \huge \sf \bfseries
+    #1\par
+    \nobreak
+    \vskip 40\p@
+    \thispagestyle{empty}
+  }}
+%
+% define a dash macro to improve on ---
+%
+\newcommand{\dash}{\,---\,}
+
+%
+% Define a macro to make tidy report numbers
+%
+\newcommand{\csnum}[2]{CSD\,--\,TR\,--\,#1\,--\,#2}
+\newcommand{\cgnum}[2]{CG\,--\,TN\,--\,#1\,--\,#2}
+%
+% define a title page
+%
+\def\makecstitle{\begin{titlepage}%
+ \let\footnotesize\small
+ \let\footnoterule\relax
+ \setcounter{page}{0}%
+ \null
+   \vspace*{-1.5cm}\hspace*{-1.5cm}{\Huge\sf\bfseries \@title \par}
+   \hspace*{-3.5cm}\includegraphics[width=19cm]{logo.pdf}\\[1cm]
+   \hspace*{9cm}{\Large\sf\bfseries  \@author\par}
+  
+   
+\@thanks
+\vfil
+\null
+\end{titlepage}%
+\setcounter{footnote}{0}%
+\let\thanks\relax
+\gdef\@thanks{}\gdef\@author{}\gdef\@title{}\let\maketitle\relax}
+
+%
+% (horrid) trick to kill dots in contents entries
+%
+\def\@dotsep{400}
+
+%
+% Make part and chapter contents entries bold sans serif
+%
+\def\l@part#1#2{\addpenalty{-\@highpenalty}
+ \addvspace{2.25em plus 1pt} \begingroup
+ \@tempdima 3em \parindent \z@ \rightskip \@pnumwidth \parfillskip
+-\@pnumwidth
+ {\large \bfseries \leavevmode {\sf\bfseries#1}\hfil \hbox to\@pnumwidth{\hss #2}}\par
+ \nobreak \endgroup}
+
+\def\l@chapter#1#2{\addpenalty{-\@highpenalty}%
+   \vskip 1.0em plus\p@
+   \@tempdima 1.5em
+   \begingroup
+     \parindent \z@ \rightskip \@pnumwidth
+     \parfillskip -\@pnumwidth
+     \sf\bfseries
+     \leavevmode
+      \advance\leftskip\@tempdima
+      \hskip -\leftskip
+     #1\nobreak\hfil \nobreak\hbox to\@pnumwidth{\hss #2}\par
+     \penalty\@highpenalty
+   \endgroup}
+
+%
+% take the colon out of the captions
+%
+\long\def\@makecaption#1#2{
+ \vskip 10pt
+ \setbox\@tempboxa\hbox{{\bfseries #1} #2}
+ \ifdim \wd\@tempboxa >\hsize \unhbox\@tempboxa\par \else \hbox
+to\hsize{\hfil\box\@tempboxa\hfil}
+ \fi}
+
+%
+% Make caption introducers bold sans-serif
+%
+\def\fnum@figure{\sf\bfseries Figure \thefigure}
+\def\fnum@table{\sf\bfseries Table \thetable}
+
+%
+% set up \sf all case headers extending into left margin
+%
+\mark{{}{}}
+
+\def\ps@headings{\let\@mkboth\markboth
+\def\@oddfoot{}
+\def\@evenfoot{}
+
+\def\@oddhead{\hfill\sf\rightmark~~~\thepage}
+
+\def\@evenhead{\protect\hspace*{-\leftmargin}\sf\thepage~~~\leftmark\hfill}
+
+
+\def\chaptermark##1{\markboth {{\ifnum \c@secnumdepth
+>\m@ne
+\ \fi \uppercase{##1}}}{}}
+
+\def\sectionmark##1{\markright
+{{\ifnum \c@secnumdepth >\z@
+ \fi ##1}}}}
+
+%
+% Make a wide box environment that uses the whole page: tough if
+% marginpars are in the way!
+%
+\newlength{\fullwidth}
+\setlength{\fullwidth}{\textwidth}
+\addtolength{\fullwidth}{\leftmargin}
+\addtolength{\fullwidth}{\rightmargin}
+
+\newenvironment{widecenter}%
+{\noindent\hspace*{-\leftmargin}
+\begin{minipage}{\fullwidth}}%
+{\end{minipage}}
+
+%
+% Make a clear page before each chapter i fthe previouspage is empty
+%
+\def\chapter{\clearpage \thispagestyle{empty} \cleardoublepage 
+\thispagestyle{empty} \global\@topnum\z@
+\@afterindentfalse \secdef\@chapter\@schapter}
+
+%
+% change default bullet to a diamond
+%
+\renewcommand{\labelitemi}{$\diamond$}
+
+\pagestyle{headings}
+\topmargin 0pt                                                                  
+\ifcase \@ptsize                                                                
+    \textheight 53\baselineskip                                                 
+\or                                                                             
+    \textheight 46\baselineskip                                                 
+\or                                                                             
+    \textheight 42\baselineskip                                                 
+\fi                                                                             
+\advance\textheight by \topskip                                                 
+\ifcase \@ptsize                                                                
+    \textwidth      5.00in                                                      
+    \marginparwidth 1.00in                                                      
+  \if@twoside                                                                   
+    \oddsidemargin  0.55in                                                      
+    \evensidemargin 0.75in                                                      
+  \else                                                                         
+    \oddsidemargin  0.55in                                                      
+    \evensidemargin 0.55in                                                      
+  \fi                                                                           
+\or                                                                             
+    \textwidth      5.20in                                                      
+    \marginparwidth 1.00in                                                      
+  \if@twoside                                                                   
+    \oddsidemargin  0.45in                                                      
+    \evensidemargin 0.65in                                                      
+  \else                                                                         
+    \oddsidemargin  0.45in                                                      
+    \evensidemargin 0.45in                                                      
+  \fi                                                                           
+\or                                                                             
+    \textwidth      5.70in                                                      
+    \marginparwidth 0.80in                                                      
+  \if@twoside                                                                   
+    \oddsidemargin  0.20in                                                      
+    \evensidemargin 0.40in                                                      
+  \else                                                                         
+    \oddsidemargin  0.20in                                                      
+    \evensidemargin 0.20in                                                      
+  \fi                                                                           
+\fi                                                                             
+\def\WideMargins{%                                                              
+  \newdimen\ExtraWidth                                                          
+  \ifcase \@ptsize                                                              
+    \ExtraWidth = 0.5in                                                         
+    \@widemargins                                                               
+  \or                                                                           
+    \ExtraWidth = 0.5in                                                         
+    \@widemargins                                                               
+  \or                                                                           
+    \ExtraWidth = 0.7in                                                         
+    \@widemargins                                                               
+   \fi\let\WideMargins\relax\let\@widemargins\relax}                             
+{\def\do{\noexpand\do\noexpand}                                                 
+ \xdef\@preamblecmds{\@preamblecmds \do\WideMargins}                            
+}                                                                               
+\def\@widemargins{%                                                             
+    \global\advance\textwidth by -\ExtraWidth                                   
+    \global\advance\marginparwidth by \ExtraWidth                               
+    \if@twoside                                                                 
+      \tw@sidedwidemargins                                                      
+    \else                                                                       
+      \@nesidedwidemargins                                                      
+    \fi}                                                                        
+\def\tw@sidedwidemargins{%                                                      
+    \if@reversemargin                                                           
+      \@tempdima=\evensidemargin                                                
+      \advance\@tempdima by -\oddsidemargin                                     
+      \advance\oddsidemargin by \ExtraWidth                                     
+      \advance\oddsidemargin by \@tempdima                                      
+      \advance\evensidemargin by -\@tempdima                                    
+    \else                                                                       
+      \advance\evensidemargin by \ExtraWidth                                    
+    \fi}                                                                        
+\def\@nesidedwidemargins{%                                                      
+    \if@reversemargin                                                           
+      \advance\oddsidemargin by \ExtraWidth                                     
+      \advance\evensidemargin by \ExtraWidth                                    
+    \fi}                                                                        
+

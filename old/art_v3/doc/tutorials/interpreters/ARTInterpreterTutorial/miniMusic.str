@@ -1,0 +1,10 @@
+
+melody sanctuary {
+
+D+ C+ B+M G F G m D m7
+}
+
+x = 3;
+while x > 0 do { print("x is ", x, "\n"); x = x -1; }
+
+play sanctuary;

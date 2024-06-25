@@ -1,0 +1,549 @@
+graph: {
+  title: "test"
+  color: white
+  iconcolors: 32
+  amax: 0 fast_icons: no
+  width: 640
+  height: 400
+  xmax: 0
+  ymax: 0
+  xbase: 5
+  ybase: 5
+  xspace: 20
+  xlspace: 10
+  yspace: 70
+  xraster: 1
+  xlraster: 1
+  yraster: 1
+  shrink:  100
+  stretch: 11 
+  layout_downfactor: 1
+  layout_upfactor: 1
+  layout_nearfactor: 1
+  layout_splinefactor: 70
+  spreadlevel: 1
+  treefactor: 0.500000
+  bmax: 2
+  cmin: 0
+  cmax: 2
+  pmin: 0
+  pmax: 2
+  rmin: 0
+  rmax: 2
+  smax: 2
+  node_alignment: center
+  orientation: top_to_bottom
+  late_edge_labels: no
+  display_edge_labels: no
+  dirty_edge_labels: no
+  finetuning: no
+  nearedges: no
+  splines: no
+  ignoresingles: no
+  straight_phase: no
+  priority_phase: no
+  manhatten_edges: no
+  smanhatten_edges: no
+  port_sharing: yes
+  crossingphase2: yes
+  crossingoptimization: yes
+  crossingweight: bary
+  arrow_mode: fixed
+  layoutalgorithm: minbackward
+  colorentry 0 :  255 255 255
+  colorentry 1 :  0 0 255
+  colorentry 2 :  255 0 0
+  colorentry 3 :  0 255 0
+  colorentry 4 :  255 255 0
+  colorentry 5 :  255 0 255
+  colorentry 6 :  0 255 255
+  colorentry 7 :  85 85 85
+  colorentry 8 :  0 0 128
+  colorentry 9 :  128 0 0
+  colorentry 10 :  0 128 0
+  colorentry 11 :  128 128 0
+  colorentry 12 :  128 0 128
+  colorentry 13 :  0 128 128
+  colorentry 14 :  255 215 0
+  colorentry 15 :  170 170 170
+  colorentry 16 :  128 128 255
+  colorentry 17 :  255 128 128
+  colorentry 18 :  128 255 128
+  colorentry 19 :  255 255 128
+  colorentry 20 :  255 128 255
+  colorentry 21 :  128 255 255
+  colorentry 22 :  238 130 238
+  colorentry 23 :  64 224 208
+  colorentry 24 :  127 255 212
+  colorentry 25 :  240 230 140
+  colorentry 26 :  160 32 240
+  colorentry 27 :  154 205 50
+  colorentry 28 :  255 192 203
+  colorentry 29 :  255 165 0
+  colorentry 30 :  218 112 214
+node: { title: "0" label: "0" }
+node: { title: "1" label: "1" }
+node: { title: "2" label: "2" }
+node: { title: "3" label: "3" }
+node: { title: "4" label: "4" }
+node: { title: "5" label: "5" }
+node: { title: "6" label: "6" }
+node: { title: "7" label: "7" }
+node: { title: "8" label: "8" }
+node: { title: "9" label: "9" }
+node: { title: "10" label: "10" }
+node: { title: "11" label: "11" }
+node: { title: "12" label: "12" }
+node: { title: "13" label: "13" }
+node: { title: "14" label: "14" }
+node: { title: "15" label: "15" }
+node: { title: "16" label: "16" }
+node: { title: "17" label: "17" }
+node: { title: "18" label: "18" }
+node: { title: "19" label: "19" }
+node: { title: "20" label: "20" }
+node: { title: "21" label: "21" }
+node: { title: "22" label: "22" }
+node: { title: "23" label: "23" }
+node: { title: "24" label: "24" }
+node: { title: "25" label: "25" }
+node: { title: "26" label: "26" }
+node: { title: "27" label: "27" }
+node: { title: "28" label: "28" }
+node: { title: "29" label: "29" }
+edge: { sourcename: "0" targetname: "29" class: 2 }
+edge: { sourcename: "0" targetname: "28" class: 2 }
+edge: { sourcename: "0" targetname: "27" class: 2 }
+edge: { sourcename: "0" targetname: "26" class: 2 }
+edge: { sourcename: "0" targetname: "25" class: 2 }
+edge: { sourcename: "0" targetname: "24" class: 2 }
+edge: { sourcename: "0" targetname: "23" class: 2 }
+edge: { sourcename: "0" targetname: "22" class: 2 }
+edge: { sourcename: "0" targetname: "21" class: 2 }
+edge: { sourcename: "0" targetname: "20" class: 2 }
+edge: { sourcename: "0" targetname: "19" class: 2 }
+edge: { sourcename: "0" targetname: "18" class: 2 }
+edge: { sourcename: "0" targetname: "17" class: 2 }
+edge: { sourcename: "0" targetname: "16" class: 2 }
+edge: { sourcename: "0" targetname: "15" class: 2 }
+edge: { sourcename: "0" targetname: "14" class: 2 }
+edge: { sourcename: "0" targetname: "13" class: 2 }
+edge: { sourcename: "0" targetname: "12" class: 2 }
+edge: { sourcename: "0" targetname: "11" class: 2 }
+edge: { sourcename: "0" targetname: "10" class: 2 }
+edge: { sourcename: "0" targetname: "9" class: 2 }
+edge: { sourcename: "0" targetname: "8" class: 2 }
+edge: { sourcename: "0" targetname: "7" class: 2 }
+edge: { sourcename: "0" targetname: "6" class: 2 }
+edge: { sourcename: "0" targetname: "5" class: 2 }
+edge: { sourcename: "0" targetname: "4" class: 2 }
+edge: { sourcename: "0" targetname: "3" class: 2 }
+edge: { sourcename: "0" targetname: "2" class: 2 }
+edge: { sourcename: "0" targetname: "1" class: 2 }
+edge: { sourcename: "1" targetname: "29" class: 2 }
+edge: { sourcename: "1" targetname: "28" class: 2 }
+edge: { sourcename: "1" targetname: "27" class: 2 }
+edge: { sourcename: "1" targetname: "26" class: 2 }
+edge: { sourcename: "1" targetname: "25" class: 2 }
+edge: { sourcename: "1" targetname: "24" class: 2 }
+edge: { sourcename: "1" targetname: "23" class: 2 }
+edge: { sourcename: "1" targetname: "22" class: 2 }
+edge: { sourcename: "1" targetname: "21" class: 2 }
+edge: { sourcename: "1" targetname: "20" class: 2 }
+edge: { sourcename: "1" targetname: "19" class: 2 }
+edge: { sourcename: "1" targetname: "18" class: 2 }
+edge: { sourcename: "1" targetname: "17" class: 2 }
+edge: { sourcename: "1" targetname: "16" class: 2 }
+edge: { sourcename: "1" targetname: "15" class: 2 }
+edge: { sourcename: "1" targetname: "14" class: 2 }
+edge: { sourcename: "1" targetname: "13" class: 2 }
+edge: { sourcename: "1" targetname: "12" class: 2 }
+edge: { sourcename: "1" targetname: "11" class: 2 }
+edge: { sourcename: "1" targetname: "10" class: 2 }
+edge: { sourcename: "1" targetname: "9" class: 2 }
+edge: { sourcename: "1" targetname: "8" class: 2 }
+edge: { sourcename: "1" targetname: "7" class: 2 }
+edge: { sourcename: "1" targetname: "6" class: 2 }
+edge: { sourcename: "1" targetname: "5" class: 2 }
+edge: { sourcename: "1" targetname: "4" class: 2 }
+edge: { sourcename: "1" targetname: "3" class: 2 }
+edge: { sourcename: "1" targetname: "2" class: 2 }
+edge: { sourcename: "2" targetname: "29" class: 2 }
+edge: { sourcename: "2" targetname: "28" class: 2 }
+edge: { sourcename: "2" targetname: "27" class: 2 }
+edge: { sourcename: "2" targetname: "26" class: 2 }
+edge: { sourcename: "2" targetname: "25" class: 2 }
+edge: { sourcename: "2" targetname: "24" class: 2 }
+edge: { sourcename: "2" targetname: "23" class: 2 }
+edge: { sourcename: "2" targetname: "22" class: 2 }
+edge: { sourcename: "2" targetname: "21" class: 2 }
+edge: { sourcename: "2" targetname: "20" class: 2 }
+edge: { sourcename: "2" targetname: "19" class: 2 }
+edge: { sourcename: "2" targetname: "18" class: 2 }
+edge: { sourcename: "2" targetname: "17" class: 2 }
+edge: { sourcename: "2" targetname: "16" class: 2 }
+edge: { sourcename: "2" targetname: "15" class: 2 }
+edge: { sourcename: "2" targetname: "14" class: 2 }
+edge: { sourcename: "2" targetname: "13" class: 2 }
+edge: { sourcename: "2" targetname: "12" class: 2 }
+edge: { sourcename: "2" targetname: "11" class: 2 }
+edge: { sourcename: "2" targetname: "10" class: 2 }
+edge: { sourcename: "2" targetname: "9" class: 2 }
+edge: { sourcename: "2" targetname: "8" class: 2 }
+edge: { sourcename: "2" targetname: "7" class: 2 }
+edge: { sourcename: "2" targetname: "6" class: 2 }
+edge: { sourcename: "2" targetname: "5" class: 2 }
+edge: { sourcename: "2" targetname: "4" class: 2 }
+edge: { sourcename: "2" targetname: "3" class: 2 }
+edge: { sourcename: "3" targetname: "29" class: 2 }
+edge: { sourcename: "3" targetname: "28" class: 2 }
+edge: { sourcename: "3" targetname: "27" class: 2 }
+edge: { sourcename: "3" targetname: "26" class: 2 }
+edge: { sourcename: "3" targetname: "25" class: 2 }
+edge: { sourcename: "3" targetname: "24" class: 2 }
+edge: { sourcename: "3" targetname: "23" class: 2 }
+edge: { sourcename: "3" targetname: "22" class: 2 }
+edge: { sourcename: "3" targetname: "21" class: 2 }
+edge: { sourcename: "3" targetname: "20" class: 2 }
+edge: { sourcename: "3" targetname: "19" class: 2 }
+edge: { sourcename: "3" targetname: "18" class: 2 }
+edge: { sourcename: "3" targetname: "17" class: 2 }
+edge: { sourcename: "3" targetname: "16" class: 2 }
+edge: { sourcename: "3" targetname: "15" class: 2 }
+edge: { sourcename: "3" targetname: "14" class: 2 }
+edge: { sourcename: "3" targetname: "13" class: 2 }
+edge: { sourcename: "3" targetname: "12" class: 2 }
+edge: { sourcename: "3" targetname: "11" class: 2 }
+edge: { sourcename: "3" targetname: "10" class: 2 }
+edge: { sourcename: "3" targetname: "9" class: 2 }
+edge: { sourcename: "3" targetname: "8" class: 2 }
+edge: { sourcename: "3" targetname: "7" class: 2 }
+edge: { sourcename: "3" targetname: "6" class: 2 }
+edge: { sourcename: "3" targetname: "5" class: 2 }
+edge: { sourcename: "3" targetname: "4" class: 2 }
+edge: { sourcename: "4" targetname: "29" class: 2 }
+edge: { sourcename: "4" targetname: "28" class: 2 }
+edge: { sourcename: "4" targetname: "27" class: 2 }
+edge: { sourcename: "4" targetname: "26" class: 2 }
+edge: { sourcename: "4" targetname: "25" class: 2 }
+edge: { sourcename: "4" targetname: "24" class: 2 }
+edge: { sourcename: "4" targetname: "23" class: 2 }
+edge: { sourcename: "4" targetname: "22" class: 2 }
+edge: { sourcename: "4" targetname: "21" class: 2 }
+edge: { sourcename: "4" targetname: "20" class: 2 }
+edge: { sourcename: "4" targetname: "19" class: 2 }
+edge: { sourcename: "4" targetname: "18" class: 2 }
+edge: { sourcename: "4" targetname: "17" class: 2 }
+edge: { sourcename: "4" targetname: "16" class: 2 }
+edge: { sourcename: "4" targetname: "15" class: 2 }
+edge: { sourcename: "4" targetname: "14" class: 2 }
+edge: { sourcename: "4" targetname: "13" class: 2 }
+edge: { sourcename: "4" targetname: "12" class: 2 }
+edge: { sourcename: "4" targetname: "11" class: 2 }
+edge: { sourcename: "4" targetname: "10" class: 2 }
+edge: { sourcename: "4" targetname: "9" class: 2 }
+edge: { sourcename: "4" targetname: "8" class: 2 }
+edge: { sourcename: "4" targetname: "7" class: 2 }
+edge: { sourcename: "4" targetname: "6" class: 2 }
+edge: { sourcename: "4" targetname: "5" class: 2 }
+edge: { sourcename: "5" targetname: "29" class: 2 }
+edge: { sourcename: "5" targetname: "28" class: 2 }
+edge: { sourcename: "5" targetname: "27" class: 2 }
+edge: { sourcename: "5" targetname: "26" class: 2 }
+edge: { sourcename: "5" targetname: "25" class: 2 }
+edge: { sourcename: "5" targetname: "24" class: 2 }
+edge: { sourcename: "5" targetname: "23" class: 2 }
+edge: { sourcename: "5" targetname: "22" class: 2 }
+edge: { sourcename: "5" targetname: "21" class: 2 }
+edge: { sourcename: "5" targetname: "20" class: 2 }
+edge: { sourcename: "5" targetname: "19" class: 2 }
+edge: { sourcename: "5" targetname: "18" class: 2 }
+edge: { sourcename: "5" targetname: "17" class: 2 }
+edge: { sourcename: "5" targetname: "16" class: 2 }
+edge: { sourcename: "5" targetname: "15" class: 2 }
+edge: { sourcename: "5" targetname: "14" class: 2 }
+edge: { sourcename: "5" targetname: "13" class: 2 }
+edge: { sourcename: "5" targetname: "12" class: 2 }
+edge: { sourcename: "5" targetname: "11" class: 2 }
+edge: { sourcename: "5" targetname: "10" class: 2 }
+edge: { sourcename: "5" targetname: "9" class: 2 }
+edge: { sourcename: "5" targetname: "8" class: 2 }
+edge: { sourcename: "5" targetname: "7" class: 2 }
+edge: { sourcename: "5" targetname: "6" class: 2 }
+edge: { sourcename: "6" targetname: "29" class: 2 }
+edge: { sourcename: "6" targetname: "28" class: 2 }
+edge: { sourcename: "6" targetname: "27" class: 2 }
+edge: { sourcename: "6" targetname: "26" class: 2 }
+edge: { sourcename: "6" targetname: "25" class: 2 }
+edge: { sourcename: "6" targetname: "24" class: 2 }
+edge: { sourcename: "6" targetname: "23" class: 2 }
+edge: { sourcename: "6" targetname: "22" class: 2 }
+edge: { sourcename: "6" targetname: "21" class: 2 }
+edge: { sourcename: "6" targetname: "20" class: 2 }
+edge: { sourcename: "6" targetname: "19" class: 2 }
+edge: { sourcename: "6" targetname: "18" class: 2 }
+edge: { sourcename: "6" targetname: "17" class: 2 }
+edge: { sourcename: "6" targetname: "16" class: 2 }
+edge: { sourcename: "6" targetname: "15" class: 2 }
+edge: { sourcename: "6" targetname: "14" class: 2 }
+edge: { sourcename: "6" targetname: "13" class: 2 }
+edge: { sourcename: "6" targetname: "12" class: 2 }
+edge: { sourcename: "6" targetname: "11" class: 2 }
+edge: { sourcename: "6" targetname: "10" class: 2 }
+edge: { sourcename: "6" targetname: "9" class: 2 }
+edge: { sourcename: "6" targetname: "8" class: 2 }
+edge: { sourcename: "6" targetname: "7" class: 2 }
+edge: { sourcename: "7" targetname: "29" class: 2 }
+edge: { sourcename: "7" targetname: "28" class: 2 }
+edge: { sourcename: "7" targetname: "27" class: 2 }
+edge: { sourcename: "7" targetname: "26" class: 2 }
+edge: { sourcename: "7" targetname: "25" class: 2 }
+edge: { sourcename: "7" targetname: "24" class: 2 }
+edge: { sourcename: "7" targetname: "23" class: 2 }
+edge: { sourcename: "7" targetname: "22" class: 2 }
+edge: { sourcename: "7" targetname: "21" class: 2 }
+edge: { sourcename: "7" targetname: "20" class: 2 }
+edge: { sourcename: "7" targetname: "19" class: 2 }
+edge: { sourcename: "7" targetname: "18" class: 2 }
+edge: { sourcename: "7" targetname: "17" class: 2 }
+edge: { sourcename: "7" targetname: "16" class: 2 }
+edge: { sourcename: "7" targetname: "15" class: 2 }
+edge: { sourcename: "7" targetname: "14" class: 2 }
+edge: { sourcename: "7" targetname: "13" class: 2 }
+edge: { sourcename: "7" targetname: "12" class: 2 }
+edge: { sourcename: "7" targetname: "11" class: 2 }
+edge: { sourcename: "7" targetname: "10" class: 2 }
+edge: { sourcename: "7" targetname: "9" class: 2 }
+edge: { sourcename: "7" targetname: "8" class: 2 }
+edge: { sourcename: "8" targetname: "29" class: 2 }
+edge: { sourcename: "8" targetname: "28" class: 2 }
+edge: { sourcename: "8" targetname: "27" class: 2 }
+edge: { sourcename: "8" targetname: "26" class: 2 }
+edge: { sourcename: "8" targetname: "25" class: 2 }
+edge: { sourcename: "8" targetname: "24" class: 2 }
+edge: { sourcename: "8" targetname: "23" class: 2 }
+edge: { sourcename: "8" targetname: "22" class: 2 }
+edge: { sourcename: "8" targetname: "21" class: 2 }
+edge: { sourcename: "8" targetname: "20" class: 2 }
+edge: { sourcename: "8" targetname: "19" class: 2 }
+edge: { sourcename: "8" targetname: "18" class: 2 }
+edge: { sourcename: "8" targetname: "17" class: 2 }
+edge: { sourcename: "8" targetname: "16" class: 2 }
+edge: { sourcename: "8" targetname: "15" class: 2 }
+edge: { sourcename: "8" targetname: "14" class: 2 }
+edge: { sourcename: "8" targetname: "13" class: 2 }
+edge: { sourcename: "8" targetname: "12" class: 2 }
+edge: { sourcename: "8" targetname: "11" class: 2 }
+edge: { sourcename: "8" targetname: "10" class: 2 }
+edge: { sourcename: "8" targetname: "9" class: 2 }
+edge: { sourcename: "9" targetname: "29" class: 2 }
+edge: { sourcename: "9" targetname: "28" class: 2 }
+edge: { sourcename: "9" targetname: "27" class: 2 }
+edge: { sourcename: "9" targetname: "26" class: 2 }
+edge: { sourcename: "9" targetname: "25" class: 2 }
+edge: { sourcename: "9" targetname: "24" class: 2 }
+edge: { sourcename: "9" targetname: "23" class: 2 }
+edge: { sourcename: "9" targetname: "22" class: 2 }
+edge: { sourcename: "9" targetname: "21" class: 2 }
+edge: { sourcename: "9" targetname: "20" class: 2 }
+edge: { sourcename: "9" targetname: "19" class: 2 }
+edge: { sourcename: "9" targetname: "18" class: 2 }
+edge: { sourcename: "9" targetname: "17" class: 2 }
+edge: { sourcename: "9" targetname: "16" class: 2 }
+edge: { sourcename: "9" targetname: "15" class: 2 }
+edge: { sourcename: "9" targetname: "14" class: 2 }
+edge: { sourcename: "9" targetname: "13" class: 2 }
+edge: { sourcename: "9" targetname: "12" class: 2 }
+edge: { sourcename: "9" targetname: "11" class: 2 }
+edge: { sourcename: "9" targetname: "10" class: 2 }
+edge: { sourcename: "10" targetname: "29" class: 2 }
+edge: { sourcename: "10" targetname: "28" class: 2 }
+edge: { sourcename: "10" targetname: "27" class: 2 }
+edge: { sourcename: "10" targetname: "26" class: 2 }
+edge: { sourcename: "10" targetname: "25" class: 2 }
+edge: { sourcename: "10" targetname: "24" class: 2 }
+edge: { sourcename: "10" targetname: "23" class: 2 }
+edge: { sourcename: "10" targetname: "22" class: 2 }
+edge: { sourcename: "10" targetname: "21" class: 2 }
+edge: { sourcename: "10" targetname: "20" class: 2 }
+edge: { sourcename: "10" targetname: "19" class: 2 }
+edge: { sourcename: "10" targetname: "18" class: 2 }
+edge: { sourcename: "10" targetname: "17" class: 2 }
+edge: { sourcename: "10" targetname: "16" class: 2 }
+edge: { sourcename: "10" targetname: "15" class: 2 }
+edge: { sourcename: "10" targetname: "14" class: 2 }
+edge: { sourcename: "10" targetname: "13" class: 2 }
+edge: { sourcename: "10" targetname: "12" class: 2 }
+edge: { sourcename: "10" targetname: "11" class: 2 }
+edge: { sourcename: "11" targetname: "29" class: 2 }
+edge: { sourcename: "11" targetname: "28" class: 2 }
+edge: { sourcename: "11" targetname: "27" class: 2 }
+edge: { sourcename: "11" targetname: "26" class: 2 }
+edge: { sourcename: "11" targetname: "25" class: 2 }
+edge: { sourcename: "11" targetname: "24" class: 2 }
+edge: { sourcename: "11" targetname: "23" class: 2 }
+edge: { sourcename: "11" targetname: "22" class: 2 }
+edge: { sourcename: "11" targetname: "21" class: 2 }
+edge: { sourcename: "11" targetname: "20" class: 2 }
+edge: { sourcename: "11" targetname: "19" class: 2 }
+edge: { sourcename: "11" targetname: "18" class: 2 }
+edge: { sourcename: "11" targetname: "17" class: 2 }
+edge: { sourcename: "11" targetname: "16" class: 2 }
+edge: { sourcename: "11" targetname: "15" class: 2 }
+edge: { sourcename: "11" targetname: "14" class: 2 }
+edge: { sourcename: "11" targetname: "13" class: 2 }
+edge: { sourcename: "11" targetname: "12" class: 2 }
+edge: { sourcename: "12" targetname: "29" class: 2 }
+edge: { sourcename: "12" targetname: "28" class: 2 }
+edge: { sourcename: "12" targetname: "27" class: 2 }
+edge: { sourcename: "12" targetname: "26" class: 2 }
+edge: { sourcename: "12" targetname: "25" class: 2 }
+edge: { sourcename: "12" targetname: "24" class: 2 }
+edge: { sourcename: "12" targetname: "23" class: 2 }
+edge: { sourcename: "12" targetname: "22" class: 2 }
+edge: { sourcename: "12" targetname: "21" class: 2 }
+edge: { sourcename: "12" targetname: "20" class: 2 }
+edge: { sourcename: "12" targetname: "19" class: 2 }
+edge: { sourcename: "12" targetname: "18" class: 2 }
+edge: { sourcename: "12" targetname: "17" class: 2 }
+edge: { sourcename: "12" targetname: "16" class: 2 }
+edge: { sourcename: "12" targetname: "15" class: 2 }
+edge: { sourcename: "12" targetname: "14" class: 2 }
+edge: { sourcename: "12" targetname: "13" class: 2 }
+edge: { sourcename: "13" targetname: "29" class: 2 }
+edge: { sourcename: "13" targetname: "28" class: 2 }
+edge: { sourcename: "13" targetname: "27" class: 2 }
+edge: { sourcename: "13" targetname: "26" class: 2 }
+edge: { sourcename: "13" targetname: "25" class: 2 }
+edge: { sourcename: "13" targetname: "24" class: 2 }
+edge: { sourcename: "13" targetname: "23" class: 2 }
+edge: { sourcename: "13" targetname: "22" class: 2 }
+edge: { sourcename: "13" targetname: "21" class: 2 }
+edge: { sourcename: "13" targetname: "20" class: 2 }
+edge: { sourcename: "13" targetname: "19" class: 2 }
+edge: { sourcename: "13" targetname: "18" class: 2 }
+edge: { sourcename: "13" targetname: "17" class: 2 }
+edge: { sourcename: "13" targetname: "16" class: 2 }
+edge: { sourcename: "13" targetname: "15" class: 2 }
+edge: { sourcename: "13" targetname: "14" class: 2 }
+edge: { sourcename: "14" targetname: "29" class: 2 }
+edge: { sourcename: "14" targetname: "28" class: 2 }
+edge: { sourcename: "14" targetname: "27" class: 2 }
+edge: { sourcename: "14" targetname: "26" class: 2 }
+edge: { sourcename: "14" targetname: "25" class: 2 }
+edge: { sourcename: "14" targetname: "24" class: 2 }
+edge: { sourcename: "14" targetname: "23" class: 2 }
+edge: { sourcename: "14" targetname: "22" class: 2 }
+edge: { sourcename: "14" targetname: "21" class: 2 }
+edge: { sourcename: "14" targetname: "20" class: 2 }
+edge: { sourcename: "14" targetname: "19" class: 2 }
+edge: { sourcename: "14" targetname: "18" class: 2 }
+edge: { sourcename: "14" targetname: "17" class: 2 }
+edge: { sourcename: "14" targetname: "16" class: 2 }
+edge: { sourcename: "14" targetname: "15" class: 2 }
+edge: { sourcename: "15" targetname: "29" class: 2 }
+edge: { sourcename: "15" targetname: "28" class: 2 }
+edge: { sourcename: "15" targetname: "27" class: 2 }
+edge: { sourcename: "15" targetname: "26" class: 2 }
+edge: { sourcename: "15" targetname: "25" class: 2 }
+edge: { sourcename: "15" targetname: "24" class: 2 }
+edge: { sourcename: "15" targetname: "23" class: 2 }
+edge: { sourcename: "15" targetname: "22" class: 2 }
+edge: { sourcename: "15" targetname: "21" class: 2 }
+edge: { sourcename: "15" targetname: "20" class: 2 }
+edge: { sourcename: "15" targetname: "19" class: 2 }
+edge: { sourcename: "15" targetname: "18" class: 2 }
+edge: { sourcename: "15" targetname: "17" class: 2 }
+edge: { sourcename: "15" targetname: "16" class: 2 }
+edge: { sourcename: "16" targetname: "29" class: 2 }
+edge: { sourcename: "16" targetname: "28" class: 2 }
+edge: { sourcename: "16" targetname: "27" class: 2 }
+edge: { sourcename: "16" targetname: "26" class: 2 }
+edge: { sourcename: "16" targetname: "25" class: 2 }
+edge: { sourcename: "16" targetname: "24" class: 2 }
+edge: { sourcename: "16" targetname: "23" class: 2 }
+edge: { sourcename: "16" targetname: "22" class: 2 }
+edge: { sourcename: "16" targetname: "21" class: 2 }
+edge: { sourcename: "16" targetname: "20" class: 2 }
+edge: { sourcename: "16" targetname: "19" class: 2 }
+edge: { sourcename: "16" targetname: "18" class: 2 }
+edge: { sourcename: "16" targetname: "17" class: 2 }
+edge: { sourcename: "17" targetname: "29" class: 2 }
+edge: { sourcename: "17" targetname: "28" class: 2 }
+edge: { sourcename: "17" targetname: "27" class: 2 }
+edge: { sourcename: "17" targetname: "26" class: 2 }
+edge: { sourcename: "17" targetname: "25" class: 2 }
+edge: { sourcename: "17" targetname: "24" class: 2 }
+edge: { sourcename: "17" targetname: "23" class: 2 }
+edge: { sourcename: "17" targetname: "22" class: 2 }
+edge: { sourcename: "17" targetname: "21" class: 2 }
+edge: { sourcename: "17" targetname: "20" class: 2 }
+edge: { sourcename: "17" targetname: "19" class: 2 }
+edge: { sourcename: "17" targetname: "18" class: 2 }
+edge: { sourcename: "18" targetname: "29" class: 2 }
+edge: { sourcename: "18" targetname: "28" class: 2 }
+edge: { sourcename: "18" targetname: "27" class: 2 }
+edge: { sourcename: "18" targetname: "26" class: 2 }
+edge: { sourcename: "18" targetname: "25" class: 2 }
+edge: { sourcename: "18" targetname: "24" class: 2 }
+edge: { sourcename: "18" targetname: "23" class: 2 }
+edge: { sourcename: "18" targetname: "22" class: 2 }
+edge: { sourcename: "18" targetname: "21" class: 2 }
+edge: { sourcename: "18" targetname: "20" class: 2 }
+edge: { sourcename: "18" targetname: "19" class: 2 }
+edge: { sourcename: "19" targetname: "29" class: 2 }
+edge: { sourcename: "19" targetname: "28" class: 2 }
+edge: { sourcename: "19" targetname: "27" class: 2 }
+edge: { sourcename: "19" targetname: "26" class: 2 }
+edge: { sourcename: "19" targetname: "25" class: 2 }
+edge: { sourcename: "19" targetname: "24" class: 2 }
+edge: { sourcename: "19" targetname: "23" class: 2 }
+edge: { sourcename: "19" targetname: "22" class: 2 }
+edge: { sourcename: "19" targetname: "21" class: 2 }
+edge: { sourcename: "19" targetname: "20" class: 2 }
+edge: { sourcename: "20" targetname: "29" class: 2 }
+edge: { sourcename: "20" targetname: "28" class: 2 }
+edge: { sourcename: "20" targetname: "27" class: 2 }
+edge: { sourcename: "20" targetname: "26" class: 2 }
+edge: { sourcename: "20" targetname: "25" class: 2 }
+edge: { sourcename: "20" targetname: "24" class: 2 }
+edge: { sourcename: "20" targetname: "23" class: 2 }
+edge: { sourcename: "20" targetname: "22" class: 2 }
+edge: { sourcename: "20" targetname: "21" class: 2 }
+edge: { sourcename: "21" targetname: "29" class: 2 }
+edge: { sourcename: "21" targetname: "28" class: 2 }
+edge: { sourcename: "21" targetname: "27" class: 2 }
+edge: { sourcename: "21" targetname: "26" class: 2 }
+edge: { sourcename: "21" targetname: "25" class: 2 }
+edge: { sourcename: "21" targetname: "24" class: 2 }
+edge: { sourcename: "21" targetname: "23" class: 2 }
+edge: { sourcename: "21" targetname: "22" class: 2 }
+edge: { sourcename: "22" targetname: "29" class: 2 }
+edge: { sourcename: "22" targetname: "28" class: 2 }
+edge: { sourcename: "22" targetname: "27" class: 2 }
+edge: { sourcename: "22" targetname: "26" class: 2 }
+edge: { sourcename: "22" targetname: "25" class: 2 }
+edge: { sourcename: "22" targetname: "24" class: 2 }
+edge: { sourcename: "22" targetname: "23" class: 2 }
+edge: { sourcename: "23" targetname: "29" class: 2 }
+edge: { sourcename: "23" targetname: "28" class: 2 }
+edge: { sourcename: "23" targetname: "27" class: 2 }
+edge: { sourcename: "23" targetname: "26" class: 2 }
+edge: { sourcename: "23" targetname: "25" class: 2 }
+edge: { sourcename: "23" targetname: "24" class: 2 }
+edge: { sourcename: "24" targetname: "29" class: 2 }
+edge: { sourcename: "24" targetname: "28" class: 2 }
+edge: { sourcename: "24" targetname: "27" class: 2 }
+edge: { sourcename: "24" targetname: "26" class: 2 }
+edge: { sourcename: "24" targetname: "25" class: 2 }
+edge: { sourcename: "25" targetname: "29" class: 2 }
+edge: { sourcename: "25" targetname: "28" class: 2 }
+edge: { sourcename: "25" targetname: "27" class: 2 }
+edge: { sourcename: "25" targetname: "26" class: 2 }
+edge: { sourcename: "26" targetname: "29" class: 2 }
+edge: { sourcename: "26" targetname: "28" class: 2 }
+edge: { sourcename: "26" targetname: "27" class: 2 }
+edge: { sourcename: "27" targetname: "29" class: 2 }
+edge: { sourcename: "27" targetname: "28" class: 2 }
+edge: { sourcename: "28" targetname: "29" class: 2 }
+}

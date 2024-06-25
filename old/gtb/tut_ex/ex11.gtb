@@ -1,0 +1,11 @@
+(* ex11  IRIA construction *)
+S ::=  'a' A 'b' 'b' | 'c' A 'b' 'd' .
+A ::=  'd' .
+
+
+(
+ex11_grammar := grammar[S]
+ex11_nfa := nfa[ex11_grammar unrolled 0]
+render[open["nfa.vcg"] ex11_nfa]
+)
+

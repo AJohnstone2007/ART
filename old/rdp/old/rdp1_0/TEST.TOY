@@ -1,0 +1,21 @@
+(*****************************************************************************
+*
+* RDP release 1.00 by Adrian Johnstone (adrian@dcs.rhbnc.ac.uk) 14 Feb 1994
+*
+* test.toy - a piece of Toy to test the Toy interpreter
+*
+* This file may be freely distributed. Please mail improvements to the author.
+*
+*****************************************************************************)
+int x = 1, y = 3, z = 12;
+
+begin
+
+begin
+	writeln("test.toy: toy interpreter OK");
+	x = x + y
+end
+
+end
+
+(* End of test.toy *)

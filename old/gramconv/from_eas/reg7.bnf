@@ -1,0 +1,10 @@
+S ::= `a..`c \ T \ `d ~B .
+T ::= ~'a'+ | { `b? } | { 'c' } .
+B ::= [ B ] * | { B } + | ( B ) * | [ `c ] + | < `2 > ? .
+K ::= ~ 'while' .
+
+
+(**
+accepts `d ~B
+translates [ B ] *  to { B }
+**)

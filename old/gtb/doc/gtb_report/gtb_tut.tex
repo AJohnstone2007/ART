@@ -1,0 +1,5500 @@
+\documentstyle[rhultechreport,epsf,11pt]{report}
+%\renewcommand{\today}{December 13, 1997}
+
+\newcommand{\derive}{{\mathop{\Rightarrow}\limits^*}}
+\newcommand{\mderive}[1]{{\mathop{\Rightarrow}\limits^{#1}}}
+\newcommand{\rmderive}[1]{{\mathop{\Rightarrow}\limits_{#1}}}
+\newcommand{\mderives}[1]{{\ \mathop{\Rightarrow}\limits^{#1}\ }}
+\newcommand{\pdn}{::=}
+
+\newcommand{\miter}[4]{({#1})\kern 2pt_{#2}{\tt @}_{#3}\kern 2pt{{\tt #4}}}
+\newcommand{\iter}[4]{({#1}){#2}{\tt @}{#3}{#4}}
+
+\newcommand{\first}{\mbox{\sc first}}
+\newcommand{\follow}{\mbox{\sc follow}}
+\newcommand{\FIRST}{\mbox{\sc first}}
+\newcommand{\FOLLOW}{\mbox{\sc follow}}
+
+\newcommand{\red}{{\cal R}}
+\newcommand{\epty}{\epsilon}
+\newcommand{\rec}[1]{{#1}^{\perp}}
+
+\newcommand{\rdpsupp}{{\mediumseries\tt rdp\_supp}}
+\newcommand{\rdp}{{\mediumseries\tt rdp}}
+\newcommand{\gtb}{{\mediumseries\tt gtb\ }}
+\newcommand{\gtbs}{{\mediumseries\tt gtb}}
+\newcommand{\rdps}{{\mediumseries\tt rdp\ }}
+
+\newcommand{\mypage}[1]{\hspace*{\fill}p\pageref{#1} }
+
+\newcommand{\lj}{\hspace*{\fill}}
+
+\newtheorem{thm}{Theorem}
+\newtheorem{prop}{Proposition}
+\newtheorem{cor}{Corollary}
+
+\title{A tutorial guide to \gtb}
+%author{Elizabeth Scott}
+%\reportnumber{\csnum{05}{24}} %Uncomment this line only when
+\begin{document}
+
+
+%\makecstitle %make Adrian's title page
+\thispagestyle{empty}
+\vspace*{1cm}
+\begin{center}{\bf Abstract}\end{center}
+
+\gtb is a system for analysing context free grammars. The user
+provides a collection of BNF rules and uses \gtbs's programming
+language, LC, to
+study grammars built from the rules. In its current stage of
+development \gtb is focused primarily on parsing and the associated
+grammar data structures. It is 
+possible to ask \gtb to produce any of the standard LR DFAs for the
+grammar, and to create an LR or a GLR parser for the grammar.
+These parsers can be run as LC methods on any specified
+input string. \gtb also generates other forms of general parsers such
+as reduction incorporated parsers, Earley parsers and Chart parsers.
+It produces various forms of output diagnostics, and can be used to
+compare the different forms of parser and DFA types.
+
+\vspace*{\fill}
+\begin{center}
+\fbox{\parbox{12cm}{This document is \copyright\,Adrian Johnstone
+and Elizabeth Scott 2005.\\[1ex]
+Permission is given to freely distribute this document
+electronically and on paper. You may not change this document or
+incorporate parts of it in other documents: it must be distributed intact.\\[1ex]
+The \gtb system itself is \copyright\,Adrian Johnstone but may
+be freely copied and modified on condition that details of the
+modifications are sent to the copyright holder 
+with permission to include
+such modifications in future versions and to discuss them (with
+acknowledgement) in future publications.\\[1ex]
+The version of \gtb described here is version 2.4 dated 
+2005.\\[1ex] 
+Please send bug reports and copies of modifications
+to the authors at the address on the title page or electronically
+to {\tt A.Johnstone@rhul.ac.uk}.
+}}
+\end{center}
+
+
+\clearpage
+\pagenumbering{roman}
+\tableofcontents
+\clearpage
+\setcounter{page}{0}
+\pagenumbering{arabic}
+\chapter{Grammars, languages and derivations}
+\section{An overview of translation and \gtbs}
+Computer programs are often written in a so-called
+`high level' language such as C++ or JAVA. Most human
+programmers find high level languages easier to use than
+the `low level' machine oriented languages.
+However, in order for a machine to execute a program
+it must  be translated from the high level language in
+which it is written to the native language of that machine.
+A {\em compiler} is a program which takes as input a program
+written in one language and produces as output an
+equivalent program written in another language.
+
+
+Although computer languages are designed to be simple to understand and
+translate, real computer languages still present significant
+problems. Sometimes,
+especially with old languages such as FORTRAN and COBOL, the
+difficulties in translation arise from the imperfect understanding that
+the early language designers had of the translation process. More modern
+languages, such as Pascal and Ada, are to a large extent designed to be
+easy to translate. The discovery that it was possible to design a
+language which could be translated in linear time (that is the
+translation time is proportional to the length of the text to be
+translated) and yet still appear readable to humans was an important
+result of early work on the theory of programming language syntax. 
+
+Computer language translation is
+traditionally viewed as a process with two main parts: the {\em front
+end} conversion of a high level language text written in a language such
+as C, Pascal or Ada into an {\em intermediate form}, and the {\em back end}
+conversion of the intermediate form into the native language of a
+computer.  This view is useful because it turns out that the
+challenges encountered in the design of a front end differ fundamentally
+from the problems posed by back end code generation and separating out
+the problems makes it easier to think about the overall task. 
+
+
+The language to be translated forms the input to the front end and is
+called the {\em source} language. The output of the back end is called
+the {\em target} language. In the typical case of a
+translator that outputs machine code for a particular computer, the
+target language is usually called the {\em object code}.
+
+
+Many of the theoretical
+issues surrounding front end translation were solved during the 1960s
+and 1970s, and it is possible to reduce most of the implementation
+effort for a new front end to a clerical exercise that may itself be
+turned into a computer program. {\em Compiler-compilers} are programs
+that take the description of a programming language,
+and output the source code of a program that will
+recognise, and possibly act upon, phrases written in that language. 
+The availability of such tools has fed back into programming language
+design. It is very hard to use such tools to generate translators for
+languages such as COBOL, but more recent languages are usually
+designed in such a way as to facilitate the use of compiler-compilers. 
+The description of the programming language to be input to a
+compiler-compiler is usually given in a variant of the {\em
+generative grammar} formalism which was introduced in the
+1950s by Chomsky. The formalism was first applied to the
+specification of programming languages by John Backus and
+Peter Naur and in recognition of this
+the notation used is often called Backus-Naur Form (or BNF).
+A full discussion of BNF can be found in standard texts
+such as \cite{dragon} or \cite{AHO72}.
+
+However, it is often a complex task to design, for a language, a
+grammar of the form which allows the standard techniques to be used. 
+Furthermore,
+in wider areas such as natural language parsing and bioinformatics
+the languages cannot be selected and thus cannot be designed to be
+easily parsed. For these reasons there is increasing interest in
+parsing techniques for grammars which are not of the theoretically
+tractable forms. \gtb is a tool that facilitates the study and 
+implementation of algorithms for general context free grammars.
+
+%\section{Specifying languages}
+
+Context free grammars are systems for specifying certain sets of
+strings of finite alphabets. A set of strings specified by a context
+free grammar is usually referred to as a (context free) {\em language}.
+Not all sets of strings can be specified
+by a context free grammar, in fact there are sets of strings which
+cannot be specified using any finite mechanical process. Context free
+grammars are sufficiently powerful to essentially specify standard
+programming languages, with the addition of semantic checks to address
+certain context sensitivities such as type compatibility.
+
+For sets specified by context free grammars, we are usually interested
+in determining whether or not some given string belongs to the
+set. The process of determining whether a given string belongs to a
+given context free language is often referred to as parsing, although
+strictly speaking parsing also requires the construction of some form
+of `derivation' of the string from the grammar.
+
+The parsing problem for context free grammars is known to be less than
+cubic, that is there are algorithms whose order is less than $n^3$
+which take any context free grammar $\Gamma$ and any string $u$ of 
+length $n$ and determine whether $u$ belongs to the language defined
+by $\Gamma$. There is no known linear algorithm which performs
+this task, but there are large sub-classes of context free grammars
+for which linear parsing algorithms do exist.
+
+This has resulted in extensive investigation of context free grammars,
+to find better general algorithms, to characterise classes of grammar
+which can be efficiently parsed, and to support the transformation of
+grammars into equivalent ones that can be parsed using one of the
+standard linear time techniques. \gtb is designed to support all
+three of these interests. It contains many of the common general
+parsing techniques, allowing them to be compared and contrasted on
+different types of grammar. It allows the user to construct
+different types of automata which form the basis of the standard LR
+parsers, and it can build many of the structures which support parsing
+such as \first\ and \follow\ sets and carry out
+left recursion detection.
+
+\gtb can output many of the structures in VCG format. Thus 
+structures such as DFAs, rules trees, grammar non-terminal dependency
+graphs, parse trees and graph structured stacks to be displayed 
+graphically using the VCG tool~\cite{SANDER95}.
+
+\gtb has been designed to support three categories of user: novice
+grammar users who can use \gtb to gain an understanding of the
+principles underlying parsing and grammars, professional programmers
+who want to develop parsers for real applications, and academic
+computer scientists who want to understand and extend the theory of
+grammars and parsing. 
+
+This guide is aimed primarily at the first category above, readers who
+want use \gtb to extend their understanding of parsing.
+We shall describe the basic functionality of \gtbs, giving brief
+discussions of the underlying theory and interspersed with the
+corresponding \gtb LC methods and example
+\gtb scripts. We begin with an
+overview of context free grammars and parsing.
+
+\section{Context free grammars}
+A context free grammar consists of a set of rewrite rules which are
+used to generate strings. The strings are generated by replacing
+instances of the left hand sides of rules with a string from the right
+hand side of the rule. For example,
+$$
+\matrix{
+S&::=&S\ +\ S\ |\ S\ *\ S\ |\ E\cr
+E&::=& a\ |\ b\lj\cr
+}
+$$
+is a set of grammar rules for a grammar ex1
+that generates a language of sums and products, for example,
+\verb%a+b*a+a% or \verb%a%.
+
+Formally, a {\em context free grammar}
+ consists of a set {\bf N} of {\em non-terminals}, a set 
+{\bf T} of {\em terminals}, and a set {$\bf\cal P$} of {\em
+grammar rules} of the form
+\begin{center}
+\tt
+A ::= $\alpha_1$ | $\alpha_2$ | $\ldots$ | $\alpha_n$ 
+\end{center}
+where $A$ is an element of {\bf N} and
+each $\alpha_i$ is a string of elements from {\bf N} and {\bf T}.
+One of the non-terminals, $S$ say, is singled out and called the
+{\em start symbol}. The strings $\alpha_1,\ldots,\alpha_n$ are called
+the {\em alternates} of the rule for $A$.
+
+In the above grammar, the non-terminals are {\tt S}, {\tt E}, 
+the terminals are 
+{\tt +},{\tt *},{\tt a},{\tt b}, and the start symbol is {\tt S}.
+
+The empty string is denoted by $\epsilon$ and it is possible for
+$\epsilon$ to be an alternate of a rule.
+
+\vskip.3cm
+\noindent
+How does a grammar specify a language?
+We {\em derive} one string from another by replacing a non-terminal with
+a string from the right hand side of its grammar rule.
+So if we have a rule
+$$
+A ::= ...\ |\ \gamma\ |\ ... \ .
+$$
+we can replace $A$ by $\gamma$. We use the symbol $\Rightarrow$
+for a derivation, and we write
+$\alpha A\beta \mderive{}\alpha\gamma\beta$.
+
+If $\mu$ and $\tau$ are strings,
+we say that  $\tau$ {\em can be derived from} $\mu$,
+and we write $\mu\derive\tau$, if there is a sequence
+$$
+\mu\mderive{}\alpha_1\mderive{}\ldots\mderive{}\alpha_n\mderive{}\tau.
+$$
+We also write $\mu\mderive{+}\tau$ to indicate that the derivation
+contains at least one step.
+
+For the example above we have
+\label{p_derive}
+\begin{eqnarray*}
+\mbox{\tt
+S} &\mderives{}& \mbox{\tt S + S} \\
+  &\mderives{}& \mbox{\tt E + S} \\
+  &\mderives{}& \mbox{\tt a + S} \\
+  &\mderives{}& \mbox{\tt a + S + S} \\
+  &\mderives{}& \mbox{\tt a + S * S + S}\\ 
+  &\mderives{}& \mbox{\tt a + E * S + S}\\ 
+  &\mderives{}& \mbox{\tt a + b * S + S} \\
+  &\mderives{}& \mbox{\tt a + b * E + S} \\
+  &\mderives{}& \mbox{\tt a + b * a + S }\\
+  &\mderives{}& \mbox{\tt a + b * a + E} \\
+  &\mderives{}& \mbox{\tt a + b * a + b} \\
+\end{eqnarray*}
+and so \ \ ${\tt S}\ \derive\ {\tt a + b * a + b}$.
+
+The {\em language specified by a grammar} is the set of strings
+of terminals which can be derived from its start symbol.
+We say that $u\in${\bf T}$^*$ is a {\em sentence} if $S\derive u$.
+(Here {\bf T}$^*$ denotes the set of strings of elements of {\bf T}
+and includes the empty string $\epsilon$, so if {\bf T}=$\{a, b, +\}$ 
+then \\
+{\bf T}$^* = \{\epsilon, a, b, +, aa, ab, a+, ba, bb, b+, +a, +b, ++,
+aaa, aab, \ldots\}$.)
+
+The language generated by the grammar above is the set of all sums
+and products of $a$'s and $b$'s.
+
+The above derivation is a {\em left-most} derivation, at each step the
+left-most non-terminal in the string is replaced. There is a
+corresponding {\em right-most} derivation in which the right-most
+non-terminal is replaced at each step.
+\begin{eqnarray*}
+\mbox{\tt
+S} &\mderives{}& \mbox{\tt S + S} \\
+  &\mderives{}& \mbox{\tt S + S + S} \\
+  &\mderives{}& \mbox{\tt S + S + E} \\
+  &\mderives{}& \mbox{\tt S + S + b} \\
+  &\mderives{}& \mbox{\tt S + S * S + b}\\ 
+  &\mderives{}& \mbox{\tt S + S * E + b} \\
+  &\mderives{}& \mbox{\tt S + S * a + b} \\
+  &\mderives{}& \mbox{\tt S + E * a + b} \\
+  &\mderives{}& \mbox{\tt S + b * a + b }\\
+  &\mderives{}& \mbox{\tt E + b * a + b} \\
+  &\mderives{}& \mbox{\tt a + b * a + b} \\
+\end{eqnarray*}
+
+A {\em sentential form} is a string $\alpha$, 
+which may include both terminals and non-terminals, such that 
+$S\derive\alpha$. 
+
+\section{Formal grammars and \gtb}
+
+The input to \gtb consists of a set of grammar rules and an LC script of
+methods to be executed. The rules have to be in a specific format:
+the terminal symbols are enclosed in single quotes, the left hand
+sides of the rules are assumed to be the non-terminals, and each grammar
+rule is terminated by a full stop. There should only be one rule for
+each non-terminal. The empty string is denoted by \verb&#& in a \gtb
+grammar.
+
+
+The following is a \gtb input file which specifies the rules for the
+small grammar, ex1, above. 
+\begin{quote}\label{p_ex1}
+\begin{verbatim}
+(* ex1 *)
+
+S ::= S '+' S | S '*' S | E .
+E ::= 'a' | 'b' .
+
+(* the LC instructions are enclosed in parantheses *)
+(
+ex1_grammar := grammar[S]  
+
+generate[ex1_grammar 10 left sentences]
+generate[ex1_grammar 15 right sentential_forms]
+)
+\end{verbatim}
+\end{quote}
+
+Comments can be included in the file using
+brackets of the form \verb%(* *)%.
+The method 
+
+\begin{center}\label{p_grm}
+\verb%my_grammar:=grammar[S]%
+\end{center}
+causes \gtb to make a grammar using the specified rules and start
+symbol $S$. The grammar construct is referred to using the variable
+name \verb%my_grammar%.
+
+The method call 
+\begin{center}\label{p_gen}
+\verb%generate[ex1_grammar 10 left sentences]%
+\end{center}
+gets \gtb to generate 10 strings in the language of the grammar using
+left-most derivations. The method call
+
+\begin{center}
+\verb%generate[ex1_grammar 15 right sentential_forms]%
+\end{center}
+gets \gtb to generate 15 strings using right-most derivations.
+
+If we run the above script through \gtbs, using the command
+\begin{center}
+\verb%gtb ex1.gtb% 
+\end{center}
+we get the following output.
+
+{\small
+\begin{verbatim}
+Generated sentences using leftmost derivation
+
+     1: a 
+     2: b 
+     3: a + a 
+     4: a + b 
+     5: b + a 
+     6: b + b 
+     7: a * a 
+     8: a * b 
+     9: b * a 
+    10: b * b 
+
+Generated sentential forms using rightmost derivation
+
+     1: S 
+     2: S '+' S 
+     3: S '*' S 
+     4: E 
+     5: S '+' S '+' S 
+     6: S '+' S '*' S 
+     7: S '+' E 
+     8: S '*' S '+' S 
+     9: S '*' S '*' S 
+    10: S '*' E 
+    11: 'a' 
+    12: 'b' 
+    13: S '+' S '+' S '+' S 
+    14: S '+' S '+' S '*' S 
+    15: S '+' S '+' E 
+\end{verbatim}
+}
+
+\section{\first\  and \follow\  sets}
+
+There are several sets associated with the grammar symbols which are
+used by parsing algorithms to assist in the construction of
+derivations.  In this section we shall discuss two of these sets, the
+\first\ and \follow\ sets. We begin with a brief discussion of the two
+most common approaches to parsing, then describe the roles of the 
+\first\ and \follow\ sets in these techniques. We then discuss these
+sets in relation to \gtbs.
+
+\subsection{Top-down and bottom-up derivation}
+
+We often classify derivation techniques as either
+top-down or bottom up. 	In a top down technique we begin with the start
+non-terminal and choose alternates to replace non-terminals until the
+required string is generated. In a bottom-up technique we read the
+required string (from the left) until the alternate of a rule is
+found, and this alternate is then replaced by non-terminal on the
+left hand side of the corresponding rule. The goal of the bottom-up
+approach is to end up with a string consisting of just the start symbol.
+
+For example, 
+if we take the grammar above and read the string $a*b+a$ from the left
+we read $a$ which is the right hand side of the rule $E\pdn a$ so we
+replace $a$ with $E$, to get the string $E*b+a$. Reading this string
+we replace $E$ with $S$, giving $S*b+a$. From this string we read
+$S$, $*$ and then $b$. We can then replace $b$, which is the right 
+hand side of a rule $E\pdn b$, with $E$, giving $S*E+a$. Next we
+read $S$, $*$ and then $E$, and then replace $E$ with $S$ to give
+$S*S+a$. Carrying on in this way we
+generate the strings $S+a$, $S+E$, $S+S$ and finally $S$.
+
+The top-down and bottom-up approaches rely on pre-computed sets, the
+\first\ and \follow\ sets, to help determine which alternate or rule
+to use.
+
+\subsection{\first\ sets}
+If we intend to use the rule $S\pdn\alpha$ as the first step in the
+generation (or top-down derivation)
+of a string $a_1\ldots a_n$ then it is clear that it must
+be possible to derive a string beginning with $a_1$ from $\alpha$. (If
+this is not the case then we should use a different alternate of $S$,
+if there is one.) In general, when deciding which alternate to use at a
+step in some derivation it is useful to know whether that alternate
+can derive a string which begins with a given terminal. The set of
+terminals which can begin a string derivable from some given string
+$\beta$ is called the \first\ set of $\beta$.
+
+Formally we define
+$$
+\first_{\bf T}(\alpha) = \{t\in{\bf T}\ |\ \alpha\derive t\beta, \
+{\rm for\ some\ } \beta\}
+$$
+\noindent
+If $\alpha\derive\epsilon$ then we also add $\epsilon$ to the \first\
+set. So we have
+$$
+\first(\alpha) = \cases{
+\first_{\bf T}(\alpha)\cup\{\epsilon\}& if $\alpha\derive\epsilon$\cr
+\first_{\bf T}(\alpha)& otherwise.
+}
+$$
+
+For example, for the above grammar ex1 we have
+$$
+\first(E) = \{a, b\}=\first(S+S)
+$$
+
+\subsection{\follow\ sets}
+In order to decide whether or not to replace, in a bottom-up
+derivation, the right hand side of a rule by its left hand side we may
+use the \follow\ sets (for more detail see Section~\ref{slr}).
+The \follow\ set of a non-terminal or a terminal  $x$ is the set of
+terminals which can appear directly to the right of $x$ in a sentential form.
+
+Formally we define
+$$
+\follow_{\bf T}(x) = \{t\in{\bf T}\ |\ S\derive \alpha xt\beta, \
+{\rm for\ some\ } \alpha,\beta\}
+$$
+\noindent
+If $S\derive\alpha x$ then we also add the special end-of-string
+symbol, $\$$, to the \follow\ set. So we have
+$$
+\follow(x) = \cases{
+\follow_{\bf T}(x)\cup\{\$\}& if $S\derive\alpha x$\cr
+\follow_{\bf T}(x)& otherwise.
+}
+$$
+
+For example, for the above grammar we have
+$$
+\follow(S) = \{\$, +, *\} = \follow(E)
+$$
+
+
+\subsection{\first\ and \follow\ sets in \gtb}\label{first}
+
+When it reads a call to the method \verb%grammar[S]%, 
+\gtb builds a grammar
+from the given rules assuming the start symbol $S$. As part of this
+process \gtb constructs various data structures associated with the
+grammar, including the \first\ and \follow\ sets for each terminal
+and non-terminal.
+
+Because \gtb uses the \first\ and \follow\ sets in various ways in
+other parts of its functionality, the sets it constructs differ
+slightly from the formal definition above in that they can also
+include non-terminals. So, for a non-terminal $A$ in the definition of
+$\first(A)$ used by \gtb the set $\first_T(A)$ is replaced by the
+set 
+$$
+\first_{{\bf T}\cup{\bf N}}(A) = \cases{
+\{x\in{\bf T}\cup{\bf N}\ |\ A\mderive{+} x\beta, \
+{\rm for\ some\ } \beta\}\cup\{\epsilon\}& if $\alpha\derive\epsilon$\cr
+\{x\in{\bf T}\cup{\bf N}\ |\ A\mderive{+} x\beta, \
+{\rm for\ some\ } \beta\}& otherwise.\cr}
+$$
+The effect of requiring $A\mderive{+} x\beta$ is that $A$ belongs to
+its own \first\ set if and only if $A$ is left recursive, and thus
+\gtb\ can detect and report on left recursion in a grammar as a side
+effect of the \first\ set construction.
+
+For example, for the above grammar, ex1, the \gtb \first\ set for $S$ is
+$$
+\{a,b,S,E\}
+$$
+
+
+
+Similarly, for a grammar symbol $x$ in the definition of
+$\follow(x)$ used by \gtb the set $\follow_T(x)$ is replaced by the
+set 
+$$
+\follow_{{\bf T}\cup{\bf N}}(x) = \cases{
+\{y\in{\bf T}\cup{\bf N}\ |\ S\derive \alpha xy\beta, \ {\rm for\ some\ } \alpha,\beta\}
+\cup\{\$\}& if $S\derive\alpha x$\cr
+\{y\in{\bf T}\cup{\bf N}\ |\ S\derive \alpha xy\beta, \
+{\rm for\ some\ } \alpha,\beta\}& otherwise.\cr}
+$$
+
+\subsection{Examining a \gtb grammar}
+
+Using the \verb&write& method, we can get \gtb to print out some of
+the data structures that it has constructed. If we add the line
+\begin{center}\label{p_wrt}
+\verb&write[ex1_grammar]& 
+\end{center}
+to the \gtb\ script it will print out
+information about the grammar \verb&ex1_grammar& that it has
+constructed. (To get more information we switch into verbose mode).
+By default the output is printed to the screen.
+
+For example, if we input the script
+\begin{quote}
+\begin{verbatim}
+(* ex1 *)
+
+S ::= S '+' S | S '*' S | E .
+E ::= 'a' | 'b' .
+
+(* the LC commands are enclosed in parantheses *)
+(
+ex1_grammar := grammar[S]  
+gtb_verbose := true
+write[ex1_grammar]
+)
+\end{verbatim}
+\end{quote}
+diagnostic information is printed on the screen. We now give these
+diagnostics, interspersed with some explanation.
+{\small
+\begin{quote}
+\begin{verbatim}
+Grammar report for start rule S
+Grammar alphabet
+   0 !Illegal
+   1 #
+   2 $
+   3 '*'
+   4 '+'
+   5 'a'
+   6 'b'
+-------------
+   7 E
+   8 S
+
+Grammar rules
+E ::= 'a' |
+       'b' .
+S ::= S[0] '+' S[1] |
+       S[2] '*' S[3] |
+       E[4] .
+\end{verbatim}
+\end{quote}}\noindent%$
+Internally all of the grammar symbols (and other things as we shall
+see later) are given unique integer numbers which are used both internally
+and in some of the output structures. This numbering is listed at the
+top of the output.
+
+Then the grammar rules are listed, and each instance
+of each non-terminal on the right hand side of a rule is given an
+instance number.   
+{\small
+\begin{quote}
+\begin{verbatim}
+Grammar sets
+
+terminals = {'*', '+', 'a', 'b'}
+
+nonterminals = {E, S}
+
+reachable = {'*', '+', 'a', 'b', E, S}
+
+reductions = {E ::= 'b' . , E ::= 'a' . , S ::= E . , 
+S ::= S '*' S . , S ::= S '+' S . }
+
+nullable_reductions = {E ::= 'b' . , E ::= 'a' . , S ::= E . , 
+S ::= S '*' S . , S ::= S '+' S . }
+
+start rule reductions = {S ::= E . , S ::= S '*' S . , S ::= S '+' S . }
+
+start rule nullable_reductions = {S ::= E . , S ::= S '*' S . , 
+S ::= S '+' S . }
+\end{verbatim}% $
+\end{quote}}\noindent
+To help identify bugs,
+\gtb performs a `reachability' analysis to determine
+which of the symbols in the rules can appear in sentential forms of
+the given start symbol.
+Then lists of certain `items' which are output. The roles of these 
+will be discussed later. 
+{\small
+\begin{quote}
+\begin{verbatim}
+first('*') = {'*'}
+follow('*') = {S}
+
+first('+') = {'+'}
+follow('+') = {S}
+
+first('a') = {'a'}
+follow('a') = {$, '*', '+'}
+
+first('b') = {'b'}
+follow('b') = {$, '*', '+'}
+
+first(E) = {'a', 'b'}
+follow(E) = {$, '*', '+'}
+
+first(S) = {'a', 'b', E, S}
+follow(S) = {$, '*', '+'}
+rhs_follow(S, 0) = {'+'}
+rhs_follow(S, 1) = {#}
+rhs_follow(S, 2) = {'*'}
+rhs_follow(S, 3) = {#}
+rhs_follow(S, 4) = {#}
+
+End of grammar report for start rule S
+\end{verbatim} 
+\end{quote}}\noindent
+Finally \gtb outputs its versions of the \first\ and \follow\ sets for
+each symbol.
+
+We can see that also output, for each non-terminal, are sets called
+rhs-follow sets. These sets are constructed for each instance of each
+non-terminal in each grammar rule, and they are the \first\ set of the
+string which follows the particular instance. So for a rule
+$B\pdn \alpha A[m] \beta$ we have
+$$
+\verb&rhs_follow&(B,m)=\first(\beta)
+$$
+
+\vskip.5cm
+\noindent
+Note: the \first\ sets and rhs-follow sets depend only on the grammar 
+rules, but the \follow\ sets depend on the start symbol of the
+grammar. For example, we can construct a different grammar from the
+rules in our example above by taking $E$ to be the start symbol.
+
+If we input the script
+\begin{quote}
+\begin{verbatim}
+S ::= S '+' S | S '*' S | E .
+E ::= 'a' | 'b' .
+
+(
+ex1_grammar := grammar[E]  
+write[ex1_grammar]
+
+generate[ex1_grammar 10 left sentences]
+generate[ex1_grammar 15 right sentential_forms]
+)
+\end{verbatim}
+\end{quote}
+the following output is printed on the screen.
+\begin{quote}
+{\small
+\begin{verbatim}
+Grammar report for start rule E
+Grammar alphabet
+   0 !Illegal
+   1 #
+   2 $
+   3 '*'
+   4 '+'
+   5 'a'
+   6 'b'
+-------------
+   7 E
+   8 S
+
+Grammar rules
+E ::= 'a' |
+       'b' .
+S ::= S[0] '+' S[1] |
+       S[2] '*' S[3] |
+       E[4] .
+
+Grammar sets
+
+terminals = {'*', '+', 'a', 'b'}
+
+nonterminals = {E, S}
+
+reachable = {'a', 'b', E}
+
+reductions = {E ::= 'b' . , E ::= 'a' . , S ::= E . , 
+S ::= S '*' S . , S ::= S '+' S . }
+
+nullable_reductions = {E ::= 'b' . , E ::= 'a' . , S ::= E . , 
+S ::= S '*' S . , S ::= S '+' S . }
+
+start rule reductions = {E ::= 'b' . , E ::= 'a' . }
+
+start rule nullable_reductions = {E ::= 'b' . , E ::= 'a' . }
+
+first('*') = {'*'}
+follow('*') = {}
+
+first('+') = {'+'}
+follow('+') = {}
+
+first('a') = {'a'}
+follow('a') = {$}
+
+first('b') = {'b'}
+follow('b') = {$}
+
+first(E) = {'a', 'b'}
+follow(E) = {$}
+
+first(S) = {'a', 'b', E, S}
+follow(S) = {}
+rhs_follow(S, 0) = {'+'}
+rhs_follow(S, 1) = {#}
+rhs_follow(S, 2) = {'*'}
+rhs_follow(S, 3) = {#}
+rhs_follow(S, 4) = {#}
+
+End of grammar report for start rule E
+
+Generated sentences using leftmost derivation
+
+     1: a 
+     2: b 
+
+Generated sentential forms using rightmost derivation
+
+     1: E 
+     2: 'a' 
+     3: 'b' 
+\end{verbatim}
+}
+\end{quote}
+
+
+\section{Enumeration and the rules tree}
+
+\gtb represents the grammar, \verb+grammar[S]+, that 
+it constructs using a rules tree. The internal rules tree can be
+output to a file in VCG~\cite{SANDER95} format, allowing it to be viewed. 
+To do this we open a
+file named, for example \verb&rules.vcg&, using the method
+
+\begin{center}\label{p_opn}
+\verb&rules_file := open["rules.vcg"]&, 
+\end{center}
+and then use the method
+
+\begin{center}\label{p_ren}
+\verb&render[rules_file my_grammar]& 
+\end{center}
+to output the VCG format to the file \verb+rules.vcg+. The graph can
+then be viewed by running VCG. Usually this is done by
+typing a command line instruction such as \verb+vcg rules.vcg+.
+
+The script
+\begin{quote}
+\begin{verbatim}
+(* ex1 *)
+S ::= S '+' S | S '*' S | E .
+E ::= 'a' | 'b' .
+
+(
+ex1_grammar := grammar[S]
+
+rules_file := open["rules.vcg"]   
+render[rules_file ex1_grammar]
+)
+\end{verbatim}
+\end{quote}
+creates a rules tree for ex1 that is displayed in VCG as 
+\begin{center}
+\epsfbox{vcg8.ps}\\[2mm]
+\end{center}
+
+The nodes in the rules tree are labelled with what are sometimes
+called LR(0) items, and which in \gtb are referred to as {\em slots}. 
+There is a slot for the start of each rule and a slot for each
+position before and after each symbol in each alternate of the rule.
+
+Each slot has a number which belongs to the enumeration
+mentioned above. 
+So, for example ex1 above, the integers 3 to 8 are used for the
+grammar symbols (as listed at the top of the output in the previous
+section) and the slot numbers start at 9.
+In addition to its use for numbering the nodes in the
+rules tree, this number is used frequently in later structures as
+part of the numbering of other graph nodes and parse actions.
+
+
+\section{Grammar dependency graphs}\label{gdg}
+
+Some parsing techniques view a grammar as a system for string matching
+in which there are notional pointers into both the grammar and the
+input string. Initially the grammar pointer points to the left hand
+side of the start rule and the string pointer points to the left hand
+end of the input string. At any stage in the parse if the grammar
+pointer is pointing at a terminal symbol then that symbol is matched
+to the symbol pointed to by the string pointer, and if the symbols
+match then both pointers are moved on one place. If the grammar
+pointer is pointing to a non-terminal on the right hand side of rule
+then the pointer is moved to the left hand side of the rule for that
+symbol. More sophisticated machinery is required to decide where to
+move the grammar pointer when it is at the left hand side of a rule, 
+and this leads to
+different forms of parsing technique. But we can see that there is a
+sense in which a non-terminal on the left hand side of a rule calls
+non-terminals which appear on the right hand side of the rule.
+
+The relationship $A$ {\em depends on} $B$ which is defined by the
+property that $B$ appears on the right hand side of the rule for $A$
+turns out to be useful in certain situations. For example, the first
+step in building a reduction incorporated parser (see Chapter~\ref{RIGLR})
+is to construct a new grammar which does not contain any proper self
+embedding. (A grammar contains self embedding if there is a terminal $A$
+and a derivation $A\mderive{+}\sigma A\tau$, see below.)
+
+The relation $A$ depends on $B$ is represented in a {\em grammar
+dependency graph} (GDG). For example, the GDG for the example
+grammar, ex1, above is
+
+\begin{center}
+{\footnotesize
+\input{tut1.pic }
+}
+\end{center}
+
+\subsection{GDGs in \gtbs}
+We can get \gtb to construct the GDG for a grammar using the method
+
+\begin{center}\label{p_gdg}
+\verb&my_gdg := gdg[my_grammar]&
+\end{center}
+which takes the grammar named
+\verb&my_grammar& and creates a graph named \verb&my_gdg&.
+The GDG produced by \gtb contains more information than just the basic
+dependency relationships. The edge from $A$ to $B$ is labelled l or r
+if there is a rule $A\pdn B\beta$ or $A\pdn \alpha B$, respectively,
+and the edge is also labelled L or R
+if there is a rule $A\pdn \alpha B\beta$ where $\alpha \not=\epsilon$
+or $\beta\not=\epsilon$, respectively.
+
+Formally, an edge of the GDG, from $A$ to $B$ say, is
+labelled with a subset, $\L_{A,B}$, of the set $\{L,R,l,r\}$, as follows.
+
+\begin{itemize}
+\item
+If there is a rule $A\pdn \alpha B\beta$ where $\alpha\not=\epsilon$ 
+then $L_{A,B}$ contains $L$.
+\item
+If there is a rule $A\pdn \alpha B\beta$ where $\beta\not=\epsilon$ 
+then $L_{A,B}$ contains $R$.
+\item
+If there is a rule $A\pdn \alpha B\beta$ where $\alpha\derive\epsilon$ 
+then $L_{A,B}$ contains $l$.
+\item
+If there is a rule $A\pdn \alpha B\beta$ where $\beta\derive\epsilon$ 
+then $L_{A,B}$ contains $r$.
+\end{itemize}
+
+As for the rules tree, 
+the internal GDG can be output in VCG format. To do this we open a
+file named, for example \verb&gdg.vcg&, using the method
+
+\begin{center}
+\verb&gdg_file := open["gdg.vcg"]&, 
+\end{center}
+and then use the method
+
+\begin{center}
+\verb&render[gdg_file my_gdg]& 
+\end{center}
+to output the VCG format.
+
+\begin{quote}
+\begin{verbatim}
+S ::= S '+' S | S '*' S | E .
+E ::= 'a' | 'b' .
+
+(
+ex1_grammar := grammar[S]  
+write[ex1_grammar]
+
+gdg_file := open["gdg.vcg"]
+ex1_gdg := gdg[ex1_grammar]
+render[gdg_file ex1_gdg]
+close[gdg_file]
+)
+\end{verbatim}\label{p_clo}
+\end{quote}
+
+Running the command \verb+vcg gdg.vcg+ displays the following graph.
+\begin{center}
+\epsfbox{vcg1.ps}\\[2mm]
+\end{center}
+\vskip-.2cm
+\noindent
+
+It is possible to nest the method calls in the obvious way, so
+we can also write 
+
+\begin{quote}
+\begin{verbatim}
+S ::= S '+' S | S '*' S | E .
+E ::= 'a' | 'b' .
+
+(
+ex1_grammar := grammar[S]
+render[open["gdg.vcg"] gdg[ex1_grammar]]
+)
+\end{verbatim}
+\end{quote}
+
+\subsection{Recursive non-terminals}
+
+A non-terminal $A$ is said to be {\em recursive} if there is a
+derivation $A\mderive{+}\sigma A\tau$, i.e. if a string that contains
+$A$ can be derived from $A$ in a derivation that contains at least one
+step.
+
+If $A$ is recursive then we have a derivation
+$$
+A\ \mderive{}\ \sigma_1 A_1\tau_1\ \mderive{}\ \sigma_2 A_2\tau_2\ \mderive{}
+\ldots\mderive{}\ \sigma_{m-1} A_{m-1}\tau_{m-1}\ \mderive{}\ \sigma A\tau
+$$
+and thus there is a corresponding cycle
+$$
+A\rightarrow A_1\rightarrow A_2\rightarrow\ldots A_{m-1}\rightarrow
+A
+$$
+in the GDG. Conversely if there is a non-empty cycle from $A$ to
+itself in the GDG then $A$ is recursive. Thus we can identify
+recursive non-terminals by identifying cycles in the GDG.
+
+For example the GDG for the grammar ex0
+$$
+\matrix{
+S&\pdn&B\ A\ a\ |\ B\ B\lj\cr
+A&\pdn&B\ b\ A\ B\ |\ a\lj\cr
+B&\pdn&S\ a\ a\ |\ \epsilon\ |\ D\cr
+D&\pdn&d\lj\cr
+}
+$$
+has GDG
+\begin{center}
+\epsfbox{vcg0.ps}\\[2mm]
+\end{center}
+We see that there are cycles from $S$, $A$ and $B$ to themselves,
+correctly reflecting the fact that these non-terminals are all recursive.
+
+A non-terminal $A$ is said to be {\em left recursive} if there is a
+derivation $A\mderive{+} A\tau$ and
+{\em right recursive} if there is a
+derivation $A\mderive{+} \sigma A$.
+
+It is not hard to see that $A$ is left recursive if and only if 
+there is a derivation of the form
+$$
+A\mderive{}\sigma_1 A_1\tau_1\derive A_1\tau_1\
+\mderive{}\sigma_2 A_2\tau_2\derive
+\ldots \derive\sigma_{m-1} A_{m-1}\tau_{m-1}\derive
+A_{m-1}\tau_{m-1}\mderive{}\sigma A\tau
+\derive A\tau
+$$
+where $\sigma_1, \sigma_2, \ldots, \sigma_{m-1},\sigma
+\derive\epsilon$. In particular there are rules
+$$
+A\mderive{}\sigma_1 A_1\tau_1,\qquad
+A_1\mderive{}\sigma_2 A_2\tau_2,\quad\ldots,\quad
+A_{m-1}\mderive{}\sigma A\tau.
+$$
+so the edges $A\to A_1$, $A_1\to A_2$, $\ldots$, $A_{m-1}\to A$ will
+all have the label $l$ on them. Thus we have that $A$ is left
+recursive if and only if there is a non-empty cycle from
+$A$ to itself in the GDG with the property that every edge in the
+cycle has a label that includes $l$.
+
+In the above example there are paths, all of whose edges are labelled
+$l$, from $S$ and $B$ to themselves, correctly reflecting the fact
+that $S$ and $B$ are left recursive but $A$ is not.
+
+
+
+Similarly a non-terminal $A$ is right
+recursive if and only if there is a non-empty cycle from
+$A$ to itself in the GDG with the property that every edge in the
+cycle has a label that includes $r$. In the above example the edge
+from $B$ to $S$ is not labelled $r$ and we see that $S$ and $B$ are
+not right recursive, but $A$ is right recursive.
+
+A non-terminal $A$ is said to be {\em self embedding} if there is a
+derivation $A\mderive{+} \sigma A\tau$ where
+$\sigma,\tau\not=\epsilon$. It is not hard to see that a non-terminal
+$A$ is self embedding if and only if there is a path in the GDG from
+$A$ to itself in which at least one edge has the label $L$ and at
+least one edge has the label $R$.
+
+We can see from the above GDG that all the non-terminals in the above
+grammar ex0 are self embedding.
+
+
+
+\chapter{LR automata}\label{lr}
+
+As we have already mentioned, it is common to take a grammar $\Gamma$
+and a string $u$ and to try to determine whether or not $u\in
+L(\Gamma)$. A well known technique which is often used for this is
+called {\em shift reduce parsing}. In its standard form a shift
+reduce parser is a bottom up parser which, if it succeeds, produces a
+right-most derivation of the input string $u$.
+
+The idea is to have an algorithm which, for a given grammar,
+takes as input a string
+$X_1X_2\ldots X_n$, say, of terminals {\em and} non-terminals and which
+produces as output another string $Y_1Y_2\ldots Y_m$, if one exists,
+such that
+$$
+S\ \derive\ Y_1Y_2\ldots Y_m\ \mderive{}\ X_1X_2\ldots X_n.
+$$
+Such an algorithm is applied to an input string,
+then successively to its own output with the aim of obtaining the string
+containing just the start symbol, $S$.
+
+Of course, the problem of determining whether the string $X_1X_2\ldots X_n$
+can be derived from the start symbol is the point of the whole
+process,
+so we can't expect to be able to tell whether a string $Y_1\ldots Y_m$
+with the above property exists. If we could then we wouldn't need the 
+process at all.
+
+It turns out that it is possible to construct a finite state automaton
+with the property that it
+accepts an input string if and only if it is an initial segment
+of a sentential form in the grammar and, as we shall see, this is
+enough. These automata
+are the standard LR automata which form the basis of the
+stack based parsing technique introduced by Knuth~\cite{KNUTH65}.
+
+In this chapter we shall describe a non-standard construction of the LR
+automata, constructing initial NFAs and then applying the subset
+construction to generate the traditional DFAs. This is based on the
+approach described by Grune~\cite{GRUNE90}, and we believe that it gives
+important pedagogic insight into the structure and behaviour of these
+automata. For this reason \gtb constructs the LR automata in precisely
+this stepwise fashion (rather than in the more direct {\em move} and
+{\em closure} based approach described in standard texts such
+as~\cite{dragon}).
+
+
+\section{State machines for finding derivations}\label{machines}
+In this section we 
+describe how to construct an NFA which works as follows:
+
+\begin{itemize}
+\item
+It reads part of the input string $X_1\ldots X_i$, say, and then
+stops.
+\item
+When it stops
+it either reports an error, or there is some string $\alpha$ such that
+$S\derive X_1\ldots X_i\alpha$ and there is a production 
+$Z::= X_jX_{j+1}\ldots X_i$. In the latter case,
+the string $X_1\ldots X_{j-1} Z X_{i+1}\ldots X_n$ is returned. Replacing
+the right hand side of a rule with its left hand side in this way is
+called a {\em reduction}.
+\end{itemize}
+
+We shall illustrate the construction and operation of the NFA using the 
+following grammar ex2 which has a special augmented start rule $S'::=S$.
+$$
+\matrix{
+S'&::=&S\hspace*{\fill}\cr
+S &::=& E ;\hspace*{\fill}\cr
+E &::=& E+T\ |\ T\cr
+T &::=& 0\ |\ 1\hspace*{\fill}\cr
+}
+$$
+
+
+The start node of our NFA is a node labelled with 
+$S'$ the augmented start symbol. We are looking to construct a string
+just containing $S$ and we describe this state using the notation
+$\cdot S$. We create a node labelled $S'\pdn\cdot S$ and an arrow labelled
+$\epsilon$ to it from the start node. If the input string is just $S$
+then we have a complete, single step derivation and we can terminate
+and accept the string. We achieve this by creating an accepting node,
+labelled $S'\pdn S\cdot$ to indicate that we have seen the string $S$, and an
+arrow labelled $S$ to this node.
+
+
+If the input string is not $S$ then we are looking to construct it. 
+To construct $S$ we need to find one of the
+alternates on the right-hand-side of a production rule for $S$.
+We create a new special header node labelled $S$ which has a child node
+for each alternate of the rule for $S$ (in this case $E ;$). We put
+a dot in front of each of the alternates to indicate that we are now looking 
+for that string. Since the move from $S$ to one of it's alternates doesn't 
+consume any of the input string the arrow between these nodes is labelled
+$\epsilon$.
+\begin{center}
+\footnotesize
+\input{tut2.pic}
+\end{center}
+
+Now we are looking for $E$. If we read the next symbol of the input
+and it is $E$ then we can move on and look for the next symbol, in this
+case a semicolon. Otherwise we need to look to construct an $E$. We build
+this into the NFA by making a header node labelled $E$.
+Then, as for $S$, we need to look
+for some alternate in the production rule for $E$, so we add new nodes
+and epsilon-transitions as for $S$. 
+\begin{center}
+\footnotesize
+\input{tut3.pic}
+\end{center}
+
+We carry on this construction process until all the branches of the NFA
+terminate in accepting states. The complete NFA for the above grammar is
+\begin{center}
+\footnotesize
+\input{tut4.pic}
+\end{center}
+
+\subsection{Formal NFA construction}
+
+Formally we construct the LR(0) NFA from a grammar $\Gamma$ as
+follows.
+
+\begin{enumerate}
+\item
+For each non-terminal $A$ in the augmented grammar construct a header node
+labelled $A$.
+
+\item
+For each rule $A\pdn x_1\ldots x_d$ 
+\begin{enumerate}
+\item
+create nodes labelled $A\pdn
+x_1\ldots x_{i-1}\cdot x_i\ldots x_d$, for $1\leq i\leq d+1$, 
+\item
+create an edge labelled $\epsilon$ from the node labelled $A$ to the
+node labelled $A\pdn\cdot x_1\ldots x_d$, 
+\item
+create an edge labelled $x_i$ from the node labelled
+$A\pdn x_1\ldots x_{i-1}\cdot x_i\ldots x_d$ to the node labelled
+$A\pdn
+x_1\ldots x_{i}\cdot x_{i+1}\ldots x_d$, for $1\leq i\leq d$.
+\item
+if $x_i$ is a non-terminal create an edge labelled $\epsilon$ from the 
+node labelled
+$A\pdn x_1\ldots x_{i-1}\cdot x_i\ldots x_d$ to the header
+node labelled $x_i$, for $1\leq i\leq d$.
+\end{enumerate}
+\item
+The start state is the state labelled with the augmented start symbol.
+\item
+The accepting states are the states with a label of the form
+$A\pdn\alpha\cdot$.
+\end{enumerate}
+
+\subsection{Using an LR(0) NFA to parse}
+
+Standard shift reduce parsers use push down automata, i.e. a
+stack is used together with the FA. Ultimately this is how our shift
+reduce parsers will work but it is instructive to consider parsing
+directly with just the LR(0) NFA because this highlights the role of
+the stack and informs our development of reduction incorporated 
+parsers in Chapter~\ref{RIGLR}.
+
+Formally we have an LR(0) NFA together with an action which is to be
+carried out when the NFA reaches an accepting state. This action will
+be to replace a substring of the input string by a non-terminal.
+
+Given an input string $X_1X_2\ldots X_m$ we begin in the start state of the
+NFA. Then at each stage we either move along an $\epsilon$ arrow
+into another state or we read the next input symbol and move into a new
+state along an arrow labelled with that symbol, if one exists.
+If no moves are possible and the current NFA state is not a leaf state
+then the parse has failed. If the NFA moves into
+a leaf state (one with no out-transitions) 
+the string on the right hand side of the item
+labelling this state will occur in the
+input string. Replace this string with the non-terminal on the left
+hand side of the item, and return the result.
+
+Suppose that we are attempting to parse the string $0+1;$ in the above grammar,
+and that we have so far constructed $E+1;$. Thus we have the
+derivation steps\quad
+$
+E+1;\ \mderive{}\ T+1;\ \mderive{}\ 0+1;.
+$
+\noindent
+To construct the previous step, starting in state 0 we
+run the NFA on $E+1;$.
+\begin{verbatim}
+state      input              action
+  0      ^E + 1 ;         move to state 1
+  1      ^E + 1 ;         move to state 3
+  3      ^E + 1 ;         move to state 4
+  4      ^E + 1 ;         move to state 5
+  5      ^E + 1 ;         move to state 6
+  6      ^E + 1 ;         read input symbol
+  7       E^+ 1 ;         read input symbol
+  8       E +^1 ;         move to state 12
+  12      E +^1 ;         move to state 15
+  15      E +^1 ;         read input symbol
+  16      E + 1^;         replace 1 by T, return string E + T ;     
+\end{verbatim}
+We now have the steps\quad
+$
+E+T;\ \mderive{}\ E+1;\ \mderive{}\ T+1;\ \mderive{}\ 0+1;
+$\quad
+and we can run the NFA again on the input $E+T;$.
+
+\subsection{Grammar augmentation in \gtb}\label{aug}
+
+If it is necessary for a grammar to be augmented, then a \gtb function
+that requires an augmented grammar will test its input and augment it
+if necessary. However, augmented versions of grammars are different
+from the corresponding original grammar. \first\ and \follow\ sets, and
+perhaps more importantly the internal enumeration of the symbols and
+slots, are different for the augmented version of a grammar.
+
+It is possible to explicitly instruct \gtb to augment a grammar using
+the method
+\begin{center}\label{p_aug}
+\verb+augment_grammar[my_grammar]+
+\end{center}
+
+It is important to note that this modifies the grammar
+\verb+my_grammar+,
+it does not create a new, independent grammar. It is also important to
+note that a grammar is only augmented if its start rule is not
+already of the form $S\pdn A$, where $S$ is not recursive.
+(In other words, if the grammar is already augmented.)
+
+The following script, \verb+ex2.gtb+, creates the grammar in the above
+example, 
+\begin{quote}
+\begin{verbatim}
+(* ex2 Augmentation *)
+S ::=  E ';' .
+E ::= E '+' T | T .
+T ::= '0' | '1' .
+
+(
+ex2_grammar := grammar[S]
+render[open["rules1.vcg"] ex2_grammar]
+
+augment_grammar[ex2_grammar]
+render[open["rules2.vcg"] ex2_grammar]
+)
+\end{verbatim}
+\end{quote}
+The first time that the \verb+render+ function is called it generates
+the rules tree for the original unaugmented grammar. The VCG 
+representation of this rules tree is
+\begin{center}
+\epsfbox{vcg13.ps}\\[2mm]
+\end{center}
+The second time it is called, the grammar has been augmented, so the
+following is now the rules tree.
+\begin{center}
+\epsfbox{vcg14.ps}\\[2mm]
+\end{center}
+
+
+\subsection{NFAs in \gtb}\label{gtbNFA}
+
+We can get \gtb to build an LR(0) NFA from a grammar, \verb+my_grammar+
+say, that we have already built from the input rules. The basic form
+of the method call is
+
+\begin{center}\label{p_nfa}
+\verb+my_nfa := nfa[my_grammar lr 0]+
+\end{center}
+
+There are various forms of NFA which can be constructed and thus the
+\verb+nfa+ method is parameterised by both the input grammar and various other
+options. Many of the options have defaults but it is necessary to
+specify the type of NFA required, in this case lr, and then the level
+of lookahead, in this case 0. This constructs an NFA of the type we
+have described above. If we render this NFA to a file \gtb generates VCG
+output which can be displayed graphically.
+
+From the following script
+\begin{quote}
+\begin{verbatim}
+(* ex2 *)
+S ::=  E ';' .
+E ::= E '+' T | T .
+T ::= '0' | '1' .
+
+(
+ex2_grammar := grammar[S]  
+
+ex2_nfa := nfa[ex2_grammar lr 0]
+render[open["nfa.vcg"] ex2_nfa]
+)
+\end{verbatim}
+\end{quote}
+generates a VCG file, \verb+nfa.vcg+, which contains the NFA.
+The function \verb+nfa[ex2_grammar lr 0]+ automatically augments the
+grammar as described in Section~\ref{aug}.
+
+The NFA generated by the above example is a little
+large to reproduce in these notes,
+so we show the effect using a smaller grammar.
+
+Consider the  grammar, ex3,
+$$
+S\ ::=\ A\ b\ |\ a\ d \qquad\qquad
+A\ ::=\ A\ a\ |\ \epsilon
+$$
+The script
+\begin{quote}
+\begin{verbatim}
+(* ex3  Generating NFAs *)
+S ::=  A 'b' | 'a' 'd' .
+A ::=  A 'a' | # .
+
+(
+ex3_grammar := grammar[S]
+ex3_nfa := nfa[ex3_grammar lr 0]
+render[open["nfa.vcg"] ex3_nfa]
+render[open["rules.vcg"] ex3_grammar]
+)
+\end{verbatim}
+\end{quote}
+generates the following VCG NFA graph.
+\begin{center}
+\epsfbox{vcg3.ps}\\[2mm]
+\end{center}
+\vskip-.2cm
+\noindent
+Again the grammar is automatically augmented by the \verb+nfa+
+function, so the corresponding rules tree is now
+\begin{center}
+\epsfbox{vcg15.ps}\\[2mm]
+\end{center}
+
+The node numbering in the NFA is based on the slot numbering in the
+rules tree. The NFA header nodes have numberings in the running
+enumeration maintained by \gtb (but the other NFA nodes do not).
+So, in the above example, the NFA header node labelled $S$
+is the 25th element in the enumeration, and the slot number in the
+rules tree for $S$ is 11. So the corresponding NFA node is labelled 
+11.25. The descendents of this node are also labelled in the form
+25.$m$, where $m$ is the corresponding slot number in the rules tree.
+
+\section{DFAs and stacks}
+There are two obvious inefficiencies with the NFA based parser
+described in the previous section: the NFA is non-deterministic and
+thus if a particular parse is unsuccessful it may be necessary to
+back-track and try a different sequence of steps, and every time a 
+non-terminal replacement is carried out the whole input string 
+is read again.
+
+We can improve the first case by using the subset construction (given,
+for example, in~\cite{dragon}) to construct a deterministic finite state
+automaton that is equivalent to the LR(0) NFA, and we can solve the
+second problem by using a stack.
+
+The following terminology is used for certain structures that are used in
+the subset construction. We give the terminology here because it is
+used in the diagnostic reporting carried out by \gtbs.
+
+A production $A::=\gamma\cdot\alpha$ which has a `dot' somewhere on its
+right hand side is called an {\em LR(0)-item}, (in \gtb it is also
+referred to as a slot as described above).
+
+If $P$ is a set of items the {\em $\epsilon$-closure} of $P$, $cl(P)$, 
+is the smallest set which contains $P$ and all items of the form
+$B::=\cdot\beta$ where there is item of the form $A::=\gamma\cdot B\alpha$
+in $P$.
+
+If $P$ is a set of items and $X$ is a terminal or non-terminal then
+$P_X$ is the set of all items $A::=\gamma X\cdot\alpha$ such that
+$A::= \gamma\cdot X\alpha$ is in $P$. We define
+$move(P,X) = cl(P_X)$.
+
+The DFA constructed from the LR(0) NFA using the subset construction
+is called the LR(0) DFA. We label the DFA states with the union of the
+labels of the NFA states from which the DFA state has been constructed.
+
+Applying the subset construction to the NFA from the end of 
+Section~\ref{machines} gives
+\begin{center}
+\footnotesize
+\input{tut5.pic}
+\end{center}
+
+The accepting states of the LR(0) DFA are those states whose label includes
+an item of the form $A\pdn\alpha\cdot$.
+
+\vskip.2cm
+\noindent
+A {\em grammar is LR(0)} if, in the LR(0) DFA constructed as above, the
+labels of the accepting states have only one item in them.
+
+
+\vskip.5cm
+We can use a DFA to parse a string in a similar fashion to the use of
+the NFA. However,
+to avoid re-reading the input string, each time we move to a
+DFA state this state is pushed onto a stack.
+When a state labelled with an item
+$A\pdn x_1\ldots x_n\cdot$ (a {\em reduction item}) is reached, the
+top $n$ states are popped of the stack, leaving $k$ say on top, and
+we move to the state which is the target of the transition from $k$
+labelled $A$. 
+
+
+\subsection{LR(0) tables}
+
+In practice it is usual to write core data structure of an LR parser
+as a table. The rows of the table are indexed
+by the DFA state numbers and the columns are indexed by $\$$, the
+terminals and the non-terminals. The columns indexed by the terminals
+form what is usually called the {\em action} part of the table, and
+the columns indexed by the non-terminals form the {\em goto} part of
+the table.
+
+%(Combining the actions as discussed in Section~\ref{PDA} allows us to use an
+%action/goto table whose rows are indexed with states. If we used the 
+%PDA actions literally as described above then we would have to index 
+%the rows with sequences of stack symbols.)
+
+Formally the LR(0) table is constructed as follows.
+\begin{itemize}
+\item
+If there is a DFA transition labelled with a terminal
+$a$ from state $h$ to state $k$
+then $sk$ is put in row $h$, column $a$ of the table.
+These actions are referred to as {\em shifts}.
+\item
+If there is a DFA transition labelled with a non-terminal
+$A$ from state $h$ to state $k$
+then $gk$ is put in row $h$, column $A$ of the table.
+\item
+If the label of state $h$ includes the item
+$A\pdn x_1\ldots x_n\cdot$, where $A\pdn x_1\ldots x_n$ is rule $m$
+and $A\not= S'$, put $rm$ in all the columns labelled with terminals, 
+and the $\$$ column, of row $h$. 
+\item 
+If the label of state $h$ includes the item $S'\pdn S\cdot$
+put $acc$ the $\$$ column of row $h$.
+\end{itemize}
+
+The following is the LR(0) table for the grammar
+$$
+\matrix{
+0.&S'&::=&S\lj&3.&E &::=& T\cr
+1.&S &::=& E ;\lj&4.&T &::=& 0\hspace*{\fill}\cr
+2.&E &::=& E+T\qquad&5.&T &::=& 1\hspace*{\fill}\cr
+}
+$$
+\vskip.2cm
+\begin{tabular}{|c||c|c|c|c|c|c|c|c|}
+\hline
+& $\$$ & 0&  1&  $+$&  $;$& $S$&  $E$&  $T$ \\
+\hline
+\hline
+0&  -  & s4&  s5& - & - & g1 & g2&  g3 \\
+\hline
+1 &acc & - & - & - & -& - & -&  -\\
+\hline
+2& - & - & - &   s7&  s6&  -&  -& -\\
+\hline
+3& r3&r3&r3&  r3 & r3 &  -&  - & -  \\
+\hline
+4& r4&  r4& r4 & r4&  r4&  - & -  &  -\\
+\hline
+5& r5&  r5 & r5 & r5&  r5&  - & -  &  -\\
+\hline
+6& r1&  r1 & r1 & r1&  r1&  - & -  &   -\\
+\hline
+7& -& s4&  s5 & - & -&  -&  - & g8 \\
+\hline
+8& r2& r2 & r2 & r2&  r2&  - & -  &  -\\
+\hline
+\end{tabular}
+
+
+\subsection{Parsing with an LR table}\label{lrParser}
+\begin{center}
+\input{tut6.pic}
+\end{center}
+\vskip.2cm
+\noindent
+
+We begin with the start state, 0, on the stack.
+At each stage in the parse, the parser looks at the state, $h$ say, 
+on the top of the stack and the next input symbol, $a$. An entry is
+then selected from row $h$, column $a$ of the table. If there is no
+entry the parse stops and an error message is given.
+If the entry is $sk$ then the parser pushes $k$ onto the stack and
+reads the next input symbol.
+If the entry is $rm$ then rule $m$, $A\pdn x_1\ldots x_d$ say, is
+found, and $d$ symbols are popped off the stack, leaving $t$ say on the
+top of the stack. The entry, $gk$ say, in row $t$, column $A$ of the
+table is then fetched and $k$ is pushed onto the stack.
+If the action is $acc$ then if the input symbol is $\$$ the parser
+terminates and reports success.
+
+\vskip.2cm
+\noindent
+{\bf Example} Parse $0+1 ;$.
+\begin{verbatim}
+stack                 remaining input   next action
+0                      0 + 1 ; $         s4
+0 4                    + 1 ; $           r4   
+0 3                    + 1 ; $           r3
+0 2                    + 1 ; $           s7
+0 2 7                  1 ; $             s5
+0 2 7 5                ; $               r5
+0 2 7 8                ; $               r2
+0 2                    ; $               s6
+0 2 6                  $                 r1
+0 1                    $                 acc
+return success
+\end{verbatim}
+
+The string of input symbols which is replaced by a non-terminal when
+a reduction is carried out (i.e. the string of
+grammar symbols popped off the stack) is called a {\em handle}.
+
+\subsection{DFAs and LR parsers in \gtb}\label{gtbDFA}
+
+For pedagogic purposes, \gtb constructs the LR(0) DFA from the NFA as
+described above, using the subset construction. The \gtb method
+to do this from a pre-constructed NFA, \verb+my_nfa+, is
+
+\begin{center}\label{p_dfa}
+\verb+my_dfa := dfa[my_nfa]+
+\end{center}
+Also, as for the NFA, the method \verb+render[dfa_file my_dfa]+
+produces a VCG format file that can be used to visualise the DFA.
+
+For example, the \gtb script
+
+\begin{quote}
+\begin{verbatim}
+(* ex3 *)
+S ::=  A 'b' | 'a' 'd' .
+A ::=  A 'a' | # .
+
+(
+ex3_grammar := grammar[S]
+ex3_nfa := nfa[ex3_grammar lr 0]
+
+ex3_dfa := dfa[ex3_nfa]
+render[open["dfa.vcg"] ex3_dfa]
+)
+\end{verbatim}
+\end{quote}
+generates the following VCG output DFA
+\begin{center}
+\epsfbox{vcg11.ps}\\[2mm]
+\end{center}
+
+\gtb has an LR parser whose structure is of the form described in
+Section~\ref{lrParser}. The parser is run using a specified DFA and a
+specified input string using the method
+\begin{center}\label{p_lr}
+\verb+lr_parse[my_dfa STRING]+
+\end{center}
+Here STRING is the sequence of input symbols, enclosed in
+double quotes. The script
+\begin{quote}
+\begin{verbatim}
+(* ex2 *)
+S ::=  E ';' .
+E ::= E '+' T | T .
+T ::= '0' | '1' .
+
+(
+ex2_grammar := grammar[S]
+ex2_dfa := dfa[nfa[ex2_grammar lr 0]]
+render[open["dfa.vcg"] ex2_dfa]
+
+gtb_verbose := true
+lr_parse[ex2_dfa "0+1;"]
+gtb_verbose := false
+)
+\end{verbatim}
+\end{quote}
+creates the DFA
+\begin{center}
+\epsfbox{vcg4.ps}\\[2mm]
+\end{center}
+\vskip-.2cm
+\noindent 
+In its default form the parse function \verb+lr_parse+
+reports \verb+accept+ or
+\verb+reject+. However, we can get \gtb to report a trace of the 
+parser using the \verb+gtb_verbose+ mode. We set this using the method
+\begin{center}\label{p_verb}
+\verb+
+gtb_verbose := true+
+\end{center}
+To switch the verbose mode off again we set \verb+gtb_verbose+ to
+\verb+false+. Many of the \gtb methods have a verbose mode.
+The above script
+generates the following output, which we discuss below.
+
+{\small
+\begin{verbatim}
+******: LR parse: '0+1;'
+Lexer initialised: lex_whitespace terminal suppresssed, 
+lex_whitespace_symbol_number 0
+Lex: 4 '0'
+
+Stack: [34] 
+State 34, input symbol 4 '0', action 35 (S35)
+Lex: 3 '+'
+
+Stack: [34] (4 '0') [35] 
+State 35, input symbol 3 '+', action 13 (R[2] R23 |1|->10)
+Goto state 34, goto action 39
+
+Stack: [34] (10 'T') [39] 
+State 39, input symbol 3 '+', action 14 (R[3] R24 |1|->7)
+Goto state 34, goto action 37
+
+Stack: [34] (7 'E') [37] 
+State 37, input symbol 3 '+', action 40 (S40)
+Lex: 5 '1'
+
+Stack: [34] (7 'E') [37] (3 '+') [40] 
+State 40, input symbol 5 '1', action 36 (S36)
+Lex: 6 ';'
+
+Stack: [34] (7 'E') [37] (3 '+') [40] (5 '1') [36] 
+State 36, input symbol 6 ';', action 12 (R[1] R22 |1|->10)
+Goto state 40, goto action 42
+
+Stack: [34] (7 'E') [37] (3 '+') [40] (10 'T') [42] 
+State 42, input symbol 6 ';', action 15 (R[4] R28 |3|->7)
+Goto state 34, goto action 37
+
+Stack: [34] (7 'E') [37] 
+State 37, input symbol 6 ';', action 41 (S41)
+Lex: EOS
+
+Stack: [34] (7 'E') [37] (6 ';') [41] 
+State 41, input symbol 2 '$', action 16 (R[5] R29 |2|->8)
+Goto state 34, goto action 38
+
+Stack: [34] (8 'S') [38] 
+State 38, input symbol 2 '$', action 11 (R[0] R21 |1|->9 Accepting)
+******: LR parse: accept
+\end{verbatim} 
+} 
+
+In the above output
+the current stack and the next action are shown at
+each step in the parse. The elements of the form \verb+[n]+
+on the stack are the DFA state
+numbers, these numbers can be seen on the VCG version of the DFA.
+In the above example, initially the stack consists just of the start
+state, \verb+[34]+.
+
+The elements of the form \verb+(m 'x')+ on the stack
+are grammar symbols, $x$ is the
+actual symbol and $m$ is its number in the \gtb generated enumeration,
+and can be obtained by using
+the \verb+write[my_grammar]+ method as described in
+Section~\ref{first}. (This number is also given in \verb+parse.tbl+
+which we shall describe below.)
+It is common in descriptions of LR parsers to include the symbol which
+labelled the transition from one state on the stack to the next,
+because this can make it easier both for the reader to see how the
+process is working, and for the user to find the point in the input
+where the parse fails, it if fails. Thus after the first action in the
+above example the stack is of the form 
+\begin{center}
+\verb+[34] (4 '0') [35]+
+\end{center}
+with state 34 on the bottom, then the terminal symbol 0, and then the state 35.
+
+The actions are given numbers internally. If the action is a shift
+then the action number is the number of the state to be pushed onto
+the stack. If the action is a reduction then the details of the
+reduction are printed out. The reduce actions are numbered internally
+by \gtb in the form \verb+R[n]+. To see which reduction corresponds to 
+\verb+R[n]+ we use the parse table, which is written by \gtbs.
+
+If we \verb+write+ the DFA a textual version of the parse table
+corresponding to the DFA is output.
+\begin{center}
+\verb+write[open["parse.tbl"] my_dfa]+
+\end{center}
+creates a file called \verb+parse.tbl+
+that contains a text version of the \gtb internal
+DFA table representation, and the reduction numbers are given in this
+file.
+
+For our example grammar ex2 the file \verb+parse.tbl+ is
+\begin{quote}
+{\small
+\begin{verbatim}
+LR symbol table
+0 !Illegal
+1 #
+2 $
+3 +
+4 0
+5 1
+6 ;
+7 E
+8 S
+9 S!augmented
+10 T
+
+LR state table
+34 0: 
+ S35
+ S36
+ S37
+ S38
+ S39
+35 4: 
+ R[2] {2}
+ R[2] {3}
+ R[2] {4}
+ R[2] {5}
+ R[2] {6}
+36 5: 
+ R[1] {2}
+ R[1] {3}
+ R[1] {4}
+ R[1] {5}
+ R[1] {6}
+37 7: 
+ S40
+ S41
+38 8: 
+ R[0] {2}
+ R[0] {3}
+ R[0] {4}
+ R[0] {5}
+ R[0] {6}
+39 10: 
+ R[3] {2}
+ R[3] {3}
+ R[3] {4}
+ R[3] {5}
+ R[3] {6}
+40 3: 
+ S35
+ S36
+ S42
+41 6: 
+ R[5] {2}
+ R[5] {3}
+ R[5] {4}
+ R[5] {5}
+ R[5] {6}
+42 10: 
+ R[4] {2}
+ R[4] {3}
+ R[4] {4}
+ R[4] {5}
+ R[4] {6}
+
+LR reduction table
+R[0] R21 |1|->9 S!augmented ::= S . Accepting
+R[1] R22 |1|->10 T ::= '1' . 
+R[2] R23 |1|->10 T ::= '0' . 
+R[3] R24 |1|->7 E ::= T . 
+R[4] R28 |3|->7 E ::= E '+' T . 
+R[5] R29 |2|->8 S ::= E ';' . 
+\end{verbatim}}
+\end{quote}%$
+In the state table section each state is listed with its state number
+followed by the number of the symbol that labels the DFA in-transitions to
+the state. Below this are the actions associated with the state. (The
+reductions have (the numbers of)
+associated lookahead symbols which are used later
+for SLR(1) and LR(1) parsers.) In the reduction table section we have
+the reduction reference, followed by the slot number of the reduction 
+item, the length of the right hand side of the reduction, and 
+(the number of) the symbol on the left hand side of the reduction rule.
+
+
+
+\section{SLR(1) parse tables}\label{slr}
+The problem with LR(0) parsing is that a large number of grammars
+are not LR(0), i.e. their LR(0) parse tables contain some
+multiple entries. It is possible for an entry to contain a shift action
+and several reduction actions.
+
+For example, consider the grammar, ex4, which is slight modification
+of the grammar ex2.
+$$
+\matrix{
+1.&S&::=&B ;\lj&4.&E &::=& T\cr
+2.&B &::=& E\lj&5.&T &::=& 0\hspace*{\fill}\cr
+3.&E &::=& E+T\qquad&6.&T &::=& 1\hspace*{\fill}\cr
+}
+$$
+When we construct the LR(0) DFA for this grammar we get
+\begin{center}
+\footnotesize
+\input{tut7.pic}
+\end{center}
+
+State 3 contains both a reduction and has a transition to another state.
+The effect of this is that when we are in state 3 we don't
+know whether to reduce, popping $E$ off the stack and pushing $B$,
+or to read the next input symbol in the hope that it is $+$.
+
+Of course we can make a choice, \gtb chooses a shift in preference to a
+reduction and chooses between reductions by taking the first one
+found. However, if the wrong choice is made then the parser may
+incorrectly reject the input string.
+
+We can resolve the problem in the above example if we use the next 
+input symbol to decide whether to `shift' or `reduce'. If the 
+next input is `+' then we need to push it onto the stack and 
+hope to construct $T$ next. If the next input is `;' then  we
+need to reduce and get $B$ onto the stack. If the input is any
+other symbol then the parse cannot continue and we report an error.
+
+
+Using the next input symbol to decide whether to perform a reduction
+is known as {\em one symbol lookahead}.
+Using one symbol lookahead vastly increases the class of
+grammars which can be correctly
+parsed using the table based techniques we have been considering.
+
+A simple way in which the input symbol is used to limit reduction
+application is to use the \follow\ sets described in
+Section~\ref{first}. This is based on the observation that if we
+replace a substring $\alpha$ of the current string $\beta\alpha u$
+with a non-terminal $A$ then for the result to
+ultimately be successfully parsed $\beta Au$ must be a sentential form.
+The next input symbol is the first symbol in $u$, so, by definition,
+this symbol must be in $\follow(A)$.
+Thus we only apply a reduction $A\pdn\alpha$ if the next input symbol
+lies in $\follow(A)$.
+
+Since the \follow\ sets can be statically computed, we can include
+this information in the parse table. The resulting table is called an
+SLR(1) table.
+
+
+We construct the states exactly as for the LR(0) parse table, and
+we put $sm$, $gm$ and $acc$ into the SLR(1) table exactly as 
+for the LR(0) table. For a reduction,
+if the label of state $h$ includes the item
+$A\pdn x_1\ldots x_n\cdot$, where $A\pdn x_1\ldots x_n$ is rule $m$
+and $A\not= S'$, we put $rm$ in all the columns of row $h$ that are
+labelled with elements of $\follow(A)$.
+
+The following in this SLR(1) table for the grammar ex4.
+\vskip.2cm
+\begin{tabular}{|c||c|c|c|c|c|c|c|c|c|}
+\hline
+  & \$ & 0 &  1&   + &  ; &  $S$&   $B$ &  $E$ &  $T$\\
+\hline
+\hline
+0&  - & s5 &  s6&  - &  - &   g1&  g2&  g3&  g4\\
+\hline
+1& acc&  - &  - &  - &  - &  - &  - &  - &  - \\  
+\hline
+2&  - &  - &  - &  - &  s7&  - &  - &  - &  -\\
+\hline
+3&  - &  - &  - &  s8&  r2&  - &  - &  - &  -\\
+\hline
+4&  - &  - &  - &  r4&  r4&  - &  - &  - &  -\\
+\hline
+5&  - &  - &  - &  r5&  r5&  - &  - &  - &  -\\
+\hline
+6&  - &  - &  - &  r6&  r6&  - &  - &  - &  -\\
+\hline
+7& r1 &  - &  - &  - &  - &  - &  - &  - &  -\\
+\hline
+8&  - &  s5&  s6&  - &  - &  - &  - &  - &  g9\\
+\hline
+9&  - &  - &  - &  r3&  r3&  - &  - &  - &  -\\
+\hline
+\end{tabular}
+\vskip.2cm
+
+A grammar is said to be SLR(1) if the entries in its SLR(1) table
+each contain at most one element.
+
+
+In \gtb the information that is required to build the parse table is
+collected when the NFA is constructed. So, despite the fact that as
+automata the NFA and the DFA for an SLR(1) parser are the same as
+those for the corresponding LR(0) parser, \gtb generates different
+internal structures in the two cases. Thus the type of table which is
+ultimately required is specified in the call to the \gtb NFA builder.
+\begin{quote}\label{p_slr}
+\begin{verbatim}
+(* ex4 An SLR(1) parser *)
+S ::=  B ';' .
+B ::= E .
+E ::= E '+' T | T .
+T ::= '0' | '1' .
+
+(
+ex4_nfa := nfa[grammar[S] slr 1]
+render[open["nfa.vcg"] ex4_nfa]
+
+ex4_dfa := dfa[ex4_nfa]
+lr_parse[ex4_dfa "0+1+1;"]
+)
+\end{verbatim}
+\end{quote}
+
+The lookahead information (the columns of the table in which a reduction on
+particular rules should appear) is stored as part of the header nodes
+in the NFA. For SLR(1) to make the graphs more readable the lookahead 
+information is omitted from the VCG rendering.
+In the VCG rendering of the DFA the reductions are listed with
+the appropriate lookahead symbols.
+
+
+Consider again the grammar, ex3, from Section~\ref{gtbNFA}.
+The script
+\begin{quote}
+\begin{verbatim}
+(* ex3 *)
+S ::=  A 'b' | 'a' 'd' .
+A ::=  A 'a' | # .
+
+(
+ex3_grammar := grammar[S]
+ex3_slr := dfa[nfa[ex3_grammar slr 1]]
+render[open["dfa1.vcg"] ex3_slr]
+)
+\end{verbatim}
+\end{quote}
+generates the following VCG graph.
+%\begin{center}
+%\epsfbox{vcg6.ps}\\[2mm]
+%\end{center}
+%\vskip-.2cm
+%\noindent
+\begin{center}
+\epsfbox{vcg7.ps}\\[2mm]
+\end{center}
+
+\section{LR(1) tables}
+
+Using the \follow\ set information to reduce the number of reductions in
+the table still leaves conflicts for many realistic grammars. It is
+possible to reduce significantly the number of conflicts by using the
+lookahead information in a more subtle way.
+
+Consider the grammar, ex5,
+$$
+\matrix{
+1.&S&::=&Ab\qquad&3.&A &::=&\epsilon\cr
+2.&S&::=&aAa \lj&\cr
+}
+$$
+that has LR(0) DFA
+\begin{center}
+\footnotesize
+\input{tut12.pic}
+\end{center}
+The start state of the DFA contains the reduction $A\pdn\epsilon$ and
+a transition labelled $a$. Since $a\in\follow(A)$ this results in a
+conflict in the SLR(1) table. However, if we look at the NFA for ex5
+\begin{center}
+\footnotesize
+\input{tut13.pic}
+\end{center}
+we see that the item $A\pdn\cdot$ appears in state 0 as a result of
+the inclusion of the item $S\pdn\cdot Ab$, and thus we really only need
+to consider performing the reduction $A\pdn\epsilon$ if the lookahead
+symbol is $b$. This observation motivates the use of `local' follow
+set information.
+
+The NFA is constructed on the basis that if we are at a state labelled
+$A\pdn\alpha\cdot B\beta$ then
+we are ultimately trying to construct $A$ and
+currently we need $B$. To construct $B$ we need to match $\gamma$,
+for some $\gamma$ such that $B::=\gamma$. When such a rule has been
+matched then we shall continue to match $\beta$, thus we need the next
+input symbol to be derivable from $\beta$. In other words, we wish that
+when we have matched $B$ that the lookahead symbol is in
+$\first(\beta)$. Thus instead of creating a header node in the NFA
+labelled $B$, we need to create one labelled with $B$ and 
+$\first(\beta)$. 
+
+There is a further complication in the case that
+$\beta\derive\epsilon$. In this case, having matched $B$ we may match $A$
+without reading any more input. Thus we need the lookahead symbol to
+be in the set of lookaheads required by $A$. Thus, if the header node
+above the node $A\pdn\alpha\cdot B\beta$ is labelled $(A,G)$ then
+we label the header node for $B$ with $(B,\first(\beta G))$,
+where $\first(\beta G)=\first(\beta)\cup G$ if $\beta\derive\epsilon$
+and $\first(\beta G)=\first(\beta)$, otherwise.
+
+\subsection{Formal LR(1) NFA construction}\label{lr1}
+
+Formally we construct the LR(1) NFA from a grammar $\Gamma$ as
+follows.
+
+\begin{enumerate}
+\item Augment the grammar with a new start symbol, $S'$,
+create and mark a header node labelled $(S',\{\$\})$.
+Create a node labelled $S'\pdn\cdot S$ and an $\epsilon$-transition
+to this node from the header node. 
+
+\item
+While there is an unmarked node in the NFA, select an unmarked node
+$h$, say, labelled  $A\pdn \alpha\cdot x\beta$, say, and suppose that
+the header node above this node is labelled $(A,G)$.
+\begin{enumerate}
+\item
+Create a node, $k$ say, labelled $A\pdn \alpha x\cdot\beta$, and a
+transition labelled $x$ from $h$ to $k$.
+\item
+If $\beta=\epsilon$, mark $k$.
+\item
+If $x$ is a non-terminal, if there is a header node labelled
+$(x,\first(\beta G))$ then add an $\epsilon$-transition from $h$ to
+this header. Otherwise create a header node, $l$ say, labelled
+$(x,\first(\beta G))$ and an $\epsilon$-transition from $h$ to $l$.
+Furthermore, for each grammar rule $x\pdn\gamma$ create an NFA node,
+$g$ say, labelled $x\pdn\cdot\gamma$ and an $\epsilon$-transition 
+from $l$ to $g$. Mark the node $l$ and, if $\gamma=\epsilon$, 
+then mark $g$.
+\item mark $h$.
+\end{enumerate}
+\item
+The start state is the header labelled $(S',\{\$\})$.
+\item
+The accepting states are the states with a label of the form
+$A\pdn\alpha\cdot$.
+\end{enumerate}
+
+For example, the LR(1) NFA for the grammar ex5 is
+\begin{center}
+\footnotesize
+\input{tut14.pic}
+\end{center}
+and the LR(1) NFA for the grammar ex3 is
+\begin{center}
+\footnotesize
+\input{tut8.pic}
+\end{center}
+
+We can get \gtb to build this NFA and the corresponding DFA simply by
+asking for an LR(1) structure in the method to build the NFA.
+\begin{quote}
+\begin{verbatim}
+(* ex3 *)
+S ::=  A 'b' | 'a' 'd' .
+A ::=  A 'a' | # .
+
+(
+ex3_grammar := grammar[S]
+render[open["nfa1.vcg"] nfa[ex3_grammar lr 1]]
+)
+\end{verbatim}
+\end{quote}
+\begin{center}
+\epsfbox{vcg12.ps}\\[2mm]
+\end{center}
+
+\subsection{LR(1) tables}
+
+The LR(1) states are labelled with the so-called LR(1)-items, pairs of
+the form $(A\pdn\alpha\cdot\beta,G)$ where $(A\pdn\alpha\cdot\beta)$
+is the label of an LR(1) NFA state whose header node is labelled
+$(A,G)$.
+
+
+To construct the LR(1) table
+we put $sm$, $gm$ and $acc$ into the LR(1) table exactly as 
+for the SLR(1) and LR(0) tables. For a reduction,
+if the label of state $h$ includes the item
+$(A\pdn x_1\ldots x_n\cdot,G)$, where $A\pdn x_1\ldots x_n$ is rule $m$
+and $A\not= S'$, put $rm$ in row $h$, column $x$ for all $x\in G$.
+
+The SLR(1) and LR(1) tables for ex5 are, respectively
+\vskip.2cm
+\begin{tabular}{|c||c|c|c|c|c|}
+\hline
+SLR(1)& $\$$ & $a$ & $b$ & $S$ & $A$ \\
+\hline
+\hline
+0&  -  & s2/r3&  r3& g1 & g3  \\
+\hline
+1 &acc & - & - & - & -\\
+\hline
+2& - & r3 & r3 &  - &  g4\\
+\hline
+3& - & - & s5 &  - & -   \\
+\hline
+4& - &  s6 & - & -  &  -\\
+\hline
+5& r1 &  - & - & -  &  -\\
+\hline
+6& r2&  - &  - & -  &   -\\
+\hline
+\end{tabular}\qquad\quad
+\begin{tabular}{|c||c|c|c|c|c|}
+\hline
+LR(1)& $\$$ & $a$ & $b$ & $S$ & $A$ \\
+\hline
+\hline
+0&  -  & s2&  r3& g1 & g3  \\
+\hline
+1 &acc & - & - & - & -\\
+\hline
+2& - & r3 & - &  - &  g4\\
+\hline
+3& - & - & s5 &  - & -   \\
+\hline
+4& - &  s6 & - & -  &  -\\
+\hline
+5& r1 &  - & - & -  &  -\\
+\hline
+6& r2&  - &  - & -  &   -\\
+\hline
+\end{tabular}
+\vskip.2cm
+
+
+
+\subsection{The singleton set model}
+
+There are two issues with the DFA construction model described in
+Section~\ref{lr1} that we shall now discuss further.
+
+Strictly speaking, applying the subset construction to the LR(1) NFA
+described above does not always result in the standard LR(1) DFA
+constructed by the direct method described, for example,
+in~\cite{dragon}. The DFA is deterministic and correct but it may have
+more states than the standard DFA. 
+
+Furthermore, it is possible for
+each of the possible subsets of a set $\follow(A)$ to occur as local
+lookahead sets, thus there may be $(2^{|\follow(A)|}-1)$ NFA 
+header nodes for each non-terminal $A$.
+
+Before discussing the alternative options that can be used in \gtb to
+address these problems, we give examples illustrating them.
+
+In the first case the issue arises because, under the subset
+construction, DFA states are made up from sets of NFA states and two
+DFA states are different if they are not
+comprised of exactly the same NFA states. When a
+DFA state is constructed the subset algorithm checks to see if there
+is already a DFA state with the same set of NFA states and if there is
+then this DFA state is reused. This ensures that the DFA construction
+algorithm terminates. Consider the grammar ex6
+$$\matrix{
+S &::=& aAa\ |\ aAb\ |\ bAB\cr
+A &::=&a\lj\cr
+B&::=&a\ |\ b\lj\cr
+}
+$$
+The LR(1) NFA as described above has three headers labelled $A$.
+The relevant portion of the NFA is shown below.
+\begin{center}
+\footnotesize
+\input{tut9.pic}
+\end{center}
+If the subset construction is strictly applied to generate the DFA
+two states containing the reduction $A\pdn a$ will be
+created. The relevant part of the DFA is
+\begin{center}
+\footnotesize
+\input{tut10.pic}
+\end{center}
+In the standard DFA construction these two states would have been
+merged because they contain the same item with the same lookahead
+set. 
+
+This problem can create many additional DFA states.
+For example, for the grammar for ISO Pascal included with the
+distribution of \gtbs, the DFA constructed
+from the LR(1) NFA using the strict form of the subset construction
+has 12,258 states while the standard LR(1) DFA has
+2,608 states.
+
+\gtb adopts two approaches to address this problem. The first approach
+is straightforward: instead of simply applying the subset
+construction, when an LR(1) NFA is being processed \gtb accepts two
+DFA states as being equal if the union of the labels from the
+corresponding NFA states are the same.
+
+The other approach is to use a different form of NFA. This approach,
+which we now discuss, also addresses the second issue mentioned above: 
+the potentially large number ($2^{|\follow(A)|}-1$) of header nodes.
+
+We create a singleton model LR(1) NFA by creating header nodes
+labelled $(A,x)$ for each non-terminal $A$ and for each
+$x\in\follow(A)$. We then build the NFA in a similar fashion to the
+LR(0) NFA. Given an item $A\pdn\alpha\cdot B\beta$ we create a node
+labelled with this item and $\epsilon$-transitions from this node to
+the headers $(A,x)$ where $x\in\first(\beta)$.
+
+\vskip.2cm
+\noindent
+{\bf Singleton follow set LR(1) NFA construction}
+
+\begin{enumerate}
+\item
+For each non-terminal $A$ in the grammar and for each $x\in\follow(A)$
+construct a header node labelled $(A,x)$.
+
+\item
+For each rule $A\pdn x_1\ldots x_d$ and for each header
+$(A,b)$
+\begin{enumerate}
+\item
+Create nodes labelled $A\pdn
+x_1\ldots x_{i-1}\cdot x_i\ldots x_d$, for $1\leq i\leq d+1$.
+\item
+Create an edge labelled $\epsilon$ from the node labelled $(A,b)$ 
+to the newly created node labelled $A\pdn\cdot x_1\ldots x_d$.
+\item
+Create an edge labelled $x_i$ from the node labelled
+$A\pdn x_1\ldots x_{i-1}\cdot x_i\ldots x_d$ to the node labelled
+$A\pdn
+x_1\ldots x_{i}\cdot x_{i+1}\ldots x_d$, for $1\leq i\leq d$.
+\item
+If $x_i$ is a non-terminal create an edge labelled $\epsilon$ from the 
+node labelled
+$A\pdn x_1\ldots x_{i-1}\cdot x_i\ldots x_d$ to the header
+nodes labelled $(x_i,y)$, for each
+$y\in\first(x_{i+1}\ldots x_d b)$, for $1\leq i\leq d$.
+\end{enumerate}
+\item
+The start state is the state labelled $S'$.
+\item
+The accepting states are the states with a label of the form
+$A\pdn\alpha\cdot$.
+\end{enumerate}
+
+The main fragment of the singleton model LR(1) NFA for ex6 is
+\begin{center}
+\footnotesize
+\input{tut11.pic}
+\end{center}
+
+Applying the subset construction in its standard form to the singleton
+model LR(1) NFA results in a DFA that is identical to the LR(1) DFA
+constructed using the standard construction procedure. Furthermore,
+the LR(1) NFA has $|\follow{A}|$ header nodes for each
+non-terminal $A$.
+
+It is not clear whether the singleton model LR(1) NFA is better in
+practice than the original version, which is referred to as the 
+full subset model in \gtbs. Although in worst case the singleton model
+has fewer NFA headers, it is likely in practice that the full subset
+model will have fewer headers. In particular if we consider SLR(1)
+NFAs, the singleton model has $|\follow(A)|$ headers while the full
+subset model has only one header for each non-terminal. Furthermore
+the singleton model has edges for each element in the local follow
+sets. 
+
+
+\gtb allows the user to choose which NFA model they want, allowing the
+two approaches to be compared. The method
+\begin{center}
+\verb+ my_nfa := nfa[my_grammar lr 1 singleton_lookahead_sets]+
+\end{center}
+generates the singleton model LR(1) NFA, while the method
+\begin{center}
+\verb+ my_nfa := nfa[my_grammar lr 1 full_lookahead_sets]+
+\end{center}
+generates the original NFA, which is also the default action.
+
+\section{LALR DFAs}
+Historically, LR(1) DFAs were considered too large to be practical, in
+general they have many more states than the SLR(1) DFA for the same
+grammar.
+
+DeRemer~\cite{DEREMER69,DEREMER71} 
+described another type of DFA, the LALR DFA, that has
+the same number of states as the corresponding SLR(1) DFA but, in
+general, fewer conflicts. The LALR DFA is the one used by YACC and
+many other standard parser generators.
+
+Conceptually an LALR DFA can be thought of as an LR(1) DFA in which
+certain states have been merged. If two LR(1) DFA states have labels
+which differ only in the lookahead sets associated with the items,
+then these two states are merged, merging the lookahead sets for
+corresponding items. There is an algorithm for constructing an
+LALR DFA directly without using the LR(1) DFA but \gtb uses the
+conceptually simple merging approach.
+
+The \gtb method
+\begin{center}\label{p_lalr}
+\verb+ lalr_dfa := la_merge[my_dfa]+
+\end{center}
+takes any LR DFA and merges states that differ only in the lookahead
+sets of the items that label them. To construct an LALR DFA first
+construct the LR(1) DFA and then run \verb+la_merge+.
+\begin{quote}
+\begin{verbatim}
+(* ex3 *)
+S ::=  A 'b' | 'a' 'd' .
+A ::=  A 'a' | # .
+
+(
+ex3_grammar := grammar[S]
+ex3_lalr := la_merge[dfa[nfa[ex3_grammar lr 1]]]
+render[open["la_dfa.vcg"] ex3_lalr]
+)
+\end{verbatim}
+\end{quote}
+\vskip.5cm
+Nowadays programming languages are designed to have grammars that are
+almost LR(1); their LR(1) tables have relatively few conflicts and
+those conflicts which do arise are dealt with using semantic checks.
+However, there is a very large class of grammars whose LR(1) tables contain
+conflicts, and left to themselves programmers do not naturally design
+LR(1) grammars. 
+
+Thus we consider general parsing techniques which can be used on all
+grammars. In the next chapter we consider an extension of the LR
+technique which, when faced with a conflict, pursues all the
+possibilities in parallel.
+
+
+
+\chapter{GLR algorithms}\label{GLR}
+
+The problem with the standard stack based LR parsers described in
+Chapter~\ref{lr} is that the LR(1) parse tables for many grammars
+contain conflicts, and the parser cannot tell which of the possible
+actions to choose. If the choice made results in the input being
+rejected then, to be correct, the parser must backtrack to the point
+where it made the choice and try a different action. This backtracking
+can result in unacceptable parse times for many grammars.
+
+An alternative approach is, when a choice of action is encountered, to
+pursue each of the choices in parallel. The naive approach is to make
+a copy of the current stack(s) for each choice of action and to
+proceed with each stack in parallel until the parse is complete or no
+further action exists for that stack. Of course, this does not solve
+the problem because there are grammars for which this process
+generates infinitely many stacks.
+
+Tomita~\cite{TOMITA91} devised a method for combining the multiple
+stacks in such a way that they require at most quadratic space. This
+allowed him to give a practical, generalised version of the LR parsing
+algorithm which effectively explores all possible actions in parallel.
+The resulting multiple stack structure is known as a graph structured
+stack (GSS), and algorithms which extend the LR parsing algorithm
+using a Tomita-style GSS are known as GLR parsers.
+
+In reality Tomita's algorithm contains an error which means it is not
+correct for grammars which contain a certain type of rule. However,
+this error can be corrected by modifying the input LR parse table.
+
+In this chapter we shall describe the GSS and Tomita's algorithm, 
+and then describe the modification to the LR tables needed to make the
+algorithm correct. All of the algorithms discussed can be executed in
+\gtb and we shall describe the methods required as we proceed.
+
+\section{Building a GSS}
+
+We describe the GSS associated with an LR parse using two examples.
+
+Tomita's original exposition pushes the grammar symbols onto
+the stack between the state symbols, as mentioned at the end of
+Section~\ref{gtbDFA}. Part of the role of \gtb is to implement
+algorithms as they are written both for pedagogic purposes and to
+allow the particular features of the algorithms to be studied.
+Thus the \gtb implementation of Tomita's algorithm constructs GSSs
+that contain symbol nodes. 
+
+\subsection{Example grammar ex7}
+Consider the grammar ex7
+$$\matrix{
+S &::=& A\ b\ |\ a\ b\cr
+A &::=& a\ |\ B\lj\cr
+B &::=& a\lj\cr
+}
+$$
+that has LR(1) DFA
+\begin{center}
+\footnotesize
+\input{tut15.pic}
+\end{center}
+We can use this DFA to recognise the string $ab$, as follows.
+
+We start in state 0 with 0 on the stack and read the first input
+symbol, $a$. We perform the shift action to state 2, giving the stack
+\begin{quote}
+\begin{verbatim}
+       2
+       a
+       0
+\end{verbatim}
+\end{quote}
+
+In state 2 we read the next input symbol, $b$, and find a shift action
+and two possible
+reduction actions. The idea is two create two copies of the stack and
+perform one of the reductions on each stack. 
+\begin{quote}
+\begin{verbatim}
+       2        3         4   
+       a        A         B
+       0        0         0
+\end{verbatim}
+\end{quote}
+There is a reduction associated with state 4, but applying this
+reduction to the corresponding stack $0B4$ generates the stack $0A3$,
+which already exists. Thus all possible reductions at this stage have
+been applied. 
+
+States 2 and 3 have a shift action on $b$ generating the corresponding
+stacks
+\begin{quote}
+\begin{verbatim}
+        5         6
+        b         b
+        2         3  
+        a         A
+        0         0
+\end{verbatim}
+\end{quote}
+State 4 has no action on input $b$ so the stack with 4 on top dies at
+this point. 
+
+We read the final input symbol, the end-of-string symbol $\$$. Both
+states 5 and 6 have reductions, and applying these results the same
+stack
+\begin{quote}
+\begin{verbatim}
+        1
+        S
+        0 
+\end{verbatim}
+\end{quote}
+Since state 1 is the accepting state the string is correctly accepted.
+
+We can represent the stacks as a graph, merging common prefixes.
+Because of the way the graph is traversed when performing a reduction, 
+we put an edge from each symbol to the symbol {\em below} it on the 
+stack. For example, we represent the stack $0a2$ as
+\begin{center}
+\footnotesize
+\input{tut16.pic}
+\end{center}
+
+The GSS corresponding to the stack activity in the above example is
+\begin{center}
+\footnotesize
+\input{tut17.pic}
+\end{center}
+
+\subsection{Example grammar ex8}\label{ex8}
+$$\matrix{
+S &::=& A\ b\lj\cr
+A &::=& b\ A\ |\ \epsilon\cr
+}
+$$
+that has LR(1) DFA
+\begin{center}
+\footnotesize
+\input{tut18.pic}
+\end{center}
+We can use this DFA to recognise the string $bbb$, as follows.
+
+We start in state 0 with 0 on the stack. The state 0 has a reduction 
+$A\pdn\epsilon$. Since the right hand side is $\epsilon$,
+nothing is popped off the stack so we simply push $A$ followed by 3
+on to the stack. State 3 does not have any reductions so we have 
+two stacks
+\begin{quote}
+\begin{verbatim}
+                  3
+                  A
+          0       0
+\end{verbatim}
+\end{quote}
+We read the first input symbol, pushing states 2 and 5, respectively,
+onto the stacks.
+The lookahead symbol is $b$ so the reduction in state 2 can be applied
+but the reduction in state 5 is not applied. Finally applying the
+reduction in state 4 gives the stacks
+\begin{quote}
+\begin{verbatim}
+                  5      4
+                  b      A
+          2       3      2     3
+          b       A      b     A
+          0       0      0     0
+\end{verbatim}
+\end{quote}
+Next we apply the shift action to states 2 and 3. The other
+two stacks die. Applying the reduction to the stack $0b2b2$ gives the
+stack $0b2b2A4$, then applying the reduction in state 4 (twice)
+results in the stacks
+\begin{quote}
+\begin{verbatim}
+                         4
+                         A
+          2       5      2      4
+          b       b      b      A
+          2       3      2      2     3
+          b       A      b      b     A
+          0       0      0      0     0
+\end{verbatim}
+\end{quote}
+We apply the last shift, then, since the lookahead symbol is $\$$,
+there is one applicable reduction, generating the stacks
+\begin{quote}
+\begin{verbatim}
+          2              
+          b              
+          2       5 
+          b       b  
+          2       3      1 
+          b       A      S  
+          0       0      0
+\end{verbatim}
+\end{quote}
+
+Again we represent these stacks as a graph, merging common
+prefixes. In this case we have that two of the stacks have the same
+state, 4, on top at the same step in the process, and such stacks are
+recombined. (It is this recombination which ensures the the GSS has
+size which is at most quadratic in the length of the input string.)
+\begin{center}
+\footnotesize
+\input{tut19.pic}
+\end{center}
+
+\vskip.5cm
+The {\em graph structured stack} associated with an LR parse is the
+graph obtained by turning each of the possible stacks into a graph
+with a node for each symbol on the stack an edge from $h$ to $k$ if
+the symbol corresponding to $h$ is directly above the symbol
+corresponding to $k$. These graphs are then merged so that stacks with
+a common prefix are merged and stacks with the same state above the
+same element of the input string on the top of the stack are
+re-combined.
+
+We now discuss Tomita's algorithm that, given a DFA and an input
+string, constructs the corresponding GSS.
+
+\section{Tomita's algorithm}
+
+In this section we give an informal description of Tomita's
+algorithm. For detailed discussion and a formal statement of the
+algorithm see~\cite{TOMITA91}, \cite{AJEAS00} or \cite{ESAJ04A}.
+
+The state nodes in the GSS are organised into levels, one level $U_i$
+for each input symbol. The nodes in level $i$ correspond to the the
+tops of stacks that can be obtained by reading the the first $i$ input
+symbols from the string. 
+
+The GSS construction proceeds by performing all possible reduction
+actions before performing the shift actions and then reading the next
+input. So the GSS is constructed level by level.
+
+When a GSS state node is constructed the actions associated with the
+state are collected and stored in a worklist pending application. The
+shift actions are only performed when there are no pending reduction
+actions. (The issues surrounding the nature of this worklist are
+subtle. A full discussion can be found in~\cite{ESAJ04A}.)
+
+\subsection{An example}\label{anEx}
+We illustrate Tomita's algorithm using ex8 from Section~\ref{ex8}
+and input $bbb$.
+
+We begin by constructing a GSS node, $u_0$, labelled 0 and collecting
+the shift and reduce actions associated with this state. Applying
+the reduction $A\pdn\epsilon$ that has length 0, since 
+the transition labelled $A$ from state 0
+goes to state 3, we create a new GSS state node, $u_1$, labelled 3
+and a path from $u_1$ to $u_0$ via a new symbol node labelled $A$.
+\begin{center}
+\footnotesize
+\input{tut25.pic}
+\end{center}
+We then collect the shift action associated with state 3. There are no
+further pending reductions so the construction of $U_0$ is complete.
+Next we apply both the pending shift actions, creating new level 1
+state nodes, $u_2$ and $u_3$, labelled 2 and 5 respectively, and
+creating paths from these nodes (via symbol nodes labelled $a$ as this
+is the current input symbol) to $u_0$ and $u_1$, respectively.
+\begin{center}
+\footnotesize
+\input{tut24.pic}
+\end{center}
+State 2 has a reduction action and applying this we construct a new
+level 1 node, $u_4$, labelled 4 and a path from $u_4$ to $u_2$ via a
+new symbol node labelled $A$.
+\begin{center}
+\footnotesize
+\input{tut23.pic}
+\end{center}
+We then apply the reduction associated with state 4. The rule $A\pdn
+bA$ is of length 2 so we trace back along the path of length 4 from
+$u_4$, in this case to $u_0$. Since the label of $u_0$ is 0 and the
+transition labelled $A$ from 0 goes to state 3, we create a new level
+1 GSS node, $u_5$, labelled 3 and a path from $u_5$ to $u_0$ via a new
+symbol node labelled $A$. There are no further pending reductions so we
+apply the shift actions, resulting in the graph
+\begin{center}
+\footnotesize
+\input{tut22.pic}
+\end{center}
+For the reduction $A\pdn\epsilon$ in state 2 we create a new level 2
+state node, $u_8$, labelled 4 and a path from $u_8$ to $u_6$ via a new
+state node labelled $A$.
+\begin{center}
+\footnotesize
+\input{tut21.pic}
+\end{center}
+For the reduction $A\pdn bA$ in state 4 we trace back along the path
+of length 4 from $u_8$ to $u_4$ and then, since the transition labelled
+$A$ from state 2 goes to state 4 and we already have a level 2 node,
+$u_8$, labelled 4 we create a path from $u_8$ to $u_4$ via a new node
+labelled $A$. There is now another path of length 4 from $u_8$, which
+goes to $u_0$. The reduction $A\pdn Ab$ must be applied down this
+path, and we create a new level two node, $u_9$, labelled 3 and a path
+from $u_9$ to $u_0$ via a new symbol node labelled $A$.
+Then we apply the pending shifts.
+\begin{center}
+\footnotesize
+\input{tut26.pic}
+\end{center}
+Because the lookahead symbol is now
+$\$$ only state 5 has a reduction. Tracing back along the path of
+length 4 from $u_{11}$ to $u_0$, since the transition labelled $S$
+from 0 goes to 1 we create a new level 3 node, $u_{12}$, labelled 1
+and a path from $u_{12}$ to $u_0$ via a new symbol node labelled $S$.
+This completes the GSS construction.
+\begin{center}
+\footnotesize
+\input{tut20.pic}
+\end{center}
+
+Because the last GSS level, level 3, contains a state node, $u_{12}$,
+whose label is 1, the DFA accepting state, the input string $bbb$ is
+accepted.
+
+\subsection{Tomita's algorithm in \gtb}
+
+We can run Tomita's algorithm on an LR DFA using the method
+\begin{center}\label{p_tom}
+\verb+this_derivation := tomita_1_parse[my_dfa STRING]+
+\end{center}
+where, as for the LR parser, STRING is the input string, 
+a doubly quoted string of grammar terminals.
+
+The parser can be run on the LR(0), SLR(1), LALR or LR(1) DFA.
+The following script causes \gtb to run the parser on ex8 with an
+LR(1) DFA.
+
+\begin{quote}
+\begin{verbatim}
+(* ex8  GLR parsing *)
+S ::=  A 'b' .
+A ::=  'b' A | # .
+
+(
+ex8_grammar := grammar[S]
+ex8_nfa := nfa[ex8_grammar lr 1]
+render[open["nfa.vcg"] ex8_nfa]
+
+ex8_dfa := dfa[ex8_nfa]
+render[open["dfa.vcg"] ex8_dfa]
+
+this_derivation := tomita_1_parse[ex8_dfa "bbb"]
+render[open["gss_ex8.vcg"] this_derivation]
+)
+\end{verbatim}
+\end{quote}
+
+As a result of running the Tomita parser \gtb produces a stack
+structured graph (ssg) that is a version of the GSS described above.
+Rendering this graph to a VCG file the stack structure can be viewed.
+\vskip-.2cm
+\noindent
+\begin{center}
+\epsfbox{vcg9.ps}\\[2mm]
+\end{center}
+
+It is possible to get \gtb to print the actions it performs during a
+traversal using \verb+gtb_verbose+. Running the script
+\begin{quote}
+\begin{verbatim}
+(* ex8  GLR parsing *)
+S ::=  A 'b' .
+A ::=  'b' A | # .
+
+(
+ex8_grammar := grammar[S]
+ex8_nfa := nfa[ex8_grammar lr 1]
+render[open["nfa.vcg"] ex8_nfa]
+ex8_dfa := dfa[ex8_nfa]
+render[open["dfa.vcg"] ex8_dfa]
+
+gtb_verbose := true
+this_derivation := tomita_1_parse[ex8_dfa "bbb"]
+render[open["ssg.vcg"] this_derivation]
+)
+\end{verbatim}
+\end{quote}
+generates the output\label{verb}
+{\small
+\begin{verbatim}
+******: Tomita 1 parse (queue length 0) : 'bbb'
+Lexer initialised: lex_whitespace terminal suppresssed, 
+lex_whitespace_symbol_number 0
+Lex: 3 'b'
+State 22, input symbol 3 'b', action 7 (R[0] R11 |0|->4)
+State 22, input symbol 3 'b', action 23 (S23)
+State 24, input symbol 3 'b', action 27 (S27)
+Lex: 3 'b'
+State 23, input symbol 3 'b', action 7 (R[0] R11 |0|->4)
+State 26, input symbol 3 'b', action 9 (R[2] R17 |2|->4)
+State 23, input symbol 3 'b', action 23 (S23)
+State 24, input symbol 3 'b', action 27 (S27)
+Lex: 3 'b'
+State 23, input symbol 3 'b', action 7 (R[0] R11 |0|->4)
+State 26, input symbol 3 'b', action 9 (R[2] R17 |2|->4)
+State 26, input symbol 3 'b', action 9 (R[2] R17 |2|->4)
+State 23, input symbol 3 'b', action 23 (S23)
+State 24, input symbol 3 'b', action 27 (S27)
+Lex: EOS
+State 27, input symbol 2 '$', action 10 (R[3] R18 |2|->5)
+State 25, input symbol 2 '$', action 8 (R[1] R14 |1|->6 Accepting)
+Lex: EOS
+******: Tomita 1 parse: accept
+
+SSG has final level 3 with 26 nodes and 26 edges; maximum queue length 1
+
+Edge visit count histogram
+0: 13
+1: 12
+2: 2
+Total of 16 edge visits
+
+Path length histogram
+0: 3
+4: 4
+Total of 7 path entries
+Weighted total of 16 path entries
+
+Reduction length histogram
+0: 3
+4: 4
+Total of 7 reduction length entries
+Weighted total of 16 reduction length entries
+
+Reduction histogram
+0: 3
+4: 4
+Total of 7 reduction entries
+Weighted total of 16 reduction entries
+\end{verbatim}
+}
+(Some discussion of the diagnostics produced from
+\verb+tomita_1_parse+ can be found in Section~\ref{RNtab}.)
+
+
+\subsection{Right nullable rules}\label{rtnull}
+
+As we saw in Section~\ref{anEx}, while the GSS is being constructed it
+is possible to add a new edge from an existing node, creating a new
+path down which a reduction must be applied. This was the case for
+node $u_8$ in the example in Section~\ref{anEx}.
+
+Tomita's algorithm was designed to construct the GSS as efficiently as
+possible, keeping to a minimum the amount of graph searching
+required. For this reason the worklist mentioned above is carefully
+designed so that pending reductions are stored with the first edge of
+each path down which they must be applied. The problem is that when a
+new edge is added to the middle of an existing path then reductions
+associated with nodes at the end of the path may not be applied down
+the new path. We illustrate the problem with the following 
+grammar, ex9.
+$$
+\matrix{
+S &\pdn& b\ A\hspace*{\fill}\cr
+A &\pdn& a\ A\ B\ |\ \epsilon\cr
+B &\pdn& \epsilon\hspace*{\fill}\cr
+}
+$$
+whose LR(1) DFA is
+\begin{center}
+\footnotesize
+\input{tut28.pic}
+\end{center}
+We run Tomita's algorithm with the above table and input 
+string $b a a$, using the \gtb script
+\begin{quote}
+\begin{verbatim}
+(* ex9  Right nullable rules *)
+S ::=  'b' A .
+A ::=  'a' A B | # .
+B ::=   # .
+
+(
+ex9_grammar := grammar[S]
+ex9_nfa := nfa[ex9_grammar lr 1]
+render[open["nfa.vcg"] ex9_nfa]
+
+ex9_dfa := dfa[ex9_nfa]
+render[open["dfa.vcg"] ex9_dfa]
+
+this_derivation := tomita_1_parse[ex9_dfa "baa"]
+render[open["ssg.vcg"] this_derivation]
+)
+\end{verbatim}
+\end{quote}
+This generates the GSS
+\vskip-.2cm
+\noindent
+\begin{center}
+\epsfbox{vcg10.ps}\\[2mm]
+\end{center}
+The parser outputs diagnostics, in particular reporting that the
+input is rejected.
+{\small
+\begin{verbatim}
+******: Tomita 1 parse (queue length 0) : 'baa'
+******: Tomita 1 parse: reject
+
+SSG has final level 3 with 12 nodes and 12 edges; maximum queue length 1
+
+Edge visit count histogram
+0: 7
+1: 6
+Total of 6 edge visits
+\end{verbatim}
+}
+
+The problem is that once node 34 in the GSS is constructed the
+reduction by the rule $A\pdn aAB$ is applied and a new edge is created
+from node 33. This creates a new path from node 34 down which the
+reduction must be applied, but only reductions associated with node
+33, and in this case there are none, are applied again. Thus the GSS
+construction process terminates without success.
+
+
+In general, suppose that we add an edge from a node, $u$ say, in 
+the middle of an existing path in the GSS, and that there is a 
+reduction associated with a node, $v$, further up this path.
+\begin{center}
+\footnotesize
+\input{tut27.pic}
+\end{center}
+It is not hard to see that the reduction must be of the form
+$A\pdn\alpha\beta$ where $\beta\derive\epsilon$ and the item
+$A\pdn\alpha\cdot\beta$ belongs to the DFA state that labels the node
+$u$.
+Rules of the form $A\pdn\alpha\beta$ where $\beta\derive\epsilon$ and 
+$\beta\not=\epsilon$ are called {\em right nullable rules}.
+
+
+
+Tomita~\cite{TOMITA86} attempted to solve the problem of right
+nullable rules by introducing 
+sub-levels into the GSS, but this caused the algorithm to fail to 
+terminate in certain cases. Farshi~\cite{FARSHI91} gave a different
+version of Tomita's algorithm, using a different worklist structure,
+and addressed the problem by simply searching the full GSS each time a
+new edge is created to ensure that all appropriate reductions are
+found and correctly applied. The problem with Farshi's algorithm is
+that it generates very much more graph searching during the GSS 
+construction and hence the algorithm is much less efficient than
+Tomita's algorithm. Some statistics comparing the efficiency of the
+algorithms can be found in~\cite{AJES04D1}.
+
+In fact the problem can be solved by using Tomita's original algorithm
+but adding extra reductions to the LR parse table. We now describe the
+modification to the tables.
+
+\section{Right Nulled parse tables}
+
+As we remarked in Section~\ref{rtnull}, Tomita's algorithm does not
+always correctly parse an input string if the grammar contains right
+nullable rules. However, we notice that, for a rule of the form
+$A\pdn\alpha\beta$, where $\beta\derive\epsilon$, if the parser
+reaches a state labelled with an item $(A\pdn\alpha\cdot\beta,a)$ and
+if the next input symbol is $a$, then eventually, without reading any
+further input, the parser will reach a state labelled with
+$(A\pdn\alpha\beta\cdot,a)$ and perform a reduction. Thus the parser
+could have performed the reduction from the state labelled 
+$(A\pdn\alpha\cdot\beta,a)$, popping off just the symbols associated
+with $\alpha$ from the stack. This simple observation forms the basis
+of the right nulled (RN) GLR parsers.
+
+We construct the LR DFA for a grammar, LR(0), SLR(1), LALR or LR(1) as
+desired, exactly as for the standard LR parser, but states labelled
+with an item of the form $(A\pdn\alpha\cdot\beta,a)$, where
+$\beta\derive\epsilon$ are also treated as reduction states. 
+To perform a reduction we need to know the number of symbols to be
+popped off the stack and the name of the non-terminal on the left
+hand side of the rule. Thus, in an RN table we record reduction
+actions together with the number of symbols to be popped off the stack
+and the left hand side of the rule. 
+
+We construct an RN table from the LR DFA in a similar way to the LR
+table, putting $sm$ and $gm$ into the RN table exactly as 
+for the LR(1) table. For a reduction,
+if the label of state $h$ includes the item
+$(A\pdn x_1\ldots x_p\cdot\beta,G)$, where $\beta\derive\epsilon$
+and $A\not= S'$, put $r(p,A)$ in row $h$, column $x$ for all $x\in G$.
+Finally, put $acc$ into row $k$, column $\$$, where $k$ is the DFA
+state whose label includes $(S'\pdn S\cdot,\$)$, and if
+$S\pdn\epsilon$ add $acc$ to row 0, column $\$$, where 0 is the DFA
+start state.
+
+
+\subsection{RN tables in \gtb}\label{RNtab}
+
+As we have said, \gtb collects all the information that it needs to
+build an LR table when it constructs the NFA. Thus the method
+that builds an NFA contains a parameter which instructs \gtb to treat
+slots of the form $A\pdn\alpha\cdot\beta$, where
+$\beta\derive\epsilon$, as reductions. The default action is to use
+only the standard LR reductions. To include the right nullable
+reductions we use the method call
+\begin{center}
+\verb+my_nfa := nfa[my_grammar lr 1 nullable_reductions]+
+\end{center}
+
+If we run \gtb with this NFA method and visualise the resulting NFA
+using VCG we see that the NFA states that contain a reduction slot
+are highlighted in blue. For the standard NFA it is the leaf nodes
+that are highlighted, but when the \verb+nullable_reductions+ option is
+used then other nodes may be highlighted as well.
+
+For example, for the grammar ex9, running the script
+\begin{quote}
+\begin{verbatim}
+(* ex9  Right nullable rules *)
+S ::=  'b' A .
+A ::=  'a' A B | # .
+B ::=   # .
+
+(
+ex9_grammar := grammar[S]
+rn_nfa := nfa[ex9_grammar lr 1 nullable_reductions]
+render[open["nfa1.vcg"] rn_nfa]
+)
+\end{verbatim}
+\end{quote}
+and then running VCG on \verb+nfa1.vcg+ we see that
+the nodes labelled $S\pdn a\cdot A$, $A\pdn b\cdot AB$, 
+and $A\pdn bA\cdot B$, are highlighted.
+\begin{center}
+\epsfbox{vcg17.ps}\\[2mm]
+\end{center}
+
+We note that, for efficiency, the internal representation of an RN
+table in \gtb is not simply the theoretical representation described
+above, it matches more closely the structure of the output table
+\verb+parse.tbl+ described in Section~\ref{gtbDFA}. 
+The internal representation is not of immediate concern to the
+reader but, as for the LR parser, 
+it is helpful for understanding some of the diagnostic
+information produced by \gtbs. In particular, when \gtb reports on a
+reduction action it reports the \gtb generated slot number of the item
+$A\pdn x_1\ldots x_p\cdot\beta$ (the number of the corresponding NFA
+node), then gives the length of the reduction and the associated 
+non-terminal.
+In fact, as can be seen in Section~\ref{rntom}, the diagnostics
+generated by the Tomita parser are in a similar form to those
+generated by the LR parser described above.
+
+\subsection{Tomita's algorithm with RN tables}\label{rntom}
+
+We can use Tomita's algorithm with RN tables and the algorithm will
+work correctly on all grammars and input strings.
+
+For example, running the script 
+\begin{quote}
+\begin{verbatim}
+(* ex9  Right nullable rules *)
+S ::=  'b' A .
+A ::=  'a' A B | # .
+B ::=   # .
+
+(
+ex9_grammar := grammar[S]
+
+rn_nfa := nfa[ex9_grammar lr 1 nullable_reductions]
+rn_dfa := dfa[rn_nfa]
+render[open["dfa1.vcg"] rn_dfa]
+write[open["parse.tbl"] rn_dfa]
+
+this_derivation := tomita_1_parse[rn_dfa "baa"]
+render[open["ssg1.vcg"] this_derivation]
+
+this_derivation := tomita_1_parse[rn_dfa "baab"]
+this_derivation := tomita_1_parse[rn_dfa "ca"]
+this_derivation := tomita_1_parse[rn_dfa "bbb"]
+)
+\end{verbatim}
+\end{quote}
+generates the following GSS and DFA
+\begin{center}
+\epsfbox{vcg16.ps}\\[2mm]
+\end{center}
+\begin{center}
+\epsfbox{vcg18.ps}\\[2mm]
+\end{center}
+The file \verb+parse.tbl+ produced is
+{\small
+\begin{verbatim}
+LR symbol table
+0 !Illegal
+1 #
+2 $
+3 a
+4 b
+5 A
+6 B
+7 S
+8 S!augmented
+
+LR state table
+28 0: 
+ S29
+ S30
+29 4: 
+ R[1] R[4] {2}
+ S31
+ S32
+30 7: 
+ R[2] {2}
+31 3: 
+ R[1] R[3] {2}
+ S31
+ S33
+32 5: 
+ R[7] {2}
+33 5: 
+ R[0] R[5] {2}
+ S34
+34 6: 
+ R[6] {2}
+
+LR reduction table
+R[0] R14 |0|->6 B ::= . #
+R[1] R15 |0|->5 A ::= . #
+R[2] R18 |1|->8 S!augmented ::= S . Accepting
+R[3] R19 |1|->5 A ::= 'a' . A B 
+R[4] R20 |1|->7 S ::= 'b' . A 
+R[5] R21 |2|->5 A ::= 'a' A . B 
+R[6] R22 |3|->5 A ::= 'a' A B . 
+R[7] R23 |2|->7 S ::= 'b' A . 
+\end{verbatim}
+}%$
+\vskip.2cm
+\noindent
+and running the script also produces the following diagnostics, 
+showing that the first input string is correctly accepted and that the
+other three input strings are (correctly) rejected.
+\vskip.2cm
+{\small
+\begin{verbatim}
+******: Tomita 1 parse (queue length 0) : 'baa'
+******: Tomita 1 parse: accept
+
+SSG has final level 3 with 16 nodes and 16 edges; maximum queue length 3
+
+Edge visit count histogram
+0: 3
+1: 6
+2: 6
+3: 2
+Total of 24 edge visits
+
+******: Tomita 1 parse (queue length 0) : 'baab'
+******: Tomita 1 parse: reject
+
+SSG has final level 3 with 7 nodes and 6 edges; maximum queue length -1000
+
+Edge visit count histogram
+0: 7
+Total of 0 edge visits
+
+******: Tomita 1 parse (queue length 0) : 'ca'
+Illegal lexical element detected
+
+******: Tomita 1 parse (queue length 0) : 'bbb'
+******: Tomita 1 parse: reject
+
+SSG has final level 1 with 3 nodes and 2 edges; maximum queue length -1000
+
+Edge visit count histogram
+0: 3
+Total of 0 edge visits
+\end{verbatim}
+}
+%$
+
+Notice that \gtb also gives statistics relating to the Tomita parse of
+the input. In particular it reports the 
+number of edge visits carried out during the construction of the GSS,
+in the first example there are 24. This allows the performance of Tomita's
+algorithm to be compared with other algorithms.
+To more detailed diagnostics as the parse proceeds we can switch
+on the verbose mode, as shown on page~\pageref{verb}.
+
+
+
+\subsection{The RNGLR algorithm}
+
+We can construct an algorithm that is
+more efficient than Tomita's in the case of
+right nullable rules by observing that a reduction of the form
+$A\pdn\alpha\beta\cdot$, where $\beta\derive\epsilon$ need not be
+applied when $\beta$ matches $\epsilon$, as the nulled reduction 
+$A\pdn\alpha\cdot\beta$ will generate the required portion of the 
+GSS when it is applied.
+
+
+
+It is not hard to see that a GSS edge between two nodes, $u$ and $v$
+say, at the same level exits if and only if it was created as the
+result of applying a reduction $B\pdn\gamma\cdot\delta$ with 
+$\gamma$ being matched to $\epsilon$. In particular,
+a reduction $A\pdn\alpha\beta\cdot$
+is to be applied with $\beta$ matching $\epsilon$ if and only if
+the first edges of the paths down which it is to be applied have 
+their target nodes on the current level. (This was the case, for 
+example, in ex9 where the
+first edge of the path down which $A\pdn aAB$ was applied was from
+node 34 to node 33, both on level 3.)
+Thus to avoid unnecessarily applying $A\pdn\alpha\beta\cdot$
+we only apply reductions down paths whose first edge goes to a level
+below the current level. (It is important to note that, because of this
+modification, the RNGLR algorithm cannot be used with the standard LR
+tables if the grammar contains right nullable rules.)
+
+The GSS constructed by the RNGLR algorithm does not have symbol nodes
+(however, when we draw them we label the GSS edges with symbols for
+pedagogic purposes).
+This makes the GSS smaller and more efficient to search. It does have
+implications for derivation tree construction, the parser version of
+the algorithm constructs a GSS whose edges are labelled with tree
+nodes. However, this method results in slightly smaller trees and so
+we prefer it to Tomita's parser, which exploits the GSS symbol nodes.
+
+The fact that the GSS does not include symbol nodes allows the RNGLR
+algorithm to have a more efficient pending reduction worklist,
+reductions are stored with the second edge on the path down which they
+are to be applied. This, together with the early application of right
+nullable reductions discussed at the start of this section means that
+the RNGLR algorithm is more efficient than Tomita's algorithm, even on
+grammars with no right nullable rules.
+
+To run the RNGLR algorithm in \gtb we use an method call of the form
+\begin{center}\label{p_rnglr}
+\verb+this_derivation := rnglr_recognise[my_dfa STRING]+
+\end{center}
+For example, running the script 
+\begin{quote}
+\begin{verbatim}
+(* ex9  Right nullable rules *)
+S ::=  'b' A .
+A ::=  'a' A B | # .
+B ::=   # .
+
+(
+ex9_grammar := grammar[S]
+rn_nfa := nfa[ex9_grammar lr 1 nullable_reductions]
+rn_dfa := dfa[ex9_nfa]
+
+gtb_verbose := true
+this_derivation := rnglr_recognise[rn_dfa "baa"]
+render[open["ssg2.vcg"] this_derivation]
+)
+\end{verbatim}
+\end{quote}
+generates the following GSS
+\begin{center}
+\epsfbox{vcg22.ps}\\[2mm]
+\end{center}
+
+
+\section{The RNGLR parser}
+
+Strictly speaking the algorithms that we have discussed so far are
+recognisers. A parser is a recogniser that outputs, in some form, a
+derivation of the input string, if that string is in the language.
+
+\subsection{Shared packed parse forests}
+Derivations are often presented as trees. The root of a derivation
+tree is labelled with the start symbol, the leaves are labelled with
+the symbols of the input string and the interior nodes are labelled
+with nonterminals. The children of a node, $A$ say, are labelled with the
+symbols from an alternate of the grammar rule for $A$.
+For example, the following derivation tree corresponds to the
+derivation on page~\pageref{p_derive}.
+\begin{center}
+\footnotesize
+\input{tut46.pic}
+\end{center}
+
+Tomita constructed the GLR algorithm with the production of derivation
+trees in mind. So the extension of the recogniser to a parser is
+relatively straightforward. However, GLR algorithms can be applied to
+all grammars, and ambiguous grammars have sentences that have more
+than one derivation tree. Thus we begin by describing an efficient 
+representation of the set of derivation trees of a string.
+
+We combine all the derivation trees for a string into a single structure
+called a shared packed parse forest in which common nodes are
+shared and multiple sets of children are packed together.
+In general, given a forest of derivation trees for a string $a_1\ldots a_n$,
+if two trees contain the same subtree for a substring $a_i\ldots a_i$,
+say, then this subtree can be shared.
+\begin{center}
+\footnotesize
+\input{tut48.pic}
+\end{center}
+
+If two nodes labelled $A$, say, have different subtrees which derive
+the same substring, $a_j\ldots a_i$ say, then the two nodes labelled $A$
+can be packed together and the subtrees can be added as alternates
+under the packed node.
+\begin{center}
+\footnotesize
+\input{tut49.pic}
+\end{center}
+
+A directed graph obtained by taking the derivation trees
+of a sentence $u$ and merging and packing the nodes in the
+fashion described above is called a {\em shared packed parse forest}
+(SPPF).
+
+The following is the SPPF for the (two) derivations of the string 
+$b*a+b$ from the grammar ex1 on page~\pageref{p_ex1}
+\begin{center}
+\footnotesize
+\input{tut47.pic}
+\end{center}
+
+\subsection{The RNGLR parser}
+To turn the RNGLR recogniser into a parser we construct an SPPF as the
+GSS is built. The method that we use is basically the same as that 
+used by
+Rekers~\cite{REKERS92} to turn Farshi's GLR algorithm into a parser.
+A node is constructed when an edge is added to the GSS,
+and the edge is labelled with this node. 
+
+We have to treat right nullable rules carefully because in the RNGLR
+algorithm the right hand ends of such reductions are short circuited. 
+Thus we have pre-constructed $\epsilon$-SPPFs for the nullable right 
+hand ends of rules
+and to add these in the appropriate places once the GSS construction
+has been completed. These SPPFs are passed into the algorithm along with
+the parse table and the input string.
+
+The SPPF is then constructed as follows. 
+When an input symbol, $a$ say, is read at the ith step of the
+algorithm, an SPPF node, $u$ say, labelled
+$(a,i)$ is created. All of the GSS edges created when this $a$ is read
+are labelled $u$. When a reduction $A\pdn\alpha\cdot\beta$ is
+applied the labels, $u_1,\ldots, u_k$ say, on the edges on the path down 
+which the reduction is applied are collected. If the last node on the
+path is at level $j$ then we look for an SPPF node labelled $(A,j)$. 
+If one has already been constructed at this step then we create a new
+packing node as a child of this node. Otherwise we create an SPPF node
+labelled $(A,j)$. The newly created node is then given as children the
+nodes labelled $u_k, \ldots,u_1$. If $\beta\not=\epsilon$ then the
+root node of the SPPF for $\beta$ is also made a child of the new SPPF
+node. (For full details of the SPPF construction process 
+see~\cite{ESAJ04A} or ~\cite{AJEAS00}.)
+
+For example, consider the grammar ex10
+$$
+\matrix{
+S &::=& T\ B\lj\cr
+T&::=&T\ +\ T\ |\ a\ |\ b\cr
+B&::=& B\ B\ |\ c\ |\ \epsilon\lj\cr
+}
+$$
+which has the following RN SLR(1) DFA and $\epsilon$-SPPF 
+\begin{center}
+\footnotesize
+\input{tut50.pic}
+\end{center}
+\vskip.2cm
+\begin{center}
+\footnotesize
+\input{tut51.pic}
+\end{center}
+We parse the string $a+b+a$ as follows.
+
+We create a GSS node $u_0$ labelled 0 and then read the first input
+symbol, $a$. We create an SPPF node, $w_1$, labelled $(a,1)$, a GSS
+node, $u_1$, labelled $3$ and an edge $(u_1,u_0)$ labelled $w_1$.
+We then perform the reduction $T\pdn a$ down this edge. We create an
+SPPF node, $w_2$ labelled $(T,1)$ as a parent of $w_1$, 
+a GSS node $u_2$ labelled 2 and an edge $(u_2,u_0)$ labelled $w_2$.
+\begin{center}
+\footnotesize
+\input{tut52.pic}
+\end{center}
+We read the next input symbol, $+$, create an SPPF node, $w_3$,
+labelled $(+,2)$, a GSS node, $u_4$, labelled 5 and an edge $(u_4,u_2)$
+labelled $w_3$.
+
+Reading the next input symbol, $b$, we create an SPPF node, $w_4$,
+labelled $(b,3)$, a GSS node, $u_5$, labelled 4 and an edge $(u_5,u_4)$
+labelled $w_4$. We then perform the reduction $T\pdn b$ down the
+edge $(u_5,u_4)$, create an SPPF node, $w_5$ labelled $(T,3)$, a GSS node 
+$u_6$ labelled 9 and an edge $(u_6,u_4)$ labelled $w_5$.
+Performing the reduction from $u_6$ we trace back along the path of
+length 3, collecting the labels $w_5$, $w_3$ and $w_2$. We create a
+new SPPF node, $w_6$, labelled $(T,1)$ with children $w_2$, $w_3$,
+$w_5$, a GSS node, $u_7$, labelled 2
+and an edge $(u_7,u_0)$ labelled $w_6$.
+\begin{center}
+\footnotesize
+\input{tut53.pic}
+\end{center}
+
+We then read the next symbol, $+$, create an SPPF node, $w_7$, labelled 
+$(+,4)$, a GSS node, $u_8$, labelled 5, and two edges $(u_8,u_6)$ and 
+$(u_8,u_7)$ labelled $w_7$. Then we read the final symbol, $a$,
+create an SPPF node, $w_8$,
+labelled $(a,5)$, a GSS node, $u_9$, labelled 5 and an edge $(u_9,u_8)$
+labelled $w_8$. Applying the reduction $T\pdn a$ down the
+edge $(u_9,u_8)$, we create an SPPF node, $w_{9}$ labelled $(T,5)$, a GSS node 
+$u_{10}$ labelled 9 and an edge $(u_{10},u_8)$ labelled $w_9$.
+\begin{center}
+\footnotesize
+\input{tut54.pic}
+\end{center}
+From $u_{10}$ we trace back along the two paths of length 3. This
+results in the GSS and SPPF shown below.
+\begin{center}
+\footnotesize
+\input{tut55.pic}
+\end{center}
+We have added a new edge to node $u_{10}$ so the reduction is applied
+down this edge. The required GSS node and edge already exist, and
+there is already an SPPF node labelled $(T,1)$ that we have
+constructed at this step. Thus we reuse this node and add the second
+set of children using packing nodes.
+\begin{center}
+\footnotesize
+\input{tut56.pic}
+\end{center}
+We then apply the reduction $B\pdn\epsilon$ from node $u_{11}$, creating
+a new GSS node, $u_{12}$, labelled 7 and an edge $(u_{12},u_{11})$ labelled
+$w_B$. Applying the reduction $B\pdn\cdot BB$ does not create any new
+edges. Applying the reduction $S\pdn T\cdot B$ from $u_{11}$ we
+create an SPPF node labelled $(S,1)$ with children $w_{11}$ and $w_B$,
+and a GSS node, $u_{13}$ labelled 1.
+
+We then apply the reduction $B\pdn \epsilon$ from $u_{12}$ to create
+$u_{14}$ labelled 8. As the edges from $u_{12}$ and $u_{14}$ were
+created by a zero length reduction we do not
+apply any of the non-zero length reductions in state 7 or 8. We apply
+the reduction $B\pdn\epsilon$ to $u_{14}$, creating an edge labelled
+$w_B$ from this node to itself, and the construction process is complete.
+\begin{center}
+\footnotesize
+\input{tut57.pic}
+\end{center}
+
+
+
+To run the parser version of the RNGLR algorithm in \gtb we use the
+method
+\begin{center}\label{p_rnparse}
+\verb+this_derivation := rnglr_parse[my_dfa STRING]+
+\end{center}
+%As a side effect of running the parser a VCG file 
+%\verb+esppf.vcg+ which contains the SPPF is output.
+
+%For example, running the script 
+%\begin{quote}
+%\begin{verbatim}
+%(* ex10 SPPF generation *)
+%S ::=  T B .
+%T ::=  T '+' T | 'a' | 'b' .
+%B ::=  B B | 'c' | # .
+
+%(
+%ex10_grammar := grammar[S]
+
+%ex10_dfa := dfa[nfa[ex10_grammar slr 1 nullable_reductions]]
+
+%this_derivation := rnglr_parse[ex10_dfa "a+b+a"]
+%render[open["ssg.vcg"] this_derivation]
+%)
+%\end{verbatim}
+%\end{quote}
+%generates the following GSS and SPPF
+
+
+%\section{The BRNGLR algorithm}
+
+
+\chapter{Reduction incorporated recognisers}\label{RIGLR}
+
+Although they are relatively efficient, GLR algorithms are at least
+cubic order in worst case. There has been quite a lot of research
+directed towards improving the efficiency of the standard LR parsing
+algorithm by reducing the cost of the stack activity.
+We know that there exist context-free languages that cannot be
+recognised by a finite state automaton, and thus we cannot expect to
+remove the stack completely from the GLR algorithm. However, from
+a theoretical point of view, we only require a stack to deal with
+instances of self embedding, i.e. derivations of the form
+$A\derive\alpha A\beta$ where $\alpha$ and $\beta$ are not $\epsilon$.
+
+This observation forms the basis of a different type of general
+parsing algorithm, initially developed by Aycock and
+Horspool~\cite{AH99}. As this is a tutorial manual we shall not give
+the detailed motivation for this approach in terms of the standard LR
+algorithm, the interested reader can read about this in~\cite{ESAJ02b} or 
+\cite{ESAJ04D}. However, the basic idea can be illustrated 
+as follows.
+
+We use a stack in the standard LR parser so that when we perform a
+reduction we can find the state that we need to trace back to.
+For example, consider the grammar, ex11, 
+$$
+\matrix{
+S&::=&a\ A\ b\ b\ \vert\ c\ A\ b\ d\cr
+A&::=&d\hspace*{\fill}\cr
+}
+$$
+which has LR(1) DFA
+\begin{center}
+{\footnotesize
+\input{tut29.pic}
+}
+\end{center}
+On input $adbb$ we eventually read all the input and have stack
+$$
+0\ \leftarrow\ 2\ \leftarrow\ 4\ \leftarrow\ 5\ \leftarrow\ 6
+$$
+Since $S\pdn aAbb\cdot$ is in state 6, we trace back to state 0
+by popping four symbols off the stack and then we traverse 
+the $S$-transition from state 0 to state 1. 
+
+
+What happens if we extend the LR DFA by adding special reduction transitions
+that move directly from a reduction state to the state that should be
+pushed on to the stack? So, in the above example we would just have a
+reduction transition (a special form of $\epsilon$-transition that does
+not require reading an input symbol)
+from state 6 to state 1. This would mean that we
+did not have to push and pop the intermediate states.
+
+In fact we could put a reduction transition from state 6 to state 1,
+and from state 9 to state 1, without changing the language accepted by
+the resulting PDA. However, there is a problem with the
+reduction associated with state 10. There are two possible paths to
+state 10 and two corresponding states that may need to be traced back
+to, states 4 and 7. 
+\begin{center}
+{\footnotesize
+\input{tut30.pic}
+}
+\end{center}
+We could put reduction transitions in for each of
+these, but when the automaton is in state 10 it would not be possible
+to tell which of the two reduction transitions should be taken.
+The above automaton will incorrectly accept the strings 
+$cabb$ and $abbd$.
+
+The solution is to `multiply out' the nodes, creating one copy of node
+10 for each of the possible paths. 
+We now discuss the details of this approach.
+
+
+\section{Grammars without self-embedding}
+
+A grammar has {\em self embedding} if there is some non-terminal,
+$A$, and strings $\alpha,\beta\not=\epsilon$ such that $A\derive\alpha
+A\beta$.
+
+In this section we discuss the construction of a finite state
+automaton, with special reduction transitions,
+which accepts precisely the language of a grammar provided that the
+grammar does not contain any self embedding.
+
+
+\subsection{Reduction incorporated automata}
+
+We begin not with the LR DFA but with the LR NFA, and add
+reduction transitions from leaves of the tree. Thus,
+initially we construct an intermediate
+automaton, IRIA($\Gamma$), that is similar
+to the LR(0) NFA except that grammar slots can label more that one
+node, and the header nodes are omitted.
+
+Initially we suppose that the grammar does not contain any recursion.
+
+We begin by constructing a node labelled $S'\pdn S\cdot$, this is the
+start node. While the graph has leaf nodes labelled
+$A\pdn\alpha\cdot\beta$ where $\beta\not=\epsilon$, pick such a leaf
+node, $h$ say, and suppose that $\beta=x\beta'$. Create a new node,
+$k$ say, labelled
+$A\pdn\alpha x\cdot \beta'$ and a transition from $h$ to $k$ labelled
+$x$. If $x$ is a non-terminal, then for each rule $x\pdn\gamma$ create
+a new node, $t$ say, labelled $x\pdn\cdot\gamma$ and an
+$\epsilon$-transition from $h$ to $t$.
+\begin{center}
+{\footnotesize
+\input{tut33.pic}
+}
+\end{center}
+
+Once all the leaf nodes have labels of the form $X\pdn\alpha\cdot$,
+we add the reduction transitions.
+For each state, $h$, labelled $X\pdn\alpha\cdot$, 
+where $X\pdn\alpha$ is rule $i$, trace back up the automaton until the
+first node, $k$ say, with a label of the form $Y\pdn\delta \cdot X\sigma$
+is reached. If $t$ is the state such that there is a transition
+labelled $X$ from $k$ to $t$, add a transition labelled $\red i$ from
+$h$ to $t$. 
+\begin{center}
+{\footnotesize
+\input{tut34.pic}
+}
+\end{center}
+
+\vskip.4cm
+\noindent
+This approach
+results in the following FA, IRIA$(\Gamma_{11})$, for ex11 above.
+\begin{center}
+{\footnotesize
+\input{tut31.pic}
+}
+\end{center}
+
+In the case of recursive rules we cannot simply 
+use the multiplying out approach 
+because this would never terminate. So, for recursive instances of
+non-terminals we add an $\epsilon$-edge back to the most recent
+instance of the target item on a path from the start state to the current
+state.
+
+For example, from the recursive
+grammar ex12 given by
+$$
+\matrix{
+1.\ S&::=&Sa&&3.\ A&::=&bA\hspace*{\fill}\cr
+2.\ S&\pdn&A\hspace{\fill}&\qquad&4.\ A&::=&\epsilon\cr
+}
+$$
+we generate the IRIA, IRIA$({\Gamma_{12}})$
+\begin{center}
+{\footnotesize
+\input{tut32.pic}
+}
+\end{center}
+The $\epsilon$-edge from $L$ to $M$ and the corresponding 
+$\red 3$-edge from $N$ to itself arise from the recursive occurrence of $A$
+in the rule $A\pdn bA$.
+
+\vskip.2cm
+For completeness we give the formal IRIA construction algorithm.
+
+\subsection*{IRIA construction algorithm}
+
+{\bf Step 1}: Create a node labelled $S'\pdn\cdot S$.
+
+\vskip.2cm
+\noindent
+{\bf Step 2}: While there are nodes 
+in the FA which are not marked as dealt with, carry out the following:
+
+\begin{enumerate}
+\item
+Pick a node $K$ labelled $(X\pdn\mu\cdot\gamma)$ which is not marked as dealt 
+with.
+
+\item
+If $\gamma\not=\epsilon$ then let $\gamma=x\gamma'$ where 
+$x\in {\bf N}\cup{\bf T}$, 
+create a new node, $M$, labelled $X\pdn \mu x\cdot\gamma'$, and
+add an arrow labelled $x$ from $K$ to $M$. 
+This arrow is defined to be a {\em primary edge}.
+\item
+If $x=Y$, where $Y$ is a non-terminal, for each rule $Y\pdn\delta$
+\begin{enumerate}
+\item
+if there is a node $L$, labelled $Y\pdn\cdot\delta$, and a path $\theta$
+from $L$ to $K$ which consists of only primary edges and primary 
+$\epty$-edges
+($\theta$ may be empty), add an arrow labelled $\epty$ from $K$ to $L$. 
+\item
+if (a) does not hold,
+create a new node with label $Y\pdn\cdot\delta$ 
+and add an arrow labelled $\epty$ from $K$ to this new node.
+This arrow is defined to be a {\em primary $\epty$-edge}.
+\end{enumerate}
+\item
+Mark $K$ as dealt with.
+\end{enumerate}
+
+\vskip.2cm
+\noindent
+{\bf Step 3}: Remove all the `dealt with' marks from all nodes.
+
+\vskip.2cm
+\noindent
+{\bf Step 4}: While there are nodes labelled $Y\pdn\gamma\cdot$ that are not
+dealt with: pick a node $K$ labelled $X\pdn x_1\ldots x_n\cdot$ which is 
+not marked  as dealt with. Let $Y\pdn\gamma$ be rule $i$.
+
+If $X\not= S'$ then find each node $L$ labelled $Z\pdn\delta\cdot X\rho$ 
+such that
+there is a path labelled $(\epty,x_1,\ldots,x_n)$ from $L$ to $K$, then add
+an arrow labelled $\red i$ from $K$ to the child of $L$ labelled 
+$Z\pdn\delta X\cdot\rho$. Mark $K$ as dealt with. 
+The new edge is called a {\em reduction} edge.
+
+\vskip.2cm
+\noindent
+{\bf Step5}: Mark the node labelled $S'\pdn \cdot S$ as the start node and 
+mark the node labelled $S'\pdn S\cdot$ as the accepting node.
+\vskip.2cm
+
+A string is accepted by an IRIA if it is accepted by the automaton in
+the standard way when the $\red i$ transitions are treated as
+$\epsilon$-transitions.
+
+\vskip.2cm
+The following theorem is proved in~\cite{ESAJ04D}.
+\begin{thm}\label{thm2}
+Let $\Gamma$ be a CFG that does not contain any self embedding.
+Then a string, $u$, of terminals is accepted by IRIA$(\Gamma)$ if 
+and only if $u$ is in $L(\Gamma)$.
+\end{thm}
+
+\subsection{IRIA($\Gamma)$ in \gtbs}\label{iriagtb}
+
+In \gtb the construction of the `multiplied out' version of an LR NFA
+is referred to as {\em unrolling}.
+To instruct \gtb to build the IRIA for a grammar, $\Gamma$, we use the
+method
+\begin{center}
+\verb+ my_iria := nfa[my_grammar unrolled 0]+
+\end{center}
+The parameter \verb+lr+ is replaced with the parameter
+\verb+unrolled+. As for LR NFAs, the \verb+nfa+ method augments
+the grammar, if it is not already in augmented form, 
+before building the IRIA.
+
+
+Although the formal version of an IRIA does not include header nodes,
+the \gtb representation does use header nodes, because this allows a
+particularly efficient internal representation. The VCG rendering of
+the IRIA includes the header nodes.
+
+The script
+\begin{quote}
+\begin{verbatim}
+(* ex11  IRIA construction *)
+S ::=  'a' A 'b' 'b' | 'c' A 'b' 'd' .
+A ::=  'd' .
+
+(
+ex11_grammar := grammar[S]
+ex11_iria:= nfa[ex11_grammar unrolled 0]
+render[open["nfa.vcg"] ex11_iria]
+)
+\end{verbatim}
+\end{quote}
+creates the IRIA
+\begin{center}
+\epsfbox{vcg19.ps}\\[2mm]
+\end{center}
+In the VCG graph the $\epsilon$-transitions are red and the reduction
+transitions are blue. An $\epsilon$-transition that returns to an
+existing node because of recursion is green.
+
+The script 
+\begin{quote}
+\begin{verbatim}
+(* ex12 *)
+S ::=  S 'a' | A .
+A ::=  'b' A | # .
+
+(
+ex12_grammar := grammar[S]
+ex12_iria:= nfa[ex12_grammar unrolled 0]
+render[open["nfa.vcg"] ex12_iria]
+)
+\end{verbatim}
+\end{quote}
+creates the IRIA
+\begin{center}
+\epsfbox{vcg20.ps}\\[2mm]
+\end{center}
+
+\vskip.5cm\noindent
+Note: \gtb will construct IRIA($\Gamma$) for any context-free grammar
+$\Gamma$. However, IRIA($\Gamma$) only correctly accepts $L( \Gamma)$
+if $\Gamma$ does not contain any self embedding.
+
+\subsection{Reduction incorporated automata}\label{ria}
+
+The RIGLR algorithm that we shall discuss below is able to correctly
+determine whether or not a string of terminals is accepted by any
+given reduction incorporated automaton. However, the algorithm is more
+efficient if there is less non-determinism in the automaton.
+
+The FAs IRIA$(\Gamma)$ that
+we constructed above are highly non-deterministic. In
+this section we shall consider approaches that reduce the non-determinism
+in IRIA$(\Gamma)$, culminating in the definition of a {\em reduction 
+incorporated automaton} for $\Gamma$.
+
+First we note that IRIA$(\Gamma)$ only ever has input which is a string
+of terminals, thus the transitions labelled with non-terminals can
+be removed once the $\red$-transitions have been constructed. So from
+now on we shall assume that IRIA$(\Gamma)$ has had all the non-terminal
+labelled transitions removed.
+
+A non-deterministic automaton can always be transformed
+in to a deterministic one by applying the standard subset construction.
+In IRIA$(\Gamma)$ the transitions labelled $\red$ consume no input and so
+can be treated as $\epsilon$-transitions from the point of view of the
+subset construction. This is fine if all we want is a recogniser but 
+ultimately we want to produce all the derivations of a sentence $u$ and
+thus we do not want to lose the information about which reductions
+were used. 
+
+We remove from IRIA$(\Gamma)$ the transitions labelled with non-terminals
+and then apply the subset construction
+treating the $\red$-transitions as non-$\epty$ transitions.
+The following automaton is the result of applying this process to
+IRIA($\Gamma_{12}$). 
+\begin{center}
+{\footnotesize
+\input{tut35.pic}
+}
+\end{center}
+
+\vskip.2cm
+As there are no transitions to the start state of IRIA$(\Gamma)$,
+the start state of RIA$(\Gamma)$ is the unique state whose label includes
+the item $S'\pdn \cdot S$. The accepting states are the states whose
+label includes the item $S'\pdn S\cdot$. Note that an RIA can have
+more than one accepting state.
+
+\vskip.2cm
+To construct an RIA using \gtb we apply the subset construction to the
+corresponding IRIA. The required \gtb method call is
+\begin{center}
+\verb+ my_ria := dfa[my_iria]+
+\end{center}
+
+%The script
+%\begin{quote}
+%\begin{verbatim}
+%(* ex11  IRIA construction *)
+%S ::=  'a' A 'b' 'b' | 'c' A 'b' 'd' .
+%A ::=  'd' .
+
+%(
+%ex11_grammar := grammar[S]
+%ex11_iria:= nfa[ex11_grammar unrolled 0]
+
+%ex11_ria:= dfa[ex11_iria]
+%render[open["dfa.vcg"] ex11_ria
+%)
+%\end{verbatim}
+%\end{quote}
+%creates the RIA
+%\begin{center}
+%\epsfbox{vcg21.ps}\\[2mm]
+%\end{center}
+%(NOTE THIS IS THE WRONG FIGURE NEED TO GET THE CORRECT ONE WHEN THE
+%SUBSET CONSTRUCTION IS FIXED.)
+
+\vskip.2cm
+Remember RIA$(\Gamma)$ only accepts precisely $L(\Gamma)$
+if $\Gamma$ does not contain any proper self embedding. In the next section
+we will describe how to deal with grammars which do contain proper
+self embedding.
+
+
+\section{Recursion call automata}\label{rca}
+
+In this section we describe how to build a push down automaton,
+RCA($\Gamma$), for any given context-free grammar, $\Gamma$, that can 
+be used to recognise sentences in $L(\Gamma)$.
+
+We begin by 
+modifying the grammar to remove most of the recursion by creating
+`terminalised' instances, $\rec{A}$, of recursive non-terminals
+(this changes the language generated by the grammar). We then construct
+the RIA for the modified grammar as described in the previous
+sections. We also construct an RIA for each terminalised non-terminal,
+and then call these automata from the main RIA. The automata calls are
+managed using a stack and so the resulting structure is a 
+(non-deterministic) push down automaton.
+
+\subsection{Terminalising a grammar}
+
+Given a grammar, $\Gamma$, our goal is to replace instances of
+non-terminals on the right hand sides of rules with special terminals,
+until the resulting grammar has no self embedding. 
+
+For example, given the grammar ex13
+$$
+\matrix{
+S& ::=& A\ a\lj\cr
+A& ::= & a\ B\ |\ a\cr
+B&::=& A\ c\lj\cr
+}
+$$
+we have that $A\derive aAc$. If we replace the rule
+$B\pdn Ac$ with the rule $B\pdn\rec{A}c$, and treat $\rec{A}$ as a
+terminal, then the derivation is no longer possible. The grammar
+$$
+\matrix{
+S& ::=& A\ a\lj\cr
+A& ::= & a\ B\ |\ a\cr
+B&::=& \rec{A}\ c\lj\cr
+}
+$$
+does not contain self embedding. Notice, this is not the only
+terminalisation that we could have used. The following grammar also
+has no self embedding
+$$
+\matrix{
+S& ::=& A\ a\lj\cr
+A& ::= & a\ \rec{B}\ |\ a\cr
+B&::=& A\ c\lj\cr
+}
+$$
+
+We shall call a grammar that has, possibly, terminalised versions of
+some of its non-terminals a {\em terminalised grammar}. (Note that it
+is possible to terminalise any instance of any non-terminal, even if
+there is no self embedding involved. We may wish to do this because it
+can reduce the size of the final RCA.)
+
+Detecting self embedding in a grammar and determining which
+non-terminals to terminalise is not completely trivial. The GDG,
+see Section~\ref{gdg}, can be used to assist this process as we shall
+discuss in Section~\ref{rcagtb}.
+For now it is sufficient to say that we can construct an RCA from any
+terminalised context-free grammar that does not have self
+embedding, using a process that we shall now describe.
+
+\subsection{RCA($\Gamma$)}
+
+Given a grammar, $\Gamma$, terminalise instances of non-terminals, as
+required, and so that the resulting grammar, $\Gamma_S$ say, has no
+self embedding. We shall call $\Gamma_S$ a {\em derived grammar}.
+
+For each non-terminal, $A\not= S$, such that $\Gamma_S$ contains at least one
+terminalised instance of $A$, 
+construct the grammar $\Gamma_A$ that
+has the same rules as $\Gamma_S$ but start symbol $A$.
+
+Construct RIA($\Gamma_S$) and construct RIA($\Gamma_A$) for each
+terminalised non-terminal $A$, ensuring that all the states in all the
+automata have different numbers.
+
+For example, for the terminalised grammar, $\Gamma_S$,
+$$
+\matrix{
+S& ::=& A\ a\lj\cr
+A& ::= & a\ B\ |\ a\cr
+B&::=& \rec{A}\ c\lj\cr
+}
+$$
+we have the following RIAs,
+\begin{center}
+{\footnotesize
+\input{tut36.pic}
+}
+\end{center}
+\vskip.2cm
+\begin{center}
+{\footnotesize
+\input{tut37.pic}
+}
+\end{center}
+
+To combine the RIAs into a push down automaton, RCA($\Gamma$),
+that recognises $L(\Gamma)$
+we replace transitions labelled with a terminalised non-terminal,
+$\rec{A}$, with a call to the corresponding RIA, RIA($\Gamma_A$).
+When RIA($\Gamma_A$) has matched an appropriate part of the input then we
+need to return to the next state in the calling automaton, and
+continue to match the rest of the string. Thus we replace each
+transition labelled $\rec{A}$ with a transition to the start state of
+RIA($\Gamma_A$) and push the target of the $\rec{A}$-transition on to a
+stack. Thus we label the new transition $p(k)$, where $k$ is the
+target of the $\rec{A}$-transition. These new transitions are
+$\epsilon$-transitions in the sense that they do not consume any of
+the input string, but they have an associated stack action.
+The accepting states of the automata RIA($\Gamma_A$) are labelled as
+pop states in the RCA. (If $\Gamma_S$ contains $\rec{S}$ then
+the accepting state of the RCA is also a pop state.)
+
+We call such a PDA a {\em recursion call automaton} (RCA).
+
+The PDA, RCA($\Gamma_{13}$) constructed from the derived grammar 
+$\Gamma_S$ of the grammar ex13 above is
+\vskip.2cm
+\begin{center}
+{\footnotesize
+\input{tut38.pic}
+}
+\end{center}
+
+\subsection{Traversing an RCA}
+We traverse an RCA with an input string $u$ as follows. We begin in
+the start state with an empty stack and read the first input
+symbol. At each step in the traversal we will be in a current state,
+$h$ say, with a current stack and have read the current input symbol,
+$x$ say. 
+
+\begin{itemize}
+\item
+If $h$ has a transition labelled $x$ to state $k$, say, then we may
+choose to move to state $k$ and read the next input symbol.
+\item
+If $h$ has a transition labelled $\red i$ to state $k$, say, then we may
+choose to move to state $k$, without reading the next input symbol.
+\item
+If $h$ has a transition labelled $p(t)$ to a state $k$, say, then we
+may choose to push $t$ on to the stack and move to state $k$, without
+reading the next input symbol. 
+\item
+If $h$ is labelled as a pop state then we
+may choose to pop the top symbol, $t$ say, off the stack and move to state
+$t$, without reading the next input symbol. 
+\item
+If $h$ is the RCA accepting state and $x$ is the end of string symbol,
+$\$$, then we may choose to terminate the traversal and report
+success.
+\item
+If none of the above actions is possible then we terminate the
+traversal and report failure.
+\end{itemize}
+
+Of course it is possible for the RCA to be non-deterministic, i.e. that
+more than one of the above actions is possible at some step.
+Thus we need an algorithm that computes all possible traversals on a
+given input string, the equivalent of Tomita's algorithm for LR
+automata. We shall discuss such an algorithm in Section~\ref{riglr},
+but first we describe the construction of RCAs in \gtbs.
+
+\subsection{Constructing RCAs in \gtbs}\label{rcagtb}
+
+We have already discussed, in Sections~\ref{iriagtb} and \ref{ria}, 
+the generation of RIAs in \gtbs. To construct an RCA for a grammar
+$\Gamma$, \gtb needs to construct the desired terminalised grammar,
+$\Gamma_S$, from which it can then build the required RIAs.
+
+There are two possible approaches. The user can specify the instances
+of non-terminals that are to be terminalised to construct $\Gamma_S$,
+or $\gtb$ can identify instances of self embedding and automatically
+introduce terminalisations until the resulting grammar does not
+contain self embedding. In this section we describe the former
+approach. In a later section we shall discuss the automatic generation
+of $\Gamma_S$.
+
+\gtb allows the user to mark instances of non-terminals in a grammar as
+`to be replaced with a terminalised version' for an RIGLR parser. We use
+\verb+~+ to mark the non-terminals.
+
+For example, \gtb accepts the script
+\begin{quote}
+\begin{verbatim}
+(* ex13  terminalising a grammar *)
+S ::=  A 'a' .
+A ::=  'a' B | 'a' .
+B ::= ~A 'c' .
+
+(
+ex13_grammar := grammar[S]
+)
+\end{verbatim}
+\end{quote}
+
+The method
+\verb+grammar[S]+ ignores the \verb+~+ annotations and treats an instance
+of \verb+~A+ as though it were just \verb+A+. Thus all of the
+previously described behaviour of \gtb is unchanged by the inclusion
+of the \verb+~+ annotations. This is to make it possible to run the GLR
+algorithms on exactly the same input grammars as the RIGLR algorithms.
+
+We can terminalise a grammar, replacing each instance \verb+~A+ with a
+pseudo terminal called \verb+A!tilde+ by \gtbs, using the method
+\begin{center}\label{p_tld}
+\verb+terminalise_grammar[my_grammar]+
+\end{center}
+In order
+for \gtb to use the terminalisation notation the \verb+grammar+ method
+needs to have the \verb+tilde_enabled+ option set. 
+\begin{center}
+\verb+grammar[start_symbol tilde_enabled]+
+\end{center}
+This ensures that
+\gtb includes the terminalised non-terminals in the list of grammar
+symbols when the grammar is built.
+Running the script
+\begin{quote}
+\begin{verbatim}
+(* ex13  terminalising a grammar *)
+S ::=  A 'a' .
+A ::=  'a' B | 'a' .
+B ::= ~A 'c' .
+
+(
+ex13_grammar := grammar[S tilde_enabled]
+terminalise_grammar[ex13_grammar terminal]
+write[ex13_grammar]
+
+iria_S := nfa[ex13_grammar unrolled 0]
+render[open["nfa.vcg"] iria_S]
+)
+\end{verbatim}
+\end{quote}
+builds the IRIA
+\begin{center}
+\epsfbox{vcg23.ps}\\[2mm]
+\end{center}
+and causes the following to be printed on the screen
+{\small
+\begin{verbatim}
+Terminalising A
+
+Grammar report for start rule S
+Grammar alphabet
+   0 !Illegal
+   1 #
+   2 $
+   3 'A!tilde'
+   4 'B!tilde'
+   5 'S!tilde'
+   6 'a'
+   7 'c'
+-------------
+   8 A
+   9 B
+  10 S
+
+Grammar rules
+A ::= 'a' B[0] |
+       'a' .
+B ::= ~'A!tilde' 'c' .
+S ::= A[0] 'a' .
+
+End of grammar report for start rule S
+\end{verbatim}
+}%$
+
+The original grammar, \verb+grammar_S+ has been mutated into a new
+grammar in which one of the instances of the non-terminal $A$ has been
+replaced by a new terminal \verb+A!tilde+.
+
+Since the grammar as been mutated the original unterminalised grammar is
+lost. To reconstruct it, to mutate the grammar back to its original
+form, we use the \verb+nonterminal+ option with the \verb+terminalise_grammar+
+function.
+\begin{center}
+\verb+my_grammar := terminalise_grammar[my_grammar nonterminal]+
+\end{center}
+The corresponding option to terminalise a grammar is \verb+terminal+ and 
+this is the default.
+
+
+\section{The RIGLR algorithm}\label{riglr}
+
+The RIGLR algorithm takes as input an RCA for a grammar $\Gamma$ and a 
+string $u=a_1\ldots a_d$ and it traverses the RCA using $u$. 
+The algorithm accepts 
+$u$ if it is a sentence in $\Gamma$ and rejects $u$ otherwise.
+
+The algorithm starts in the RCA start state and at each step $i$ it
+constructs the set $U$  of all RCA states that can be reached on reading
+the input $a_1\ldots a_{i}$.
+When a push transition is traversed the return state is pushed onto
+the stack. The stacks are combined into a graph structured stack 
+called the {\em call graph} and each state in $U$ is recorded with the node
+in the call graph that corresponds to the top of the associated
+stack.
+
+We use a slightly modified version of the algorithm that incorporates
+some lookahead. The lookahead is similar to that used in the SLR(1)
+version of the GLR algorithms. We only perform a push action to the
+automaton for $A$ if the next input symbol is in $\first(A)$, or 
+$\follow(A)$ if $A\derive\epsilon$. Also, we only traverse a reduction
+transition if the next input symbol is in $\follow(A)$ where $A$ is
+the left hand side of the reduction rule, and we only perform a pop
+action from the automaton for $A$ if the next input symbol is in
+$\follow(A)$.
+
+
+For example, consider the simple grammar ex14
+$$
+\matrix{
+S &::=& a\ \rec{S}\ B\ a\ |\ c\cr
+B&::=& b\ |\ \epsilon\lj\cr
+}
+$$
+which has RCA
+\begin{center}
+{\footnotesize
+\input{tut61.pic}
+}
+\end{center}
+and consider the input string $aacbaa$.
+
+We begin by creating a base node, $v_0$, in the call graph labelled
+$-1$ and start in the start state 0. Thus we have
+$$
+U=\{(0,v_0)\}
+$$
+The only action is to read the next input symbol, $a$, and move to
+state 2, starting the next step. We then perform the push action, 
+create a new call graph node,
+$v_1$ labelled 4, and move to state 0.
+\begin{center}
+{\footnotesize
+\input{tut62.pic}
+}
+\end{center}
+Reading the next input symbol, $a$, from the process $(0,v_1)$ we move to
+state 2, and from here we perform the push action, creating a new call
+graph node $v_2$.
+\begin{center}
+{\footnotesize
+\input{tut63.pic}
+}
+\end{center}
+We then read the next input symbol, $c$, and from the process
+$(0,v_2)$ we move to
+state 3. From state 3 we traverse the reduction transition to state 1
+and we perform the pop action. In the latter case we pop the top
+element, 4 the label of $v_2$, and we move to state 4. The top of the
+stack is now the child of $v_2$, $v_1$. We do not traverse the
+reduction transition from state 5 because the next input symbol, $b$,
+is not in $\follow(B)$.
+$$
+U=\{(3,v_2),\ \ (1,v_2),\ \ (4,v_1)\}
+$$
+The next input symbol is $b$ and from state 4 we can move to state 6
+and then, via the reduction transition, to state 5. From $(5,v_1)$,
+reading the next input symbol $a$, we move to state 7. We can traverse
+the reduction transition to state 1 and perform
+the pop action, creating the process $(4,v_0)$, and then the reduction
+transition from state 4 to state 5.
+$$
+U=\{(7,v_1),\ \ (1,v_1),\ \ (4,v_0),\ \ (5,v_0)\}
+$$
+Reading the last input symbol, $a$, we move from state 5 to state 7.
+We can traverse the reduction to state 1 but, as $v_0$ is the base of
+the stack, no pop action can be performed.
+$$
+U=\{(7,v_0),\ \ (1,v_0)\}
+$$
+The traversal is now complete and one of the current positions,
+$(1,v_0)$,
+is the accepting state and the empty stack. Thus the input string is
+(correctly) accepted.
+
+
+\vskip.5cm
+To run the RIGLR algorithm in \gtb we use the method
+\begin{center}\label{p_rirec}
+\verb+ri_recognise[my_grammar STRING]+
+\end{center}
+This method takes a grammar with terminalisation annotation, 
+generates the structures needed for an RIGLR recogniser as described
+above, and then runs the recogniser on the specified STRING.
+
+For example, running the script
+\begin{quote}
+\begin{verbatim}
+(* ex14 the RIGLR algorithm *)
+S ::=  'a' ~S B 'a' | 'c' .
+B ::=  'b' | # .
+
+(
+ex14_grammar := grammar[S tilde_enabled]
+ri_recognise[ex14_grammar "aacbaa"]
+)
+\end{verbatim}
+\end{quote}
+generates the following output.
+
+{\small
+\begin{verbatim}
+Terminalising S
+
+******: RIGLR recognise: 'aacbaa'
+******: RIGLR recognise: accept
+Call graph has 3 nodes and 2 edges
+\end{verbatim}
+}%$
+
+
+\section{Terminalising a grammar}
+
+We now return to the issue of terminalising a grammar so that all the
+self embedding is removed. 
+In general there will be different terminalisation possibilities that 
+we could choose. We call a set of instances of non-terminals
+which have been replaced with pseudo-terminals to remove self
+embedding a {\em terminalisation} of the grammar. A terminalisation 
+is {\em minimal} if no proper subset of it is also a terminalisation.
+
+The problem that has to be addressed is how to identify minimal 
+terminalisations. The GDG constructed by \gtb has been designed to 
+facilitate this process.
+Recall from Section~\ref{gdg} that the GDG for a grammar, $\Gamma$, is
+a graph with nodes labelled with each of the non-terminals of $\Gamma$
+such that there is an edge from $A$ to $B$ if $B$ appears on the right
+hand side of the grammar rule for $A$. 
+
+The edge from $A$ to $B$ is labelled $R$ (for non-trivial right context) 
+if there is a rule $A\pdn\alpha B\beta$ such that
+$\beta\not=\epsilon$ and the edge is labelled $L$ 
+(for non-trivial left context) if there is a rule 
+$A\pdn\sigma B\tau$ such that $\sigma\not=\epsilon$. 
+
+A {\em path of length $k$} in a graph is a sequence of nodes
+$(N_1,\ldots,N_{k+1})$ such that there is an edge from $N_i$ to $N_{i+1}$,
+for $1\leq i\leq k$, and a {\em cycle} (from $N_1$ to itself)
+is a path $(N_1,\ldots, N_k, N_1)$, of length at least 1,
+such that $N_i=N_j$ if and only if $i=j$.
+Then a non-terminal $A$ is recursive if and only if there is a cycle
+in the GDG from $A$ to itself.
+
+The non-terminal
+$A$ is self embedding if and only if there is a path in the GDG
+from $A$ to itself that contains at least one edge labelled $L$ and at
+least one edge labelled $R$. We call such paths 
+{\em LR-paths}. Similarly, we call a path that contains at least one L
+(R) edge an L-(R-)path. (So every LR-path is also an L-path and
+an R-path.) To determine whether a non-terminal
+$A$ is self embedding we can find all the edges in the GDG that lie on
+any path from $A$ to itself and look at their labels.
+Finding all such edges is called {\em strongly connected component
+analysis}.
+
+\subsection{Strongly connected components}
+
+A graph is said to be {\em strongly connected} if there is a path from any
+node to any other node in the graph.
+
+For any graph and any node $A$ in the graph we can form the strongly
+connected component containing $A$. We take $A$ and all the nodes that
+are on any path from $A$ to itself. We then form a subgraph by taking
+these nodes and all the edges from the original graph between these
+nodes.
+
+Formally we partition the set of nodes of a graph into subsets, two
+nodes $A$ and $B$ are in the same subset if and only if there is path
+from $A$ to $B$ and a path from $B$ to $A$. We turn the each set
+in the partition in to a graph by adding an edge from $A$ to $B$
+if $A$ and $B$ are in the same partition and if there was an edge from
+$A$ to $B$ in the original graph. The subgraphs constructed in this
+way are all strongly connected and they are called the {\em strongly
+connected components} (SCCs) of the graph.
+
+For example, the grammar ex15
+$$
+\matrix{
+S&\pdn & A\ B\ A\ a\ |\ B\ d\lj\cr
+A&\pdn& E\ a\ |\ b\ |\ C\ S\ C\ |\ a\ S\ b\ |\ \epsilon\cr
+B&\pdn& b\ a\ A\ B\ |\ A\lj\cr
+C&\pdn& D\ a\ |\ a\lj\cr
+D&\pdn& C\ |\ F\lj\cr
+E&\pdn&d\ A\lj\cr
+F&\pdn&a\lj\cr
+}
+$$
+has GDG 
+\begin{center}
+{\footnotesize
+\input{tut39.pic}
+}
+\end{center}
+which in turn has two strongly connected components.
+\begin{center}
+{\footnotesize
+\input{tut40.pic}
+}
+\end{center}
+
+
+
+In order to remove recursion, we need to identify cycles in the SCCs
+and then remove an edge from each cycle, by terminalising the 
+corresponding instance(s)
+of the non-terminal which is the target of the edge.  
+
+
+
+\subsection{Finding terminalisation sets}\label{basic}
+
+Any LR-path from a node to itself in a GDG is contained in a maximal SCC,
+and thus we begin by using Tarjan's algorithm, as above, to find the SCCs.
+
+Each SCC that contains at least one edge labelled $L$ and at least one
+edge labelled $R$ is then considered. 
+In any terminalisation all of the L-cycles or all of the
+R-cycles must have been removed, and once all of the L-cycles
+(or R-cycles) have been removed there can be no remaining self
+embedding. Thus to find precisely all the minimal
+terminalisations we run the process twice, once to find all possible
+minimal terminalisations that can be obtained by removing edges from
+every L-cycle and then again to find the minimal terminalisations 
+by removing edges from every R-cycle. (Of course, the two processes
+will find many of the same terminalisations.)
+In the rest of this discussion we shall describe the process of
+generating terminalisations by removing L-cycles, the process for
+R-cycles is identical except that only R-cycles are considered.
+
+We illustrate the process using the following grammar, ex16, 
+as a running example.
+
+$$
+\matrix{
+S &::=& A \hspace*{\fill}& C &::=& a\ D\hspace*{\fill}\cr
+A &::=& E\ E\ B\ C\ \hspace*{\fill} &D &::=& C\ D\ a\ |\ \epsilon\cr
+B &::=& a\ A\ E\ a\ |\ \epsilon\qquad&E &::=& A\ S\ |\ \epsilon
+\hspace*{\fill}\cr
+}
+$$
+
+The grammar has GDG
+\begin{center}
+{\footnotesize
+\input{tut58.pic}
+}
+\end{center}
+
+First we run Tarjan's algorithm.
+Since we are removing L-cycles, all L-loops (L-edges from a node to
+itself) must be included in any terminalisation and no other loops are
+of interest. To reduce the size of the SCC's we remove all loops.
+For the above example this gives the following
+two LR-SCC's.
+\begin{center}
+{\footnotesize
+\input{tut59.pic}
+}
+\end{center}
+
+We then consider each LR-SCC in turn.
+
+We begin by finding all the cycles, and then we consider all the
+L-cycles. For the first SCC in our example this results
+in five L-cycles.
+\begin{center}
+{\footnotesize
+\input{tut60.pic}
+}
+\end{center}
+
+
+Once all the cycles have been found, the basic algorithm works
+recursively down the list of cycles choosing one edge from each cycle
+to form each terminalisation set in turn. Of course this approach will produce
+many terminalisation sets that are not minimal as well as all the minimal
+ones. As a first step towards efficiency, as each cycle is considered
+the algorithm checks to see if the terminalisation set already contains an edge
+from this cycle, and if it does then the cycle is skipped.
+
+For example, with the above cycles
+we could choose $(S,A)$ from the first cycle, $(A,E)$ from the second
+cycle, then nothing more from the third cycle because we already have
+$(S,A)$, then $(A,B)$ from the fourth cycle and nothing from the fifth
+cycle. This gives us the following terminalisation set
+$$
+\{(S,A)\quad (A,E)\quad  (A,B)\}
+$$
+
+We then back track to the fourth cycle and choose $(B,E)$ instead of
+$(A,B)$. This time we have to choose an edge from the fifth cycle,
+thus we get two terminalisation sets
+$$
+\{(S,A)\quad (A,E)\quad  (B,E)\quad  (A,B)\}\qquad\qquad
+\{(S,A)\quad (A,E)\quad  (B,E)\quad  (B,A)\}\qquad\qquad
+$$
+
+Carrying on in this way we find that the algorithm constructs the
+following sequence of terminalisation sets, from which
+repeated ones have been removed.
+(The actual list of terminalisations constructed before the test for
+subsets will depend on the order in which the cycles are visited.)
+$$
+\begin{tabular}{ll}
+\{(S,A)\quad (A,E)\quad  (E,A)\quad  (A,B)\}\qquad\qquad&
+\{(S,A)\quad (A,E)\quad  (E,A)\quad  (B,A)\}\\
+\{(S,A)\quad (E,A)\quad  (A,B)\}& 
+\{(S,A)\quad (E,A)\quad  (B,A)\}\\
+\{(A,B)\quad (A,E)\}& 
+\{(A,B)\quad (E,A)\quad  (A,E)\}\\
+\{(A,B)\quad (E,A)\quad  (E,S)\}&
+\{(B,E)\quad (A,E)\quad (A,B)\}\\
+\{(B,E)\quad (A,E)\quad  (B,A)\}&
+\{(B,E)\quad (E,A)\quad (S,A)\quad (A,B)\}\\
+\{(B,E)\quad (E,A)\quad (S,A)\quad (B,A)\}&
+\{(B,E)\quad (E,A)\quad (A,E)\quad (A,B)\}\\
+\{(B,E)\quad (E,A)\quad (A,E)\quad (B,A)\}&
+\{(B,E)\quad (E,A)\quad (E,S)\quad (A,B)\}\\ 
+\{(B,E)\quad (E,A)\quad (E,S)\quad (B,A)\}&
+\{(E,S)\quad (A,E)\quad  (B,E)\quad (A,B)\}\\
+\{(E,S)\quad (A,E)\quad  (B,E)\quad (B,A)\}&
+\{(E,S)\quad (A,E)\quad  (E,A)\quad (A,B)\}\\
+\{(E,S)\quad (A,E)\quad  (E,A)\quad (B,A)\}&
+\{(E,S)\quad (E,A)\quad  (A,B)\}\\
+\{(E,S)\quad (E,A)\quad  (B,A)\}\\
+\end{tabular}
+$$
+
+We then remove the non-minimal sets by removing any set which has one
+of the other sets as a proper subset.
+
+For our running example this results in the following six sets.
+$$\begin{tabular}{ll}
+&\{(S,A)\quad (E,A)\quad  (A,B)\}\\
+&\{(S,A)\quad (E,A)\quad  (B,A)\}\\
+&\{(A,B)\quad (A,E)\}\\
+&\{(B,E)\quad (A,E)\quad  (B,A)\}\\
+&\{(E,S)\quad (E,A)\quad  (A,B)\}\\
+&\{(E,S)\quad (E,A)\quad  (B,A)\}\\
+\end{tabular}
+$$
+
+
+We then repeat the process for the R-cycles. Once the terminalisations
+for R-cycles are constructed we run a final test to see whether any of
+the L-terminalisations are subsets of the R-terminalisations, or vice
+versa. Then the resulting sets are the minimal terminalisations for the
+SCC.
+
+In our example the
+R-cycles are the same as the L-cycles so no additional terminalisation
+sets are created.
+
+We then compute the terminalisation sets for the other SCC's, and
+combine them to form terminalisation sets for the whole grammar.
+
+In our example the other SCC has two minimal 
+terminalisations 
+$$
+\{(C,D), (D,D)\}\qquad\qquad\{(D,C), (D,D)\}
+$$
+
+
+
+%\subsection{
+%Pruning the search space -- testing for minimality during
+%construction}\label{minimality}
+%To address this issue we use an
+%additional test that is carried out as each element is added
+%to a potential terminalisation set. The aim is to
+%filter out non-minimal sets where possible as they are being
+%constructed.
+%
+%Each time a new element is added to the terminalisation set, $B$ say,
+%being constructed we check to see if any of the
+%currently constructed terminalisation sets is a subset of $B$. If we find a
+%subset then the construction procedure is terminated, $B$ is not
+%minimal. If the construction of $B$ is completed then we have a new
+%terminalisation set. This set is tested against all the existing 
+%terminalisation sets
+%and any that are supersets of $B$ are deleted. The subset testing
+%truncates the search, and the superset testing keeps the number of
+%current terminalisation sets low, speeding up the subset testing.
+%When the construction is complete only minimal terminalisation sets will be
+%left, so the final filtering step is not needed.
+%
+%Of course we have added a considerable overhead to the algorithm in
+%that every time an element is added to the terminalisation set currently being
+%constructed the existing terminalisation sets are tested for inclusion. 
+%It is reasonable to ask whether the reduction in
+%searching generated by truncating the construction of supersets of
+%existing terminalisation sets offsets the subset testing overhead.
+
+%In fact the efficiency gains are significant.
+
+\subsection{Terminalising a grammar using \gtbs}
+
+\gtb supports user-defined grammar terminalisation by performing
+GDG analysis that identifies the strongly connected components.
+The terminalisation analysis is performed by issuing the method call
+\begin{center}\label{p_gdganl}
+\verb+
+cycle_break_sets[my_gdg]+
+\end{center}
+It uses Tarjan's algorithm~\cite{TARJAN72} on the initial GDG and,
+as a side effect,
+\gtb creates a new version of the GDG in which the nodes in each
+equivalence class and the edges between them are identified,
+the nodes in
+equivalence classes of greater than one element are all coloured the
+same colour, and the edges between nodes in the same equivalence class
+have class 1 or 3. The class 2 edges can be hidden in VCG allowing the 
+non-trivial strongly connected components to be viewed directly.
+In addition, the set of minimal terminalisation sets for each SCC is output to
+the screen. The edges in the sets are listed by number and these numbers
+are displayed in the \verb+gdg.vcg+ file.
+
+Consider the following example, ex16,
+\begin{quote}
+\begin{verbatim}
+(* ex16  removing self embedding *)
+S ::= A .
+A ::= E E B C .
+B ::= 'a' A E 'a' | # .
+C ::= 'a' D .
+D ::= C D 'a' | # .
+E ::= A S | # .
+
+(
+ex16_grammar := grammar[S] 
+ex16_gdg := gdg[ex16_grammar]
+
+cycle_break_sets[ex16_gdg]
+render[open["gdg.vcg"] ex16_gdg]
+)
+\end{verbatim}
+\end{quote}
+When this script is run the following output is generated.
+(More detailed information can be obtained by setting
+\verb+gtb_verbose+ to true.)
+{\small
+\begin{verbatim}
+Break sets for partition 1
+0: {6, 8} cardinality 2
+1: {7, 8} cardinality 2
+
+Break sets for partition 2
+0: {1, 2} cardinality 2
+2: {2, 9, 10} cardinality 3
+3: {2, 9, 11} cardinality 3
+5: {1, 4, 5} cardinality 3
+10: {4, 9, 10} cardinality 3
+11: {4, 9, 11} cardinality 3
+\end{verbatim}
+}
+
+After the analysis the GDG looks
+similar to the original GDG but nodes $S$, $B$, $A$
+and $E$ are coloured the same colour as each other, and so are
+nodes $C$ and $D$. 
+Within the VCG tool there is a `Folding' option which allows nodes and
+edges to be combined and hidden. (In the Windows version of VCG there
+is a Folding option on the task bar.) Under Folding is an
+option to Expose/Hide edges. If this option is selected and used to
+Hide the class 2 edges then the following graph is displayed
+\begin{center}
+\epsfbox{vcg28.ps}\\[2mm]
+\end{center}
+
+Choosing the terminalisation set 
+$\{6,8\}\cup\{2,3\}$, we use the GDG to find the corresponding slots
+in the grammar and introduce the associated terminalisation to the grammar.
+\begin{quote}
+\begin{verbatim}
+(* ex16 *)
+S ::= A .
+A ::= ~E ~E ~B C .
+B ::= 'a' A E 'a' | # .
+C ::= 'a' ~D .
+D ::= C ~D 'a' | # .
+E ::= A S | # .
+
+(
+ex16_grammar := grammar[S] 
+terminalise_grammar[ex16_grammar terminal]
+
+ex16_gdg := gdg[ex16_grammar]
+cycle_break_sets[ex16_gdg]
+render[open["gdg.vcg"] ex16_gdg]
+)
+\end{verbatim}
+\end{quote}
+
+Running this script we see that the terminalised grammar has no
+non-trivial strongly connected components, and hence no self embedding.
+\begin{center}
+\epsfbox{vcg29.ps}\\[2mm]
+\end{center}
+
+
+\subsection{Pruning the search space}
+In some cases the number of interim terminalisation sets
+constructed prior to the minimality testing is very large.
+Furthermore, for some grammars the number of cycles, and the final number of
+minimal terminalisation sets, means that the prospect of finding all
+minimal terminalisation sets is impractical.
+
+We can get \gtb to list the interim terminalisation sets by stopping
+the analysis before the minimality testing step.
+We do this using the \verb+retain_break_sets+ option.
+\begin{center}
+\verb+
+cycle_break_sets[my_gdg retain_break_sets]+
+\end{center}
+(The option to do the minimality testing is
+\verb+prune_break_sets_by_table+, which is the default option.)
+
+Running the script 
+\begin{quote}
+\begin{verbatim}
+(* ex16 *)
+S ::= A .
+A ::= E E B C .
+B ::= 'a' A E 'a' | # .
+C ::= 'a' D .
+D ::= C D 'a' | # .
+E ::= A S | # .
+
+(
+ex16_grammar := grammar[S] 
+ex16_gdg := gdg[ex16_grammar]
+
+cycle_break_sets[ex16_gdg retain_break_sets]
+)
+\end{verbatim}
+\end{quote}
+generates the following output
+{\small
+\begin{verbatim}
+Break sets for partition 1
+0: {6, 8} cardinality 2
+1: {7, 8} cardinality 2
+
+Break sets for partition 2
+0: {1, 2} cardinality 2
+1: {1, 2, 9} cardinality 3
+2: {2, 9, 10} cardinality 3
+3: {2, 9, 11} cardinality 3
+4: {1, 2, 4} cardinality 3
+5: {1, 4, 5} cardinality 3
+6: {1, 2, 4, 9} cardinality 4
+7: {1, 4, 5, 9} cardinality 4
+8: {1, 4, 9, 10} cardinality 4
+9: {1, 4, 9, 11} cardinality 4
+10: {4, 9, 10} cardinality 3
+11: {4, 9, 11} cardinality 3
+\end{verbatim}
+}
+
+In the case where the number of interim sets is very large we can
+reduce the search space by only looking for sets of size less than
+some specified value $N$ say. The effect of this is that \gtb stops
+attempting to construct each terminalisation set at the point where
+the $(N+1)$st element is about to be added.
+We achieve this using a third parameter to the analysis function
+\begin{center}
+\verb+
+cycle_break_sets[my_gdg retain_break_sets 2]+
+\end{center}
+(To compute all the terminalisation sets we set the parameter to 0,
+which is the default option.)
+
+For example, running the script 
+\begin{quote}
+\begin{verbatim}
+(* ex16 *)
+S ::= A .
+A ::= E E B C .
+B ::= 'a' A E 'a' | # .
+C ::= 'a' D .
+D ::= C D 'a' | # .
+E ::= A S | # .
+
+(
+ex16_grammar := grammar[S] 
+ex16_gdg := gdg[ex16_grammar]
+
+cycle_break_sets[ex16_gdg retain_break_sets 2]
+)
+\end{verbatim}
+\end{quote}
+generates the following output
+{\small
+\begin{verbatim}
+Break sets for partition 1
+0: {6, 8} cardinality 2
+1: {7, 8} cardinality 2
+
+Break sets for partition 2
+0: {1, 2} cardinality 2
+Break set cardinality limit of 2 triggered: terminating
+\end{verbatim}
+}
+
+%\subsection{Automated grammar terminalisation}
+
+%In general there are many different choices non-terminalisation that
+%yield grammars with no self embedding. Furthermore, additional
+%instances of non-terminals may be terminalised to reduce the size of
+%the final RCA (although this will potentially increase the level of
+%run time stack activity). Thus we expect that users will want to
+%choose their own particular terminalisations and, as described above,
+%we have provided support within \gtb for them to do this.
+
+%However, it is also possible to instruct \gtb to automatically
+%introduce terminalisations to a grammar in a way that ensures that the
+%final grammar has no self embedding. Thus the RIGLR algorithm can be
+%run in \gtb on any context free grammar without the need for the user
+%to check for, and terminalise, instances of self embedding.
+
+
+%....
+
+\section{Aycock and Horspool's approach}
+
+The RIGLR algorithm is based on work done by Aycock and
+Horspool~\cite{AH99}. However, Aycock and Horspool's construction is
+slightly different. They construct an automaton based on a trie
+constructed from the `handles' of a terminalised version of the input
+grammar. This method requires the grammar to have terminalised so that
+all recursion except for non-hidden left recursion has been removed. 
+Aycock and Horspool also give a different algorithm for computing all
+the traversals of an automaton. However, their algorithm is only
+guaranteed to terminate if the original grammar did not contain any
+hidden left recursion. Of course, the RIGLR algorithm can be used on
+Aycock and Horspool style automata, and the RIGLR will work correctly
+on all context free grammars. To allow Aycock and Horspool's automata
+and algorithm to be studied and compared to other algorithms, \gtb
+supports the construction of Aycock and Horspool trie based automata.
+
+In this section we shall describe the trie based automata and their
+construction using \gtbs.
+
+\subsection{Left contexts and prefix grammars}\label{ex15}
+
+The standard LR(0) parser identifies strings of the form
+$\alpha\beta$, where $\beta$ is the right
+hand side of a grammar rule and there is a right-most derivation
+$S\rmderive{rm}\alpha\beta w$, for some string of terminals $w$.
+The strings $\beta$ are often called {\em handles} and the string
+$\alpha$ is called a {\em left context} of $\beta$. An LR(0) parser
+identifies a handle, and having identified a handle replaces it
+with the left hand side of the corresponding grammar rule.
+The set of strings $\alpha\beta$ as described above is the
+language accepted by the LR(0) DFA of the grammar.
+
+Aycock and Horspool's automaton is constructed by taking all the
+strings in the language of the LR(0) DFA and forming a {\em
+trie} from them. When the trie has been constructed, reduction
+transitions are added, the non-terminal transitions are removed, and
+transitions labelled with terminalised non-terminals are replaced with
+calls to a trie constructed from that non-terminal.
+
+In order to build the trie it is necessary for the language of the
+LR(0) DFA to be finite, and this is the case if and only if the
+grammar contains no recursion other than non-hidden left recursion.
+
+To construct the language of an LR(0) DFA, we use what we call a
+{\em prefix grammar}. We augment the original grammar with a
+non-terminal $S'$ and then for each non-terminal $A$, including $S'$, we
+create a corresponding non-terminal, $[A]$ in the prefix grammar.
+The terminals of the prefix grammar are the terminals and
+non-terminals of the original grammar. The rules of the prefix grammar
+are constructed as follows. There is always a rule
+$$
+[S']\pdn \epsilon
+$$
+and for each instance of a non-terminal, $B$ say, on the right hand side of a
+rule $A\pdn \gamma B\delta$ in the original grammar, where $A$ is 
+reachable,~\footnote{A symbol $x$ is reachable if $S\derive\tau
+x\sigma$ for some $\tau$ and $\sigma$.} there is a rule
+$$
+[B]\pdn [A]\gamma
+$$
+in the prefix grammar. The prefix grammar, $P\Gamma$, has the property
+that $L([A])$, the language generated by the non-terminal $[A]$, is
+precisely the set of left contexts of $A$. I.e. the set of $\alpha$ such
+that $S\rmderive{}\alpha A w$ for some string of terminals $w$.
+
+For example, consider the following terminalised version of ex15, 
+from which we have also removed the right recursion in $B$.
+$$
+\matrix{
+S&\pdn & A\ B\ A\ a\ |\ B\ d\lj\cr
+A&\pdn& \rec{E}\ a\ |\ b\ |\ C\ \rec{S}\ C\ |\ a\ \rec{S}\ b\ |\ \epsilon\cr
+B&\pdn& b\ a\ A\ \rec{B}\ |\ A\lj\cr
+C&\pdn& \rec{D}\ a\ |\ a\lj\cr
+D&\pdn& C\ |\ F\lj\cr
+E&\pdn&d\ A\lj\cr
+F&\pdn&a\lj\cr
+}
+$$
+(Notice that the non-terminals $D$, $E$ and $F$ are unreachable in
+this grammar, but they are used later to construct a recogniser for
+the original grammar.)
+The rules of the corresponding prefix grammar are
+$$
+\matrix{
+[S']&\pdn&\epsilon\lj\cr
+[S]&\pdn& [S']\lj\cr
+[A]&\pdn&[S]\ |\ [S]\ A\ B\ |\ [B]\ b\ a\ |\ [B]\cr
+[B]&\pdn&[S]\ A\ |\ [S]\lj\cr
+[C]&\pdn&[A]\ |\ [A]\ C\ \rec{S}\lj\cr
+}
+$$
+
+If $\alpha\beta$ is in the language of the LR(0) DFA, where $\beta$ is
+a handle, then there is some non-terminal, $A$ say, such that
+$S\rmderive{}\alpha A w\mderive{} \alpha\beta w$ and so
+$\alpha\in L([A])$.
+Thus the language of the LR(0) DFA is the set of all strings
+$$
+\{\alpha\beta\ |\ {\rm for\ some\ nonterminal\ } A,
+\alpha\in L([A]) {\rm \ and\ } A\pdn\beta\}
+$$
+
+For the above example we have
+$$
+\matrix{
+L([S'])&=\{\epsilon\},\lj\cr
+L([S])&=\{\epsilon\},\lj\cr
+L([A])&=\{\epsilon,\ AB,\ Aba,\ ba,\ A\},\lj\cr
+L([B])&=\{A,\ \epsilon\},\lj\cr
+L([C])&=\{\epsilon,\ AB,\ Aba,\ ba,\ A,\ C\rec{S},\ ABC\rec{S},\ 
+AbaC\rec{S},\ baC\rec{S},\ AC\rec{S}\}\cr}
+$$
+and the language of the LR(0) DFA for this grammar is
+$$
+\matrix{
+\{&
+S,\ ABAa,\ Bd,\ \rec{E}a,\ b,\ C\rec{S}C,\ a\rec{S}b,\ \epsilon,\ 
+AB\rec{E}a,\ ABb,\ ABC\rec{S}C,\lj \cr
+&ABa\rec{S}b,\ AB,\ 
+Aba\rec{E}a,\ Abab,\ AbaC\rec{S}C,\ 
+Abaa\rec{S}b,\ Aba,\ ba\rec{E}a,\lj\cr
+&bab,\ baC\rec{S}C,\ 
+baa\rec{S}b,\ ba,\ 
+A\rec{E}a,\ Ab,\ AC\rec{S}C,\ Aa\rec{S}b,\ A,\ baA\rec{B},\lj \cr
+& AA,\ baA\rec{B},\ A,\  
+\rec{D}a,\ a,\ AB\rec{D}a, ABa,\ C\rec{S}\rec{D}a,\ C\rec{S}a,\lj\cr
+&ABC\rec{S}\rec{D}a,\  ABC\rec{S}a,\ Aba\rec{D}a,\ Abba,\ 
+ba\rec{D}a,\ baa\ A\rec{D}a,\ 
+Aa,\lj\cr   
+&AbaC\rec{S}\rec{D}a,\ AbaC\rec{S}a,\ baC\rec{S}\rec{D}a,\ baC\rec{S}a,\ 
+AC\rec{S}\rec{D}a,\ AC\rec{S}a   
+\}\cr
+}
+$$
+
+\gtb will automatically construct the prefix grammar as the first step
+in the trie construction discussed below. However, it is possible to
+get \gtb to build the prefix grammar independently of the other
+methods using the method
+\begin{center}\label{p_prfx}
+\verb+prefix_grammar[my_grammar]
++
+\end{center}
+This method does not mutate the grammar, it creates a new
+grammar, in this case written to \verb+prefix_grammar+.
+
+For example, running the script
+\begin{quote}
+\begin{verbatim}
+(* ex15 *)
+S ::=  A B A 'a' | B 'd' .
+A ::=  ~E 'a' | 'b' | C ~S C | 'a' ~S 'b' | # .
+B ::=  'b' 'a' A ~B | A .
+C ::=  ~D 'a' | 'a' .
+D ::=  C | F .
+E ::=  'd' A .
+F ::=  'a' .
+
+(
+ex15_grammar := grammar[S tilde_enabled]
+augment_grammar[ex15_grammar]
+ex15_prefix := prefix_grammar[ex15_grammar]
+write[ex15_prefix]
+)
+\end{verbatim}
+\end{quote}
+generates the following output.
+{\small
+\begin{verbatim}
+Terminalising E
+Terminalising S
+Terminalising S
+Terminalising B
+Terminalising D
+
+Grammar report for start rule S!left_context
+Grammar alphabet
+   0 !Illegal
+   1 #
+   2 $
+   3 'A!terminal'
+   4 'B!terminal'
+   5 'C!terminal'
+   6 'S!tilde'
+   7 'a'
+   8 'b'
+   9 'd'
+-------------
+  10 A!left_context
+  11 B!left_context
+  12 C!left_context
+  13 D!left_context
+  14 E!left_context
+  15 F!left_context
+  16 S!augmented!left_context
+  17 S!left_context
+
+Grammar rules
+A!left_context ::= B!left_context[0] 'b' 'a' |
+                    B!left_context[0] |
+                    E!left_context[0] 'd' |
+                    S!left_context[0] |
+                    S!left_context[0] 'A!terminal' 'B!terminal' .
+B!left_context ::= S!left_context[0] 'A!terminal' |
+                    S!left_context[0] .
+C!left_context ::= A!left_context[0] |
+                    A!left_context[0] 'C!terminal' 'S!tilde' |
+                    D!left_context[0] .
+D!left_context ::= UNDEFINED
+E!left_context ::= UNDEFINED
+F!left_context ::= D!left_context[0] .
+S!augmented!left_context ::= UNDEFINED
+S!left_context ::= S!augmented!left_context[0] .
+
+End of grammar report for start rule S!left_context
+\end{verbatim}%$
+}
+
+\subsection{Trie based automata}
+
+If $\Gamma$ has no recursion other 
+than non-hidden left recursion then all the sets $L([A])$ are finite.
+We form a trie from the set of strings in the language of the DFA
+as follows.
+
+Form the set, $\Phi(\Gamma)$, of triples
+$$
+\Phi(\Gamma)=\{(\alpha,\beta,A)\ |\ {\rm for\ some\ nonterminal\ } A,
+\alpha\in L([A]) {\rm \ and\ } A\pdn\beta\}
+$$
+by first generating each of the sets $L([A])$ 
+then, for each $\alpha\in L([A])$ and for each rule $A\pdn\beta$ 
+add $(\alpha,\beta,A)$ to $\Phi(\Gamma)$.
+(So the language of the DFA is the set of strings $\alpha\beta$ such
+that $(\alpha,\beta,A)\in \Phi(\Gamma)$.)
+
+We use $\Phi(\Gamma)$ to construct a trie based automaton.
+Create a start node, $u_0$ say. For each element $(\alpha,\beta, A)$
+in $\Phi(\Gamma)$, begin at the start node and suppose that $x_1$ is
+the first element of $\alpha\beta$. If there is an edge labelled $x_1$
+from the start node move to the target of this edge. Otherwise create
+a new node, $u$ say, and an edge labelled $x_1$ from $u_0$ to $u$
+and move to $u$. Continue in this way, so suppose that we are at node
+$v$ and that the next symbol of $\alpha\beta$ is $x_i$. 
+If there is an edge labelled $x_i$
+from $v$ move to the target of this edge. Otherwise create
+a new node, $w$ say, and an edge labelled $x_i$ from $v$ to $w$
+and move to $w$. 
+
+When all the symbols in $\alpha\beta$ have been
+read, so we are at a node, $y$ say, that is at the end of a path
+labelled $\alpha\beta$ from $u_0$, if $A\not= S'$
+retrace back up the path  labelled with the elements of $\beta$,
+so that we are at a node, $t$ say, that is the end of a path
+labelled $\alpha$ from $u_0$. If there is not an edge labelled $A$ from
+$t$ then create a new node, $r$ say, and an edge from $t$ to $r$
+labelled $A$. Add an edge labelled ${\cal R}$ from $y$ to $r$.
+
+We then remove the edges labelled with non-terminals from the original
+grammar, obtaining an automaton that corresponds to RIA($\Gamma_S$)
+in the RIGLR algorithm. We call this the trie based automaton for $S$.
+
+For example consider the terminalised grammar ex17
+$$\matrix{
+S&\pdn& a\ \rec{S}\ b\ |\ A\ a\ A\ |\ S\ a\lj\cr
+A&\pdn& a\ \rec{B}\ |\ a\ \rec{B}\ \rec{B}\ |\ \epsilon\cr
+B&\pdn& B\ A\ |\ \epsilon\lj\cr
+}
+$$
+The prefix grammar is
+$$\matrix{
+[S']&\pdn&\epsilon\lj\cr
+[S]&\pdn& [S']\ |\ [S]\lj\cr
+[A]&\pdn& [S]\ |\ [S]\ A\ a\cr
+}
+$$
+the languages are
+$$
+L([S'])=\{\epsilon\},\quad L([S]) =\{\epsilon\},\quad
+L([A])=\{\epsilon,\ Aa\}
+$$
+and the set $\Phi(\Gamma)$ is
+$$
+\matrix{
+\{&
+(\epsilon,S,S'),\ (\epsilon,a\rec{S}b,S),\ (\epsilon,AaA,S),\ 
+(\epsilon,Sa,S),\ (\epsilon,a\rec{B},A),\
+(\epsilon,a\rec{B}\rec{B},A),\cr 
+&(\epsilon,\epsilon,A),\  (Aa,a\rec{B},A),\
+(Aa,a\rec{B}\rec{B},A),\ (Aa,\epsilon,A)\ \}\lj\cr
+}
+$$ 
+The corresponding trie based automaton for $S$ (before the
+non-terminal transitions are removed) is
+\begin{center}
+{\footnotesize
+\input{tut43.pic}
+}
+\end{center}
+
+To build the full push down automaton, for each terminalised
+non-terminal, $A$, in turn we create a new rule $A'\pdn A$ in the
+terminalised grammar and consider the grammar obtained by taking $A'$
+as the start symbol. We construct a prefix grammar and a trie based
+automaton for $A$, as we have described above for $S'$.
+
+For the above example we need to build the trie based automaton for
+$B$. The required prefix grammar is
+$$\matrix{
+[B']&\pdn&\epsilon\lj\cr
+[B]&\pdn& [B']\ |\ [B]\lj\cr
+[A]&\pdn& [B]\ B\lj\cr
+}
+$$
+the set $\Phi(\Gamma_B)$ is
+$$
+\{
+(\epsilon,B,B'),\ (\epsilon,BA,B),\ (\epsilon,\epsilon,B),
+\ (B,a\rec{B},A),\
+(B,a\rec{B}\rec{B},A),\ (B,\epsilon,A)\ \}
+$$ 
+and the trie based automaton is
+\begin{center}
+{\footnotesize
+\input{tut44.pic}
+}
+\end{center}
+
+
+As for the RCA construction described in Section~\ref{rca}, we build a
+push down automaton from the trie based automata. For each
+transition in any of the automata labelled $\rec{A}$, replace this
+with a transition labelled $p(k)$ to the start state of the trie 
+based automaton for $A$, where $k$ is the target of the $\rec{A}$
+transition. The accepting state of the PDA is the state in the
+trie based automaton for $S$ which is the target of the $S$ transition
+from the start state. For each terminalised non-terminal, $\rec{A}$,
+the state in the
+trie based automaton for $A$ which is the target of the $A$ transition
+from the start state is a $pop$ state in the PDA.
+
+The PDA for the above example is
+\begin{center}
+{\footnotesize
+\input{tut45.pic}
+}
+\end{center}
+
+
+
+\subsection{Trie based constructions in \gtbs}
+
+We get \gtb to construct an Aycock and Horspool trie based push down
+automaton using the method
+
+\begin{center}\label{p_trie}
+\verb+
+ah_trie[my_grammar]+
+\end{center}
+As a side effect of this method \gtb outputs a VCG rending of the
+tries in the file
+\begin{center}
+\verb+trie.vcg+
+\end{center}
+
+Initially the grammar must be terminalised so that there is no
+recursion other than non-hidden left recursion. As for the RCAs 
+we use the method \verb+terminalise_grammar[]+ to produce a terminalised
+grammar. 
+We can run the RIGLR recogniser on the trie based automata 
+using the method call
+\begin{center}
+\verb+
+ri_recognise[this_ah_trie STRING]+
+\end{center}
+
+For example, the script
+\begin{quote}
+\begin{verbatim}
+(* ex17 *)
+S ::=  'a' ~S 'b' | A 'a' A | S 'a' .
+A ::=  'a' ~B | 'a' ~B ~B | # .
+B ::=  B A | # .
+
+(
+ex17_grammar := grammar[S tilde_enabled]
+terminalise_grammar[ex17_grammar terminal]
+ah_ex17 := ah_trie[ex17_grammar]
+ri_recognise[ah_ex17 "aaaabb"]
+)
+\end{verbatim}
+\end{quote}
+constructs the tries
+\begin{center}
+\epsfbox{vcg30.ps}\\[2mm]
+\end{center}
+and generates the following output
+{\small
+\begin{verbatim}
+Terminalising B
+Terminalising B
+Terminalising B
+Terminalising S
+
+******: RIGLR recognise: 'aaaabb'
+******: RIGLR recognise: accept
+Call graph has 24 nodes and 77 edges
+\end{verbatim}
+}
+
+\chapter{Library grammars}
+
+Grammars for ANSI-C, ISO-7185 Pascal and a version of IBM VS-COBOL are 
+included with the \gtb distribution. These are the grammars on which
+the experiments that have been reported in~\cite{AJES04D1} are based.
+Basic \gtb scripts containing these grammars are 
+in the \verb+lib_ex+ subdirectory and are called 
+\begin{center}
+\verb+
+ansi_c.gtb       pascal.gtb     cobol.gtb+
+\end{center}
+respectively.
+
+The grammar for ANSI-C has been extracted from~\cite{KR:ANSI}, the
+grammar for Pascal has been extracted from the ISO Standard
+and the grammar for COBOL is from the grammar
+extracted by Steven Klusener and Ralf Laemmel, which is available from
+%\href{http://www.cs.vu.nl/grammars/vs-cobol-ii/}
+{\texttt{http://www.cs.vu.nl/grammars/vs-cobol-ii/}}. 
+
+The grammars have been put into a BNF
+form using our \verb+ebnf2bnf+ tool, followed by some
+manual manipulation.
+
+Also in the \verb+lib_ex+ directory 
+are token strings on which the recognisers for these grammars
+can be run. The strings have been obtained from original programs,
+written for other purposes, which have been `tokenised' so that an
+initial lexical analysis phase is not needed.
+
+These token strings are as follows:
+\begin{itemize}
+\item
+\verb+bool.tok+\\ An ANSI-C program implementing a 
+Quine-McCluskey Boolean minimiser.
+It contains 4,291 tokens.
+
+\item
+\verb+rdp_full.tok+\\ An ANSI-C program formed from the source code of
+our RDP tool.
+It contains 26,551 tokens.
+
+\item
+\verb+gtb_src.tok+\\ An ANSI-C program formed from the source code of
+the GTB tool itself.
+It contains 36,827  tokens.
+
+\item
+\verb+treeview.tok+\\ A Pascal program designed to allow elementary
+construction and visualisation of tree structures.
+It contains 4,425  tokens.
+
+\item
+\verb+view_ite.tok+\\ The \verb+treeview+ program with the
+\verb+if-then+ statements replaced by \verb+if-then-else+ statements
+whose \verb+else+ clause is empty. This allows a longest match LR(1) 
+parser to successfully parse the string.
+It contains 4,480  tokens.
+
+\item
+\verb+quad.tok+\\ A short Pascal program that calculates quadratic roots
+of quadratic polynomials.
+It contains 279 tokens.
+
+\item
+\verb+cob_src.tok+\\ A Cobol program based on one of the functions
+available from\\ 
+{\texttt{http://www.cs.vu.nl/grammars/vs-cobol-ii/}}. 
+It contains 2,197 tokens.
+\end{itemize}
+
+The \gtb parse functions can read the input string from a file. To do
+this simply open for reading the file that contains the token string
+and supply that file in place of the STRING argument.
+\begin{verbatim}
+this_derivation := 
+   rnglr_recognise[this_dfa this_dfa open["bool.tok" read_text]]
+\end{verbatim}
+NOTE: care is needed here because the default option for the \verb+open+
+method is \verb+write_text+ so if the \verb+read_text+ option is
+left out then the file, in this case \verb+bool.tok+, will be
+overwritten with an empty file!
+
+\vskip.2cm
+\noindent
+Also note that \gtb script files for each of the example grammars
+discussed in this guide are included in the \verb+tut_ex+ subdirectory.
+
+
+\chapter{\gtb methods}
+{\parindent=0pt
+\parskip = 25pt
+
+\verb+ah_trie[my_grammar]+ \mypage{p_trie}\\
+Builds an RCA using the Aycock and Horspool trie based method.
+
+\verb+augment_grammar[my_grammar]+ \mypage{p_aug}\\
+Augments the grammar \verb+my_grammar+ if it does not already have a 
+start rule of the required form. 
+
+\verb+close["file_name"]+ \mypage{p_clo}\\
+Closes the file called \verb+file_name+ previously opened
+for reading and writing.
+
+
+\verb+cycle_break_sets[my_gdg prune_break_sets_by_table 0]+ \mypage{p_gdganl}\\
+Finds the strongly connected components and minimal terminalisation
+sets for the graph \verb+my_gdg+. Replacing the
+\verb+prune_break_sets_by_table+ option with \verb+retain_break_sets+
+causes all the sets constructed to be listed. Replacing 0 with $N$
+causes only sets of size up to $N$ to be constructed.
+
+\verb+dfa[my_nfa]+\mypage{p_dfa}\\
+Constructs a DFA from the NFA \verb+my_nfa+.
+
+\verb+gdg[my_grammar]+ \mypage{p_gdg}\\
+Builds a grammar dependency graph for \verb+my_grammar+.
+
+\verb+generate[my_grammar 10 left sentences]+ \mypage{p_gen}\\
+Constructs 10 sentences from the grammar \verb+my_grammar+ using 
+left-most derivations. The parameter \verb+left+ can be replaced by 
+\verb+right+ and \verb+random+. The parameter \verb+sentences+ can be 
+replaced by \verb+sentential_forms+.
+
+\verb+grammar[start_symbol tilde_enabled]+ \mypage{p_grm}\\
+Creates a grammar from the given rules
+taking \verb+start_symbol+ as the start symbol.
+The \verb+tilde_enabled+ flag is an optional flag that creates the
+additional grammar symbols from a tilded rule set.
+
+\verb+gtb_verbose+ \mypage{p_verb}\\
+Switches on and off verbose diagnostics.
+
+\verb+la_merge[my_dfa]+\mypage{p_lalr}\\
+Constructs the LALR DFA from the LR(1) DFA \verb+my_dfa+.
+
+\verb+lr_parse[my_dfa STRING]+\mypage{p_lr}\\
+Parses the string \verb+STRING+ using an LR parser and the DFA
+\verb+my_dfa+. If STRING is replaced with a file name then the string
+is read from the file.
+
+
+\verb+nfa[my_grammar lr 1 terminal_lookahead_sets +\mypage{p_nfa}\\
+\verb+                          full_lookahead_sets normal_reductions]+\\
+Creates an NFA from the grammar \verb+my_grammar+. The parameter
+\verb+lr+ can be replaced with \verb+unrolled+ to get an IRIA NFA.
+The parameter 1 can be replaced by 0, to get an LR(0), or 0-1,
+to get an SLR(1) NFA. The last three parameters
+are optional and the ones given are the defaults. There is one other
+possibility for each of these parameters,
+\verb+non-terminal_lookahead_sets+,
+\verb+singleton_lookahead_sets+ and
+\verb+nullable_reductions+, respectively.
+
+\verb+nfa[my_grammar slr 1]+\mypage{p_slr}\\
+This is an abbreviation for \verb+nfa[my_grammar lr 0-1 
+terminal_lookahead_sets +\\
+\verb+full_lookahead_sets normal_reductions]+\\
+
+
+\verb+open["file_name" write_text]+ \mypage{p_opn}\\
+Opens a file called \verb+file_name+ for writing. To open for read
+change the option \verb+write_text+ to \verb+read_text+.
+The default option is \verb+write_text+.
+
+
+\verb+prefix_grammar[my_grammar]+ \mypage{p_prfx}\\ 
+Constructs a left context prefix grammar from \verb+my_grammar+.
+
+\verb+render[my_file my_grammar]+ \mypage{p_ren}\\
+Writes a file based on its second argument to the file 
+\verb+file_name+ where this file is
+created using \verb+my_file := open["file_name"]+
+
+\verb+ri_recognise[my_grammar STRING]+\mypage{p_rirec}\\
+Recognises the string \verb+STRING+ using an RIGLR parser and the
+grammar \verb+my_grammar+. If STRING is replaced with a file name then
+the string is read from the file.
+
+\verb+rnglr_recognise[my_dfa STRING]+\mypage{p_rnglr}\\
+Recognises the string \verb+STRING+ using an RNGLR parser and the DFA
+\verb+my_dfa+. The DFA must be RN. If STRING is replaced with a file
+name then the string is read from the file.
+
+\verb+terminalise_grammar[my_grammar terminal]+\mypage{p_tld}\\
+Convert non-terminals written \verb+~A+ in the grammar into terminals.
+To turn them back replace the \verb+terminal+ option (which is the
+default option) with \verb+nonterminal+.
+
+\verb+tomita_1_parse[my_dfa STRING]+\mypage{p_tom}\\
+Parses the string \verb+STRING+ using a Tomita parser and the DFA
+\verb+my_dfa+. If STRING is replaced with a file name then the string
+is read from the file.
+
+\verb+write[my_grammar]+ \mypage{p_wrt}\\
+Prints output based on its argument to the primary output device.
+}
+\bibliographystyle{alpha}
+\bibliography{adrian}
+\end{document}
+
+Once we introduce the stack we are no longer simply traversing a
+finite state automaton until we reach an accepting state and then
+taking some specified action. For example, actions taken on reaching 
+particular DFA states can now be of the form `jump to some other DFA state
+and continue the traversal form there'. Formally, we are now dealing
+with a push down automaton (PDA), although the relationship between our DFA
+based parser and a PDA is a little complicated.
+
+\subsection{Aside on push down automata}\label{PDA}
+
+Strictly speaking, we construct an LR(0) push down automaton (PDA)
+as follows. The states of the PDA are the states of the LR(0) DFA and
+the start state is the start state of the DFA.
+The (unique) DFA state whose label includes the item
+$S'\pdn S\cdot$ is the accepting state of the PDA.
+The stack symbols are the DFA states and the grammar non-terminals. 
+PDA actions are written in the form $(h,l,x)\to(k,y)$, where $h,k$
+are PDA states, $l$ and $y$ are sequences of stack symbols,
+and $x$ is a terminal or $\epsilon$. The action can be applied if the
+current state is $h$ and $l$ is on the top of the stack.
+
+Thus in a zero lookahead PDA we read the current state and the current
+stack and select an action $(h,l,x)\to(k,y)$ such that $h$ is the
+current state and $l$ is on the top of the current stack. (In other
+words actions are indexed by pairs comprising a state and a sequence
+of stack symbols.)
+
+If $x\not=\epsilon$ then the next input symbol is read. If this symbol
+is not $x$ then the PDA terminates and reports failure. If the next
+input symbol is $x$, or if $x=\epsilon$ (in which case nothing is
+read) the PDA pops the symbols in $l$ off the stack, pushes the symbols in
+$y$ onto the stack and moves to state $k$.
+
+The LR(0) PDA actions are defined as follows.
+
+If there is a transition labelled with the terminal $a$
+from the LR(0) DFA state $h$ to the DFA state $k$
+then there is a PDA action $(h,h,a)\to(k,(h,k))$. (This action
+reads the next input symbol, matches it to $a$, pops the
+stack to check that the stack top is a state, moves to state $k$ and
+then pushes the popped
+state followed by the state we have moved to, $h$, on to the stack.)
+
+If there is a transition labelled with the non-terminal $A$
+from the DFA state $h$ to the DFA state $k$
+then there is a PDA action $(h,A,\epsilon)\to(k,k)$.
+(This action does not read the next input symbol, it pops the
+stack to check that the stack top is a non-terminal, moves to state $k$
+then pushes $k$ on to the stack.)
+
+If the state $k_n$ has a label $A\pdn x_1\ldots x_n\cdot$ 
+then there is a PDA action 
+$(k_n,(k_0,\ldots,k_n),\epsilon)\to(k_0,(k_0,A))$, 
+where $k_0, \ldots,k_{n-1}$ is any sequence of DFA states 
+such that there is a transition labelled $x_i$ from $x_{i-1}$ to 
+$x_i$, $1\leq i\leq n$.
+(This action does not
+read the next input symbol, it pops the top $n+1$ symbols from the
+stack, moves to the last state popped from the stack and then pushes
+this last state and the non-terminal $A$ onto the stack.)
+
+
+It is clear that actions of the form 
+$(k_n,(k_0\ldots k_n),\epsilon)\to(k_0,(k_0,A))$ and
+$(h,A,\epsilon)\to(k,k)$ can only be performed together, an action of the
+first type can and must be followed immediately by an action of
+the second type with $h=k_0$. 
+Thus these two actions are combined into what is
+called a {\em reduction}. There is a reduction action for each grammar
+rule. The rules are numbered and the action $rm$, associated with rule
+$m$, $A\pdn x_1\ldots x_n$ say, causes the top $n$ states to be popped
+off the stack, leaving $k_0$ say, and then pushes onto the stack 
+the state which is the target of the transition labelled $A$ from
+$k_0$. 
+
+The LR(0) PDA we have described is called LR(0) because strictly
+speaking it does not use any lookahead, it decides which action to
+take and then reads the next input symbol if the action requires it.
+We can significantly reduce the choices of action if we read the next
+input symbol and then only choose actions which either require that
+symbol to be read, or which do not read a symbol. In other words we do
+not select an action $(h,h,a)\to(k,(h,k))$ if the next input symbol
+is not $a$. Thus our implementation of LR(0) PDAs uses lookahead to
+determine whether or not to take such an action. However, it does not
+use the lookahead symbol to further restrict the choice of action,
+although this can be done as we shall see later.
+
+
+(Combining the actions as discussed in Section~\ref{PDA} allows us to use an
+action/goto table whose rows are indexed with states. If we used the 
+PDA actions literally as described above then we would have to index 
+the rows with sequences of stack symbols.)

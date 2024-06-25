@@ -1,0 +1,34 @@
+(* ex9  Right nullable rules *)
+S ::=  'b' A .
+A ::=  'a' A B | # .
+B ::=   # .
+
+(
+ex9_grammar := grammar[S]
+
+ex9_nfa := nfa[ex9_grammar lr 1]
+render[open["nfa.vcg"] ex9_nfa]
+
+ex9_dfa := dfa[ex9_nfa]
+render[open["dfa.vcg"] ex9_dfa]
+
+this_derivation := tomita_1_parse[ex9_dfa "baa"]
+render[open["ssg.vcg"] this_derivation]
+
+rn_nfa := nfa[ex9_grammar lr 1 nullable_reductions]
+render[open["nfa1.vcg"] rn_nfa]
+
+rn_dfa := dfa[rn_nfa]
+render[open["dfa1.vcg"] rn_dfa]
+write[open["parse.tbl"] rn_dfa]
+
+this_derivation := tomita_1_parse[rn_dfa "baa"]
+render[open["ssg1.vcg"] this_derivation]
+
+this_derivation := tomita_1_parse[rn_dfa "baab"]
+this_derivation := tomita_1_parse[rn_dfa "ca"]
+this_derivation := tomita_1_parse[rn_dfa "bbb"]
+
+this_derivation := rnglr_recognise[rn_dfa "baa"]
+render[open["ssg2.vcg"] this_derivation]
+)

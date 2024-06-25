@@ -1,0 +1,1 @@
+if a<b then if c==d then c=1 else d=1 ;

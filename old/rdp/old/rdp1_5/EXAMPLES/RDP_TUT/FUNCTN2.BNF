@@ -1,0 +1,5 @@
+(* TREE *)
+S:integer ::= INTEGER:val1 [* result = val1 ; *] 
+              ('+' S:val2 [* result = val1 + val2 ; *] | ';' ) .
+
+(***** functn2.bnf *****)

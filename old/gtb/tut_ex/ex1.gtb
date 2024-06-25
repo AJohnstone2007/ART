@@ -1,0 +1,22 @@
+(* ex1 *)
+S ::= S '+' S | S '*' S | E .
+E ::= 'a' | 'b' .
+
+(
+ex1_grammar := grammar[S]
+gtb_verbose := true
+write[ex1_grammar]
+
+rules_file := open["rules.vcg"]   
+render[rules_file ex1_grammar]
+
+generate[ex1_grammar 10 left sentences]
+generate[ex1_grammar 15 right sentential_forms]
+
+gdg_file := open["gdg.vcg"]
+ex1_gdg := gdg[ex1_grammar]
+render[gdg_file ex1_gdg]
+close[gdg_file]
+
+render[open["gdg.vcg"] gdg[ex1_grammar]]
+)

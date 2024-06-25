@@ -1,0 +1,201 @@
+******************** 
+actions.bnf 
+Files old/gc.by and new/gc.by differ
+Files old/gc.gtb and new/gc.gtb differ
+Files old/gc.iso and new/gc.iso differ
+Files old/gc.out and new/gc.out are identical
+Files old/gc.sdf and new/gc.sdf differ
+Files old/gc.vcg and new/gc.vcg differ
+Files old/gc.y and new/gc.y differ
+******************** 
+bad_permutations.bnf 
+Files old/gc.out and new/gc.out are identical
+******************** 
+brackets.bnf 
+Files old/gc.by and new/gc.by differ
+Files old/gc.gtb and new/gc.gtb differ
+Files old/gc.iso and new/gc.iso differ
+Files old/gc.out and new/gc.out are identical
+Files old/gc.sdf and new/gc.sdf differ
+Files old/gc.vcg and new/gc.vcg differ
+Files old/gc.y and new/gc.y differ
+******************** 
+bracket_nesting.bnf 
+Files old/gc.by and new/gc.by differ
+Files old/gc.gtb and new/gc.gtb differ
+Files old/gc.iso and new/gc.iso differ
+Files old/gc.out and new/gc.out are identical
+Files old/gc.sdf and new/gc.sdf differ
+Files old/gc.vcg and new/gc.vcg differ
+Files old/gc.y and new/gc.y differ
+******************** 
+characters.bnf 
+Only in old: gc.by
+Only in old: gc.gtb
+Only in old: gc.iso
+Files old/gc.out and new/gc.out differ
+Only in old: gc.sdf
+Only in old: gc.vcg
+Only in old: gc.y
+******************** 
+comments_only.bnf 
+Files old/gc.by and new/gc.by differ
+Files old/gc.gtb and new/gc.gtb differ
+Files old/gc.iso and new/gc.iso differ
+Files old/gc.out and new/gc.out are identical
+Files old/gc.sdf and new/gc.sdf differ
+Files old/gc.vcg and new/gc.vcg differ
+Files old/gc.y and new/gc.y differ
+******************** 
+comment_only.bnf 
+Files old/gc.by and new/gc.by differ
+Files old/gc.gtb and new/gc.gtb differ
+Files old/gc.iso and new/gc.iso differ
+Files old/gc.out and new/gc.out are identical
+Files old/gc.sdf and new/gc.sdf differ
+Files old/gc.vcg and new/gc.vcg differ
+Files old/gc.y and new/gc.y differ
+******************** 
+empty_file.bnf 
+Files old/gc.by and new/gc.by differ
+Files old/gc.gtb and new/gc.gtb differ
+Files old/gc.iso and new/gc.iso differ
+Files old/gc.out and new/gc.out are identical
+Files old/gc.sdf and new/gc.sdf differ
+Files old/gc.vcg and new/gc.vcg differ
+Files old/gc.y and new/gc.y differ
+******************** 
+invert.bnf 
+Files old/gc.by and new/gc.by differ
+Files old/gc.gtb and new/gc.gtb differ
+Files old/gc.iso and new/gc.iso differ
+Files old/gc.out and new/gc.out are identical
+Files old/gc.sdf and new/gc.sdf differ
+Files old/gc.vcg and new/gc.vcg differ
+Files old/gc.y and new/gc.y differ
+******************** 
+many_rules.bnf 
+Files old/gc.by and new/gc.by differ
+Files old/gc.gtb and new/gc.gtb differ
+Files old/gc.iso and new/gc.iso differ
+Files old/gc.out and new/gc.out are identical
+Files old/gc.sdf and new/gc.sdf differ
+Files old/gc.vcg and new/gc.vcg differ
+Files old/gc.y and new/gc.y differ
+******************** 
+merge_after.bnf 
+Files old/gc.by and new/gc.by differ
+Files old/gc.gtb and new/gc.gtb differ
+Files old/gc.iso and new/gc.iso differ
+Files old/gc.out and new/gc.out are identical
+Files old/gc.sdf and new/gc.sdf differ
+Files old/gc.vcg and new/gc.vcg differ
+Files old/gc.y and new/gc.y differ
+******************** 
+merge_before.bnf 
+Files old/gc.by and new/gc.by differ
+Files old/gc.gtb and new/gc.gtb differ
+Files old/gc.iso and new/gc.iso differ
+Files old/gc.out and new/gc.out are identical
+Files old/gc.sdf and new/gc.sdf differ
+Files old/gc.vcg and new/gc.vcg differ
+Files old/gc.y and new/gc.y differ
+******************** 
+one_rule.bnf 
+Files old/gc.by and new/gc.by differ
+Files old/gc.gtb and new/gc.gtb differ
+Files old/gc.iso and new/gc.iso differ
+Files old/gc.out and new/gc.out are identical
+Files old/gc.sdf and new/gc.sdf differ
+Files old/gc.vcg and new/gc.vcg differ
+Files old/gc.y and new/gc.y differ
+******************** 
+one_rule_many_alts.bnf 
+Files old/gc.by and new/gc.by differ
+Files old/gc.gtb and new/gc.gtb differ
+Files old/gc.iso and new/gc.iso differ
+Files old/gc.out and new/gc.out are identical
+Files old/gc.sdf and new/gc.sdf differ
+Files old/gc.vcg and new/gc.vcg differ
+Files old/gc.y and new/gc.y differ
+******************** 
+parameters.bnf 
+Files old/gc.by and new/gc.by differ
+Files old/gc.gtb and new/gc.gtb differ
+Files old/gc.iso and new/gc.iso differ
+Files old/gc.out and new/gc.out are identical
+Files old/gc.sdf and new/gc.sdf differ
+Files old/gc.vcg and new/gc.vcg differ
+Files old/gc.y and new/gc.y differ
+******************** 
+parameters_pure.bnf 
+Files old/gc.by and new/gc.by differ
+Files old/gc.gtb and new/gc.gtb differ
+Files old/gc.iso and new/gc.iso differ
+Files old/gc.out and new/gc.out are identical
+Files old/gc.sdf and new/gc.sdf differ
+Files old/gc.vcg and new/gc.vcg differ
+Files old/gc.y and new/gc.y differ
+******************** 
+permutations.bnf 
+Files old/gc.by and new/gc.by differ
+Files old/gc.gtb and new/gc.gtb differ
+Files old/gc.iso and new/gc.iso differ
+Files old/gc.out and new/gc.out are identical
+Files old/gc.sdf and new/gc.sdf differ
+Files old/gc.vcg and new/gc.vcg differ
+Files old/gc.y and new/gc.y differ
+******************** 
+promotions.bnf 
+Files old/gc.by and new/gc.by differ
+Files old/gc.gtb and new/gc.gtb differ
+Files old/gc.iso and new/gc.iso differ
+Files old/gc.out and new/gc.out are identical
+Files old/gc.sdf and new/gc.sdf differ
+Files old/gc.vcg and new/gc.vcg differ
+Files old/gc.y and new/gc.y differ
+******************** 
+range.bnf 
+Only in new: gc.by
+Only in new: gc.gtb
+Only in new: gc.iso
+Files old/gc.out and new/gc.out differ
+Only in new: gc.sdf
+Only in new: gc.vcg
+Only in new: gc.y
+******************** 
+replicated_rule_after.bnf 
+Files old/gc.by and new/gc.by differ
+Files old/gc.gtb and new/gc.gtb differ
+Files old/gc.iso and new/gc.iso differ
+Files old/gc.out and new/gc.out are identical
+Files old/gc.sdf and new/gc.sdf differ
+Files old/gc.vcg and new/gc.vcg differ
+Files old/gc.y and new/gc.y differ
+******************** 
+replicated_rule_before.bnf 
+Files old/gc.by and new/gc.by differ
+Files old/gc.gtb and new/gc.gtb differ
+Files old/gc.iso and new/gc.iso differ
+Files old/gc.out and new/gc.out are identical
+Files old/gc.sdf and new/gc.sdf differ
+Files old/gc.vcg and new/gc.vcg differ
+Files old/gc.y and new/gc.y differ
+******************** 
+re_postfix.bnf 
+Files old/gc.by and new/gc.by differ
+Files old/gc.gtb and new/gc.gtb differ
+Files old/gc.iso and new/gc.iso differ
+Files old/gc.out and new/gc.out are identical
+Files old/gc.sdf and new/gc.sdf differ
+Files old/gc.vcg and new/gc.vcg differ
+Files old/gc.y and new/gc.y differ
+******************** 
+translations.bnf 
+Files old/gc.by and new/gc.by differ
+Files old/gc.gtb and new/gc.gtb differ
+Files old/gc.iso and new/gc.iso differ
+Files old/gc.out and new/gc.out are identical
+Files old/gc.sdf and new/gc.sdf differ
+Files old/gc.vcg and new/gc.vcg differ
+Files old/gc.y and new/gc.y differ

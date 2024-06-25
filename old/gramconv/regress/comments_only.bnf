@@ -1,0 +1,39 @@
+!h1
+!b
+!g
+!i
+!s
+!y
+
+!v
+
+// A line end comment
+
+
+(* Regression: only a few comments *)
+
+(* A multiline 
+
+
+comment *)
+
+
+(* a (* nested
+
+
+*) 
+
+comment *)
+
+/* A Yacc/Bison style comment which doesn't nest! /* */
+
+x::= 'x'.
+
+
+(* and a comment right at the end *)
+
+
+
+
+
+

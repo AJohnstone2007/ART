@@ -1,0 +1,7 @@
+TREE 
+
+S ::= 'if' B 'then' S X | 'STOP' | 'SKIP' .
+X ::= ['else' S] .
+B ::= 'true' | 'false' .
+
+

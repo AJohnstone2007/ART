@@ -1,0 +1,7 @@
+(* TREE *)
+
+S ::= E:val [* printf("%i\n", val) ; *] .
+E:integer ::= INTEGER:val1 
+              ['-' E:val2 [*result=val1-val2;*] ]:[*result=val1;*] .
+
+    (***** arith3.bnf *****)

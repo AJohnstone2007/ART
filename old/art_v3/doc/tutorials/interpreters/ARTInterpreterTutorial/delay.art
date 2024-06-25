@@ -1,0 +1,3 @@
+S<dummy:int> ::= 'if' P 'then' A< { if (P1.v) artEvaluate(S.A1, A1);}  
+P<v:boolean> ::= 'true' {P.v = true;} | 'false' {P.v = false;}  
+A ::= 'print' {artText.println("Printed");}  

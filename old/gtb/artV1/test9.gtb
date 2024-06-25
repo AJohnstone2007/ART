@@ -1,0 +1,21 @@
+S ::= A A A | 'a' .
+A ::= 'b' .
+
+
+
+(
+write["\n" gtb_version " processing '" gtb_main_file_name "' on " date_time "\n\n"]
+
+gtb_verbose := true
+this_grammar := grammar[S]
+write[this_grammar]
+
+string := "
+bbb
+"
+
+this_derivation := gll_parse[this_grammar "glltest.cpp" string]
+
+write["\n" CPU_time " CPU seconds elapsed\n\n"]
+)
+

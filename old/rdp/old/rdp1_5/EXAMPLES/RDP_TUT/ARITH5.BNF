@@ -1,0 +1,12 @@
+(* TREE *)
+
+S:integer ::= INTEGER:val E(val):result [* printf("%i\n", result) ; *] .
+E(lhs:integer):integer ::= ['-' INTEGER:val [* val = lhs - val; *] 
+                            E(val):result ]:[* result = lhs; *] . 
+
+
+              (***** arith5.bnf *****)
+
+
+
+

@@ -1,0 +1,23 @@
+%TeXCAD Options
+%\grade{\off}
+%\emlines{\off}
+%\beziermacro{\on}
+%\reduce{\on}
+%\snapping{\on}
+%\quality{2}
+%\graddiff{.01}
+%\snapasp{1}
+%\zoom{9.4180}
+\unitlength 0.60mm % = 1.71pt
+\linethickness{0.4pt}
+\ifx\plotpoint\undefined\newsavebox{\plotpoint}\fi % GNUPLOT compatibility
+\begin{picture}(47.47,20.47)(0,0)
+\put(5,16){\makebox(0,0)[cc]{$S$}}
+\put(43,5){\makebox(0,0)[cc]{$E$}}
+\put(5,16){\circle{8.94}}
+\put(43,5){\circle{8.94}}
+\put(8,13){\vector(4,-1){31}}
+%\qbezvec(9,15)(34,12.5)(7,20)
+\put(7,20){\vector(-4,1){.12}}\qbezier(9,15)(34,12.5)(7,20)
+%\end
+\end{picture}

@@ -1,0 +1,15 @@
+(* ex4 An SLR(1) parser *)
+S ::=  B ';' .
+B ::= E .
+E ::= E '+' T | T .
+T ::= '0' | '1' .
+
+(
+ex4_dfa := dfa[nfa[grammar[S] slr 1]]
+render[open["dfa.vcg"] ex4_dfa]
+
+lr_parse[ex4_dfa "0+1+1;"]
+
+ex4_nfa := nfa[grammar[S] slr 1 singleton_lookahead_sets]
+render[open["nfa.vcg"] ex4_nfa]
+)

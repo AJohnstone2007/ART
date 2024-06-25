@@ -1,0 +1,140 @@
+SCCS-info %W% %E%
+RCS-info$Id: README,v 1.1 1995/03/22 17:45:38 sander Exp sander $
+
+This directory contains fonts for the VCG tool. These pixel fonts are 
+derived from the corresponding X11 fonts and compatible to the some 
+Adobe PostScript fonts. During the export of VCG files to PostScript, 
+the original PostScript fonts can be used (if your PostScript printer 
+has these fonts available).
+
+FILES IN THIS DIRECTORY
+-----------------------
+	README            - this file
+	Makefile          - Makefile to make the fonts
+			    In fact, there is nothing to make, since
+			    everything is there.
+	fulltest          - a test sequence that calls maketest to 
+			    show all fonts in a vcg specification.
+	maketest          - a test programm that calls xvcg with a
+			    test font.
+
+	The fonts are available in 8, 10, 12, 14, 28 and 24 point.
+
+	Filename base   | Corresponding PostScript font
+	-----------------------------------------------
+	courB           | Courier-Bold
+	courBO          | Courier-BoldOblique
+	courO           | Courier-Oblique
+	courR           | Courier
+	helvB           | Helcetica-Bold
+	helvBO          | Helvetica-BoldOblique
+	helvO           | Helvetica-Oblique
+	helvR           | Helvetica
+	timB            | Times-Bold
+	timBI           | Times-BoldItalic
+	timI            | Times-Italic
+	timR            | Times-Roman
+	symb            | Symbol
+	ncenB           | NewCenturySchlbk-Bold
+	ncenBI          | NewCenturySchlbk-BoldItalic
+	ncenI           | NewCenturySchlbk-Italic
+	ncenR           | NewCenturySchlbk-Roman
+
+
+
+
+
+FONT FORMAT
+-----------
+
+We use a specialized font format that needs only about half the size compared 
+to the original X11 font format. As side effect, the VCG tool can scale these 
+fonts in unrestricted way. The basic idea is that a character symbol contains
+of a list of boxes instead of a list of pixels. In the worst case, each pixel
+is a box. In most cases, many pixels can be combined to a larger box.
+For each box, we store the minimal and maximal (x,y) coordinates relative to
+the leftest, most upper point of the character. These coordinates are in the
+range on 0...127, thus each box is stored by 4 Bytes: (xmin,ymin)-(xmax,ymax). 
+
+Example: the character four:
+
+	    in pixels:            in boxes:
+					     _
+		   1                       _| |                                 
+		  11                     _|_| |                          
+		 1 1                   _|_| | |                          
+		1  1                 _|_|___|_|_                         
+	       111111               |___________|                        
+		   1                        | |                          
+		   1                        |_|                          
+ 
+we store the following boxes:
+
+   (4,0)-(4,6) ; (0,4)-(5,4) ; (3,1)-(3,1) ; (2,2)-(2,2) ; (1,3)-(1,3) 
+
+which results in the hexadecimal byte sequence
+
+   04 00 04 06 00 04 05 04 03 01 03 01 02 02 02 02 01 03 01 03
+
+that describes the character matrix.
+Additionally, each character has a width, a left and right bearing, and
+and up and down bearing, also known as ascent and descent of the character.
+The bearings determine where the logical origin of the character is, and
+the width determines where the next origin should be after drawing the
+character. Bearings and width are stored as bytes and are in the range of 
+-127 to 127, i.e. signed chars.
+				     _        
+				   _| |                                
+     The logical origin          _|_| |                          
+     is marked by              _|_| | |                         
+     the x.                  _|_|___|_|_     ascent (up bearing)    = 7
+			    |___________|    descent (down baering) = 0
+				    | |                         
+			       x    |_|       x (next origin)                 
+			    `-' `-------'
+			     |      |
+		      left bear.  right bear.
+			 -1           5
+
+				`------------'
+				       |
+				     width = 6
+
+
+Note: In general, the character matrix has the following sizes:
+
+		matrix width  = right bear. - left bear.
+		matrix height = ascent + descent
+
+We store this information in the following order:
+
+	width ascent descent leftBear. rightBear. matrix-info
+
+The hexadecimal byte sequence that describes the character four completely:
+
+  06 07 00 FF 05   04 00 04 06 00 04 05 04 03 01 03 01 02 02 02 02 01 03 01 03
+
+
+The VCF font file format is the following (all integers, shorts, etc.
+in Motorola format HH hh LL ll, i.e. not in intel format !!!) :
+
+    1) The file type indicator  "VCF1"    (4 Bytes)
+    2) The size of the character data     (unsigned long integer = 4 Byte)
+    3) PostScipt name and Point Size, e.g. "Times-Roman12"
+       This is the font Times-Roman at pointsize 12.
+       This string ends with a 0.
+    4) At the next position, divisable by 4:
+	   Font ascent   (unsigned short = 2 Byte)
+	   Font descent  (unsigned short = 2 Byte)
+    5) The starting position of the character descriptions in the character
+       data:
+       These are 257 entries (each is an unsigned short = 2 Byte)
+       for the 256 characters and 1 for the end position of the last
+       character description.
+       For instance ther first character starts at index 0, the second
+       character imediately after the first charcter, etc.
+    6) The character data containing the character descriptions, as defined
+       above.
+
+
+

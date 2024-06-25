@@ -1,0 +1,796 @@
+/***************************************************************************
+*
+* gramex version 3.2 by Adrian Johnstone (A.Johnstone@rhul.ac.uk)
+*
+* Created 21 August 2006.
+* V2.0 added Pascal functionality 12 January 2007
+* V2.1 added indentation for Pascal 19 January 2007
+* V2.2 added support for ... metasymbol in the C# standards
+* V3.0 converted output format to ART V2.2
+* V3.1 modified output format to use ()? and ()* when [] and {} are EBNF
+* V3.2 blank lines after LHS nonterminal are set as continuation lines for the JLS document 31 August 2012
+*
+* gramex.c - extract grammar rules from plain text version of standards.
+*
+* A conversion tool that reads raw text versions of the ANSI C,
+* ANSI C++, C#, Java and Pascal standards and extracts EBNF rules.
+*
+* This file may be freely distributed.
+*
+* Please mail improvements to the author.
+*
+***************************************************************************/
+#include<stdio.h>
+#include<string.h>
+#include<stdlib.h>
+#include<ctype.h>
+
+enum {K_COMMENT, K_MAYBE_TYPO, K_PASCAL_START_RULE, K_PASCAL_START_END_RULE,
+      K_PASCAL_CONTINUATION, K_PASCAL_END_RULE, K_START_RULE,
+      K_START_RULE_ONE_OF, K_END_RULE, K_PRODUCTION, K_PRODUCTION_CONTINUED,
+      K_SECTION_HEADING, K_BLANK};
+
+char *buffer;
+unsigned linecount = 0;
+struct line_struct {
+  char *start;
+  char *lhs_start;
+  char *lhs_end;
+  int kind;
+  char* lhs_nonterminal;
+} *lines;
+
+int suppress_comments = 0;
+int use_dots = 0;
+int use_ebnf = 0;
+int use_indentation_as_continuation = 0;
+int pascal_mode = 0;
+int suppress_section_numbers = 0;
+char *scan_start, *scan_end;
+int first_production_indent;
+
+void scan(void)
+{
+  while (*scan_end != '\n' && isspace(*scan_end))
+    scan_end++;
+
+  scan_start = scan_end;
+
+  while (!isspace(*scan_end))
+    scan_end++;
+}
+
+int rest_of_line_empty(void)
+{
+  char *temp = scan_end;
+  int return_value = 1;
+
+  while (*temp != '\n')
+  {
+    if (!isspace(*temp))
+      return_value = 0;
+    temp++;
+  }
+
+  return return_value;
+}
+
+int has_opt_suffix(void)
+{
+  return *(scan_end - 1) == 't' &&
+         *(scan_end - 2) == 'p' &&
+         *(scan_end - 3) == 'o';
+}
+
+int initial_alpha_has_colon_suffix(void)
+{
+  return isalpha(*scan_start) && *(scan_end - 1) == ':';
+}
+
+int is_section_number(void)
+{
+  int seen_period = 0;
+  int seen_digit = 0;
+
+
+  char * temp;
+
+  for (temp = scan_start; temp < scan_end; temp++) {
+    seen_digit |= isdigit(*temp);
+    seen_period |= (*temp == '.');
+  }
+
+  return seen_digit && seen_period;
+}
+
+int is_valid_pascal_nonterminal(void)
+{
+  int return_value = 1;
+
+  char * temp;
+
+  for (temp = scan_start; temp < scan_end; temp++)
+    if (!(isalpha(*temp) || *temp == '_'))
+      return_value = 0;
+
+  return return_value;
+}
+
+
+int line_ends_with_period(int line_number)
+{
+  char *temp = lines[line_number + 1].start - 1;
+
+  while (isspace(*temp))
+    temp--;
+
+  return *temp == '.';
+}
+
+int line_ends_with_equals(int line_number)
+{
+  char *temp = lines[line_number + 1].start - 1;
+
+  while (isspace(*temp))
+    temp--;
+
+  return *temp == '=';
+}
+
+int line_starts_with_bar(int line_number)
+{
+  char *temp = lines[line_number].start;
+
+  while (isspace(*temp))
+    temp--;
+
+  return *temp == '|';
+}
+
+void indent_pascal(int line_number, int pascal_indent)
+{
+  int local_indent;
+  for (local_indent = 0; local_indent < pascal_indent; local_indent++)
+    printf(" ");
+
+  if (!line_starts_with_bar(line_number))
+    printf("  ");
+}
+
+void write_to_end_of_line(char *start)
+{
+  while (*start != '\n')
+    printf("%c", *start++);
+}
+
+int write_pattern(int is_nonterminal)
+{
+  int printed = 0;
+
+  if (use_ebnf && scan_end - scan_start == 1 &&
+       ( *scan_start == '[' ||
+         *scan_start == '{' ||
+         *scan_start == '(' ||
+         *scan_start == '|' ||
+         *scan_start == ')' ||
+         *scan_start == '}' ||
+         *scan_start == ']'
+       )
+     ) {
+    if ( *scan_start == '[' || *scan_start == '{')
+      printed += printf("( ");
+    else if ( *scan_start == ']')
+      printed += printf(")? ");
+    else if ( *scan_start == '}')
+      printed += printf(")* ");
+    else
+      printed += printf("%c ", *scan_start);
+  }
+  else if (use_dots && *scan_start == '.' && *(scan_start+1) == '.' && *(scan_start+2) == '.')
+    printed += printf("// ... ");
+  else
+  {
+    char *c;
+    int drop = has_opt_suffix();
+
+    if (drop)
+      scan_end -= 3;
+
+    if (!is_nonterminal)
+      printed += printf("\'");
+
+    for (c = scan_start; c < scan_end; c++)
+      if (is_nonterminal && *c == '-')
+        printed += printf("_");
+      else if (isprint(*c)&& *c != '\"' && *c != '\'' && *c != '\\')
+        printed += printf("%c", *c);
+      else
+      {
+        printed += printf("\\");
+        switch (*c)
+        {
+          case'\a': printed += printf("a"); break;
+          case'\b': printed += printf("b"); break;
+          case'\f': printed += printf("f"); break;
+          case'\n': printed += printf("n"); break;
+          case'\r': printed += printf("r"); break;
+          case'\t': printed += printf("t"); break;
+          case'\v': printed += printf("v"); break;
+          case'\\': printed += printf("\\"); break;
+          case'\'': printed += printf("\'"); break;
+          case'\"': printed += printf("\""); break;
+          default: printed += printf("X%.2X", *c); break;
+        }
+      }
+
+    if (!is_nonterminal)
+      printed += printf("\'");
+
+    if (drop)
+      scan_end += 3;
+  }
+
+  return printed;
+}
+
+int pattern_compare(int index)
+{
+  char *left_start = scan_start;
+  char *left_end = scan_end;
+  char *right_start = lines[index].lhs_start;
+  char *right_end = lines[index].lhs_end;
+
+  for (;
+       left_start < left_end && right_start < right_end;
+       left_start++, right_start++)
+  {
+    if (*left_start != *right_start)
+      return 0;
+  }
+
+  if (left_start == left_end && right_start == right_end)
+    return 1;
+  else
+    return 0;
+}
+
+void write_production(char *start, int in_one_of_rule)
+{
+  int first = 1;
+
+  printf("  ");
+  scan_end = start;
+  scan();
+  while (*scan_start != '\n')
+  {
+    int is_nonterminal = 0;
+    int drop = has_opt_suffix();
+    int temp;
+
+    if (!first && in_one_of_rule)
+      printf("| ");
+
+    first = 0;
+
+    if (drop)
+      scan_end -=3;
+
+    /* Now look to see if this appears as a LHS nonterminal anywhere */
+    for (temp = 0; temp < linecount; temp++)
+    {
+      if (lines[temp].kind == K_START_RULE ||
+          lines[temp].kind == K_START_RULE_ONE_OF)
+        is_nonterminal |= pattern_compare(temp);
+    }
+
+    if (drop)
+      scan_end +=3;
+
+    write_pattern(is_nonterminal);
+
+    if (drop)
+      printf("?");
+
+    printf(" ");
+    scan();
+  }
+}
+
+int white_prefix_length(int index)
+{
+  int prefix_length = 0;
+  char *c = lines[index].start;
+
+  while (isspace(*c++))
+    prefix_length++;
+
+  return prefix_length;
+}
+
+void help(void)
+{
+  printf("gramex V3.1 (c) Adrian Johnstone 2006, 2007, 2012\n\n"
+         "Usage: gramex [options] source\n\n"
+         "-c   suppress comment (non-rule) lines\n"
+         "-d   treat ... as meta symbol\n"
+         "-e   treat ( ) [ ] { } | as EBNF meta symbols\n"
+         "-i   treat production lines indented or outdented by two or more"
+         " spaces as continuation lines\n"
+         "-p   process Pascal standard file (implies -e)\n"
+         "-s   suppress section numbers at start of line\n"
+        );
+}
+
+void test_and_replace(char *current, char *substring, char*replacement)
+{
+  if (strlen(substring) != strlen(replacement))
+  {
+    printf("Internal programming error:"
+           " substring '%s' and replacement string '%s' lengths differ\n",
+           substring, replacement);
+    exit(1);
+  }
+
+  if (strncmp(current, "{", 1) == 0)
+    printf("Bang!");
+
+  if (strncmp(current, substring, strlen(substring)) == 0)
+    memcpy(current, replacement, strlen(replacement));
+}
+
+void process_pascal(void)
+{
+  int line_number;
+  char *a_i_string_10206 = "6.1.9 apostrophe_image = '''' .";
+  char *a_i_string_7185 = "6.1.7 apostrophe_image = '''' .";
+
+  /* Inplace translations to ASCII */
+
+  for (line_number = 0; line_number < linecount - 1; line_number++)
+  {
+    char *current = lines[line_number].start;
+
+//    printf("\n*** %i ***\n", line_number);
+
+    /* mapping applied at start of line only */
+    test_and_replace(current, "[ ", "( ");
+    test_and_replace(current, "f ", "( ");  /* { comes out as f */
+    test_and_replace(current, "g ", ")*");  /* } comes out as g */
+    test_and_replace(current, "j ", "| ");  /* | comes out as | */
+    test_and_replace(current, "? ", "> ");  /* ? (conformant levels( comes out as ? */
+    test_and_replace(current, "] ", ")?");
+    test_and_replace(current, ". ", "; ");
+
+    while (*current != '\n')
+    {
+//      printf("%c (%i)", *current, *current);
+//      printf("%c", *current);
+
+//      test_and_replace(current, " = ", "::=");
+      test_and_replace(current, " [ ", " ( ");
+      test_and_replace(current, " f ", " ( ");  /* { comes out as f */
+      test_and_replace(current, " g ", ")* ");  /* } comes out as g */
+      test_and_replace(current, " j ", " | ");  /* | comes out as | */
+      test_and_replace(current, " ? ", " > ");  /* ? (conformant levels( comes out as ? */
+      test_and_replace(current, " ] ", ")? ");
+      test_and_replace(current, " . ", " ; ");
+
+      if (*current == -83)
+        *current = '_';
+      else if (*current == '`')
+      {
+        *current = '\'';
+
+        if ((strncmp(lines[line_number].start, a_i_string_7185, strlen(a_i_string_7185)) == 0 )||
+            (strncmp(lines[line_number].start, a_i_string_10206, strlen(a_i_string_10206)) == 0) )
+          test_and_replace(current, "''''", "'\"' ");
+        else
+          test_and_replace(current, "''''", "'^' ");
+
+        test_and_replace(current, "'\\Gamma'", "'-'     ");
+        test_and_replace(current, "'!'", "'<'");
+        test_and_replace(current, "'?'", "'>'");
+        test_and_replace(current, "'!='", "'<='");
+        test_and_replace(current, "'?='", "'>='");
+        test_and_replace(current, "'=?'", "'=>'");
+        test_and_replace(current, "'!?'", "'<>'");
+        test_and_replace(current, "'?!'", "'><'");
+        test_and_replace(current-1, " '''", "'\\''");
+        test_and_replace(current, "' '", "'_'");
+        test_and_replace(current, "'and then'", "'and_then'");
+        test_and_replace(current, "'or else'", "'or_else'");
+        test_and_replace(current, "'or else'", "'or_else'");
+      }
+
+      current++;
+    }
+  }
+
+  /* Annotate production start lines */
+  for (line_number = 0; line_number < linecount - 1; line_number++)
+  {
+    scan_end = lines[line_number].start;
+
+    scan();
+
+    if (is_section_number())
+    {
+      scan();
+
+      if (is_valid_pascal_nonterminal())
+      {
+        char *temp_scan_start = scan_start;
+        char *temp_scan_end = scan_end;
+
+        scan();
+
+        if ((*scan_start == '=' || *scan_start == '>') && (*(scan_start+1) == '\'' || isspace(*(scan_start+1))) )
+        {
+          lines[line_number].kind = K_PASCAL_START_RULE;
+          lines[line_number].lhs_start = temp_scan_start;
+          lines[line_number].lhs_end = temp_scan_end;
+
+          if (line_ends_with_period(line_number))
+            lines[line_number].kind = K_PASCAL_START_END_RULE;
+        }
+      }
+    }
+  }
+
+  /* Annotate continuation lines */
+  for (line_number = 1; line_number < linecount - 1; line_number++)
+  {
+    if (lines[line_number].kind == K_COMMENT) /* presently unlabelled */
+    {
+      if (lines[line_number - 1].kind == K_PASCAL_START_RULE ||
+          lines[line_number - 1].kind == K_PASCAL_CONTINUATION)
+      {
+        if (line_ends_with_period(line_number))
+          lines[line_number].kind = K_PASCAL_END_RULE;
+        else
+          lines[line_number].kind = K_PASCAL_CONTINUATION;
+      }
+    }
+  }
+}
+
+void process_c(void)
+{
+  int in_rule = 0;
+  int temp;
+
+  /* Annotate start lines */
+  for (temp = 0; temp < linecount - 1; temp++)
+  {
+    scan_end = lines[temp].start;
+
+    scan();
+
+    if (initial_alpha_has_colon_suffix())
+    {
+      lines[temp].kind = K_START_RULE;
+      lines[temp].lhs_start = scan_start;
+      lines[temp].lhs_end = scan_end - 1; /* drop trailing colon */
+
+      scan();
+
+        /* Check for 'one of' */
+        if (((scan_end - scan_start) == 3) && *(scan_start) == 'o' &&
+                                              *(scan_start+1) == 'n' &&
+                                              *(scan_start+2) == 'e')
+        {
+          scan();
+          if (((scan_end - scan_start) == 2) && *(scan_start) == 'o' &&
+                                                *(scan_start+1) == 'f')
+            lines[temp].kind = K_START_RULE_ONE_OF;
+          scan();
+        }
+
+        if (*scan_start != '\n')
+          lines[temp].kind = K_MAYBE_TYPO;
+      }
+      else
+      {
+        scan();
+        if ((scan_end - scan_start == 1) && *scan_start == ':')
+          lines[temp].kind = K_MAYBE_TYPO;
+      }
+  }
+
+  /* Annotate productions */
+  for (temp = 0; temp < linecount - 1; temp++)
+  {
+
+    if (lines[temp].kind == K_START_RULE ||
+        lines[temp].kind == K_START_RULE_ONE_OF)
+      in_rule = 1;
+
+    if (lines[temp].kind == K_BLANK)
+      if (!(lines[temp-1].kind == K_START_RULE || lines[temp-1].kind == K_START_RULE_ONE_OF))   // The JLS often has a blank line after the initial ID: RHS designator
+        in_rule = 0;
+
+    if (in_rule && (lines[temp].kind == K_COMMENT ||
+        lines[temp].kind == K_MAYBE_TYPO))
+    {
+      lines[temp].kind = K_PRODUCTION;
+
+      if (lines[temp - 1].kind == K_START_RULE)
+        first_production_indent = white_prefix_length(temp);
+
+      if (use_indentation_as_continuation &&
+          ((white_prefix_length(temp) > (first_production_indent + 1)) |
+           (white_prefix_length(temp) < (first_production_indent - 1))
+          ))
+        lines[temp - 1].kind = K_PRODUCTION_CONTINUED;
+    }
+  }
+
+  /* Annotate final productions */
+  for (temp = 0; temp < linecount - 1; temp++)
+    if (lines[temp].kind == K_PRODUCTION &&
+        !(lines[temp+1].kind == K_PRODUCTION ||
+          lines[temp+1].kind == K_PRODUCTION_CONTINUED
+         )
+        )
+      lines[temp].kind = K_END_RULE;
+}
+
+int main(int argc, char *argv[])
+{
+  FILE *f;
+  char *filename;
+  unsigned temp;
+  char *tempstring;
+  int in_one_of_rule = 0;
+  unsigned charcount;
+  int pascal_indent;
+  int nonterminal_length;
+
+  if (argc < 2)
+  {
+    help();
+    return 1;
+  }
+
+  for (temp = 1; temp < argc; temp++)
+  {
+    if (*argv[temp] == '-')  /* option */
+      switch (*(argv[temp] + 1))
+      {
+        case 'c': suppress_comments = 1; break;
+        case 'd': use_dots = 1; break;
+        case 'e': use_ebnf = 1; break;
+        case 'i': use_indentation_as_continuation = 1; break;
+        case 'p': pascal_mode = 1; use_ebnf = 1; break;
+        case 's': suppress_section_numbers = 1; break;
+        default:
+          printf("Unknown option -%c\n\n", *(argv[temp] + 1));
+          help();
+          return 1;
+      }
+    else
+      filename = argv[temp];
+  }
+
+  if ((f = fopen(filename, "r")) == NULL)
+  {
+    printf("Unable to open input file '%s' for read\n\n", filename);
+    help();
+    return 0;
+  }
+
+  /* Size the file and allocate the buffer */
+  charcount = 0;
+  while (charcount++, getc(f) != EOF)
+    ;
+  rewind(f);
+
+  if ((buffer = (char*) malloc(charcount+2)) == NULL)
+  {
+    printf("Unable to allocate buffer\n");
+    return 0;
+  }
+
+  /* Load input buffer */
+  charcount = 0;
+  while (1)
+  {
+    int ch = getc(f);
+
+    if (ch == EOF)
+    {
+      if (buffer[charcount - 1] != '\n')
+        buffer[charcount++] = '\n';  /* tack on a trailing \n if missing */
+      break;
+    }
+    else
+      buffer[charcount++] = (char) ch;
+  }
+
+  /* Count lines */
+  for (temp = 0; temp < charcount; temp++)
+    if (buffer[temp] == '\n')
+      linecount++;
+
+  /* Allocate lines buffer */
+  lines = (struct line_struct*)
+          calloc(linecount + 2, sizeof(struct line_struct));
+
+  if (lines == NULL)
+  {
+    printf("Unable to allocate lines buffer\n");
+    return 1;
+  }
+
+  /* Load lines start entries */
+  linecount = 0;
+  lines[linecount++].start = &buffer[0];
+
+  for (temp = 0; temp < charcount; temp++)
+    if (buffer[temp] == '\n')
+      lines[linecount++].start = &buffer[temp+1];
+
+  /* Annotate blank lines */
+  for (temp = 0; temp < linecount - 1; temp++)
+  {
+    int is_blank = 1;
+
+    for (tempstring = lines[temp].start; *tempstring != '\n'; tempstring++)
+      if (!isspace(*tempstring))
+        is_blank = 0;
+
+    if (is_blank)
+      lines[temp].kind = K_BLANK;
+  }
+
+  if (suppress_section_numbers)
+  for (temp = 0; temp < linecount - 1; temp++)
+  {
+    scan_end = lines[temp].start;
+
+    scan();
+
+    if (is_section_number()) {
+      lines[temp].kind = K_SECTION_HEADING;
+
+//      fprintf(stderr, "suppressing section at line %i\n", temp);
+    }
+  }
+
+
+  if (pascal_mode)
+    process_pascal();
+   else
+     process_c();
+
+  /* Output lines */
+  printf("// Generated by gramex V3.2 from '%s' (this build "
+         __DATE__ " at " __TIME__ ")\n",
+         filename);
+  printf("// Command line:");
+  for (temp = 0; temp < argc; temp++)
+    printf(" %s", argv[temp]);
+
+  printf("\n\nM()(startRule)\n\n");
+
+  for (temp = 0; temp < linecount - 1; temp++)
+  {
+    char *c;
+
+    scan_end = lines[temp].start;
+
+    switch (lines[temp].kind)
+    {
+      case K_COMMENT:
+      case K_SECTION_HEADING:
+        if (!suppress_comments)
+        {
+          printf("// ");
+          for (c = lines[temp].start; *c != '\n'; c++)
+            printf("%c", *c);
+          printf("\n");
+        }
+        break;
+
+      case K_MAYBE_TYPO:
+        if (!suppress_comments)
+        {
+          printf("//?? ");
+          for (c = lines[temp].start; *c != '\n'; c++)
+            printf("%c", *c);
+          printf("\n");
+        }
+        break;
+
+      case K_START_RULE:
+        scan();
+        scan_end--;
+        write_pattern(1);
+        printf(" ::=");
+        printf("\n");
+        in_one_of_rule = 0;
+        break;
+
+      case K_PASCAL_START_END_RULE:
+      case K_PASCAL_START_RULE:
+        pascal_indent = 0;
+
+        printf("\n");
+
+        scan();
+
+        if (!suppress_section_numbers)
+        {
+          pascal_indent += printf("(*");
+          pascal_indent += write_pattern(1);
+          pascal_indent += printf("*) ");
+
+          while (pascal_indent < 14)
+            pascal_indent += printf(" ");
+        }
+
+        scan();
+        nonterminal_length = write_pattern(1);
+        pascal_indent += nonterminal_length;
+
+        pascal_indent += 1; /* allow for position of = in rule */
+
+        in_one_of_rule = 0;
+
+        if (line_ends_with_equals(temp))
+          pascal_indent = pascal_indent - nonterminal_length + 2;
+
+        write_to_end_of_line(scan_end);
+        printf("\n");
+
+        break;
+
+      case K_PASCAL_CONTINUATION:
+
+        indent_pascal(temp, pascal_indent);
+        write_to_end_of_line(scan_end);
+        printf("\n");
+        break;
+
+      case K_PASCAL_END_RULE:
+        indent_pascal(temp, pascal_indent);
+        write_to_end_of_line(scan_end);
+        printf("\n");
+        break;
+
+      case K_START_RULE_ONE_OF:
+        scan();
+        scan_end--;
+        write_pattern(1);
+        printf(" ::=");
+        printf("\n");
+        in_one_of_rule = 1;
+        break;
+
+      case K_END_RULE:
+        write_production(lines[temp].start, in_one_of_rule);
+        printf(";\n");
+        if (suppress_comments)
+          printf("\n");
+        break;
+
+      case K_PRODUCTION:
+        write_production(lines[temp].start, in_one_of_rule);
+        printf("|\n");
+        break;
+
+      case K_PRODUCTION_CONTINUED:
+        write_production(lines[temp].start, in_one_of_rule);
+        printf("\n");
+        break;
+
+      case K_BLANK:
+        if (!suppress_comments)
+          printf("\n");
+        break;
+    }
+  }
+
+  return 0;
+}
+

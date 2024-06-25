@@ -1,0 +1,140 @@
+(* ex17 *)
+S ::=  'a' ~S 'b' | A 'a' A | S 'a' .
+A ::=  'a' ~B | 'a' ~B ~B | # .
+B ::=  B A | # .
+
+(
+ex17_grammar := grammar[S tilde_enabled]
+tilde[ex17_grammar terminal]
+write[ex17_grammar]
+ah_ex17 := ah_table[ex17_grammar]
+ri_recognise[ah_ex17 "aaaabb"]
+)
+
+
+(* RIGHT table
+Symbols
+   0 !Illegal
+   1 #
+   2 $
+   3 'A!tilde'
+   4 'B!tilde'
+   5 'S!tilde'
+   6 'a'
+   7 'b'
+-------------
+   8 A
+   9 B
+  10 S
+
+Start symbol
+  10 S
+
+Rules
+A ::= 'a' ~'B!tilde' |
+       'a' ~'B!tilde' ~'B!tilde' |
+       # .
+B ::= B[0] A[1] |
+       # .
+S ::= 'a' ~'S!tilde' 'b' |
+       A[1] 'a' A[2] |
+       S[3] 'a' .
+
+Reduction table
+R14   |0|->9    B ::= . #
+R16   |0|->8    A ::= . #
+R28   |2|->9    B ::= B A . 
+R30   |3|->8    A ::= 'a' 'B!tilde' 'B!tilde' . 
+R31   |2|->8    A ::= 'a' 'B!tilde' . 
+R32   |2|->10   S ::= S 'a' . 
+R34   |3|->10   S ::= A 'a' A . 
+R36   |3|->10   S ::= 'a' 'S!tilde' 'b' . 
+
+Parse table
+     1 R14 2 
+     2 R16 4 S6 3 O 
+     4 R28 2 
+     3 P9 -4 
+    -4 P9 -5 R31 4 
+    -5 R30 4 
+     5 R16 8 S6 7 
+     8 S6 9 
+     9 R16 11 S6 10 
+    11 R34 6 
+    10 P9 -8 
+    -8 P9 -9 R31 11 
+    -9 R30 11 
+     7 P10 -10 P9 -6 
+   -10 S7 12 
+    12 R36 6 
+    -6 P9 -7 R31 8 
+    -7 R30 8 
+     6 S6 13 O A 
+    13 R32 6 
+
+Trie start table
+9 1 -4
+10 5 -6
+*)
+
+(* WRONG TABLE
+Symbols
+   0 !Illegal
+   1 #
+   2 $
+   3 'A!tilde'
+   4 'B!tilde'
+   5 'S!tilde'
+   6 'a'
+   7 'b'
+-------------
+   8 A
+   9 B
+  10 S
+
+Start symbol
+  10 S
+
+Rules
+A ::= 'a' ~B[0] |
+       'a' ~B[1] ~B[2] |
+       # .
+B ::= B[0] A[1] |
+       # .
+S ::= 'a' ~S[0] 'b' |
+       A[1] 'a' A[2] |
+       S[3] 'a' .
+
+Reduction table
+R14   |0|->9    B ::= . #
+R16   |0|->8    A ::= . #
+R28   |2|->9    B ::= B A . 
+R30   |3|->8    A ::= 'a' B B . 
+R31   |2|->8    A ::= 'a' B . 
+R32   |2|->10   S ::= S 'a' . 
+R34   |3|->10   S ::= A 'a' A . 
+R36   |3|->10   S ::= 'a' S 'b' . 
+
+Parse table
+     1 R16 5 S6 3 
+     5 S6 7 
+     7 R16 10 S6 8 
+    10 R34 2 
+     8 R14 9 
+     9 R14 11 R31 10 
+    13 R28 9 
+    11 R30 10 
+    15 R28 11 
+     3 R14 4 
+    16 S7 17 
+    17 R36 2 
+     4 R14 6 R31 5 
+    12 R28 4 
+     6 R30 5 
+    14 R28 6 
+     2 S6 18 A 
+    18 R32 2 
+
+Trie start table
+10 1 -4
+*)

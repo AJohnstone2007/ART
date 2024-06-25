@@ -1,0 +1,251 @@
+******: Warning - rule 'preprocessing_file' never called so deleted
+******: Warning - rule 'token' never called so deleted
+******: Warning - rule 'translation_unit' never called so deleted
+******: Error - identifier 'operator' is a C++ reserved word or library identifier
+******: Error - LL(1) violation - rule 'assignment_expression'
+ productions rdp_assignment_expression_0 ::= conditional_expression .
+ and rdp_assignment_expression_1 ::= logical_or_expression assignment_operator assignment_expression .
+ share these start tokens: '!', '!=', '\"', '%', '%=', '&', '&&', '&=', '\'', '(', '()', '*', '*=', '+', 
+'++', '+=', ',', '-', '--', '-=', '->', '->*', '.', '/', '/=', '0', '0X', '0x', 
+'1', '2', '3', '4', '5', '6', '7', '8', '9', '::', '<', '<<', '<<=', '<=', '=', 
+'==', '>', '>=', '>>', '>>=', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 
+'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 
+'[]', '\\U', '\\u', '^', '^=', '_', 'a', 'b', 'bool', 'c', 'char', 'const_cast', 
+'d', 'delete', 'delete[]', 'double', 'dynamic_cast', 'e', 'f', 'false', 'float', 
+'g', 'h', 'i', 'int', 'j', 'k', 'l', 'long', 'm', 'n', 'new', 'new[]', 'o', 'p', 
+'q', 'r', 'reinterpret_cast', 's', 'short', 'signed', 'sizeof', 'static_cast', 
+'t', 'this', 'true', 'typeid', 'u', 'unsigned', 'v', 'void', 'w', 'wchar_t', 'x', 
+'y', 'z', '|', '|=', '||', '~'
+******: Error - LL(1) violation - rule 'block_declaration'
+ productions rdp_block_declaration_3 ::= using_declaration .
+ and rdp_block_declaration_4 ::= using_directive .
+ share these start tokens: 'using'
+******: Error - LL(1) violation - rule 'cast_expression'
+ productions rdp_cast_expression_0 ::= unary_expression .
+ and rdp_cast_expression_1 ::= '(' type_id ')' cast_expression .
+ share these start tokens: '('
+******: Error - LL(1) violation - rule 'class_head'
+ productions rdp_class_head_4 ::= class_key [ identifier ] [ base_clause ] .
+ and rdp_class_head_7 ::= class_key nested_name_specifier identifier [ base_clause ] .
+ share these start tokens: 'class', 'struct', 'union'
+******: Error - LL(1) violation - rule 'class_name'
+ productions rdp_class_name_0 ::= identifier .
+ and rdp_class_name_1 ::= template_id .
+ share these start tokens: 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 
+'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '\\U', '\\u', '_', 'a', 'b', 
+'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 
+'s', 't', 'u', 'v', 'w', 'x', 'y', 'z'
+******: Error - LL(1) violation - rule 'class_or_namespace_name'
+ productions rdp_class_or_namespace_name_0 ::= class_name .
+ and rdp_class_or_namespace_name_1 ::= namespace_name .
+ share these start tokens: 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 
+'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '\\U', '\\u', '_', 'a', 'b', 
+'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 
+'s', 't', 'u', 'v', 'w', 'x', 'y', 'z'
+******: Error - LL(1) violation - rule 'condition'
+ productions rdp_condition_0 ::= expression .
+ and rdp_condition_1 ::= type_specifier_seq declarator '=' assignment_expression .
+ share these start tokens: '::', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 
+'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '\\U', '\\u', '_', 'a', 
+'b', 'bool', 'c', 'char', 'd', 'double', 'e', 'f', 'float', 'g', 'h', 'i', 'int', 
+'j', 'k', 'l', 'long', 'm', 'n', 'o', 'p', 'q', 'r', 's', 'short', 'signed', 't', 
+'u', 'unsigned', 'v', 'void', 'w', 'wchar_t', 'x', 'y', 'z'
+******: Error - LL(1) violation - rule 'control_line'
+ productions rdp_control_line_0 ::= '#' 'include' pp_tokens new_line .
+ and rdp_control_line_1 ::= '#' 'define' identifier replacement_list new_line .
+ share these start tokens: '#'
+******: Error - LL(1) violation - rule 'control_line'
+ productions rdp_control_line_0 ::= '#' 'include' pp_tokens new_line .
+ and rdp_control_line_4 ::= '#' 'define' identifier lparen [ 'identifier_list' ] ')' replacement_list new_line .
+ share these start tokens: '#'
+******: Error - LL(1) violation - rule 'control_line'
+ productions rdp_control_line_0 ::= '#' 'include' pp_tokens new_line .
+ and rdp_control_line_5 ::= '#' 'undef' identifier new_line .
+ share these start tokens: '#'
+******: Error - LL(1) violation - rule 'control_line'
+ productions rdp_control_line_0 ::= '#' 'include' pp_tokens new_line .
+ and rdp_control_line_6 ::= '#' 'line' pp_tokens new_line .
+ share these start tokens: '#'
+******: Error - LL(1) violation - rule 'control_line'
+ productions rdp_control_line_0 ::= '#' 'include' pp_tokens new_line .
+ and rdp_control_line_9 ::= '#' 'error' [ pp_tokens ] new_line .
+ share these start tokens: '#'
+******: Error - LL(1) violation - rule 'control_line'
+ productions rdp_control_line_0 ::= '#' 'include' pp_tokens new_line .
+ and rdp_control_line_12 ::= '#' 'pragma' [ pp_tokens ] new_line .
+ share these start tokens: '#'
+******: Error - LL(1) violation - rule 'control_line'
+ productions rdp_control_line_0 ::= '#' 'include' pp_tokens new_line .
+ and rdp_control_line_13 ::= '#' new_line .
+ share these start tokens: '#'
+******: Error - LL(1) violation - rule 'control_line'
+ productions rdp_control_line_1 ::= '#' 'define' identifier replacement_list new_line .
+ and rdp_control_line_4 ::= '#' 'define' identifier lparen [ 'identifier_list' ] ')' replacement_list new_line .
+ share these start tokens: '#'
+******: Error - LL(1) violation - rule 'control_line'
+ productions rdp_control_line_1 ::= '#' 'define' identifier replacement_list new_line .
+ and rdp_control_line_5 ::= '#' 'undef' identifier new_line .
+ share these start tokens: '#'
+******: Error - LL(1) violation - rule 'control_line'
+ productions rdp_control_line_1 ::= '#' 'define' identifier replacement_list new_line .
+ and rdp_control_line_6 ::= '#' 'line' pp_tokens new_line .
+ share these start tokens: '#'
+******: Error - LL(1) violation - rule 'control_line'
+ productions rdp_control_line_1 ::= '#' 'define' identifier replacement_list new_line .
+ and rdp_control_line_9 ::= '#' 'error' [ pp_tokens ] new_line .
+ share these start tokens: '#'
+******: Error - LL(1) violation - rule 'control_line'
+ productions rdp_control_line_1 ::= '#' 'define' identifier replacement_list new_line .
+ and rdp_control_line_12 ::= '#' 'pragma' [ pp_tokens ] new_line .
+ share these start tokens: '#'
+******: Error - LL(1) violation - rule 'control_line'
+ productions rdp_control_line_1 ::= '#' 'define' identifier replacement_list new_line .
+ and rdp_control_line_13 ::= '#' new_line .
+ share these start tokens: '#'
+******: Error - LL(1) violation - rule 'control_line'
+ productions rdp_control_line_4 ::= '#' 'define' identifier lparen [ 'identifier_list' ] ')' replacement_list new_line .
+ and rdp_control_line_5 ::= '#' 'undef' identifier new_line .
+ share these start tokens: '#'
+******: Error - LL(1) violation - rule 'control_line'
+ productions rdp_control_line_4 ::= '#' 'define' identifier lparen [ 'identifier_list' ] ')' replacement_list new_line .
+ and rdp_control_line_6 ::= '#' 'line' pp_tokens new_line .
+ share these start tokens: '#'
+******: Error - LL(1) violation - rule 'control_line'
+ productions rdp_control_line_4 ::= '#' 'define' identifier lparen [ 'identifier_list' ] ')' replacement_list new_line .
+ and rdp_control_line_9 ::= '#' 'error' [ pp_tokens ] new_line .
+ share these start tokens: '#'
+******: Error - LL(1) violation - rule 'control_line'
+ productions rdp_control_line_4 ::= '#' 'define' identifier lparen [ 'identifier_list' ] ')' replacement_list new_line .
+ and rdp_control_line_12 ::= '#' 'pragma' [ pp_tokens ] new_line .
+ share these start tokens: '#'
+******: Error - LL(1) violation - rule 'control_line'
+ productions rdp_control_line_4 ::= '#' 'define' identifier lparen [ 'identifier_list' ] ')' replacement_list new_line .
+ and rdp_control_line_13 ::= '#' new_line .
+ share these start tokens: '#'
+******: Error - LL(1) violation - rule 'control_line'
+ productions rdp_control_line_5 ::= '#' 'undef' identifier new_line .
+ and rdp_control_line_6 ::= '#' 'line' pp_tokens new_line .
+ share these start tokens: '#'
+******: Error - LL(1) violation - rule 'control_line'
+ productions rdp_control_line_5 ::= '#' 'undef' identifier new_line .
+ and rdp_control_line_9 ::= '#' 'error' [ pp_tokens ] new_line .
+ share these start tokens: '#'
+******: Error - LL(1) violation - rule 'control_line'
+ productions rdp_control_line_5 ::= '#' 'undef' identifier new_line .
+ and rdp_control_line_12 ::= '#' 'pragma' [ pp_tokens ] new_line .
+ share these start tokens: '#'
+******: Error - LL(1) violation - rule 'control_line'
+ productions rdp_control_line_5 ::= '#' 'undef' identifier new_line .
+ and rdp_control_line_13 ::= '#' new_line .
+ share these start tokens: '#'
+******: Error - LL(1) violation - rule 'control_line'
+ productions rdp_control_line_6 ::= '#' 'line' pp_tokens new_line .
+ and rdp_control_line_9 ::= '#' 'error' [ pp_tokens ] new_line .
+ share these start tokens: '#'
+******: Error - LL(1) violation - rule 'control_line'
+ productions rdp_control_line_6 ::= '#' 'line' pp_tokens new_line .
+ and rdp_control_line_12 ::= '#' 'pragma' [ pp_tokens ] new_line .
+ share these start tokens: '#'
+******: Error - LL(1) violation - rule 'control_line'
+ productions rdp_control_line_6 ::= '#' 'line' pp_tokens new_line .
+ and rdp_control_line_13 ::= '#' new_line .
+ share these start tokens: '#'
+******: Error - LL(1) violation - rule 'control_line'
+ productions rdp_control_line_9 ::= '#' 'error' [ pp_tokens ] new_line .
+ and rdp_control_line_12 ::= '#' 'pragma' [ pp_tokens ] new_line .
+ share these start tokens: '#'
+******: Error - LL(1) violation - rule 'control_line'
+ productions rdp_control_line_9 ::= '#' 'error' [ pp_tokens ] new_line .
+ and rdp_control_line_13 ::= '#' new_line .
+ share these start tokens: '#'
+******: Error - LL(1) violation - rule 'control_line'
+ productions rdp_control_line_12 ::= '#' 'pragma' [ pp_tokens ] new_line .
+ and rdp_control_line_13 ::= '#' new_line .
+ share these start tokens: '#'
+******: Error - LL(1) violation - rule 'declaration'
+ productions rdp_declaration_0 ::= block_declaration .
+ and rdp_declaration_1 ::= function_definition .
+ share these start tokens: '!', '!=', '%', '%=', '&', '&&', '&=', '(', '()', '*', '*=', '+', '++', '+=', 
+',', '-', '--', '-=', '->', '->*', '/', '/=', '::', '<', '<<', '<<=', '<=', '=', 
+'==', '>', '>=', '>>', '>>=', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 
+'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 
+'[]', '\\U', '\\u', '^', '^=', '_', 'a', 'auto', 'b', 'bool', 'c', 'char', 'class', 
+'const', 'd', 'delete', 'delete[]', 'double', 'e', 'enum', 'explicit', 'extern', 
+'f', 'float', 'friend', 'g', 'h', 'i', 'inline', 'int', 'j', 'k', 'l', 'long', 
+'m', 'mutable', 'n', 'new', 'new[]', 'o', 'p', 'q', 'r', 'register', 's', 'short', 
+'signed', 'static', 'struct', 't', 'typedef', 'typename', 'u', 'union', 'unsigned', 
+'v', 'virtual', 'void', 'volatile', 'w', 'wchar_t', 'x', 'y', 'z', '|', '|=', 
+'||', '~'
+******: Error - LL(1) violation - rule 'declaration'
+ productions rdp_declaration_0 ::= block_declaration .
+ and rdp_declaration_5 ::= linkage_specification .
+ share these start tokens: 'extern'
+******: Error - LL(1) violation - rule 'declaration'
+ productions rdp_declaration_0 ::= block_declaration .
+ and rdp_declaration_6 ::= namespace_definition .
+ share these start tokens: 'namespace'
+******: Error - LL(1) violation - rule 'declaration'
+ productions rdp_declaration_1 ::= function_definition .
+ and rdp_declaration_5 ::= linkage_specification .
+ share these start tokens: 'extern'
+******: Error - LL(1) violation - rule 'declaration'
+ productions rdp_declaration_2 ::= template_declaration .
+ and rdp_declaration_3 ::= explicit_instantiation .
+ share these start tokens: 'template'
+******: Error - LL(1) violation - rule 'declaration'
+ productions rdp_declaration_2 ::= template_declaration .
+ and rdp_declaration_4 ::= explicit_specialization .
+ share these start tokens: 'template'
+******: Error - LL(1) violation - rule 'declaration'
+ productions rdp_declaration_3 ::= explicit_instantiation .
+ and rdp_declaration_4 ::= explicit_specialization .
+ share these start tokens: 'template'
+******: Error - LL(1) violation - rule 'declarator'
+ productions rdp_declarator_0 ::= direct_declarator .
+ and rdp_declarator_1 ::= ptr_operator declarator .
+ share these start tokens: '&', '*', '::', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 
+'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '\\U', '\\u', 
+'_', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 
+'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'
+******: Error - LL(1) violation - rule 'declarator_id'
+ productions rdp_declarator_id_2 ::= [ '::' ] id_expression .
+ and rdp_declarator_id_7 ::= [ '::' ] [ nested_name_specifier ] type_name .
+ share these start tokens: '::', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 
+'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '\\U', '\\u', '_', 'a', 
+'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 
+'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'
+******: Error - LL(1) violation - rule 'delete_expression'
+ productions rdp_delete_expression_2 ::= [ '::' ] 'delete' cast_expression .
+ and rdp_delete_expression_5 ::= [ '::' ] 'delete' '[' ']' cast_expression .
+ share these start tokens: '::', 'delete'
+******: Error - LL(1) violation - rule 'elaborated_type_specifier'
+ productions rdp_elaborated_type_specifier_12 ::= 'typename' [ '::' ] nested_name_specifier identifier .
+ and rdp_elaborated_type_specifier_15 ::= 'typename' [ '::' ] nested_name_specifier identifier '<' template_argument_list '>' .
+ share these start tokens: 'typename'
+******: Error - LL(1) violation - rule 'enumerator_definition'
+ productions rdp_enumerator_definition_0 ::= enumerator .
+ and rdp_enumerator_definition_1 ::= enumerator '=' constant_expression .
+ share these start tokens: 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 
+'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '\\U', '\\u', '_', 'a', 'b', 
+'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 
+'s', 't', 'u', 'v', 'w', 'x', 'y', 'z'
+******: Error - LL(1) violation - rule 'exception_declaration'
+ productions rdp_exception_declaration_0 ::= type_specifier_seq declarator .
+ and rdp_exception_declaration_1 ::= type_specifier_seq abstract_declarator .
+ share these start tokens: '::', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 
+'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '\\U', '\\u', '_', 'a', 
+'b', 'bool', 'c', 'char', 'class', 'const', 'd', 'double', 'e', 'enum', 'f', 'float', 
+'g', 'h', 'i', 'int', 'j', 'k', 'l', 'long', 'm', 'n', 'o', 'p', 'q', 'r', 's', 
+'short', 'signed', 'struct', 't', 'typename', 'u', 'union', 'unsigned', 'v', 'void', 
+'volatile', 'w', 'wchar_t', 'x', 'y', 'z'
+******: Error - LL(1) violation - rule 'exception_declaration'
+ productions rdp_exception_declaration_0 ::= type_specifier_seq declarator .
+ and rdp_exception_declaration_2 ::= type_specifier_seq .
+ share these start tokens: '::', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 
+'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '\\U', '\\u', '_', 'a', 
+'b', 'bool', 'c', 'char', 'class', 'const', 'd', 'double', 'e', 'enum', 'f', 'float', 
+'g', 'h', 'i', 'int', 'j', 'k', 'l', 'long', 'm', 'n', 'o', 'p', 'q', 'r', 's', 
+'short', 'signed', 'struct', 't', 'typename', 'u', 'union', 'unsigned', 'v', 'void', 
+'volatile', 'w', 'wchar_t', 'x', 'y', 'z'
+******: Error - LL(1) violation - rule 'exception_declaration'
+Fatal (gc.gtb): too many errors

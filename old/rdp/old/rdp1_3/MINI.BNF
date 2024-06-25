@@ -1,0 +1,46 @@
+(*****************************************************************************
+*
+* RDP release 1.30 by Adrian Johnstone (adrian@dcs.rhbnc.ac.uk) 28 Dec 1994
+*
+* mini.bnf - a decorated mini grammar with interpreter semantics
+*
+* This file may be freely distributed. Please mail improvements to the author.
+*
+*****************************************************************************)
+TITLE("Mini V1.30 (c) Adrian Johnstone 1994")
+SUFFIX("min")
+
+program   ::= {([var_dec] | [statement]) ';'}.
+
+var_dec   ::= 'int' < NEW_ID:name [* symbol__insert_id(name)->token=P_ID; *]      (* declaration *)
+                      ['=' e1:val [* symbol__lookup_id(name)->data.i=val; *]
+                      ]
+                    > ','.      (* initialisation *)
+
+
+statement ::= ID:name '=' e1:value [* symbol__lookup_id(name)->data.i = value; *] |
+              'print' '(' < e1:value [* printf(INTEGER_FORMAT, value); *] |
+                            String:str [* printf(STRING_FORMAT, str+1); *]
+                          >','
+                      ')'.
+
+e1:integer ::= e2:result {'+' e2:right [* result += right; *] |          (* Add *)
+                         '-' e2:right [* result -= right; *] }.         (* Subtract *)
+
+e2:integer ::= e3:result {'*' e3:right [* result *= right; *] |          (* Divide *)
+                         '/' e3:right [* result /= right; *] }.         (* Multiply *)
+
+e3:integer ::= '+' e4:result |                                       (* Posite *)
+              '-' e4:result [* result = -result; *] |                    (* Negate *)
+              e4:result.
+
+e4:integer ::= ID:name [* result = symbol__lookup_id(name)->data.i; *] | (* Variable *)
+              INTEGER:result |                                        (* Numeric literal *)
+              '(' e1:result ')'.                                    (* Parenthesised expression *)
+
+comment    ::= COMMENT_NEST('(*' '*)').                             (* Comments *)
+
+String: string ::= STRING_ESC('"' '\\'):result.                                (* Strings for print *)
+
+(* End of mini.bnf *)
+

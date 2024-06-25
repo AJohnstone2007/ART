@@ -1,0 +1,60 @@
+(*******************************************************************************
+*
+* RDP release 1.40 by Adrian Johnstone (adrian@dcs.rhbnc.ac.uk) 30 Jan 1995
+*
+* mini.bnf - a decorated mini grammar with interpreter semantics
+*
+* This file may be freely distributed. Please mail improvements to the author.
+*
+*******************************************************************************)
+TITLE("Mini V1.40 (c) Adrian Johnstone 1995")
+SUFFIX("min")
+
+SYMBOL_TABLE(mini 101 31
+             symbol__compare_string
+             symbol__hash_string
+             symbol__print_string
+             [* char* id; integer i; *]
+            )
+
+program   ::= {([var_dec] | [statement]) ';'}.
+
+var_dec   ::= 'int' < ID:name [ '=' e1:val ]
+ [* mini__cast(symbol__insert_string_key(mini, name, sizeof(mini__data)))->i = val; *]
+                    > ','.
+
+statement ::= ID:name
+              [* if (symbol__lookup_key(mini, name) == NULL)
+                 {
+                   text__message(TEXT__ERROR, "undeclared variable '%s'\n", name);
+                   symbol__insert_string_key(mini, name, sizeof(mini__data));
+                 }
+              *]
+              '=' e1:val
+              [* mini__cast(symbol__lookup_key(mini, name))->i = val; *] |
+
+              'print' '(' < e1:val [* printf("%li", val); *] |
+                            String:str [* printf("%s", str); *]
+                          >','
+                      ')'.
+
+e1:integer ::= e2:result {'+' e2:right [* result += right; *] |          (* Add *)
+                          '-' e2:right [* result -= right; *] }.         (* Subtract *)
+
+e2:integer ::= e3:result {'*' e3:right [* result *= right; *] |          (* Multiply *)
+                          '/' e3:right [* result /= right; *] }.         (* Divide *)
+
+e3:integer ::= '+' e4:result |                                           (* Posite *)
+               '-' e4:result [* result = -result; *] |                   (* Negate *)
+               e4:result.
+
+e4:integer ::= ID:name [* result = mini__cast(symbol__lookup_key(mini, name))->i; *] | (* Variable *)
+               INTEGER:result |                                          (* Numeric literal *)
+               '(' e1:result ')'.                                        (* Parenthesised expression *)
+
+comment    ::= COMMENT_NEST('(*' '*)').                                  (* Comments *)
+
+String: char * ::= STRING_ESC('"' '\\'):result.                          (* Strings for print *)
+
+(* End of mini.bnf *)
+

@@ -1,0 +1,150 @@
+\contentsline {chapter}{\numberline {1}Introduction}{1}
+\contentsline {section}{\numberline {1.1}Specifying languages to {\fontseries m\selectfont \tt rdp}}{1}
+\contentsline {section}{\numberline {1.2}Acceptable languages}{2}
+\contentsline {section}{\numberline {1.3}Support modules}{3}
+\contentsline {section}{\numberline {1.4}System flow}{3}
+\contentsline {chapter}{\numberline {2}IBNF\,--\,the {\fontseries m\selectfont \tt rdp}\ source language}{7}
+\contentsline {section}{\numberline {2.1}Grammars and BNF}{7}
+\contentsline {section}{\numberline {2.2}Layout and comments}{9}
+\contentsline {section}{\numberline {2.3}Identifiers}{9}
+\contentsline {section}{\numberline {2.4}Grammar rule format}{10}
+\contentsline {chapter}{\numberline {3}IBNF extended forms}{11}
+\contentsline {section}{\numberline {3.1}Sequences}{11}
+\contentsline {section}{\numberline {3.2}Alternate productions}{11}
+\contentsline {section}{\numberline {3.3}Recursion}{12}
+\contentsline {section}{\numberline {3.4}Do-first}{12}
+\contentsline {section}{\numberline {3.5}Zero-or-one occurrences (optional sub-productions)}{12}
+\contentsline {section}{\numberline {3.6}Zero-or-many occurrences (Kleene closure)}{13}
+\contentsline {section}{\numberline {3.7}One-or-many occurrences (positive closure)}{13}
+\contentsline {section}{\numberline {3.8}The iterator operator {\tt @}}{13}
+\contentsline {section}{\numberline {3.9}Using iterators to implement lists}{14}
+\contentsline {chapter}{\numberline {4}Scanner elements}{15}
+\contentsline {section}{\numberline {4.1}Introduction}{15}
+\contentsline {subsection}{\fontseries m\selectfont Keyword tokens}{16}
+\contentsline {subsection}{{\fontseries m\selectfont \tt ID} token}{16}
+\contentsline {subsection}{{\fontseries m\selectfont \tt INTEGER} token}{16}
+\contentsline {subsection}{{\fontseries m\selectfont \tt REAL} token}{17}
+\contentsline {subsection}{{\fontseries m\selectfont \tt STRING({\rm \em \fontseries m\selectfont open\/})} token}{17}
+\contentsline {subsection}{{\fontseries m\selectfont \tt STRING\_\,ESC\,({\rm \em \fontseries m\selectfont open escape\/})} token}{17}
+\contentsline {subsection}{{\fontseries m\selectfont \tt CHAR({\rm \em \fontseries m\selectfont open\/})} token}{17}
+\contentsline {subsection}{{\fontseries m\selectfont \tt CHAR\_\,ESC\,({\rm \em \fontseries m\selectfont open escape\/})} token}{18}
+\contentsline {subsection}{{\fontseries m\selectfont \tt EOLN} token}{18}
+\contentsline {section}{\numberline {4.2}Describing comments to the scanner}{18}
+\contentsline {chapter}{\numberline {5}Attributes and semantic actions}{21}
+\contentsline {section}{\numberline {5.1}An introductory example}{21}
+\contentsline {section}{\numberline {5.2}Synthesized attribute definition}{22}
+\contentsline {section}{\numberline {5.3}Synthesized attribute types for scanner primitives}{23}
+\contentsline {section}{\numberline {5.4}Using synthesized attributes}{23}
+\contentsline {section}{\numberline {5.5}Inherited attribute definition}{24}
+\contentsline {section}{\numberline {5.6}Semantic actions}{24}
+\contentsline {section}{\numberline {5.7}Error checking of semantic actions}{25}
+\contentsline {section}{\numberline {5.8}Default actions for iterators that match the empty string}{25}
+\contentsline {section}{\numberline {5.9}Semantic rules}{25}
+\contentsline {section}{\numberline {5.10}Semantic actions in multi-pass parsers}{26}
+\contentsline {chapter}{\numberline {6}Directives}{29}
+\contentsline {section}{\numberline {6.1}Flow control directives}{29}
+\contentsline {subsection}{{\fontseries m\selectfont \tt INCLUDE("}{\rm \em \fontseries m\selectfont filename\/}{\fontseries m\selectfont \tt ")}}{29}
+\contentsline {section}{\numberline {6.2}Parser setup directives}{29}
+\contentsline {subsection}{{\fontseries m\selectfont \tt USES("}{\rm \em \fontseries m\selectfont filename\/}{\fontseries m\selectfont \tt ")}}{29}
+\contentsline {subsection}{{\fontseries m\selectfont \tt TITLE("}{\rm \em \fontseries m\selectfont string\/}{\fontseries m\selectfont \tt ")}}{30}
+\contentsline {subsection}{{\fontseries m\selectfont \tt SUFFIX("}{\rm \em \fontseries m\selectfont string\/}{\fontseries m\selectfont \tt ")}}{30}
+\contentsline {subsection}{\fontseries m\selectfont \tt PARSER({\rm \em \fontseries m\selectfont start})}{30}
+\contentsline {subsection}{{\fontseries m\selectfont \tt PRE\_\,PARSE([*}{\rm \em \fontseries m\selectfont \nobreakspace {}action\nobreakspace {}}{\fontseries m\selectfont \tt *])}}{30}
+\contentsline {subsection}{{\fontseries m\selectfont \tt POST\_\,PARSE([*}{\rm \em \fontseries m\selectfont \nobreakspace {}action\nobreakspace {}}{\fontseries m\selectfont \tt *])}}{30}
+\contentsline {subsection}{{\fontseries m\selectfont \tt OUTPUT\_\,FILE("}{\rm \em \fontseries m\selectfont file\/}{\fontseries m\selectfont \tt ")}}{30}
+\contentsline {subsection}{{\fontseries m\selectfont \tt PASSES(}{\rm \em \fontseries m\selectfont count}{\fontseries m\selectfont \tt )}}{30}
+\contentsline {subsection}{{\fontseries m\selectfont \tt SYMBOL\_\,TABLE(}{\rm \em \fontseries m\selectfont name size prime compare hash print} {\fontseries m\selectfont \tt [*}{\rm \em \fontseries m\selectfont \nobreakspace {}data\nobreakspace {}}{\fontseries m\selectfont \tt *])}}{31}
+\contentsline {section}{\numberline {6.3}Command line argument definition directives}{32}
+\contentsline {subsection}{{\fontseries m\selectfont \tt ARG\_\,BOOLEAN(}{\rm \em \fontseries m\selectfont key identifier key\_\,string}{\fontseries m\selectfont \tt )}}{32}
+\contentsline {subsection}{{\fontseries m\selectfont \tt ARG\_\,NUMERIC(}{\rm \em \fontseries m\selectfont key identifier key\_\,string}{\fontseries m\selectfont \tt )}}{32}
+\contentsline {subsection}{{\fontseries m\selectfont \tt ARG\_\,STRING(}{\rm \em \fontseries m\selectfont key identifier key\_\,string}{\fontseries m\selectfont \tt )}}{33}
+\contentsline {subsection}{{\fontseries m\selectfont \tt ARG\_\,BLANK(}{\rm \em \fontseries m\selectfont key\_\,string}{\fontseries m\selectfont \tt )}}{33}
+\contentsline {section}{\numberline {6.4}Command line default directives}{33}
+\contentsline {subsection}{{\fontseries m\selectfont \tt TAB\_\,WIDTH(}{\rm \em \fontseries m\selectfont count}{\fontseries m\selectfont \tt )}}{33}
+\contentsline {subsection}{{\fontseries m\selectfont \tt TEXT\_\,SIZE(}{\rm \em \fontseries m\selectfont count}{\fontseries m\selectfont \tt )}}{33}
+\contentsline {subsection}{{\fontseries m\selectfont \tt MAX\_\,ERRORS(}{\rm \em \fontseries m\selectfont count}{\fontseries m\selectfont \tt )}}{33}
+\contentsline {subsection}{{\fontseries m\selectfont \tt MAX\_\,WARNINGS(}{\rm \em \fontseries m\selectfont count}{\fontseries m\selectfont \tt )}}{34}
+\contentsline {section}{\numberline {6.5}Scanner directives}{34}
+\contentsline {subsection}{\fontseries m\selectfont \tt CASE\_\,INSENSITIVE}{34}
+\contentsline {subsection}{\fontseries m\selectfont \tt SHOW\_\,SKIPS}{34}
+\contentsline {section}{\numberline {6.6}Tree generation directives}{34}
+\contentsline {subsection}{{\fontseries m\selectfont \tt TREE([*}{\rm \em \fontseries m\selectfont \nobreakspace {}data\nobreakspace {}}{\fontseries m\selectfont \tt *]})}{34}
+\contentsline {subsection}{{\fontseries m\selectfont \tt EPSILON\_\,TREE([*}{\rm \em \fontseries m\selectfont \nobreakspace {}data\nobreakspace {}}{\fontseries m\selectfont \tt *]})}{34}
+\contentsline {subsection}{{\fontseries m\selectfont \tt ANNOTATED\_\,EPSILON\_\,TREE([*}{\rm \em \fontseries m\selectfont \nobreakspace {}data\nobreakspace {}}{\fontseries m\selectfont \tt *]})}{35}
+\contentsline {chapter}{\numberline {7}Running {\fontseries m\selectfont \tt rdp}}{37}
+\contentsline {section}{\numberline {7.1}{\fontseries m\selectfont \tt rdp}\ filename parameters}{37}
+\contentsline {section}{\numberline {7.2}{\fontseries m\selectfont \tt rdp}\ option parameters}{37}
+\contentsline {subsection}{{\fontseries m\selectfont \tt -e} write out expanded IBNF}{37}
+\contentsline {subsection}{{\fontseries m\selectfont \tt -E} add rule name to error messages}{38}
+\contentsline {subsection}{{\fontseries m\selectfont \tt -f} filter mode}{38}
+\contentsline {subsection}{{\fontseries m\selectfont \tt -F} force creation of output files}{38}
+\contentsline {subsection}{{\fontseries m\selectfont \tt -l} make a listing}{38}
+\contentsline {subsection}{{\fontseries m\selectfont \tt -ofilename} write output to filename}{39}
+\contentsline {subsection}{{\fontseries m\selectfont \tt -p} make parser only}{39}
+\contentsline {subsection}{{\fontseries m\selectfont \tt -R} add rule entry and exit messages}{39}
+\contentsline {subsection}{{\fontseries m\selectfont \tt -s} echo each scanner symbol as it is read}{39}
+\contentsline {subsection}{{\fontseries m\selectfont \tt -S} print summary symbol table statistics}{39}
+\contentsline {subsection}{{\fontseries m\selectfont \tt -tn} tab expansion width}{39}
+\contentsline {subsection}{{\fontseries m\selectfont \tt -Tn} text buffer size in bytes for scanner}{40}
+\contentsline {subsection}{{\fontseries m\selectfont \tt -v} set verbose mode}{40}
+\contentsline {subsection}{{\fontseries m\selectfont \tt -V} dump derivation tree in VCG format}{40}
+\contentsline {section}{\numberline {7.3}Options understood by {\fontseries m\selectfont \tt rdp}-generated parsers}{41}
+\contentsline {chapter}{\numberline {8}{\fontseries m\selectfont \tt rdp}\ global variables}{43}
+\contentsline {section}{\numberline {8.1}Monitoring parser status at runtime}{43}
+\contentsline {subsection}{\tt rdp\_\,error\_\,return}{43}
+\contentsline {subsection}{\tt rdp\_\,outputfilename}{43}
+\contentsline {subsection}{\tt rdp\_\,pass}{43}
+\contentsline {subsection}{\tt rdp\_\,sourcefilename}{43}
+\contentsline {subsection}{\tt rdp\_\,tree}{43}
+\contentsline {subsection}{\tt rdp\_\,verbose}{44}
+\contentsline {section}{\numberline {8.2}Defining the message stream}{44}
+\contentsline {section}{\numberline {8.3}Adding reserved words to the dangerous identifier list}{44}
+\contentsline {chapter}{\numberline {9}Derivation tree construction and visualisation}{45}
+\contentsline {section}{\numberline {9.1}Derivation trees}{46}
+\contentsline {subsection}{\numberline {9.1.1}A larger example}{47}
+\contentsline {section}{\numberline {9.2}Tree generation directives}{51}
+\contentsline {subsection}{{\fontseries m\selectfont \tt TREE([*}{\rm \em \fontseries m\selectfont \nobreakspace {}data\nobreakspace {}}{\fontseries m\selectfont \tt *])}}{51}
+\contentsline {subsection}{{\fontseries m\selectfont \tt EPSILON\_\,TREE([*}{\rm \em \fontseries m\selectfont \nobreakspace {}data\nobreakspace {}}{\fontseries m\selectfont \tt *])}}{51}
+\contentsline {subsection}{{\fontseries m\selectfont \tt ANNOTATED\_\,EPSILON\_\,TREE([*}{\rm \em \fontseries m\selectfont \nobreakspace {}data\nobreakspace {}}{\fontseries m\selectfont \tt *])}}{51}
+\contentsline {section}{\numberline {9.3}Using VCG to visualise derivation trees}{51}
+\contentsline {chapter}{\numberline {10}Tree manipulation}{55}
+\contentsline {section}{\numberline {10.1}Normal tree construction}{55}
+\contentsline {section}{\numberline {10.2}Modifying tree construction with promotion operators}{56}
+\contentsline {subsection}{\numberline {10.2.1}Promote underneath parent}{56}
+\contentsline {subsection}{\numberline {10.2.2}Promote on top of parent}{56}
+\contentsline {subsection}{\numberline {10.2.3}Promote above parent}{56}
+\contentsline {subsection}{\numberline {10.2.4}Insert here (no promotion)}{57}
+\contentsline {section}{\numberline {10.3}Valid contexts for promotion operators}{57}
+\contentsline {section}{\numberline {10.4}A complete example}{58}
+\contentsline {subsection}{\numberline {10.4.1}Removing syntactic sugar}{58}
+\contentsline {subsection}{\numberline {10.4.2}Making operators parent nodes to their operands}{58}
+\contentsline {subsection}{\numberline {10.4.3}Handling left associative operators}{61}
+\contentsline {chapter}{\numberline {11}Error and informational messages}{63}
+\contentsline {section}{\numberline {11.1}Fatal errors}{64}
+\contentsline {section}{\numberline {11.2}Errors}{65}
+\contentsline {section}{\numberline {11.3}Warnings}{69}
+\contentsline {section}{\numberline {11.4}Informational messages}{69}
+\contentsline {chapter}{\numberline {12}Understanding and debugging {\fontseries m\selectfont \tt rdp}-generated parsers}{73}
+\contentsline {section}{\numberline {12.1}The header file}{73}
+\contentsline {section}{\numberline {12.2}The {\fontseries m\selectfont \tt rdp}\ scanner}{73}
+\contentsline {subsection}{\numberline {12.2.1}The token enumeration}{74}
+\contentsline {subsection}{\numberline {12.2.2}Interaction between the scanner and the parser}{75}
+\contentsline {section}{\numberline {12.3}The main file}{76}
+\contentsline {subsection}{\numberline {12.3.1}Implementing parser functions}{76}
+\contentsline {section}{\numberline {12.4}Selecting alternate productions}{79}
+\contentsline {section}{\numberline {12.5}Parsing iterators}{80}
+\contentsline {section}{\numberline {12.6}Debugging {\fontseries m\selectfont \tt rdp}-generated parsers}{81}
+\contentsline {section}{\numberline {12.7}Errors reported by {\fontseries m\selectfont \tt rdp}\ when parsing a specification}{81}
+\contentsline {section}{\numberline {12.8}LL(1) errors reported by {\fontseries m\selectfont \tt rdp}\ during the analysis phase}{82}
+\contentsline {section}{\numberline {12.9}Refining a grammar}{83}
+\contentsline {subsubsection}{Examining scanner lexemes with the {\tt -s} flag}{83}
+\contentsline {subsubsection}{Adding rule names to error messages with the {\tt -E} flag}{84}
+\contentsline {subsubsection}{Enabling a full parser trace with the {\tt -R} flag}{84}
+\contentsline {subsubsection}{Tracing with VCG}{84}
+\contentsline {section}{\numberline {12.10}Debugging semantic actions}{84}
+\contentsline {subsubsection}{Inhibiting semantic actions with the {\tt -p} flag}{84}
+\contentsline {subsubsection}{Tracing parsers with a debugger}{84}
+\contentsline {subsubsection}{Examining the contents of symbol tables with the {\tt -S} flag}{85}
+\contentsline {chapter}{\numberline {A}Acquiring and installing {\fontseries m\selectfont \tt rdp}}{87}
+\contentsline {section}{\numberline {A.1}Installation}{87}
+\contentsline {section}{\numberline {A.2}Build log}{89}

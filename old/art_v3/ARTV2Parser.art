@@ -1,0 +1,129 @@
+(* artparse.art - ART V3.00 front end grammar modded for V2 with semantics removd
+
+(c) Adrian Johnstone 2015-16 *)
+
+ARTV3 &COMMENT_NEST_ART &COMMENT_LINE_C &WHITESPACE()(text)
+
+text ::=  textElements^ ;
+     
+textElements ::= textElement^ textElements^ | #^ ;
+
+textElement ::= directive^ |
+                equation |
+                rule |
+                deleter ;
+
+directive ::=  'module'^^ ID |
+
+              'import'^ ID^ |
+              'start'^ ID^ |
+
+              'whitespace'^ ID^ |
+              'longest'^ ID^ |
+              'suppress'^ ID^ |
+
+              'option'^ IDList^ |
+
+              'prelude'^ STRING_BRACE_NEST^ |
+              'support'^ STRING_BRACE_NEST^ ;
+
+equation ::= MINUSUPTOEQUAL EQUALUPTOMINUS IDopt^  ; 
+
+rule ::= nonTerminal^  
+         attributesOpt^  
+         '::='^ rhs  ';'; // Added ';' for V2 compatibility
+
+deleter ::= nonTerminal^ ':/='^  rhs;
+
+attributesOpt<lhs:String> ::=  '<'^ attributes^ '>'^ | #^;
+attributes<lhs:String> ::=  attribute attributes^ | #^;
+attribute<lhs:String> ::= ID ':'^ ID  ;
+
+(* Body rules below *)
+
+rhs<lhs:String isDeleter:boolean> ::= cat  | 
+         cat  
+         '|'^  rhs^ ;
+
+alt ::= cat^^ |          (* This cat is double hatted onto the alt so that we do not have a singleton alt *)
+        cat '|'^ alt1^ ; (* alt1 matches the same language as alt, but has different hat behaviour *)
+alt1 ::= cat | cat '|'^ alt1^ ;
+
+cat::= slot catTail^;
+catTail ::=  abbrev slot | abbrev slot catTail^;
+
+slot ::= #^ | action ;
+
+abbrev ::= iter^^ | iter '*'^^ | iter '+'^^ | iter '?'^^ ;
+
+iter ::= diff^^ | diff '@'^^ iter^ ; 
+
+diff ::= not^^ | diff^ '/'^^ not ;
+
+not ::=  element^^ | '~'^^ element ;
+
+element<doFirst:boolean>
+        ::= epsilon^^ annotations | 
+            nonTerminal^^ annotations | 
+            caseSensitiveTerminal^^ annotations | 
+            caseInsensitiveTerminal^^ annotations | 
+            characterTerminal^^ annotations | 
+            builtinTerminal^^ annotations | 
+            epsilon^^ | 
+            nonTerminal^^ | 
+            caseSensitiveTerminal^^ | 
+            caseInsensitiveTerminal^^ | 
+            characterTerminal^^ | 
+            builtinTerminal^^ | 
+            insertTear^^ | 
+            '('^^ alt ')'^ ;
+
+annotations ::= annotation | annotation annotations^ ;
+
+annotation ::= name | delay | gather | fold ;
+
+name ::= ':'^^ ID ;
+delay ::= '<'^^ ;
+gather ::= '!'^^ ID ;
+fold ::= '^_'^^ | '^'^^ | '^^'^^ | '^^^'^^ ;
+insertTear ::= '%%'^^ ID ;
+
+nonTerminal<v:String> ::= ID  ;
+caseSensitiveTerminal ::= STRING_SQ ;
+caseInsensitiveTerminal ::= STRING_DQ ;
+characterTerminal ::= CHAR_BQ | CHAR_BQ  '..' CHAR_BQ ;
+builtinTerminal ::= '&'^ ID ;
+insertionName ::= '%%'^ ID ;
+epsilon ::=  '#'^;
+
+action ::= STRING_BRACE_NEST ;
+insertion ::= '[' alt ']' ;
+
+IDList ::= ID | ID IDList ;
+IDopt<v:String> ::= ID |  #^;
+
+(* Lexical rules faked up using builtins *)
+
+ID <leftExtent:int rightExtent:int lexeme:String v:String> ::= 
+  &ID^^ ;
+
+INTEGER <leftExtent:int rightExtent:int lexeme:String v:int> ::= 
+  &INTEGER^^ ;
+
+STRING_DQ <leftExtent:int rightExtent:int lexeme:String v:String> ::= 
+  &STRING_DQ^^ ;
+
+STRING_SQ <leftExtent:int rightExtent:int lexeme:String v:String> ::= 
+  &STRING_SQ^^ ;
+
+CHAR_BQ <leftExtent:int rightExtent:int lexeme:String v:String> ::= 
+  &CHAR_BQ^^ ;
+
+MINUSUPTOEQUAL <leftExtent:int rightExtent:int lexeme:String v:String> ::= 
+  &MINUSUPTOEQUAL^^  ;
+
+EQUALUPTOMINUS <leftExtent:int rightExtent:int lexeme:String v:String> ::= 
+  &EQUALUPTOMINUS^^  ;
+
+STRING_BRACE_NEST <leftExtent:int rightExtent:int lexeme:String v:String> ::= 
+  &STRING_BRACE_NEST ;

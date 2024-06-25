@@ -1,0 +1,256 @@
+** RDP release version 1.00 flyer. Adrian Johnstone 16 February 1994 **
+
+RDP - a recursive descent parser generator
+
+RDP compiles attributed LL(1) grammars decorated with C-language semantic
+actions into recursive descent compilers. RDP is written in strict ANSI C
+and produces strict ANSI C. RDP was developed using Borland C 3.1 on a PC
+and has also been built with no problems on Alpha/OSF-1, DECstation/Ultrix
+and Sun 4/SunOS hosts. The definition of strict ANSI here means compiling
+with gcc -Wall -pedantic -ANSI and getting no warning messages.
+
+RDP itself and the language processors it generates use standard symbol,
+set and scanner modules. The RDP scanner is programmed by loading tokens
+into the symbol table at the start of each run.
+
+RDP produces complete runnable programs with built-in help information and
+command line switches that are specified as part of the EBNF file. In this
+sense RDP output is far more shrink-wrapped than the usual parser generators
+which helps beginning students. RDP can generate itself which is a nice
+demonstration of the bootstrapping technique used for porting compilers to
+new architectures.
+
+I wrote RDP because in October I start giving a course on compiler design.
+I don't think the world needs another course on parsing techniques and am
+really interested in code generation for exotic processors, so I tried to
+produce a compact parser generator that would enable undergraduates to rip
+through the syntax and standard code generation parts of the syllabus in a
+few weeks, thus leaving me time to get into the black arts of code
+scheduling and optimisation.
+
+What you get.
+
+- An implementation of Pascal style set-handling in C.
+
+- A hash-coded symbol table with support for scoping and arbitrary user data
+
+- A programmable high-speed scanner with integrated error handling and
+  hooks for macros (RDP is being used to generate assemblers for two novel
+  microprocessors in addition to the traditional territory of LL(1) parsers).
+
+- The source to a hand-coded version of the RDP translator. RDP checks that
+  the source grammar is LL(1) and explains exactly why a non-LL(1) grammar
+  is unacceptable. RDP does not attempt to rework a grammar by itself.
+
+- A decorated EBNF file describing RDP that may be processed by the
+  hand-coded RDP translator to produce a machine generated version of RDP.
+  This is good for boggling undergraduate's minds with.
+
+- A decorated EBNF file describing an interpreter for a language called TOY.
+
+- An EBNF file describing Pascal which can be used to generate parser for
+  the Pascal language. This file has not been well tested!
+
+- A pre-built executable for MS-DOS.
+
+- Sources, makefiles and Borland 3.1 project files for everything which
+  you may use freely on condition that you send copies of any modifications,
+  enhancements and ill-conceived changes you might make back to me so that
+  I can improve RDP.
+
+What you don't get.
+
+- Decent manuals (coming Real Soon Now).
+
+- Tutorial information on parsing and compiling (try Wirth's Algorithms +
+  Data Structures = Programs, Chapter 5 or your favourite compiler book).
+
+- Warranties. (This code has only just escaped from my personal toolkit.
+  I've put a lot of effort into making it fit for others to use, but in
+  the very nature of compiler compilers it is hard to test all the angles,
+  and the Garbage In - Garbage Out principle holds to the highest degree:
+  if you write syntactically ill-formed semantic actions you won't find
+  out until you try and compile the parser that RDP wrote for you.)
+
+What I'd like.
+
+- Guinea pigs: I'm sure there are some bad surprises waiting for me, and I'd
+  like to find them before October so that my course doesn't get torpedoed.
+
+- A C grammar. The supplied Pascal grammar was produced by retrieving the
+  yacc Pascal description floating around on the net and hacking it into RDP
+  source form (which shortens it a great deal BTW). An obvious first
+  project is to do the same for the C grammar and maybe produce a
+  pretty-printer based on it.
+
+RDP source language.
+
+- The RDP source language is a very conventional EBNF supplemented with:
+
+    a few pre-defined tokens such as ID (an alphanumeric identifier),
+    NEW_ID (an alphanumeric identifier that has not yet been added to
+    the symbol table), EOF and EOLN,
+
+    some programmable tokens such as STRING and STRING_ESC which define
+    Pascal and C style strings respectively,
+
+    a set of directives which are mainly used to programme the scanner
+    and the help subsystems
+
+    a weird construct < sequence > 'token' which is shorthand for
+    sequence {'token' sequence}
+
+    attributes of the form :identifier which may be attached to production
+    names where they define the type of variable returned on the LHS and
+    the name of the receiving variable on the RHS of an ::=
+
+    arbitrary C code semantic actions embedded in double quotes. These are
+    simply copied into the generated parser.
+
+- Here's the RDP grammar written in terms of itself. Tokens are enclosed
+  in single quotes, directives and built-in tokens are written in upper case
+  and comments are denoted by (* ... *). RDP is case sensitive.
+
+(* RDP source grammar *)
+unit      ::= { prod | dir} EOF.
+
+prod      ::= (ID|NEW_ID) [':'(ID|NEW_ID) {'*'} ] '::=' alt:body '.' .
+
+alt       ::= < seq: body > '|' .
+
+seq       ::= { (item_ret [':' (ID | NEW_ID) ] | item_inl) }.
+
+item_ret  ::= ID | NEW_ID | token |
+              'STRING' '(' token ')' |
+              'STRING_ESC' '(' token token')' |
+              'COMMENT' '(' token token ')' |
+              'COMMENT_NEST' '(' token token ')'.
+
+
+item_inl: ::= code |                 (* semantic action *)
+              '('alt:body')' |       (* do first *)
+              '{'alt:body'}' |       (* zero or more *)
+              '['alt:body']' |       (* zero or one *)
+              '<'alt:body'>' token . (* list: <X>'t' expands to X {'t' X} *)
+
+code      ::= STRING_ESC('"' '\\').
+token     ::= STRING_ESC('\'' '\\').
+comment   ::= COMMENT('(*' '*)').
+
+dir::= 'INCLUDE' '(' code ')' |        (* Does for RDP what #include does for C *)
+       'HELP' '(' code code  ')' |     (* Add help line and command line switch *)
+       'USES' '(' code ')' |           (* Adds a #include to the generated parser *)
+       'TITLE' '(' code ')' |          (* Descriptive programme title for help *)
+       'SUFFIX' '(' code ')' |         (* Defalt file suffix for scanner input *)
+       'OUTPUT_FILE' '(' code ')' |    (* Default output file name *)
+       'SET_SIZE' '(' NUMBER ')' |     (* Set maximum set size (must be >= # of tokens *)
+       'HASH_SIZE' '(' NUMBER ')' |    (* Number of hash buckets in hash table *)
+       'HASH_PRIME' '(' NUMBER ')' |   (* Hash key: see dragon book on hash functions *)
+       'TAB_WIDTH' '(' NUMBER ')' |    (* Tab expansion width in listings *)
+       'TEXT_SIZE' '(' NUMBER ')' |    (* Default size of text buffer *)
+       'MAX_ERRORS' '(' NUMBER ')' |   (* Stop after this many errors *)
+       'MAX_WARNINGS' '(' NUMBER ')' | (* Stop after this many warnings *)
+       'CASE_INSENSITIVE' |            (* Make scanner case insensitive (cf Pascal) *)
+       'SHOW_SKIPS' |                  (* Issue 'Skipping...' informational messges *)
+       'NEWLINE_VISIBLE' |             (* Make newlines visisbles (cf Ada comments, assemblers) *)
+       'COMMENTS_VISIBLE'.             (* Return comments to parser (cf assemblers) *)
+
+(* End of grammar *)
+
+How to get RDP.
+
+- Use anonymous ftp to cscx.dcs.rhbnc.ac.uk () and download
+  pub/rdp/rdp.tar.Z if you are a Unix user or pub/rdp/rdp.zip if you are an
+  MS-DOS user. Actually both files contain exactly the same distribution kit,
+  so you will find an MS-DOS executable in the tar file.
+
+- If you can't manage ftp then I am prepared to send out 3.5in 1.4M disks
+  for MS-DOS. If you're really desperate I can supply just any other medium
+  that PC's, Amigas, Atari-ST's, Mac's or DEC computers have ever used, but
+  I'm very short of time so strange requests may take a while to service.
+
+Other machines.
+
+- An ex-student of mine is going to try and build RDP for an Amiga. IMHO
+  anybody with an ANSI C compiler should have almost no problems building
+  from the standard kit. On the other hand K&R compiler users may suffer.
+
+Installation.
+
+1 Unpack the distribution kit into a single directory. You should have the
+  following files:
+
+  crash.c      fatal error handling
+  crash.h
+  makefile     build instructions
+  pascal.bnf   EBNF description of Pascal. Use -F to overcome dangling else
+  pascal.prj   Borland C 3.1 project file for machine generated pascal
+  rdp.bnf      decorated version of rdp grammar given above
+  rdp.c        hand written rdp parser
+  rdp.doc      this file
+  rdp.exe      MS-DOS executable
+  rdp.h
+  rdp.prj      Borland C 3.1 project file for hand written RDP
+  rdp_aux.c    RDP auxilliary functions
+  rdp_aux.h
+  rdp_gen.prj  Borland C 3.1 project file for machine generated RDP
+  scan.c       the scanner
+  scan.h
+  set.c        set handling routines
+  set.h
+  symbol.c     the hash coded symbol table
+  symbol.h
+  toy.bnf      decorated grammar for a TOY language interpreter
+  toy.prj      Borland C 3.1 project file for machine generated TOY
+
+2 The makefile can be used on Unix or on a PC. You should edit the makefile
+  to specify the name of your C compiler by changing the first line. Simply
+  issuing the command 'make' will build and do an installation test.
+
+  In detail, rdp.c and its friends are compiled into the executable rdp(.exe)
+  which is the hand coded parser generator. This executable is then run on
+  rdp.bnf to produce rdp_gen.c which is the machine generated analogue of
+  rdp.c.
+
+  rdp_gen(.exe) is then run on rdp.bnf to produce rdp_gen2.c which should
+  be the same as rdp_gen.c except for the program title and header file name.
+  This is confirmed by running a diff (or fc on MS-DOS) on them. You should
+  see something like the following. If other differences appear then
+  something is broken and I would appreciate being told.
+
+3 Assuming all has gone well, try 'make toy'. This will run toy.bnf through
+  rdp(.exe) and then compile the resulting interpreter. Toy is a small
+  language with many of the worst features of both C and Pascal. It is
+  closely based on Wirth's PL0 as described in A+D=P but has C-style
+  declarations and a Pascal write(ln) statement. Toy.bnf contains all the
+  necessary interpreter semantics, although some dirty tricks have been used
+  in the implementation of if and while statements. I have deliberately not
+  implemented an else clause to postpone  discussion of dangling-else
+  problems until after the student has successfully built their first
+  language processor.
+
+4 There is a toy test programme in the file test.toy. Try typing 'toy' to
+  see the help message and then 'toy test' to interpret the test programme.
+  'toy -l test' effectively provides a trace of interpretation by turning
+  on the scanner line echoing.
+
+5 You might like to try 'make clean' which deletes all object files along
+  with the machine generated rdp sources used produced during the
+  installation.
+
+Enhancements for the next version
+
+- RDP parsers have large numbers of constant first and follow sets embedded
+  in them. For some applications, especially assemblers, many of these sets
+  are identical. In version 2 identical sets will be collapsed. This is only
+  likely to save a few kilobytes in even the most pathological parser.
+
+- Macro handling code will be incorporated directly into the scanner. At the
+  moment I do macros within my assemblers (which I'm not releasing for
+  public consumption just yet).
+
+Comments, queries and requests for code to
+
+Dr Adrian Johnstone, CS Dept, Royal Holloway, University of London
+Email: adrian@dcs.rhbnc.ac.uk
+

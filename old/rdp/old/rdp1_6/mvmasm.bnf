@@ -1,0 +1,162 @@
+(*******************************************************************************
+*
+* RDP release 1.50 by Adrian Johnstone (A.Johnstone@rhbnc.ac.uk) 20 December 1997
+*
+* mvmasm.bnf - an assembler for Mini Virtual Machine assembler language
+*
+* This file may be freely distributed. Please mail improvements to the author.
+*
+*******************************************************************************)
+TITLE("mvmasm v1.5 - absolute assembler for mvm")
+SUFFIX("mvm")
+USES("mvm_aux.h")
+USES("math.h")
+USES("mvm_def.h")
+PASSES(3)
+PARSER(unit) (* name of start production *)
+
+PRE_PARSE([* init(rdp_outputfilename); *])
+POST_PARSE([* quit(rdp_outputfilename); *])
+
+ARG_BOOLEAN(x execute_sim "execute assembled code using mvmsim simulator")
+ARG_BLANK("")
+ARG_BLANK("You can contact the author (Adrian Johnstone) at:")
+ARG_BLANK("")
+ARG_BLANK("Computer Science Department, Royal Holloway, University of London")
+ARG_BLANK("Egham, Surrey, TW20 0EX UK. Email: A.Johnstone@rhbnc.ac.uk")
+
+SYMBOL_TABLE(mvmasm 101 31
+	     symbol_compare_string
+	     symbol_hash_string
+	     symbol_print_string
+	     [* char *id;
+  		     integer val;
+	     *]
+	    )
+
+unit    ::= [* emit_code = (rdp_pass == 3);
+	       data_location = code_location = 0;  /* clear location counters */
+	       location = &code_location;          /* make code counter current */
+	       dummy_label = symbol_new_symbol(sizeof(mvmasm_data));             /* initialise error symbol */
+	    *]
+	    { code }.
+
+code  ::= [* emit_eoln(); emit_loc(); last_label = NULL; *]
+          [label ':'] [instr] [* emit_fill(); *] EOLN.
+
+label ::= ID:lab
+	  [* if ((last_label = symbol_lookup_key(mvmasm, &lab, NULL)) == NULL)
+	       last_label = symbol_insert_key(mvmasm, &lab, sizeof(char*), sizeof(mvmasm_data));
+	     mvmasm_cast(last_label)->val = *location;
+	  *].
+
+instr   ::= diadic | copy | branch | print | halt | directive.
+
+diadic ::= [* int op, m1 = 1, m2 = 1; *]
+           (
+           'ADD' [* op = OP_ADD; *] e1: dst ',' ['#' [* m1=0; *] ] e1: src1 ',' ['#' [* m2=0; *] ] e1:src2 |
+           'SUB' [* op = OP_SUB; *] e1: dst ',' ['#' [* m1=0; *] ] e1: src1 ',' ['#' [* m2=0; *] ] e1:src2 |
+           'MUL' [* op = OP_MUL; *] e1: dst ',' ['#' [* m1=0; *] ] e1: src1 ',' ['#' [* m2=0; *] ] e1:src2 |
+           'DIV' [* op = OP_DIV; *] e1: dst ',' ['#' [* m1=0; *] ] e1: src1 ',' ['#' [* m2=0; *] ] e1:src2 |
+           'EXP' [* op = OP_EXP; *] e1: dst ',' ['#' [* m1=0; *] ] e1: src1 ',' ['#' [* m2=0; *] ] e1:src2 |
+
+           'EQ'  [* op = OP_EQ;  *] e1: dst ',' ['#' [* m1=0; *] ] e1: src1 ',' ['#' [* m2=0; *] ] e1:src2 |
+           'NE'  [* op = OP_NE;  *] e1: dst ',' ['#' [* m1=0; *] ] e1: src1 ',' ['#' [* m2=0; *] ] e1:src2 |
+           'GT'  [* op = OP_GT;  *] e1: dst ',' ['#' [* m1=0; *] ] e1: src1 ',' ['#' [* m2=0; *] ] e1:src2 |
+           'GE'  [* op = OP_GE;  *] e1: dst ',' ['#' [* m1=0; *] ] e1: src1 ',' ['#' [* m2=0; *] ] e1:src2 |
+           'LT'  [* op = OP_LT;  *] e1: dst ',' ['#' [* m1=0; *] ] e1: src1 ',' ['#' [* m2=0; *] ] e1:src2 |
+           'LE'  [* op = OP_LE;  *] e1: dst ',' ['#' [* m1=0; *] ] e1: src1 ',' ['#' [* m2=0; *] ] e1:src2 
+           ) [* emit_op(op, dst, src1, src2, m1, m2, 3); *] .
+
+copy   ::= [* int m1 = 1; *]
+           'CPY' e1: dst ',' ['#' [* m1=0; *] ] e1: src [* emit_op(OP_CPY, dst, src, 0, m1, 1, 2); *] .
+
+branch ::= 'BEQ' e1: src ',' e1: label [* emit_op(OP_BEQ, label, src, 0, 1, 1, 2); *] |
+           'BNE' e1: src ',' e1: label [* emit_op(OP_BNE, label, src, 0, 1, 1, 2); *] |
+           'BRA' e1: label [* emit_op(OP_BEQ, label, 0, 0, 0, 1, 2); /* force immediate mode */ *] .
+
+print  ::= [* int m1 = 1; *]
+           (
+           'PRTS' e1: src [* emit_op(OP_PRTS, 0, src, 0, 0, 1, 2); /* force immediate mode */ *] |
+           'PRTI' ['#' [* m1=0; *] ] e1: src [* emit_op(OP_PRTI, 0, src, 0, m1, 1, 2); *]
+           ).
+
+halt   ::= 'HALT' [* emit_op(OP_HALT, 0, 0, 0, 1, 1, 0); *] .
+
+directive  ::= 'INCLUDE' '(' string: filename ')'
+	       [* if (text_open(filename) == NULL)
+		     text_message(TEXT_ERROR_ECHO, "include file '%s' not found\n", filename);
+		  else
+		  {
+		    text_get_char();
+		    scan_();
+		  }
+	       *] |
+
+	       'CODE' [* location = &code_location; *] [ e1:n [* *location = n; *] ] |
+	       'DATA' [* location = &data_location; *] [ e1:n [* *location = n; *] ] |
+	       'WORD' e1:val [* emit2(val); *] |
+	       'BLOCKW' e1:val [* *location += 2 * val; *] |
+	       'STRING' string:str [* while (*str!=0) emit1(*str++); emit1(0); *] |
+	       'EQU' e1:val [* mvmasm_cast(current_label())->val = val; *] |
+               'END' e1: val [* transfer = val; emit_transfer(); *] .
+
+(* Expression interpreter using C operators and long int data ***************)
+
+e1:integer ::= e2:result ['>'  e2:right [* result = result > right;  *] |  (* Greater than *)
+			  '<'  e2:right [* result = result < right;  *] |  (* Less than *)
+			  '>=' e2:right [* result = result >= right; *] |  (* Greater than or equal to *)
+			  '<=' e2:right [* result = result <= right; *] |  (* Less than or equal to *)
+			  '==' e2:right [* result = result == right; *] |  (* Equal to *)
+			  '!=' e2:right [* result = result != right; *] ]. (* Not equal to *)
+
+e2:integer ::= e3:result {'||' e3:right  [* result = result || right; *]}. (* Logical inclusive OR *)
+
+e3:integer ::= e4:result {'&&' e4:right  [* result = result && right; *]}. (* Logical AND *)
+
+e4:integer ::= e5:result {'^' e5:right  [* result ^= right; *]}.           (* Bitwise exclusive OR *)
+
+e5:integer ::= e6:result {'|' e6:right  [* result |= right; *]}.           (* Bitwise inclusive OR *)
+
+e6:integer ::= e7:result {'&' e7:right  [* result &= right; *]}.           (* Bitwise AND *)
+
+e7:integer ::= e8:result {'<<' e8:right [* result <<= right; *] |          (* Shift left  *)
+			  '>>' e8:right [* result >>= right; *] }.         (* Shift right *)
+
+e8:integer ::= e9:result {'+' e9:right  [* result += right; *] |           (* Add *)
+			  '-' e9:right  [* result -= right; *] }.          (* Subtract *)
+
+e9:integer ::= e10:result {'*' e10:right  [* result *= right; *] |         (* Divide *)
+			   '/' e10:right  [* result /= right; *] }.        (* Multiply *)
+
+e10:integer ::= '+' e10:result |                                           (* Posite *)
+		'-' e10:result [* result = -result; *] |                   (* Negate *)
+		'~' e10:result [* result = ~result; *] |                   (* Bitwise complement *)
+		'!' e10:result [* result = !result; *] |                   (* Logical not *)
+		e11:result.
+
+e11:integer ::= e0:result ['**' e10:right [* result = (integer) pow((double) result, (double) right); *]]. (* Exponentiate *)
+
+e0:integer ::= [* mvmasm_data* temp; *]
+	       ID:name
+	       [* temp = mvmasm_cast(symbol_lookup_key(mvmasm, &name, NULL));
+		  if (temp == NULL)
+		  {
+                    if (rdp_pass == 3)
+ 		      text_message(TEXT_ERROR_ECHO,"Undefined symbol '%s'\n", name);
+		    result = 0;
+		  }
+		  else
+		    result = temp->val;
+	       *] |                                                        (* Variable *)
+	       INTEGER:result |                                            (* Numeric literal *)
+	       'TRUE' [* result = 1; *] |                                  (* Logical TRUE *)
+	       'FALSE' [* result = 0; *] |                                 (* Logical FALSE *)
+
+	       '(' e2:result ')'.                                          (* Do-first *)
+
+string: char* ::= STRING_ESC('"' '\\'):result.
+
+Comment ::= COMMENT_LINE(';').
+
+

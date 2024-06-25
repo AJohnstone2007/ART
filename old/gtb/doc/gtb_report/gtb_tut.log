@@ -1,0 +1,1364 @@
+This is pdfTeX, Version 3.141592653-2.6-1.40.24 (MiKTeX 21.12.10) (preloaded format=pdflatex 2022.1.4)  25 JUN 2024 11:09
+entering extended mode
+ restricted \write18 enabled.
+ %&-line parsing enabled.
+**C:/csle/dev/art/archive/gtb/doc/gtb_report/gtb/gtb_tut.tex
+(C:/csle/dev/art/archive/gtb/doc/gtb_report/gtb/gtb_tut.tex
+LaTeX2e <2021-11-15> patch level 1
+L3 programming layer <2021-11-22>
+(C:\Users\adrian\AppData\Local\Programs\MiKTeX\tex/latex/base\latex209.def
+File: latex209.def 2020/11/26 v0.55 Standard LaTeX file
+
+
+          Entering LaTeX 2.09 COMPATIBILITY MODE
+ *************************************************************
+    !!WARNING!!    !!WARNING!!    !!WARNING!!    !!WARNING!!   
+ 
+ This mode attempts to provide an emulation of the LaTeX 2.09
+ author environment so that OLD documents can be successfully
+ processed. It should NOT be used for NEW documents!
+ 
+ New documents should use Standard LaTeX conventions and start
+ with the \documentclass command.
+ 
+ Compatibility mode is UNLIKELY TO WORK with LaTeX 2.09 style
+ files that change any internal macros, especially not with
+ those that change the FONT SELECTION or OUTPUT ROUTINES.
+ 
+ Therefore such style files MUST BE UPDATED to use
+          Current Standard LaTeX: LaTeX2e.
+ If you suspect that you may be using such a style file, which
+ is probably very, very old by now, then you should attempt to
+ get it updated by sending a copy of this error message to the
+ author of that file.
+ *************************************************************
+
+\footheight=\dimen138
+\@maxsep=\dimen139
+\@dblmaxsep=\dimen140
+\@cla=\count183
+\@clb=\count184
+\mscount=\count185
+(C:\Users\adrian\AppData\Local\Programs\MiKTeX\tex/latex/base\tracefnt.sty
+Package: tracefnt 2020/12/22 v3.0n Standard LaTeX package (font tracing)
+\tracingfonts=\count186
+LaTeX Info: Redefining \selectfont on input line 107.
+Applying: [2021/06/01] Add hook to \selectfont  on input line 142.
+Already applied: [0000/00/00] Add hook to \selectfont  on input line 145.
+)
+\symbold=\mathgroup4
+\symsans=\mathgroup5
+\symtypewriter=\mathgroup6
+\symitalic=\mathgroup7
+\symsmallcaps=\mathgroup8
+\symslanted=\mathgroup9
+LaTeX Font Info:    Redeclaring math alphabet \mathbf on input line 275.
+LaTeX Font Info:    Redeclaring math alphabet \mathsf on input line 276.
+LaTeX Font Info:    Redeclaring math alphabet \mathtt on input line 277.
+LaTeX Font Info:    Redeclaring math alphabet \mathit on input line 283.
+LaTeX Info: Redefining \em on input line 293.
+
+(C:\Users\adrian\AppData\Local\Programs\MiKTeX\tex/latex/base\latexsym.sty
+Package: latexsym 1998/08/17 v2.2e Standard LaTeX package (lasy symbols)
+\symlasy=\mathgroup10
+LaTeX Font Info:    Overwriting symbol font `lasy' in version `bold'
+(Font)                  U/lasy/m/n --> U/lasy/b/n on input line 52.
+)
+LaTeX Font Info:    Redeclaring math delimiter \lgroup on input line 339.
+LaTeX Font Info:    Redeclaring math delimiter \rgroup on input line 341.
+LaTeX Font Info:    Redeclaring math delimiter \bracevert on input line 343.
+)
+(C:\Users\adrian\AppData\Local\Programs\MiKTeX\tex/latex/base\report.cls
+Document Class: report 2021/10/04 v1.4n Standard LaTeX document class
+(C:\Users\adrian\AppData\Local\Programs\MiKTeX\tex/latex/base\size11.clo
+File: size11.clo 2021/10/04 v1.4n Standard LaTeX file (size option)
+)
+\c@part=\count187
+\c@chapter=\count188
+\c@section=\count189
+\c@subsection=\count190
+\c@subsubsection=\count191
+\c@paragraph=\count192
+\c@subparagraph=\count193
+\c@figure=\count194
+\c@table=\count195
+\abovecaptionskip=\skip47
+\belowcaptionskip=\skip48
+Compatibility mode: definition of \rm ignored.
+Compatibility mode: definition of \sf ignored.
+Compatibility mode: definition of \tt ignored.
+Compatibility mode: definition of \bf ignored.
+Compatibility mode: definition of \it ignored.
+Compatibility mode: definition of \sl ignored.
+Compatibility mode: definition of \sc ignored.
+LaTeX Info: Redefining \cal on input line 577.
+LaTeX Info: Redefining \mit on input line 578.
+\bibindent=\dimen141
+)
+(C:/csle/dev/art/archive/gtb/doc/gtb_report/gtb\rhultechreport.sty
+Standard style for RHUL reports, released 27 July 1993, Adrian Johnstone
+\fullwidth=\skip49
+) (C:/csle/dev/art/archive/gtb/doc/gtb_report/gtb\epsf.sty
+This is `epsf.tex' v2.7 <25 October 1996>
+\epsffilein=\read2
+\epsfframemargin=\dimen142
+\epsfframethickness=\dimen143
+\epsfrsize=\dimen144
+\epsftmp=\dimen145
+\epsftsize=\dimen146
+\epsfxsize=\dimen147
+\epsfysize=\dimen148
+\pspoints=\dimen149
+)
+\c@thm=\count196
+\c@prop=\count197
+\c@cor=\count198
+
+(C:\Users\adrian\AppData\Local\Programs\MiKTeX\tex/latex/l3backend\l3backend-pd
+ftex.def
+File: l3backend-pdftex.def 2021-12-14 L3 backend support: PDF output (pdfTeX)
+\l__color_backend_stack_int=\count199
+\l__pdf_internal_box=\box50
+)
+No file gtb_tut.aux.
+\openout1 = `gtb_tut.aux'.
+
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 39.
+LaTeX Font Info:    ... okay on input line 39.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 39.
+LaTeX Font Info:    ... okay on input line 39.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 39.
+LaTeX Font Info:    ... okay on input line 39.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 39.
+LaTeX Font Info:    ... okay on input line 39.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 39.
+LaTeX Font Info:    ... okay on input line 39.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 39.
+LaTeX Font Info:    ... okay on input line 39.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 39.
+LaTeX Font Info:    ... okay on input line 39.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <14.4> on input line 42.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <7> on input line 42.
+LaTeX Font Info:    Trying to load font information for U+lasy on input line 42
+.
+(C:\Users\adrian\AppData\Local\Programs\MiKTeX\tex/latex/base\ulasy.fd
+File: ulasy.fd 1998/08/17 v2.2e LaTeX symbol font definitions
+)
+
+LaTeX Warning: No \author given.
+
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <10.95> on input line 42.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <8> on input line 42.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <6> on input line 42.
+\rhuolbox=\box51
+\rhuolw=\dimen150
+! Font \rhuola=rhuola not loadable: Metric (TFM) file not found.
+<to be read again> 
+                   \setbox 
+l.42 \makecstitle
+                  %make Adrian's title page
+? r
+OK, entering \nonstopmode...
+Missing character: There is no ! in font nullfont!
+Missing character: There is no ( in font nullfont!
+Missing character: There is no ) in font nullfont!
+Missing character: There is no + in font nullfont!
+Missing character: There is no , in font nullfont!
+Missing character: There is no ! in font nullfont!
+Missing character: There is no ( in font nullfont!
+Missing character: There is no ) in font nullfont!
+Missing character: There is no + in font nullfont!
+Missing character: There is no , in font nullfont!
+Missing character: There is no - in font nullfont!
+Missing character: There is no . in font nullfont!
+Missing character: There is no / in font nullfont!
+Missing character: There is no 0 in font nullfont!
+Missing character: There is no 1 in font nullfont!
+Missing character: There is no 2 in font nullfont!
+Missing character: There is no 3 in font nullfont!
+Missing character: There is no 4 in font nullfont!
+Missing character: There is no 5 in font nullfont!
+Missing character: There is no 6 in font nullfont!
+[0
+
+{C:/Users/adrian/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map}] [1]
+No file gtb_tut.toc.
+\tf@toc=\write3
+\openout3 = `gtb_tut.toc'.
+
+[1
+
+
+
+]
+Chapter 1.
+
+LaTeX Warning: Citation `dragon' on page 1 undefined on input line 154.
+
+
+LaTeX Warning: Citation `AHO72' on page 1 undefined on input line 154.
+
+[1
+
+
+
+] [2]
+
+LaTeX Warning: Citation `SANDER95' on page 3 undefined on input line 209.
+
+[3] [4] [5] [6]
+
+LaTeX Warning: Reference `slr' on page 7 undefined on input line 502.
+
+[7] [8]
+Overfull \hbox (29.568pt too wide) in paragraph at lines 655--655
+ []\OT1/cmtt/m/n/10 start rule reductions = {S ::= E . , S ::= S '*' S . , S ::
+= S '+' S . }[] 
+ []
+
+[9] [10] [11]
+
+LaTeX Warning: Citation `SANDER95' on page 12 undefined on input line 812.
+
+[12]
+Overfull \hbox (15.6542pt too wide) in paragraph at lines 845--845
+ [] 
+ []
+
+[13
+Non-PDF special ignored!
+<special> PSfile=vcg8.ps llx=0 lly=425 urx=390 ury=632 rwi=3900
+]
+
+LaTeX Warning: Reference `RIGLR' on page 14 undefined on input line 885.
+
+(C:/csle/dev/art/archive/gtb/doc/gtb_report/gtb\tut1.pic
+\plotpoint=\box52
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <9> on input line 15.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <5> on input line 15.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 21.
+
+)
+Overfull \hbox (3.24808pt too wide) in paragraph at lines 906--914
+\OT1/cmr/m/n/10.95 which takes the gram-mar named []\OT1/cmtt/m/n/10.95 my_gram
+mar \OT1/cmr/m/n/10.95 and cre-ates a graph named []\OT1/cmtt/m/n/10.95 my_gdg\
+OT1/cmr/m/n/10.95 .
+ []
+
+[14] [15
+Non-PDF special ignored!
+<special> PSfile=vcg1.ps llx=231 lly=407 urx=310 ury=506 rwi=790
+] [16
+Non-PDF special ignored!
+<special> PSfile=vcg0.ps llx=242 lly=349 urx=352 ury=501 rwi=1100
+] [17]
+Chapter 2.
+
+LaTeX Warning: Citation `KNUTH65' on page 18 undefined on input line 1109.
+
+
+LaTeX Warning: Citation `GRUNE90' on page 18 undefined on input line 1114.
+
+
+LaTeX Warning: Citation `dragon' on page 18 undefined on input line 1119.
+
+[18
+
+
+] (C:/csle/dev/art/archive/gtb/doc/gtb_report/gtb\tut2.pic
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 27.
+
+) (C:/csle/dev/art/archive/gtb/doc/gtb_report/gtb\tut3.pic
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 33.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 41.
+
+) [19] (C:/csle/dev/art/archive/gtb/doc/gtb_report/gtb\tut4.pic
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 57.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 66.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 76.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 97.
+
+)
+Overfull \hbox (65.4993pt too wide) in paragraph at lines 99--1194
+ [] 
+ []
+
+
+LaTeX Warning: Reference `RIGLR' on page 20 undefined on input line 1240.
+
+[20] [21]
+Overfull \hbox (21.67664pt too wide) in paragraph at lines 1331--1331
+ [] 
+ []
+
+
+Overfull \hbox (9.63177pt too wide) in paragraph at lines 1336--1336
+ [] 
+ []
+
+[22
+Non-PDF special ignored!
+<special> PSfile=vcg13.ps llx=0 lly=422 urx=396 ury=634 rwi=3960
+]
+
+LaTeX Warning: Reference `aug' on page 23 undefined on input line 1376.
+
+
+Overfull \hbox (72.55046pt too wide) in paragraph at lines 1374--1377
+\OT1/cmr/m/n/10.95 generates a VCG file, []\OT1/cmtt/m/n/10.95 nfa.vcg\OT1/cmr/
+m/n/10.95 , which con-tains the NFA. The func-tion []\OT1/cmtt/m/n/10.95 nfa[ex
+2_grammar lr 0]
+ []
+
+[23
+Non-PDF special ignored!
+<special> PSfile=vcg14.ps llx=0 lly=477 urx=384 ury=634 rwi=3840
+]
+Overfull \hbox (57.81122pt too wide) in paragraph at lines 1404--1404
+ [] 
+ []
+
+
+Overfull \hbox (9.63177pt too wide) in paragraph at lines 1411--1411
+ [] 
+ []
+
+[24
+Non-PDF special ignored!
+<special> PSfile=vcg3.ps llx=81 lly=311 urx=513 ury=537 rwi=4320
+Non-PDF special ignored!
+<special> PSfile=vcg15.ps llx=0 lly=445 urx=384 ury=587 rwi=3840
+]
+
+LaTeX Warning: Citation `dragon' on page 25 undefined on input line 1432.
+
+
+LaTeX Warning: Reference `machines' on page 25 undefined on input line 1459.
+
+(C:/csle/dev/art/archive/gtb/doc/gtb_report/gtb\tut5.pic
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 62.
+
+) [25] [26] (C:/csle/dev/art/archive/gtb/doc/gtb_report/gtb\tut6.pic) [27]
+[28]
+
+LaTeX Warning: Reference `lrParser' on page 29 undefined on input line 1635.
+
+[29
+Non-PDF special ignored!
+<special> PSfile=vcg11.ps llx=0 lly=422 urx=367 ury=730 rwi=3670
+] [30
+Non-PDF special ignored!
+<special> PSfile=vcg4.ps llx=0 lly=435 urx=327 ury=821 rwi=3270
+]
+
+LaTeX Warning: Reference `first' on page 31 undefined on input line 1741.
+
+[31] [32] [33] (C:/csle/dev/art/archive/gtb/doc/gtb_report/gtb\tut7.pic
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 71.
+
+)
+
+LaTeX Warning: Reference `first' on page 34 undefined on input line 1907.
+
+[34]
+
+LaTeX Warning: Reference `gtbNFA' on page 35 undefined on input line 1995.
+
+[35]
+Overfull \hbox (60.82243pt too wide) in paragraph at lines 2017--2017
+ [] 
+ []
+
+(C:/csle/dev/art/archive/gtb/doc/gtb_report/gtb\tut12.pic
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 44.
+
+) [36
+Non-PDF special ignored!
+<special> PSfile=vcg7.ps llx=0 lly=433 urx=435 ury=694 rwi=4350
+] (C:/csle/dev/art/archive/gtb/doc/gtb_report/gtb\tut13.pic
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 76.
+
+) [37]
+Overfull \hbox (1.67262pt too wide) in paragraph at lines 2095--2103
+[]\OT1/cmr/m/n/10.95 If $\OML/cmm/m/it/10.95 x$ \OT1/cmr/m/n/10.95 is a non-ter
+minal, if there is a header node la-belled $(\OML/cmm/m/it/10.95 x; []\OT1/cmr/
+m/n/10.95 (\OML/cmm/m/it/10.95 G\OT1/cmr/m/n/10.95 ))$
+ []
+
+(C:/csle/dev/art/archive/gtb/doc/gtb_report/gtb\tut14.pic
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 85.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 88.
+
+) (C:/csle/dev/art/archive/gtb/doc/gtb_report/gtb\tut8.pic
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 103.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 106.
+
+)
+Overfull \hbox (16.845pt too wide) in paragraph at lines 115--2121
+ [] 
+ []
+
+[38]
+Overfull \hbox (25.69159pt too wide) in paragraph at lines 2138--2138
+ [] 
+ []
+
+
+Overfull \hbox (14.55382pt too wide) in paragraph at lines 2158--2198
+[][]  [] 
+ []
+
+[39
+Non-PDF special ignored!
+<special> PSfile=vcg12.ps llx=0 lly=566 urx=400 ury=756 rwi=4000
+]
+
+LaTeX Warning: Reference `lr1' on page 40 undefined on input line 2205.
+
+
+LaTeX Warning: Citation `dragon' on page 40 undefined on input line 2210.
+
+
+Overfull \hbox (2.23616pt too wide) in paragraph at lines 2213--2217
+[]\OT1/cmr/m/n/10.95 Furthermore, it is pos-si-ble for each of the pos-si-ble s
+ub-sets of a set $[](\OML/cmm/m/it/10.95 A\OT1/cmr/m/n/10.95 )$
+ []
+
+(C:/csle/dev/art/archive/gtb/doc/gtb_report/gtb\tut9.pic
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 101.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 104.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 107.
+
+) [40] (C:/csle/dev/art/archive/gtb/doc/gtb_report/gtb\tut10.pic) [41]
+(C:/csle/dev/art/archive/gtb/doc/gtb_report/gtb\tut11.pic
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 87.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 90.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 112.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 115.
+
+) [42]
+
+LaTeX Warning: Citation `DEREMER69' on page 43 undefined on input line 2353.
+
+
+LaTeX Warning: Citation `DEREMER71' on page 43 undefined on input line 2353.
+
+[43]
+Chapter 3.
+
+LaTeX Warning: Reference `lr' on page 44 undefined on input line 2405.
+
+
+LaTeX Warning: Citation `TOMITA91' on page 44 undefined on input line 2420.
+
+
+LaTeX Warning: Reference `gtbDFA' on page 44 undefined on input line 2443.
+
+[44
+
+
+] (C:/csle/dev/art/archive/gtb/doc/gtb_report/gtb\tut15.pic
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 54.
+
+) [45] (C:/csle/dev/art/archive/gtb/doc/gtb_report/gtb\tut16.pic)
+(C:/csle/dev/art/archive/gtb/doc/gtb_report/gtb\tut17.pic)
+(C:/csle/dev/art/archive/gtb/doc/gtb_report/gtb\tut18.pic
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 47.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 49.
+
+) [46] (C:/csle/dev/art/archive/gtb/doc/gtb_report/gtb\tut19.pic
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 77.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 80.
+
+) [47]
+
+LaTeX Warning: Citation `TOMITA91' on page 48 undefined on input line 2626.
+
+
+LaTeX Warning: Citation `AJEAS00' on page 48 undefined on input line 2626.
+
+
+LaTeX Warning: Citation `ESAJ04A' on page 48 undefined on input line 2626.
+
+
+LaTeX Warning: Citation `ESAJ04A' on page 48 undefined on input line 2641.
+
+
+LaTeX Warning: Reference `ex8' on page 48 undefined on input line 2644.
+
+(C:/csle/dev/art/archive/gtb/doc/gtb_report/gtb\tut25.pic)
+(C:/csle/dev/art/archive/gtb/doc/gtb_report/gtb\tut24.pic) [48]
+(C:/csle/dev/art/archive/gtb/doc/gtb_report/gtb\tut23.pic)
+(C:/csle/dev/art/archive/gtb/doc/gtb_report/gtb\tut22.pic)
+(C:/csle/dev/art/archive/gtb/doc/gtb_report/gtb\tut21.pic) [49]
+(C:/csle/dev/art/archive/gtb/doc/gtb_report/gtb\tut26.pic
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 74.
+
+) (C:/csle/dev/art/archive/gtb/doc/gtb_report/gtb\tut20.pic
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 77.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 80.
+
+) [50] [51
+Non-PDF special ignored!
+<special> PSfile=vcg9.ps llx=0 lly=439 urx=352 ury=564 rwi=3520
+]
+Overfull \hbox (2.19293pt too wide) in paragraph at lines 2835--2835
+[]\OT1/cmtt/m/n/10 SSG has final level 3 with 26 nodes and 26 edges; maximum qu
+eue length 1[] 
+ []
+
+[52]
+
+LaTeX Warning: Reference `RNtab' on page 53 undefined on input line 2838.
+
+
+LaTeX Warning: Reference `anEx' on page 53 undefined on input line 2843.
+
+
+LaTeX Warning: Reference `anEx' on page 53 undefined on input line 2846.
+
+(C:/csle/dev/art/archive/gtb/doc/gtb_report/gtb\tut28.pic
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 25.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 41.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 48.
+
+) [53]
+Overfull \hbox (2.19293pt too wide) in paragraph at lines 2910--2910
+[]\OT1/cmtt/m/n/10 SSG has final level 3 with 12 nodes and 12 edges; maximum qu
+eue length 1[] 
+ []
+
+(C:/csle/dev/art/archive/gtb/doc/gtb_report/gtb\tut27.pic)
+
+LaTeX Warning: Citation `TOMITA86' on page 54 undefined on input line 2937.
+
+
+LaTeX Warning: Citation `FARSHI91' on page 54 undefined on input line 2940.
+
+
+LaTeX Warning: Citation `AJES04D1' on page 54 undefined on input line 2948.
+
+[54
+Non-PDF special ignored!
+<special> PSfile=vcg10.ps llx=0 lly=433 urx=367 ury=480 rwi=3670
+]
+
+LaTeX Warning: Reference `rtnull' on page 55 undefined on input line 2956.
+
+[55]
+Overfull \hbox (7.6243pt too wide) in paragraph at lines 3029--3029
+ [] 
+ []
+
+
+LaTeX Warning: Reference `gtbDFA' on page 56 undefined on input line 3035.
+
+
+LaTeX Warning: Reference `rntom' on page 56 undefined on input line 3044.
+
+[56
+Non-PDF special ignored!
+<special> PSfile=vcg17.ps llx=0 lly=514 urx=382 ury=779 rwi=3820
+] [57
+Non-PDF special ignored!
+<special> PSfile=vcg16.ps llx=0 lly=441 urx=367 ury=535 rwi=3670
+] [58
+Non-PDF special ignored!
+<special> PSfile=vcg18.ps llx=0 lly=444 urx=317 ury=707 rwi=3170
+]
+Overfull \hbox (2.19293pt too wide) in paragraph at lines 3172--3172
+[]\OT1/cmtt/m/n/10 SSG has final level 3 with 16 nodes and 16 edges; maximum qu
+eue length 3[] 
+ []
+
+
+Overfull \hbox (12.69284pt too wide) in paragraph at lines 3172--3172
+[]\OT1/cmtt/m/n/10 SSG has final level 3 with 7 nodes and 6 edges; maximum queu
+e length -1000[] 
+ []
+
+
+Overfull \hbox (12.69284pt too wide) in paragraph at lines 3172--3172
+[]\OT1/cmtt/m/n/10 SSG has final level 1 with 3 nodes and 2 edges; maximum queu
+e length -1000[] 
+ []
+
+
+LaTeX Warning: Reference `verb' on page 59 undefined on input line 3182.
+
+[59] [60]
+
+LaTeX Warning: Reference `p_derive' on page 61 undefined on input line 3274.
+
+(C:/csle/dev/art/archive/gtb/doc/gtb_report/gtb\tut46.pic) [61
+Non-PDF special ignored!
+<special> PSfile=vcg22.ps llx=0 lly=403 urx=374 ury=534 rwi=3740
+] (C:/csle/dev/art/archive/gtb/doc/gtb_report/gtb\tut48.pic)
+(C:/csle/dev/art/archive/gtb/doc/gtb_report/gtb\tut49.pic)
+Overfull \hbox (3.18765pt too wide) in paragraph at lines 122--3305
+ [] 
+ []
+
+[62]
+
+LaTeX Warning: Reference `p_ex1' on page 63 undefined on input line 3313.
+
+(C:/csle/dev/art/archive/gtb/doc/gtb_report/gtb\tut47.pic
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 61.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 64.
+
+)
+
+LaTeX Warning: Citation `REKERS92' on page 63 undefined on input line 3323.
+
+
+LaTeX Warning: Citation `ESAJ04A' on page 63 undefined on input line 3349.
+
+
+LaTeX Warning: Citation `AJEAS00' on page 63 undefined on input line 3349.
+
+(C:/csle/dev/art/archive/gtb/doc/gtb_report/gtb\tut50.pic) [63]
+(C:/csle/dev/art/archive/gtb/doc/gtb_report/gtb\tut51.pic
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 26.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 29.
+
+) (C:/csle/dev/art/archive/gtb/doc/gtb_report/gtb\tut52.pic)
+(C:/csle/dev/art/archive/gtb/doc/gtb_report/gtb\tut53.pic
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 69.
+
+) (C:/csle/dev/art/archive/gtb/doc/gtb_report/gtb\tut54.pic
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 92.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 96.
+
+)
+Overfull \hbox (4.32407pt too wide) in paragraph at lines 99--3411
+ [] 
+ []
+
+[64] (C:/csle/dev/art/archive/gtb/doc/gtb_report/gtb\tut55.pic
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 104.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 108.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 112.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 116.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 120.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 123.
+
+)
+Overfull \hbox (4.32407pt too wide) in paragraph at lines 126--3417
+ [] 
+ []
+
+(C:/csle/dev/art/archive/gtb/doc/gtb_report/gtb\tut56.pic
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 64.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 67.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 73.
+
+) (C:/csle/dev/art/archive/gtb/doc/gtb_report/gtb\tut57.pic
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 118.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 122.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 126.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 130.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 139.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 142.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 148.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 161.
+
+)
+Overfull \hbox (4.32407pt too wide) in paragraph at lines 165--3443
+ [] 
+ []
+
+[65] [66]
+Chapter 4.
+
+LaTeX Warning: Citation `AH99' on page 67 undefined on input line 3494.
+
+
+LaTeX Warning: Citation `ESAJ02b' on page 67 undefined on input line 3496.
+
+
+LaTeX Warning: Citation `ESAJ04D' on page 67 undefined on input line 3497.
+
+(C:/csle/dev/art/archive/gtb/doc/gtb_report/gtb\tut29.pic) [67
+
+
+]
+(C:/csle/dev/art/archive/gtb/doc/gtb_report/gtb\tut30.pic)
+Overfull \hbox (12.67776pt too wide) in paragraph at lines 77--3542
+ [] 
+ []
+
+[68] (C:/csle/dev/art/archive/gtb/doc/gtb_report/gtb\tut33.pic)
+(C:/csle/dev/art/archive/gtb/doc/gtb_report/gtb\tut34.pic)
+(C:/csle/dev/art/archive/gtb/doc/gtb_report/gtb\tut31.pic
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 161.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 164.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 167.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 170.
+
+) [69] (C:/csle/dev/art/archive/gtb/doc/gtb_report/gtb\tut32.pic
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 133.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 136.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 139.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 142.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 153.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 175.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 178.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 181.
+
+) [70]
+
+LaTeX Warning: Citation `ESAJ04D' on page 71 undefined on input line 3710.
+
+
+Overfull \hbox (6.62056pt too wide) in paragraph at lines 3753--3753
+ [] 
+ []
+
+[71] [72
+Non-PDF special ignored!
+<special> PSfile=vcg19.ps llx=0 lly=279 urx=381 ury=849 rwi=3810
+] [73] [74
+Non-PDF special ignored!
+<special> PSfile=vcg20.ps llx=0 lly=297 urx=333 ury=850 rwi=3330
+] (C:/csle/dev/art/archive/gtb/doc/gtb_report/gtb\tut35.pic
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 45.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 48.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 51.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 57.
+
+) [75]
+
+LaTeX Warning: Reference `gdg' on page 76 undefined on input line 3925.
+
+
+LaTeX Warning: Reference `rcagtb' on page 76 undefined on input line 3926.
+
+
+Overfull \hbox (2.63792pt too wide) in paragraph at lines 3923--3930
+[]\OT1/cmr/m/n/10.95 Detecting self em-bed-ding in a gram-mar and de-ter-min-in
+g which non-terminals
+ []
+
+[76]
+Overfull \hbox (8.56477pt too wide) in paragraph at lines 3942--3945
+[]\OT1/cmr/m/n/10.95 Construct RIA($ []$) and con-struct RIA($ []$) for each te
+r-mi-nalised non-terminal
+ []
+
+(C:/csle/dev/art/archive/gtb/doc/gtb_report/gtb\tut36.pic
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 46.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 51.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 62.
+
+) (C:/csle/dev/art/archive/gtb/doc/gtb_report/gtb\tut37.pic
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 39.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 44.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 54.
+
+) (C:/csle/dev/art/archive/gtb/doc/gtb_report/gtb\tut38.pic
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 46.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 50.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 61.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 86.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 90.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 103.
+
+) [77]
+
+LaTeX Warning: Reference `riglr' on page 78 undefined on input line 4030.
+
+
+LaTeX Warning: Reference `iriagtb' on page 78 undefined on input line 4035.
+
+
+LaTeX Warning: Reference `ria' on page 78 undefined on input line 4035.
+
+[78] [79] [80
+Non-PDF special ignored!
+<special> PSfile=vcg23.ps llx=0 lly=393 urx=255 ury=849 rwi=2550
+] [81] (C:/csle/dev/art/archive/gtb/doc/gtb_report/gtb\tut61.pic
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 33.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 36.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 40.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 51.
+
+) (C:/csle/dev/art/archive/gtb/doc/gtb_report/gtb\tut62.pic)
+(C:/csle/dev/art/archive/gtb/doc/gtb_report/gtb\tut63.pic) [82]
+
+LaTeX Warning: Reference `gdg' on page 83 undefined on input line 4298.
+
+[83] (C:/csle/dev/art/archive/gtb/doc/gtb_report/gtb\tut39.pic
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 33.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 36.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 39.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 42.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 45.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 58.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 62.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 65.
+
+) [84] (C:/csle/dev/art/archive/gtb/doc/gtb_report/gtb\tut40.pic
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 29.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 32.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 35.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 38.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 41.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 52.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 56.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 59.
+
+) (C:/csle/dev/art/archive/gtb/doc/gtb_report/gtb\tut58.pic
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 34.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 37.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 40.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 44.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 47.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 55.
+
+) [85] (C:/csle/dev/art/archive/gtb/doc/gtb_report/gtb\tut59.pic
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 34.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 37.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 40.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 43.
+
+) (C:/csle/dev/art/archive/gtb/doc/gtb_report/gtb\tut60.pic
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 51.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 54.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 57.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 60.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 63.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 66.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 69.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 72.
+
+)
+Overfull \hbox (39.49054pt too wide) detected at line 4469
+\OMS/cmsy/m/n/10.95 f\OT1/cmr/m/n/10.95 (\OML/cmm/m/it/10.95 S; A\OT1/cmr/m/n/1
+0.95 ) (\OML/cmm/m/it/10.95 A; E\OT1/cmr/m/n/10.95 ) (\OML/cmm/m/it/10.95 B; E\
+OT1/cmr/m/n/10.95 ) (\OML/cmm/m/it/10.95 A; B\OT1/cmr/m/n/10.95 )\OMS/cmsy/m/n/
+10.95 g  f\OT1/cmr/m/n/10.95 (\OML/cmm/m/it/10.95 S; A\OT1/cmr/m/n/10.95 ) (\OM
+L/cmm/m/it/10.95 A; E\OT1/cmr/m/n/10.95 ) (\OML/cmm/m/it/10.95 B; E\OT1/cmr/m/n
+/10.95 ) (\OML/cmm/m/it/10.95 B; A\OT1/cmr/m/n/10.95 )\OMS/cmsy/m/n/10.95 g  
+ []
+
+[86]
+LaTeX Font Info:    Trying to load font information for OMS+cmr on input line 4
+478.
+ (C:\Users\adrian\AppData\Local\Programs\MiKTeX\tex/latex/base\omscmr.fd
+File: omscmr.fd 2019/12/16 v2.5j Standard LaTeX font definitions
+)
+LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <10.95> not available
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 4478.
+
+
+
+LaTeX Warning: Citation `TARJAN72' on page 87 undefined on input line 4578.
+
+[87] [88] [89
+Non-PDF special ignored!
+<special> PSfile=vcg28.ps llx=117 lly=442 urx=282 ury=640 rwi=1650
+]
+Overfull \hbox (3.87665pt too wide) in paragraph at lines 4681--4684
+\OT1/cmr/m/n/10.95 y-sis be-fore the min-i-mal-ity test-ing step. We do this us
+-ing the []\OT1/cmtt/m/n/10.95 retain_break_sets
+ []
+
+
+Overfull \hbox (2.1829pt too wide) in paragraph at lines 4688--4690
+\OT1/cmr/m/n/10.95 (The op-tion to do the min-i-mal-ity test-ing is []\OT1/cmtt
+/m/n/10.95 prune_break_sets_by_table\OT1/cmr/m/n/10.95 , which
+ []
+
+[90
+Non-PDF special ignored!
+<special> PSfile=vcg29.ps llx=151 lly=437 urx=287 ury=600 rwi=1360
+]
+
+LaTeX Warning: Citation `AH99' on page 91 undefined on input line 4800.
+
+[91] [92] [93] [94] [95]
+Overfull \hbox (1.17982pt too wide) detected at line 5089
+[] [] 
+ []
+
+(C:/csle/dev/art/archive/gtb/doc/gtb_report/gtb\tut43.pic
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 70.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 73.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 76.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 79.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 82.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 85.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 88.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 91.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 94.
+
+) (C:/csle/dev/art/archive/gtb/doc/gtb_report/gtb\tut44.pic
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 37.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 52.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 55.
+
+) [96]
+
+LaTeX Warning: Reference `rca' on page 97 undefined on input line 5127.
+
+(C:/csle/dev/art/archive/gtb/doc/gtb_report/gtb\tut45.pic
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 52.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 55.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 58.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 61.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 64.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 67.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 70.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 73.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 76.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 105.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 120.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 123.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 134.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 137.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 140.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 143.
+
+
+LaTeX Warning: \oval, \circle, or \line size unavailable on input line 150.
+
+) [97]
+Overfull \hbox (14.65047pt too wide) in paragraph at lines 5192--5192
+ [] 
+ []
+
+[98
+Non-PDF special ignored!
+<special> PSfile=vcg30.ps llx=0 lly=472 urx=389 ury=576 rwi=3890
+]
+Chapter 5.
+
+LaTeX Warning: Citation `AJES04D1' on page 99 undefined on input line 5212.
+
+
+LaTeX Warning: Citation `KR:ANSI' on page 99 undefined on input line 5221.
+
+
+Overfull \hbox (26.91154pt too wide) in paragraph at lines 5261--5266
+\OT1/cmr/m/n/10.95 The []\OT1/cmtt/m/n/10.95 treeview \OT1/cmr/m/n/10.95 pro-gr
+am with the []\OT1/cmtt/m/n/10.95 if-then \OT1/cmr/m/n/10.95 state-ments re-pla
+ced by []\OT1/cmtt/m/n/10.95 if-then-else
+ []
+
+[99
+
+
+] [100]
+Chapter 6.
+
+LaTeX Warning: Reference `p_trie' on page 101 undefined on input line 5301.
+
+
+LaTeX Warning: Reference `p_aug' on page 101 undefined on input line 5304.
+
+
+LaTeX Warning: Reference `p_clo' on page 101 undefined on input line 5308.
+
+
+LaTeX Warning: Reference `p_gdganl' on page 101 undefined on input line 5313.
+
+
+LaTeX Warning: Reference `p_dfa' on page 101 undefined on input line 5320.
+
+
+LaTeX Warning: Reference `p_gdg' on page 101 undefined on input line 5323.
+
+
+LaTeX Warning: Reference `p_gen' on page 101 undefined on input line 5326.
+
+
+LaTeX Warning: Reference `p_grm' on page 101 undefined on input line 5332.
+
+[101
+
+
+]
+
+LaTeX Warning: Reference `p_verb' on page 102 undefined on input line 5338.
+
+
+LaTeX Warning: Reference `p_lalr' on page 102 undefined on input line 5341.
+
+
+LaTeX Warning: Reference `p_lr' on page 102 undefined on input line 5344.
+
+
+LaTeX Warning: Reference `p_nfa' on page 102 undefined on input line 5350.
+
+
+LaTeX Warning: Reference `p_slr' on page 102 undefined on input line 5362.
+
+
+Overfull \hbox (8.38652pt too wide) in paragraph at lines 5362--5366
+\OT1/cmr/m/n/10.95 This is an ab-bre-vi-a-tion for []\OT1/cmtt/m/n/10.95 nfa[my
+_grammar lr 0-1 terminal_lookahead_sets 
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 5362--5366
+
+ []
+
+
+LaTeX Warning: Reference `p_opn' on page 102 undefined on input line 5368.
+
+
+LaTeX Warning: Reference `p_prfx' on page 102 undefined on input line 5374.
+
+
+LaTeX Warning: Reference `p_ren' on page 102 undefined on input line 5377.
+
+
+LaTeX Warning: Reference `p_rirec' on page 102 undefined on input line 5382.
+
+
+Overfull \hbox (17.52632pt too wide) in paragraph at lines 5382--5386
+\OT1/cmr/m/n/10.95 Recognises the string []\OT1/cmtt/m/n/10.95 STRING \OT1/cmr/
+m/n/10.95 us-ing an RIGLR parser and the gram-mar []\OT1/cmtt/m/n/10.95 my_gram
+mar\OT1/cmr/m/n/10.95 .
+ []
+
+[102]
+
+LaTeX Warning: Reference `p_rnglr' on page 103 undefined on input line 5387.
+
+
+LaTeX Warning: Reference `p_tld' on page 103 undefined on input line 5392.
+
+
+LaTeX Warning: Reference `p_tom' on page 103 undefined on input line 5397.
+
+
+LaTeX Warning: Reference `p_wrt' on page 103 undefined on input line 5402.
+
+No file gtb_tut.bbl.
+[103] (gtb_tut.aux)
+
+LaTeX Warning: There were undefined references.
+
+
+LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
+
+ ) 
+Here is how much of TeX's memory you used:
+ 1276 strings out of 478659
+ 24503 string characters out of 2845447
+ 891846 words of memory out of 3000000
+ 19187 multiletter control sequences out of 15000+600000
+ 424792 words of font info for 104 fonts, out of 8000000 for 9000
+ 1141 hyphenation exceptions out of 8191
+ 43i,9n,39p,271b,435s stack positions out of 5000i,500n,10000p,200000b,80000s
+ <C:\Users\adrian\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\tcr
+m1095.pk><C:/Users/adrian/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsf
+onts/cm/cmbx10.pfb><C:/Users/adrian/AppData/Local/Programs/MiKTeX/fonts/type1/p
+ublic/amsfonts/cm/cmbx8.pfb><C:/Users/adrian/AppData/Local/Programs/MiKTeX/font
+s/type1/public/amsfonts/cm/cmcsc10.pfb><C:/Users/adrian/AppData/Local/Programs/
+MiKTeX/fonts/type1/public/amsfonts/cm/cmex10.pfb><C:/Users/adrian/AppData/Local
+/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi10.pfb><C:/Users/adrian/App
+Data/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi6.pfb><C:/Users/a
+drian/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi8.pfb><C
+:/Users/adrian/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmm
+i9.pfb><C:/Users/adrian/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfon
+ts/cm/cmr10.pfb><C:/Users/adrian/AppData/Local/Programs/MiKTeX/fonts/type1/publ
+ic/amsfonts/cm/cmr12.pfb><C:/Users/adrian/AppData/Local/Programs/MiKTeX/fonts/t
+ype1/public/amsfonts/cm/cmr6.pfb><C:/Users/adrian/AppData/Local/Programs/MiKTeX
+/fonts/type1/public/amsfonts/cm/cmr8.pfb><C:/Users/adrian/AppData/Local/Program
+s/MiKTeX/fonts/type1/public/amsfonts/cm/cmr9.pfb><C:/Users/adrian/AppData/Local
+/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmss10.pfb><C:/Users/adrian/App
+Data/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmss12.pfb><C:/Users/
+adrian/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmssbx10.pf
+b><C:/Users/adrian/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm
+/cmsy10.pfb><C:/Users/adrian/AppData/Local/Programs/MiKTeX/fonts/type1/public/a
+msfonts/cm/cmsy6.pfb><C:/Users/adrian/AppData/Local/Programs/MiKTeX/fonts/type1
+/public/amsfonts/cm/cmsy8.pfb><C:/Users/adrian/AppData/Local/Programs/MiKTeX/fo
+nts/type1/public/amsfonts/cm/cmsy9.pfb><C:/Users/adrian/AppData/Local/Programs/
+MiKTeX/fonts/type1/public/amsfonts/cm/cmti10.pfb><C:/Users/adrian/AppData/Local
+/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmtt10.pfb><C:/Users/adrian/App
+Data/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmtt12.pfb><C:/Users/
+adrian/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/latxfont/lcirc
+le1.pfb><C:/Users/adrian/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfo
+nts/latxfont/line10.pfb>
+Output written on gtb_tut.pdf (106 pages, 1067511 bytes).
+PDF statistics:
+ 473 PDF objects out of 1000 (max. 8388607)
+ 0 named destinations out of 1000 (max. 500000)
+ 1 words of extra memory for PDF output out of 10000 (max. 10000000)
+

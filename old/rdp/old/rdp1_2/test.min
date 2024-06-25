@@ -1,0 +1,23 @@
+(*****************************************************************************
+*
+* RDP release 1.20 by Adrian Johnstone (adrian@dcs.rhbnc.ac.uk) 6 Nov 1994
+*
+* test.min - a piece of Mini source to test the Mini interpreter
+*
+* This file may be freely distributed. Please mail improvements to the author.
+*
+*****************************************************************************)
+
+int a=3+4, b=1;
+
+print("a is ", a);
+
+b=a*2;
+
+print("b is ", b, ", -b is ", -b);
+
+int z = a;
+print(z);
+
+
+(* End of test.min *)

@@ -1,0 +1,3 @@
+start ::= INTEGER '+' expr.
+expr  ::= INTEGER '*' INTEGER.
+

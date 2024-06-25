@@ -1,0 +1,258 @@
+ (text.1): Scanned   1  id 'scanner'
+  (text.1): Scanned   1  id 'test'
+  (text.1): Scanned   1  id 'file'
+
+     2:  @..
+ (text.1): Scanned  14  id '(null)'
+ ******* -^
+Error (text.1): Unexpected character 0x40 '@' in source file
+******* --^
+Error (text.1): Unexpected character 0x2E '.' in source file
+******* ---^
+Error (text.1): Unexpected character 0x2E '.' in source file
+     3: 
+ (text.1): Scanned  14  id '(null)'
+
+     4:  _an_identifier
+ (text.1): Scanned  14  id '(null)'
+  (text.1): Scanned   1  id '_an_identifier'
+
+     5:  123 decimal
+ (text.1): Scanned  14  id '(null)'
+  (text.1): Scanned   2  id '123'
+  (text.1): Scanned   1  id 'decimal'
+
+     6:  0xfea hexadecimal
+ (text.1): Scanned  14  id '(null)'
+  (text.1): Scanned   2  id '0xfea'
+  (text.1): Scanned   1  id 'hexadecimal'
+
+     7:  1.
+ (text.1): Scanned  14  id '(null)'
+  (text.1): Scanned   3  id '1.'
+
+     8:  1232.456
+ (text.1): Scanned  14  id '(null)'
+  (text.1): Scanned   3  id '1232.456'
+
+     9:  .3
+ (text.1): Scanned  14  id '(null)'
+ ******* -^
+Error (text.1): Unexpected character 0x2E '.' in source file
+ (text.1): Scanned   2  id '3'
+
+    10: ' A string using '' Pascal style quoting'
+ (text.1): Scanned  14  id '(null)'
+' (text.1): Scanned   4  id ' A string using ' Pascal style quoting'
+
+    11: "A string using C-style \" quoting"
+ (text.1): Scanned  14  id '(null)'
+" (text.1): Scanned   5  id 'A string using C-style " quoting'
+
+    12: {A nonnexted {comment} }
+ (text.1): Scanned  14  id '(null)'
+{******* -----------------------^
+Error (text.1): Unexpected character 0x7D '}' in source file
+    13: <A visible nonnested <comment> >
+ (text.1): Scanned  14  id '}'
+< (text.1): Scanned   7  id 'A visible nonnested <comment'
+     14: /* A nested /* comment */ */
+ (text.1): Scanned  14  id '>'
+/******* ^
+Error (text.1): Unexpected character 0x2F '/' in source file
+******* -^
+Error (text.1): Unexpected character 0x2A '*' in source file
+ (text.1): Scanned   1  id 'a'
+  (text.1): Scanned   1  id 'nested'
+ ******* ------------^
+Error (text.1): Unexpected character 0x2F '/' in source file
+******* -------------^
+Error (text.1): Unexpected character 0x2A '*' in source file
+ (text.1): Scanned   1  id 'comment'
+ ******* -----------------------^
+Error (text.1): Unexpected character 0x2A '*' in source file
+******* ------------------------^
+Error (text.1): Unexpected character 0x2F '/' in source file
+******* --------------------------^
+Error (text.1): Unexpected character 0x2A '*' in source file
+******* ---------------------------^
+Error (text.1): Unexpected character 0x2F '/' in source file
+    15: \* A nested visible \* comment *\ *\
+ (text.1): Scanned  14  id '(null)'
+\******* ^
+Error (text.1): Unexpected character 0x5C '\' in source file
+******* -^
+Error (text.1): Unexpected character 0x2A '*' in source file
+ (text.1): Scanned   1  id 'a'
+  (text.1): Scanned   1  id 'nested'
+  (text.1): Scanned   1  id 'visible'
+ ******* --------------------^
+Error (text.1): Unexpected character 0x5C '\' in source file
+******* ---------------------^
+Error (text.1): Unexpected character 0x2A '*' in source file
+ (text.1): Scanned   1  id 'comment'
+ ******* -------------------------------^
+Error (text.1): Unexpected character 0x2A '*' in source file
+******* --------------------------------^
+Error (text.1): Unexpected character 0x5C '\' in source file
+******* ----------------------------------^
+Error (text.1): Unexpected character 0x2A '*' in source file
+******* -----------------------------------^
+Error (text.1): Unexpected character 0x5C '\' in source file
+    16: indentifier ++ comment end at line end
+ (text.1): Scanned  14  id '(null)'
+i (text.1): Scanned   1  id 'indentifier'
+     17: indentifier -- visible comment end at line end
+ (text.1): Scanned  14  id ' comment end at line end'
+i (text.1): Scanned   1  id 'indentifier'
+  (text.1): Scanned  11  id ' visible comment end at line end'
+
+    18: >>=
+ (text.1): Scanned  14  id '(null)'
+> (text.1): Scanned  15  id '>>='
+
+    19: 
+ (text.1): Scanned  14  id '(null)'
+
+    20: Now tes file inclusion
+ (text.1): Scanned  14  id '(null)'
+N (text.1): Scanned   1  id 'now'
+  (text.1): Scanned   1  id 'tes'
+  (text.1): Scanned   1  id 'file'
+  (text.1): Scanned   1  id 'inclusion'
+
+    21: 
+ (text.1): Scanned  14  id '(null)'
+
+    22: include_zzz[!]
+ (text.1): Scanned  14  id '(null)'
+i (text.1): Scanned   1  id 'include_zzz'
+[******* -----------^
+Error (text.1): Unexpected character 0x5B '[' in source file
+ (text.1): Scanned  16  id '!'
+]Warning (text.1): saw include directive
+******* -------------^
+Error (text.1): can't find include file 'zzz.zzz.zzz'
+******* -------------^
+Error (text.1): Unexpected character 0x5D ']' in source file
+    23: include_text2[?]
+ (text.1): Scanned  14  id '(null)'
+i (text.1): Scanned   1  id 'include_text2'
+[******* -------------^
+Error (text.1): Unexpected character 0x5B '[' in source file
+ (text.1): Scanned  17  id '?'
+]Warning (text.1): saw include directive
+ (text.2): 
+******* ^
+Warning (text.2): opened include file 'text.2'
+******* ^
+Error (text.2): Unexpected character 0x5D ']' in source file
+     1: Start of testtext.2
+ (text.2): Scanned   1  id 'start'
+  (text.2): Scanned   1  id 'of'
+  (text.2): Scanned   1  id 'testtext'
+.******* -----------------^
+Error (text.2): Unexpected character 0x2E '.' in source file
+ (text.2): Scanned   2  id '2'
+
+     2: Including testtext.3 from within testtext.2 [$]
+ (text.2): Scanned  14  id '(null)'
+I (text.2): Scanned   1  id 'including'
+  (text.2): Scanned   1  id 'testtext'
+.******* ------------------^
+Error (text.2): Unexpected character 0x2E '.' in source file
+ (text.2): Scanned   2  id '3'
+  (text.2): Scanned   1  id 'from'
+  (text.2): Scanned   1  id 'within'
+  (text.2): Scanned   1  id 'testtext'
+.******* -----------------------------------------^
+Error (text.2): Unexpected character 0x2E '.' in source file
+ (text.2): Scanned   2  id '2'
+ ******* --------------------------------------------^
+Error (text.2): Unexpected character 0x5B '[' in source file
+ (text.2): Scanned  18  id '$'
+]Warning (text.2): saw include directive
+ (text.3): 
+******* ^
+Warning (text.3): opened include file 'text.3'
+******* ^
+Error (text.3): Unexpected character 0x5D ']' in source file
+     1: Start of testtext.3
+ (text.3): Scanned   1  id 'start'
+  (text.3): Scanned   1  id 'of'
+  (text.3): Scanned   1  id 'testtext'
+.******* -----------------^
+Error (text.3): Unexpected character 0x2E '.' in source file
+ (text.3): Scanned   2  id '3'
+
+     2: some text
+ (text.3): Scanned  14  id '(null)'
+s (text.3): Scanned   1  id 'some'
+  (text.3): Scanned   1  id 'text'
+
+     3: End of testtext.3
+ (text.3): Scanned  14  id '(null)'
+E (text.3): Scanned   1  id 'end'
+  (text.3): Scanned   1  id 'of'
+  (text.3): Scanned   1  id 'testtext'
+.******* ---------------^
+Error (text.3): Unexpected character 0x2E '.' in source file
+ (text.3): Scanned   2  id '3'
+  (text.3): 3 errors and 1 warning
+ (text.2): 
+     2: Including testtext.3 from within testtext.2 [$]
+     3: End of testtext.2
+ (text.2): Scanned  14  id '(null)'
+E (text.2): Scanned   1  id 'end'
+  (text.2): Scanned   1  id 'of'
+  (text.2): Scanned   1  id 'testtext'
+.******* ---------------^
+Error (text.2): Unexpected character 0x2E '.' in source file
+ (text.2): Scanned   2  id '2'
+
+     4: 
+ (text.2): Scanned  14  id '(null)'
+  (text.2): 6 errors and 2 warnings
+ (text.1): 
+    23: include_text2[?]
+    24: include_text3[$]
+ (text.1): Scanned  14  id '(null)'
+i (text.1): Scanned   1  id 'include_text3'
+[******* -------------^
+Error (text.1): Unexpected character 0x5B '[' in source file
+ (text.1): Scanned  18  id '$'
+]Warning (text.1): saw include directive
+ (text.3): 
+******* ^
+Warning (text.3): opened include file 'text.3'
+******* ^
+Error (text.3): Unexpected character 0x5D ']' in source file
+     1: Start of testtext.3
+ (text.3): Scanned   1  id 'start'
+  (text.3): Scanned   1  id 'of'
+  (text.3): Scanned   1  id 'testtext'
+.******* -----------------^
+Error (text.3): Unexpected character 0x2E '.' in source file
+ (text.3): Scanned   2  id '3'
+
+     2: some text
+ (text.3): Scanned  14  id '(null)'
+s (text.3): Scanned   1  id 'some'
+  (text.3): Scanned   1  id 'text'
+
+     3: End of testtext.3
+ (text.3): Scanned  14  id '(null)'
+E (text.3): Scanned   1  id 'end'
+  (text.3): Scanned   1  id 'of'
+  (text.3): Scanned   1  id 'testtext'
+.******* ---------------^
+Error (text.3): Unexpected character 0x2E '.' in source file
+ (text.3): Scanned   2  id '3'
+  (text.3): 3 errors and 1 warning
+ (text.1): 
+    24: include_text3[$]
+    25: 
+ (text.1): Scanned  14  id '(null)'
+  (text.1): 26 errors and 3 warnings
+ (text.1): Scanned  13  id '(null)'
+ (text.1): total of 38 errors and 7 warnings

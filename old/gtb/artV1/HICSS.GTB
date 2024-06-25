@@ -1,0 +1,50 @@
+(* Example GTB script *)
+
+S ::= 'i' S 'e' S | 'i' S | 'a' | #.
+
+(
+gdg_file := open["gdg.vcg"]
+nfa_file := open["nfa.vcg"]
+dfa_file := open["dfa.vcg"]
+merged_dfa_file := open["merged.vcg"]
+table_file := open["table.tbl"]
+ssg_file := open["ssg.vcg"]
+
+this_grammar := grammar[S]
+write[this_grammar] 
+
+this_gdg := gdg[this_grammar]
+write[gdg_file this_gdg]
+
+generate[this_grammar 10 sentences]
+generate[this_grammar 10 left_sentential_forms]
+
+this_nfa := nfa[this_grammar slr_1]
+add_nullable_accepting_states[this_nfa]
+write[nfa_file this_nfa]
+flush[nfa_file]
+
+this_dfa := subset_construction[this_nfa]
+write[dfa_file this_dfa]
+
+(*
+merged_dfa := la_merge[dfa]
+write ["Printing merged DFA\n"]
+write[merged_dfa_file merged_dfa]
+*)
+
+(*
+table := parse_table[dfa]
+write[table_file table]
+
+lr_parse[table "if expr expr"] 
+lr_parse[table "expr if"] 
+
+ssg := tomita_1_parse[table "if if expr expr"]
+write[ssg_file ssg]
+*)
+
+write["\n" CPU_time " CPU seconds elapsed\n\n"]
+)
+
+

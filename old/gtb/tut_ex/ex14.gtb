@@ -1,0 +1,8 @@
+(* ex14 the RIGLR algorithm *)
+S ::=  'a' ~S B 'a' | 'c' .
+B ::=  'b' | # .
+
+(
+ex14_grammar := grammar[S tilde_enabled]
+ri_recognise[ex14_grammar "aacbaa"]
+)

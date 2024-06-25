@@ -1,0 +1,197 @@
+graph: {
+  title: "icontest"
+  color: white
+  iconcolors: 32
+  fast_icons: no
+  width: 640 
+  height: 400
+  xmax: 1072
+  ymax: 816
+  xbase: 15
+  ybase: 5
+  xspace: 20
+  xlspace: 10
+  yspace: 70
+  xraster: 20
+  xlraster: 1
+  yraster: 1
+  shrink:  100
+  stretch: 50
+  layout_downfactor: 1
+  layout_upfactor: 1
+  layout_nearfactor: 0
+  layout_splinefactor: 70
+  spreadlevel: 1
+  treefactor: 0.500000
+  bmax: 100
+  cmin: 0
+  cmax: 32000
+  pmin: 0
+  pmax: 100
+  rmin: 0
+  rmax: 0
+  smax: 100
+  node_alignment: center
+  orientation: top_to_bottom
+  late_edge_labels: no
+  display_edge_labels: no
+  dirty_edge_labels: no
+  finetuning: yes
+  nearedges: yes
+  splines: no
+  ignoresingles: no
+  straight_phase: yes
+  priority_phase: yes
+  manhatten_edges: no
+  smanhatten_edges: no
+  port_sharing: yes
+  crossingphase2: no
+  crossingoptimization: yes
+  crossingweight: bary
+  arrow_mode: fixed
+  colorentry 0 :  255 255 255
+  colorentry 1 :  0 0 255
+  colorentry 2 :  255 0 0
+  colorentry 3 :  0 255 0
+  colorentry 4 :  255 255 0
+  colorentry 5 :  255 0 255
+  colorentry 6 :  0 255 255
+  colorentry 7 :  85 85 85
+  colorentry 8 :  0 0 128
+  colorentry 9 :  128 0 0
+  colorentry 10 :  0 128 0
+  colorentry 11 :  128 128 0
+  colorentry 12 :  128 0 128
+  colorentry 13 :  0 128 128
+  colorentry 14 :  255 215 0
+  colorentry 15 :  170 170 170
+  colorentry 16 :  128 128 255
+  colorentry 17 :  255 128 128
+  colorentry 18 :  128 255 128
+  colorentry 19 :  255 255 128
+  colorentry 20 :  255 128 255
+  colorentry 21 :  128 255 255
+  colorentry 22 :  238 130 238
+  colorentry 23 :  64 224 208
+  colorentry 24 :  127 255 212
+  colorentry 25 :  240 230 140
+  colorentry 26 :  160 32 240
+  colorentry 27 :  154 205 50
+  colorentry 28 :  255 192 203
+  colorentry 29 :  255 165 0
+  colorentry 30 :  218 112 214
+  colorentry 31 :  0 0 0
+  colorentry 32 :  222 222 230
+  colorentry 33 :  238 234 238
+  colorentry 34 :  250 246 238
+  colorentry 35 :  125 93 85
+  colorentry 36 :  85 80 85
+  colorentry 37 :  117 36 48
+  colorentry 38 :  117 72 64
+  colorentry 39 :  80 56 60
+  colorentry 40 :  129 113 109
+  colorentry 41 :  52 48 56
+  colorentry 42 :  56 36 48
+  colorentry 43 :  214 202 206
+  colorentry 44 :  178 186 198
+  colorentry 45 :  80 48 52
+  colorentry 46 :  133 133 137
+  colorentry 47 :  161 141 137
+  colorentry 48 :  161 105 85
+  colorentry 49 :  56 56 60
+  colorentry 50 :  194 145 129
+  colorentry 51 :  85 32 36
+  colorentry 52 :  250 250 238
+  colorentry 53 :  210 186 186
+  colorentry 54 :  190 105 80
+  colorentry 55 :  165 174 190
+  colorentry 56 :  129 137 165
+  colorentry 57 :  145 153 174
+  colorentry 58 :  161 76 60
+  colorentry 59 :  246 250 255
+
+  node.bordercolor: blue
+  node.borderwidth: 6
+  edge.color: red
+  edge.thickness: 4
+  node: {
+	title: "A1"
+	label: ""
+	iconfile: "a1.ppm"
+	level: 0
+  }
+
+  node: {
+	title: "A2"
+	label: ""
+	iconfile: "a2.ppm"
+	level: 0
+  }
+
+  node: {
+	title: "M1"
+	color: red
+	borderwidth: 1
+	bordercolor: red
+	label: ""
+	width: 4
+	height: 4
+	shape: circle
+	borderwidth: 5
+	level: 0
+  }
+
+  edge: {
+	sourcename: "A1"
+	targetname: "M1"
+	arrowstyle: none
+  }
+  edge: {
+	sourcename: "A2"
+	targetname: "M1"
+	arrowstyle: none
+  }
+
+  node: {
+	title: "A3"
+	label: ""
+	iconfile: "a3.ppm"
+	level: 1
+  }
+
+  node: {
+	title: "A4"
+	label: ""
+	iconfile: "a4.ppm"
+	level: 1
+  }
+
+  node: {
+	title: "M2"
+	color: red
+	bordercolor: red
+	borderwidth: 1
+	label: ""
+	shape: circle
+	width: 4
+	height: 4
+	borderwidth: 5
+	level: 1
+  }
+
+  edge: {
+	sourcename: "M1"
+	targetname: "A4"
+  }
+  edge: {
+	sourcename: "A3"
+	targetname: "M2"
+	arrowstyle: none
+  }
+  edge: {
+	sourcename: "A4"
+	targetname: "M2"
+	arrowstyle: none
+  }
+
+}

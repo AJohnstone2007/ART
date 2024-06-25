@@ -1,0 +1,36 @@
+\begin{thebibliography}{Bac60}
+
+\bibitem[Bac60]{bs60}
+J.~W. Backus.
+\newblock The syntax and semantics of the proposed {I}nternational {A}lgebraic
+  {L}anguage of the {Z}urich {ACM-GAMM} conference.
+\newblock In R.~Oldenburg, editor, {\em Proc. Internat'l Conf. Information
+  Processing, UNESCO, Paris, 1959}, pages 125--132, London, 1960. Butterworths.
+
+\bibitem[JS97a]{rdp:case:1.5}
+Adrian Johnstone and Elizabeth Scott.
+\newblock Designing and implementing language translators with {\tt rdp}\,--\,a
+  case study.
+\newblock Technical Report TR-97-27, Royal Holloway, University of London,
+  Computer Science Department, December 1997.
+
+\bibitem[JS97b]{rdp:supp:1.5}
+Adrian Johnstone and Elizabeth Scott.
+\newblock {\tt rdp\_\,supp} -- support routines for the {\tt rdp} compiler
+  compiler version 1.5.
+\newblock Technical Report TR-97-26, Royal Holloway, University of London,
+  Computer Science Department, December 1997.
+
+\bibitem[JS97c]{rdp:tut:1.5}
+Adrian Johnstone and Elizabeth Scott.
+\newblock A tutorial guide to {\tt rdp} for new users.
+\newblock Technical Report TR-97-24, Royal Holloway, University of London,
+  Computer Science Department, December 1997.
+
+\bibitem[San95]{SANDER95}
+Georg Sander.
+\newblock {\em {VCG} Visualisation of Compiler Graphs}.
+\newblock Universit\"at des Saarlandes, 66041 Saarbr\"ucken, Germany, February
+  1995.
+
+\end{thebibliography}

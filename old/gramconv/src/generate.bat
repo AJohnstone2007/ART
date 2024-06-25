@@ -1,0 +1,2 @@
+\csle\dev\rdp\bin\rdp -F -ogramconv gramconv.bnf
+move /y gramconv.c gramconv.cpp

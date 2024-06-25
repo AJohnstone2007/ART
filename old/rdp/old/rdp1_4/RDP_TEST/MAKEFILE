@@ -1,0 +1,140 @@
+# RDP release 1.40 by Adrian Johnstone (adrian@dcs.rhbnc.ac.uk) 30 Jan 1995
+
+###############################################################################
+# Configuration section: uncomment one of the following blocks for gcc, g++,
+# djgpp, acc on Sunos, Borland C++ or Microsoft C++.
+
+# Configuration for gcc on Unix. Also works for g++ if you set CC = g++
+#CC      = gcc
+#OBJ     = .o
+#EXE     =
+#DIFF    = diff -s
+#RM      = rm
+#CP      = cp
+#SUPP_DIR = .../rdp_supp/
+#CFLAGS = -I$(SUPP_DIR) -Wmissing-prototypes -Wstrict-prototypes -fno-common -Wall -ansi -pedantic -g
+#LINK    = $(CC) -o ./
+#MATHS   = -lm
+#HERE    = ./
+#OBJ_ONLY = -c
+# End of gcc on Unix configuration
+
+# Configuration for gcc on DOS using djpgg.
+# Note: You can find diff,cp,rm etc by looking for DOSIX with archie
+#CC     = gcc
+#OBJ = .o
+#EXE =
+#DIFF = diff -b                 # assumes you have diff for dos
+#RM = rm                        # assumes you have rm for dos
+#CP = cp                        # assumes you have cp for dos
+#SUPP_DIR = ../rdp_supp/
+#CFLAGS = -I$(SUPP_DIR) -Wmissing-prototypes -Wstrict-prototypes -fno-common -Wall -ansi -pedantic
+#LINK = $(CC) $(CFLAGS) -o ./
+#MATHS = -lm
+#HERE = ./
+#COFF = coff2exe        # gcc util to add in DPMI => standalone .exe file
+#OBJ_ONLY = -c
+# End of gcc on DOS configuration
+
+# Configuration for Sun acc 2.0 on SunOS
+#CC     = acc
+#OBJ = .o
+#EXE =
+#DIFF = diff -s
+#RM = rm
+#CP = cp
+#SUPP_DIR = ../rdp_supp/
+#CFLAGS = -I$(SUPP_DIR) -Xa -vc
+#LINK = $(CC) $(CFLAGS) -o ./
+#MATHS = -lm
+#HERE = ./
+#OBJ_ONLY = -c
+# End of Sun acc 2.0 on SunOS configuration
+
+# Configuration for Borland C 3.1 on MS-DOS
+CC     = bcc
+OBJ    = .obj
+EXE    = .exe
+DIFF   = fc 
+RM     = del
+CP     = copy
+SUPP_DIR = ..\rdp_supp\\
+CFLAGS = -I$(SUPP_DIR) -A -P -w -N -mh
+LINK   = $(CC) -mh -o
+MATHS  =
+HERE   = 
+OBJ_ONLY = -c
+# End of Borland C 3.1 on MS-DOS configuration
+
+# Configuration for Microsoft C Version 7.00 on MS-DOS using nmake
+#CC     = cl
+#OBJ    = .obj
+#EXE    = .exe
+#DIFF   = fc 
+#RM     = del
+#CP     = copy
+#SUPP_DIR = ..\rdp_supp^\
+#CFLAGS = /AL /W4 /I $(SUPP_DIR)
+#LINK   = $(CC) $(CFLAGS) -o.^\
+#MATHS  =
+#HERE   = .^\
+#OBJ_ONLY = /c
+# End of Configuration for Microsoft 'C' Version 7.00 on MS-DOS using nmake
+
+# End of configuration : don't alter anything below this line
+###############################################################################
+
+# Standard macros
+
+RDP_SUPP = memalloc$(OBJ) scan$(OBJ) scanner$(OBJ) set$(OBJ) symbol$(OBJ) textio$(OBJ)
+RDP_AUX = rdp_aux$(OBJ) rdp_gram$(OBJ) rdp_prnt$(OBJ)
+
+# Standard suffix rules
+
+.c$(OBJ):
+	$(CC) $(CFLAGS) $(OBJ_ONLY) $*.c
+
+# default target: do everything
+
+all: set_tst sym_tst text_tst scan_tst
+
+set_tst: settest$(OBJ) $(RDP_SUPP)
+	$(LINK)settest$(EXE) settest$(OBJ) $(RDP_SUPP)
+
+sym_tst: symtest$(OBJ) $(RDP_SUPP)
+	$(LINK)symtest$(EXE) symtest$(OBJ) $(RDP_SUPP)
+
+text_tst: texttest$(OBJ) $(RDP_SUPP)
+	$(LINK)texttest$(EXE) texttest$(OBJ) $(RDP_SUPP)
+
+scan_tst: scantest$(OBJ) $(RDP_SUPP)
+	$(LINK)scantest$(EXE) scantest$(OBJ) $(RDP_SUPP)
+
+# Build the support modules: do this locally in case user wants debug options
+memalloc$(OBJ): $(SUPP_DIR)memalloc.h $(SUPP_DIR)memalloc.c
+	$(CC) $(CFLAGS) $(OBJ_ONLY) $(SUPP_DIR)memalloc.c
+
+scan$(OBJ): $(SUPP_DIR)scan.h $(SUPP_DIR)scan.c
+	$(CC) $(CFLAGS) $(OBJ_ONLY) $(SUPP_DIR)scan.c
+
+scanner$(OBJ): $(SUPP_DIR)scan.h $(SUPP_DIR)scanner.c
+	$(CC) $(CFLAGS) $(OBJ_ONLY) $(SUPP_DIR)scanner.c
+
+set$(OBJ): $(SUPP_DIR)set.h $(SUPP_DIR)set.c
+	$(CC) $(CFLAGS) $(OBJ_ONLY) $(SUPP_DIR)set.c
+
+symbol$(OBJ): $(SUPP_DIR)symbol.h $(SUPP_DIR)symbol.c
+	$(CC) $(CFLAGS) $(OBJ_ONLY) $(SUPP_DIR)symbol.c
+
+textio$(OBJ): $(SUPP_DIR)textio.h $(SUPP_DIR)textio.c
+	$(CC) $(CFLAGS) $(OBJ_ONLY) $(SUPP_DIR)textio.c
+# get rid of intermediate files
+clean:
+	-$(RM) *$(OBJ)
+	-$(RM) *$(EXE)
+
+# return to intial distribution state by deleting executables
+veryclean: clean
+	-$(RM) *.swp
+	-$(RM) *.dsk
+	-$(RM) *.bak

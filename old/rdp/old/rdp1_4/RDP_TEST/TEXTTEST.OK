@@ -1,0 +1,71 @@
+
+
+textio test start
+
+after forcing filetype 'text' onto 'adrian.was.here': 'adrian.was.text'
+after forcing filetype 'text' onto 'adrian.': 'adrian.text'
+after forcing filetype 'text' onto 'adrian': 'adrian.text'
+after defaulting filetype 'text' onto 'adrian.was.here': 'adrian.was.here'
+after defaulting filetype 'text' onto 'adrian.': 'adrian.'
+after defaulting filetype 'text' onto 'adrian': 'adrian.text'
+Error (null file): This is a test error message
+Error (null file): This is a test error echo message
+ (null file): total of 2 errors and 0 warnings
+Total errors = 2, total warnings = 0
+ (null file): text buffer uninitialised
+Inserted text: 'Z12345adrian was here'
+Inserted text: ' identifier__32'
+ (null file): successfully read EOF on closed file
+ (null file): can't find file 'zzz.zzz.zzz'
+ (null file): successfully read EOF on closed file
+ (text.1): successfully opened 'text.1'
+Echoing files to message stream
+Scanner test file
+ @..
+
+ _an_identifier
+ 123 decimal
+ 0xfea hexadecimal
+ 1.
+ 1232.456
+ .3
+' A string using '' Pascal style quoting'
+"A string using C-style \" quoting"
+{A nonnexted {comment} }
+<A visible nonnested <comment> >
+/* A nested /* comment */ */
+\* A nested visible \* comment *\ *\
+indentifier ++ comment end at line end
+indentifier -- visible comment end at line end
+>>=
+
+Now tes file inclusion
+
+include_zzz[!    22: include_zzz[!]
+******* ------------^
+Error (text.1): can't find include file 'zzz.zzz.zzz'
+]
+include_text2[?     0: 
+******* ^
+Warning (text.2): opened include file 'text.2'
+Start of testtext.2
+Including testtext.3 from within testtext.2 [$     0: 
+******* ^
+Warning (text.3): opened include file 'text.3'
+Start of testtext.3
+some text
+End of testtext.3  (text.3): 0 errors and 1 warning
+]
+End of testtext.2
+  (text.2): 0 errors and 1 warning
+]
+include_text3[$     0: 
+******* ^
+Warning (text.3): opened include file 'text.3'
+Start of testtext.3
+some text
+End of testtext.3  (text.3): 0 errors and 1 warning
+]
+  (text.1): 1 error and 0 warnings
+textio test end
+

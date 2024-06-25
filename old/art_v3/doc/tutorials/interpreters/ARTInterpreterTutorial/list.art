@@ -1,0 +1,5 @@
+S ::= A | B
+
+A<listLength:int> ::= 'a' A {A.listLength = A1.listLength + 1 ;} | # {A.listLength = 0; }
+
+B ::= 'b'

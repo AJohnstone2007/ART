@@ -1,0 +1,229 @@
+graph: {
+  title: "Software Wartung"
+  color: aquamarine
+  iconcolors: 32
+  amax: 0 fast_icons: no
+  width: 640
+  height: 400
+  xmax: 10
+  ymax: 10
+  xbase: 5
+  ybase: 5
+  xspace: 20
+  xlspace: 10
+  yspace: 50
+  xraster: 1
+  xlraster: 1
+  yraster: 1
+  shrink:  100
+  stretch: 25
+  layout_downfactor: 1
+  layout_upfactor: 40
+  layout_nearfactor: 0
+  layout_splinefactor: 70
+  spreadlevel: 1
+  treefactor: 0.500000
+  bmax: 100
+  cmin: 0
+  cmax: 32767
+  pmin: 0
+  pmax: 100
+  rmin: 0
+  rmax: 0
+  smax: 100
+  node_alignment: center
+  orientation: top_to_bottom
+  late_edge_labels: no
+  display_edge_labels: no
+  dirty_edge_labels: no
+  finetuning: yes
+  nearedges: yes
+  splines: no
+  ignoresingles: no
+  straight_phase: yes
+  priority_phase: yes
+  manhatten_edges: yes
+  smanhatten_edges: no
+  port_sharing: yes
+  crossingphase2: yes
+  crossingoptimization: yes
+  crossingweight: bary
+  arrow_mode: fixed
+  layoutalgorithm: minbackward
+  colorentry 0 :  255 255 255
+  colorentry 1 :  0 0 255
+  colorentry 2 :  255 0 0
+  colorentry 3 :  0 255 0
+  colorentry 4 :  255 255 0
+  colorentry 5 :  255 0 255
+  colorentry 6 :  0 255 255
+  colorentry 7 :  85 85 85
+  colorentry 8 :  0 0 128
+  colorentry 9 :  128 0 0
+  colorentry 10 :  0 128 0
+  colorentry 11 :  128 128 0
+  colorentry 12 :  128 0 128
+  colorentry 13 :  0 128 128
+  colorentry 14 :  255 215 0
+  colorentry 15 :  170 170 170
+  colorentry 16 :  128 128 255
+  colorentry 17 :  255 128 128
+  colorentry 18 :  128 255 128
+  colorentry 19 :  255 255 128
+  colorentry 20 :  255 128 255
+  colorentry 21 :  128 255 255
+  colorentry 22 :  238 130 238
+  colorentry 23 :  64 224 208
+  colorentry 24 :  127 255 212
+  colorentry 25 :  240 230 140
+  colorentry 26 :  160 32 240
+  colorentry 27 :  154 205 50
+  colorentry 28 :  255 192 203
+  colorentry 29 :  255 165 0
+  colorentry 30 :  218 112 214
+
+
+
+edge.color: red
+edge.arrowsize: 15
+node.bordercolor: darkyellow
+foldnode.shape: triangle
+
+node: { title: "A"
+	label: "\fuVerhaltensregeln fuer die\fn\n    \fuSoftware-Wartung\fn"
+	borderwidth: 0
+	stretch: 2
+	color: aquamarine
+	textcolor: magenta 
+      }
+
+edge: { sourcename: "A" targetname: "Start" linestyle: invisible }
+
+node: { title: "Start"  borderwidth: 0 color: aquamarine }
+
+node: { title: "1"  
+	label: "Funktioniert\ndas\nSystem?"
+	shape: rhomb
+	width: 200
+	height:132
+      }
+
+edge: { sourcename: "Start" targetname: "1" }
+
+node: { title: "2a" label: "ja" borderwidth: 0 color: aquamarine textcolor: red } 
+node: { title: "2" 
+	label: "Fummel bloss\nnicht dran rum!"
+	width: 178
+	height: 42
+      }
+
+edge: { sourcename: "2" targetname: "fin" } 
+nearedge: { sourcename: "1"  targetname: "2a" arrowsize:0  } 
+nearedge: { sourcename: "2a" targetname: "2" } 
+
+node: { title: "3" label: "nein" borderwidth: 0 color: aquamarine textcolor: red }
+node: { title: "4"  
+	label: "Hast Du\ndamit\nrumgespielt?"
+	shape: rhomb
+	width: 200
+	height:132
+      }
+
+nearedge: { sourcename: "1" targetname: "3" arrowsize:0 } 
+edge: { sourcename: "3" targetname: "4" priority: 100} 
+
+node: { title: "5a" label: "ja" borderwidth: 0 color: aquamarine textcolor: red } 
+node: { title: "5" 
+	label: "\Du Rindvieh!"
+	stretch: 3
+	shrink: 2
+	width: 178
+	height: 42
+      }
+
+
+nearedge: { sourcename: "4" targetname: "5a" arrowsize:0 } 
+nearedge: { sourcename: "5a" targetname: "5" } 
+
+node: { title: "6" label: "nein" borderwidth: 0 color: aquamarine textcolor: red }
+node: { title: "7"  
+	label: "Wird man\nDich dafuer\nverantwortlich\nmachen?"
+	shape: rhomb
+	width: 200
+	height:132
+	textmode: left_justify
+      }
+
+nearedge: { sourcename: "4" targetname: "6" arrowsize:0 } 
+edge: { sourcename: "6" targetname: "7" } 
+
+node: { title: "8"  
+	label: "Hat es\njemand\ngesehen?"
+	shape: rhomb
+	width: 200
+	height:132
+      }
+
+edge: { sourcename: "5" targetname: "8" } 
+
+
+node: { title: "9a" label: "nein" borderwidth: 0 color: aquamarine textcolor: red }
+node: { title: "9"  
+	label: "Kuemmer dich\nnicht drum!"
+	width: 178
+	height: 42
+      }
+
+nearedge: { sourcename: "7" targetname: "9a" arrowsize:0 } 
+edge: { sourcename: "9a" targetname: "9" } 
+edge: { sourcename: "9" targetname: "fin" } 
+
+node: { title: "10a" label: "ja" borderwidth: 0 color: aquamarine textcolor: red }
+node: { title: "10"  
+	label: "Du armes Schwein!"
+	shape: ellipse 
+	stretch: 2
+      }
+
+nearedge: { sourcename: "7" targetname: "10a" arrowsize:0 } 
+edge: { sourcename: "10a" targetname: "10" } 
+
+node: { title: "11a" label: "nein" borderwidth: 0 color: aquamarine textcolor: red }
+node: { title: "11"  
+	label: "Verdufte unauffaellig"
+	width: 178
+	height: 42
+      }
+
+nearedge: { sourcename: "8" targetname: "11a" arrowsize:0 } 
+edge: { sourcename: "11a" targetname: "11" } 
+edge: { sourcename: "11" targetname: "fin" } 
+
+node: { title: "12a" label: "ja" borderwidth: 0 color: aquamarine textcolor: red }
+nearedge: { sourcename: "8" targetname: "12a" arrowsize:0 } 
+edge: { sourcename: "12a" targetname: "10" } 
+
+node: { title: "13"  
+	label: "Kannst Du\njemand die Schuld\nin die Schuhe\nschieben?"
+	shape: rhomb
+	width: 200
+	height:132
+	textmode: left_justify 
+      }
+
+edge: { sourcename: "10" targetname: "13" } 
+node: { title: "14a" label: "ja" borderwidth: 0 color: aquamarine textcolor: red }
+node: { title: "15a" label: "nein" borderwidth: 0 color: aquamarine textcolor: red }
+nearedge: { sourcename: "13" targetname: "14a" arrowsize:0 } 
+nearedge: { sourcename: "13" targetname: "15a" arrowsize:0 } 
+edge: { sourcename: "14a" targetname: "fin" } 
+edge: { sourcename: "15a" targetname: "10" } 
+
+node: { title: "fin"  
+	label: "Alles klar!"
+	shape: ellipse 
+	stretch: 2
+      }
+
+}
+

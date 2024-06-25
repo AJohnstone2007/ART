@@ -1,0 +1,34 @@
+RDP version 1.3, 28 December 1994
+
+File list
+
+rdp_doc/            documentation subdirectory
+rdp_doc/rdp_user.ps Postscript sourse of the user manual
+00files             this file
+00readme            hints on getting started
+makefile            makefile for DOS/Borland C 3.1 and Unix/Gnu C
+mini.bnf            a very simple language interpreter
+mpl.bnf             an enhanced but still very simple language interpreter
+pascal.bnf          a syntax for Pascal
+rdp.bnf             rdp defined in itself
+rdp.c               a hand written rdp parser
+rdp.h    
+rdp.prj             Borland project file for building rdp.exe
+rdparser.prj        Borland project file for building parsers with rdp
+rdpgen.prj          Borland project file for building secondary versions of rdp
+rdp_aux.c           support routines for rdp
+rdp_aux.h
+rdp_supp/           support library subdirectory
+rdp_supp/crash.c    fatal error handling
+rdp_supp/crash.h
+rdp_supp/params.h   the definition of various system parameters
+rdp_supp/scan.c     a programmable scanner
+rdp_supp/scan.h
+rdp_supp/set.c      Pascal style set handling in C
+rdp_supp/set.h
+rdp_supp/symbol.c   a hash-coded symbol table
+rdp_supp/symbol.h
+test.min            test file for mini interpreter
+test.mpl            test file for mini-plus interpreter
+test.pas            test file for Pascal parser
+

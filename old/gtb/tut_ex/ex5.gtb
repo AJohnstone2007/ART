@@ -1,0 +1,14 @@
+(* ex5  LR(1) automata *)
+S ::=  A 'b' | 'a' A 'a' .
+A ::=  # .
+
+(
+ex5_nfa := nfa[grammar[S] slr 1]
+render[open["nfa.vcg"] ex5_nfa]
+
+lr1_nfa := nfa[grammar[S] lr 1]
+render[open["nfa1.vcg"] lr1_nfa]
+
+ex5_dfa := dfa[ex5_nfa]
+render[open["dfa.vcg"] ex5_dfa]
+)

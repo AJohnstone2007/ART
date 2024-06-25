@@ -1,0 +1,21 @@
+(* ex15  strongly connected components *)
+S ::=  A B A 'a' | B 'd' .
+A ::=  ~E 'a' | 'b' | C ~S C | 'a' ~S 'b' | # .
+B ::=  'b' 'a' A ~B | A .
+C ::=  ~D 'a' | 'a' .
+D ::=  C | F .
+E ::=  'd' A .
+F ::=  'a' .
+
+(
+ex15_grammar := grammar[S tilde_enabled]
+ex15_gdg := gdg[ex15_grammar]
+
+cycle_break_sets[ex15_gdg]
+render[open["gdg.vcg"] ex15_gdg]
+
+augment_grammar[ex15_grammar]
+terminalise_grammar[ex15_grammar terminal]
+ex15_prefix := prefix_grammar[ex15_grammar]
+write[ex15_prefix]
+)

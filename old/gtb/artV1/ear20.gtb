@@ -1,0 +1,31 @@
+S ::= 'a' 'a' 'b' | 'a' A 'c' .
+
+A ::= 'a'  .
+
+
+
+
+(
+(* Main script *)
+
+write["\n" gtb_version " processing '" gtb_main_file_name "' on " date_time "\n\n"]
+
+
+this_grammar := grammar[S]
+gtb_verbose := true
+write[this_grammar]
+
+
+this_derivation := earley_parse[this_grammar "a a b"]
+
+(*
+this_nfa := nfa[this_grammar slr 1 singleton_lookahead_sets nullable_reductions] 
+
+this_dfa := dfa[this_nfa] 
+
+this_derivation := brnglr_parse[this_dfa "aab"]
+*)
+
+
+write["\n" CPU_time " CPU seconds elapsed\n\n"]
+)

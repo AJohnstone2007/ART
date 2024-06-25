@@ -1,0 +1,81 @@
+Version 2.01
+
+To do
+
+  Create syntactic and lexical rule attributes
+
+  Output scanner
+
+  New semantic check table
+
+
+  Review GRDP techniques
+
+  (iterator, substitute, head/tail, multiply, expand pahses)
+
+  Output scanner/parser/evaluator
+
+Semantic check table: note that the grammar filters out many of these,
+                      but the semantic check phase looks at them all anyway.
+
+Node-kind     Glyph Out Child-kind  hi,lo  Promote? Translate?
+                    deg              !=1?
+SEQUENCE            >0  Any           Y       N          N
+SUBRULE             >0  Any           Y       Y          Y
+EPSILON         #    0  -             Y       Y          N
+CHARACTER       `X   0  -             Y       Y          N
+TERMINAL        'X'  0  -             Y       Y          N
+NONTERMINAL     X    0  -             Y       Y          Y
+LHS_NONTERMINAL X   >0  SEQUENCE      N       N          N
+ITER            @    2  Any           Y       Y          Y
+DIFF            \    2  NONTERMINAL   Y       N          N
+                        CHARACTER
+RANGE           ..   2  CHARACTER     Y       N          N
+ACTION          $$   0  -             Y       N          N
+
+Old phases
+
+0 parsing and semantic checks
+
+1 coalesce multiple rules for the same nonterminal
+
+2 regular operator to subrule
+
+3 map iterators to subrules
+
+4 move epsilons up into subrules
+
+5 substitute
+
+6 head tail expansion
+
+7 multiply
+
+8 expand
+
+New phases
+
+0 parsing and semantic checks: done
+
+1 coalesce multiple rules: done
+
+2 evaluate set operations to CHARSET kind: removes \ and .. operators
+
+3 translate iterators to subrules: removes @ operators
+
+4 substitute
+
+5 head tail expansion
+
+6 multiply
+
+7 expand
+
+Changes: add new set evaluation phase
+         no need to convert regular operators
+         keep epsilons explicit
+
+Issues: iterator to subrule translations
+        define head tail expansion
+
+

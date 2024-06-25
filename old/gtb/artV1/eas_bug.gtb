@@ -1,0 +1,12 @@
+(* ex1.gtb  Our first gtb scritp *)
+
+S ::= S '+' S | S '*' S | E .
+E ::= 'a' | 'b' .
+
+(* the script commands are enclosed in parantheses *)
+(
+this_grammar := grammar[E]
+
+write[this_grammar]
+
+)

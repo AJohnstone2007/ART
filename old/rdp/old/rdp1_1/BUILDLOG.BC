@@ -1,0 +1,141 @@
+MAKE Version 3.6  Copyright (c) 1992 Borland International
+
+Available memory 1255936 bytes
+
+        bcc -A -N -mh /c rdp.c
+Borland C++  Version 3.1 Copyright (c) 1992 Borland International
+rdp.c:
+
+        Available memory 811168
+        bcc -A -N -mh /c rdp_aux.c
+Borland C++  Version 3.1 Copyright (c) 1992 Borland International
+rdp_aux.c:
+
+        Available memory 782460
+        bcc -A -N -mh /c crash.c
+Borland C++  Version 3.1 Copyright (c) 1992 Borland International
+crash.c:
+
+        Available memory 876120
+        bcc -A -N -mh /c scan.c
+Borland C++  Version 3.1 Copyright (c) 1992 Borland International
+scan.c:
+
+        Available memory 797116
+        bcc -A -N -mh /c set.c
+Borland C++  Version 3.1 Copyright (c) 1992 Borland International
+set.c:
+
+        Available memory 864116
+        bcc -A -N -mh /c symbol.c
+Borland C++  Version 3.1 Copyright (c) 1992 Borland International
+symbol.c:
+
+        Available memory 854816
+        bcc -A -N -mh -o.\rdp.exe rdp.obj rdp_aux.obj crash.obj scan.obj set.obj symbol.obj
+Borland C++  Version 3.1 Copyright (c) 1992 Borland International
+Turbo Link  Version 5.1 Copyright (c) 1992 Borland International
+
+        Available memory 934472
+        rdp -omini mini
+        bcc -A -N -mh /c mini.c
+Borland C++  Version 3.1 Copyright (c) 1992 Borland International
+mini.c:
+
+        Available memory 800468
+        bcc -A -N -mh -o.\mini.exe mini.obj crash.obj scan.obj set.obj symbol.obj
+Borland C++  Version 3.1 Copyright (c) 1992 Borland International
+Turbo Link  Version 5.1 Copyright (c) 1992 Borland International
+
+        Available memory 897760
+        mini -v test
+
+Mini V1.00 Mar 27 1994 02:42:06
+a is 7
+b is 14, -b is -14
+7
+ test.min: 0 errors, 0 warnings
+        rdp -F -otoy toy
+Error: LL(1) violation in 'dis_statement':
+ sub-production [ 'else' dis_statement ] 
+ contains null but first and follow sets both include 'else'.
+Error: LL(1) violation in 'statement':
+ sub-production [ 'else' statement ] 
+ contains null but first and follow sets both include 'else'.
+ Total: 2 errors, 0 warnings
+Warning: Grammar is not LL(1) but -F switch set: writing output files
+        bcc -A -N -mh /c toy.c
+Borland C++  Version 3.1 Copyright (c) 1992 Borland International
+toy.c:
+
+        Available memory 747792
+        bcc -A -N -mh -o.\toy.exe toy.obj crash.obj scan.obj set.obj symbol.obj
+Borland C++  Version 3.1 Copyright (c) 1992 Borland International
+Turbo Link  Version 5.1 Copyright (c) 1992 Borland International
+
+        Available memory 897760
+        toy -v test
+
+Toy V1.00 Mar 27 1994 02:42:11
+
+Toy test program
+
+(If true) y is greater than x
+(If false) x is not greater than y
+(Repeat) x = 1
+(Repeat) x = 4
+(Repeat) x = 7
+(Repeat) x = 10
+(While) x = 13
+(While) x = 10
+(While) x = 7
+(While) x = 4
+(While) x = 1
+(For up) x = 1
+(For up) x = 4
+(For up) x = 7
+(For up) x = 10
+(For down) x = 12
+(For down) x = 9
+(For down) x = 6
+(For down) x = 3
+ Text mode: 0 errors, 0 warnings
+        rdp -opascal -F pascal
+Error: LL(1) violation in 'statement':
+ sub-production [ 'else' statement ] 
+ contains null but first and follow sets both include 'else'.
+ Total: 1 error, 0 warnings
+Warning: Grammar is not LL(1) but -F switch set: writing output files
+        bcc -A -N -mh /c pascal.c
+Borland C++  Version 3.1 Copyright (c) 1992 Borland International
+pascal.c:
+
+        Available memory 714236
+        bcc -A -N -mh -o.\pascal.exe pascal.obj crash.obj scan.obj set.obj symbol.obj
+Borland C++  Version 3.1 Copyright (c) 1992 Borland International
+Turbo Link  Version 5.1 Copyright (c) 1992 Borland International
+
+        Available memory 897744
+        pascal -v test
+
+Pascal parser V1.00 (generated) Mar 27 1994 02:42:18
+ test.pas: 0 errors, 0 warnings
+        rdp -ordp_gen rdp
+        bcc -A -N -mh /c rdp_gen.c
+Borland C++  Version 3.1 Copyright (c) 1992 Borland International
+rdp_gen.c:
+
+        Available memory 743760
+        bcc -A -N -mh -o.\rdp_gen.exe rdp_gen.obj rdp_aux.obj crash.obj scan.obj set.obj symbol.obj
+Borland C++  Version 3.1 Copyright (c) 1992 Borland International
+Turbo Link  Version 5.1 Copyright (c) 1992 Borland International
+
+        Available memory 897744
+        copy rdp_gen.c rdp_gen1.c
+        1 file(s) copied
+        rdp_gen -ordp_gen rdp
+        fc rdp_gen.c rdp_gen1.c
+Comparing files RDP_GEN.C and RDP_GEN1.C
+FC: no differences encountered
+
+        del rdp_gen1.c

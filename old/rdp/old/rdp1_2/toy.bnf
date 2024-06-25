@@ -1,0 +1,125 @@
+(*****************************************************************************
+*
+* RDP release 1.20 by Adrian Johnstone (adrian@dcs.rhbnc.ac.uk) 6 Nov 1994
+*
+* toy.bnf - decorated toy grammar with interpreter semantics
+*
+* This file may be freely distributed. Please mail improvements to the author.
+*
+*****************************************************************************)
+TITLE("Toy V1.20 (c) Adrian Johnstone 1994")
+SUFFIX("toy")
+USES("math.h")
+SHOW_SKIPS
+TEXT_MODE
+
+program ::= [var_dec] [statement] EOF [dis_statement] (* cheat *).
+
+var_dec ::= 'int'
+            <NEW_ID:name [* symbol__insert_id(name)->token=P_ID; *]                 (* variable declaration *)
+             [':=' e1:value [* symbol__lookup_id(name)->data.i=value; *] ]>',' ';'.   (* optional initialisation *)
+
+
+(* This is the full version of statement with semantic actions added *)
+statement ::= [ ID:name ':=' e1:value [* symbol__lookup_id(name)->data.i = value; *] | (* assignment *)
+
+                (* IF statement *)
+                'if' e1:cnd 'then'
+                [* if (cnd) *] statement [* else dis_statement(); *]
+                ['else' [* if (!cnd) *] statement [* else dis_statement(); *] ] |
+
+                (* WHILE DO statement *)
+                [* char *target = scan__position(); *]
+                'while'
+                [* do { scan__goto(target); *]
+                e1:cnd 'do'
+                [* if (cnd) { *]
+                statement
+                [* scan__goto(target); } else dis_statement();} while (cnd); *] |
+
+                (* FOR DO statement *)
+                [* char *target;
+                   symbol__ *i;
+                   finish = 0; step = -1;
+                *] (* force default semantics *)
+                'for' ID:induction ':=' e1:start ['to' e1:finish ['by' e1:step ]]
+                [* target = scan__position();
+                   i = symbol__lookup_id(induction);
+                *]
+                'do'
+                [* for (i->data.i = start; step>0 ? i->data.i < finish : i->data.i > finish; i->data.i+=step){ scan__goto(target); *]
+                statement
+                [* } *] |
+
+                (* REPEAT UNTIL *)
+                [* char *target = scan__position(); *]
+                'repeat'
+                [* do { scan__goto(target); *]
+                <statement>';'
+                'until' e1:cnd
+                [* } while (!cnd); *] |
+
+                (* compound statement *)
+                'begin' <statement>';' 'end' |                                   (* compound statement *)
+
+                (* I/O statements *)
+                ( 'write':token | 'writeln':token )                               (* write(ln) statement *)
+                ['(' < e1:value [* printf(INTEGER_FORMAT, value); *] |
+                       String:str [* printf(STRING_FORMAT, str+1); *]
+                     >','
+                 ')'
+                ] [* if (token == T_writeln) printf("\n"); *]
+              ] .
+
+(* Disabled statement production with same grammar as statement, but no side effects *)
+dis_statement ::= [ ID ':=' e1 | (* assignment *)
+                    'if' e1 'then' dis_statement ['else' dis_statement] |
+                    'while' e1 'do' dis_statement |
+                    'for' ID ':=' e1 ['to' e1 ['by' e1 ]] 'do' dis_statement |
+                    'repeat' dis_statement 'until' e1 |
+                    'begin' <dis_statement>';' 'end' |                                   (* compound statement *)
+                    ('write' | 'writeln')  ['(' <e1 | String>',' ')' ]
+                  ].
+
+(* The following e... productions describe a conventional expression syntax
+   using mainly C-style operators *)
+e1:integer ::= e2:result {'>' e2:right  [* result = result > right; *] |  (* Greater than *)
+                      '<' e2:right  [* result = result < right; *] |  (* Less than *)
+                      '>=' e2:right [* result = result >= right; *] | (* Greater than or equal to *)
+                      '<=' e2:right [* result = result <= right; *] | (* Less than or equal to *)
+                      '==' e2:right [* result = result == right; *] | (* Equal to *)
+                      '!=' e2:right [* result = result != right; *] }.(* Not equal to *)
+
+e2:integer ::= e3:result {'$' e3:right [* result ^= right; *]}.           (* Bitwise exclusive OR *)
+
+e3:integer ::= e4:result {'|' e4:right [* result |= right; *]}.           (* Bitwise inclusive OR *)
+
+e4:integer ::= e5:result {'^' e5:right [* result ^= right; *]}.           (* Bitwise exclusive OR *)
+
+e5:integer ::= e6:result {'&' e6:right [* result &= right; *]}.           (* Bitwise AND *)
+
+e6:integer ::= e7:result {'<<' e7:right [* result <<= right; *] |         (* Shift left  *)
+                      '>>' e7:right [* result >>= right; *] }.        (* Shift right *)
+
+e7:integer ::= e8:result {'+' e8:right [* result += right; *] |           (* Add *)
+                      '-' e8:right [* result -= right; *] }.          (* Subtract *)
+
+e8:integer ::= e9:result {'*' e9:right [* result *= right; *] |           (* Divide *)
+                      '/' e9:right [* result /= right; *] }.          (* Multiply *)
+
+e9:integer ::= e10:result {'**' e10:right [* result = (int) pow((float) result, (float) right); *]}. (* Exponentiate *)
+
+e10:integer ::= '+' e10:result |                                      (* Posite *)
+            '-' e10:result [* result = -result; *] |                  (* Negate *)
+            '~' e10:result [* result = ~result; *] |                  (* Bitwise complement *)
+            '!' e10:result [* result = !result; *] |                  (* Logical not *)
+            e0:result.
+
+e0:integer ::= ID:name [* result = symbol__lookup_id(name)->data.i; *] |   (* Variable *)
+           INTEGER:result |                                        (* Numeric literal *)
+           '(' e1:result ')'.                                     (* Parenthesised expression *)
+
+comment ::= COMMENT_NEST ('(*' '*)').
+String: string ::= STRING('"'):result.
+
+(* End of toy.bnf *)

@@ -1,0 +1,8 @@
+1. Underscores in Extended Pascal tokens
+
+2. Pascal section in manual: note removal of leading section numbers on _all_
+   lines
+
+3. Remove print character lines in Pascal processor
+
+4. Update implementation section to use new line numbers

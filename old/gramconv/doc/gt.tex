@@ -1,0 +1,38 @@
+\documentstyle[rhultechreport]{article}
+\title{{\tt gt} quick guide}
+\author{Adrian Johnstone}
+\begin{document}
+\makecstitle
+\section{Introduction}
+{\tt gt} is a standalone tool for transforming grammars in EBNF
+into BNF. There can be no canonical translation from EBNF to BNF since
+different parser generators demand grammars with different
+chacteristics. The main goal of {\tt gt} is to allow generally
+available published grammars (especially grammars from language
+standards documents) to be transformed into grammars suitable for use
+with standard tools in a way that is semi-automatic {\em and}
+documented. 
+
+\subsection{The need for flexible translation}
+In general, EBNF constructs such as Kleene closure (the
+'star' operator in regular expressions, or curly-braces in Wirth-style
+grammars) can be translated into BNF in several ways, and 
+it turns out that the best translation to use certainly
+depends on the expected use of the grammar and may depend on
+particular local features of the grammar. For instance, recursive descent
+parser generators cannot usually accept left recursive definitions,
+since left recursion leads to non-termination, yet bottom up parser
+generators show performance improvements if left recursion is used in
+preference to right recursion.
+
+\section{Overall flow}
+
+
+
+\appendix
+\section{An {\tt rdp} grammar for {\tt gt}}
+{\footnotesize
+\begin{verbatim}
+\end{verbatim}
+}
+\end{document}

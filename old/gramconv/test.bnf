@@ -1,0 +1,4 @@
+$initial action$
+A ::= B 'c'.
+
+$(* grd_parse_generate(start, whitespace, lex1, lex2, lex3, file) *)$

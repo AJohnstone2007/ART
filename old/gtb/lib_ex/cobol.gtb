@@ -1,0 +1,3027 @@
+(* Grammar for  VS COBOL *)
+
+
+Abbreviated_combined_relation_conditions_2 ::= Expression Relational_operator '(' Expression Abbreviation_rest ')' |
+                                               Expression Relational_operator '(' 'NOT' Expression Abbreviation_rest ')' .
+
+
+Abbreviated_combined_relation_conditions_3_sub_list ::= Abbreviated_combined_relation_conditions_3_sub_list Alt_and_or Abbreviated_combined_relation_conditions_3_sub |
+                                                        Abbreviated_combined_relation_conditions_3_sub .
+
+Abbreviated_combined_relation_conditions_3_sub ::= '(' Relational_operator Expression Abbreviation_rest ')' |
+                                                   'NOT' '(' Relational_operator Expression Abbreviation_rest ')' .
+
+
+Abbreviated_combined_relation_conditions_3 ::= Expression Abbreviated_combined_relation_conditions_3_sub_list .
+
+Abbreviation_leaf ::= '(' Expression ~Abbreviation_rest ')' |
+                      Expression .
+
+
+Abbreviation_rest ::= # |
+                      Abbreviation_rest And_or_abbreviation_leaf .
+
+
+Accept_statement_1 ::= 'ACCEPT' Identifier |
+                       'ACCEPT' Identifier From_environment_name .
+
+
+Accept_statement_2 ::= 'ACCEPT' Identifier 'FROM' Date .
+
+Accept_statement ::= Accept_statement_1 |
+                     Accept_statement_2 .
+
+Add_statement_non_closed ::= Add_statement_simple On_size_error_phrases .
+
+
+Add_statement_simple_1 ::= 'ADD' Add_statement_simple_1_5 'TO' Cobword_rounded |
+                            Add_statement_simple_1 Cobword_rounded .
+
+Add_statement_simple_1_5 ::= Cobword_lit |
+                             Add_statement_simple_1_5 Cobword_lit .
+
+Add_statement_simple_2 ::= 'ADD' Add_statement_simple_2_7 Cobword_lit 'GIVING' Cobword_rounded |
+                           'ADD' Add_statement_simple_2_7 'TO' Cobword_lit 'GIVING' Cobword_rounded |
+                            Add_statement_simple_2 Cobword_rounded .
+
+Add_statement_simple_2_7 ::= Cobword_lit |
+                             Add_statement_simple_2_7 Cobword_lit .
+
+
+Add_statement_simple_3 ::= 'ADD' Corresponding Identifier 'TO' Identifier |
+                           'ADD' Corresponding Identifier 'TO' Identifier 'ROUNDED' .
+
+
+Add_statement_simple ::= Add_statement_simple_1 |
+                         Add_statement_simple_2 |
+                         Add_statement_simple_3 .
+
+Add_statement ::= Add_statement_non_closed 'END_ADD' |
+                  Add_statement_simple 'END_ADD' |
+                  Add_statement_simple .
+
+Advancing_phrase ::= Alt_before_after  Page_phrase |
+                     Alt_before_after 'ADVANCING' Page_phrase .
+
+
+All_procedures ::= 'ALL' 'PROCEDURES' .
+
+Alphabet_clause ::= 'ALPHABET' Alphabet_name Alphabet_type |
+                    'ALPHABET' Alphabet_name 'IS' Alphabet_type .
+
+
+Alphabet_name ::= Alphabetic_user_defined_word .
+
+Alphabet_type_also_through ::= Alphabet_type_alsos |
+                               Through_literal .
+
+Alphabet_type_also ::= 'ALSO' Literal .
+
+Alphabet_type_alsos ::= Alphabet_type_also |
+                        Alphabet_type_alsos Alphabet_type_also .
+
+Alphabet_type_other ::= Literal |
+                        Literal Alphabet_type_also_through .
+                           
+Alphabet_type_others ::= Alphabet_type_other |
+                         Alphabet_type_others Alphabet_type_other .
+
+Alphabet_type ::= 'EBCDIC' |
+                  'NATIVE' |
+                  'STANDARD_1' |
+                  'STANDARD_2' |
+                  Alphabet_type_others .
+
+Alphabetic_user_defined_word ::= Cobword .
+
+Also_phrase ::= 'ALSO' Evaluate_condition .
+
+Alt_all_leading_first ::= 'ALL' |
+                          'FIRST' |
+                          'LEADING' .
+
+Alt_all_leading ::= 'ALL' |
+                    'LEADING' .
+
+Alt_and_or ::= 'AND' |
+               'OR' .
+
+Alt_ascending_descending ::= 'ASCENDING' |
+                             'DESCENDING' .
+
+Alt_assignment_name_file_name ::= Assignment_name |
+                                  File_name .
+
+Alt_assignment_name_literal ::= Assignment_name |
+                                Literal .
+
+Alt_before_after ::= 'AFTER' |
+                     'BEFORE' .
+
+Alt_beginning_ending ::= 'BEGINNING' |
+                         'ENDING' .
+
+Alt_characters_records ::= 'CHARACTERS' |
+                           'RECORD' |
+                           'RECORDS' .
+
+Alt_data_name_filler ::= 'FILLER' |
+                         Data_name .
+
+Alt_data_name_integer ::= Data_name |
+                          'Integer' .
+
+Alt_exception_error ::= 'ERROR' |
+                        'EXCEPTION' .
+
+Alt_fd_sd ::= 'FD' |
+              'SD' .
+
+Alt_file_names_i_o ::= 'EXTEND' |
+                       'I_O' |
+                       'INPUT' |
+                       'OUTPUT' |
+                       File_names .
+
+Alt_file_reel_unit ::= 'FILE' |
+                       'REEL' |
+                       'UNIT' .
+
+Alt_indexed_relative_sequential ::= 'INDEXED' |
+                                    'RELATIVE' |
+                                    'SEQUENTIAL' .
+
+Alt_leading_trailing ::= 'LEADING' |
+                         'TRAILING' .
+
+Alt_left_right ::= 'LEFT' |
+                   'RIGHT' .
+
+Alt_library_name_literal ::= Library_name |
+                             Literal .
+
+Alt_no_rewind_lock ::= 'LOCK' |
+                       No_rewind .
+
+Alt_plus_minus ::= '-' |
+                   '+' .
+
+Alt_procedures_all_procedures ::= All_procedures |
+                                  Procedure_names .
+
+Alt_qualified_data_name_literal ::= Literal |
+                                    Qualified_data_name .
+
+Alt_reel_unit ::= 'REEL' |
+                  'UNIT' .
+
+Alt_removal_no_rewind ::= For_removal |
+                          With_no_rewind .
+
+Alt_reversed_with_no_rewind ::= 'REVERSED' |
+                                With_no_rewind .
+
+Alt_run_literal ::= 'RUN' |
+                    Literal .
+
+Alt_sequential_random_dynamic ::= 'DYNAMIC' |
+                                  'RANDOM' |
+                                  'SEQUENTIAL' .
+
+Alt_text_name_literal ::= Literal |
+                          Text_name .
+
+Alt_times_div ::= '*' |
+                  '/' .
+
+Alt_up_down_by ::= Alt_up_down 'BY' .
+
+Alt_up_down ::= 'DOWN' |
+                'UP' .
+
+Alter_statement ::= 'ALTER' Procedure_to_procedure |
+                     Alter_statement Procedure_to_procedure .
+
+Altered_goto ::= Label_name '.' 'GO' '.' |
+                 Label_name '.' 'GO' 'TO' '.' .
+
+
+Alternate_record_key_clause ::= 'ALTERNATE' Qualified_data_name Alternate_record_key_clause_21 Alternate_record_key_clause_22 |
+                                'ALTERNATE' 'RECORD' Qualified_data_name Alternate_record_key_clause_21 Alternate_record_key_clause_22 |
+                                'ALTERNATE' 'KEY' Qualified_data_name Alternate_record_key_clause_21 Alternate_record_key_clause_22 |
+                                'ALTERNATE' 'RECORD' 'KEY' Qualified_data_name Alternate_record_key_clause_21 Alternate_record_key_clause_22 |
+                                'ALTERNATE' 'IS' Qualified_data_name Alternate_record_key_clause_21 Alternate_record_key_clause_22 |
+                                'ALTERNATE' 'RECORD' 'IS' Qualified_data_name Alternate_record_key_clause_21 Alternate_record_key_clause_22 |
+                                'ALTERNATE' 'KEY' 'IS' Qualified_data_name Alternate_record_key_clause_21 Alternate_record_key_clause_22 |
+                                'ALTERNATE' 'RECORD' 'KEY' 'IS' Qualified_data_name Alternate_record_key_clause_21 Alternate_record_key_clause_22 .
+
+Alternate_record_key_clause_21 ::= # |
+                                   Password_clause .
+
+Alternate_record_key_clause_22 ::= # |
+                                   With_duplicates .
+
+
+And_or_abbreviation_leaf ::= Alt_and_or Abbreviation_leaf |
+                             Alt_and_or Relational_operator Abbreviation_leaf .
+
+
+And_or_combinable_condition_1 ::= Alt_and_or ~Combinable_condition_1 .
+
+Are ::= 'ARE' |
+        'IS' .
+
+Areas ::= 'AREA' |
+          'AREAS' .
+
+Arithmetic_expression_tail ::= Alt_plus_minus Times_div .
+
+
+Arithmetic_expression ::= Times_div |
+                          Arithmetic_expression Arithmetic_expression_tail .
+
+
+Assign_clause ::= 'ASSIGN' Alt_assignment_name_literal |
+                   'ASSIGN' 'TO' Alt_assignment_name_literal |
+                   Assign_clause Alt_assignment_name_literal .
+
+Assignment_name ::= System_name .
+
+At_end_of_page_statement_list ::= End_of_page Statement_list |
+                                  'AT' End_of_page Statement_list .
+
+
+
+At_end_phrases ::= At_end_statement_list |
+                   At_end_statement_list Not_at_end_statement_list |
+                   Not_at_end_statement_list .
+
+At_end_statement_list ::= 'END' Statement_list |
+                          'AT' 'END' Statement_list .
+
+Author ::= 'AUTHOR' |
+           'AUTHOR' '.' |
+            Author Comment_entry .
+
+Basis_1 ::= '(' Arithmetic_expression ')' .
+
+Basis ::= Basis_1 |
+          Figurative_constant |
+          Identifier |
+          Unsigned_numeric .
+
+Before_after_phrase ::= Alt_before_after Cobword_lit |
+                        Alt_before_after 'INITIAL' Cobword_lit .
+
+Blank_when_zero_clause ::= 'BLANK' Zeroes |
+                           'BLANK' 'WHEN' Zeroes .
+
+Block_contains_clause ::= 'BLOCK' 'Integer' |
+                          'BLOCK' 'CONTAINS' 'Integer' |
+                          'BLOCK' Integer_to 'Integer' |
+                          'BLOCK' 'CONTAINS' Integer_to 'Integer' |
+                          'BLOCK' 'Integer' Alt_characters_records |
+                          'BLOCK' 'CONTAINS' 'Integer' Alt_characters_records |
+                          'BLOCK' Integer_to 'Integer' Alt_characters_records |
+                          'BLOCK' 'CONTAINS' Integer_to 'Integer' Alt_characters_records .
+                             
+By_reference ::= 'REFERENCE' |
+                 'BY' 'REFERENCE' .
+
+Call_error_phrases ::= Not_on_exception_statement_list |
+                       Not_on_exception_statement_list On_overflow_statement_list |
+                       On_exception_statement_list |
+                       On_exception_statement_list Not_on_exception_statement_list |
+                       On_exception_statement_list On_overflow_statement_list |
+                       On_exception_statement_list Not_on_exception_statement_list On_overflow_statement_list |
+                       On_overflow_statement_list .
+
+
+Call_statement_non_closed ::= Call_statement_simple Call_error_phrases .
+
+Call_statement_simple ::= 'CALL' Cobword_lit |
+                          'CALL' Cobword_lit Using_parameters .
+
+Call_statement ::= Call_statement_non_closed 'END_CALL' |
+                   Call_statement_simple 'END_CALL' |
+                   Call_statement_simple .
+
+Cancel_statement ::= 'CANCEL' Cobword_lit |
+                      Cancel_statement Cobword_lit .
+
+Cics_statement ::= 'EXEC' 'CICS' Cics_statement_43 'END_EXEC' .
+
+Cics_statement_43 ::= # |
+                      Cics_statement_43 Emb_token .
+
+Class_clause ::= 'CLASS' Class_name Literal_through_literal |
+                 'CLASS' Class_name 'IS' Literal_through_literal |
+                 Class_clause Literal_through_literal .
+
+
+Class_condition ::= Identifier Is_or_is_not Class_type .
+
+Class_name ::= Alphabetic_user_defined_word .
+
+Class_type ::= 'ALPHABETIC_LOWER' |
+               'ALPHABETIC_UPPER' |
+               'ALPHABETIC' |
+               'DBCS' |
+               'KANJI' |
+               'NUMERIC' |
+               Class_name .
+
+Close_statement_file_name ::= File_name |
+                              File_name Close_statement_options .
+
+
+Close_statement_options_1 ::= Alt_reel_unit |
+                              Alt_reel_unit Alt_removal_no_rewind .
+
+Close_statement_options_2 ::= Alt_no_rewind_lock |
+                              'WITH' Alt_no_rewind_lock .
+
+
+Close_statement_options ::= Close_statement_options_1 |
+                            Close_statement_options_2 .
+
+Close_statement ::= 'CLOSE' Close_statement_file_name |
+                     Close_statement Close_statement_file_name .
+
+
+Cobol_source_program ::= Identification 'DIVISION' '.' Program_id_cobol_source_program Identification_division_content Cobol_source_program_50 Cobol_source_program_51 Cobol_source_program_52 Cobol_source_program_53 .
+
+Cobol_source_program_50 ::= # |
+                            Environment_division .
+
+Cobol_source_program_51 ::= # |
+                            Data_division .
+
+Cobol_source_program_52 ::= # |
+                            Procedure_division .
+
+Cobol_source_program_53 ::= # |
+                            End_program .
+
+
+Cobol_source_programs ::= # |
+                          Cobol_source_programs Cobol_source_program .
+
+Cobword_int ::= Identifier |
+                'Integer' .
+
+Cobword_lit_size ::= 'SIZE' |
+                     Identifier |
+                     Literal .
+
+Cobword_lit ::= Identifier |
+                Literal .
+
+Cobword_rounded ::= Identifier |
+                    Identifier 'ROUNDED' .
+
+
+Cobword ::= 'ACCEPT' |
+            'ACCESS' |
+            'ADD' |
+            'ADDRESS' |
+            'ADVANCING' |
+            'AFTER' |
+            'ALL' |
+            'ALPHABET' |
+            'ALPHABETIC_LOWER' |
+            'ALPHABETIC_UPPER' |
+            'ALPHABETIC' |
+            'ALPHANUMERIC_EDITED' |
+            'ALPHANUMERIC' |
+            'ALSO' |
+            'ALTER' |
+            'ALTERNATE' |
+            'AND' |
+            'ANY' |
+            'APPLY' |
+            'ARE' |
+            'AREA' |
+            'AREAS' |
+            'ASCENDING' |
+            'ASSIGN' |
+            'AT' |
+            'AUTHOR' |
+            'BEFORE' |
+            'BEGINNING' |
+            'BINARY' |
+            'BLANK' |
+            'BLOCK' |
+            'BOTTOM' |
+            'BY' |
+            'CALL' |
+            'CANCEL' |
+            'CHARACTER' |
+            'CHARACTERS' |
+            'CICS' |
+            'CLASS' |
+            'CLOSE' |
+            'CODE_SET' |
+            'COLLATING' |
+            'COMMA' |
+            'COMP_1' |
+            'COMP_2' |
+            'COMP_3' |
+            'COMP_4' |
+            'COMP' |
+            'COMPUTATIONAL_1' |
+            'COMPUTATIONAL_2' |
+            'COMPUTATIONAL_3' |
+            'COMPUTATIONAL_4' |
+            'COMPUTATIONAL' |
+            'COMPUTE' |
+            'CONFIGURATION' |
+            'CONTAINS' |
+            'CONTENT' |
+            'CONTINUE' |
+            'CONVERTING' |
+            'COPY' |
+            'CORR' |
+            'CORRESPONDING' |
+            'COUNT' |
+            'CURRENCY' |
+            'DATA' |
+            'DATE_COMPILED' |
+            'DATE_WRITTEN' |
+            'DATE' |
+            'DAY_OF_WEEK' |
+            'DAY' |
+            'DBCS' |
+            'DEBUG_ITEM' |
+            'DEBUGGING' |
+            'DECIMAL_POINT' |
+            'DECLARATIVES' |
+            'DEGUGGING' |
+            'DELETE' |
+            'DELIMITED' |
+            'DELIMITER' |
+            'DEPENDING' |
+            'DESCENDING' |
+            'DISPLAY_1' |
+            'DISPLAY' |
+            'DIVIDE' |
+            'DIVISION' |
+            'DOWN' |
+            'DUPLICATES' |
+            'DYNAMIC' |
+            'EBCDIC' |
+            'EGCS' |
+            'EJECT' |
+            'ELSE' |
+            'END_ADD' |
+            'END_CALL' |
+            'END_COMPUTE' |
+            'END_DELETE' |
+            'END_DIVIDE' |
+            'END_EVALUATE' |
+            'END_EXEC' |
+            'END_IF' |
+            'END_MULTIPLY' |
+            'END_OF_PAGE' |
+            'END_PERFORM' |
+            'END_READ' |
+            'END_RETURN' |
+            'END_REWRITE' |
+            'END_SEARCH' |
+            'END_START' |
+            'END_STRING' |
+            'END_SUBTRACT' |
+            'END_UNSTRING' |
+            'END_WRITE' |
+            'END' |
+            'ENDING' |
+            'ENTRY' |
+            'ENVIRONMENT' |
+            'EOP' |
+            'EQUAL' |
+            'ERROR' |
+            'EVALUATE' |
+            'EVERY' |
+            'EXCEPTION' |
+            'EXEC' |
+            'EXIT' |
+            'EXTEND' |
+            'EXTERNAL' |
+            'FALSE' |
+            'FD' |
+            'FILE_CONTROL' |
+            'FILE' |
+            'FILLER' |
+            'FIRST' |
+            'FOOTING' |
+            'FOR' |
+            'FROM' |
+            'GIVING' |
+            'GLOBAL' |
+            'GO' |
+            'GOBACK' |
+            'GREATER' |
+            'HIGH_VALUE' |
+            'HIGH_VALUES' |
+            'I_O_CONTROL' |
+            'I_O' |
+            'ID' |
+            'IDENTIFICATION' |
+            'IF' |
+            'IN' |
+            'INDEX' |
+            'INDEXED' |
+            'INITIAL' |
+            'INITIALIZE' |
+            'INPUT_OUTPUT' |
+            'INPUT' |
+            'INSPECT' |
+            'INSTALLATION' |
+            'INTO' |
+            'INVALID' |
+            'IS' |
+            'JUST' |
+            'JUSTIFIED' |
+            'KANJI' |
+            'KEY' |
+            'LABEL' |
+            'LEADING' |
+            'LEFT' |
+            'LENGTH' |
+            'LESS' |
+            'LINAGE_COUNTER' |
+            'LINAGE' |
+            'LINE' |
+            'LINES' |
+            'LINKAGE' |
+            'LOCK' |
+            'LOW_VALUE' |
+            'LOW_VALUES' |
+            'MEMORY' |
+            'MERGE' |
+            'MODE' |
+            'MODULES' |
+            'MORE_LABELS' |
+            'MOVE' |
+            'MULTIPLE' |
+            'MULTIPLY' |
+            'NATIVE' |
+            'NEGATIVE' |
+            'NEXT' |
+            'NO' |
+            'NOT' |
+            'NULL' |
+            'NULLS' |
+            'NUMERIC_EDITED' |
+            'NUMERIC' |
+            'OBJECT_COMPUTER' |
+            'OCCURS' |
+            'OF' |
+            'OFF' |
+            'OMITTED' |
+            'ON' |
+            'OPEN' |
+            'OPTIONAL' |
+            'OR' |
+            'ORDER' |
+            'ORGANIZATION' |
+            'OTHER' |
+            'OUTPUT' |
+            'OVERFLOW' |
+            'PACKED_DECIMAL' |
+            'PADDING' |
+            'PAGE' |
+            'PASSWORD' |
+            'PERFORM' |
+            'PIC' |
+            'PICTURE' |
+            'POINTER' |
+            'POSITION' |
+            'POSITIVE' |
+            'PROCEDURE' |
+            'PROCEDURES' |
+            'PROCEED' |
+            'PROGRAM_ID' |
+            'PROGRAM' |
+            'QUOTE' |
+            'QUOTES' |
+            'RANDOM' |
+            'READ' |
+            'RECORD' |
+            'RECORDING' |
+            'RECORDS' |
+            'REDEFINES' |
+            'REEL' |
+            'REFERENCE' |
+            'RELATIVE' |
+            'RELEASE' |
+            'REMAINDER' |
+            'REMARKS' |
+            'REMOVAL' |
+            'RENAMES' |
+            'REPLACING' |
+            'RERUN' |
+            'RESERVE' |
+            'RETURN_CODE' |
+            'RETURN' |
+            'REVERSED' |
+            'REWIND' |
+            'REWRITE' |
+            'RIGHT' |
+            'ROUNDED' |
+            'RUN' |
+            'SAME' |
+            'SD' |
+            'SEARCH' |
+            'SECTION' |
+            'SECURITY' |
+            'SEGMENT_LIMIT' |
+            'SELECT' |
+            'SENTENCE' |
+            'SEPARATE' |
+            'SEQUENCE' |
+            'SEQUENTIAL' |
+            'SET' |
+            'SHIFT_IN' |
+            'SHIFT_OUT' |
+            'SIGN' |
+            'SIZE' |
+            'SKIP' |
+            'SKIP1' |
+            'SKIP2' |
+            'SKIP3' |
+            'SORT_CONTROL' |
+            'SORT_CORE_SIZE' |
+            'SORT_FILE_SIZE' |
+            'SORT_MERGE' |
+            'SORT_MESSAGE' |
+            'SORT_MODE_SIZE' |
+            'SORT_RETURN' |
+            'SORT' |
+            'SOURCE_COMPUTER' |
+            'SPACE' |
+            'SPACES' |
+            'SPECIAL_NAMES' |
+            'SQL' |
+            'STANDARD_1' |
+            'STANDARD_2' |
+            'STANDARD' |
+            'START' |
+            'STATUS' |
+            'STOP' |
+            'STRING' |
+            'SUBTRACT' |
+            'SUPPRESS' |
+            'SYMBOLIC' |
+            'SYNC' |
+            'SYNCHRONIZED' |
+            'TALLY' |
+            'TALLYING' |
+            'TAPE' |
+            'TEST' |
+            'THAN' |
+            'THEN' |
+            'THROUGH' |
+            'THRU' |
+            'TIME' |
+            'TIMES' |
+            'TO' |
+            'TOP' |
+            'TRAILING' |
+            'TRUE' |
+            'UNIT' |
+            'UNSTRING' |
+            'UNTIL' |
+            'UP' |
+            'UPON' |
+            'USAGE' |
+            'USE' |
+            'USING' |
+            'VALUE' |
+            'VALUES' |
+            'VARYING' |
+            'WHEN_COMPILED' |
+            'WHEN' |
+            'WITH' |
+            'WORDS' |
+            'WORKING_STORAGE' |
+            'WRITE_ONLY' |
+            'WRITE' |
+            'ZERO' |
+            'ZEROES' |
+            'ZEROS' |
+            'Lex_cobword' New3 . 
+
+
+New3 ::= # |
+         'Continuation' 'Digits_cobword' ~New3 .
+
+
+Code_set_clause ::= 'CODE_SET' Alphabet_name |
+                    'CODE_SET' 'IS' Alphabet_name .
+
+
+
+Collating_sequence ::= 'SEQUENCE' Alphabet_name |
+                       'COLLATING' 'SEQUENCE' Alphabet_name |
+                       'SEQUENCE' 'IS' Alphabet_name |
+                       'COLLATING' 'SEQUENCE' 'IS' Alphabet_name .
+
+
+Combinable_condition_0 ::= '(' Expression ')' Abbreviation_rest |
+                           Condition_name_reference Abbreviation_rest .
+
+Combinable_condition_1 ::= Abbreviated_combined_relation_conditions_2 |
+                           Abbreviated_combined_relation_conditions_3 |
+                           Class_condition |
+                           Condition_name_reference |
+                           Negated_simple_conditions |
+                           Relation_condition Abbreviation_rest |
+                           Sign_condition |
+                           Simple_condition_1 .
+
+Combinable_condition ::= Combinable_condition_0 |
+                         ~Combinable_condition_1 .
+
+
+
+(******* NOT CALLED FROM ANYWHERE !!! **************)
+Comment_entries ::=  # |
+                     Comment_entries Comment_entry .
+
+Compute_statement_non_closed ::= Compute_statement_simple On_size_error_phrases .
+
+Compute_statement_simple ::= 'COMPUTE' Compute_statement_simple_61 Equal Arithmetic_expression .
+
+Compute_statement_simple_61 ::= Cobword_rounded |
+                                Compute_statement_simple_61 Cobword_rounded .
+
+Compute_statement ::= Compute_statement_non_closed 'END_COMPUTE' |
+                      Compute_statement_simple 'END_COMPUTE' |
+                      Compute_statement_simple .
+
+Computer_name ::= System_name .
+
+
+Condition_name_reference ::= Condition_name Condition_name_reference_62 |
+                             Condition_name_reference Subscript_parentheses .
+
+Condition_name_reference_62 ::= # |
+                                Condition_name_reference_62 In_data_or_file_or_mnemonic_name .
+
+
+Condition_name ::= Alphabetic_user_defined_word .
+
+
+Condition_value_clause ::= Values_are Literal_through_literal |
+                           Condition_value_clause Literal_through_literal .
+
+Condition_without_condition_reference ::= Combinable_condition_1 |
+                                          Combinable_condition Condition_without_condition_reference_65 |
+                                          Condition_name_reference Condition_without_condition_reference_66 .
+
+Condition_without_condition_reference_65 ::= And_or_combinable_condition_1 |
+                                             Condition_without_condition_reference_65 And_or_combinable_condition_1 .
+
+Condition_without_condition_reference_66 ::= And_or_abbreviation_leaf |
+                                             Condition_without_condition_reference_66 And_or_abbreviation_leaf .
+
+
+Condition ::= Combinable_condition |
+              Condition And_or_combinable_condition_1 .
+
+
+Configuration_section_paragraph ::= Dummy_statement |
+                                    Dummy_statement '.' |
+                                    Object_computer_paragraph |
+                                    Source_computer_paragraph |
+                                    Special_names_paragraph .
+
+
+Configuration_section_paragraphs ::= # |
+                                     Configuration_section_paragraphs Configuration_section_paragraph .
+
+
+
+Configuration_section ::= 'CONFIGURATION' 'SECTION' '.' Configuration_section_paragraphs |
+                          'CONFIGURATION' 'SECTION' '.' Skip_statement_dot Configuration_section_paragraphs .
+
+
+Content_parameter_value ::= Identifier |
+                            Literal .
+
+
+Content_parameter ::= 'CONTENT' Content_parameter_value |
+                      'BY' 'CONTENT' Content_parameter_value |
+                      Content_parameter Content_parameter_value .
+
+
+Continue_statement ::= 'CONTINUE' .
+
+Copy_operand ::= Cobword |
+                 Literal |
+                 Quoted_pseudo_text .
+
+Copy_statement_by_phrase ::= Copy_operand 'BY' Copy_operand .
+
+Copy_statement_closed_by_period ::= Copy_statement '.' .
+
+
+Copy_statement_replacing_phrase ::= 'REPLACING' Copy_statement_by_phrase |
+                                    Copy_statement_replacing_phrase Copy_statement_by_phrase .
+
+
+Copy_statement ::= 'COPY' Alt_text_name_literal |
+                   'COPY' Alt_text_name_literal In_library |
+                   'COPY' Alt_text_name_literal 'SUPPRESS' |
+                   'COPY' Alt_text_name_literal In_library 'SUPPRESS' |
+                   'COPY' Alt_text_name_literal Copy_statement_replacing_phrase |
+                   'COPY' Alt_text_name_literal In_library Copy_statement_replacing_phrase |
+                   'COPY' Alt_text_name_literal 'SUPPRESS' Copy_statement_replacing_phrase |
+                   'COPY' Alt_text_name_literal In_library 'SUPPRESS' Copy_statement_replacing_phrase .
+                      
+
+Corresponding ::= 'CORR' |
+                  'CORRESPONDING' .
+
+
+Count_in_identifier ::= 'COUNT' Identifier |
+                        'COUNT' 'IN' Identifier .
+
+
+Currency_sign_clause ::= 'CURRENCY' Literal |
+                         'CURRENCY' 'SIGN' Literal |
+                         'CURRENCY' 'IS' Literal |
+                         'CURRENCY' 'SIGN' 'IS' Literal .
+
+
+Data_description_entry_clause ::= Blank_when_zero_clause |
+                                  Condition_value_clause |
+                                  External_clause |
+                                  Global_clause |
+                                  Justified_clause |
+                                  Occurs_clause |
+                                  Picture_clause |
+                                  Redefines_clause |
+                                  Renames_clause |
+                                  Sign_clause |
+                                  Synchronized_clause |
+                                  Usage_clause .
+
+
+Data_description_entry_clauses ::= # |
+                                   Data_description_entry_clauses Data_description_entry_clause .
+
+
+Data_description_entry ::= Cics_statement '.' |
+                           Cics_statement |
+                           Copy_statement '.' |
+                           Level_number Data_description_entry_clauses Periods |
+                           Level_number Alt_data_name_filler Data_description_entry_clauses Periods |
+                           Skip_statement '.' |
+                           Skip_statement |
+                           Sql_statement '.' |
+                           Sql_statement .
+
+
+Data_division_content ::= Data_division_content_83 Data_division_content_84 |
+                          File_section Data_division_content_83 Data_division_content_84 .
+
+Data_division_content_83 ::= # |
+                             Working_storage_section .
+
+Data_division_content_84 ::= # |
+                             Linkage_section .
+
+Data_division ::= 'DATA' 'DIVISION' '.' Data_division_content .
+
+Data_name_or_copy_book ::= Copy_statement_closed_by_period |
+                           Data_name .
+
+Data_name ::= 'EJECT' |
+              'SKIP' |
+              'SKIP1' |
+              'SKIP2' |
+              'SKIP3' |
+              Alphabetic_user_defined_word .
+
+
+Data_names ::= Data_name |
+               Data_names Data_name .
+
+Data_or_file_name ::= Alphabetic_user_defined_word .
+
+Data_or_file_or_mnemonic_name ::= Alphabetic_user_defined_word .
+
+
+Data_records_clause ::= 'DATA' Records_are Data_name |
+                         Data_records_clause Data_name .
+
+
+Date_compiled ::= 'DATE_COMPILED' |
+                  'DATE_COMPILED' '.' |
+                   Date_compiled Comment_entry .
+
+
+Date_written ::= 'DATE_WRITTEN' |
+                 'DATE_WRITTEN' '.' |
+                  Date_written Comment_entry .
+
+Date ::= 'DATE' |
+         'DAY_OF_WEEK' |
+         'DAY' |
+         'TIME' .
+
+
+Decimal_point_clause ::= 'DECIMAL_POINT' 'COMMA' |
+                         'DECIMAL_POINT' 'IS' 'COMMA' .
+
+
+Declaratives_content ::= Section_header '.' Use_statement '.' Paragraphs .
+
+Declaratives ::= 'DECLARATIVES' '.' Declaratives_92 'END' 'DECLARATIVES' '.' .
+
+Declaratives_92 ::= Declaratives_content |
+                    Declaratives_92 Declaratives_content .
+
+Delete_statement_non_closed ::= Delete_statement_simple Invalid_key_phrases .
+
+
+Delete_statement_simple ::= 'DELETE' File_name |
+                            'DELETE' File_name 'RECORD' .
+
+
+Delete_statement ::= Delete_statement_non_closed 'END_DELETE' |
+                     Delete_statement_simple 'END_DELETE' |
+                     Delete_statement_simple .
+
+
+Delimited_by_all_phrase ::= 'DELIMITED' Cobword_lit |
+                            'DELIMITED' 'BY' Cobword_lit |
+                            'DELIMITED' 'ALL' Cobword_lit |
+                            'DELIMITED' 'BY' 'ALL' Cobword_lit |
+                             Delimited_by_all_phrase Or_all_cobword_lit .
+
+
+
+Delimited_by_phrase ::= Cobword_lit  'DELIMITED' Cobword_lit_size |
+                        Cobword_lit  'DELIMITED' 'BY' Cobword_lit_size |
+                        Cobword_lit ~Delimited_by_phrase .
+
+
+Delimiter_in_identifier ::= 'DELIMITER' Identifier |
+                            'DELIMITER' 'IN' Identifier .
+
+
+Depending_on ::= 'DEPENDING' Data_name |
+                 'DEPENDING' 'ON' Data_name .
+
+
+Display_statement ::= 'DISPLAY' Display_statement_101 |
+                      'DISPLAY' Display_statement_101 Upon_environment_name |
+                      'DISPLAY' Display_statement_101 With_no_advancing |
+                      'DISPLAY' Display_statement_101 Upon_environment_name With_no_advancing .
+
+Display_statement_101 ::= Cobword_lit |
+                          Display_statement_101 Cobword_lit .
+
+
+Divide_statement_non_closed ::= Divide_statement_simple On_size_error_phrases .
+
+
+
+Divide_statement_simple ::= 'DIVIDE' Cobword_lit 'BY' Cobword_lit 'GIVING' Divide_statement_simple_104 |
+                            'DIVIDE' Cobword_lit 'BY' Cobword_lit 'GIVING' Identifier 'REMAINDER' Identifier |
+                            'DIVIDE' Cobword_lit 'BY' Cobword_lit 'GIVING' Identifier 'ROUNDED' 'REMAINDER' Identifier |
+                            'DIVIDE' Cobword_lit 'INTO' Cobword_lit 'GIVING' Divide_statement_simple_104 |
+                            'DIVIDE' Cobword_lit 'INTO' Cobword_lit 'GIVING' Identifier 'REMAINDER' Identifier |
+                            'DIVIDE' Cobword_lit 'INTO' Cobword_lit 'GIVING' Identifier 'ROUNDED' 'REMAINDER' Identifier |
+                            'DIVIDE' Cobword_lit 'INTO' Divide_statement_simple_104 .
+
+Divide_statement_simple_104 ::= Cobword_rounded |
+                                Divide_statement_simple_104 Cobword_rounded .
+
+
+Divide_statement ::= Divide_statement_non_closed 'END_DIVIDE' |
+                     Divide_statement_simple 'END_DIVIDE' |
+                     Divide_statement_simple .
+
+Dummy_statement ::= Exit_statement |
+                    Skip_statement .
+
+Else_phrase ::= 'ELSE' Statement_list .
+
+Emb_token ::= 'END_EXEC' .
+
+
+Empty_when_clause ::= When_phrase |
+                      Empty_when_clause When_phrase .
+
+End_of_page ::= 'END_OF_PAGE' |
+                'EOP' .
+
+End_program ::= 'END' 'PROGRAM' Program_name '.' .
+
+
+Entry_statement ::= 'ENTRY' Literal |
+                    'ENTRY' Literal Using_data_names .
+                        
+
+Environment_division_content ::= Environment_division_content_112 |
+                                 Configuration_section Environment_division_content_112 .
+
+Environment_division_content_112 ::= # |
+                                     Input_output_section .
+
+Environment_division ::= 'ENVIRONMENT' 'DIVISION' '.' Environment_division_content |
+                         'ENVIRONMENT' 'DIVISION' '.' Skip_statement_dot Environment_division_content .
+
+
+Environment_name ::= System_name .
+
+
+Equal_to ::= '=' |
+             'EQUAL' |
+             'EQUAL' 'TO' .
+
+Equal ::= '=' |
+          'EQUAL' .
+
+Evaluate_condition ::= 'FALSE' |
+                       'TRUE' |
+                       Arithmetic_expression |
+                       Condition_without_condition_reference .
+
+
+Evaluate_phrase_1 ::= # |
+                      'NOT' |
+                      Through_expression |
+                      'NOT' Through_expression .                          
+
+Evaluate_phrase ::= 'ANY' |
+                    'FALSE' |
+                    'TRUE' |
+                    Condition_without_condition_reference |
+                    Evaluate_phrase_1 .
+
+
+Evaluate_statement_non_closed ::= 'EVALUATE' Evaluate_condition Evaluate_statement_non_closed_117 When_clauses |
+                                  'EVALUATE' Evaluate_condition Evaluate_statement_non_closed_117 When_clauses When_other_phrase .
+
+Evaluate_statement_non_closed_117 ::= # |
+                                      Evaluate_statement_non_closed_117 Also_phrase .
+
+
+Evaluate_statement ::= Evaluate_statement_non_closed 'END_EVALUATE' .
+
+Every_phrase_1 ::= 'Integer' 'RECORDS' .
+
+
+Every_phrase_2 ::= 'END' Alt_reel_unit |
+                   'END' 'OF' Alt_reel_unit .
+
+Every_phrase ::= Every_phrase_1 |
+                 Every_phrase_2 .
+
+Exit_program_statement ::= 'EXIT' 'PROGRAM' .
+
+Exit_statement ::= 'EXIT' .
+
+Expression ::= Arithmetic_expression |
+               Nonnumeric .
+
+
+External_clause ::= 'EXTERNAL' |
+                    'IS' 'EXTERNAL' .
+
+
+Fce_access_mode ::= 'ACCESS' Alt_sequential_random_dynamic |
+                    'ACCESS' 'MODE' Alt_sequential_random_dynamic |
+                    'ACCESS' 'IS' Alt_sequential_random_dynamic |
+                    'ACCESS' 'MODE' 'IS' Alt_sequential_random_dynamic |
+                    'ACCESS' Alt_sequential_random_dynamic Relative_key_clause |
+                    'ACCESS' 'MODE' Alt_sequential_random_dynamic Relative_key_clause |
+                    'ACCESS' 'IS' Alt_sequential_random_dynamic Relative_key_clause |
+                    'ACCESS' 'MODE' 'IS' Alt_sequential_random_dynamic Relative_key_clause .
+
+
+Fce_organization ::= Alt_indexed_relative_sequential |
+                     Organization_is Alt_indexed_relative_sequential .
+
+
+Fce_phrase ::= Alternate_record_key_clause |
+               Fce_access_mode |
+               Fce_organization |
+               File_status_clause |
+               Padding_character_clause |
+               Password_clause |
+               Record_delimiter_clause |
+               Record_key_clause |
+               Reserve_clause .
+
+Figurative_constant_all ::= 'ALL' Literal .
+
+Figurative_constant_simple ::= 'HIGH_VALUE' |
+                               'HIGH_VALUES' |
+                               'LOW_VALUE' |
+                               'LOW_VALUES' |
+                               'NULL' |
+                               'NULLS' |
+                               'QUOTE' |
+                               'QUOTES' |
+                               'SPACE' |
+                               'SPACES' |
+                               'ZERO' |
+                               'ZEROES' |
+                               'ZEROS' .
+
+Figurative_constant ::= Figurative_constant_all |
+                        Figurative_constant_simple .
+
+File_and_sort_description_entry_clause ::= Block_contains_clause |
+                                           Code_set_clause |
+                                           Data_records_clause |
+                                           External_clause |
+                                           Global_clause |
+                                           Label_records_clause |
+                                           Linage_clause |
+                                           Record_clause |
+                                           Recording_mode_clause |
+                                           Value_of_clause .
+
+
+File_and_sort_description_entry_clauses ::= # |
+                                            File_and_sort_description_entry_clauses File_and_sort_description_entry_clause .
+
+File_and_sort_description_entry ::= Alt_fd_sd File_name File_and_sort_description_entry_clauses '.' .
+
+File_control_entry ::= Select_clause Assign_clause File_control_entry_126 '.' |
+                       Skip_statement_dot .
+
+File_control_entry_126 ::= # |
+                           File_control_entry_126 Fce_phrase .
+
+File_control_paragraph ::= 'FILE_CONTROL' '.' File_control_paragraph_127 |
+                           'FILE_CONTROL' '.' Skip_statement_dot .
+
+File_control_paragraph_127 ::= # |
+                               File_control_paragraph_127 File_control_entry .
+
+
+
+File_name_position ::= File_name |
+                       File_name Position .
+
+
+File_name ::= Alphabetic_user_defined_word .
+
+
+
+File_names ::= File_name |
+               File_names File_name .
+
+
+File_section_entry ::= File_and_sort_description_entry Data_description_entry |
+                       File_section_entry Data_description_entry .
+
+File_section ::= 'FILE' 'SECTION' '.' File_section_131 |
+                 'FILE' 'SECTION' '.' Skip_statement_dot .
+
+File_section_131 ::= # |
+                     File_section_131 File_section_entry .
+
+
+
+File_status_clause ::= 'STATUS' Qualified_data_name |
+                       'FILE' 'STATUS' Qualified_data_name |
+                       'STATUS' 'IS' Qualified_data_name |
+                       'FILE' 'STATUS' 'IS' Qualified_data_name |
+                       'STATUS' Qualified_data_name Qualified_data_name |
+                       'FILE' 'STATUS' Qualified_data_name Qualified_data_name |
+                       'STATUS' 'IS' Qualified_data_name Qualified_data_name |
+                       'FILE' 'STATUS' 'IS' Qualified_data_name Qualified_data_name .
+
+
+
+Footing ::= 'FOOTING' Alt_data_name_integer |
+            'WITH' 'FOOTING' Alt_data_name_integer |
+            'FOOTING' 'AT' Alt_data_name_integer |
+            'WITH' 'FOOTING' 'AT' Alt_data_name_integer .
+
+
+For_removal ::= 'REMOVAL' |
+                'FOR' 'REMOVAL' .
+
+From_environment_name ::= 'FROM' Cobword .
+
+From_identifier ::= 'FROM' Identifier .
+
+
+From_integer ::= 'Integer' |
+                 'FROM' 'Integer' .
+
+
+Giving_file_names ::= 'GIVING' File_name |
+                       Giving_file_names File_name .
+
+
+
+Global_clause ::= 'GLOBAL' |
+                  'IS' 'GLOBAL' .
+
+
+
+Go_to_statement_1 ::= 'GO' Procedure_name |
+                      'GO' 'TO' Procedure_name .
+
+
+
+Go_to_statement_2 ::= 'GO' Go_to_statement_2_143 'DEPENDING' Identifier |
+                      'GO' Go_to_statement_2_143 'DEPENDING' 'ON' Identifier |
+                      'GO' 'TO' Go_to_statement_2_143 'DEPENDING' Identifier |
+                      'GO' 'TO' Go_to_statement_2_143 'DEPENDING' 'ON' Identifier .
+
+Go_to_statement_2_143 ::= Procedure_name |
+                          Go_to_statement_2_143 Procedure_name .
+
+
+
+Go_to_statement_3 ::= 'GO' 'MORE_LABELS' |
+                      'GO' 'TO' 'MORE_LABELS' .
+
+
+Go_to_statement ::= Go_to_statement_1 |
+                    Go_to_statement_2 |
+                    Go_to_statement_3 .
+
+Goback_statement ::= 'GOBACK' .
+
+
+Greater_than_1 ::= 'GREATER' |
+                   'GREATER' 'THAN' .
+
+
+Greater_than_or_equal_to ::= '>=' |
+                             'GREATER' 'OR' 'EQUAL' |
+                             'GREATER' 'OR' 'EQUAL' 'TO' |
+                             'GREATER' 'THAN' 'OR' 'EQUAL' |
+                             'GREATER' 'THAN' 'OR' 'EQUAL' 'TO' |
+                             'NOT' '<' |
+                             'NOT' 'LESS' |
+                             'NOT' 'LESS' 'THAN' .
+
+Greater_than ::= '>' |
+                 Greater_than_1 .
+
+
+
+I_o_control_paragraph ::=  'I_O_CONTROL' '.' |
+                           'I_O_CONTROL' '.' I_o_sam |
+                           'I_O_CONTROL' '.' I_o_sort_merge |
+                           'I_O_CONTROL' '.' I_o_sam I_o_sort_merge |
+                           'I_O_CONTROL' '.' Skip_statement_dot |
+                           'I_O_CONTROL' '.' I_o_sam Skip_statement_dot |
+                           'I_O_CONTROL' '.' I_o_sort_merge Skip_statement_dot |
+                           'I_O_CONTROL' '.' I_o_sam I_o_sort_merge Skip_statement_dot .
+
+
+I_o_sam ::= Qsam_or_sam_or_vsam_i_o_control_entries '.' |
+            Qsam_or_sam_or_vsam_i_o_control_entries ~I_o_sam .
+
+
+I_o_sort_merge ::= Sort_merge_i_o_control_entries '.' .
+
+
+Identification_division_content ::= # |
+                                    Identification_division_content Identification_division_phrase .
+
+Identification_division_phrase ::= Author |
+                                   Date_compiled |
+                                   Date_written |
+                                   Installation |
+                                   Remarks |
+                                   Security .
+
+Identification ::= 'ID' |
+                   'IDENTIFICATION' .
+
+Identifier_1 ::= Qualified_data_name New1 .
+
+New1 ::= # |
+         Reference_modification |
+         Subscript_parentheses ~New1 .
+
+
+Identifier_2 ::= 'LINAGE_COUNTER' |
+                 'LINAGE_COUNTER' In_file_name .
+
+Identifier ::= Identifier_1 |
+               Identifier_2 .
+
+If_statement_non_closed ::= 'IF' Condition ~Statement_list |
+                            'IF' Condition 'THEN' ~Statement_list |
+                            'IF' Condition ~Statement_list Else_phrase |
+                            'IF' Condition 'THEN' ~Statement_list Else_phrase .
+
+If_statement ::= If_statement_non_closed 'END_IF' .
+
+In_alphabet_name ::= 'IN' Alphabet_name .
+
+In_data_or_file_name ::= In Data_or_file_name .
+
+In_data_or_file_or_mnemonic_name ::= In Data_or_file_or_mnemonic_name .
+
+In_file_name ::= In File_name .
+
+In_label_name ::= In Label_name .
+
+In_library ::= In Alt_library_name_literal .
+
+In ::= 'IN' |
+       'OF' .
+
+Index_name ::= Alphabetic_user_defined_word .
+
+Indexed_by ::= 'INDEXED' Index_name |
+               'INDEXED' 'BY' Index_name |
+                Indexed_by Index_name .
+
+Initial_program ::= 'INITIAL'  |
+                    'INITIAL' 'PROGRAM' |
+                    'IS' 'INITIAL'  |
+                    'IS' 'INITIAL' 'PROGRAM' .
+
+Initialize_replacing_argument ::= Initialize_replacing_type 'BY' Cobword_lit |
+                                  Initialize_replacing_type 'DATA' 'BY' Cobword_lit .
+
+
+Initialize_replacing_phrase ::= 'REPLACING' Initialize_replacing_argument |
+                                 Initialize_replacing_phrase Initialize_replacing_argument .
+
+Initialize_replacing_type ::= 'ALPHABETIC' |
+                              'ALPHANUMERIC_EDITED' |
+                              'ALPHANUMERIC' |
+                              'DBCS' |
+                              'EGCS' |
+                              'NUMERIC_EDITED' |
+                              'NUMERIC' .
+
+
+
+Initialize_statement ::= 'INITIALIZE' New2.
+                             
+New2 ::= Identifier | 
+         Initialize_replacing_phrase |
+         Identifier ~New2 .
+
+
+Input_output_section ::= 'INPUT_OUTPUT' 'SECTION' '.' Input_output_section_168 Input_output_section_169 .
+
+Input_output_section_168 ::= # |
+                             File_control_paragraph .
+
+Input_output_section_169 ::= # |
+                             I_o_control_paragraph .
+
+
+
+Input_procedure ::= 'INPUT' 'PROCEDURE' Procedures_thru |
+                    'INPUT' 'PROCEDURE' 'IS' Procedures_thru .
+
+
+
+Inspect_replacing_argument ::= Cobword_lit 'BY' Cobword_lit |
+                               Inspect_replacing_argument Before_after_phrase .
+
+
+
+Inspect_replacing_phrase_1 ::= 'CHARACTERS' 'BY' Cobword_lit |
+                               Inspect_replacing_phrase_1 Before_after_phrase .
+
+
+
+Inspect_replacing_phrase_2 ::= Alt_all_leading_first Inspect_replacing_argument |
+                               Inspect_replacing_phrase_2 Inspect_replacing_argument .
+
+Inspect_replacing_phrase ::= Inspect_replacing_phrase_1 |
+                             Inspect_replacing_phrase_2 .
+
+
+
+Inspect_statement_1 ::= 'INSPECT' Identifier 'TALLYING'  Tallying_argument |
+                         Inspect_statement_1 Tallying_argument .
+
+
+Inspect_statement_2 ::= 'INSPECT' Identifier 'CONVERTING' Cobword_lit 'TO' Cobword_lit |
+                         Inspect_statement_2 Before_after_phrase .
+
+
+
+Inspect_statement_3 ::= 'INSPECT' Identifier 'TALLYING' Inspect_statement_3_176 'REPLACING' Inspect_replacing_phrase |
+                         Inspect_statement_3 Inspect_replacing_phrase .
+
+Inspect_statement_3_176 ::= Tallying_argument |
+                            Inspect_statement_3_176 Tallying_argument .
+
+
+Inspect_statement_4 ::= 'INSPECT' Identifier 'REPLACING' Inspect_replacing_phrase |
+                         Inspect_statement_4 Inspect_replacing_phrase .
+
+Inspect_statement ::= Inspect_statement_1 |
+                      Inspect_statement_2 |
+                      Inspect_statement_3 |
+                      Inspect_statement_4 .
+
+
+
+Installation ::= 'INSTALLATION' |
+                 'INSTALLATION' '.' |
+                  Installation Comment_entry .
+
+Integer_to ::= 'Integer' 'TO' .
+
+Into_identifier ::= 'INTO' Identifier .
+
+
+
+Invalid_key_phrases ::= Invalid_key_statement_list |
+                        Invalid_key_statement_list Not_invalid_key_statement_list |
+                        Not_invalid_key_statement_list .
+
+
+
+Invalid_key_statement_list ::= 'INVALID' Statement_list |
+                               'INVALID' 'KEY' Statement_list .
+
+
+
+Is_mnemonic_name ::= Mnemonic_name |
+                     Mnemonic_name Special_names_paragraph_status_phrase |
+                     'IS' Mnemonic_name |
+                     'IS' Mnemonic_name Special_names_paragraph_status_phrase .
+
+
+Is_not ::=  # |
+            'IS' |
+            'NOT' |
+            'IS' 'NOT' .               
+
+Is_or_is_not ::= Is_not |
+                 Not_is .
+
+
+Justified_clause ::= Justified |
+                     Justified 'RIGHT' .
+
+Justified ::= 'JUST' |
+              'JUSTIFIED' .
+
+
+
+Key_is_qualified_data_name ::= 'KEY' Qualified_data_name |
+                               'KEY' 'IS' Qualified_data_name .
+
+
+
+Key_is_rel_op_qualified_data_name ::= 'KEY' Rel_op Qualified_data_name |
+                                      'KEY' 'IS' Rel_op Qualified_data_name .
+
+
+Key_is ::= 'KEY' |
+           'KEY' 'IS' .
+
+
+Label_name ::= 'Integer' |
+               User_defined_word .
+
+Label_records_clause_tail ::= 'OMITTED' |
+                              'STANDARD' |
+                              Data_names .
+
+Label_records_clause ::= 'LABEL' Records_are Label_records_clause_tail .
+
+Leftmost_character_position ::= Arithmetic_expression .
+
+Length ::= Arithmetic_expression .
+
+Library_name ::= User_defined_word .
+
+
+Linage_clause ::= 'LINAGE' Alt_data_name_integer Linage_clause_192 Linage_footing_phrase |
+                  'LINAGE' 'IS' Alt_data_name_integer Linage_clause_192 Linage_footing_phrase .
+
+Linage_clause_192 ::= # |
+                      'LINES' .
+
+
+Linage_footing_phrase ::= # |
+                          Footing |
+                          Lines_top |
+                          Footing Lines_top |
+                          Lines_bottom |
+                          Footing Lines_bottom |
+                          Lines_top Lines_bottom |
+                          Footing Lines_top Lines_bottom .
+
+
+Lines_bottom ::= 'BOTTOM' Alt_data_name_integer |
+                 'LINES' 'BOTTOM' Alt_data_name_integer |
+                 'AT' 'BOTTOM' Alt_data_name_integer |
+                 'LINES' 'AT' 'BOTTOM' Alt_data_name_integer .
+
+
+
+Lines_top ::= 'TOP' Alt_data_name_integer |
+              'LINES' 'TOP' Alt_data_name_integer |
+              'AT' 'TOP' Alt_data_name_integer |
+              'LINES' 'AT' 'TOP' Alt_data_name_integer .
+
+
+Lines ::= 'LINE' |
+          'LINES' .
+
+
+Linkage_section ::= 'LINKAGE' 'SECTION' '.' |
+                     Linkage_section Data_description_entry .
+
+
+Literal_through_literal ::= Literal |
+                            Literal  Through_literal .
+
+Literal ::= Dbcs |
+            ~Figurative_constant |
+            Nonnumeric |
+            Numeric .
+
+Memory_size_type ::= 'CHARACTERS' |
+                     'MODULES' |
+                     'WORDS' .
+
+
+Memory_size ::= 'MEMORY' 'Integer' Memory_size_type |
+                'MEMORY' 'SIZE' 'Integer' Memory_size_type .
+
+Merge_statement_tail ::= Giving_file_names |
+                         Output_procedure .
+
+Merge_statement ::= 'MERGE' File_name Merge_statement_203 Merge_statement_204 'USING' File_name Merge_statement_205 Merge_statement_tail .
+
+Merge_statement_203 ::= On_key_phrase |
+                        Merge_statement_203 On_key_phrase .
+
+Merge_statement_204 ::= # |
+                        Collating_sequence .
+
+Merge_statement_205 ::= File_name |
+                        Merge_statement_205 File_name .
+
+Mnemonic_name ::= Alphabetic_user_defined_word .
+
+
+Move_statement_1 ::= 'MOVE' Cobword_lit 'TO' Identifier |
+                      Move_statement_1 Identifier .
+
+
+Move_statement_2 ::= 'MOVE' Corresponding Identifier 'TO' Identifier |
+                      Move_statement_2 Identifier .
+
+
+Move_statement ::= 'MOVE' Cobword_lit To_identifier Move_statement_208 |
+                   Move_statement_1 |
+                   Move_statement_2 .
+
+Move_statement_208 ::= To_identifier |
+                       Move_statement_208 To_identifier .
+
+Multiply_statement_non_closed ::= Multiply_statement_simple On_size_error_phrases .
+
+
+
+Multiply_statement_simple ::= 'MULTIPLY' Cobword_lit 'BY' Cobword_lit 'GIVING' Cobword_rounded |
+                              'MULTIPLY' Cobword_lit 'BY' Cobword_rounded |
+                               Multiply_statement_simple Cobword_rounded .
+
+
+Multiply_statement ::= Multiply_statement_non_closed 'END_MULTIPLY' |
+                       Multiply_statement_simple 'END_MULTIPLY' |
+                       Multiply_statement_simple .
+
+Negated_simple_conditions ::= 'NOT' Combinable_condition .
+
+Next_sentence_statement ::= 'NEXT' 'SENTENCE' .
+
+No_rewind ::= 'NO' 'REWIND' .
+
+
+Non_empty_statement_list ::= Statement_non_closed_inj |
+                             Non_empty_statement_list_212 Statement_non_closed_inj |
+                             Non_empty_statement_list_212 .
+
+Non_empty_statement_list_212 ::= Statement_inj |
+                                 Non_empty_statement_list_212 ~Statement_inj .
+
+Nonnumeric_dq_continuation ::= 'Continuation' |
+                               'Continuation' Nonnumeric_dq .
+
+Nonnumeric_dq_opt_closed_continuation ::= 'Continuation' |
+                                          'Continuation' Nonnumeric_dq_opt_non_closed .
+
+Nonnumeric_dq_opt_non_closed ::= Nonnumeric_dq_non_closed |
+                                 Nonnumeric_dq .
+
+Nonnumeric_sq_continuation ::= 'Continuation' |
+                               'Continuation' Nonnumeric_sq .
+
+Nonnumeric_sq_opt_closed_continuation ::= 'Continuation' |
+                                          'Continuation' Nonnumeric_sq_opt_non_closed .
+
+Nonnumeric_sq_opt_non_closed ::= Nonnumeric_sq_non_closed |
+                                 Nonnumeric_sq .
+
+Nonnumeric ::= Nonnumeric_dq_opt_non_closed Nonnumeric_213 Nonnumeric_dq_continuation |
+               Nonnumeric_dq |
+               Nonnumeric_sq_opt_non_closed Nonnumeric_214 Nonnumeric_sq_continuation |
+               Nonnumeric_sq .
+
+Nonnumeric_213 ::= # |
+                   Nonnumeric_213 Nonnumeric_dq_opt_closed_continuation .
+
+Nonnumeric_214 ::= # |
+                   Nonnumeric_214 Nonnumeric_sq_opt_closed_continuation .
+
+
+Not_at_end_of_page_statement_list ::= 'NOT' End_of_page Statement_list |
+                                      'NOT' 'AT' End_of_page Statement_list .
+
+
+Not_at_end_statement_list ::= 'NOT' 'END' Statement_list |
+                              'NOT' 'AT' 'END' Statement_list .
+
+
+
+Not_invalid_key_statement_list ::= 'NOT' 'INVALID' Statement_list |
+                                   'NOT' 'INVALID' 'KEY' Statement_list .
+
+Not_is ::= 'NOT' 'IS' .
+
+
+Not_on_exception_statement_list ::= 'NOT' 'EXCEPTION' Statement_list |
+                                    'NOT' 'ON' 'EXCEPTION' Statement_list .
+
+
+Not_on_overflow_statement_list ::= 'NOT' 'OVERFLOW' Statement_list |
+                                   'NOT' 'ON' 'OVERFLOW' Statement_list .
+
+
+
+Not_on_size_error_statement_list ::= 'NOT' 'SIZE' 'ERROR' Statement_list |
+                                     'NOT' 'ON' 'SIZE' 'ERROR' Statement_list .
+
+
+
+Nr_lines_phrase ::= Cobword_int |
+                    Cobword_int Lines .                        
+
+
+Numeric ::= '-' Unsigned_numeric |
+            Numeric_222 Unsigned_numeric .
+
+Numeric_222 ::= # |
+                '+' .
+
+
+Object_computer_name ::= Computer_name Object_computer_name_223 Object_computer_paragraph_sequence_phrase '.' .
+
+Object_computer_name_223 ::= # |
+                             Memory_size .
+
+
+Object_computer_paragraph_sequence_phrase ::= Object_computer_paragraph_sequence_phrase_224 Object_computer_paragraph_sequence_phrase_225 .
+
+Object_computer_paragraph_sequence_phrase_224 ::= # |
+                                                  Program_collating_sequence .
+
+Object_computer_paragraph_sequence_phrase_225 ::= # |
+                                                  Segment_limit .
+
+
+
+Object_computer_paragraph ::= 'OBJECT_COMPUTER' '.' |
+                              'OBJECT_COMPUTER' '.' Object_computer_name .
+                                  
+
+
+Occurs_clause_1 ::= 'OCCURS' 'Integer' Occurs_clause_1_228 Occurs_clause_1_229 |
+                    'OCCURS' 'Integer' 'TIMES' Occurs_clause_1_228 Occurs_clause_1_229 .
+
+Occurs_clause_1_227 ::= # |
+                        'TIMES' .
+
+Occurs_clause_1_228 ::= # |
+                        Occurs_clause_1_228 Occurs_clause_key .
+
+Occurs_clause_1_229 ::= # |
+                        Indexed_by .
+
+
+
+Occurs_clause_2 ::= 'OCCURS' 'Integer' Occurs_clause_2_231 'DEPENDING' Qualified_data_name Occurs_clause_2_233 Occurs_clause_2_234 |
+                    'OCCURS' Integer_to 'Integer' Occurs_clause_2_231 'DEPENDING' Qualified_data_name Occurs_clause_2_233 Occurs_clause_2_234 |
+                    'OCCURS' 'Integer' Occurs_clause_2_231 'DEPENDING' 'ON' Qualified_data_name Occurs_clause_2_233 Occurs_clause_2_234 |
+                    'OCCURS' Integer_to 'Integer' Occurs_clause_2_231 'DEPENDING' 'ON' Qualified_data_name Occurs_clause_2_233 Occurs_clause_2_234 .
+
+
+
+Occurs_clause_2_231 ::= # |
+                        'TIMES' .
+
+Occurs_clause_2_233 ::= # |
+                        Occurs_clause_2_233 Occurs_clause_key .
+
+Occurs_clause_2_234 ::= # |
+                        Indexed_by .
+
+
+
+Occurs_clause_key ::= Alt_ascending_descending Qualified_data_name |
+                      Alt_ascending_descending 'KEY' Qualified_data_name |
+                      Alt_ascending_descending 'IS' Qualified_data_name |
+                      Alt_ascending_descending 'KEY' 'IS' Qualified_data_name |
+                      Occurs_clause_key Qualified_data_name .
+
+
+Occurs_clause ::= Occurs_clause_1 |
+                  Occurs_clause_2 .
+
+
+
+Off_status ::= 'OFF' Condition |
+               'OFF' 'STATUS' Condition |
+               'OFF' 'IS' Condition |
+               'OFF' 'STATUS' 'IS' Condition .
+
+
+
+On_exception_statement_list ::= 'EXCEPTION' Statement_list |
+                                'ON' 'EXCEPTION' Statement_list .
+
+
+
+On_key_is_phrase ::= Alt_ascending_descending Qualified_data_name |
+                     'ON' Alt_ascending_descending Qualified_data_name |
+                     Alt_ascending_descending Key_is Qualified_data_name |
+                     'ON' Alt_ascending_descending Key_is Qualified_data_name |
+                     On_key_is_phrase Qualified_data_name .
+
+
+
+On_key_phrase ::= Alt_ascending_descending  Qualified_data_name |
+                  'ON' Alt_ascending_descending Qualified_data_name |
+                  Alt_ascending_descending 'KEY' Qualified_data_name |
+                  'ON' Alt_ascending_descending 'KEY' Qualified_data_name |
+                  On_key_phrase Qualified_data_name .
+
+
+
+On_overflow_phrases ::= Not_on_overflow_statement_list |
+                        On_overflow_statement_list |
+                        On_overflow_statement_list Not_on_overflow_statement_list .
+                            
+
+
+On_overflow_statement_list ::= 'OVERFLOW' Statement_list |
+                               'ON' 'OVERFLOW' Statement_list .
+
+
+On_size_error_phrases ::= Not_on_size_error_statement_list |
+                          On_size_error_statement_list |
+                          On_size_error_statement_list Not_on_size_error_statement_list .
+
+
+
+On_size_error_statement_list ::= 'SIZE' 'ERROR' Statement_list |
+                                 'ON' 'SIZE' 'ERROR' Statement_list .
+
+On_statement ::= 'ON' Cobword_lit Statement_list .
+
+
+
+On_status ::= 'ON' Condition |
+              'ON' 'STATUS' Condition |
+              'ON' 'IS' Condition |
+              'ON' 'STATUS' 'IS' Condition .
+
+
+
+Open_statement_extend ::= 'EXTEND' File_name |
+                           Open_statement_extend File_name .
+
+
+
+
+Open_statement_i_o ::= 'I_O' File_name |
+                        Open_statement_i_o File_name .
+
+
+
+Open_statement_input_file_name ::= File_name |
+                                   File_name Alt_reversed_with_no_rewind .
+
+
+
+Open_statement_input ::= 'INPUT' Open_statement_input_file_name |
+                          Open_statement_input Open_statement_input_file_name .
+
+
+Open_statement_output_file_name ::= File_name |
+                                    File_name With_no_rewind .
+
+
+Open_statement_output ::= 'OUTPUT' Open_statement_output_file_name |
+                          Open_statement_output Open_statement_output_file_name .
+
+Open_statement_phrase ::= Open_statement_extend |
+                          Open_statement_i_o |
+                          Open_statement_input |
+                          Open_statement_output .
+
+
+Open_statement ::= 'OPEN' Open_statement_phrase |
+                    Open_statement Open_statement_phrase .
+
+
+
+Or_all_cobword_lit ::= 'OR' Cobword_lit |
+                       'OR' 'ALL' Cobword_lit .
+
+
+Organization_is ::= 'ORGANIZATION' |
+                    'ORGANIZATION' 'IS' .
+
+
+
+Output_procedure ::= 'OUTPUT' 'PROCEDURE' Procedures_thru |
+                     'OUTPUT' 'PROCEDURE' 'IS' Procedures_thru .
+
+
+
+Padding_character_clause ::= 'PADDING' Alt_qualified_data_name_literal |
+                             'PADDING' 'CHARACTER' Alt_qualified_data_name_literal |
+                             'PADDING' 'IS' Alt_qualified_data_name_literal |
+                             'PADDING' 'CHARACTER' 'IS' Alt_qualified_data_name_literal .
+
+
+Page_phrase ::= 'PAGE' |
+                Nr_lines_phrase .
+
+
+
+Paragraph_without_header ::= Dummy_statement  |
+                             Paragraph_without_header_266 |
+                             Dummy_statement ~Paragraph_without_header .
+
+Paragraph_without_header_266 ::= Sentence |
+                                 Paragraph_without_header_266 Sentence .
+
+Paragraph ::= Altered_goto |
+              Label_name '.' Paragraph_268 Paragraph_269 .
+
+Paragraph_268 ::= # |
+                  Paragraph_268 Sentence .
+
+Paragraph_269 ::= # |
+                  Paragraph_269 Dummy_statement .
+
+
+
+Paragraphs ::= # |
+               Paragraph_without_header |
+               Paragraph ~Paragraphs .
+
+
+Parameter_or_copy_book ::= Copy_statement_closed_by_period |
+                           Parameter .
+
+Parameter ::= Content_parameter |
+              Reference_parameter .
+
+
+
+Password_clause ::= 'PASSWORD' Data_name |
+                    'PASSWORD' 'IS' Data_name .
+
+
+Perform_after_phrase ::= 'AFTER' Identifier 'FROM' Cobword_lit 'BY' Cobword_lit 'UNTIL' Condition .
+
+Perform_inline ::= 'PERFORM' Perform_inline_273 Statement_list .
+
+Perform_inline_273 ::= # |
+                       Perform_inline_273 Perform_phrase .
+
+Perform_phrase ::= Perform_times_phrase |
+                   Perform_until_phrase |
+                   Perform_varying_after_phrase .
+
+
+
+Perform_procedures ::= 'PERFORM' Procedures_thru |
+                       Perform_procedures Perform_phrase .
+
+Perform_statement_non_closed ::= Perform_inline .
+
+Perform_statement_simple ::= Perform_procedures .
+
+Perform_statement ::= Perform_statement_non_closed 'END_PERFORM' |
+                      Perform_statement_simple .
+
+Perform_times_phrase ::= Cobword_int 'TIMES' .
+
+
+
+Perform_until_phrase ::= 'UNTIL' Condition |
+                         With_test 'UNTIL' Condition .
+
+
+
+Perform_varying_after_phrase ::= Perform_varying_phrase |
+                                 Perform_varying_after_phrase Perform_after_phrase .
+
+
+
+Perform_varying_phrase ::= 'VARYING' Identifier 'FROM' Cobword_lit 'BY' Cobword_lit 'UNTIL' Condition |
+                           With_test 'VARYING' Identifier 'FROM' Cobword_lit 'BY' Cobword_lit 'UNTIL' Condition .
+
+
+
+Periods ::= '.' |
+            Periods '.' .
+
+
+
+Picture_clause ::= Picture Picture_string |
+                   Picture 'IS' Picture_string .
+
+
+Picture ::= 'PIC' |
+            'PICTURE' .
+
+Position ::= 'POSITION' 'Integer' .
+
+Power_tail ::= '**' ~Basis .
+
+
+
+Power ::= ~Basis |
+          Alt_plus_minus ~Basis |
+          Power Power_tail .
+
+
+
+Procedure_division_header ::= 'PROCEDURE' 'DIVISION' Using_phrase '.' |
+                              'PROCEDURE' 'DIVISION' Using_phrase '.' Declaratives .
+
+
+Procedure_division ::= Procedure_division_header Sections .
+
+
+
+Procedure_name ::= Label_name |
+                   Label_name In_label_name .                       
+
+
+
+Procedure_names ::= Procedure_name |
+                    Procedure_names Procedure_name .
+
+
+
+Procedure_to_procedure ::= Procedure_name 'TO' Procedure_name |
+                           Procedure_name 'TO' Proceed_to Procedure_name .
+
+
+
+Procedures_thru ::= Procedure_name |
+                    Procedure_name Through_procedure_name .
+                        
+
+Proceed_to ::= 'PROCEED' 'TO' .
+
+
+
+Program_collating_sequence ::= 'SEQUENCE' Alphabet_name |
+                               'PROGRAM' 'SEQUENCE' Alphabet_name |
+                               'COLLATING' 'SEQUENCE' Alphabet_name |
+                               'PROGRAM' 'COLLATING' 'SEQUENCE' Alphabet_name |
+                               'SEQUENCE' 'IS' Alphabet_name |
+                               'PROGRAM' 'SEQUENCE' 'IS' Alphabet_name |
+                               'COLLATING' 'SEQUENCE' 'IS' Alphabet_name |
+                               'PROGRAM' 'COLLATING' 'SEQUENCE' 'IS' Alphabet_name .
+
+
+Program_id_cobol_source_program ::= 'PROGRAM_ID' Program_name Program_id_cobol_source_program_291 Program_id_cobol_source_program_292 |
+                                    'PROGRAM_ID' '.' Program_name Program_id_cobol_source_program_291 Program_id_cobol_source_program_292 .
+
+
+Program_id_cobol_source_program_291 ::= # |
+                                        Initial_program .
+
+Program_id_cobol_source_program_292 ::= # |
+                                        '.' .
+
+Program_name ::= Nonnumeric |
+                 User_defined_word .
+
+
+
+Qsam_or_sam_or_vsam_i_o_control_entries_1 ::= 'RERUN' 'ON' Alt_assignment_name_file_name Qsam_or_sam_or_vsam_i_o_control_entries_1_293 Every_phrase Qsam_or_sam_or_vsam_i_o_control_entries_1_294 File_name .
+
+Qsam_or_sam_or_vsam_i_o_control_entries_1_293 ::= # |
+                                                  'EVERY' .
+
+Qsam_or_sam_or_vsam_i_o_control_entries_1_294 ::= # |
+                                                  'OF' .
+
+
+Qsam_or_sam_or_vsam_i_o_control_entries_2 ::= 'SAME' Qsam_or_sam_or_vsam_i_o_control_entries_2_295 Qsam_or_sam_or_vsam_i_o_control_entries_2_296 Qsam_or_sam_or_vsam_i_o_control_entries_2_297 File_name File_name |
+                                               Qsam_or_sam_or_vsam_i_o_control_entries_2 File_name .
+
+Qsam_or_sam_or_vsam_i_o_control_entries_2_295 ::= # |
+                                                  'RECORD' .
+
+Qsam_or_sam_or_vsam_i_o_control_entries_2_296 ::= # |
+                                                  'AREA' .
+
+Qsam_or_sam_or_vsam_i_o_control_entries_2_297 ::= # |
+                                                  'FOR' .
+
+
+
+Qsam_or_sam_or_vsam_i_o_control_entries_3 ::= 'MULTIPLE' 'FILE' File_name_position |
+                                              'MULTIPLE' 'FILE' 'CONTAINS' File_name_position |
+                                              'MULTIPLE' 'FILE' 'TAPE' File_name_position |
+                                              'MULTIPLE' 'FILE' 'TAPE' 'CONTAINS' File_name_position |
+                                               Qsam_or_sam_or_vsam_i_o_control_entries_3 File_name_position .
+
+
+
+Qsam_or_sam_or_vsam_i_o_control_entries_4 ::= 
+           'APPLY' 'WRITE_ONLY' File_name |
+           'APPLY' 'WRITE_ONLY' 'ON' File_name |
+            Qsam_or_sam_or_vsam_i_o_control_entries_4 File_name .
+
+
+Qsam_or_sam_or_vsam_i_o_control_entries ::= Qsam_or_sam_or_vsam_i_o_control_entries_1 |
+                                            Qsam_or_sam_or_vsam_i_o_control_entries_2 |
+                                            Qsam_or_sam_or_vsam_i_o_control_entries_3 |
+                                            Qsam_or_sam_or_vsam_i_o_control_entries_4 .
+
+
+
+
+Qualified_data_name_1 ::= Data_name |
+                          Qualified_data_name_1 In_data_or_file_name .
+
+Qualified_data_name ::= Qualified_data_name_1 |
+                        ~Special_register .
+
+
+Read_error_phrases ::= At_end_phrases |
+                       Invalid_key_phrases |
+                       Invalid_key_phrases At_end_phrases .
+                           
+
+Read_statement_non_closed ::= Read_statement_simple Read_error_phrases .
+
+
+
+Read_statement_simple ::= 'READ' File_name |
+                          'READ' File_name 'NEXT' |
+                          'READ' File_name 'RECORD' |
+                          'READ' File_name 'NEXT' |
+                          'READ' File_name Into_identifier |
+                          'READ' File_name 'NEXT' Into_identifier |
+                          'READ' File_name 'RECORD' Into_identifier |
+                          'READ' File_name 'NEXT' 'RECORD' Into_identifier |
+                          'READ' File_name Key_is_qualified_data_name |
+                          'READ' File_name 'NEXT' Key_is_qualified_data_name |
+                          'READ' File_name 'RECORD' Key_is_qualified_data_name |
+                          'READ' File_name 'NEXT' Key_is_qualified_data_name |
+                          'READ' File_name Into_identifier Key_is_qualified_data_name |
+                          'READ' File_name 'NEXT' Into_identifier Key_is_qualified_data_name |
+                          'READ' File_name 'RECORD' Into_identifier Key_is_qualified_data_name |
+                          'READ' File_name 'NEXT' 'RECORD' Into_identifier Key_is_qualified_data_name .
+
+
+Read_statement ::= Read_statement_non_closed 'END_READ' |
+                   Read_statement_simple 'END_READ' |
+                   Read_statement_simple .
+
+
+
+Record_clause_tail_1 ::= 'Integer' |
+                         'Integer' 'CHARACTERS' |
+                         'CONTAINS' 'Integer' |
+                         'CONTAINS' 'Integer' 'CHARACTERS' .
+
+
+
+Record_clause_tail_2 ::= 'Integer' 'TO' 'Integer' |
+                         'Integer' 'TO' 'Integer' 'CHARACTERS' |
+                         'CONTAINS' 'Integer' 'TO' 'Integer' |
+                         'CONTAINS' 'Integer' 'TO' 'Integer' 'CHARACTERS' .
+
+
+Record_clause_tail_3 ::= Record_varying_phrase Record_clause_tail_3_314 .
+
+Record_clause_tail_3_314 ::= # |
+                             Depending_on .
+
+Record_clause_tail ::= Record_clause_tail_1 |
+                       Record_clause_tail_2 |
+                       Record_clause_tail_3 .
+
+Record_clause ::= 'RECORD' Record_clause_tail .
+
+
+
+Record_delimiter_clause ::= 'RECORD' 'DELIMITER' Record_delimiter_name |
+                            'RECORD' 'DELIMITER' 'IS' Record_delimiter_name .
+
+
+Record_delimiter_name ::= 'STANDARD_1' |
+                          Assignment_name .
+
+
+
+Record_key_clause ::= 'RECORD' Qualified_data_name |
+                      'RECORD' 'KEY' Qualified_data_name |
+                      'RECORD' 'IS' Qualified_data_name |
+                      'RECORD' 'KEY' 'IS' Qualified_data_name .
+
+Record_name ::= Qualified_data_name .
+
+Record_sort ::= 'RECORD' |
+                'SORT_MERGE' |
+                'SORT' .
+
+
+
+Record_varying_phrase ::= 'VARYING' Record_varying_phrase_321 Record_varying_phrase_322 Record_varying_phrase_323 |
+                          'IS' 'VARYING' Record_varying_phrase_321 Record_varying_phrase_322 Record_varying_phrase_323 |
+                          'VARYING' 'IN' Record_varying_phrase_321 Record_varying_phrase_322 Record_varying_phrase_323 |
+                          'IS' 'VARYING' 'IN' Record_varying_phrase_321 Record_varying_phrase_322 Record_varying_phrase_323 |
+                          'VARYING' 'SIZE' Record_varying_phrase_321 Record_varying_phrase_322 Record_varying_phrase_323 |
+                          'IS' 'VARYING' 'SIZE' Record_varying_phrase_321 Record_varying_phrase_322 Record_varying_phrase_323 |
+                          'VARYING' 'IN' 'SIZE' Record_varying_phrase_321 Record_varying_phrase_322 Record_varying_phrase_323 |
+                          'IS' 'VARYING' 'IN' 'SIZE' Record_varying_phrase_321 Record_varying_phrase_322 Record_varying_phrase_323 .
+
+Record_varying_phrase_321 ::= # |
+                              From_integer .
+
+Record_varying_phrase_322 ::= # |
+                              To_integer .
+
+Record_varying_phrase_323 ::= # |
+                              'CHARACTERS' .
+
+
+
+Recording_mode_clause ::= 'RECORDING' Cobword |
+                          'RECORDING' 'MODE' Cobword |
+                          'RECORDING' 'IS' Cobword |
+                          'RECORDING' 'MODE' 'IS' Cobword .
+
+
+
+Records_are ::= Records |
+                Records Are.
+
+Records ::= 'RECORD' |
+            'RECORDS' .
+
+Redefines_clause ::= 'REDEFINES' Data_name .
+
+Reference_modification ::= '(' Leftmost_character_position ':' Reference_modification_327 ')' .
+
+Reference_modification_327 ::= # |
+                               Length .
+
+Reference_parameter ::= Reference_parameter_328 Identifier .
+
+Reference_parameter_328 ::= # |
+                            By_reference .
+
+Rel_op ::= Equal_to |
+           Greater_than_or_equal_to |
+           Greater_than .
+
+Relation_condition ::= Expression Relational_operator Expression .
+
+Relational_operator_rest ::= '<' |
+                             '>' |
+                             'GREATER' Than |
+                             'LESS' Than |
+                             Equal_to .
+
+
+
+Relational_operator_tail ::= '<' '=' |
+                             '>' '=' |
+                             'GREATER' Than 'OR' 'EQUAL' |
+                             'LESS' Than 'OR' 'EQUAL' |
+                             'GREATER' Than 'OR' 'EQUAL' 'TO' |
+                             'LESS' Than 'OR' 'EQUAL' 'TO' |
+                             'NOT' Relational_operator_rest |
+                             'NOT' 'IS' Relational_operator_rest |
+                             Relational_operator_rest .
+
+
+
+Relational_operator ::= Relational_operator_tail |
+                        'IS' Relational_operator_tail .
+
+
+
+Relative_key_clause ::= 'RELATIVE' Qualified_data_name |
+                        'RELATIVE' 'KEY' Qualified_data_name |
+                        'RELATIVE' 'IS' Qualified_data_name |
+                        'RELATIVE' 'KEY' 'IS' Qualified_data_name .
+
+
+
+Release_statement ::= 'RELEASE' Record_name |
+                      'RELEASE' Record_name From_identifier .
+
+
+
+Remarks ::= 'REMARKS' |
+            'REMARKS' '.' |
+             Remarks Comment_entry .
+
+
+
+Renames_clause ::= 'RENAMES' Qualified_data_name |
+                   'RENAMES' Qualified_data_name Through_qualified_data_name .
+
+Rerun_on ::= 'RERUN' 'ON' Assignment_name .
+
+
+
+Reserve_clause ::= 'RESERVE' 'Integer' |
+                   'RESERVE' 'Integer' Areas .
+
+Return_statement_non_closed ::= Return_statement_simple At_end_phrases .
+
+
+
+Return_statement_simple ::= 'RETURN' File_name |
+                            'RETURN' File_name 'RECORD' |
+                            'RETURN' File_name Into_identifier |
+                            'RETURN' File_name 'RECORD' Into_identifier .
+
+Return_statement ::= Return_statement_non_closed 'END_RETURN' .
+
+Rewrite_statement_non_closed ::= Rewrite_statement_simple Invalid_key_phrases .
+
+
+Rewrite_statement_simple ::= 'REWRITE' Record_name |
+                             'REWRITE' Record_name From_identifier .
+
+Rewrite_statement ::= Rewrite_statement_non_closed 'END_REWRITE' |
+                      Rewrite_statement_simple 'END_REWRITE' |
+                      Rewrite_statement_simple .
+
+
+
+Same_area ::= 'SAME' Record_sort File_name File_name |
+              'SAME' Record_sort 'AREA' File_name File_name |
+              'SAME' Record_sort 'FOR' File_name File_name |
+              'SAME' Record_sort 'AREA' 'FOR' File_name File_name |
+               Same_area File_name .
+
+
+Search_statement_condition_tail ::= 'AND' Search_statement_condition .
+
+Search_statement_condition ::= Condition_name_reference |
+                               Search_statement_equal_expression .
+
+Search_statement_equal_expression ::= Identifier Equal_to Expression .
+
+
+Search_statement_non_closed ::= 'SEARCH' 'ALL' Identifier Search_statement_non_closed_346 'WHEN' Search_statement_condition Search_statement_non_closed_347 Statement_list |
+                                'SEARCH' Identifier Search_statement_non_closed_348 Search_statement_non_closed_349 When_in_search_clauses_plus .
+
+Search_statement_non_closed_346 ::= # |
+                                    At_end_statement_list .
+
+Search_statement_non_closed_347 ::= # |
+                                    Search_statement_non_closed_347 Search_statement_condition_tail .
+
+Search_statement_non_closed_348 ::= # |
+                                    Varying_identifier .
+
+Search_statement_non_closed_349 ::= # |
+                                    At_end_statement_list .
+
+Search_statement ::= Search_statement_non_closed 'END_SEARCH' .
+
+
+Section_header ::= Label_name 'SECTION' |
+                   Label_name 'SECTION'  Priority_number .
+
+Section_without_header ::= Paragraphs .
+
+Section ::= Section_header '.' Paragraphs .
+
+
+Sections ::= Section_without_header |
+             Sections Section .
+
+
+
+Security ::= 'SECURITY' |
+             'SECURITY' '.' |
+              Security Comment_entry .
+
+
+
+Segment_limit ::= 'SEGMENT_LIMIT' Priority_number |
+                  'SEGMENT_LIMIT' 'IS' Priority_number .
+
+
+Select_clause ::= 'SELECT' File_name |
+                  'SELECT' 'OPTIONAL' File_name .
+
+Sentence ::= Statement_list '.' .
+
+
+Separate_character ::= 'SEPARATE' |
+                       'SEPARATE' 'CHARACTER' .
+
+Set_oper ::= 'TO' |
+             Alt_up_down_by .
+
+Set_src ::= 'OFF' |
+            'ON' |
+            'TRUE' |
+            Identifier |
+            Literal .
+
+
+
+Set_statement_phrase ::=  Identifier Set_oper Set_src |
+                          Identifier ~Set_statement_phrase .
+
+
+
+Set_statement ::= 'SET' Set_statement_phrase |
+                   Set_statement Set_statement_phrase .
+
+
+
+Sign_clause ::= Sign_clause_359 Alt_leading_trailing Sign_clause_360 .
+
+Sign_clause_359 ::= # |
+                    Sign_is .
+
+Sign_clause_360 ::= # |
+                    Separate_character .
+
+Sign_condition ::= Arithmetic_expression Is_or_is_not Sign_type .
+
+
+
+Sign_is ::= 'SIGN' |
+            'SIGN'  'IS' .
+
+Sign_type ::= 'NEGATIVE' |
+              'POSITIVE' |
+              'ZERO' |
+              'ZEROES' |
+              'ZEROS' .
+
+Simple_condition_1 ::= '(' Condition ')' .
+
+
+Skip_statement_dot ::= Skip_statement |
+                       Skip_statement  '.' .
+
+Skip_statement ::= 'EJECT' |
+                   'SKIP' |
+                   'SKIP1' |
+                   'SKIP2' |
+                   'SKIP3' .
+
+
+Sort_merge_i_o_control_entries ::= Same_area |
+                                   Rerun_on Same_area |
+                                   Sort_merge_i_o_control_entries Same_area .
+
+
+Sort_statement_in ::= Input_procedure |
+                      Using_file_names .
+
+Sort_statement_out ::= Giving_file_names |
+                       Output_procedure .
+
+Sort_statement ::= 'SORT' File_name Sort_statement_365 Sort_statement_366 Sort_statement_367 Sort_statement_in Sort_statement_out .
+
+Sort_statement_365 ::= On_key_is_phrase |
+                       Sort_statement_365 On_key_is_phrase .
+
+Sort_statement_366 ::= # |
+                       With_duplicates_in_order .
+
+Sort_statement_367 ::= # |
+                       Collating_sequence .
+
+
+Source_computer_name ::= Computer_name '.' |
+                         Computer_name With_debugging_mode '.' .
+
+
+Source_computer_paragraph ::= 'SOURCE_COMPUTER' '.' |
+                              'SOURCE_COMPUTER' '.' Source_computer_name .
+
+
+Special_names_paragraph_clause ::= Alphabet_clause |
+                                   Class_clause |
+                                   Currency_sign_clause |
+                                   Decimal_point_clause |
+                                   Symbolic_characters_clause .
+
+
+Special_names_paragraph_clauses ::= # |
+                                    Special_names_paragraph_clauses Special_names_paragraph_clause .
+
+Special_names_paragraph_phrase_tail ::= Is_mnemonic_name |
+                                        Special_names_paragraph_status_phrase .
+
+Special_names_paragraph_phrase ::= Environment_name Special_names_paragraph_phrase_tail .
+
+Special_names_paragraph_status_phrase_1 ::= 'ON' Special_names_paragraph_status_phrase_1_371 Special_names_paragraph_status_phrase_1_372 Condition Special_names_paragraph_status_phrase_1_373 .
+
+Special_names_paragraph_status_phrase_1_371 ::= # |
+                                                'STATUS' .
+
+Special_names_paragraph_status_phrase_1_372 ::= # |
+                                                'IS' .
+
+Special_names_paragraph_status_phrase_1_373 ::= # |
+                                                Off_status .
+
+Special_names_paragraph_status_phrase_2 ::= 'OFF' Special_names_paragraph_status_phrase_2_374 Special_names_paragraph_status_phrase_2_375 Condition Special_names_paragraph_status_phrase_2_376 .
+
+Special_names_paragraph_status_phrase_2_374 ::= # |
+                                                'STATUS' .
+
+Special_names_paragraph_status_phrase_2_375 ::= # |
+                                                'IS' .
+
+Special_names_paragraph_status_phrase_2_376 ::= # |
+                                                On_status .
+
+Special_names_paragraph_status_phrase ::= Special_names_paragraph_status_phrase_1 |
+                                          Special_names_paragraph_status_phrase_2 .
+
+Special_names_paragraph ::= 'SPECIAL_NAMES' '.' Special_names_paragraph_377 Special_names_paragraph_clauses Special_names_paragraph_378 .
+
+Special_names_paragraph_377 ::= # |
+                                Special_names_paragraph_377 Special_names_paragraph_phrase .
+
+Special_names_paragraph_378 ::= # |
+                                '.' .
+Special_register_1 ::= 'ADDRESS' 'OF' Data_name .
+
+Special_register_2 ::= 'LENGTH' 'OF' Identifier .
+
+Special_register ::= 'DEBUG_ITEM' |
+                     'RETURN_CODE' |
+                     'SHIFT_IN' |
+                     'SHIFT_OUT' |
+                     'SORT_CONTROL' |
+                     'SORT_CORE_SIZE' |
+                     'SORT_FILE_SIZE' |
+                     'SORT_MESSAGE' |
+                     'SORT_MODE_SIZE' |
+                     'SORT_RETURN' |
+                     'TALLY' |
+                     'WHEN_COMPILED' |
+                     Special_register_1 |
+                     Special_register_2 .
+
+Sql_statement ::= 'EXEC' 'SQL' Sql_statement_379 'END_EXEC' .
+
+Sql_statement_379 ::= # |
+                      Sql_statement_379 Emb_token .
+
+Start_statement_non_closed ::= Start_statement_simple Invalid_key_phrases .
+
+
+Start_statement_simple ::= 'START' File_name |
+                           'START' File_name Key_is_rel_op_qualified_data_name .
+
+Start_statement ::= Start_statement_non_closed 'END_START' |
+                    Start_statement_simple 'END_START' |
+                    Start_statement_simple .
+
+Statement_inj ::= Statement .
+
+
+Statement_list ::= Statement_list_381 |
+                   Statement_list_382 ~Statement_non_closed_inj .
+
+Statement_list_381 ::= # |
+                       Statement_list_381 ~Statement_inj .
+
+Statement_list_382 ::= # |
+                       Statement_list_382 ~Statement_inj .
+
+
+Statement_non_closed_inj ::= Statement_non_closed .
+
+Statement_non_closed ::= Add_statement_non_closed |
+                         Call_statement_non_closed |
+                         Compute_statement_non_closed |
+                         Copy_statement |
+                         Delete_statement_non_closed |
+                         Divide_statement_non_closed |
+                         Evaluate_statement_non_closed |
+                         If_statement_non_closed |
+                         Multiply_statement_non_closed |
+                         On_statement |
+                         Perform_statement_non_closed |
+                         Read_statement_non_closed |
+                         Return_statement_non_closed |
+                         Rewrite_statement_non_closed |
+                         Search_statement_non_closed |
+                         Start_statement_non_closed |
+                         String_statement_non_closed |
+                         Subtract_statement_non_closed |
+                         Unstring_statement_non_closed |
+                         Write_statement_non_closed .
+
+Statement ::= Accept_statement |
+              Add_statement |
+              Alter_statement |
+              Call_statement |
+              Cancel_statement |
+              Cics_statement |
+              Close_statement |
+              Compute_statement |
+              Continue_statement |
+              Delete_statement |
+              Display_statement |
+              Divide_statement |
+              Entry_statement |
+              Evaluate_statement |
+              Exit_program_statement |
+              Exit_statement |
+              Go_to_statement |
+              Goback_statement |
+              If_statement |
+              Initialize_statement |
+              Inspect_statement |
+              Merge_statement |
+              Move_statement |
+              Multiply_statement |
+              Next_sentence_statement |
+              Open_statement |
+              Perform_statement |
+              Read_statement |
+              Release_statement |
+              Return_statement |
+              Rewrite_statement |
+              Search_statement |
+              Set_statement |
+              Skip_statement |
+              Sort_statement |
+              Sql_statement |
+              Start_statement |
+              Stop_statement |
+              String_statement |
+              Subtract_statement |
+              Unstring_statement |
+              Write_statement .
+
+Stop_statement ::= 'STOP' Alt_run_literal .
+
+String_statement_non_closed ::= String_statement_simple On_overflow_phrases .
+
+
+String_statement_simple ::= 'STRING' String_statement_simple_383 'INTO' Identifier |
+                            'STRING' String_statement_simple_383 'INTO' With_pointer_identifier .
+
+String_statement_simple_383 ::= Delimited_by_phrase |
+                                String_statement_simple_383 Delimited_by_phrase .
+
+String_statement ::= String_statement_non_closed 'END_STRING' |
+                     String_statement_simple 'END_STRING' |
+                     String_statement_simple .
+
+Subscript_expression ::= Literal |
+                         Qualified_data_name .
+
+Subscript_parentheses ::= '(' Subscript ')' .
+
+
+Subscript ::= Subscript_expression |
+              Subscript Subscript_expression .
+
+
+Subtract_statement_non_closed ::= Subtract_statement_simple On_size_error_phrases .
+
+
+Subtract_statement_simple ::= 'SUBTRACT' Subtract_statement_simple_386 'FROM' Cobword_lit 'GIVING' Subtract_statement_simple_387 |
+                              'SUBTRACT' Subtract_statement_simple_386 'FROM' Subtract_statement_simple_387 |
+                              'SUBTRACT' Corresponding Identifier 'FROM' Identifier |
+                              'SUBTRACT' Corresponding Identifier 'FROM'  'ROUNDED' .
+
+Subtract_statement_simple_386 ::= Cobword_lit |
+                                  Subtract_statement_simple_386 Cobword_lit .
+
+Subtract_statement_simple_387 ::= Cobword_rounded |
+                                  Subtract_statement_simple_387 Cobword_rounded .
+
+
+
+Subtract_statement ::= Subtract_statement_non_closed 'END_SUBTRACT' |
+                       Subtract_statement_simple 'END_SUBTRACT' |
+                       Subtract_statement_simple .
+
+
+Symbolic_character_mapping ::= Symbolic_character_mapping_391 Symbolic_character_mapping_392 'Integer' |
+                               Symbolic_character_mapping 'Integer' .
+
+Symbolic_character_mapping_391 ::= Symbolic_character |
+                                   Symbolic_character_mapping_391 Symbolic_character .
+
+Symbolic_character_mapping_392 ::= # |
+                                   Are .
+
+
+Symbolic_character ::= Alphabetic_user_defined_word .
+
+
+Symbolic_characters_clause ::= 'SYMBOLIC' Symbolic_characters_clause_395 |
+                               'SYMBOLIC' Symbolic_characters_clause_395 In_alphabet_name |
+                               'SYMBOLIC' 'CHARACTERS' Symbolic_characters_clause_395 |
+                               'SYMBOLIC' 'CHARACTERS' Symbolic_characters_clause_395 In_alphabet_name .
+
+
+Symbolic_characters_clause_395 ::= Symbolic_character_mapping |
+                                   Symbolic_characters_clause_395 Symbolic_character_mapping .
+
+
+
+Synchronized_clause ::= Synchronized |
+                        Synchronized Alt_left_right .
+
+Synchronized ::= 'SYNC' |
+                 'SYNCHRONIZED' .
+
+System_name ::= Cobword .
+
+
+Tallying_argument ::= Identifier 'FOR' Tallying_for_argument |
+                      Tallying_argument Tallying_for_argument .
+
+
+Tallying_for_argument_1 ::= 'CHARACTERS' |
+                             Tallying_for_argument_1 Before_after_phrase .
+
+
+Tallying_for_argument_2 ::= Alt_all_leading Tallying_for_cobword_lit |
+                            Tallying_for_argument_2 Tallying_for_cobword_lit .
+
+Tallying_for_argument ::= Tallying_for_argument_1 |
+                          Tallying_for_argument_2 .
+
+
+Tallying_for_cobword_lit ::= Cobword_lit |
+                             Tallying_for_cobword_lit Before_after_phrase .
+
+
+Tallying_in_identifier ::= 'TALLYING' Identifier |
+                           'TALLYING' 'IN' Identifier .
+
+Text_name ::= User_defined_word .
+
+
+Than ::= 'THAN' |
+          # |
+          'THEN' .
+
+Through_expression ::= Through Expression .
+
+Through_literal ::= Through Literal .
+
+Through_procedure_name ::= Through Procedure_name .
+
+Through_qualified_data_name ::= Through Qualified_data_name .
+
+Through ::= 'THROUGH' |
+            'THRU' .
+
+Times_div_tail ::= Alt_times_div Power .
+
+
+Times_div ::= Power |
+              Times_div Times_div_tail .
+
+To_identifier ::= 'TO' Identifier .
+
+To_integer ::= 'TO' 'Integer' .
+
+Unsigned_numeric ::= 'Integer' |
+                     'Unsigned_decimal' .
+
+
+Unstring_statement_dst ::= Identifier |
+                           Identifier Count_in_identifier |
+                           Identifier Delimiter_in_identifier |
+                           Identifier Delimiter_in_identifier Count_in_identifier .
+
+
+Unstring_statement_non_closed ::= Unstring_statement_simple On_overflow_phrases .
+
+
+Unstring_statement_simple ::= 'UNSTRING' Identifier Unstring_statement_simple_407 'INTO' Unstring_statement_simple_408 |
+                              'UNSTRING' Identifier Unstring_statement_simple_407 'INTO' Unstring_statement_simple_408 With_pointer_identifier |
+                              'UNSTRING' Identifier Unstring_statement_simple_407 'INTO' Unstring_statement_simple_408 Tallying_in_identifier |
+                              'UNSTRING' Identifier Unstring_statement_simple_407 'INTO' Unstring_statement_simple_408 With_pointer_identifier Tallying_in_identifier .
+
+Unstring_statement_simple_407 ::= # |
+                                  Delimited_by_all_phrase .
+
+Unstring_statement_simple_408 ::= Unstring_statement_dst |
+                                  Unstring_statement_simple_408 Unstring_statement_dst .
+
+
+Unstring_statement ::= Unstring_statement_non_closed 'END_UNSTRING' |
+                       Unstring_statement_simple 'END_UNSTRING' |
+                       Unstring_statement_simple .
+
+Upon_environment_name ::= 'UPON' Cobword .
+
+
+Usage_clause ::= Usage |
+                 Usage_is Usage .
+
+
+Usage_is ::= 'USAGE' |
+             'USAGE' 'IS' .
+
+Usage ::= 'BINARY' |
+          'COMP_1' |
+          'COMP_2' |
+          'COMP_3' |
+          'COMP_4' |
+          'COMP' |
+          'COMPUTATIONAL_1' |
+          'COMPUTATIONAL_2' |
+          'COMPUTATIONAL_3' |
+          'COMPUTATIONAL_4' |
+          'COMPUTATIONAL' |
+          'DISPLAY_1' |
+          'DISPLAY' |
+          'INDEX' |
+          'PACKED_DECIMAL' |
+          'POINTER' .
+
+Use_statement_1 ::= 'USE' Use_statement_1_413 'AFTER' Use_statement_1_414 Alt_exception_error 'PROCEDURE' Use_statement_1_415 Alt_file_names_i_o .
+
+Use_statement_1_413 ::= # |
+                        'GLOBAL' .
+
+Use_statement_1_414 ::= # |
+                        'STANDARD' .
+
+Use_statement_1_415 ::= # |
+                        'ON' .
+
+Use_statement_2 ::= 'USE' Use_statement_2_416 'AFTER' Use_statement_2_417 Use_statement_2_418 Use_statement_2_419 'LABEL' 'PROCEDURE' Use_statement_2_420 Alt_file_names_i_o .
+
+Use_statement_2_416 ::= # |
+                        'GLOBAL' .
+
+Use_statement_2_417 ::= # |
+                        'STANDARD' .
+
+Use_statement_2_418 ::= # |
+                        Alt_beginning_ending .
+
+Use_statement_2_419 ::= # |
+                        Alt_file_reel_unit .
+
+Use_statement_2_420 ::= # |
+                        'ON' .
+
+Use_statement_3 ::= 'USE' Use_statement_3_421 'DEGUGGING' Use_statement_3_422 Alt_procedures_all_procedures .
+
+Use_statement_3_421 ::= # |
+                        'FOR' .
+
+Use_statement_3_422 ::= # |
+                        'ON' .
+
+Use_statement ::= Use_statement_1 |
+                  Use_statement_2 |
+                  Use_statement_3 .
+
+User_defined_word ::= Cobword .
+
+
+Using_data_names ::= 'USING' |
+                      Using_data_names Data_name_or_copy_book .
+
+
+Using_file_names ::= 'USING' File_name |
+                      Using_file_names File_name .
+
+
+Using_parameters ::= 'USING' Parameter_or_copy_book |
+                      Using_parameters Parameter_or_copy_book .
+
+
+
+Using_phrase ::= Using_phrase_427 Using_phrase_428 |
+                 Copy_statement_closed_by_period Using_phrase_427 Using_phrase_428 .
+
+Using_phrase_426 ::= # |
+                     Copy_statement_closed_by_period .
+
+Using_phrase_427 ::= # |
+                     Using_data_names .
+
+Using_phrase_428 ::= # |
+                     Copy_statement .
+
+Value_of_clause_tail ::= System_name Value_of_clause_tail_429 Alt_qualified_data_name_literal .
+
+Value_of_clause_tail_429 ::= # |
+                             'IS' .
+
+
+Value_of_clause ::= 'VALUE' 'OF' Value_of_clause_tail |
+                     Value_of_clause Value_of_clause_tail .
+
+
+
+Values_are ::= Values |
+               Values Are .
+
+
+Values ::= 'VALUE' |
+           'VALUES' .
+
+Varying_identifier ::= 'VARYING' Identifier .
+
+
+When_clause ::= When_phrase Non_empty_statement_list |
+                When_phrase ~When_clause .
+                    
+
+When_clauses_plus ::= When_clause |
+                      When_clause ~When_clauses_plus .
+
+When_clauses ::= Empty_when_clause |
+                 ~When_clauses_plus .
+
+When_in_search_clause ::= 'WHEN' Condition Statement_list .
+
+When_in_search_clauses_plus ::= When_in_search_clause |
+                                When_in_search_clause ~When_in_search_clauses_plus .
+
+When_other_phrase ::= 'WHEN' 'OTHER' Statement_list .
+
+When_phrase_also_phrase ::= 'ALSO' Evaluate_phrase .
+
+
+When_phrase ::= 'WHEN' Evaluate_phrase |
+                 When_phrase When_phrase_also_phrase .
+
+
+
+With_debugging_mode ::= 'DEBUGGING' 'MODE' |
+                        'WITH' 'DEBUGGING' 'MODE' .
+
+
+With_duplicates_in_order ::= With_duplicates_in_order_435 'DUPLICATES' With_duplicates_in_order_436 With_duplicates_in_order_437 .
+
+With_duplicates_in_order_435 ::= # |
+                                 'WITH' .
+
+With_duplicates_in_order_436 ::= # |
+                                 'IN' .
+
+With_duplicates_in_order_437 ::= # |
+                                 'ORDER' .
+
+
+With_duplicates ::= 'DUPLICATES' |
+                    'WITH' 'DUPLICATES' .
+
+
+With_no_advancing ::= 'NO' 'ADVANCING' |
+                      'WITH' 'NO' 'ADVANCING' .
+
+
+With_no_rewind ::= 'NO' 'REWIND' |
+                   'WITH' 'NO' 'REWIND' .
+
+
+With_pointer_identifier ::= 'POINTER' Identifier |
+                            'WITH' 'POINTER' Identifier .
+
+
+
+With_test ::= 'TEST' Alt_before_after |
+              'WITH' 'TEST' Alt_before_after .
+
+
+Working_storage_section ::= 'WORKING_STORAGE' 'SECTION' '.' |
+                             Working_storage_section Data_description_entry .
+
+
+Write_error_phrases ::= At_end_of_page_statement_list |
+                        At_end_of_page_statement_list Not_at_end_of_page_statement_list |
+                        At_end_of_page_statement_list Invalid_key_phrases |
+                        At_end_of_page_statement_list Not_at_end_of_page_statement_list Invalid_key_phrases |
+                        Invalid_key_phrases |
+                        Not_at_end_of_page_statement_list |
+                        Not_at_end_of_page_statement_list Invalid_key_phrases .
+
+                            
+Write_statement_non_closed ::= Write_statement_simple Write_error_phrases .
+
+
+Write_statement_simple ::= 'WRITE' Record_name  |
+                           'WRITE' Record_name Advancing_phrase |
+                           'WRITE' Record_name From_identifier  |
+                           'WRITE' Record_name From_identifier Advancing_phrase .
+
+
+Write_statement ::= Write_statement_non_closed 'END_WRITE' |
+                    Write_statement_simple 'END_WRITE' |
+                    Write_statement_simple .
+
+Zeroes ::= 'ZERO' |
+           'ZEROES' |
+           'ZEROS' .
+
+Comment_entry ::= 'Comment_entry' .
+
+Continuation ::= 'Continuation' .
+
+Dbcs ::= 'Dbcs' .
+
+Digits_cobword ::= 'Digits_cobword' .
+
+Integer ::= 'Integer' .
+
+
+Level_number ::= 'Integer' .
+
+Lex_cobword ::= 'Lex_cobword' .
+
+Nonnumeric_dq ::= 'Nonnumeric_dq' .
+
+Nonnumeric_dq_non_closed ::= 'Nonnumeric_dq_non_closed' .
+
+Nonnumeric_sq ::= 'Nonnumeric_sq' .
+
+Nonnumeric_sq_non_closed ::= 'Nonnumeric_sq_non_closed' .
+
+Picture_string ::=  'Integer' '(' 'Integer' ')' |
+                    'Lex_cobword' '(' 'Integer' ')' |
+                    'Lex_cobword' .
+
+Priority_number ::= 'Integer' .
+
+Quoted_pseudo_text ::= 'Quoted_pseudo_text' .
+
+Unsigned_decimal ::= 'Unsigned_decimal' .
+
+
+
+(
+(* Main Script *)
+
+write["\n" gtb_version " processing '" 
+gtb_main_file_name "' on " date_time "\n\n"]
+
+this_grammar := grammar[Cobol_source_programs tilde_enabled] 
+
+this_nfa := nfa[this_grammar slr 1 terminal_lookahead_sets 
+full_lookahead_sets nullable_reductions]
+
+this_dfa := dfa[this_nfa]
+
+rnglr_parse[this_dfa open["cob_str.tok" read_text]]
+
+ri_recognise[this_grammar open["cob_str.tok" read_text]]
+
+write["\n" CPU_time " CPU seconds elapsed\n\n"]
+)
+

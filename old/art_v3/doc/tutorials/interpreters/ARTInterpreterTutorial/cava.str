@@ -1,0 +1,12 @@
+ref x = 6;
+println("x = ", x);
+
+ref y = 3.0 + 4;
+ x = y;
+println("x = ", x, " y = ", y);
+println();
+
+for (ref z = 1; z < 8; z = z + 1)
+ println(z);
+println(14); println();
+

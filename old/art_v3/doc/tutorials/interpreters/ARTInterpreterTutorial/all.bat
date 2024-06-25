@@ -1,0 +1,19 @@
+@echo off
+echo ** miniSyntax
+call tst miniSyntax
+echo ** miniSyntaxRDT
+call tst miniSyntaxRDT
+echo ** miniCalc
+call tst miniCalc
+echo ** miniAssign
+call tst miniAssign
+echo ** miniIf
+call tst miniIf
+echo ** miniWhile
+call tst miniWhile
+echo ** miniCall
+call tst miniCall
+echo ** miniMusic
+call tst miniMusic
+echo ** cava
+call tst cava

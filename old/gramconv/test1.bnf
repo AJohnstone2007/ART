@@ -1,0 +1,17 @@
+(* all have direct left recursion however not reported for C or H *)
+
+A ::= 'b' | A 'c' .
+
+S ::= S 'a' S 'a' | 'b' .
+
+B ::= 'b' | B 'c' .
+
+C ::= C 'c' | 'd' | 'c' .
+
+E ::= E .
+
+D ::= D 'a' | D 'a' .
+
+H ::= 'a' | 'b' | 'c' | 'f' | H | 'c' .
+
+K ::= 'a' | 'b' | 'c' | 'f' | K  .

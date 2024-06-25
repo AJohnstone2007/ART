@@ -1,0 +1,154 @@
+MAKE Version 3.6  Copyright (c) 1992 Borland International
+
+Available memory 1255936 bytes
+
+        bcc -I.\rdp_supp\ -A -N -mh -c rdp.c
+Borland C++  Version 3.1 Copyright (c) 1992 Borland International
+rdp.c:
+
+        Available memory 793824
+        bcc -I.\rdp_supp\ -A -N -mh -c rdp_aux.c
+Borland C++  Version 3.1 Copyright (c) 1992 Borland International
+rdp_aux.c:
+
+        Available memory 750620
+        bcc -I.\rdp_supp\ -A -N -mh -c .\rdp_supp\crash.c
+Borland C++  Version 3.1 Copyright (c) 1992 Borland International
+.\rdp_supp\crash.c:
+
+        Available memory 858248
+        bcc -I.\rdp_supp\ -A -N -mh -c .\rdp_supp\scan.c
+Borland C++  Version 3.1 Copyright (c) 1992 Borland International
+.\rdp_supp\scan.c:
+
+        Available memory 753132
+        bcc -I.\rdp_supp\ -A -N -mh -c .\rdp_supp\set.c
+Borland C++  Version 3.1 Copyright (c) 1992 Borland International
+.\rdp_supp\set.c:
+
+        Available memory 846756
+        bcc -I.\rdp_supp\ -A -N -mh -c .\rdp_supp\symbol.c
+Borland C++  Version 3.1 Copyright (c) 1992 Borland International
+.\rdp_supp\symbol.c:
+
+        Available memory 837200
+        bcc -I.\rdp_supp\ -A -N -mh -o.\rdp.exe rdp.obj rdp_aux.obj crash.obj scan.obj set.obj symbol.obj
+Borland C++  Version 3.1 Copyright (c) 1992 Borland International
+Turbo Link  Version 5.1 Copyright (c) 1992 Borland International
+
+        Available memory 918232
+        .\rdp -omini mini
+Warning: Production 'comment' is never referenced: no C code will be generated
+ Total: 0 errors, 1 warning
+        bcc -I.\rdp_supp\ -A -N -mh -c mini.c
+Borland C++  Version 3.1 Copyright (c) 1992 Borland International
+mini.c:
+
+        Available memory 782604
+        bcc -I.\rdp_supp\ -A -N -mh -o.\mini.exe mini.obj crash.obj scan.obj set.obj symbol.obj
+Borland C++  Version 3.1 Copyright (c) 1992 Borland International
+Turbo Link  Version 5.1 Copyright (c) 1992 Borland International
+
+        Available memory 881520
+        .\mini -v test
+
+Mini V1.20 (c) Adrian Johnstone 1994
+Generated on Nov 12 1994 at 14:28:48 and compiled on Nov 12 1994 at 14:29:04
+
+a is 7
+b is 14, -b is -14
+7
+ test.min: 0 errors, 0 warnings
+ test.min: 0 errors, 0 warnings
+        .\rdp -F -otoy toy
+Warning: Production 'comment' is never referenced: no C code will be generated
+Error: LL(1) violation: production 'dis_statement'
+contains null but first and follow sets both include: 'else'
+Error: LL(1) violation: production 'statement'
+contains null but first and follow sets both include: 'else'
+ Total: 2 errors, 1 warning
+Warning: Grammar is not LL(1) but -F switch set: writing output files
+        bcc -I.\rdp_supp\ -A -N -mh -c toy.c
+Borland C++  Version 3.1 Copyright (c) 1992 Borland International
+toy.c:
+
+        Available memory 713984
+        bcc -I.\rdp_supp\ -A -N -mh -o.\toy.exe toy.obj crash.obj scan.obj set.obj symbol.obj 
+Borland C++  Version 3.1 Copyright (c) 1992 Borland International
+Turbo Link  Version 5.1 Copyright (c) 1992 Borland International
+
+        Available memory 881520
+        .\toy -v test
+
+Toy V1.20 (c) Adrian Johnstone 1994
+Generated on Nov 12 1994 at 14:28:48 and compiled on Nov 12 1994 at 14:29:08
+
+
+Toy test program
+
+(If true) y is greater than x
+(If false) x is not greater than y
+(Repeat) x = 1
+(Repeat) x = 4
+(Repeat) x = 7
+(Repeat) x = 10
+(While) x = 13
+(While) x = 10
+(While) x = 7
+(While) x = 4
+(While) x = 1
+(For up) x = 1
+(For up) x = 4
+(For up) x = 7
+(For up) x = 10
+(For down) x = 12
+(For down) x = 9
+(For down) x = 6
+(For down) x = 3
+ Text mode: 0 errors, 0 warnings
+ Text mode: 0 errors, 0 warnings
+        .\rdp -opascal -F pascal
+Warning: Production 'comment' is never referenced: no C code will be generated
+Error: LL(1) violation: production 'statement'
+contains null but first and follow sets both include: 'else'
+ Total: 1 error, 1 warning
+Warning: Grammar is not LL(1) but -F switch set: writing output files
+        bcc -I.\rdp_supp\ -A -N -mh -c pascal.c
+Borland C++  Version 3.1 Copyright (c) 1992 Borland International
+pascal.c:
+
+        Available memory 688700
+        bcc -I.\rdp_supp\ -A -N -mh -o.\pascal.exe pascal.obj crash.obj scan.obj set.obj symbol.obj
+Borland C++  Version 3.1 Copyright (c) 1992 Borland International
+Turbo Link  Version 5.1 Copyright (c) 1992 Borland International
+
+        Available memory 881520
+        .\pascal -v test
+
+Pascal parser V1.20 (generated) (c) Adrian Johnstone 1994
+Generated on Nov 12 1994 at 14:28:48 and compiled on Nov 12 1994 at 14:29:17
+
+ test.pas: 0 errors, 0 warnings
+        .\rdp -ordp_gen rdp
+Warning: Production 'comment' is never referenced: no C code will be generated
+ Total: 0 errors, 1 warning
+        bcc -I.\rdp_supp\ -A -N -mh -c rdp_gen.c
+Borland C++  Version 3.1 Copyright (c) 1992 Borland International
+rdp_gen.c:
+
+        Available memory 721216
+        bcc -I.\rdp_supp\ -A -N -mh -o.\rdp_gen.exe rdp_gen.obj rdp_aux.obj crash.obj scan.obj set.obj symbol.obj
+Borland C++  Version 3.1 Copyright (c) 1992 Borland International
+Turbo Link  Version 5.1 Copyright (c) 1992 Borland International
+
+        Available memory 881504
+        copy rdp_gen.c rdp_gen1.c
+        1 file(s) copied
+        .\rdp_gen -ordp_gen rdp
+Warning: Production 'comment' is never referenced: no C code will be generated
+ Total: 0 errors, 1 warning
+        fc rdp_gen.c rdp_gen1.c
+Comparing files RDP_GEN.C and RDP_GEN1.C
+FC: no differences encountered
+
+        del rdp_gen1.c

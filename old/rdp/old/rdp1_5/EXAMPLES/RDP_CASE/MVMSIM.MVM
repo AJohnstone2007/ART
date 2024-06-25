@@ -1,0 +1,11 @@
+;Simulator example file
+ DATA 0x000A     ;start assembling data at address 000A hex
+temp: WORD 1     ;declare an integer variable called temp
+
+ CODE 0x1000     ;switch to assembling code at address 1000 hex
+start:
+ CPY temp, #123  ;load temp with decimal 123
+ PRTI temp       ;print the value of temp as an integer
+ HALT            ;terminate the simulator
+
+ END start       ;transfer address is code start

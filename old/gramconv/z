@@ -1,0 +1,64 @@
+  1136: Error 1 (csharp language specification v1.2_plain_text.bnf) Scanned '..' whilst expecting one of EOF, ')', '.', ';', '>', ']', '|', '||', '}'
+  1136: Error 2 (csharp language specification v1.2_plain_text.bnf) Scanned '|' whilst expecting one of ID, EOF, '!*', '!.', '!<', '!>', '!S', '!W', '!^', '!b', '!c', 
+'!g', '!h', '!i', '!p', '!s', '!v', '!y', '!|', '$', 'P'
+  1136:   ...  |
+  1136: ---1---2
+  1139: Error 1 (csharp language specification v1.2_plain_text.bnf) Scanned '..' whilst expecting one of EOF, ')', '.', ';', '>', ']', '|', '||', '}'
+  1139: Error 2 (csharp language specification v1.2_plain_text.bnf) Scanned '|' whilst expecting one of ID, EOF, '!*', '!.', '!<', '!>', '!S', '!W', '!^', '!b', '!c', 
+'!g', '!h', '!i', '!p', '!s', '!v', '!y', '!|', '$', 'P'
+  1139:   ...  |
+  1139: ---1---2
+  1142: Error 1 (csharp language specification v1.2_plain_text.bnf) Scanned '..' whilst expecting one of EOF, ')', '.', ';', '>', ']', '|', '||', '}'
+  1142: Error 2 (csharp language specification v1.2_plain_text.bnf) Scanned '|' whilst expecting one of ID, EOF, '!*', '!.', '!<', '!>', '!S', '!W', '!^', '!b', '!c', 
+'!g', '!h', '!i', '!p', '!s', '!v', '!y', '!|', '$', 'P'
+  1142:   ...  |
+  1142: ---1---2
+  1145: Error 1 (csharp language specification v1.2_plain_text.bnf) Scanned '..' whilst expecting one of EOF, ')', '.', ';', '>', ']', '|', '||', '}'
+  1145: Error 2 (csharp language specification v1.2_plain_text.bnf) Scanned '|' whilst expecting one of ID, EOF, '!*', '!.', '!<', '!>', '!S', '!W', '!^', '!b', '!c', 
+'!g', '!h', '!i', '!p', '!s', '!v', '!y', '!|', '$', 'P'
+  1145:   ...  |
+  1145: ---1---2
+  1148: Error 1 (csharp language specification v1.2_plain_text.bnf) Scanned '..' whilst expecting one of EOF, ')', '.', ';', '>', ']', '|', '||', '}'
+  1148: Error 2 (csharp language specification v1.2_plain_text.bnf) Scanned '|' whilst expecting one of ID, EOF, '!*', '!.', '!<', '!>', '!S', '!W', '!^', '!b', '!c', 
+'!g', '!h', '!i', '!p', '!s', '!v', '!y', '!|', '$', 'P'
+  1148:   ...  |
+  1148: ---1---2
+  1151: Error 1 (csharp language specification v1.2_plain_text.bnf) Scanned '..' whilst expecting one of EOF, ')', '.', ';', '>', ']', '|', '||', '}'
+  1151: Error 2 (csharp language specification v1.2_plain_text.bnf) Scanned '|' whilst expecting one of ID, EOF, '!*', '!.', '!<', '!>', '!S', '!W', '!^', '!b', '!c', 
+'!g', '!h', '!i', '!p', '!s', '!v', '!y', '!|', '$', 'P'
+  1151:   ...  |
+  1151: ---1---2
+  1154: Error 1 (csharp language specification v1.2_plain_text.bnf) Scanned '..' whilst expecting one of EOF, ')', '.', ';', '>', ']', '|', '||', '}'
+  1154: Error 2 (csharp language specification v1.2_plain_text.bnf) Scanned '|' whilst expecting one of ID, EOF, '!*', '!.', '!<', '!>', '!S', '!W', '!^', '!b', '!c', 
+'!g', '!h', '!i', '!p', '!s', '!v', '!y', '!|', '$', 'P'
+  1154:   ...  |
+  1154: ---1---2
+  1157: Error 1 (csharp language specification v1.2_plain_text.bnf) Scanned '..' whilst expecting one of EOF, ')', '.', ';', '>', ']', '|', '||', '}'
+  1157: Error 2 (csharp language specification v1.2_plain_text.bnf) Scanned '|' whilst expecting one of ID, EOF, '!*', '!.', '!<', '!>', '!S', '!W', '!^', '!b', '!c', 
+'!g', '!h', '!i', '!p', '!s', '!v', '!y', '!|', '$', 'P'
+  1157:   ...  |
+  1157: ---1---2
+  1160: Error 1 (csharp language specification v1.2_plain_text.bnf) Scanned '..' whilst expecting one of EOF, ')', '.', ';', '>', ']', '|', '||', '}'
+  1160: Error 2 (csharp language specification v1.2_plain_text.bnf) Scanned '|' whilst expecting one of ID, EOF, '!*', '!.', '!<', '!>', '!S', '!W', '!^', '!b', '!c', 
+'!g', '!h', '!i', '!p', '!s', '!v', '!y', '!|', '$', 'P'
+  1160:   ...  |
+  1160: ---1---2
+  1163: Error 1 (csharp language specification v1.2_plain_text.bnf) Scanned '..' whilst expecting one of EOF, ')', '.', ';', '>', ']', '|', '||', '}'
+  1163: Error 2 (csharp language specification v1.2_plain_text.bnf) Scanned '|' whilst expecting one of ID, EOF, '!*', '!.', '!<', '!>', '!S', '!W', '!^', '!b', '!c', 
+'!g', '!h', '!i', '!p', '!s', '!v', '!y', '!|', '$', 'P'
+  1163:   ...  |
+  1163: ---1---2
+  1166: Error 1 (csharp language specification v1.2_plain_text.bnf) Scanned '..' whilst expecting one of EOF, ')', '.', ';', '>', ']', '|', '||', '}'
+  1166: Error 2 (csharp language specification v1.2_plain_text.bnf) Scanned '|' whilst expecting one of ID, EOF, '!*', '!.', '!<', '!>', '!S', '!W', '!^', '!b', '!c', 
+'!g', '!h', '!i', '!p', '!s', '!v', '!y', '!|', '$', 'P'
+  1166:   ...  |
+  1166: ---1---2
+  1179: Error 1 (csharp language specification v1.2_plain_text.bnf) Scanned '..' whilst expecting one of EOF, ')', '.', ';', '>', ']', '|', '||', '}'
+  1179: Error 2 (csharp language specification v1.2_plain_text.bnf) Scanned '|' whilst expecting one of ID, EOF, '!*', '!.', '!<', '!>', '!S', '!W', '!^', '!b', '!c', 
+'!g', '!h', '!i', '!p', '!s', '!v', '!y', '!|', '$', 'P'
+  1179:   ...  |
+  1179: ---1---2
+  1180: Error 1 (csharp language specification v1.2_plain_text.bnf) Scanned ';' whilst expecting one of EOF, ':', '::=', '='
+  1180:   unsafe_statement ;
+  1180: -------------------1
+  1193: Error 1 (csharp language specification v1.2_plain_text.bnf) Scanned Fatal (csharp language specification v1.2_plain_text.bnf): too many errors

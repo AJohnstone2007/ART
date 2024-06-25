@@ -1,0 +1,121 @@
+graph: {
+  title: "SYNTAXTREE"
+  color: lightcyan
+  iconcolors: 32
+  fast_icons: no
+  amax: 30
+  width: 640
+  height: 400
+  xmax: 10
+  ymax: 10
+  xbase: 5
+  ybase: 5
+  xspace: 20
+  xlspace: 10
+  yspace: 70
+  xraster: 1
+  xlraster: 1
+  yraster: 1
+  shrink:  100
+  stretch: 60
+  layout_downfactor: 10
+  layout_upfactor: 1
+  layout_nearfactor: 5
+  layout_splinefactor: 70
+  spreadlevel: 1
+  treefactor: 0.500000
+  bmax: 100
+  cmin: 0
+  cmax: 32767
+  pmin: 0
+  pmax: 100
+  rmin: 0
+  rmax: 100
+  smax: 100
+  node_alignment: center
+  orientation: top_to_bottom
+  late_edge_labels: no
+  display_edge_labels: no
+  dirty_edge_labels: no
+  finetuning: yes
+  nearedges: yes
+  splines: no
+  ignoresingles: no
+  straight_phase: no
+  priority_phase: no
+  manhatten_edges: no
+  smanhatten_edges: no
+  port_sharing: yes
+  crossingphase2: yes
+  crossingoptimization: yes
+  crossingweight: bary
+  arrow_mode: fixed
+  layoutalgorithm: dfs
+  colorentry 0 :  255 255 255
+  colorentry 1 :  0 0 255
+  colorentry 2 :  255 0 0
+  colorentry 3 :  0 255 0
+  colorentry 4 :  255 255 0
+  colorentry 5 :  255 0 255
+  colorentry 6 :  0 255 255
+  colorentry 7 :  85 85 85
+  colorentry 8 :  0 0 128
+  colorentry 9 :  128 0 0
+  colorentry 10 :  0 128 0
+  colorentry 11 :  128 128 0
+  colorentry 12 :  128 0 128
+  colorentry 13 :  0 128 128
+  colorentry 14 :  255 215 0
+  colorentry 15 :  170 170 170
+  colorentry 16 :  128 128 255
+  colorentry 17 :  255 128 128
+  colorentry 18 :  128 255 128
+  colorentry 19 :  255 255 128
+  colorentry 20 :  255 128 255
+  colorentry 21 :  128 255 255
+  colorentry 22 :  238 130 238
+  colorentry 23 :  64 224 208
+  colorentry 24 :  127 255 212
+  colorentry 25 :  240 230 140
+  colorentry 26 :  160 32 240
+  colorentry 27 :  154 205 50
+  colorentry 28 :  255 192 203
+  colorentry 29 :  255 165 0
+  colorentry 30 :  218 112 214
+
+         layoutalgorithm: dfs
+	 node: { title:"A" label:"A"  color: lightgreen textcolor: blue}
+	 node: { title:"B" label:"B"  color: lightgreen textcolor: blue}
+	 node: { title:"C" label:"C"  color: lightgreen textcolor: blue}
+	 node: { title:"D" label:"D"  color: lightgreen textcolor: blue}
+	 node: { title:"E" label:"E"  color: lightgreen textcolor: blue}
+	 node: { title:"F" label:"F"  color: lightgreen textcolor: blue}
+	 node: { title:"G" label:"G"  color: lightgreen textcolor: blue}
+	 node: { title:"H" label:"H"  color: lightgreen textcolor: blue}
+	 node: { title:"I" label:"I"  color: lightgreen textcolor: blue}
+	 node: { title:"J" label:"J"  color: lightgreen textcolor: blue}
+	 node: { title:"K" label:"K"  color: lightgreen textcolor: blue}
+	 node: { title:"L" label:"L"  color: lightgreen textcolor: blue}
+	 node: { title:"M" label:"M"  color: lightgreen textcolor: blue}
+	 node: { title:"N" label:"N"  color: lightgreen textcolor: blue}
+	 node: { title:"O" label:"O"  color: lightgreen textcolor: blue}
+	 edge: { sourcename:"A" targetname:"B" color: red thickness: 4 priority: 8 }
+	 edge: { sourcename:"A" targetname:"C" color: red thickness: 4 priority: 8 }
+	 edge: { sourcename:"B" targetname:"D" color: red thickness: 4 priority: 8 }
+	 edge: { sourcename:"B" targetname:"E" color: red thickness: 4 priority: 8 }
+	 edge: { sourcename:"C" targetname:"F" color: red thickness: 4 priority: 8 }
+	 edge: { sourcename:"C" targetname:"G" color: red thickness: 4 priority: 8 }
+	 edge: { sourcename:"D" targetname:"H" color: red thickness: 4 priority: 8 }
+	 edge: { sourcename:"D" targetname:"I" color: red thickness: 4 priority: 8 }
+	 edge: { sourcename:"E" targetname:"J" color: red thickness: 4 priority: 8 }
+	 edge: { sourcename:"E" targetname:"K" color: red thickness: 4 priority: 8 }
+	 edge: { sourcename:"F" targetname:"L" color: red thickness: 4 priority: 8 }
+	 edge: { sourcename:"F" targetname:"M" color: red thickness: 4 priority: 8 }
+	 edge: { sourcename:"G" targetname:"N" color: red thickness: 4 priority: 8 }
+	 edge: { sourcename:"G" targetname:"O" color: red thickness: 4 priority: 8 }
+	 edge: { sourcename:"L" targetname:"A" priority: 1 color: blue }
+	 edge: { sourcename:"D" targetname:"A" priority: 1 color: blue }
+	 edge: { sourcename:"C" targetname:"N" priority: 1 color: blue }
+	 edge: { sourcename:"M" targetname:"A" priority: 1 color: blue }
+}
+

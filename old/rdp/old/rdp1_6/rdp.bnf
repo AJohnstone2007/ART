@@ -1,0 +1,542 @@
+(*****************************************************************************
+*
+* RDP release 1.65 by Adrian Johnstone (A.Johnstone@rhbnc.ac.uk) 20 Sep 2000
+*
+* rdp.bnf - decorated rdp grammar
+*
+* This file may be freely distributed. Please mail improvements to the author.
+*
+*****************************************************************************)
+TITLE("Recursive descent parser generator V1.65 (c) Adrian Johnstone 2000")
+SUFFIX("bnf")
+SHOW_SKIPS
+PASSES(2)
+TAB_WIDTH(8)
+TEXT_SIZE(60000)
+MAX_ERRORS(50)
+MAX_WARNINGS(120)
+OUTPUT_FILE("rdparser")
+TREE
+USES("rdp_aux.h")
+USES("rdp_gram.h")
+USES("rdp_prnt.h")
+
+SYMBOL_TABLE(rdp 101 31
+             symbol_compare_string
+             symbol_hash_string
+             symbol_print_string
+             [*
+               char * id;
+               int token;
+               unsigned token_value;         /* token value for tokens */
+               unsigned extended_value;      /* extended value for tokens */
+               int kind;
+               char * return_type;           /* return_type name */
+               unsigned return_type_stars;   /* number of indirections in return type */
+               char * token_string;          /* pointer to token value as a string */
+               char * token_enum;            /* pointer to token value as enum element */
+               char * extended_enum;         /* pointer to extended value as enum element */
+               int promote_default;          /* default promotion operator */
+               int promote;                  /* promotion operator for inline calls */
+               int delimiter_promote,        /* promotion operator for iterator delimiters */
+               comment_only: 1,              /* flag to suppress unused production warning if production contains only comments */
+               contains_null: 1,             /* for quick first calculation */
+               parameterised: 1,             /* production has inherited attributes */
+               code_successor: 1,            /* mark items that follow a code item */
+               code_terminator: 1,           /* mark last code item in sequence */
+               code_only: 1,                 /* primary production with code only */
+               been_defined: 1,              /* has appeared on LHS of ::= */
+               in_use: 1,                    /* production being checked flag */
+               ll1_violation: 1,             /* ll(1) violation detected */
+               first_done: 1,                /* first() completed on this production */
+               follow_done: 1;               /* follow() completed on this production */
+               set_ first;                   /* set of first symbols */
+               unsigned call_count;          /* how many times production is called */
+               unsigned first_cardinality;   /* number of elements in first set */
+               set_ follow;                  /* set of follow symbols */
+               unsigned follow_cardinality;  /* number of elements in follow set */
+               unsigned code_pass;           /* active parser pass for code element */
+               unsigned long lo;             /* minimum iteration count */
+               unsigned long hi;             /* maximum iteration count */
+               struct rdp_param_node * params,      /* list of parameter names (and types) */
+               * actuals;                    /* list of actuals filled in by item_ret */
+               struct rdp_list_node * list;  /* list of alternatives or items */
+               struct rdp_data_node * supplementary_token;  /* spare token pointer */
+               char * close;                 /* extended keyword close string */
+             *]
+            )
+
+SYMBOL_TABLE(tokens 101 31
+             symbol_compare_string
+             symbol_hash_string
+             symbol_print_string
+             [*
+               char * id;
+               int token;
+               unsigned token_value;         /* token value for tokens */
+               unsigned extended_value;      /* extended value for tokens */
+               int kind;
+               char * return_type;           /* return_type name */
+               unsigned return_type_stars;   /* number of indirections in return type */
+               char * token_string;          /* pointer to token value as a string */
+               char * token_enum;            /* pointer to token value as enum element */
+               char * extended_enum;         /* pointer to extended value as enum element */
+               int promote_default;          /* default promotion operator */
+               int promote;                  /* promotion operator for inline calls */
+               int delimiter_promote,        /* promotion operator for iterator delimiters */
+               comment_only: 1,              /* flag to suppress unused production warning if production contains only comments */
+               contains_null: 1,             /* for quick first calculation */
+               parameterised: 1,             /* production has inherited attributes */
+               code_successor: 1,            /* mark items that follow a code item */
+               code_terminator: 1,           /* mark last code item in sequence */
+               code_only: 1,                 /* primary production with code only */
+               been_defined: 1,              /* has appeared on LHS of ::= */
+               in_use: 1,                    /* production being checked flag */
+               ll1_violation: 1,             /* ll(1) violation detected */
+               first_done: 1,                /* first() completed on this production */
+               follow_done: 1;               /* follow() completed on this production */
+               set_ first;                   /* set of first symbols */
+               unsigned call_count;          /* how many times production is called */
+               unsigned first_cardinality;   /* number of elements in first set */
+               set_ follow;                  /* set of follow symbols */
+               unsigned follow_cardinality;  /* number of elements in follow set */
+               unsigned code_pass;           /* active parser pass for code element */
+               unsigned long lo;             /* minimum iteration count */
+               unsigned long hi;             /* maximum iteration count */
+               struct rdp_param_node * params,      /* list of parameter names (and types) */
+               * actuals;                    /* list of actuals filled in by item_ret */
+               struct rdp_list_node * list;  /* list of alternatives or items */
+               struct rdp_data_node * supplementary_token;  /* spare token pointer */
+               char * close;                 /* extended keyword close string */
+             *]
+            )
+
+SYMBOL_TABLE(codes 101 31
+             symbol_compare_string
+             symbol_hash_string
+             symbol_print_string
+             [*
+               char * id;
+               int token;
+               unsigned token_value;         /* token value for tokens */
+               unsigned extended_value;      /* extended value for tokens */
+               int kind;
+               char * return_type;           /* return_type name */
+               unsigned return_type_stars;   /* number of indirections in return type */
+               char * token_string;          /* pointer to token value as a string */
+               char * token_enum;            /* pointer to token value as enum element */
+               char * extended_enum;         /* pointer to extended value as enum element */
+               int promote_default;          /* default promotion operator */
+               int promote;                  /* promotion operator for inline calls */
+               int delimiter_promote,        /* promotion operator for iterator delimiters */
+               comment_only: 1,              /* flag to suppress unused production warning if production contains only comments */
+               contains_null: 1,             /* for quick first calculation */
+               parameterised: 1,             /* production has inherited attributes */
+               code_successor: 1,            /* mark items that follow a code item */
+               code_terminator: 1,           /* mark last code item in sequence */
+               code_only: 1,                 /* primary production with code only */
+               been_defined: 1,              /* has appeared on LHS of ::= */
+               in_use: 1,                    /* production being checked flag */
+               ll1_violation: 1,             /* ll(1) violation detected */
+               first_done: 1,                /* first() completed on this production */
+               follow_done: 1;               /* follow() completed on this production */
+               set_ first;                   /* set of first symbols */
+               unsigned call_count;          /* how many times production is called */
+               unsigned first_cardinality;   /* number of elements in first set */
+               set_ follow;                  /* set of follow symbols */
+               unsigned follow_cardinality;  /* number of elements in follow set */
+               unsigned code_pass;           /* active parser pass for code element */
+               unsigned long lo;             /* minimum iteration count */
+               unsigned long hi;             /* maximum iteration count */
+               struct rdp_param_node * params,      /* list of parameter names (and types) */
+               * actuals;                    /* list of actuals filled in by item_ret */
+               struct rdp_list_node * list;  /* list of alternatives or items */
+               struct rdp_data_node * supplementary_token;  /* spare token pointer */
+               char * close;                 /* extended keyword close string */
+             *]
+            )
+
+SYMBOL_TABLE(locals 101 31
+             symbol_compare_string
+             symbol_hash_string
+             symbol_print_string
+             [* char *id; *]
+            )
+
+ARG_BLANK("")
+ARG_BOOLEAN(e rdp_expanded "Write out expanded BNF along with first and follow sets")
+ARG_BOOLEAN(E rdp_error_production_name "Add rule name to error messages in generated parser")
+ARG_BOOLEAN(F rdp_force "Force creation of output files")
+ARG_BOOLEAN(p rdp_parser_only "Make parser only (omit semantic actions from generated code)")
+ARG_BOOLEAN(R rdp_trace "Add rule entry and exit messages")
+
+ARG_BLANK("")
+ARG_BLANK("You can contact the author (Adrian Johnstone) at:")
+ARG_BLANK("")
+ARG_BLANK("Computer Science Department, Royal Holloway, University of London")
+ARG_BLANK("Egham, Surrey, TW20 0EX UK. Email: A.Johnstone@rhbnc.ac.uk")
+
+PRE_PARSE([* rdp_pre_parse(); *])
+POST_PARSE([* rdp_post_parse(rdp_outputfilename, rdp_force); *])
+
+PARSER(unit)
+
+unit ::= { rule | dir }
+         [* if (rdp_rule_count == 0) text_message(TEXT_FATAL,"no rule definitions found\n"); *] .
+
+dir ::= 'INCLUDE' '(' String: filename ')'
+                     [* if (text_open(filename) == NULL)
+                           text_message(TEXT_ERROR_ECHO, "include file '%s' not found\n", filename);
+                        else
+                        {
+                          text_get_char();
+                          scan_();
+                        }
+                      *]@2 |
+
+       (* List directives *)
+
+       'ARG_BOOLEAN' '(' ID:key ( ID:var | code:var ) String:desc ')' [* rdp_add_arg(ARG_BOOLEAN, key, var, desc); *]@2 |
+       'ARG_NUMERIC' '(' ID:key ( ID:var | code:var ) String:desc ')' [* rdp_add_arg(ARG_NUMERIC, key, var, desc); *]@2 |
+       'ARG_STRING'  '(' ID:key ( ID:var | code:var ) String:desc ')' [* rdp_add_arg(ARG_STRING,  key, var, desc); *]@2 |
+       'ARG_BLANK'   '(' String:desc ')'               [* rdp_add_arg(ARG_BLANK,   NULL, NULL, desc); *]@2 |
+
+       [* rdp_table_list *temp; *]
+       'SYMBOL_TABLE' '(' ID: name INTEGER:size INTEGER:prime
+                          ID: compare ID:hash ID:print
+                          code: data_fields
+                          [*temp = (rdp_table_list*) mem_malloc(sizeof(rdp_table_list));
+                            temp->name = name;
+                            temp->size = (unsigned) size;
+                            temp->prime = (unsigned) prime;
+                            temp->compare = compare;
+                            temp->hash = hash;
+                            temp->print = print;
+                            temp->data_fields = data_fields;
+                            temp->next = rdp_dir_symbol_table;
+                            rdp_dir_symbol_table = temp;
+                          *]@2
+                ')' |
+
+       [* rdp_string_list *temp; *]
+       'USES' '(' String: s
+                  [*temp = (rdp_string_list*) mem_malloc(sizeof(rdp_string_list));
+                    temp->str1 = s;
+                    temp->next = rdp_dir_include;
+                    rdp_dir_include = temp;
+                  *]@2
+               ')' |
+
+       (* String directives *)
+       'OUTPUT_FILE' '(' String:s [* rdp_dir_output_file = s; *] ')' |
+       'PARSER' '(' ID:name [* rdp_start_prod = rdp_find(name, K_PRIMARY, RDP_OLD); rdp_start_prod->call_count++; *]@2 ')' |
+       'POST_PARSE' '(' code:s [* rdp_dir_post_parse = s; *] ')' |
+       'PRE_PARSE' '(' code:s [* rdp_dir_pre_parse = s; *] ')' |
+       'GLOBAL' '(' code:s [* rdp_dir_global = s; *] ')' |
+       'SUFFIX' '(' String:s [* rdp_dir_suffix = s; *] ')' |
+       'TITLE' '(' String: s [* rdp_dir_title = s; *] ')' |
+
+       (* Numeric directives *)
+       'MAX_ERRORS' '(' INTEGER:n [* rdp_dir_max_errors = (unsigned) n; *] ')' |
+       'MAX_WARNINGS' '(' INTEGER:n [* rdp_dir_max_warnings = (unsigned) n; *] ')' |
+       'PASSES' '(' INTEGER:n [* rdp_dir_passes = (unsigned) n; *] ')' |
+       'MULTIPLE_SOURCE_FILES' [* rdp_dir_multiple_source_files = 1; *] |
+       'TAB_WIDTH' '(' INTEGER:n [* rdp_dir_tab_width = (unsigned) n; *] ')' |
+       'TEXT_SIZE' '(' INTEGER:n [* rdp_dir_text_size = (unsigned) n; *] ')' |
+
+       (* Boolean directives *)
+       ('DERIVATION_TREE' [* rdp_dir_derivation_tree = 1; *] |
+        'ANNOTATED_EPSILON_TREE' [* rdp_dir_annotated_epsilon_tree = 1; rdp_dir_epsilon_tree = 1; *] |
+        'EPSILON_TREE' [* rdp_dir_epsilon_tree = 1; *] |
+        'SUPPRESS_BUILT_IN_ARGUMENTS' [* rdp_dir_args = NULL; *] |
+        'TREE'
+       )
+       [* rdp_dir_tree = 1; *]@1
+       [ '(' code: str [* rdp_dir_tree_node_fields = str; *]
+             code: str [* rdp_dir_tree_edge_fields = str; *]
+         ')'
+       ] |
+       'CASE_INSENSITIVE' [* rdp_dir_case_insensitive = 1; *] |
+       'RETAIN_COMMENTS' [* rdp_dir_retain_comments = 1; *] |
+       'SHOW_SKIPS' [* rdp_dir_show_skips = 1; *] |
+
+       (* Obsolete *)
+       'OPTION' [* text_message(TEXT_ERROR_ECHO, "Obsolete directive: OPTION replaced by ARG_* at version 1.5\n"); *]
+                 '(' String [ code ] ')' |
+
+       'PRE_PROCESS' [* text_message(TEXT_ERROR_ECHO, "Obsolete directive: PRE_PROCESS renamed PRE_PARSE at version 1.3\n"); *]
+                 '(' code ')' |
+       'POST_PROCESS' [* text_message(TEXT_ERROR_ECHO, "Obsolete directive: POST_PROCESS renamed POST_PARSE at version 1.3\n"); *]
+                 '(' code ')' |
+       'SET_SIZE' [* text_message(TEXT_ERROR_ECHO, "Obsolete directive: SET_SIZE deleted at version 1.4\n"); *]
+                 '(' INTEGER ')' |
+       'HASH_SIZE' [* text_message(TEXT_ERROR_ECHO, "Obsolete directive: HASH_SIZE replaced by SYMBOL_TABLE at version 1.4\n"); *]
+                 '(' INTEGER ')' |
+       'HASH_PRIME' [* text_message(TEXT_ERROR_ECHO, "Obsolete directive: HASH_PRIME replaced by SYMBOL_TABLE at version 1.4\n"); *]
+                 '(' INTEGER ')' |
+       'INTERPRETER' [* text_message(TEXT_ERROR_ECHO, "Obsolete directive: INTERPRETER mode deleted at version 1.4\n"); *]
+                 '(' INTEGER ')'
+       .
+
+rule:rdp_data* ::= [* unsigned stars; *]
+                   ID:name
+                   [* rdp_primary_id = name; rdp_component = 0;
+                      rdp_rule_count++;
+                      result = rdp_find(rdp_primary_id, K_PRIMARY, rdp_pass == 1 ? RDP_NEW : RDP_OLD);
+                      if (rdp_start_prod == NULL)
+                      {
+                        rdp_start_prod = result;
+                        result->call_count++;
+                      }
+                   *]
+
+                   ['(' [* result->parameterised = 1; *]
+                        { [* rdp_param_list *param; type = "void"; stars = 0; *]
+                          ID:name 
+                          [ ':' ID:type  (* optional because ofsemantic rules *)
+                          {'*' [* stars++; *] } ]
+                          [* param = (rdp_param_list* ) mem_calloc(sizeof(rdp_param_list), 1);
+                             param->id = name;
+                             param->type = type;
+                             param->stars = stars;
+                             param->next = result->params;
+                             result->params = param;
+                          *]@1
+                        }
+                    ')'
+                   ]
+
+                   [* type = "void"; stars = 0; *]
+
+                   [':' ID:type {'*' [* stars++; *] } ]
+
+                   [* result->promote_default = PROMOTE_DONT; *]@2
+                   [ '^_' [* result->promote_default = PROMOTE_DONT; *]@2 |
+                     '^'  [* result->promote_default = PROMOTE; *]@2 |
+                     '^^' [* result->promote_default = PROMOTE_AND_COPY; *]@2 |
+                     '^^^' [* result->promote_default = PROMOTE_ABOVE; *]@2
+                   ]
+
+                   [* rdp_comment_only = 1; /* set comments only flag */ *]
+                   '::='   prod:body [* rdp_rule_count++;
+                                     result->list = body;
+                                     result->been_defined = 1;
+                                     result->return_type = type;
+                                     result->return_type_stars = stars;
+                                     result->comment_only = rdp_comment_only;
+                                  *]@2
+                   '.' .
+
+prod:rdp_list*  ::= [* rdp_list* end; *]
+                   [* end = result = (rdp_list*) mem_calloc(sizeof(rdp_list), 1); *]@2
+                   ( seq: body [* end->next = (rdp_list*) mem_calloc(sizeof(rdp_list), 1);
+                                  end = end->next;
+                                  end->production = rdp_find(text_insert_substring("rdp", rdp_primary_id, rdp_component++), K_SEQUENCE, RDP_NEW);
+                                  end->production->call_count++;
+                                  end->production->list = body;
+                               *]@2
+                   )1@0'|'  [* result = result->next; *]@2 . (* could dispose header here *)
+
+
+seq:rdp_list* ::= [* rdp_list* end; int promote_op; int promote_epsilon; *]
+                   [* end = result = (rdp_list*) mem_calloc(sizeof(rdp_list), 1); *]@2
+
+                   < [* ret_name = NULL; promote_epsilon = PROMOTE_DONT; promote_op = PROMOTE_DEFAULT; *]@2
+                     ((item_ret:body [* rdp_comment_only = 0; *] | item_com:body)
+                      [':' ID:ret_name] [ '^_' [* promote_op = PROMOTE_DONT; *]@2 |
+                                          '^'  [* promote_op = PROMOTE; *]@2 |
+                                          '^^' [* promote_op = PROMOTE_AND_COPY; *]@2 |
+                                          '^^^'[* promote_op = PROMOTE_ABOVE; *]@2
+                                        ] |
+                      item_inl: body [* rdp_comment_only = 0; *]
+                                     [* promote_op=body->promote; default_action = NULL; *]@2
+                                     [ ':' [ ID [* text_message(TEXT_ERROR_ECHO,"Illegal grammar element: expressions may not retun a value"); *]@2 (* This is not allowed on pass 2 *) ]
+                                           [ code:default_action
+                                             ['^_' [* promote_epsilon = PROMOTE_DONT; *]@2 |
+                                              '^'  [* promote_epsilon = PROMOTE; *]@2 |
+                                              '^^' [* promote_epsilon = PROMOTE_AND_COPY; *]@2 |
+                                              '^^^' [* promote_epsilon = PROMOTE_ABOVE; *]@2
+                                              ]
+                                              |
+                                              (
+                                                '^_' [* promote_epsilon = PROMOTE_DONT; *]@2 |
+                                                '^'  [* promote_epsilon = PROMOTE; *]@2 |
+                                                '^^' [* promote_epsilon = PROMOTE_AND_COPY; *]@2 |
+                                                '^^^' [* promote_epsilon = PROMOTE_ABOVE; *]@2
+                                              )
+                                            ]
+                                     ]
+                     )
+                     [* end->next = (rdp_list*) mem_calloc(sizeof(rdp_list), 1);
+                        end = end->next;
+                        end->production = body;
+                        end->actuals = body->actuals;
+                        end->return_name = ret_name;
+                        end->promote = promote_op;
+                        end->promote_epsilon = promote_epsilon;
+                        end->default_action = default_action;
+                     *]@2
+                   > [* result = result->next; *]@2. (* could dispose header here *)
+
+
+item_ret:rdp_data* ::= ID:name [* result = rdp_find(name, K_PRIMARY, RDP_OLD);
+                                  rdp_check_eoln(name);
+                                  result->call_count++; /* increment call count */
+                                  result->actuals = NULL;
+                               *]@2
+
+
+                         [* if (rdp_pass == 2 && result->parameterised ) { *]
+                           '('
+                           { [* rdp_param_list *param; *]
+
+                             ( INTEGER:n
+                               [* param = (rdp_param_list* ) mem_calloc(sizeof(rdp_param_list), 1);
+                                  param->n = n;
+                                  param->next = result->actuals;
+                                  result->actuals = param;
+                                  param->flavour = PARAM_INTEGER;
+                               *]@2 |
+
+                               REAL:r
+                               [* param = (rdp_param_list* ) mem_calloc(sizeof(rdp_param_list), 1);
+                                  param->r = r;
+                                  param->next = result->actuals;
+                                  result->actuals = param;
+                                  param->flavour = PARAM_REAL;
+                               *]@2 |
+
+                               String:str
+                               [* param = (rdp_param_list* ) mem_calloc(sizeof(rdp_param_list), 1);
+                                  param->id = str;
+                                  param->next = result->actuals;
+                                  result->actuals = param;
+                                  param->flavour = PARAM_STRING;
+                               *]@2 |
+
+                               ID:name
+                               [* param = (rdp_param_list* ) mem_calloc(sizeof(rdp_param_list), 1);
+                                  param->id = name;
+                                  param->next = result->actuals;
+                                  result->actuals = param;
+                                  param->flavour = PARAM_ID;
+                               *]@2
+                             )
+                           }
+                           ')'
+                         [* } *]
+
+                          |
+
+                       token:name [* result = (rdp_data*) rdp_process_token(name); *]@2 |
+
+                       'CHAR' '(' token:name ')' [* result = rdp_find_extended(name, NULL, SCAN_P_CHAR); *]@2 |
+                       'CHAR_ESC' '(' token:name token:quote ')' [* result = rdp_find_extended(name, quote, SCAN_P_CHAR_ESC); *]@2 |
+                       'STRING' '(' token:name ')' [* result = rdp_find_extended(name, NULL, SCAN_P_STRING); *]@2 |
+                       'STRING_ESC' '(' token:name token:quote ')' [* result = rdp_find_extended(name, quote, SCAN_P_STRING_ESC); *]@2 |
+                       'COMMENT_VISIBLE' '(' token:name token:close ')' [* result = rdp_find_extended(name, close, SCAN_P_COMMENT_VISIBLE); *]@2 |
+                       'COMMENT_NEST_VISIBLE' '(' token:name token:close ')' [* result = rdp_find_extended(name, close, SCAN_P_COMMENT_NEST_VISIBLE); *]@2 |
+                       'COMMENT_LINE_VISIBLE' '(' token:name ')' [* result = rdp_find_extended(name, NULL, SCAN_P_COMMENT_LINE_VISIBLE); *]@2 |
+
+                       (* Obsolete scanner primitives *)
+                       'NUMBER' [* text_message(TEXT_ERROR_ECHO, "Obsolete scanner primitive: NUMBER renamed INTEGER at version 1.3\n"); *] |
+                       'NEW_ID' [* text_message(TEXT_ERROR_ECHO, "Obsolete scanner primitive: NEW_ID deleted at version 1.4\n"); *] |
+                       'ALT_ID' [* text_message(TEXT_ERROR_ECHO, "Obsolete scanner primitive: ALT_ID deleted at version 1.4\n"); *] |
+                       (* 'EOF'    [* text_message(TEXT_ERROR_ECHO, "Obsolete scanner primitive: EOF deleted at version 1.4\n"); *] *)
+
+                       (* Now some wackyness to cope with strings, integers and
+                         reals during pass1 in paramaters... *)
+
+                       String:str [* text_message(TEXT_ERROR_ECHO, "Illegal grammar element: perhaps you intended to write '%s'\n", str); *]@2 |
+                       INTEGER [* text_message(TEXT_ERROR_ECHO, "Illegal grammar element: an integer may not appear here\n"); *]@2 |
+                       REAL [* text_message(TEXT_ERROR_ECHO, "Illegal grammar element: a real may not appear here\n"); *]@2 .
+
+item_com:rdp_data* ::= 'COMMENT' '(' token:name token:close ')' [* result = rdp_find_extended(name, close, SCAN_P_COMMENT); *]@2 |
+                       'COMMENT_LINE' '(' token:name ')' [* result = rdp_find_extended(name, NULL, SCAN_P_COMMENT_LINE); *]@2 |
+                       'COMMENT_NEST' '(' token:name token:close ')' [* result = rdp_find_extended(name, close, SCAN_P_COMMENT_NEST); *]@2 .
+
+
+item_inl:rdp_data* ::= [* int promote_op = PROMOTE_DEFAULT; *]
+                     (
+                     code:name
+                     [* result = rdp_find(name, K_CODE, RDP_ANY);
+                        result->contains_null = 1;
+                        result->call_count++; /* increment call count */
+                     *]@2
+                     [ '@' INTEGER:pass [* result->code_pass = (unsigned) pass; *]@2 ] |
+
+                     '('prod:body')'
+                     [* result = rdp_find(text_insert_substring("rdp", rdp_primary_id, rdp_component++), K_LIST, RDP_ANY);
+                        result->promote = promote_op;
+                        result->list = body;
+                        result->call_count++;
+                        result->lo = 1;
+                        result->hi = 1;
+                     *]@2
+
+                     (* Dummy promotion operators which act as pass 2 error productions *)
+
+                     [ ('^_' | '^' | '^^' | '^^^') [* text_message(TEXT_ERROR_ECHO, "Promotion operators may not be attached to do-first expressions\n"); *]@2 ]
+                     (* Now do the version 1.5 iterator operator: watch out
+                        because this is not the full iteration operator!! *)
+
+                     [ [ INTEGER:val [* result->lo = val; *]@2 ]
+                       '@'
+                       [* result->hi = 0; /* iterate for ever by default */ *]@2
+                       [ INTEGER:val [* result->hi = val; *]@2 ]
+                       [* if (result->lo == 0) result->contains_null = 1;
+                          if (result->hi != 0 && (result->hi < result->lo))
+                            text_message(TEXT_ERROR_ECHO,"Iterator high count must be greater than low count\n");
+                       *]@2
+                       [* result->delimiter_promote = PROMOTE_DONT; *]@2
+                       (
+                       token:delimiter
+                       [* result->supplementary_token = rdp_find(delimiter, K_TOKEN, RDP_ANY); *]@2 |
+                       '#'
+                       )
+                       [
+                         '^_' [* result->delimiter_promote = PROMOTE_DONT; *]@2 |
+                         '^'  [* result->delimiter_promote = PROMOTE; *]@2 |
+                         '^^' [* result->delimiter_promote = PROMOTE_AND_COPY; *]@2 |
+                         '^^^' [* result->delimiter_promote = PROMOTE_ABOVE; *]@2
+                       ]
+                     ]
+
+                     |
+
+                     '{'prod:body'}'  (* Kleene closure *)
+                     [* result = rdp_find(text_insert_substring("rdp", rdp_primary_id, rdp_component++), K_LIST, RDP_ANY);
+                        result->promote = promote_op;
+                        result->list = body; result->contains_null = 1;
+                        result->call_count++;
+                        result->lo = 0;
+                        result->hi = 0;
+                     *]@2 |
+
+                     '['prod:body']'  (* Optional *)
+                     [* result = rdp_find(text_insert_substring("rdp", rdp_primary_id, rdp_component++), K_LIST, RDP_ANY);
+                        result->promote = promote_op;
+                        result->list = body; result->contains_null = 1;
+                        result->call_count++;
+                        result->lo = 0;
+                        result->hi = 1;
+                     *]@2 |
+
+                     '<'prod:body'>'  (* Positive closure *)
+                     [* result = rdp_find(text_insert_substring("rdp", rdp_primary_id, rdp_component++), K_LIST, RDP_ANY);
+                        result->promote = promote_op;
+                        result->list = body;
+                        result->call_count++;
+                        result->lo = 1;
+                        result->hi = 0;
+                     *]@2
+                     ).
+
+
+token:char*  ::= STRING_ESC('\'' '\\'):result .
+String:char* ::= STRING_ESC('"' '\\'):result  .
+code:char*   ::= COMMENT_VISIBLE('[*' '*]'):result  .
+comment      ::= COMMENT('(*' '*)').
+
+(* End of rdp.bnf *)
+

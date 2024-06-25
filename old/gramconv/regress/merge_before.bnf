@@ -1,0 +1,21 @@
+(* Regression: merging *)
+
+!h0
+!b
+!g
+!i
+!s
+!y
+
+!v
+
+A ::= 'a' || 'b' 'c'.
+
+A ::= 'x' | 'y' 'z'.
+
+A ::= B.
+
+B ::= 'b'.
+
+B::= 'z' 'y' || 'x'.
+

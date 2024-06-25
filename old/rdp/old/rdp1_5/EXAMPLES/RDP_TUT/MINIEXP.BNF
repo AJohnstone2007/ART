@@ -1,0 +1,14 @@
+TREE
+USES("mexp_aux.h")
+
+S ::= e1:val [* printf("%i\n", val); *] .
+e1:integer ::= e2:result {'+' e2:val [* result = result + val; *]
+                           | '-' e2:val [* result = result - val; *] } .
+e2:integer ::= e3:result {'*' e3:val [* result = result * val; *]
+                           | '/' e3:val [* result = result / val; *] } .
+e3:integer ::= '+' e4:result | '-' e4:val [*result = -val;*] | e4:result .
+e4:integer ::= e5:result ['^' e4:val [* result = pow(result,val); *] ] .
+e5:integer ::= ID | INTEGER:result | '(' e1:result ')' .
+
+                        (***** miniexp.bnf *****)
+ 

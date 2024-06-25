@@ -1,0 +1,41 @@
+(* Test generation for ART *)
+
+(* Conventions for filenames
+
+S, T, U, V, W, X, Y, Z nonterminals
+a, b, c, d, e, f, g, h terminals
+
+_ |  alternation bar
+H #  (hash - epsilon)
+L (  (left parenthesis)
+R )  (right parenthesis)
+Q ?  (query)  
+P +  (positive)
+K *  (Kleene)
+I @  (Iterator)
+D \  (Difference)
+*)
+
+(* Parentheses *)
+
+LLcRR
+$S ::= ((`c));$
+accept $c$
+reject $cc$
+
+bLLLaRRRc
+$S ::= `b(((`a)))`c;$
+accept $bac$
+reject $a$ $baa$ $bc$
+
+aLLLb_cRRRd
+$S ::= `a ((( `b | `c ))) `d;$
+accept $abd$ $acd$
+reject $$ $abcd$ $ad$
+
+(* Optionals *)
+
+aLb_LcRPRNd
+$S ::= `a ( `b (`c | (`d`e )+)+ )* `g;$
+accept $ag$ $abcg$ $abccg$ $abdededeg$
+reject $$ $abcd$

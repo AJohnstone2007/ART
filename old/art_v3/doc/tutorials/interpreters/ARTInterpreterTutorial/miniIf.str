@@ -1,0 +1,9 @@
+{
+temp = 3+4*2;
+threshold = 12;
+
+if temp < threshold then
+  print("Temp is less than threshold\n");
+else
+ print("Temp is greater than or equal to threshold\n");
+}

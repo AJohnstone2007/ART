@@ -1,0 +1,202 @@
+graph: {
+  title: "Xerox Star"
+  color: white
+  iconcolors: 32
+  amax: 0 fast_icons: no
+  width: 640
+  height: 400
+  xmax: 10
+  ymax: 10
+  xbase: 5
+  ybase: 5
+  xspace: 20
+  xlspace: 10
+  yspace: 70
+  xraster: 1
+  xlraster: 1
+  yraster: 1
+  shrink:  100
+  stretch: 30
+  layout_downfactor: 1
+  layout_upfactor: 1
+  layout_nearfactor: 1
+  layout_splinefactor: 70
+  spreadlevel: 1
+  treefactor: 0.500000
+  bmax: 100
+  cmin: 11
+  cmax: 32767
+  pmin: 0
+  pmax: 100
+  rmin: 0
+  rmax: 100
+  smax: 100
+  node_alignment: center
+  orientation: top_to_bottom
+  late_edge_labels: no
+  display_edge_labels: no
+  dirty_edge_labels: no
+  finetuning: yes
+  nearedges: no
+  splines: no
+  ignoresingles: no
+  straight_phase: no
+  priority_phase: no
+  manhatten_edges: no
+  smanhatten_edges: no
+  port_sharing: yes
+  crossingphase2: yes
+  crossingoptimization: yes
+  crossingweight: medianbary
+  arrow_mode: fixed
+  layoutalgorithm: minbackward
+  colorentry 0 :  255 255 255
+  colorentry 1 :  0 0 255
+  colorentry 2 :  255 0 0
+  colorentry 3 :  0 255 0
+  colorentry 4 :  255 255 0
+  colorentry 5 :  255 0 255
+  colorentry 6 :  0 255 255
+  colorentry 7 :  85 85 85
+  colorentry 8 :  0 0 128
+  colorentry 9 :  128 0 0
+  colorentry 10 :  0 128 0
+  colorentry 11 :  128 128 0
+  colorentry 12 :  128 0 128
+  colorentry 13 :  0 128 128
+  colorentry 14 :  255 215 0
+  colorentry 15 :  170 170 170
+  colorentry 16 :  128 128 255
+  colorentry 17 :  255 128 128
+  colorentry 18 :  128 255 128
+  colorentry 19 :  255 255 128
+  colorentry 20 :  255 128 255
+  colorentry 21 :  128 255 255
+  colorentry 22 :  238 130 238
+  colorentry 23 :  64 224 208
+  colorentry 24 :  127 255 212
+  colorentry 25 :  240 230 140
+  colorentry 26 :  160 32 240
+  colorentry 27 :  154 205 50
+  colorentry 28 :  255 192 203
+  colorentry 29 :  255 165 0
+  colorentry 30 :  218 112 214
+
+node: {  title: "Memex" shape: rhomb color: yellow bordercolor: blue }
+node: {  title: "Reactive Engine" shape: rhomb width: 144 height: 90 color: yellow bordercolor: blue }
+node: {  title: "NLS" shape: ellipse color: darkgreen textcolor: lightyellow }
+node: {  title: "Sketchpad" shape: ellipse color: darkgreen textcolor: lightyellow }
+node: {  title: "Alto" shape: ellipse color: darkgreen textcolor: lightyellow }
+node: {  title: "Augment" shape: triangle color: darkgreen textcolor: lightyellow }
+node: {  title: "Simula" shape: triangle color: darkgreen textcolor: lightyellow }
+
+node: {  title: "Bravo" shape: box color: lightblue }
+node: {  title: "Flyer" color: lightblue }
+node: {  title: "Markup" color: lightblue }
+node: {  title: "Press" color: lightblue }
+node: {  title: "Office Talk" color: lightblue }
+node: {  title: "SIL" color: lightblue }
+node: {  title: "Draw" color: lightblue }
+node: {  title: "Smalltalk" shape: ellipse color: lightblue }
+
+node: {  title: "Doodle" color: lightred }
+node: {  title: "Interpress" color: lightred }
+node: {  title: "SRI" shape: ellipse color: lightred }
+node: {  title: "Pygmalion" color: lightred }
+node: {  title: "Gypsy" shape: ellipse color: lightred }
+
+node: {  title: "Deluxe Paint" color: darkblue textcolor: lightgreen }
+node: {  title: "Postscript" color: darkblue textcolor: lightgreen }
+node: {  title: "Mesa" shape: ellipse color: darkblue textcolor: lightgreen }
+node: {  title: "BravoX" color: darkblue textcolor: lightgreen }
+
+node: {  title: "Cedar" color: pink }
+node: {  title: "Tajo (XDE)" color: pink }
+node: {  title: "Star (8010)" color: aquamarine }
+
+node: {  title: "Lisa" color: pink }
+node: {  title: "Metaphor Workstation" color: aquamarine }
+node: {  title: "ViewPoint (6085)" color: aquamarine }
+node: {  title: "Cognition MCAE System" color: aquamarine }
+node: {  title: "Interleaf" color: aquamarine }
+
+node: {  title: "Macintosh" color: pink }
+node: {  title: "ViewPoint 2.0" color: pink }
+
+node: {  title: "Mac II" shape: rhomb color: pink }
+
+edge: { sourcename: "Memex" targetname: "Reactive Engine" color: darkgreen }
+edge: { sourcename: "Memex" targetname: "NLS" }
+edge: { sourcename: "Memex" targetname: "Sketchpad" color: darkgreen }
+
+edge: { sourcename: "Reactive Engine" targetname: "Alto" }
+edge: { sourcename: "Reactive Engine" targetname: "Smalltalk" }
+
+edge: { sourcename: "NLS" targetname: "Alto" }
+edge: { sourcename: "NLS" targetname: "Augment" linestyle: dotted color: red }
+edge: { sourcename: "NLS" targetname: "Star (8010)" }
+
+edge: { sourcename: "Sketchpad" targetname: "SIL" }
+edge: { sourcename: "Sketchpad" targetname: "Draw" }
+
+edge: { sourcename: "Alto" targetname: "Bravo" linestyle: dashed }
+edge: { sourcename: "Alto" targetname: "Flyer" }
+edge: { sourcename: "Alto" targetname: "Markup" }
+edge: { sourcename: "Alto" targetname: "Press" }
+edge: { sourcename: "Alto" targetname: "Office Talk" linestyle: dashed }
+edge: { sourcename: "Alto" targetname: "BravoX" }
+edge: { sourcename: "Alto" targetname: "SIL" color: darkgreen }
+edge: { sourcename: "Alto" targetname: "Draw" color: darkgreen }
+edge: { sourcename: "Alto" targetname: "Smalltalk" }
+
+edge: { sourcename: "Simula" targetname: "Smalltalk" color: blue }
+
+edge: { sourcename: "Bravo" targetname: "BravoX" linestyle: dotted color: red }
+
+edge: { sourcename: "Flyer" targetname: "Doodle" }
+
+edge: { sourcename: "Markup" targetname: "Doodle" color: blue }
+
+edge: { sourcename: "Press" targetname: "Interpress" color: blue }
+
+edge: { sourcename: "Office Talk" targetname: "Star (8010)" }
+
+edge: { sourcename: "Draw" targetname: "Star (8010)" }
+
+edge: { sourcename: "Smalltalk" targetname: "Pygmalion" }
+edge: { sourcename: "Smalltalk" targetname: "Gypsy" }
+edge: { sourcename: "Smalltalk" targetname: "Star (8010)" }
+edge: { sourcename: "Smalltalk" targetname: "Lisa" }
+
+edge: { sourcename: "Doodle" targetname: "ViewPoint (6085)" color: blue }
+edge: { sourcename: "Doodle" targetname: "Deluxe Paint" color: blue }
+
+edge: { sourcename: "Interpress" targetname: "Star (8010)" }
+edge: { sourcename: "Interpress" targetname: "Postscript" color: blue }
+
+edge: { sourcename: "SRI" targetname: "Mesa" color: darkgreen }
+
+edge: { sourcename: "Pygmalion" targetname: "Star (8010)" }
+
+edge: { sourcename: "Gypsy" targetname: "BravoX" }
+edge: { sourcename: "Gypsy" targetname: "Lisa" }
+
+edge: { sourcename: "Mesa" targetname: "Cedar" linestyle: dotted color: red }
+edge: { sourcename: "Mesa" targetname: "Tajo (XDE)" }
+
+edge: { sourcename: "BravoX" targetname: "Star (8010)" }
+edge: { sourcename: "BravoX" targetname: "Lisa" }
+
+edge: { sourcename: "Tajo (XDE)" targetname: "ViewPoint (6085)" }
+edge: { sourcename: "Star (8010)" targetname: "Metaphor Workstation" }
+edge: { sourcename: "Star (8010)" targetname: "Lisa" }
+edge: { sourcename: "Star (8010)" targetname: "ViewPoint (6085)" linestyle: dotted }
+edge: { sourcename: "Star (8010)" targetname: "Cognition MCAE System" }
+edge: { sourcename: "Star (8010)" targetname: "Interleaf" }
+
+edge: { sourcename: "Lisa" targetname: "Macintosh" }
+edge: { sourcename: "Macintosh" targetname: "Mac II" linestyle: dotted }
+edge: { sourcename: "ViewPoint (6085)" targetname: "ViewPoint 2.0" linestyle: dotted }
+
+}
+

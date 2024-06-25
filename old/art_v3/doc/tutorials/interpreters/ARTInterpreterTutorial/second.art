@@ -1,0 +1,2 @@
+S ::= 'b' | 'a' X '@' (* An example grammar *)
+X ::= 'x' X | # 

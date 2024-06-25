@@ -1,0 +1,353 @@
+(* artparser.art - ART V3.00 front end grammar for ART V3.00 bootstrap (c) Adrian Johnstone 2015-19 *)
+
+module ARTV3 
+
+whitespace &WHITESPACE
+whitespace &COMMENT_NEST_ART 
+whitespace &COMMENT_LINE_C 
+
+start text
+
+prelude {
+  import uk.ac.rhul.cs.csle.art.manager.module.*;
+  import java.nio.file.Files;
+  import java.nio.file.Paths;
+}
+
+support { 
+  ARTManager artManager; 
+  ARTModule currentModule;
+}
+
+text <artManager: ARTManager> 
+  ::= { artManager = text.artManager; currentModule = artManager.findModule("ART"); if (artManager.getDefaultMainModule() == null) artManager.setDefaultMainModule(currentModule); } textElements 
+    | { artManager = text.artManager; } modules
+
+modules ::= #^ | moduleHeader textElements^ modules^ 
+
+moduleHeader ::= 'module'^^ ID 
+  { currentModule = artManager.findModule(ID1.v); 
+    if (artManager.getDefaultMainModule() == null || artManager.getDefaultMainModule().getId().equals("ART")) artManager.setDefaultMainModule(currentModule); } 
+     
+textElements ::= textElement^ textElements^ | #^ 
+
+textElement 
+  ::= directive
+    | grammarRule 
+    | deleter 
+
+directive 
+  ::= 'import' ID 
+    | 'start' nonterminal { currentModule.setDefaultStart(nonterminal1.v); }
+    | 'whitespace' { currentModule.seenWhitespaceDeclaration = true; terminalisers1.isWhiteSpace = true;  }  terminalisers
+    | 'terminal'   { terminalisers1.isWhiteSpace = false; }  terminalisers
+
+    | 'choose' choosers
+    | 'option' options
+
+    (* undocumented deprecated elements *)
+    | 'prelude' STRING_BRACE_NEST { currentModule.addPreludeString(STRING_BRACE_NEST1.v); }
+    | 'support' STRING_BRACE_NEST { currentModule.addSupportString(STRING_BRACE_NEST1.v); } 
+
+terminalisers<isWhiteSpace:boolean> ::= {terminaliser1.isWhiteSpace = terminalisers.isWhiteSpace; } terminaliser 
+                                      | {terminaliser1.isWhiteSpace = terminalisers.isWhiteSpace; } terminaliser 
+                                        {terminalisers1.isWhiteSpace = terminalisers.isWhiteSpace; } terminalisers
+
+terminaliser<isWhiteSpace:boolean> 
+  ::= nonterminal 
+      { if (terminaliser.isWhiteSpace) currentModule.addWhiteSpaceTerminal(new ARTValueTerm("nonterminal", new ARTValueTerm(nonterminal1.v)));
+        else currentModule.addDeclaredTerminal(new ARTValueTerm("nonterminal", new ARTValueTerm(nonterminal1.v))); }
+    | builtinTerminal
+      { if (terminaliser.isWhiteSpace) currentModule.addWhiteSpaceTerminal(new ARTValueTerm("builtinTerminal", new ARTValueTerm(builtinTerminal1.v)));
+        else currentModule.addDeclaredTerminal(new ARTValueTerm("builtinTerminal", new ARTValueTerm(builtinTerminal1.v))); }
+
+choosers ::= chooser | chooser choosers
+
+chooser 
+  ::= choiceElement '>' choiceElement  { currentModule.addHigher(choiceElement1.t, choiceElement2.t); }
+    | choiceElement '<' choiceElement  { currentModule.addHigher(choiceElement2.t, choiceElement1.t); }
+    | choiceElement '>>' choiceElement { currentModule.addLonger(choiceElement1.t, choiceElement2.t); }
+    | choiceElement '<<' choiceElement { currentModule.addLonger(choiceElement2.t, choiceElement1.t); }
+    | 'longest' choiceElement          { currentModule.addLonger(choiceElement1.t, choiceElement1.t); }
+
+choiceElement<t:ARTValueTerm> 
+  ::= nonterminal { choiceElement.t = new ARTValueTerm("nonterminal", new ARTValueTerm(nonterminal1.v)); }
+    | caseSensitiveTerminal { choiceElement.t = new ARTValueTerm("caseSensitiveTerminal", new ARTValueTerm(caseSensitiveTerminal1.v)); }
+    | caseInsensitiveTerminal { choiceElement.t = new ARTValueTerm("caseInsensitiveTerminal", new ARTValueTerm(caseInsensitiveTerminal1.v)); }
+    | characterTerminal { choiceElement.t = new ARTValueTerm("characterTerminal", new ARTValueTerm(characterTerminal1.v)); }
+    | characterSetTerminal { choiceElement.t = new ARTValueTerm("characterSetTerminal", new ARTValueTerm(characterSetTerminal1.lo), new ARTValueTerm(characterSetTerminal1.hi)); }
+    | builtinTerminal { choiceElement.t = new ARTValueTerm("builtinTerminal", new ARTValueTerm(builtinTerminal1.v)); }
+    | "''" { choiceElement.t = new ARTValueTerm("allSingletons"); }// Dirty trick to allow STRING_PLAIN_SQ for inputfile. Horrid
+    | '.' ID { choiceElement.t = new ARTValueTerm("productionLabel", new ARTValueTerm(ID1.v)); }
+
+options ::= optionSingle | optionSingle options
+
+optionSingle ::= 
+    (* Manager level options *)
+      'verbosity' optionalColon INTEGER                    { artManager.optionBlock.verbosityLevel = INTEGER1.v; }
+    | 'statistics' optionalColon trueFalse                 { artManager.optionBlock.statistics = trueFalse1.v; }
+    | 'trace' optionalColon trueFalse                      { artManager.optionBlock.trace = trueFalse1.v; }
+
+    (* Input list options *)
+    | 'inputFile' optionalColon STRING_PLAIN_SQ            { artManager.optionBlock.inputs.add(ARTText.readFile(STRING_PLAIN_SQ1.v)); artManager.optionBlock.inputFilenames.add(STRING_PLAIN_SQ1.v); }
+    | 'inputFileIfExists' optionalColon STRING_PLAIN_SQ    { if (Files.isRegularFile(Paths.get(STRING_PLAIN_SQ1.v))) { artManager.optionBlock.inputs.add(ARTText.readFile(STRING_PLAIN_SQ1.v)); artManager.optionBlock.inputFilenames.add(STRING_PLAIN_SQ1.v); }}
+
+    | 'inputFile' optionalColon ID                         { artManager.optionBlock.inputs.add(ARTText.readFile(ID1.v)); artManager.optionBlock.inputFilenames.add(ID1.v); }
+    | 'inputFileIfExists' optionalColon ID                 { if (Files.isRegularFile(Paths.get(ID1.v))) { artManager.optionBlock.inputs.add(ARTText.readFile(ID1.v)); artManager.optionBlock.inputFilenames.add(STRING_PLAIN_SQ1.v); }}
+
+    | 'inputString' optionalColon STRING_PLAIN_SQ          { artManager.optionBlock.inputs.add(STRING_PLAIN_SQ1.v); }
+      
+    (* Phase selection options*)
+    | 'phaseModule' optionalColon trueFalse                { artManager.optionBlock.phaseModule = trueFalse1.v; }
+    | 'phaseLex' optionalColon trueFalse                   { artManager.optionBlock.phaseLex = trueFalse1.v; }
+    | 'phasePreChoose' optionalColon trueFalse             { artManager.optionBlock.phasePreChoose = trueFalse1.v; }
+    | 'phaseParse' optionalColon trueFalse                 { artManager.optionBlock.phaseParse = trueFalse1.v; }
+    | 'phasePostChoose' optionalColon trueFalse            { artManager.optionBlock.phasePostChoose = trueFalse1.v; }
+    | 'phaseDerivationSelect' optionalColon trueFalse      { artManager.optionBlock.phaseDerivationSelect = trueFalse1.v; }
+    | 'phaseGIFT' optionalColon trueFalse                  { artManager.optionBlock.phaseGIFT = trueFalse1.v; }
+    | 'phaseAG' optionalColon trueFalse                    { artManager.optionBlock.phaseAG = trueFalse1.v; }
+    | 'phaseTR' optionalColon trueFalse                    { artManager.optionBlock.phaseTR = trueFalse1.v; }
+    | 'phaseSOS' optionalColon trueFalse                   { artManager.optionBlock.phaseSOS = trueFalse1.v; }
+
+    (* Artefact display options *)
+    | 'showTWE' optionalColon trueFalse                    { artManager.optionBlock.showTWE = trueFalse1.v; }
+    | 'showBSR' optionalColon trueFalse                    { artManager.optionBlock.showBSR = trueFalse1.v; }
+    | 'showSPPFFull' optionalColon trueFalse               { artManager.optionBlock.showSPPFFull = trueFalse1.v; }
+    | 'showSPPFCore' optionalColon trueFalse               { artManager.optionBlock.showSPPFCore = trueFalse1.v; }
+    | 'showDT' optionalColon trueFalse                     { artManager.optionBlock.showDT = trueFalse1.v; }
+    | 'showGIFT' optionalColon trueFalse                   { artManager.optionBlock.showGIFT = trueFalse1.v; }
+    | 'showAG' optionalColon trueFalse                     { artManager.optionBlock.showAG = trueFalse1.v; }
+    | 'showTR' optionalColon trueFalse                     { artManager.optionBlock.showTR = trueFalse1.v; }
+    | 'showSOS' optionalColon trueFalse                    { artManager.optionBlock.showSOS = trueFalse1.v; }
+
+    | 'showAll' optionalColon trueFalse                    { artManager.optionBlock.showTWE = trueFalse1.v;
+                                                             artManager.optionBlock.showBSR = trueFalse1.v;
+                                                             artManager.optionBlock.showSPPFFull = trueFalse1.v;
+                                                             artManager.optionBlock.showSPPFCore = trueFalse1.v;
+                                                             artManager.optionBlock.showDT = trueFalse1.v;
+                                                             artManager.optionBlock.showGIFT = trueFalse1.v;
+                                                             artManager.optionBlock.showAG = trueFalse1.v;
+                                                             artManager.optionBlock.showTR = trueFalse1.v;                                                            
+                                                             artManager.optionBlock.showSOS = trueFalse1.v; }
+  
+    (* Grammar rework options *)
+    | 'ebnfMultiplyOut' optionalColon trueFalse            { artManager.optionBlock.ebnfMultiplyOut = trueFalse1.v; }
+    | 'ebnfracketToNonterminal' optionalColon trueFalse    { artManager.optionBlock.ebnfBracketToNonterminal = trueFalse1.v; }
+    | 'ebnfClosureRight' optionalColon trueFalse           { artManager.optionBlock.ebnfClosureLeft = trueFalse1.v; }
+    | 'ebnfClosureLeft' optionalColon trueFalse            { artManager.optionBlock.ebnfClosureRight = trueFalse1.v; }
+    | 'ebnfLeftFactor' optionalColon trueFalse             { artManager.optionBlock.ebnfLeftFactor = trueFalse1.v; }
+
+    (* Lexer experimental options *)
+    | 'lexDFA' optionalColon trueFalse                     { artManager.optionBlock.lexDFA = trueFalse1.v; }
+    | 'lexCFRecognise' optionalColon trueFalse             { artManager.optionBlock.lexCFRecognise = trueFalse1.v; }
+    | 'lexCFParse' optionalColon trueFalse                 { artManager.optionBlock.lexCFParse = trueFalse1.v; }
+
+    | 'lexWSSuffix' optionalColon trueFalse                { artManager.optionBlock.lexWSSuffix = trueFalse1.v; }
+    | 'lexExtents' optionalColon trueFalse                 { artManager.optionBlock.lexExtents = trueFalse1.v; }
+    | 'lexSegments' optionalColon trueFalse                { artManager.optionBlock.lexSegments = trueFalse1.v; }
+    | 'lexRecursive' optionalColon trueFalse               { artManager.optionBlock.lexRecursive = trueFalse1.v; }
+    | 'lexPrintTWESet' optionalColon trueFalse             { artManager.optionBlock.lexPrintTWESet = trueFalse1.v; }
+
+    | 'lexDead' optionalColon trueFalse                    { artManager.optionBlock.lexDead = trueFalse1.v; }
+    | 'lexLongestWithin' optionalColon trueFalse           { artManager.optionBlock.lexLongestWithin = trueFalse1.v; }
+    | 'lexLongestAcross' optionalColon trueFalse           { artManager.optionBlock.lexLongestAcross = trueFalse1.v; }
+    | 'lexPriority' optionalColon trueFalse                { artManager.optionBlock.lexPriority = trueFalse1.v; }
+
+    | 'postUseTerminals' optionalColon trueFalse           { artManager.optionBlock.postUseTerminals = trueFalse1.v; }
+    | 'postLongestWithin' optionalColon trueFalse          { artManager.optionBlock.postLongestWithin = trueFalse1.v; }
+    | 'postLongestAcross' optionalColon trueFalse          { artManager.optionBlock.postLongestAcross = trueFalse1.v; }
+    | 'postPriority' optionalColon trueFalse               { artManager.optionBlock.postPriority = trueFalse1.v; }
+
+    (* Generated parser options *)
+    | 'outputDirectory' optionalColon STRING_PLAIN_SQ      { artManager.optionBlock.outputDirectory = STRING_PLAIN_SQ1.v; }
+    | 'namespace' optionalColon STRING_PLAIN_SQ            { artManager.optionBlock.namespace = STRING_PLAIN_SQ1.v; }
+    | 'lexerName' optionalColon STRING_PLAIN_SQ            { artManager.optionBlock.lexerName = STRING_PLAIN_SQ1.v; }
+    | 'parserName' optionalColon STRING_PLAIN_SQ           { artManager.optionBlock.parserName = STRING_PLAIN_SQ1.v; }
+
+    | 'generateDynamic'                                    { artManager.optionBlock.despatchMode = ARTModeDespatch.dynamic; }
+    | 'generateStatic'                                     { artManager.optionBlock.despatchMode = ARTModeDespatch.static_; }
+    | 'generateState'                                      { artManager.optionBlock.despatchMode = ARTModeDespatch.state; }
+    | 'generateFragment'                                   { artManager.optionBlock.despatchMode = ARTModeDespatch.fragment; }
+    | 'generatePool'                                       { artManager.optionBlock.supportMode = ARTModeSupport.HashPool; }
+    | 'generateJava'                                       { artManager.optionBlock.targetLanguageMode = ARTModeTargetLanguage.Java; }
+    | 'generateC++'                                        { artManager.optionBlock.targetLanguageMode = ARTModeTargetLanguage.CPP; }
+    
+    (* GLL experimental options *)
+    | 'predictivePops' optionalColon trueFalse             { artManager.optionBlock.predictivePops = trueFalse1.v; }
+    | 'FIFODescriptors' optionalColon trueFalse            { artManager.optionBlock.FIFODescriptors = trueFalse1.v; }
+    | 'suppressPopGuard' optionalColon trueFalse           { artManager.optionBlock.suppressPopGuard = trueFalse1.v; }
+    | 'suppressProductionGuard' optionalColon trueFalse    { artManager.optionBlock.suppressProductionGuard = trueFalse1.v; }
+    | 'suppressTestRepeat' optionalColon trueFalse         { artManager.optionBlock.suppressTestRepeat = trueFalse1.v; }
+    | 'suppressSemantics' optionalColon trueFalse          { artManager.optionBlock.suppressSemantics = trueFalse1.v; }
+
+    (* Algorithm selection options *)
+    | 'lexerData'                                          { artManager.optionBlock.algorithmMode = ARTModeAlgorithm.lexerData; }
+      
+    | 'earley'                                             { artManager.optionBlock.algorithmMode = ARTModeAlgorithm.earleyLinkedAPI; }
+    | 'earley2007LinkedAPI'                                { artManager.optionBlock.algorithmMode = ARTModeAlgorithm.earley2007LinkedAPI; }
+    | 'earleyLinkedAPI'                                    { artManager.optionBlock.algorithmMode = ARTModeAlgorithm.earleyLinkedAPI; }
+    | 'earleyIndexedAPI'                                   { artManager.optionBlock.algorithmMode = ARTModeAlgorithm.earleyIndexedAPI; }
+    | 'earleyIndexedPool'                                  { artManager.optionBlock.algorithmMode = ARTModeAlgorithm.earleyIndexedPool; }
+    | 'earleyIndexedData'                                  { artManager.optionBlock.algorithmMode = ARTModeAlgorithm.earleyIndexedData; }
+
+    | 'earleyTable'                                        { artManager.optionBlock.algorithmMode = ARTModeAlgorithm.earleyTableLinkedAPI; }
+    | 'earleyTableLinkedAPI'                               { artManager.optionBlock.algorithmMode = ARTModeAlgorithm.earleyTableLinkedAPI; }
+    | 'earleyTableIndexedAPI'                              { artManager.optionBlock.algorithmMode = ARTModeAlgorithm.earleyTableIndexedAPI; }
+    | 'earleyTableIndexedPool'                             { artManager.optionBlock.algorithmMode = ARTModeAlgorithm.earleyTableIndexedPool; }
+    | 'earleyTableIndexedData'                             { artManager.optionBlock.algorithmMode = ARTModeAlgorithm.earleyTableIndexedData; }
+            
+    | 'cnp'                                                { artManager.optionBlock.algorithmMode = ARTModeAlgorithm.cnpLinkedAPI; }
+    | 'cnpLinkedAPI'                                       { artManager.optionBlock.algorithmMode = ARTModeAlgorithm.cnpLinkedAPI; }
+    | 'cnpIndexedAPI'                                      { artManager.optionBlock.algorithmMode = ARTModeAlgorithm.cnpIndexedAPI; }
+    | 'cnpIndexedPool'                                     { artManager.optionBlock.algorithmMode = ARTModeAlgorithm.cnpIndexedPool; }
+    | 'cnpGeneratorPool'                                   { artManager.optionBlock.algorithmMode = ARTModeAlgorithm.cnpGeneratorPool; }
+      
+    | 'lcnp'                                               { artManager.optionBlock.algorithmMode = ARTModeAlgorithm.lcnpLinkedAPI; }
+    | 'lcnpLinkedAPI'                                      { artManager.optionBlock.algorithmMode = ARTModeAlgorithm.lcnpLinkedAPI; }
+    | 'lcnpIndexedAPI'                                     { artManager.optionBlock.algorithmMode = ARTModeAlgorithm.lcnpIndexedAPI; }
+    | 'lcnpIndexedPool'                                    { artManager.optionBlock.algorithmMode = ARTModeAlgorithm.lcnpIndexedPool; }
+    | 'lcnpGeneratorPool'                                  { artManager.optionBlock.algorithmMode = ARTModeAlgorithm.lcnpGeneratorPool; }
+      
+    | 'gll'                                                { artManager.optionBlock.algorithmMode = ARTModeAlgorithm.gllGeneratorPool; }
+    | 'gllGeneratorPool'                                   { artManager.optionBlock.algorithmMode = ARTModeAlgorithm.gllGeneratorPool; }
+    | 'gllTWEGeneratorPool'                                { artManager.optionBlock.algorithmMode = ARTModeAlgorithm.gllTWEGeneratorPool; }
+    | 'gllClusteredGeneratorPool'                          { artManager.optionBlock.algorithmMode = ARTModeAlgorithm.gllGeneratorPool; artManager.optionBlock.clusteredGSS = true; }
+
+    | 'mgll'                                               { artManager.optionBlock.algorithmMode = ARTModeAlgorithm.gllGeneratorPool; artManager.optionBlock.mGLL = true; }
+    | 'mgllGeneratorPool'                                  { artManager.optionBlock.algorithmMode = ARTModeAlgorithm.gllGeneratorPool; artManager.optionBlock.mGLL = true; }
+
+    | 'osbrd'                                              { artManager.optionBlock.algorithmMode = ARTModeAlgorithm.osbrdGenerator; }
+    | 'osbrdGenerator'                                     { artManager.optionBlock.algorithmMode = ARTModeAlgorithm.osbrdGenerator; }
+
+optionalColon ::= # | ':'
+
+trueFalse <v:boolean> 
+  ::= # { trueFalse.v = true; }
+    | 'true' { trueFalse.v = true; }
+    | 'false' { trueFalse.v = false; }
+
+grammarRule ::= nonterminal^   { attributesOpt1.lhs = nonterminal1.v;; if (currentModule.getDefaultStart() == null) currentModule.setDefaultStart(nonterminal1.v); }
+         attributesOpt^ 
+         '::='^ {rhs1.lhs = nonterminal1.v; rhs1.isDeleter = false; } rhs 
+
+deleter ::= nonterminal^ ':~='^ {rhs1.lhs = nonterminal1.v; rhs1.isDeleter = true; }  rhs
+
+attributesOpt<lhs:String> ::= {attributes1.lhs = attributesOpt.lhs;} '<'^ attributes^ '>'^ | #^
+attributes<lhs:String> ::= {attribute1.lhs = attributes.lhs; attributes1.lhs = attributes.lhs; } attribute attributes^ | #^
+attribute<lhs:String> ::= ID ':'^ TYPE  { currentModule.addAttribute(attribute.lhs, ID1.v, TYPE1.v); } 
+
+(* Grammar body rules below *)
+
+rhs<lhs:String isDeleter:boolean> ::= cat { if (rhs.isDeleter) currentModule.addDeleter(rhs.lhs, artNewParent); else currentModule.addProduction(rhs.lhs, artNewParent);}
+
+| cat { if (rhs.isDeleter) currentModule.addDeleter(rhs.lhs, artNewParent); else currentModule.addProduction(rhs.lhs, artNewParent);} 
+  '|'^ {rhs1.lhs = rhs.lhs; rhs1.isDeleter = rhs.isDeleter; } rhs^ 
+
+alt ::= cat^^ |         (* This cat is double hatted onto the alt so that we do not have a singleton alt *)
+        cat '|'^ alt1^  (* alt1 matches the same language as alt, but has different hat behaviour *)
+alt1 ::= cat | cat '|'^ alt1^ 
+
+cat::= slot catTail^
+catTail ::=  abbrev slot | abbrev slot catTail^
+
+slot ::= #^ | action 
+
+abbrev ::= iter^^ | iter '*'^^ | iter '+'^^ | iter '?'^^ 
+
+iter ::= diff^^ | diff '@'^^ iter^ 
+
+diff ::= union^^ | diff^ '\\'^^ union 
+
+union ::= not^^ | union^ '||'^^ not
+
+not ::=  element^^ | '\\'^^ element 
+
+element<doFirst:boolean> 
+        ::= epsilon^^ | 
+            nonterminal^^ | 
+            caseSensitiveTerminal^^ | 
+            caseInsensitiveTerminal^^ | 
+            characterTerminal^^ | 
+            characterSetTerminal^^ | 
+            builtinTerminal^^ |
+
+            epsilon^^ annotations | 
+            nonterminal^^ annotations | 
+            caseSensitiveTerminal^^ annotations | 
+            caseInsensitiveTerminal^^ annotations | 
+            characterTerminal^^ annotations | 
+            characterSetTerminal^^ annotations | 
+            builtinTerminal^^ annotations |
+
+            '('^^ alt ')'^ 
+
+annotations ::= annotation | annotation annotations^ 
+annotation ::= name^^ | delay^^ | gather^^ | fold^^ 
+
+name ::= ':'^ ID 
+delay ::= '<'^ 
+gather ::= '!'^ ID 
+fold ::= '^_' | '^' | '^^' | '^^^' 
+
+nonterminal<v:String> ::= ID^ {nonterminal.v = ID1.v;}
+                        | STRING_DOLLAR^  {nonterminal.v = "$" + STRING_DOLLAR1.v + "$";} 
+caseSensitiveTerminal<v:String> ::= STRING_PLAIN_SQ^ {caseSensitiveTerminal.v = STRING_PLAIN_SQ1.v;} 
+caseInsensitiveTerminal<v:String> ::= STRING_DQ^ {caseInsensitiveTerminal.v = STRING_DQ1.v;} 
+characterTerminal<v:String> ::= CHAR_BQ^ {characterTerminal.v = CHAR_BQ1.v;} 
+characterSetTerminal<lo:String hi:String> ::= CHAR_BQ^  { characterSetTerminal.lo = CHAR_BQ1.v; } '..'^ CHAR_BQ^ { characterSetTerminal.hi = CHAR_BQ2.v;} 
+builtinTerminal<v:String> ::= '&'^ ID^ {builtinTerminal.v = ID1.v; } 
+insertionName<v:String> ::= '%%'^ ID^ {insertionName.v = ID1.v;}
+epsilon ::=  '#'^
+
+action<v:String> ::= STRING_BRACE_NEST^ { action.v = STRING_BRACE_NEST1.v; } 
+                   | '\\' term
+
+insertion ::= '[' alt ']' 
+
+IDList ::= ID | ID IDList 
+IDopt<v:String> ::= ID {IDopt.v = ID1.v; }| {IDopt.v = null;} #^
+
+term ::= INTEGER
+       | REAL
+       | STRING_DQ
+       | ID
+       | ID '(' terms ')'
+
+termsOpt ::= # | terms
+
+terms ::= term 
+        | term ',' term
+
+(* Lexical rules faked up using builtins *)
+
+ID <leftExtent:int rightExtent:int lexeme:String v:String b: boolean> ::= 
+  &ID^ {ID.lexeme = artLexeme(ID.leftExtent, ID.rightExtent); ID.v = artLexemeAsID(ID.leftExtent, ID.rightExtent); } 
+
+(* This is to support Java style generics in attribute declarations *)
+TYPE<leftExtent:int rightExtent:int lexeme:String v:String> ::= 
+  TypeNest{TYPE.lexeme = artLexeme(TYPE.leftExtent, TYPE.rightExtent); TYPE.v = artLexemeAsID(TYPE.leftExtent, TYPE.rightExtent).trim(); } 
+
+TypeNest ::= &ID | &ID '<' TypeList '>' 
+
+TypeList ::= TypeNest | TypeNest ',' TypeList 
+
+INTEGER <leftExtent:int rightExtent:int lexeme:String v:int> ::= 
+  &INTEGER^ {INTEGER.lexeme = artLexeme(INTEGER.leftExtent, INTEGER.rightExtent); INTEGER.v = artLexemeAsInteger(INTEGER.leftExtent, INTEGER.rightExtent); } 
+
+REAL <leftExtent:int rightExtent:int lexeme:String v:double> ::= 
+  &REAL^ {REAL.lexeme = artLexeme(REAL.leftExtent, REAL.rightExtent); REAL.v = artLexemeAsReal(REAL.leftExtent, REAL.rightExtent); } 
+
+STRING_DQ <leftExtent:int rightExtent:int lexeme:String v:String> ::= 
+  &STRING_DQ^ {STRING_DQ.lexeme = artLexeme(STRING_DQ.leftExtent, STRING_DQ.rightExtent); STRING_DQ.v = artLexemeAsString(STRING_DQ.leftExtent, STRING_DQ.rightExtent); } 
+
+STRING_DOLLAR <leftExtent:int rightExtent:int lexeme:String v:String> ::= 
+  &STRING_DOLLAR^ {STRING_DOLLAR.lexeme = artLexeme(STRING_DOLLAR.leftExtent, STRING_DOLLAR.rightExtent); STRING_DOLLAR.v = artLexemeAsString(STRING_DOLLAR.leftExtent, STRING_DOLLAR.rightExtent); } 
+
+STRING_PLAIN_SQ <leftExtent:int rightExtent:int lexeme:String v:String> ::= 
+  &STRING_PLAIN_SQ^ {STRING_PLAIN_SQ.lexeme = artLexeme(STRING_PLAIN_SQ.leftExtent, STRING_PLAIN_SQ.rightExtent); STRING_PLAIN_SQ.v = artLexemeAsRawString(STRING_PLAIN_SQ.leftExtent, STRING_PLAIN_SQ.rightExtent, 1, 1); } 
+
+CHAR_BQ <leftExtent:int rightExtent:int lexeme:String v:String> ::= 
+  &CHAR_BQ^ {CHAR_BQ.lexeme = artLexeme(CHAR_BQ.leftExtent, CHAR_BQ.rightExtent); CHAR_BQ.v = artLexemeAsString(CHAR_BQ.leftExtent, CHAR_BQ.rightExtent, 1, 0); } 
+
+STRING_BRACE_NEST <leftExtent:int rightExtent:int lexeme:String v:String> ::= 
+  &STRING_BRACE_NEST^	      {STRING_BRACE_NEST.lexeme = artLexeme(STRING_BRACE_NEST.leftExtent, STRING_BRACE_NEST.rightExtent); STRING_BRACE_NEST.v = artLexemeAsString(STRING_BRACE_NEST.leftExtent, STRING_BRACE_NEST.rightExtent); } 

@@ -1,0 +1,70 @@
+graph:{
+orientation:top_to_bottom
+edge.arrowsize:7
+edge.thickness:1
+display_edge_labels:yes
+arrowmode:free
+node.borderwidth:1
+node:{title:"2"label:"text" horizontal_order:2 shape:ellipse }
+edge:{sourcename:"2" targetname:"4"}
+edge:{sourcename:"2" targetname:"36"}
+node:{title:"36"label:"rule" horizontal_order:36 shape:ellipse }
+edge:{sourcename:"36" targetname:"38"}
+edge:{sourcename:"36" targetname:"42"}
+edge:{sourcename:"36" targetname:"44"}
+edge:{sourcename:"36" targetname:"54"}
+edge:{sourcename:"36" targetname:"56"}
+edge:{sourcename:"36" targetname:"62"}
+node:{title:"62"label:"'.'" horizontal_order:62}
+node:{title:"56"label:"production" horizontal_order:56 shape:ellipse }
+edge:{sourcename:"56" targetname:"58"}
+node:{title:"58"label:"ruleName" horizontal_order:58 shape:ellipse }
+edge:{sourcename:"58" targetname:"60"}
+node:{title:"60"label:"A" horizontal_order:60}
+node:{title:"54"label:"'|'" horizontal_order:54}
+node:{title:"44"label:"production" horizontal_order:44 shape:ellipse }
+edge:{sourcename:"44" targetname:"46"}
+edge:{sourcename:"44" targetname:"50"}
+node:{title:"50"label:"terminal" horizontal_order:50 shape:ellipse }
+edge:{sourcename:"50" targetname:"52"}
+node:{title:"52"label:"'z'" horizontal_order:52}
+node:{title:"46"label:"terminal" horizontal_order:46 shape:ellipse }
+edge:{sourcename:"46" targetname:"48"}
+node:{title:"48"label:"'x'" horizontal_order:48}
+node:{title:"42"label:"'::='" horizontal_order:42}
+node:{title:"38"label:"ruleName" horizontal_order:38 shape:ellipse }
+edge:{sourcename:"38" targetname:"40"}
+node:{title:"40"label:"C" horizontal_order:40}
+node:{title:"4"label:"rule" horizontal_order:4 shape:ellipse }
+edge:{sourcename:"4" targetname:"6"}
+edge:{sourcename:"4" targetname:"10"}
+edge:{sourcename:"4" targetname:"12"}
+edge:{sourcename:"4" targetname:"26"}
+edge:{sourcename:"4" targetname:"28"}
+edge:{sourcename:"4" targetname:"34"}
+node:{title:"34"label:"'.'" horizontal_order:34}
+node:{title:"28"label:"production" horizontal_order:28 shape:ellipse }
+edge:{sourcename:"28" targetname:"30"}
+node:{title:"30"label:"terminal" horizontal_order:30 shape:ellipse }
+edge:{sourcename:"30" targetname:"32"}
+node:{title:"32"label:"'ccb'" horizontal_order:32}
+node:{title:"26"label:"'|'" horizontal_order:26}
+node:{title:"12"label:"production" horizontal_order:12 shape:ellipse }
+edge:{sourcename:"12" targetname:"14"}
+edge:{sourcename:"12" targetname:"18"}
+edge:{sourcename:"12" targetname:"22"}
+node:{title:"22"label:"terminal" horizontal_order:22 shape:ellipse }
+edge:{sourcename:"22" targetname:"24"}
+node:{title:"24"label:"'b'" horizontal_order:24}
+node:{title:"18"label:"ruleName" horizontal_order:18 shape:ellipse }
+edge:{sourcename:"18" targetname:"20"}
+node:{title:"20"label:"C" horizontal_order:20}
+node:{title:"14"label:"terminal" horizontal_order:14 shape:ellipse }
+edge:{sourcename:"14" targetname:"16"}
+node:{title:"16"label:"'a'" horizontal_order:16}
+node:{title:"10"label:"'::='" horizontal_order:10}
+node:{title:"6"label:"ruleName" horizontal_order:6 shape:ellipse }
+edge:{sourcename:"6" targetname:"8"}
+node:{title:"8"label:"A" horizontal_order:8}
+
+}

@@ -1,0 +1,128 @@
+graph: {
+  title: "SYNTAXTREE"
+  color: lightcyan
+  iconcolors: 32
+  amax: 0 fast_icons: no
+  width: 640
+  height: 400
+  xmax: 10
+  ymax: 10
+  xbase: 5
+  ybase: 5
+  xspace: 20
+  xlspace: 10
+  yspace: 70
+  xraster: 1
+  xlraster: 1
+  yraster: 1
+  shrink:  100
+  stretch: 33
+  layout_downfactor: 10
+  layout_upfactor: 1
+  layout_nearfactor: 0
+  layout_splinefactor: 70
+  spreadlevel: 1
+  treefactor: 0.500000
+  bmax: 100
+  cmin: 0
+  cmax: 32767
+  pmin: 0
+  pmax: 100
+  rmin: 0
+  rmax: 0
+  smax: 100
+  node_alignment: center
+  orientation: top_to_bottom
+  late_edge_labels: no
+  display_edge_labels: no
+  dirty_edge_labels: no
+  finetuning: yes
+  nearedges: yes
+  splines: no
+  ignoresingles: no
+  straight_phase: yes
+  priority_phase: yes
+  manhatten_edges: yes
+  smanhatten_edges: no
+  port_sharing: yes
+  crossingphase2: yes
+  crossingoptimization: yes
+  crossingweight: bary
+  arrow_mode: fixed
+  colorentry 0 :  255 255 255
+  colorentry 1 :  0 0 255
+  colorentry 2 :  255 0 0
+  colorentry 3 :  0 255 0
+  colorentry 4 :  255 255 0
+  colorentry 5 :  255 0 255
+  colorentry 6 :  0 255 255
+  colorentry 7 :  85 85 85
+  colorentry 8 :  0 0 128
+  colorentry 9 :  128 0 0
+  colorentry 10 :  0 128 0
+  colorentry 11 :  128 128 0
+  colorentry 12 :  128 0 128
+  colorentry 13 :  0 128 128
+  colorentry 14 :  255 215 0
+  colorentry 15 :  170 170 170
+  colorentry 16 :  128 128 255
+  colorentry 17 :  255 128 128
+  colorentry 18 :  128 255 128
+  colorentry 19 :  255 255 128
+  colorentry 20 :  255 128 255
+  colorentry 21 :  128 255 255
+  colorentry 22 :  238 130 238
+  colorentry 23 :  64 224 208
+  colorentry 24 :  127 255 212
+  colorentry 25 :  240 230 140
+  colorentry 26 :  160 32 240
+  colorentry 27 :  154 205 50
+  colorentry 28 :  255 192 203
+  colorentry 29 :  255 165 0
+  colorentry 30 :  218 112 214
+         node: {title:"A" 
+		label:"Struct bar\n\f22next\n\f29content" }
+         node: {title:"B" 
+		label:"Struct bar\n\f22next\n\f29content" }
+         node: {title:"C" 
+		label:"Struct bar\n\f22next\n\f29content" }
+         node: {title:"D" 
+		label:"Struct bar\n\f22next\n\f29content" }
+	 edge: { color: lilac sourcename:"A" targetname:"B" anchor: 2 }
+	 edge: { color: lilac sourcename:"B" targetname:"C" anchor: 2 }
+	 edge: { color: lilac sourcename:"C" targetname:"D" anchor: 2 }
+
+         node: {title:"AS" 
+		label:"Struct foo\n\f01field A\n\f02field B\n\f11field C"  }
+         node: {title:"BS" 
+		label:"Struct foo\n\f01field A\n\f02field B\n\f11field C"  }
+         node: {title:"CS" 
+		label:"Struct foo\n\f01field A\n\f02field B\n\f11field C"  }
+         node: {title:"DS" 
+		label:"Struct foo\n\f01field A\n\f02field B\n\f11field C"  }
+	 edge: { color: orange sourcename:"A" targetname:"AS" anchor: 3 }
+	 edge: { color: orange sourcename:"B" targetname:"BS" anchor: 3 }
+	 edge: { color: orange sourcename:"C" targetname:"CS" anchor: 3 }
+	 edge: { color: orange sourcename:"D" targetname:"DS" anchor: 3 }
+
+         node: {title:"X1" } 
+         node: {title:"X2" } 
+         node: {title:"X3" } 
+         node: {title:"Y1" } 
+         node: {title:"Y2" } 
+         node: {title:"Y3" } 
+         node: {title:"Z1" } 
+         node: {title:"Z2" } 
+         node: {title:"Z3" } 
+
+	 edge: { color: blue sourcename:"AS" targetname:"X1" anchor: 2 }
+	 edge: { color: red sourcename:"AS" targetname:"X2" anchor: 3 }
+	 edge: { color: darkyellow sourcename:"AS" targetname:"X3" anchor: 4 }
+	 edge: { color: blue sourcename:"BS" targetname:"Y1" anchor: 2 }
+	 edge: { color: red sourcename:"BS" targetname:"Y2" anchor: 3 }
+	 edge: { color: darkyellow sourcename:"BS" targetname:"Y3" anchor: 4 }
+	 edge: { color: blue sourcename:"CS" targetname:"Z1" anchor: 2 }
+	 edge: { color: red sourcename:"CS" targetname:"Z2" anchor: 3 }
+	 edge: { color: darkyellow sourcename:"CS" targetname:"Z3" anchor: 4 }
+}
+

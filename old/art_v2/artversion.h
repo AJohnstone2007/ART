@@ -1,0 +1,4 @@
+#define ARTMAJOR 3
+#define ARTMINOR 0
+#define ARTBUILD 300
+#define ARTSTATUS "AMBER"

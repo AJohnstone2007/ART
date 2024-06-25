@@ -1,0 +1,6 @@
+(* TREE *) 
+
+E:integer ::= INTEGER:val1 [* result = val1; *] 
+                 [ '+' E:val2 [* result = val1 + val2; *] ] .
+
+    (***** arith1.bnf *****)

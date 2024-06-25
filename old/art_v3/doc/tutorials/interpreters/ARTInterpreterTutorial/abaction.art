@@ -1,0 +1,3 @@
+S ::= A | B
+A ::= 'a' {System.out.println("Found an a");} A | #
+B ::='b'

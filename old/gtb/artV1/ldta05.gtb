@@ -1,0 +1,56 @@
+S::= B .
+
+B ::= S | C | 'a' S S.
+
+C ::= D.
+
+D ::= B | E.
+
+E ::= F.
+
+F ::= G.
+
+G ::= H.
+
+H ::= G | K.
+
+K ::= 	G | #.
+
+(
+write["\n" gtb_version " processing '" gtb_main_file_name "' on " date_time "\n\n"]
+this_grammar := grammar[S]
+
+this_gdg := gdg[this_grammar]
+write[open["gdg.vcg"] this_gdg]
+(*
+compressed_gdg := gdg_compress[this_gdg 1]
+write[open["gdg_c.vcg"] compressed_gdg]
+*)
+analysed_gdg := gdg_analyse[this_gdg]
+write[open["gdg_a.vcg"] analysed_gdg]
+
+
+(*
+this_nfa := nfa[this_grammar lr 1  singleton_lookahead_sets]
+
+this_dfa := dfa[this_nfa]
+
+write[this_grammar]
+
+write[open["nfa.vcg"] this_nfa]
+
+write[open["dfa.vcg"] this_dfa]
+
+
+this_parse_table := parse_table[this_dfa]
+write[open["parse.tbl"] this_parse_table]
+
+	
+lex_whitespace := "white_space" 
+
+lr_parse[this_parse_table "xab"]
+*)
+
+write["\n" CPU_time " CPU seconds elapsed\n\n"]
+
+)

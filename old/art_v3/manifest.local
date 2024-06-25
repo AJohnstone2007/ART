@@ -1,0 +1,7 @@
+Specification-Vendor: Center for Software Language Engineering, RHUL
+Specification-Title: ART
+Specification-Version: 3.0
+Implementation-Vendor: Center for Software Language Engineering, RHUL
+Implementation-Title: ART
+Implementation-Version: 3.0.300.AMBER
+Main-Class: uk.ac.rhul.cs.csle.art.ART

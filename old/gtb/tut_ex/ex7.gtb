@@ -1,0 +1,14 @@
+(* ex7  GLR parsing *)
+S ::=  A 'b' | 'a' 'b' .
+A ::=  'a' | B .
+B ::=  'a' .
+(
+ex7_nfa := nfa[grammar[S] lr 1]
+render[open["nfa.vcg"] ex7_nfa]
+
+ex7_dfa := dfa[ex7_nfa]
+render[open["dfa.vcg"] ex7_dfa]
+
+this_derivation := tomita_1_parse[ex7_dfa "ab"]
+render[open["ssg.vcg"] this_derivation]
+)

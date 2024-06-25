@@ -1,0 +1,341 @@
+/* SCCS-info %W% %E% */
+/* $Id: test.vcg,v 1.1 1995/03/22 17:45:38 sander Exp $ */
+
+graph: {
+ 
+title: "charset"
+  width: 640
+  height: 400
+  shrink: 100
+  stretch: 50
+node.fontname: "timBI24.vcf"
+ 
+node: {
+	 borderwidth: 1
+	 loc: { x: 10   y: 10 }
+	 title: "1"
+	 label: "
+\fi000
+\fi008
+\fi016
+\fi024
+\fi032
+\fi040
+\fi048
+\fi056
+\fi064
+\fi072
+\fi080
+\fi088
+\fi096
+\fi104
+\fi112
+\fi120
+\fi128
+\fi136
+\fi144
+\fi152
+\fi160
+\fi168
+\fi176
+\fi184
+\fi192
+\fi200
+\fi208
+\fi216
+\fi224
+\fi232
+\fi240
+\fi248
+ "
+
+}
+
+
+node: {
+	 borderwidth: 1
+	 loc: { x: 97   y: 10 }
+	 title: "2"
+	 label: "
+\fi001
+\fi009
+\fi017
+\fi025
+\fi033
+\fi041
+\fi049
+\fi057
+\fi065
+\fi073
+\fi081
+\fi089
+\fi097
+\fi105
+\fi113
+\fi121
+\fi129
+\fi137
+\fi145
+\fi153
+\fi161
+\fi169
+\fi177
+\fi185
+\fi193
+\fi201
+\fi209
+\fi217
+\fi225
+\fi233
+\fi241
+\fi249
+ "
+}
+
+node: {
+	 borderwidth: 1
+	 loc: { x: 184   y: 10 }
+	 title: "3"
+	 label: "
+\fi002
+\fi010
+\fi018
+\fi026
+\fi034
+\fi042
+\fi050
+\fi058
+\fi066
+\fi074
+\fi082
+\fi090
+\fi098
+\fi106
+\fi114
+\fi122
+\fi130
+\fi138
+\fi146
+\fi154
+\fi162
+\fi170
+\fi178
+\fi186
+\fi194
+\fi202
+\fi210
+\fi218
+\fi226
+\fi234
+\fi242
+\fi250
+ "
+}
+
+
+node: {
+	 borderwidth: 1
+	 loc: { x: 271  y: 10 }
+	 title: "4"
+	 label: "
+\fi003
+\fi011
+\fi019
+\fi027
+\fi035
+\fi043
+\fi051
+\fi059
+\fi067
+\fi075
+\fi083
+\fi091
+\fi099
+\fi107
+\fi115
+\fi123
+\fi131
+\fi139
+\fi147
+\fi155
+\fi163
+\fi171
+\fi179
+\fi187
+\fi195
+\fi203
+\fi211
+\fi219
+\fi227
+\fi235
+\fi243
+\fi251
+ "
+}
+
+
+
+node: {
+	 borderwidth: 1
+	 loc: { x: 358   y: 10 }
+	 title: "5"
+	 label: "
+\fi004
+\fi012
+\fi020
+\fi028
+\fi036
+\fi044
+\fi052
+\fi060
+\fi068
+\fi076
+\fi084
+\fi092
+\fi100
+\fi108
+\fi116
+\fi124
+\fi132
+\fi140
+\fi148
+\fi156
+\fi164
+\fi172
+\fi180
+\fi188
+\fi196
+\fi204
+\fi212
+\fi220
+\fi228
+\fi236
+\fi244
+\fi252
+ "
+}
+
+node: {
+	 borderwidth: 1
+	 loc: { x: 445   y: 10 }
+	 title: "6"
+	 label: "
+\fi005
+\fi013
+\fi021
+\fi029
+\fi037
+\fi045
+\fi053
+\fi061
+\fi069
+\fi077
+\fi085
+\fi093
+\fi101
+\fi109
+\fi117
+\fi125
+\fi133
+\fi141
+\fi149
+\fi157
+\fi165
+\fi173
+\fi181
+\fi189
+\fi197
+\fi205
+\fi213
+\fi221
+\fi229
+\fi237
+\fi245
+\fi253
+ "
+}
+
+
+node: {
+	 borderwidth: 1
+	 loc: { x: 532   y: 10 }
+	 title: "7"
+	 label: "
+\fi006
+\fi014
+\fi022
+\fi030
+\fi038
+\fi046
+\fi054
+\fi062
+\fi070
+\fi078
+\fi086
+\fi094
+\fi102
+\fi110
+\fi118
+\fi126
+\fi134
+\fi142
+\fi150
+\fi158
+\fi166
+\fi174
+\fi182
+\fi190
+\fi198
+\fi206
+\fi214
+\fi222
+\fi230
+\fi238
+\fi246
+\fi254
+ "
+}
+
+
+node: {
+	 borderwidth: 1
+	 loc: { x: 619   y: 10 }
+	 title: "8"
+	 label: "
+\fi007
+\fi015
+\fi023
+\fi031
+\fi039
+\fi047
+\fi055
+\fi063
+\fi071
+\fi079
+\fi087
+\fi095
+\fi103
+\fi111
+\fi119
+\fi127
+\fi135
+\fi143
+\fi151
+\fi159
+\fi167
+\fi175
+\fi183
+\fi191
+\fi199
+\fi207
+\fi215
+\fi223
+\fi231
+\fi239
+\fi247
+\fi255
+"
+}
+
+}
+

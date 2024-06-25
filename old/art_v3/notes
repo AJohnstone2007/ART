@@ -1,0 +1,581 @@
+Notes on Cava
+
+First test Cava and write some regression tests
+
+Work Cava up as a plausible language for the HeSOS system
+
+Simplify the grammar by doing away with the unit rule convention.
+
+Add unit nonterminals to punctuation operators
+
+Set grammar up with hats so as to provide eSOS terms
+
+Syntactic sugar for C-style function declarations
+
+Try and write eSOS rules that mirror the attribute grammar.
+
+Maybe write a translator from C to Cava?
+
+:= vs = have a command line switch that turns = into :=
+
+Make all elements expressions
+
+
+Notes on eSOS
+
+Current usage of functions can be subsumed in substitution
+
+1.
+
+funcOp(c,d) |> z
+---
+a(b,c,d),sig1 -> b(z),sig1
+
+2.
+---
+a(b,c,d),sig1 -> b(funcOp(c,d)),sig1
+
+
+s, left hand side matches against current configuration with empty environment
+
+
+<theta,sig,rho> -> <theta',sig,rho>
+
+
+
+
+
+
+Mod lexer to use static array of:
+
+whitespaces
+
+epsilon element number
+
+eos element number
+
+terminals
+
+Usages as follows
+
+
+
+
+
+
+
+check ID_SOS is still working in new lexer
+
+eSOS should display all side conditions including functions
+
+eSOS match operator not general
+
+     
+
+Earley table - failing on EBNF test?
+
+
+Builtin_ID seems to be the same.
+
+
+
+Notes on Java GC
+
+Have tried a lot of changes to the GC paramaters. Nondeteminacy remains quite high. For now use 
+
+-XX:NewSize=1000M -XX:SurvivorRatio=100 -Xms2048M -Xmx2048M
+
+We are presently rewrking pool.cpp to remove coprime
+
+
+
+Notes on EarleyTablePool in Java
+
+Constructor makes an EarleyTableIndexed from the grammar, and sets epsiln and eos
+
+There are three versions of artParse
+
+one takes just a string and simply throws an exception complaining that there is no grammar
+
+Another taks an input string and a nonterminal name and calls the main one with useRDNSet set to true
+
+This is the one that is used
+
+So, from C mainline just call the 'big' artParser as 
+
+artParse(optionBlock.inputs.get(0), null, true); 
+
+All of the table values are pulld from earleyTableIndex; so write a C output routine that gives access to those tables and then delete object name from C code
+
+
+So, add call to toCSting from EarleyTableIndexPool.java and try compiler
+
+
+
+Notes on adder simulation
+
+Redo models in OpenSCAD so that they are in the right vertical positions for UP
+
+Make groups: one for each figure wheel
+
+One for each axis
+
+
+
+
+Something bad is happening with annotations as one goes from 3_0_228 to current
+
+
+At the moment the special constructor for TWEset sets defaults. Bring under control of the option block.
+
+	
+
+New semantics regime
+
+Basic idea - use ARTValue classes
+
+A term add(X, y) will be interpretered as X.add(Y)
+
+All actions need to be written as
+
+LHS.a = ...
+
+or RHS.a1 = ...
+
+We probabaly need ARTValues that for selection and iteration
+
+Now we don't need to worry about syntax
+
+
+So 
+
+S <a,b,c> ::= 'a' a=1 X.z = 15 X 'c' b = c = 1 a = add(a, X.x, c)
+
+X <x,z> ::= 'b' x = div(z,z)
+
+Reflection
+
+X ::= Y< Z creates implicit attribute X.Y1 and action X.Y1=Y1
+
+We need a native interface; say dispatch(term, term)
+We need a term evaluator, say eval(ter)
+We need a tree traverse-and-evaluate, say traverse(term)
+
+Syntactic sugar
+
+X ::= Y X=
+
+Note: we don't  need to declare attributes: just collect them together
+
+< means delay traversal
+
+
+
+Supported grammars
+
+ARTParser.art
+ARTCavaParser.art
+ARTeSOSParser.art
+ARTTGParser.art
+
+mini series
+
+
+
+
+
+Notes on pool use in standard Earley
+
+One pool, reinitialised for each call to parse
+
+int acceptingSlotsSet 1:0
+earleyItem 3:0
+int [] eSets - E EarleyConfigurationSet[]
+int qSet
+int qPrimeSet
+int rSet   - R queue
+int vSet
+
+int hMap
+hMap 1:1
+
+sppfNode 3:1
+sppfPackedNode 2:0
+int sppf
+
+Notes on Cava parameter passing
+
+There exists ARTValueProcedure which contains 
+
+ARTValueMapOrderedHierarchy
+ 
+ARTGLLRDTHandle body (maybe change to term at some point - we need ART
+to build RDT's using ARTValueTerm)
+
+Step one: get the intepreter to output its symbol table at the end.
+
+
+Errors
+CNP generate broken
+Quite a lot of ABENDs many of which aneed looking at - why is the EBNF test not working
+
+
+
+Notes on Earley parsers
+
+Packages
+
+artearleylinkedapi
+artearleyindexedapi
+artearleyindexedpool
+
+artearleytable has table generation code
+Main entry point is in ARTEarleyTableLinked.java
+The idea is that ARTEarleyTableIndexed calls ARTEarleyTableLinked to make the table, and then creates an indexable version for downstream use
+
+artearleytablelinkedapi parses the linked table and the Java API
+
+artearleytableindexedapi parses using the indexed table and the Java API
+
+art earleytableindexedpool parses using the indexed table and HashPool
+
+In each case, the parser extens ARTParserBase
+
+Notes on the matrix of algorithms
+
+Base algorithm
+
+Earley
+EarleyTable
+CNP
+GLL
+MGLL
+LCNP
+MCNP
+
+generated/interpreted
+
+linkedAPI
+indexedAPI
+indexedPool
+generatedPool
+
+
+
+
+
+
+Notes on the software engineering train
+
+Using CNP as an exemplar - GLL would be the same in all variants
+
+cnp interpret instance api
+cnp interpret slotarray api
+*cnp interpret slotArray pool
+
+cnp generator
+
+*cnp generated pool (java)
+
+Using Earley as an examplar
+
+earley instance api
+earley slotArray api
+* earley slotArray pool
+
+earleyTable earleyNFA api
+earleyTable earleyNFAArray api
+* earleyTable earleyNFAArray pool
+
+* implement in C++ as well
+  
+
+
+
+Notes on top down parsing abstract machine
+
+We have a new presentation of the machine which uses the element
+numbers as th eoperations, with zero (EoS) as end of production.
+
+This leaves open the question of set tests. We can use numbers beyond
+the nonterminals for that.
+
+
+So, 0 => EoS
+1..|T| => terminal
+
+|T|+1 => epsilon (not used)
+
+|T| + 2.. |T| + |N| + 2 => nonterninal
+
+|T + |N| + 3... -> set tet
+
+
+Write random, top down and breadth first generators
+
+
+Summary of CNP data structures
+
+Signatures: 
+ARTBSR instance:?, i:int, j: int, k:int
+ARTCNPDescriptor: slot:?, k: int, i:int
+ARTClusterNode: nonterminal:? h: int
+ARTClusterNodePayload: kSet:set<int>, leafset:set<ARTCRFLeafNode>
+
+ 
+private ArrayList<ARTGrammarElementTerminal> input;
+  private int m;// Length of the input
+
+Use an array and an integer
+
+
+  private Set<ARTBSR> upsilon;
+  private Set<ARTCNPDescriptor> U;
+  private List<ARTCNPDescriptor> R;
+  private Map<ARTCRFClusterNode, ARTCRFClusterNodePayload> CRF; // A digraph - really a forest of unit trees toor -> leaf1, leaf2, ...
+  private Map<ARTCRFLeafNode, ARTCRFLeafNode> CRFleaves;
+  private int cU;
+  private int cI;
+  private boolean inLanguage;
+  private int descriptorFinds;
+  private int bsrFinds; // Count accesses to upsilon, NOT including scam of upsilon for start candiates in acceptance testing
+  private int crfFinds;
+  private int crfLeavesFinds;
+
+
+Check out ordering of felds in output
+!!!!!!!!!!!!
+
+gram1* series fails on Earley - why?
+
+
+Notes on FORTRAC
+
+Term grammar modified to have sigma as low priority and construction
+of term objects independant of the RDT. Not tested yet. Index
+acquisition into the B's.
+
+Notes on eSOS and IMLeSOS
+
+Should none, brk and cnt be terminals
+
+A version of GCD that had an n' in it and an unused n did not generate
+any errors.
+
+NB gcdSmall.sos does not terminate
+
+
+
+
+
+Notes on algebraic data types in ARTValue and eSOS
+
+Let us support sum an dproduct algebraic data types.
+
+A fully resolved value of any type can be represented as a simple term
+in which (i) the leaves are values, (ii) the sibling relationship
+represents product (X), and (iii)the parent-child relationship
+represents inclusion.
+
+A type made up purely of products may similarly be represented as a
+term in which the leaves are type names.
+
+A type which includes sum operations might be viewed as a set of
+product-only types which have been packed together.
+
+We can use a special internally defined constructor | to indicate the
+alternates packings. A term containing one or more | constructors is called a
+packec term.
+
+The operator ||> pattern matches a packed-or-closed term on the left
+with a packed term on the right, return either bottom if the match
+fails, or the rhs operand if it passes.
+
+Hence the expression typeTerm ||> closedTerm |> openTerm has the
+effect of type checking closedTerm against the typeTerm and then
+decomposing it to an environment of binfinds specified by the
+opernTerm
+
+
+
+Notes on Cava and the value system
+
+There is a problem inallowing semantic actions to nest - a missing bracket generates suprising outcomes. Time to get rid of those brackets!
+
+
+
+Notes on lexical grammar generation
+
+First cut: in the grammar class, have a makeLexer method which make sthe lexical grammar. In the generator, have a flag which causes the lexical grammar to be generated with special action to make TWE sets, or work off of the SPPF.
+
+
+
+
+Notes on SPPF rendering
+
+Basic invariant (assuming top to bottom layout)
+
+Each SPPF node is placed at x = leftExtent
+
+The extents gathering phase need only store the maximum width for each extent
+
+The post-extents gathering phase then computes the graphics-plane x-coordinate for each logical x-coordinate
+
+We need to add the 'multiroot' version of the traversal
+
+We need a switch to allow deep rendering without back edges - the basic version sets visited; the 'everywhere' version resets visited as we exit the recursion
+
+Options
+
+Failed putative parses or just parses that get back to the 'real' start symbol
+
+Full derivations or
+
+
+
+'render' methods in ARTGLL should be renamed RenderAsDot
+
+We need to form the 'local' xMax within each Z-plane so that they are laid out independently
+
+
+Notes on SOS interpreter
+
+Add extra ARTValue functions
+
+Have a standard prelude for setting up functions and values: allow
+function name in SOSrules to be different to the one internally
+
+Make a version of the interpeter that returns sets of configurations and
+investigates them all breadth first
+
+
+Remove EoK computation and attribute
+
+
+ART does not detect strings with end of line characters in them
+
+Incorrectly nested comments are not being detected by ART
+
+
+
+
+V3 breaks on multiple contiguous actions
+
+
+Notes on lexical analyser
+
+
+   
+Java lexing is brain damaged because we are testing against '\0'
+instead of checing eos.
+
+
+
+
+Notes for FORTRAC
+
+1. Set things up properly - we need \csle\dev\FORTRAC with a getfromEclipse.bat which builds: it will need access to the ART jar too.
+
+2. Add sets to the parsers so that they collect points and faces, and then load the mesh.
+
+How should the relationship be between parser and mesh?
+
+One option is to create the parser object (binary or ASCII) and then have a method which constructs and returns a mesh.
+
+The current option is that we have an ARTSTLMesh constructor which takes a parser. The mesh constructor then interrogates the sets in the parsers to build th emesh arrays,
+
+The mesh analyses shoud then probably live in the STLMesh class
+
+Anlayses: face count, point cout etc.
+Return a collection of meshes representing the sub meshes
+Normalise mesh to bounding box aligned at the origin
+Locate RAT and return coordinates
+Clone the mesh without the RAT
+
+
+
+
+
+
+Notes onV3 abends
+
+We are still producing all sets because we haven't putthe set in use code in yet
+
+We are filtering unused enumeration elements, but the initialisation code is still there...
+
+
+
+Put sppf node labels on GSS arrows
+
+Medium term issues
+------------------
+
+Deliberately crash is not being handled properly in the regression
+tester: it is meant to be noticed by ARTTest which should then perform
+a premature exit.
+
+There are more crashes in V3 than there should be - watch for
+exception handlers in test run. Mostly seem to be '@' issues
+
+After we have closure, we need to fix the label naming convention. At
+the moment we make a label ARTL_M_S for the start symbol, and
+ARTL_M_S_n for the labels on instances in the production trees for
+S. If we have a nonterminal S_1 in the user grammar, then this will
+break. Instead we should use a comvention like ARTL1_M_S for the
+labels. Could also change V2 to match.
+
+ARTVisual uses canvases, but these are of limited size. rework with 3D scene graph instead.
+
+Major steps not yet started
+------------------
+
+evaluator functions missing
+
+Immediate issues
+----------------
+
+Read ToPLAS paper on recovery
+
+Notes on RAT's
+--------------
+
+We need to find places where we have three right angled triangles joined at their right-vertices with a closing triangle.
+
+We need to worry about numerical precision.
+
+Test each triangle to find if it is right angled and make a list or right triangkes.
+
+'If the dot product of AB and BC is zero, then the triangle ABC has a right angle at B.'
+
+Sort the list by coordinates of right angle.
+
+Find block t of exactly length 3
+
+Find a triangle in the main list that covers t
+
+Done.
+
+So, we need a test for right angle in 3D.
+
+Take each pair of edges. Compute equations of line in 3D - we have two equations in three variables...
+
+Notes on staticJava
+
+Need more thought on symbol tables. We want to keep things simple, so
+values should carry their types around with them in the
+interpreter. Make a value keep a pointer to its record so that we can
+do type checking? That way we can do simple lookup in the symbol table by supplying the full signature.
+
+•Multiple semicolons/null statements
+•Methods having the same signature
+•Not being able to chain together declarations (e.g. int x,y,z; )
+•Initialise variables in the scope of the class (no statements will work in the scope of the class, but I believe it's only variable initialisations that work anyway)
+
+
+Notes on evaluator
+
+Add syntax so that <x:y(a,b,c)> generates x = new y(a,b,c) so that object attributes can be initialised.
+
+Notes on error reporting
+
+Get checkacceptance to find the rightmost NODE (not just extent) and from that report the slot and the input tocken

@@ -1,0 +1,18 @@
+!h1
+!b
+!g
+!i
+!s
+!y
+
+!v
+(* Regression: semantic actions *)
+
+A ::= $pqr$ $ xyz $ | $abc$ | $def$ 'z'  A.
+
+
+
+
+
+
+

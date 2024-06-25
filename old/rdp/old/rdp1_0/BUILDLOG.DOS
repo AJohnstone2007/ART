@@ -1,0 +1,121 @@
+MAKE Version 3.6  Copyright (c) 1992 Borland International
+
+Available memory 862736 bytes
+
+        bcc -A -N -mh  /c rdp.c
+Borland C++  Version 3.1 Copyright (c) 1992 Borland International
+rdp.c:
+
+        Available memory 529032
+        bcc -A -N -mh  /c rdp_aux.c
+Borland C++  Version 3.1 Copyright (c) 1992 Borland International
+rdp_aux.c:
+
+        Available memory 505364
+        bcc -A -N -mh  /c crash.c
+Borland C++  Version 3.1 Copyright (c) 1992 Borland International
+crash.c:
+
+        Available memory 585392
+        bcc -A -N -mh  /c scan.c
+Borland C++  Version 3.1 Copyright (c) 1992 Borland International
+scan.c:
+
+        Available memory 508516
+        bcc -A -N -mh  /c set.c
+Borland C++  Version 3.1 Copyright (c) 1992 Borland International
+set.c:
+
+        Available memory 573388
+        bcc -A -N -mh  /c symbol.c
+Borland C++  Version 3.1 Copyright (c) 1992 Borland International
+symbol.c:
+
+        Available memory 564088
+        bcc -A -N -mh  -o.\rdp.exe rdp.obj rdp_aux.obj crash.obj scan.obj set.obj symbol.obj
+Borland C++  Version 3.1 Copyright (c) 1992 Borland International
+Turbo Link  Version 5.1 Copyright (c) 1992 Borland International
+
+        Available memory 643744
+        rdp -otoy toy
+        bcc -A -N -mh  /c toy.c
+Borland C++  Version 3.1 Copyright (c) 1992 Borland International
+toy.c:
+Warning toy.c 732: 'base' is assigned a value that is never used in function main
+Warning toy.c 732: 'force' is assigned a value that is never used in function main
+
+        Available memory 339560
+        bcc -A -N -mh  -o.\toy.exe toy.obj crash.obj scan.obj set.obj symbol.obj
+Borland C++  Version 3.1 Copyright (c) 1992 Borland International
+Turbo Link  Version 5.1 Copyright (c) 1992 Borland International
+
+        Available memory 623416
+        toy -v test
+
+Toy V1.00 Feb 20 1994 15:44:25
+test.toy: toy interpreter OK
+ Text mode: 0 errors, 0 warnings
+        rdp -opascal -F pascal 
+Error: ** Production 'statement__8' contains null but first /\ follow is not empty
+ Total: 1 error, 0 warnings
+        bcc -A -N -mh  /c pascal.c
+Borland C++  Version 3.1 Copyright (c) 1992 Borland International
+pascal.c:
+Warning pascal.c 1820: 'base' is assigned a value that is never used in function main
+Warning pascal.c 1820: 'force' is assigned a value that is never used in function main
+
+        Available memory 275940
+        bcc -A -N -mh  -o.\pascal.exe pascal.obj crash.obj scan.obj set.obj symbol.obj
+Borland C++  Version 3.1 Copyright (c) 1992 Borland International
+Turbo Link  Version 5.1 Copyright (c) 1992 Borland International
+
+        Available memory 623400
+        pascal -v test
+
+Pascal parser V1.00 (generated) Feb 20 1994 15:45:00
+ test.pas: 0 errors, 0 warnings
+        rdp -ordp_gen rdp
+        bcc -A -N -mh  /c rdp_gen.c
+Borland C++  Version 3.1 Copyright (c) 1992 Borland International
+rdp_gen.c:
+
+        Available memory 310632
+        bcc -A -N -mh  -o.\rdp_gen.exe rdp_gen.obj rdp_aux.obj crash.obj scan.obj set.obj symbol.obj
+Borland C++  Version 3.1 Copyright (c) 1992 Borland International
+Turbo Link  Version 5.1 Copyright (c) 1992 Borland International
+
+        Available memory 623384
+        rdp_gen -ordp_gena rdp
+        bcc -A -N -mh  /c rdp_gena.c
+Borland C++  Version 3.1 Copyright (c) 1992 Borland International
+rdp_gena.c:
+
+        Available memory 310616
+        bcc -A -N -mh  -o.\rdp_gena.exe rdp_gena.obj rdp_aux.obj crash.obj scan.obj set.obj symbol.obj
+Borland C++  Version 3.1 Copyright (c) 1992 Borland International
+Turbo Link  Version 5.1 Copyright (c) 1992 Borland International
+
+        Available memory 623384
+        rdp_gena -ordp_genb rdp
+Comparing files RDP_GENA.C and RDP_GENB.C
+***** RDP_GENA.C
+#include "scan.h"
+#include "rdp_gena.h"
+#include "rdp_aux.h"
+***** RDP_GENB.C
+#include "scan.h"
+#include "rdp_genb.h"
+#include "rdp_aux.h"
+*****
+
+***** RDP_GENA.C
+        crash__("%s\n\n Recursive descent parser generator V1.00 (generated) " __DATE__ " " __TIME__ "\n\n"
+                 "Usage: rdp_gena [options] sourcefile \n\n"
+                 "Options:\n\n"
+***** RDP_GENB.C
+        crash__("%s\n\n Recursive descent parser generator V1.00 (generated) " __DATE__ " " __TIME__ "\n\n"
+                 "Usage: rdp_genb [options] sourcefile \n\n"
+                 "Options:\n\n"
+*****
+
+

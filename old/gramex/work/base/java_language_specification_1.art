@@ -1,0 +1,531 @@
+Goal ::=
+  CompilationUnit ;
+
+Literal ::=
+  'IntegerLiteral' |
+  'FloatingPointLiteral' |
+  'BooleanLiteral' |
+  'CharacterLiteral' |
+  'StringLiteral' |
+  'NullLiteral' ;
+
+Type ::=
+  PrimitiveType |
+  ReferenceType ;
+
+PrimitiveType ::=
+  NumericType |
+  'boolean' ;
+
+NumericType ::=
+  IntegralType |
+  FloatingPointType ;
+
+IntegralType ::=
+  'byte' | 'short' | 'int' | 'long' | 'char' ;
+
+FloatingPointType ::=
+  'float' | 'double' ;
+
+ReferenceType ::=
+  ClassOrInterfaceType |
+  ArrayType ;
+
+ClassOrInterfaceType ::=
+  Name ;
+
+ClassType ::=
+  ClassOrInterfaceType ;
+
+InterfaceType ::=
+  ClassOrInterfaceType ;
+
+ArrayType ::=
+  PrimitiveType '[' ']' |
+  Name '[' ']' |
+  ArrayType '[' ']' ;
+
+Name ::=
+  SimpleName |
+  QualifiedName ;
+
+SimpleName ::=
+  'Identifier' ;
+
+QualifiedName ::=
+  Name '.' 'Identifier' ;
+
+CompilationUnit ::=
+  PackageDeclaration? ImportDeclarations? TypeDeclarations? ;
+
+ImportDeclarations ::=
+  ImportDeclaration |
+  ImportDeclarations ImportDeclaration ;
+
+TypeDeclarations ::=
+  TypeDeclaration |
+  TypeDeclarations TypeDeclaration ;
+
+PackageDeclaration ::=
+  'package' Name ';' ;
+
+ImportDeclaration ::=
+  SingleTypeImportDeclaration |
+  TypeImportOnDemandDeclaration ;
+
+SingleTypeImportDeclaration ::=
+  'import' Name ';' ;
+
+TypeImportOnDemandDeclaration ::=
+  'import' Name '.' '*' ';' ;
+
+TypeDeclaration ::=
+  ClassDeclaration |
+  InterfaceDeclaration |
+  ';' ;
+
+Modifiers ::=
+  Modifier |
+  Modifiers Modifier ;
+
+Modifier ::=
+  'public' | 'protected' | 'private' |
+  'static' |
+  'abstract' | 'final' | 'native' | 'synchronized' | 'transient' | 'volatile' ;
+
+ClassDeclaration ::=
+  Modifiers? 'class' 'Identifier' Super? Interfaces? ClassBody ;
+
+Super ::=
+  'extends' ClassType ;
+
+Interfaces ::=
+  'implements' InterfaceTypeList ;
+
+InterfaceTypeList ::=
+  InterfaceType |
+  InterfaceTypeList ',' InterfaceType ;
+
+ClassBody ::=
+  '{' ClassBodyDeclarations? '}' ;
+
+ClassBodyDeclarations ::=
+  ClassBodyDeclaration |
+  ClassBodyDeclarations ClassBodyDeclaration ;
+
+ClassBodyDeclaration ::=
+  ClassMemberDeclaration |
+  StaticInitializer |
+  ConstructorDeclaration ;
+
+ClassMemberDeclaration ::=
+  FieldDeclaration |
+  MethodDeclaration ;
+
+FieldDeclaration ::=
+  Modifiers? Type VariableDeclarators ';' ;
+
+VariableDeclarators ::=
+  VariableDeclarator |
+  VariableDeclarators ',' VariableDeclarator ;
+
+VariableDeclarator ::=
+  VariableDeclaratorId |
+  VariableDeclaratorId '=' VariableInitializer ;
+
+VariableDeclaratorId ::=
+  'Identifier' |
+  VariableDeclaratorId '[' ']' ;
+
+VariableInitializer ::=
+  Expression |
+  ArrayInitializer ;
+
+MethodDeclaration ::=
+  MethodHeader MethodBody ;
+
+MethodHeader ::=
+  Modifiers? Type MethodDeclarator Throws? |
+  Modifiers? 'void' MethodDeclarator Throws? ;
+
+MethodDeclarator ::=
+  'Identifier' '(' FormalParameterList? ')' |
+  MethodDeclarator '[' ']' ;
+
+FormalParameterList ::=
+  FormalParameter |
+  FormalParameterList ',' FormalParameter ;
+
+FormalParameter ::=
+  Type VariableDeclaratorId ;
+
+Throws ::=
+  'throws' ClassTypeList ;
+
+ClassTypeList ::=
+  ClassType |
+  ClassTypeList ',' ClassType ;
+
+MethodBody ::=
+  Block |
+  ';' ;
+
+StaticInitializer ::=
+  'static' Block ;
+
+ConstructorDeclaration ::=
+  Modifiers? ConstructorDeclarator Throws? ConstructorBody ;
+
+ConstructorDeclarator ::=
+  SimpleName '(' FormalParameterList? ')' ;
+
+ConstructorBody ::=
+  '{' ExplicitConstructorInvocation? BlockStatements? '}' ;
+
+ExplicitConstructorInvocation ::=
+  'this' '(' ArgumentList? ')' ';' |
+  'super' '(' ArgumentList? ')' ';' ;
+
+InterfaceDeclaration ::=
+  Modifiers? 'interface' 'Identifier' ExtendsInterfaces? InterfaceBody ;
+
+ExtendsInterfaces ::=
+  'extends' InterfaceType |
+  ExtendsInterfaces ',' InterfaceType ;
+
+InterfaceBody ::=
+  '{' InterfaceMemberDeclarations? '}' ;
+
+InterfaceMemberDeclarations ::=
+  InterfaceMemberDeclaration |
+  InterfaceMemberDeclarations InterfaceMemberDeclaration ;
+
+InterfaceMemberDeclaration ::=
+  ConstantDeclaration |
+  AbstractMethodDeclaration ;
+
+ConstantDeclaration ::=
+  FieldDeclaration ;
+
+AbstractMethodDeclaration ::=
+  MethodHeader ';' ;
+
+ArrayInitializer ::=
+  '{' VariableInitializers? ','? '}' ;
+
+VariableInitializers ::=
+  VariableInitializer |
+  VariableInitializers ',' VariableInitializer ;
+
+Block ::=
+  '{' BlockStatements? '}' ;
+
+BlockStatements ::=
+  BlockStatement |
+  BlockStatements BlockStatement ;
+
+BlockStatement ::=
+  LocalVariableDeclarationStatement |
+  Statement ;
+
+LocalVariableDeclarationStatement ::=
+  LocalVariableDeclaration ';' ;
+
+LocalVariableDeclaration ::=
+  Type VariableDeclarators ;
+
+Statement ::=
+  StatementWithoutTrailingSubstatement |
+  LabeledStatement |
+  IfThenStatement |
+  IfThenElseStatement |
+  WhileStatement |
+  ForStatement ;
+
+StatementNoShortIf ::=
+  StatementWithoutTrailingSubstatement |
+  LabeledStatementNoShortIf |
+  IfThenElseStatementNoShortIf |
+  WhileStatementNoShortIf |
+  ForStatementNoShortIf ;
+
+StatementWithoutTrailingSubstatement ::=
+  Block |
+  EmptyStatement |
+  ExpressionStatement |
+  SwitchStatement |
+  DoStatement |
+  BreakStatement |
+  ContinueStatement |
+  ReturnStatement |
+  SynchronizedStatement |
+  ThrowStatement |
+  TryStatement ;
+
+EmptyStatement ::=
+  ';' ;
+
+LabeledStatement ::=
+  'Identifier' ':' Statement ;
+
+LabeledStatementNoShortIf ::=
+  'Identifier' ':' StatementNoShortIf ;
+
+ExpressionStatement ::=
+  StatementExpression ';' ;
+
+StatementExpression ::=
+  Assignment |
+  PreIncrementExpression |
+  PreDecrementExpression |
+  PostIncrementExpression |
+  PostDecrementExpression |
+  MethodInvocation |
+  ClassInstanceCreationExpression ;
+
+IfThenStatement ::=
+  'if' '(' Expression ')' Statement ;
+
+IfThenElseStatement ::=
+  'if' '(' Expression ')' StatementNoShortIf 'else' Statement ;
+
+IfThenElseStatementNoShortIf ::=
+  'if' '(' Expression ')' StatementNoShortIf 'else' StatementNoShortIf ;
+
+SwitchStatement ::=
+  'switch' '(' Expression ')' SwitchBlock ;
+
+SwitchBlock ::=
+  '{' SwitchBlockStatementGroups? SwitchLabels? '}' ;
+
+SwitchBlockStatementGroups ::=
+  SwitchBlockStatementGroup |
+  SwitchBlockStatementGroups SwitchBlockStatementGroup ;
+
+SwitchBlockStatementGroup ::=
+  SwitchLabels BlockStatements ;
+
+SwitchLabels ::=
+  SwitchLabel |
+  SwitchLabels SwitchLabel ;
+
+SwitchLabel ::=
+  'case' ConstantExpression ':' |
+  'default' ':' ;
+
+WhileStatement ::=
+  'while' '(' Expression ')' Statement ;
+
+WhileStatementNoShortIf ::=
+  'while' '(' Expression ')' StatementNoShortIf ;
+
+DoStatement ::=
+  'do' Statement 'while' '(' Expression ')' ';' ;
+
+ForStatement ::=
+  'for' '(' ForInit? ';' Expression? ';' ForUpdate? ')' |
+  Statement ;
+
+ForStatementNoShortIf ::=
+  'for' '(' ForInit? ';' Expression? ';' ForUpdate? ')' |
+  StatementNoShortIf ;
+
+ForInit ::=
+  StatementExpressionList |
+  LocalVariableDeclaration ;
+
+ForUpdate ::=
+  StatementExpressionList ;
+
+StatementExpressionList ::=
+  StatementExpression |
+  StatementExpressionList ',' StatementExpression ;
+
+BreakStatement ::=
+  'break' 'Identifier'? ';' ;
+
+ContinueStatement ::=
+  'continue' 'Identifier'? ';' ;
+
+ReturnStatement ::=
+  'return' Expression? ';' ;
+
+ThrowStatement ::=
+  'throw' Expression ';' ;
+
+SynchronizedStatement ::=
+  'synchronized' '(' Expression ')' Block ;
+
+TryStatement ::=
+  'try' Block Catches |
+  'try' Block Catches? Finally ;
+
+Catches ::=
+  CatchClause |
+  Catches CatchClause ;
+
+CatchClause ::=
+  'catch' '(' FormalParameter ')' Block ;
+
+Finally ::=
+  'finally' Block ;
+
+Primary ::=
+  PrimaryNoNewArray |
+  ArrayCreationExpression ;
+
+PrimaryNoNewArray ::=
+  Literal |
+  'this' |
+  '(' Expression ')' |
+  ClassInstanceCreationExpression |
+  FieldAccess |
+  MethodInvocation |
+  ArrayAccess ;
+
+ClassInstanceCreationExpression ::=
+  'new' ClassType '(' ArgumentList? ')' ;
+
+ArgumentList ::=
+  Expression |
+  ArgumentList ',' Expression ;
+
+ArrayCreationExpression ::=
+  'new' PrimitiveType DimExprs Dims? |
+  'new' ClassOrInterfaceType DimExprs Dims? ;
+
+DimExprs ::=
+  DimExpr |
+  DimExprs DimExpr ;
+
+DimExpr ::=
+  '[' Expression ']' ;
+
+Dims ::=
+  '[' ']' |
+  Dims '[' ']' ;
+
+FieldAccess ::=
+  Primary '.' 'Identifier' |
+  'super' '.' 'Identifier' ;
+
+MethodInvocation ::=
+  Name '(' ArgumentList? ')' |
+  Primary '.' 'Identifier' '(' ArgumentList? ')' |
+  'super' '.' 'Identifier' '(' ArgumentList? ')' ;
+
+ArrayAccess ::=
+  Name '[' Expression ']' |
+  PrimaryNoNewArray '[' Expression ']' ;
+
+PostfixExpression ::=
+  Primary |
+  Name |
+  PostIncrementExpression |
+  PostDecrementExpression ;
+
+PostIncrementExpression ::=
+  PostfixExpression '++' ;
+
+PostDecrementExpression ::=
+  PostfixExpression '--' ;
+
+UnaryExpression ::=
+  PreIncrementExpression |
+  PreDecrementExpression |
+  '+' UnaryExpression |
+  '-' UnaryExpression |
+  UnaryExpressionNotPlusMinus ;
+
+PreIncrementExpression ::=
+  '++' UnaryExpression ;
+
+PreDecrementExpression ::=
+  '--' UnaryExpression ;
+
+UnaryExpressionNotPlusMinus ::=
+  PostfixExpression |
+  '~' UnaryExpression |
+  '!' UnaryExpression |
+  CastExpression ;
+
+CastExpression ::=
+  '(' PrimitiveType Dims? ')' UnaryExpression |
+  '(' Expression ')' UnaryExpressionNotPlusMinus |
+  '(' Name Dims ')' UnaryExpressionNotPlusMinus ;
+
+MultiplicativeExpression ::=
+  UnaryExpression |
+  MultiplicativeExpression '*' UnaryExpression |
+  MultiplicativeExpression '/' UnaryExpression |
+  MultiplicativeExpression '%' UnaryExpression ;
+
+AdditiveExpression ::=
+  MultiplicativeExpression |
+  AdditiveExpression '+' MultiplicativeExpression |
+  AdditiveExpression '-' MultiplicativeExpression ;
+
+ShiftExpression ::=
+  AdditiveExpression |
+  ShiftExpression '<<' AdditiveExpression |
+  ShiftExpression '>>' AdditiveExpression |
+  ShiftExpression '>>>' AdditiveExpression ;
+
+RelationalExpression ::=
+  ShiftExpression |
+  RelationalExpression '<' ShiftExpression |
+  RelationalExpression '>' ShiftExpression |
+  RelationalExpression '<=' ShiftExpression |
+  RelationalExpression '>=' ShiftExpression |
+  RelationalExpression 'instanceof' ReferenceType ;
+
+EqualityExpression ::=
+  RelationalExpression |
+  EqualityExpression '==' RelationalExpression |
+  EqualityExpression '!=' RelationalExpression ;
+
+AndExpression ::=
+  EqualityExpression |
+  AndExpression '&' EqualityExpression ;
+
+ExclusiveOrExpression ::=
+  AndExpression |
+  ExclusiveOrExpression '^' AndExpression ;
+
+InclusiveOrExpression ::=
+  ExclusiveOrExpression |
+  InclusiveOrExpression '|' ExclusiveOrExpression ;
+
+ConditionalAndExpression ::=
+  InclusiveOrExpression |
+  ConditionalAndExpression '&&' InclusiveOrExpression ;
+
+ConditionalOrExpression ::=
+  ConditionalAndExpression |
+  ConditionalOrExpression '||' ConditionalAndExpression ;
+
+ConditionalExpression ::=
+  ConditionalOrExpression |
+  ConditionalOrExpression '?' Expression ':' ConditionalExpression ;
+
+AssignmentExpression ::=
+  ConditionalExpression |
+  Assignment ;
+
+Assignment ::=
+  LeftHandSide AssignmentOperator AssignmentExpression ;
+
+LeftHandSide ::=
+  Name |
+  FieldAccess |
+  ArrayAccess ;
+
+AssignmentOperator ::=
+  '=' | '*=' | '/=' | '%=' | '+=' | '-=' | '<<=' | '>>=' | '>>>=' | '&=' | '^=' | '|=' ;
+
+Expression ::=
+  AssignmentExpression ;
+
+ConstantExpression ::=
+  Expression ;
+

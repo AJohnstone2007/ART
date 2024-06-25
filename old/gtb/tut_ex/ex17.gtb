@@ -1,0 +1,11 @@
+(* ex17 *)
+S ::=  'a' ~S 'b' | A 'a' A | S 'a' .
+A ::=  'a' ~B | 'a' ~B ~B | # .
+B ::=  B A | # .
+
+(
+ex17_grammar := grammar[S tilde_enabled]
+terminalise_grammar[ex17_grammar terminal]
+ah_ex17 := ah_trie[ex17_grammar]
+ri_recognise[ah_ex17 "aaaabb"]
+)

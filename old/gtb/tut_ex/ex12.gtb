@@ -1,0 +1,9 @@
+(* ex12 *)
+S ::=  S 'a' | A .
+A ::=  'b' A | # .
+
+(
+ex12_grammar := grammar[S]
+ex12_iria := nfa[ex12_grammar unrolled 0]
+render[open["nfa.vcg"] ex12_iria]
+)

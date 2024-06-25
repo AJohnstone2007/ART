@@ -1,0 +1,14 @@
+!h1
+!b
+!g
+!i
+!s
+!y
+
+!v
+(* Regression: parameters *)
+
+A(i1: t1 i2:t2)(s1:t3 s2:t4 s3:t5) l1:x l2 :  y ::= 'a'.
+
+B ::= A (x y z) (p q r)^^!* $ p = x l1 = x $.
+

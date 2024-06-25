@@ -1,0 +1,80 @@
+(*******************************************************************************
+*
+* RDP release 1.50 by Adrian Johnstone (A.Johnstone@rhbnc.ac.uk) 20 December 1997
+*
+* minitree.bnf - a mini parser which builds an intermediate form
+*
+* This file may be freely distributed. Please mail improvements to the author.
+*
+*******************************************************************************)
+TITLE("Minitree compiler V1.50 (c) Adrian Johnstone 1997")
+SUFFIX("m")
+PARSER(program)
+USES("ml_aux.h")
+USES("mt_aux.h")
+OUTPUT_FILE("minitree.mvm")
+TREE
+POST_PARSE([* code_generate(rdp_sourcefilename, rdp_outputfilename, rdp_tree); *])
+
+SYMBOL_TABLE(mini 101 31
+	     symbol_compare_string
+	     symbol_hash_string
+	     symbol_print_string
+	     [* char* id; *]
+	    )
+
+check_declared ::= [* if (symbol_lookup_key(mini, &name, NULL) == NULL)
+		      {
+		        text_message(TEXT_ERROR, "Undeclared variable '%s'\n", name);
+		        symbol_insert_key(mini, &name, sizeof(char*), sizeof(mini_data));
+		      }
+	           *].
+
+program   ::=  { [var_dec | statement] ';'^}.
+
+var_dec ::= 'int'^^ (dec_body)@','^.
+
+dec_body ::= ID:name^^ ['='^ e0 ]:^
+             [* symbol_insert_key(mini, &name, sizeof(char*), sizeof(mini_data)); 
+                if (*name == '_' && *(name+1) == '_')
+                  text_message(TEXT_ERROR_ECHO, "variable names must not begin with two underscores\n");
+             *].
+
+statement ::= ID:name check_declared '='^^ e0  |                       (* assignment *)
+              'if'^^ e0 'then'^ statement [ 'else'^ statement ] |   (* if statement *)
+              'while'^^ e0 'do'^ statement |                       (* while do statement *)
+              'print'^^ '('^ ( e0  | String )@','^ ')'^ |            (* print statement *)
+              'begin'^^ (statement)@';'^ 'end'^.                    (* compound statement *)
+
+e0 ::= e1^^ [ '>'^^^ e1  |  (* Greater than *)
+              '<'^^^ e1  |  (* Less than *)
+              '>='^^^ e1 |  (* Greater than or equal *)
+              '<='^^^ e1 |  (* Less than or equal *)
+              '=='^^^ e1 |  (* Equal *)
+              '!='^^^ e1    (* Not equal *)
+            ] .
+
+e1 ::= e2^^ { '+'^^^ e2  |  (* Add *)
+              '-'^^^ e2     (* Subtract *)
+          } .
+
+e2 ::= e3^^ { '*'^^^ e3  |  (* Multiply *)
+              '/'^^^ e3     (* Divide *)
+            } .
+
+e3 ::= e4^^ | 
+       '+'^ e3  |  (* Posite: note suppression from intermediate form! *)
+       '-'^^ e3 .  (* Negate *)
+             
+
+e4 ::= e5 [ '**'^^ e4 ]:^^.
+
+e5 ::= ID:name^^ check_declared | (* Variable access *)
+       INTEGER^^  |    (* Numeric literal *)
+       '('^ e1^^ ')'^.    (* Parenthesised expression *)
+
+comment ::= COMMENT_NEST('(*' '*)').  (* Comments: stripped by lexer *)
+String^  ::= STRING_ESC('"' '\\').     (* Strings for print *)
+
+(* End of minitree.bnf *)
+

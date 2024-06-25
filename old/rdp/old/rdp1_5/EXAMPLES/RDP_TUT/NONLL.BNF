@@ -1,0 +1,24 @@
+(*This file contains grammars on which rdp should report errors *)
+
+(* a left recursive grammar *)
+(*
+S ::= S '+' S | S '*' S | E .
+E ::= 'a' | 'b' .
+*)
+
+(* a grammar with an empty production *)
+(*
+S ::= E Y .
+Y ::= '+' S | .
+E ::= T X .
+X ::= '*' E | .
+T ::= 'a' | 'b' .
+*)
+
+(* a non-left factored grammar *)
+S ::= E Y .
+Y ::= [ '+' S ] .
+E ::= T X .
+X ::= [ '*' E ] .
+T ::= 'a' 'a' | 'a' 'b' .
+

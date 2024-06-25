@@ -1,0 +1,163 @@
+(*******************************************************************************
+*
+* cava.art - Adrian Johnstone 21 March 2017
+*
+* A dynamically typed language which uses ART's value types
+*
+* Developed by Adrian Johnstone with support from:
+*
+* Leverhulme Trust project grant RPG-2013-396 
+*       'Notions and notations; Babbage's Language of Thought'
+*
+* and
+*
+* EPSRC project EP/I032509/1 
+*       'PLanCompS: Programming Language Components and Specifications'
+*
+*******************************************************************************)
+whitespace &WHITESPACE
+whitespace &COMMENT_BLOCK_C
+whitespace &COMMENT_LINE_C 
+
+support 
+{ ARTValueMapHierarchy refs = new ARTValueMapHierarchy(); 
+  final ARTValueVoid VOID = new ARTValueVoid(); 
+  final ARTValueInteger32 ZERO = new ARTValueInteger32(0); 
+  final ARTValueBoolean TRUE = new ARTValueBoolean(true); 
+  final ARTValueBoolean FALSE = new ARTValueBoolean(false); }
+
+text ::= statements
+
+statements ::= statement | statement statements  
+
+statement ::= expr ';' 
+
+| 'if' '(' expr ')' statement< elseOpt<     (* if statement *)
+  { if (expr1.v.toNativeBoolean()) artEvaluate(statement.statement1, statement1); 
+  else artEvaluate(statement.elseOpt1, elseOpt1); }     
+
+| 'while' '(' expr< ')' statement<          (* while statement *)
+  { artEvaluate(statement.expr1, expr1); 
+    while (expr1.v.toNativeBoolean()) { 
+      artEvaluate(statement.statement1, statement1); 
+      artEvaluate(statement.expr1, expr1); } }  
+
+| 'for' '(' expr< ';' expr< ';' expr< ')' statement<  (* while statement *)
+  { artEvaluate(statement.expr1, expr1);        // perform initialisation
+    artEvaluate(statement.expr2, expr2);        // perform first test
+    while (expr2.v.toNativeBoolean()) { 
+      artEvaluate(statement.statement1, statement1); 
+      artEvaluate(statement.expr3, expr3);      // perform increment 
+      artEvaluate(statement.expr2, expr2); } }  // perform test       
+
+| 'print' '(' printElements ')' ';'         (* print statement *)
+  
+| 'println' '(' printElements ')' ';' { artText.print("\\n"); } (* println statement *)
+  
+| '{' statements '}'              (* compound statement *)
+
+| 'ref' ID '(' { formals1.v = new ARTValueMap(); } formals ')'
+    '{' statements< '}'
+    { refs.insert(ID1.v, new ARTValueFunction(statement.statements1, formals1.v)); }   
+
+elseOpt ::= 'else' statement | #     
+
+printElements ::= 
+  # 
+| expr { artText.print("" + expr1.v); } 
+| expr { artText.print("" + expr1.v); } ',' printElements  
+
+formals<v:ARTValueMap> ::= 
+  # 
+| ID { formals.v.insert(ID1.v, ZERO); }          
+| ID { formals.v.insert(ID1.v, ZERO); formals1.v = formals.v; } ',' formals
+| ID '=' e0 { formals.v.insert(ID1.v, e01.v); } 
+| ID '=' e0 { formals.v.insert(ID1.v, e01.v); formals1.v = formals.v; } ',' formals
+
+expr <v:ARTValue> ::= 
+  e0 { expr.v = e01.v; } 
+| ID '=' expr { refs.update(ID1.v, expr1.v); expr.v = expr1.v; }           (* Assignment *)
+| 'ref' ID { expr.v = ZERO; refs.insert(ID1.v, expr.v); }    (* Declaration standard initialisation *)
+| 'ref' ID '=' expr { expr.v = expr1.v; refs.insert(ID1.v, expr1.v); } (* Declaration *)
+
+
+e0 <v:ARTValue> ::= 
+  e1 { e0.v = e11.v; }  
+| e1 '>'  e1 { e0.v = e11.v.gt(e12.v); }      (* Greater than *)
+| e1 '<'  e1 { e0.v = e11.v.lt(e12.v); }      (* Less than *)
+| e1 '>=' e1 { e0.v = e11.v.ge(e12.v); }      (* Greater than or equals*)
+| e1 '<=' e1 { e0.v = e11.v.le(e12.v); }      (* Less than or equals *)
+| e1 '==' e1 { e0.v = e11.v.eq(e12.v); }      (* Equal to *)
+| e1 '!=' e1 { e0.v = e11.v.ne(e12.v); }      (* Not equal to *)
+
+e1 <v:ARTValue> ::= 
+  e2 { e1.v = e21.v; }  
+| e1 '+' e2 { e1.v = e11.v.add(e21.v); }      (* Add *)
+| e1 '-' e2 { e1.v = e11.v.sub(e21.v); }      (* Subtract *)
+
+e2 <v:ARTValue> ::= 
+  e3 { e2.v= e31.v; }   
+| e2 ':' e3 { e2.v = e21.v.insert(e31.v); }   (* Concatenation *)
+| e2 '*' e3 { e2.v = e21.v.mul(e31.v); }      (* Multiply *)
+| e2 '/' e3 { e2.v = e21.v.div(e31.v); }      (* Divide *)
+| e2 '%' e3 { e2.v = e21.v.mod(e31.v); }      (* Mod *)
+
+e3 <v:ARTValue> ::= 
+  e4 {e3.v = e41.v; }   
+| '+' e3 {e3.v = e41.v.pos(); }      (* Posite *)
+| '-' e3 {e3.v = e41.v.neg(); }      (* Negate *)
+
+e4 <v:ARTValue> ::= 
+  e5 { e4.v = e51.v; }  
+| e5 '**' e4 { e4.v = e51.v.exp(e41.v); }      (* Exponentiate *)
+
+e5 <v:ARTValue r:ARTValueMapHierarchy > ::= 
+  INTEGER {e5.v = INTEGER1.v; }      (* Integer literal *)
+| REAL {e5.v = REAL1.v; }            (* Real literal *)
+| STRING_SQ {e5.v = STRING_SQ1.v; }  (* Character literal *)
+| STRING_DQ {e5.v = STRING_DQ1.v; }  (* String literal *)
+| 'true' {e5.v = TRUE;}    (* Boolean literal true *) 
+| 'false' {e5.v = FALSE;}            (* Boolean literal false *)
+| '(' expr { e5.v = expr1.v; } ')'   (* Parenthesised expression *)
+| ID { e5.v = refs.value(ID1.v); }     (* Variable access *)
+| ID '('            (* Call *) 
+  { e5.r = refs; 
+  refs = new ARTValueMapHierarchy(refs, refs.value(ID1.v).getParameters()); }  actuals ')' { artEvaluate(refs.value(ID1.v).getBody(), null); e5.v = VOID; refs = e5.r; }
+
+actuals ::= 
+  unnamedActuals { refs.updateOrdered(unnamedActuals1.v); }
+| unnamedActuals { refs.updateOrdered(unnamedActuals1.v); }  ',' namedActuals 
+|  namedActuals
+
+unnamedActuals<v:ARTValueList> ::= 
+  # 
+| e1 { unnamedActuals.v = new ARTValueList(); unnamedActuals.v.insert(e11.v); } 
+| e1 { unnamedActuals.v.insert(e11.v); } ',' { unnamedActuals1.v = unnamedActuals.v; } unnamedActuals
+
+namedActuals ::= 
+  # 
+| ID '=' e1 { refs.insert(ID1.v, e11.v); } 
+| ID '=' e1 { refs.insert(ID1.v, e11.v); } ',' namedActuals
+
+(* Lexical syntax *)
+ID <leftExtent:int rightExtent:int lexeme:String v:ARTValueString> ::= 
+  &ID {ID.lexeme = artLexeme(ID.leftExtent, ID.rightExtent); 
+  ID.v = new ARTValueString(artLexemeAsID(ID.leftExtent, ID.rightExtent)); }  
+
+INTEGER <leftExtent:int rightExtent:int lexeme:String v:ARTValueInteger32> ::= 
+  &INTEGER { INTEGER.lexeme = artLexeme(INTEGER.leftExtent, INTEGER.rightExtent); 
+  INTEGER.v = new ARTValueInteger32(artLexemeAsInteger(INTEGER.leftExtent, INTEGER.rightExtent)); }  
+
+REAL <leftExtent:int rightExtent:int lexeme:String v:ARTValueReal64> ::= 
+  &REAL { REAL.lexeme = artLexeme(REAL.leftExtent, REAL.rightExtent); 
+  REAL.v = new ARTValueReal64(artLexemeAsReal(REAL.leftExtent, REAL.rightExtent)); }  
+
+STRING_SQ <leftExtent:int rightExtent:int lexeme:String v:ARTValueCharacter> ::= 
+  &STRING_SQ { STRING_SQ.lexeme = artLexeme(STRING_SQ.leftExtent, STRING_SQ.rightExtent); 
+  STRING_SQ.v = 
+  new ARTValueCharacter(artLexemeAsString(STRING_SQ.leftExtent, STRING_SQ.rightExtent).charAt(0)); }  
+
+STRING_DQ <leftExtent:int rightExtent:int lexeme:String v:ARTValueString> ::= 
+  &STRING_DQ { STRING_DQ.lexeme = artLexeme(STRING_DQ.leftExtent, STRING_DQ.rightExtent); 
+  STRING_DQ.v = 
+  new ARTValueString(artLexemeAsString(STRING_DQ.leftExtent, STRING_DQ.rightExtent)); }  

@@ -1,0 +1,9 @@
+{
+procedure sub { print("Hello from a procedure\n"); }
+
+
+x = 3;
+while x > 0 do { print("x is ", x, "\n"); x = x -1; }
+
+call sub;
+}

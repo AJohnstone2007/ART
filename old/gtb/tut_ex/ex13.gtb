@@ -1,0 +1,15 @@
+(* ex13  terminalising a grammar *)
+S ::=  A 'a' .
+A ::=  'a' B | 'a' .
+B ::= ~A 'c' .
+
+(
+ex13_grammar := grammar[S tilde_enabled]
+terminalise_grammar[ex13_grammar terminal]
+write[ex13_grammar]
+
+iria_S := nfa[ex13_grammar unrolled 0]
+render[open["nfa.vcg"] iria_S]
+terminalise_grammar[ex13_grammar nonterminal]
+write[ex13_grammar]
+)

@@ -1,0 +1,45 @@
+\begin{thebibliography}{ASU86}
+
+\bibitem[ASU86]{dragon}
+Alfred~V. Aho, Ravi Sethi, and Jeffrey~D. Ullman.
+\newblock {\em Compilers: principles techniques and tools}.
+\newblock Addison-Wesley, 1986.
+
+\bibitem[Hol90]{holub}
+Allen~I. Holub.
+\newblock {\em Compiler design in C}.
+\newblock Prentice Hall, 1990.
+
+\bibitem[JS97a]{rdp:case:1.5}
+Adrian Johnstone and Elizabeth Scott.
+\newblock Designing and implementing language translators with {\tt rdp}\,--\,a
+  case study.
+\newblock Technical Report TR-97-27, Royal Holloway, University of London,
+  Computer Science Department, December 1997.
+
+\bibitem[JS97b]{rdp:user:1.5}
+Adrian Johnstone and Elizabeth Scott.
+\newblock {\tt rdp} - a recursive descent compiler compiler. user manual for
+  version 1.5.
+\newblock Technical Report TR-97-25, Royal Holloway, University of London,
+  Computer Science Department, December 1997.
+
+\bibitem[JS97c]{rdp:tut:1.5}
+Adrian Johnstone and Elizabeth Scott.
+\newblock A tutorial guide to {\tt rdp} for new users.
+\newblock Technical Report TR-97-24, Royal Holloway, University of London,
+  Computer Science Department, December 1997.
+
+\bibitem[Par95]{PARR95}
+Terence~John Parr.
+\newblock {\em Language Translation Using {PCCTS} and $C++$ (A Reference
+  Guide)}.
+\newblock Parr Research Corporation, June 1995.
+
+\bibitem[San95]{SANDER95}
+Georg Sander.
+\newblock {\em {VCG} Visualisation of Compiler Graphs}.
+\newblock Universit\"at des Saarlandes, 66041 Saarbr\"ucken, Germany, February
+  1995.
+
+\end{thebibliography}

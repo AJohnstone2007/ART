@@ -1,0 +1,20 @@
+S ::= A T | 'a' T .
+A ::= 'a' | B A .
+B ::= # .
+T ::= 'b' 'b' 'b' .
+
+(
+write["\n" gtb_version " processing '" gtb_main_file_name "' on " date_time "\n\n"]
+
+gtb_verbose := true
+this_grammar := grammar[S]
+render[open["earley.vcg"] this_grammar]
+write[this_grammar]
+
+string := "a b b b"
+
+this_derivation := earley_parse[this_grammar string]
+
+write["\n" CPU_time " CPU seconds elapsed\n\n"]
+)
+

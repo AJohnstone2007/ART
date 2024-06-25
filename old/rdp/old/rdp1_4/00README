@@ -1,0 +1,255 @@
+The fourth maintenance release of RDP (version 1.4) is now available via ftp
+from cscx.cs.rhbnc.ac.uk (134.219.200.45) in directory /pub/rdp. Get
+rdp1_4.zip if you are an MS-DOS user or rdp1_4.tar if you are a Unix user.
+
+The major changes at this release centre around the rewritten support library.
+In particular the set module now handles dynamically resizable sets and the
+symbol table manager allows multiple tables with arbitrary data. Several RDP
+directives have been replaced or deleted to reflect changes in the library.
+
+A fuller list of changes will be found at the end of this message
+
+**** Here follows a thumbnail sketch of RDP ****
+
+RDP - a recursive descent parser generator
+
+RDP compiles attributed LL(1) grammars decorated with C-language semantic
+actions into recursive descent compilers. RDP is written in strict ANSI C and
+produces strict ANSI C. RDP was developed using Borland C 3.1 on a PC and has
+also been built with no problems on Alpha/OSF-1, DECstation/Ultrix, Sun
+4/SunOS, Linux and NetBSD 0.9 hosts all using GCC. The definition of strict
+ANSI here means  compiling with
+
+gcc -Wmissing-prototypes -Wstrict-prototypes -fno-common -Wall -ansi -pedantic
+
+and getting no warning messages. 
+
+RDP also compiles with Borland Turbo-C and Microsoft C.
+
+RDP is C++ `clean' i.e. there are no identifiers used that clash with C++
+reserved words. RDP generated code has been used with g++ applications, and
+compiles with g++ and the Borland C++ (as opposed to ANSI) compiler.
+
+RDP itself and the language processors it generates use standard symbol, set
+memeory management, text buffering and scanner modules. The RDP scanner is
+programmed by loading tokens into a symbol table at the start of each run.
+In principle, the RDP scanner can be used to support runtime extensible
+languages, such as user defined operators in Algol-68, although nobody has had
+the nerve to try this yet.
+
+RDP produces complete runnable programs with built-in help information and
+command line switches that are specified as part of the EBNF file. In this
+sense RDP output is far more shrink-wrapped than the usual parser generators
+which helps beginning students. RDP generates itself (you mean you use a 
+parser generator which _isn't_ written in itself?) which is a nice
+demonstration of the bootstrapping technique used for porting compilers to new
+architectures.
+
+I wrote RDP because in October '94 I started giving a course on compiler
+design. I don't think the world needs another course on parsing techniques and
+am really interested in code generation for exotic processors, so I tried to
+produce a compact parser generator that would enable undergraduates to rip
+through the syntax and standard code generation parts of the syllabus in a few
+weeks, thus leaving me time to get into the black arts of code scheduling and
+optimisation.
+
+What you get.
+
+o A set-handling package that supports dynamically sizable sets.
+
+o A hash-coded symbol table with support for multiple symbol tables, 
+  nested scope rules and arbitrary user data.
+
+o A standard text buffering package with integrated messaging utilities that 
+  are used for all communication with the user.
+
+o A set of wrapper functions for the standard C memory allocation routines
+  with built in fatal error handling for out of memory errors.
+
+o A programmable high-speed scanner with integrated error handling and
+  hooks for macros (RDP is being used to generate assemblers for two novel
+  microprocessors in addition to the usual applications of LL(1) parsers).
+
+o The machine generated source for the RDP translator. RDP checks that
+  the source grammar is LL(1) and explains exactly why a non-LL(1) grammar
+  is unacceptable. RDP does not attempt to rework a grammar by itself.
+
+o The decorated EBNF file describing RDP that was processed by the RDP 
+  executable to produce its own source code. This is good for boggling 
+  undergraduate's minds with.
+
+o Decorated EBNF files for the languages Mini and Mini-plus that are used as
+  examples in the user manual.
+
+o An EBNF file describing ISO-Pascal which generates a parser for the Pascal 
+  language (this is still under construction - a working grammar for Pascal
+  is included but it is not guaranteed to be ISO standard).
+
+o An EBNF file describing ANSI C which generates a parser for the C programming
+  language (this is still under construction). 
+
+o Sources, makefiles and Borland 3.1 project files for everything which
+  you may use freely on condition that you send copies of any modifications,
+  enhancements and ill-conceived changes you might make back to me so that
+  I can improve RDP.
+
+o User and library support manuals
+
+What you don't get.
+
+o Tutorial information on parsing and compiling (try Wirth's Algorithms +
+  Data Structures = Programs, Chapter 5 or your favourite compiler book).
+  Maybe one day there'll be a book by me. In a future release I will include
+  the slides and notes from my compilers course.
+
+o Warranties. This code has only just escaped from my personal toolkit.
+  I've put a lot of effort into making it fit for others to use, but in
+  the very nature of compiler compilers it is hard to test all the angles,
+  and the Garbage In - Garbage Out principle holds to the highest degree:
+  if you write ill-formed semantic actions you won't find out until you try
+  and compile the parser that RDP wrote for you. On the plus side, RDP has
+  now been used pretty ferociously by lots of people and has stood up very 
+  well. It does seem to be pretty stable, and I will continue to respond to
+  bug reports.
+
+                                     Adrian
+
+
+
+** RDP release version 1.40 flyer. Adrian Johnstone 30 January 1995 **
+
+This is the RDP V1.40 release distribution. To install RDP look in the
+makefile and ensure that the blocks of options at the top are commented out   
+correctly for your compiler and operating system. Then type 'make' (or 'nmake'
+if you are a Microsoft  compiler user) and stand well back.           
+     
+If you use an ANSI compiler then you should be able to build RDP after you
+have uncommented suitable compiler switch options in the makefile. I'd really
+like to hear about any problems you have with other MS-DOS or Unix C
+compilers.   
+                     
+If you have a non-ANSI compiler, then the only part of the code that might
+cause you problems is that several of the data structures use bit fields to
+store flags. You can rework the code to use #define'd masks in the traditional 
+way if you have enough patience.
+      
+Further documentation may be found in Postscript form in subdirectory 'rdp_doc'.
+
+I'd like to thank the many people who have tried RDP and sent me encouraging
+messages, suggestions for improvements and bug reports, in particular Andy
+Betts (previously of UCL, now at Inmos) and my students on course CS347 
+(Compilers and code generation) at RHUL.
+
+** Improvements in this version include **
+
+NEW FEATURES AND CHANGES
+
+1. The RDP support library has been completely rewritten and now comprises
+modules memalloc, scan, scanner, set, symbol and textio.
+
+2. The new symbol table handler allows multiple tables to be declared with
+arbitrary user data. 
+
+3. A new SYMBOL_TABLE directive allows symbol tables to be specified from
+within the EBNF file. 
+
+4. The HASH_PRIME and HASH_SIZE directives have been removed since their
+functions are subsumed into the new SYMBOL_TABLE feature.
+
+5. The memory allocation routines from module crash have been moved to a new
+support module called memalloc.c. A versions of realloc and free have been 
+added, and the size parameter has been reinstated on calloc.
+
+6. Module scan now contains just the token testing and scanner error routines.
+Error messages are generated at run time, significantly reducing the size of 
+the static data segment.
+
+7. The actual scanner is in module scanner. In a future release the scanner 
+be written into the parser file by rdp. This version still uses essentially
+the old hard wired scanner.
+
+8. A brand new set handling package which supports dynamically sized sets
+has been added.
+
+9. The SET_SIZE directive has been deleted as it is no longer needed since
+sets can expand to arbitrary size.
+
+10. The `out of tokens' error message has been removed because sets can now
+expand dynamically, so you can never run out of token space.
+
+11. The messaging routines from modules scan and crash have been completely
+reworked and moved to a module called textio.
+
+12. Support module crash has been deleted.
+
+13. The error message generated by left recursive productions has been enhanced
+to print out the chain of productions involved in the left recursion.
+
+14. Parser syntax error messages are now generated at run time, significantly
+reducing the size of the string segment in RDP generated parsers.
+
+15. The INTERPRETER directive has been removed, because at V2.00 interpreter
+support will be via AST's.
+
+16. Interpreter support (read ahead of the whole file) has been removed from
+the scanner.
+
+17. Token names are now of the form T__xxx (i.e. with two consecutive
+underscores). The P_yyy primitive tokens are now named T__yyy in preparation
+for the new scanner support in version 2.00.
+
+18. A set of library support test routines is provided in subdirectory test.
+
+19. Strings returned from the STRING, STRING_ESC and so on primitives no
+longer have a leading header byte. RDP maintains tokens and production names in
+separate tables, removing the need for this disambiguation kludge.
+
+20. A simple assembler called nasm4 has been added to the distribution. A paper
+describing the target architecture is in rdp_doc.
+
+**** Features for future versions
+
+Version 2.00 will support scanner productions which supersede the various
+programmable tokens used at the moment. RDP will then write out a customised
+scanner for each language in exactly the same way that it currently writes out
+parsers. These generated scanners will look just like the existing scanner
+(i.e. they will NOT be DFA based) so that they can be debugged easily. A set
+of scanner productions roughly equivalent to the current scanner will be
+supplied.
+
+As part of the scanner production support, subproductions comprising a list
+of alternates each of which is exactly one terminal long will automatically
+be translated into a set of such tokens. NOT and wildcard operators will be
+provided.
+
+Version 2.00 will also offer some new grammar writing tools. In particular, I
+intend to enhance the < > construct so as to allow specification of maximum
+and minimum iteration counts, and redefine all other constructs in terms of
+this  new mechanism, I also hope to support permutation phrases, as described
+in a recent edition of LOPLAS.  
+
+There will be some elementary support for the construction of abstract syntax
+trees, probably in the form of some semantic action macros that implement
+common construction operations. RDP itself will be rewritten using this
+standard AST format rather than the mix of special data structures presently
+used.
+
+Perhaps at V2.00, you will be able to selectively allow backtracking so
+allowing LL(k) grammars to be parsed. If you need this a lot you should be
+looking at PCCTS or PRECC not RDP.
+
+Other suggestions for improvements are welcome.
+
+Finally (surprise, surprise) a textbook on code generation for modern
+processors, using RDP to construct the compiler front ends, will appear
+eventually. Anybody interested in beta-testing the book might like to get in
+touch, but we're not expecting to make much progress on it until early Summer
+1995.
+
+***
+Comments, queries and requests for code to
+
+Smail: Dr Adrian Johnstone, Dean of Science, Computer Science Department, 
+       Royal Holloway, University of London, Egham, Surrey, TW20 0EX, UK.
+
+Email: adrian@dcs.rhbnc.ac.uk  Tel: +44 (0)1784 443425  Fax: +44 (0)1784 443420

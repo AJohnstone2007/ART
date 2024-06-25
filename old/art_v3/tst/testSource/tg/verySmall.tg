@@ -1,0 +1,8 @@
+a 
+$S ::= `a;$ 
+accept $a$ 
+
+aK 
+$S ::= `a*;$ 
+accept $a$ 
+

@@ -1,0 +1,9 @@
+/* Test input for the expression grammar */
+
+/*this string should be accepted*/
+
+3 + 5 * 8 /*multiplication will be done first*/ + 10
+
+/*this string should fail*/
+
+10  7

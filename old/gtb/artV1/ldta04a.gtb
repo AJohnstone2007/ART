@@ -1,0 +1,17 @@
+(* Example GTB script *)
+S ::= 'a' | A B | A 'z'.
+A ::= 'a' .
+B ::= 'b' | #.
+
+(this_gram := grammar[S]
+(* generate[this_gram 0 left sentential_forms]*)
+ this_nfa := nfa[this_gram lr 1]
+(* add_nullable_accepting_states[this_nfa]*)
+ write[open["nfa.vcg"] this_nfa]
+(*
+ this_dfa := subset_construction[this_nfa]
+ write[open["dfa.vcg"] this_dfa]
+ export[open["rnlr1.tbl"] parse_table[this_dfa]]
+*)
+ write[this_gram "\n" CPU_time " CPU seconds elapsed\n\n"] 
+)

@@ -1,0 +1,12 @@
+int a=3+4, b;
+
+print("a is ", a);
+
+b=a*2;
+
+print("b is ", b, ", -b is ", -b);
+
+int z = a;
+print(z);
+
+

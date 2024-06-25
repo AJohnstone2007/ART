@@ -1,0 +1,33 @@
+\begin{thebibliography}{PD82b}
+
+\bibitem[JS97a]{rdp:user:1.5}
+Adrian Johnstone and Elizabeth Scott.
+\newblock {\tt rdp} - a recursive descent compiler compiler. user manual for
+  version 1.5.
+\newblock Technical Report TR-97-25, Royal Holloway, University of London,
+  Computer Science Department, December 1997.
+
+\bibitem[JS97b]{rdp:supp:1.5}
+Adrian Johnstone and Elizabeth Scott.
+\newblock {\tt rdp\_\,supp} -- support routines for the {\tt rdp} compiler
+  compiler version 1.5.
+\newblock Technical Report TR-97-26, Royal Holloway, University of London,
+  Computer Science Department, December 1997.
+
+\bibitem[JS97c]{rdp:tut:1.5}
+Adrian Johnstone and Elizabeth Scott.
+\newblock A tutorial guide to {\tt rdp} for new users.
+\newblock Technical Report TR-97-24, Royal Holloway, University of London,
+  Computer Science Department, December 1997.
+
+\bibitem[PD82a]{PEMBERTON82b}
+S~Pemberton and M~C Daniels.
+\newblock {\em Pascal implementation: compiler and assembler/interpreter}.
+\newblock Ellis Horwood, 1982.
+
+\bibitem[PD82b]{PEMBERTON82a}
+S~Pemberton and M~C Daniels.
+\newblock {\em Pascal implementation: the P4 compiler}.
+\newblock Ellis Horwood, 1982.
+
+\end{thebibliography}

@@ -1,0 +1,18 @@
+!h1
+!b
+!g
+!i
+!s
+!y
+
+!v
+(* Regression: simple single rule *)
+
+
+A ::= 'a' | 'b' | # | | 'a' 'b' 'c'.
+
+
+
+
+
+

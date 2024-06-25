@@ -1,0 +1,112 @@
+module eSOS
+
+whitespace WHITESPACE COMMENT_NEST_ART COMMENT_LINE_C
+whitespace &WHITESPACE
+whitespace &COMMENT_NEST_ART 
+whitespace &COMMENT_LINE_C 
+
+support { ARTeSOSSpecification eSOSSpecification = new ARTeSOSSpecification(this); 
+          ARTeSOSRule workingRule; ARTeSOSRelation workingRelation; ARTeSOSConfiguration workingConfiguration; }
+
+specification ::= element specification | element { eSOSSpecification.induceRules(); }
+
+element ::= 'latex' latexElement latexElements
+          | 'relation' RELATION { workingRelation = eSOSSpecification.findRelation(RELATION1.v); } relationElements
+          | 'relation'          { workingRelation = eSOSSpecification.findRelation(""); }          relationElements  // Global relation elements in empty-string relation
+          | 'priority' priority priorities
+          | rule
+          | 'test' test
+
+latexElements ::= ',' latexElement latexElements | #
+latexElement::= ID_SOS STRING_DQ { ARTeSOSSpecification.addLaTeXName(ID_SOS1.v.toString(), STRING_DQ1.v); } 
+              | RELATION STRING_DQ { ARTeSOSSpecification.addLaTeXName(RELATION1.v, STRING_DQ1.v); }
+
+relationElements ::= ',' relationElement relationElements | # 
+relationElement ::= ID_SOS ':' 'map' { workingRelation.addEntity(ID_SOS1.v, new ARTValueTermUsingList(new ARTeSOSEntityMap())); }
+                  | ID_SOS ':' 'mapFixed' { workingRelation.addEntity(ID_SOS1.v, new ARTValueTermUsingList(new ARTeSOSEntityMapFixed())); }
+                  | ID_SOS ':' 'listIn'{ workingRelation.addEntity(ID_SOS1.v, new ARTValueTermUsingList(new ARTeSOSEntityListIn())); }
+                  | ID_SOS ':' 'listOut'{ workingRelation.addEntity(ID_SOS1.v, new ARTValueTermUsingList(new ARTeSOSEntityListOut())); }
+                  | ID_SOS ':' 'singleton' ID_SOS { workingRelation.addEntity(ID_SOS1.v, new ARTValueTermUsingList(new ARTeSOSEntitySingleton(new ARTValueTermUsingList(ID_SOS1.v)))); }
+                  | ID_SOS ':' 'untyped' ID_SOS { workingRelation.addEntity(ID_SOS1.v, new ARTValueTermUsingList(new ARTeSOSEntityUntyped(new ARTValueTermUsingList(ID_SOS1.v)))); }
+                  | term { workingRelation.addThetaTerminal(term1.v); } // Terminal terms 
+
+priorities ::= ',' priority priorities | #
+priority ::= ID_SOS '>' ID_SOS { eSOSSpecification.addPriorityGT(ID_SOS1.v, ID_SOS2.v); } 
+           | ID_SOS '<' ID_SOS { eSOSSpecification.addPriorityGT(ID_SOS2.v, ID_SOS1.v); }
+           | ID_SOS '=' ID_SOS { eSOSSpecification.addPriorityEQ(ID_SOS1.v, ID_SOS2.v); }
+
+rule ::= { workingRule = new ARTeSOSRule(); } 
+         labelOpt priorityOpt conditions '---' transition 
+         { workingRule.setConclusion(transition1.v); eSOSSpecification.addRule(workingRule); }
+
+priorityOpt ::= #      { workingRule.setPriority(new ARTeSOSName("default")); }              
+              | '+' ID_SOS { workingRule.setPriority(ID_SOS1.v); }
+
+labelOpt ::= # { workingRule.setLabelNumeric(); } 
+           | '-' ID_SOS { workingRule.setLabel(ID_SOS1.v.toString()); }
+           | '-' STRING_DQ { workingRule.setLabel(STRING_DQ1.v.toString()); } 
+
+conditions ::= #
+             | transition    { workingRule.getConditions().add(transition1.v); } conditions 
+             | sideCondition { workingRule.getConditions().add(sideCondition1.v); } conditions
+
+transition<v:ARTeSOSTransition> ::=   
+  { transition.v = new ARTeSOSTransition();
+    workingConfiguration = transition.v.getLhs(); }
+  configuration 
+  RELATION 
+  { workingConfiguration = transition.v.getRhs(); } 
+  configuration 
+  { transition.v.setRelation(eSOSSpecification.findRelation(RELATION1.v)); }
+  
+configuration ::= term { workingConfiguration.addEntity(eSOSSpecification.termKey, term1.v); } entityReferences
+
+entityReferences ::= # 
+                   | ',' term            { workingConfiguration.addEntity(term1.v); }            entityReferences
+                   | ',' ID_SOS '=' term { workingConfiguration.addEntity(ID_SOS1.v, term1.v); } entityReferences
+
+sideCondition<v:ARTeSOSSideCondition> ::= term '|>' term { sideCondition.v = new ARTeSOSSideCondition(term1.v, term2.v); }
+
+term<v:ARTValueTermUsingList > ::= termElement { term.v = termElement1.v; } 
+                        | ID_SOS { term.v = new ARTValueTermUsingList(ID_SOS1.v); subterms1.p = term.v; } '(' subterms ')' 
+
+subterms<p:ARTValueTermUsingList> ::= # 
+                           | term { subterms.p.addChild(term1.v); } 
+                           | term { subterms.p.addChild(term1.v); } ',' {subterms1.p = subterms.p; } subterms
+
+termElement<v:ARTValueTermUsingList> ::= BOOLEAN { termElement.v = new ARTValueTermUsingList(new ARTValueBoolean(BOOLEAN1.v)); }
+                              | INTEGER { termElement.v = new ARTValueTermUsingList(new ARTValueInteger32(INTEGER1.v)); }  
+                              | REAL { termElement.v = new ARTValueTermUsingList(new ARTValueReal64(REAL1.v)); } 
+                              | STRING_DQ { termElement.v = new ARTValueTermUsingList(new ARTValueString(STRING_DQ1.v)); }  
+                              | STRING_SQ { termElement.v = new ARTValueTermUsingList(new ARTValueCharacter(STRING_SQ1.v)); }  
+                              | ID_SOS {termElement.v = new ARTValueTermUsingList(ID_SOS1.v); } 
+
+test ::=                           RELATION ',' { subterms1.p = new ARTValueTermUsingList(new ARTValueInteger32(0)); } subterms { eSOSSpecification.addTest("", 1, eSOSSpecification.findRelation(RELATION1.v), subterms1.p); } 
+       |             STRING_DQ ',' RELATION ',' { subterms1.p = new ARTValueTermUsingList(new ARTValueInteger32(0)); } subterms { eSOSSpecification.addTest(STRING_DQ1.v, 1, eSOSSpecification.findRelation(RELATION1.v), subterms1.p); } 
+       | INTEGER ',' STRING_DQ ',' RELATION ',' { subterms1.p = new ARTValueTermUsingList(new ARTValueInteger32(0)); } subterms { eSOSSpecification.addTest(STRING_DQ1.v, INTEGER1.v, eSOSSpecification.findRelation(RELATION1.v), subterms1.p); }       
+       | INTEGER ','               RELATION ',' { subterms1.p = new ARTValueTermUsingList(new ARTValueInteger32(0)); } subterms { eSOSSpecification.addTest("", INTEGER1.v, eSOSSpecification.findRelation(RELATION1.v), subterms1.p); } 
+
+RELATION <leftExtent:int rightExtent:int v:String> ::= relationSymbol 
+  {RELATION.v = artLexemeAsID(RELATION.leftExtent, RELATION.rightExtent).trim(); }  
+
+relationSymbol ::= '->' | '->*' | '=>' | '=>*' | '->>'
+
+ID_SOS <leftExtent:int rightExtent:int v:ARTeSOSName> ::=
+  &ID_SOS {ID_SOS.v = new ARTeSOSName(artLexemeAsID(ID_SOS.leftExtent, ID_SOS.rightExtent)); }  
+
+BOOLEAN <lexeme:String v:boolean> ::= 
+  'true' { BOOLEAN.lexeme = "true"; BOOLEAN.v = true; } |
+  'false' { BOOLEAN.lexeme = "false"; BOOLEAN.v = false; }
+                                   
+INTEGER <leftExtent:int rightExtent:int lexeme:String v:int> ::= 
+  &INTEGER {INTEGER.lexeme = artLexeme(INTEGER.leftExtent, INTEGER.rightExtent); INTEGER.v = artLexemeAsInteger(INTEGER.leftExtent, INTEGER.rightExtent); }  
+
+REAL  <leftExtent:int rightExtent:int lexeme:String v:double> ::= 
+  &REAL {REAL.lexeme = artLexeme(REAL.leftExtent, REAL.rightExtent); REAL.v = artLexemeAsReal(REAL.leftExtent, REAL.rightExtent); } 
+
+STRING_DQ <leftExtent:int rightExtent:int lexeme:String v:String> ::= 
+  &STRING_DQ {STRING_DQ.lexeme = artLexeme(STRING_DQ.leftExtent, STRING_DQ.rightExtent); STRING_DQ.v = artLexemeAsString(STRING_DQ.leftExtent, STRING_DQ.rightExtent); }  
+
+STRING_SQ <leftExtent:int rightExtent:int lexeme:String v:String> ::= 
+  &STRING_SQ {STRING_SQ.lexeme = artLexeme(STRING_SQ.leftExtent, STRING_SQ.rightExtent); STRING_SQ.v = artLexemeAsString(STRING_SQ.leftExtent, STRING_SQ.rightExtent); }  
+

@@ -1,0 +1,358 @@
+(* Test generation for ART *)
+
+(* Conventions for filenames
+
+S, T, U, V, W, X, Y, Z nonterminals
+a, b, c, d, e, f, g, h terminals
+
+_ |  alternation bar
+H #  (hash - epsilon)
+L (  (left parenthesis)
+R )  (right parenthesis)
+Q ?  (query)  
+P +  (positive)
+K *  (Kleene)
+I @  (Iterator)
+D \  (Difference)
+*)
+
+(* Deliberately incorrect accept/reject tests so as to test that the framework is working as expected *)
+
+deliberatelyBad
+$S ::= `a `b | `c `d;$
+accept $acd$
+reject $cd$
+
+deliberatelyCrash
+$S ::= 'a';$
+accept $a$
+reject $a$
+
+(* Bug found in April 2014 *)
+
+SLaSR_H
+$S::= S ('a'S) |  #;$
+accept $a$ $aa$ $$
+
+(* Basic sequences *)
+
+a 
+$S ::= `a;$ 
+accept $a$ 
+reject $$ $aa$ $aaa$ $b$ $bb$ $bbb$ $c$ $cc$ $ccc$
+
+aa 
+$S ::= `a `a;$ 
+accept $aa$ 
+reject $$ $a$ $aaa$ $b$ $bb$ $bbb$ $c$ $cc$ $ccc$
+
+aaa
+$S ::= `a `a `a;$ 
+accept $aaa$ 
+reject $$ $a$ $aa$ $b$ $bb$ $bbb$ $c$ $cc$ $ccc$
+
+a_b 
+$S ::= `a | `b;$ 
+accept $a$ $b$
+reject $$ $aa$ $aaa$ $bb$ $bbb$ $c$ $cc$ $ccc$
+
+aa_b
+$S ::= `a `a | `b;$ 
+accept $aa$ $b$
+reject $$ $a$ $aaa$ $bb$ $bbb$ $c$ $cc$ $ccc$
+
+aaa_b
+$S ::= `a `a `a | `b;$ 
+accept $aaa$ $b$
+reject $$ $a$ $aa$ $bb$ $bbb$ $c$ $cc$ $ccc$
+
+a_bb
+$S ::= `a | `b `b;$ 
+accept $a$ $bb$
+reject $$ $aa$ $aaa$ $b$ $bbb$ $c$ $cc$ $ccc$
+
+aa_bb
+$S ::= `a `a | `b `b;$ 
+accept $aa$ $bb$ 
+reject $$ $a$ $aaa$ $b$ $bbb$ $c$ $cc$ $ccc$
+
+aaa_bb
+$S ::= `a `a `a | `b `b;$ 
+accept $aaa$ $bb$
+reject $$ $a$ $aa$ $b$ $bbb$ $c$ $cc$ $ccc$
+
+a_bbb
+$S ::= `a | `b `b `b;$ 
+accept $a$ $bbb$
+reject $$ $aa$ $aaa$ $b$ $bb$ $c$ $cc$ $ccc$
+
+aa_bbb
+$S ::= `a `a | `b `b `b;$ 
+accept $aa$ $bbb$ 
+reject $$ $a$ $aaa$ $b$ $bb$ $c$ $cc$ $ccc$
+
+aaa_bbb
+$S ::= `a `a `a | `b `b `b;$ 
+accept $aaa$ $bbb$
+reject $$ $a$ $aa$ $b$ $bb$ $c$ $cc$ $ccc$
+
+a_c
+$S ::= `a | `c;$ 
+accept $a$ $c$
+reject $$ $aa$ $aaa$ $b$ $bb$ $bbb$ $cc$ $ccc$
+
+aa_c
+$S ::= `a `a | `c;$ 
+accept $aa$ $c$
+reject $$ $a$ $aaa$ $b$ $bb$ $bbb$ $cc$ $ccc$
+
+aaa_c
+$S ::= `a `a `a | `c;$ 
+accept $aaa$ $c$
+reject $$ $a$ $aa$ $b$ $bb$ $bbb$ $cc$ $ccc$
+
+a_b_c
+$S ::= `a | `b | `c;$ 
+accept $a$ $b$ $c$
+reject $$ $aa$ $aaa$ $bb$ $bbb$ $cc$ $ccc$
+
+aa_b_c
+$S ::= `a `a | `b | `c;$ 
+accept $aa$ $b$ $c$
+reject $$ $a$ $aaa$ $bb$ $bbb$ $cc$ $ccc$
+
+aaa_b_c
+$S ::= `a `a `a | `b | `c;$ 
+accept $aaa$ $b$ $c$
+reject $$ $a$ $aa$ $bb$ $bbb$ $cc$ $ccc$
+
+a_bb_c
+$S ::= `a | `b `b | `c;$ 
+accept $a$ $bb$ $c$
+reject $$ $aa$ $aaa$ $b$ $bbb$ $cc$ $ccc$
+
+aa_bb_c
+$S ::= `a `a | `b `b | `c;$ 
+accept $aa$ $bb$ $c$
+reject $$ $a$ $aaa$ $b$ $bbb$ $cc$ $ccc$
+
+aaa_bb_c
+$S ::= `a `a `a | `b `b | `c;$ 
+accept $aaa$ $bb$ $c$
+reject $$ $a$ $aa$ $b$ $bbb$ $cc$ $ccc$
+
+a_bbb_c
+$S ::= `a | `b `b `b | `c;$ 
+accept $a$ $bbb$ $c$
+reject $$ $aa$ $aaa$ $b$ $bb$ $cc$ $ccc$
+
+aa_bbb_c
+$S ::= `a `a | `b `b `b | `c;$ 
+accept $aa$ $bbb$ $c$
+reject $$ $a$ $aaa$ $b$ $bb$ $cc$ $ccc$
+
+aaa_bbb_c
+$S ::= `a `a `a | `b `b `b | `c;$ 
+accept $aaa$ $bbb$ $c$
+reject $$ $a$ $aa$ $b$ $bb$ $cc$ $ccc$
+
+a_cc
+$S ::= `a | `c `c;$ 
+accept $a$ $cc$
+reject $$ $aa$ $aaa$ $b$ $bb$ $bbb$ $c$ $ccc$
+
+aa_cc
+$S ::= `a `a | `c `c;$ 
+accept $aa$ $cc$
+reject $$ $a$ $aaa$ $b$ $bb$ $bbb$ $c$ $ccc$
+
+aaa_cc
+$S ::= `a `a `a | `c `c;$ 
+accept $aaa$ $cc$
+reject $$ $a$ $aa$ $b$ $bb$ $bbb$ $c$ $ccc$
+
+a_b_cc
+$S ::= `a | `b | `c `c;$ 
+accept $a$ $b$ $cc$
+reject $$ $aa$ $aaa$ $bb$ $bbb$ $c$ $ccc$
+
+aa_b_cc
+$S ::= `a `a | `b | `c `c;$ 
+accept $aa$ $b$ $cc$
+reject $$ $a$ $aaa$ $bb$ $bbb$ $c$ $ccc$
+
+aaa_b_cc
+$S ::= `a `a `a | `b | `c `c;$ 
+accept $aaa$ $b$ $cc$
+reject $$ $a$ $aa$ $bb$ $bbb$ $c$ $ccc$
+
+a_bb_cc
+$S ::= `a | `b `b | `c `c;$ 
+accept $a$ $bb$ $cc$
+reject $$ $aa$ $aaa$ $b$ $bbb$ $c$ $ccc$
+
+aa_bb_cc
+$S ::= `a `a | `b `b | `c `c;$ 
+accept $aa$ $bb$ $cc$
+reject $$ $a$ $aaa$ $b$ $bbb$ $c$ $ccc$
+
+aaa_bb_cc
+$S ::= `a `a `a | `b `b | `c `c;$ 
+accept $aaa$ $bb$ $cc$
+reject $$ $a$ $aa$ $b$ $bbb$ $c$ $ccc$
+
+a_bbb_cc
+$S ::= `a | `b `b `b | `c `c;$ 
+accept $a$ $bbb$ $cc$
+reject $$ $aa$ $aaa$ $b$ $bb$ $c$ $ccc$
+
+aa_bbb_cc
+$S ::= `a `a | `b `b `b | `c `c;$ 
+accept $aa$ $bbb$ $cc$
+reject $$ $a$ $aaa$ $b$ $bb$ $c$ $ccc$
+
+aaa_bbb_cc
+$S ::= `a `a `a | `b `b `b | `c `c;$ 
+accept $aaa$ $bbb$ $cc$
+reject $$ $a$ $aa$ $b$ $bb$ $c$ $ccc$
+
+a_ccc
+$S ::= `a | `c `c `c;$ 
+accept $a$ $ccc$
+reject $$ $aa$ $aaa$ $b$ $bb$ $bbb$ $c$ $cc$
+
+aa_ccc
+$S ::= `a `a | `c `c `c;$ 
+accept $aa$ $ccc$
+reject $$ $a$ $aaa$ $b$ $bb$ $bbb$ $c$ $cc$ 
+
+aaa_ccc
+$S ::= `a `a `a | `c `c `c;$ 
+accept $aaa$ $ccc$
+reject $$ $a$ $aa$ $b$ $bb$ $bbb$ $c$ $cc$
+
+a_b_ccc
+$S ::= `a | `b | `c `c `c;$ 
+accept $a$ $b$ $ccc$
+reject $$ $aa$ $aaa$ $bb$ $bbb$ $c$ $cc$ 
+
+aa_b_ccc
+$S ::= `a `a | `b | `c `c `c;$ 
+accept $aa$ $b$ $ccc$
+reject $$ $a$ $aaa$ $bb$ $bbb$ $c$ $cc$ 
+
+aaa_b_ccc
+$S ::= `a `a `a | `b | `c `c `c;$ 
+accept $aaa$ $b$ $ccc$
+reject $$ $a$ $aa$ $bb$ $bbb$ $c$ $cc$ 
+
+a_bb_ccc
+$S ::= `a | `b `b | `c `c `c;$ 
+accept $a$ $bb$ $ccc$
+reject $$ $aa$ $aaa$ $b$ $bbb$ $c$ $cc$ 
+
+aa_bb_ccc
+$S ::= `a `a | `b `b | `c `c `c;$ 
+accept $aa$ $bb$ $ccc$
+reject $$ $a$ $aaa$ $b$ $bbb$ $c$ $cc$ 
+
+aaa_bb_ccc
+$S ::= `a `a `a | `b `b | `c `c `c;$ 
+accept $aaa$ $bb$ $ccc$
+reject $$ $a$ $aa$ $b$ $bbb$ $c$ $cc$ 
+
+a_bbb_ccc
+$S ::= `a | `b `b `b | `c `c `c;$ 
+accept $a$ $bbb$ $ccc$
+reject $$ $aa$ $aaa$ $b$ $bb$ $c$ $cc$ 
+
+aa_bbb_ccc
+$S ::= `a `a | `b `b `b | `c `c `c;$ 
+accept $aa$ $bbb$ $ccc$
+reject $$ $a$ $aaa$ $b$ $bb$ $c$ $cc$ 
+
+aaa_bbb_ccc
+$S ::= `a `a `a | `b `b `b | `c `c `c;$ 
+accept $aaa$ $bbb$ $ccc$
+reject $$ $a$ $aa$ $b$ $bb$ $c$ $cc$ 
+
+(* Empty languages *)
+H
+$S ::= #;$ 
+accept $$ 
+reject $a$ $aa$
+
+HH
+$S ::= # #;$ 
+accept $$ 
+reject $a$ $aa$
+
+HHH
+$S ::= # # #;$ 
+accept $$ 
+reject $a$ $aa$
+
+HK
+$S ::= #*;$ 
+accept $$ 
+reject $a$ $aa$
+
+HQ
+$S ::= #?;$ 
+accept $$ 
+reject $a$ $aa$
+
+HP
+$S ::= #+;$ 
+accept $$ 
+reject $a$ $aa$
+
+HHKH
+$S ::= # #* #;$ 
+accept $$ 
+reject $a$ $aa$
+
+(* Empty-ish languages *)
+aH 
+$S ::= `a #; $
+accept $a$
+reject $$ $aa$
+
+Ha 
+$S ::= # `a ; $
+accept $a$
+reject $$ $aa$
+
+aHHH
+$S ::= `a # # #; $
+accept $a$
+reject $$ $aa$
+
+HKaHQ
+$S ::= #* `a #?; $
+accept $a$
+reject $$ $aa$
+
+HKHPaHQ
+$S ::= #* #+ `a #?; $
+accept $a$
+reject $$ $aa$
+
+
+
+aLHR 
+$S ::= `a (#); $
+accept $a$
+reject $$ $aa$
+
+aLHRb
+$S ::= `a (#) `b; $
+accept $ab$
+reject $$ $aa$ $abb$
+
+aLc_HRb
+$S ::= `a (`c | #) `b; $
+accept $ab$ $acb$
+reject $$ $aa$ $ac$ $abb$
+
+

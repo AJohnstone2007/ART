@@ -1,0 +1,8 @@
+(* TREE *)
+
+E ::= [*int left=0, right=0, delim=-1;*]
+        ('a'[*left++; delim++;*] | 'b'[*right++; delim++;*]) 
+           0@0 ',':[* delim=0;*]
+      [* printf("%i, %i, %i\n", left, right, delim);*] .
+
+    (***** iter2.bnf *****)

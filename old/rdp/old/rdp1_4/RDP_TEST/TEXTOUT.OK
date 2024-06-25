@@ -1,0 +1,98 @@
+
+
+textio test start
+
+after forcing filetype 'text' onto 'adrian.was.here': 'adrian.was.text'
+after forcing filetype 'text' onto 'adrian.': 'adrian.text'
+after forcing filetype 'text' onto 'adrian': 'adrian.text'
+after defaulting filetype 'text' onto 'adrian.was.here': 'adrian.was.here'
+after defaulting filetype 'text' onto 'adrian.': 'adrian.'
+after defaulting filetype 'text' onto 'adrian': 'adrian.text'
+Error (text.1): This is a test error message
+Error (text.1): This is a test error echo message
+ (text.1): total: 5 errors, 2 warnings
+Total errors = 5, total warnings = 2
+ (text.1): text size 50 bytes of which symbols 38 bytes and free 10 bytes
+Inserted text: 'Z12345adrian was here'
+Inserted text: ' identifier__32'
+ (text.1): successfully read EOF on closed file
+ (text.1): can't find file 'zzz.zzz.zzz'
+ (text.1): successfully read EOF on closed file
+        text.1
+ (text.1): successfully opened 'text.1'
+Echoing files to message stream
+     1: Scanner test file
+Scanner test file
+     2:  @..
+ @..
+     3: 
+
+     4:  _an_identifier
+ _an_identifier
+     5:  123 decimal
+ 123 decimal
+     6:  0xfea hexadecimal
+ 0xfea hexadecimal
+     7:  1.
+ 1.
+     8:  1232.456
+ 1232.456
+     9:  .3
+ .3
+    10: ' A string using '' Pascal style quoting'
+' A string using '' Pascal style quoting'
+    11: "A string using C-style \" quoting"
+"A string using C-style \" quoting"
+    12: {A nonnexted {comment} }
+{A nonnexted {comment} }
+    13: <A visible nonnested <comment> >
+<A visible nonnested <comment> >
+    14: /* A nested /* comment */ */
+/* A nested /* comment */ */
+    15: \* A nested visible \* comment *\ *\
+\* A nested visible \* comment *\ *\
+    16: indentifier ++ comment end at line end
+indentifier ++ comment end at line end
+    17: indentifier -- visible comment end at line end
+indentifier -- visible comment end at line end
+    18: >>=
+>>=
+    19: 
+
+    20: Now tes file inclusion
+Now tes file inclusion
+    21: 
+
+    22: include_zzz[!]
+include_zzz[!******* ------------^
+Error (text.1): can't find include file 'zzz.zzz.zzz'
+]
+    23: include_text2[?]
+include_text2[?        text.2
+******* ^
+Warning (text.2): opened include file 'text.2'
+     1: Start of testtext.2
+Start of testtext.2
+     2: 
+     3: End of testtext.2
+End of testtext.2
+     4: 
+  (text.2):         text.2: 0 errors, 1 warning
+ (text.1):         text.1
+    23: include_text2[?]
+]
+    24: include_text3[$]
+include_text3[$        text.3
+******* ^
+Warning (text.3): opened include file 'text.3'
+     1: Start of testtext.3
+Start of testtext.3
+     2: some text
+some text
+     3: End of testtext.3
+End of testtext.3  (text.3):         text.3: 0 errors, 1 warning
+ (text.1):         text.1
+    24: include_text3[$]
+]
+    25: 
+  (text.1):         text.1: 1 error, 0 warnings

@@ -1,0 +1,49 @@
+(* Tests for iteration *)
+
+(* Conventions for filenames
+
+S, T, U, V, W, X, Y, Z nonterminals
+a, b, c, d, e, f, g, h terminals
+
+_ |  alternation bar
+H #  (hash - epsilon)
+L (  (left parenthesis)
+R )  (right parenthesis)
+Q ?  (query)  
+P +  (positive)
+K *  (Kleene)
+I @  (Iterator)
+D \  (Difference)
+*)
+
+aIb
+$S ::= `a @ `b;$
+accept $a$ $aba$ $ababa$ $ababababa$
+reject $$ $aa$ $b$ $bb$ $abab$
+
+aILbR
+$S ::= `a @ (`b);$
+accept $a$ $aba$ $ababa$ $ababababa$
+reject $$ $aa$ $b$ $bb$ $abab$
+
+LaILbRR
+$S ::= ( `a @ (`b) );$
+accept $a$ $aba$ $ababa$ $ababababa$
+reject $$ $aa$ $b$ $bb$ $abab$
+
+attest1
+$S::= T@('a') ;
+T::= ('c')?;
+$
+accept $a a a a a a a a a$
+
+attest2
+$S::= S@('a') | ('c')?  ;$
+accept $a a a a a a a a a$
+
+attest3
+$S::= (S@('a'))? ;$
+accept $a a a a a a a a a$
+
+
+

@@ -1,0 +1,41 @@
+(*****************************************************************************
+*
+* RDP release 1.10 by Adrian Johnstone (adrian@dcs.rhbnc.ac.uk) 14 Mar 1994
+*
+* mini.bnf - a decorated mini grammar with interpreter semantics
+*
+* This file may be freely distributed. Please mail improvements to the author.
+*
+*****************************************************************************)
+TITLE("Mini V1.00")
+SUFFIX("min")
+
+program   ::= {([var_dec] | [statement]) ';'} EOF.
+
+var_dec   ::= 'int' <NEW_ID:name "symbol__insert_id(name)->token=P_ID;"			(* declaration *)
+							 ['=' e1:val "symbol__lookup_id(name)->number=val;"]>','.	    (* initialisation *)
+
+
+statement ::= ID:name '=' e1:value "symbol__lookup_id(name)->number = value;" |
+							'print' ['(' < e1:value "printf(\"%i\",value);" |
+														 string:str "printf(\"%s\", str+1);"
+													 >','
+											 ')'
+											] "printf(\"\\n\");".
+
+e1:int    ::= e2:result {'+' e2:right "result += right;" |          (* Add *)
+												 '-' e2:right "result -= right;" }.         (* Subtract *)
+
+e2:int    ::= e3:result {'*' e3:right "result *= right;" |          (* Divide *)
+												 '/' e3:right "result /= right;" }.         (* Multiply *)
+
+e3:int    ::= '+' e4:result |                                       (* Posite *)
+							'-' e4:result "result = -result;" |					          (* Negate *)
+							e4:result.
+
+e4:int    ::= ID:name "result = symbol__lookup_id(name)->number;" | (* Variable *)
+							NUMBER:result |																			  (* Numeric literal *)
+							'(' e1:result ')'.                                    (* Parenthesised expression *)
+
+comment    ::= COMMENT_NEST('(*' '*)').                             (* Comments *)
+string:char* ::= STRING('"'):result.                                (* Strings for print *)

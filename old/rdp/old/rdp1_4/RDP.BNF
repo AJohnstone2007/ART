@@ -1,0 +1,302 @@
+(*****************************************************************************
+*
+* RDP release 1.40 by Adrian Johnstone (adrian@dcs.rhbnc.ac.uk) 30 Jan 1995
+*
+* rdp.bnf - decorated rdp grammar
+*
+* This file may be freely distributed. Please mail improvements to the author.
+*
+*****************************************************************************)
+TITLE("Recursive descent parser generator V1.40 (c) Adrian Johnstone 1995")
+SUFFIX("bnf")
+SHOW_SKIPS
+PASSES(2)
+TAB_WIDTH(8)
+TEXT_SIZE(30000)
+MAX_ERRORS(50)
+MAX_WARNINGS(120)
+OUTPUT_FILE("rdparser")
+USES("rdp_aux.h")
+USES("rdp_gram.h")
+USES("rdp_prnt.h")
+
+SYMBOL_TABLE(rdp 101 31
+             symbol__compare_string
+             symbol__hash_string
+             symbol__print_string
+             [* RDP__DATA *]
+            )
+
+SYMBOL_TABLE(tokens 101 31
+             symbol__compare_string
+             symbol__hash_string
+             symbol__print_string
+             [* RDP__DATA *]
+            )
+
+SYMBOL_TABLE(codes 101 31
+             symbol__compare_string
+             symbol__hash_string
+             symbol__print_string
+             [* RDP__DATA *]
+            )
+
+SYMBOL_TABLE(locals 101 31
+             symbol__compare_string
+             symbol__hash_string
+             symbol__print_string
+             [* char* id; *]
+            )
+
+OPTION("e  Write out expanded BNF along with first and follow sets" [* rdp__expanded = 1; *])
+OPTION("E  Add production name to error messages in generated parser" [* rdp__error_production_name = 1; *])
+OPTION("F  Force creation of output files" [* rdp__force = 1; *])
+OPTION("p  Make parser only (omit semantic actions from generated code)" [* rdp__parser_only = 1; *])
+OPTION("")
+OPTION("You can contact the author (Adrian Johnstone) at:")
+OPTION("")
+OPTION("Computer Science Department, Royal Holloway, University of London")
+OPTION("Egham, Surrey, TW20 0EX UK. Email: adrian@dcs.rhbnc.ac.uk")
+
+PRE_PARSE([* rdp__pre_parse(); *])
+POST_PARSE([* rdp__post_parse(rdp__outputfilename, rdp__force); *])
+
+PARSER(unit)
+
+unit ::= { prod | dir}.
+
+dir::= 'INCLUDE' '(' code: filename
+                     [* if (text__open(filename) == NULL)
+                           text__message(TEXT__ERROR_ECHO, "include file '%s' not found\n", filename);
+                        text__get_char();
+                        scan__();
+                      *]@2
+                 ')' |
+
+       (* List directives *)
+       [* rdp__string_list *temp; *]
+       [* temp = (rdp__string_list *) mem__malloc(sizeof(rdp__string_list)); *]@2
+       'OPTION' '(' String: s [* temp->str1 = s;
+                                 temp->str2 = NULL;
+                                 temp->next = rdp__dir_help;
+                                 rdp__dir_help = temp;
+                              *]@2
+                    [ code: s [* temp->str2 = s; *]@2 ]
+                ')' |
+
+       [* rdp__table_list *temp; *]
+       [* temp = (rdp__table_list *) mem__malloc(sizeof(rdp__table_list)); *]@2
+       'SYMBOL_TABLE' '(' ID: name INTEGER:size INTEGER:prime
+                          ID: compare ID:hash ID:print
+                          code: data_fields
+                          [*temp = (rdp__table_list*) mem__malloc(sizeof(rdp__table_list));
+                            temp->name = name;
+                            temp->size = (unsigned) size;
+                            temp->prime = (unsigned) prime;
+                            temp->compare = compare;
+                            temp->hash = hash;
+                            temp->print = print;
+                            temp->data_fields = data_fields;
+                            temp->next = rdp__dir_symbol_table;
+                            rdp__dir_symbol_table = temp;
+                          *]@2
+                ')' |
+
+       [* rdp__string_list *temp; *]
+       [* temp = (rdp__string_list*) mem__malloc(sizeof(rdp__string_list)); *]@2
+       'USES' '(' String: s
+                  [*temp = (rdp__string_list*) mem__malloc(sizeof(rdp__string_list));
+                    temp->str1 = s;
+                    temp->next = rdp__dir_include;
+                    rdp__dir_include = temp;
+                  *]@2
+               ')' |
+
+       (* String directives *)
+       'OUTPUT_FILE' '(' String:s [* rdp__dir_output_file = s; *] ')' |
+       'PARSER' '(' ID:name [* rdp__start_prod = rdp__find(name, K__PRIMARY, RDP__OLD); rdp__start_prod->call_count++; *]@2 ')' |
+       'POST_PARSE' '(' code:s [* rdp__dir_post_parse = s; *] ')' |
+       'PRE_PARSE' '(' code:s [* rdp__dir_pre_parse = s; *] ')' |
+       'SUFFIX' '(' String:s [* rdp__dir_suffix = s; *] ')' |
+       'TITLE' '(' String: s [* rdp__dir_title = s; *] ')' |
+
+       (* Numeric directives *)
+       'MAX_ERRORS' '(' INTEGER:n [* rdp__dir_max_errors = (unsigned) n; *] ')' |
+       'MAX_WARNINGS' '(' INTEGER:n [* rdp__dir_max_warnings = (unsigned) n; *] ')' |
+       'PASSES' '(' INTEGER:n [* rdp__dir_passes = (unsigned) n; *] ')' |
+       'TAB_WIDTH' '(' INTEGER:n [* rdp__dir_tab_width = (unsigned) n; *] ')' |
+       'TEXT_SIZE' '(' INTEGER:n [* rdp__dir_text_size = (unsigned) n; *] ')' |
+
+       (* Boolean directives *)
+       'CASE_INSENSITIVE' [* rdp__dir_case_insensitive = 1; *] |
+       'SHOW_SKIPS' [* rdp__dir_show_skips = 1; *] |
+
+       (* Obsolete and future directives *)
+       'PRE_PROCESS' [* text__message(TEXT__ERROR_ECHO, "obsolete directive: PRE_PROCESS renamed PRE_PARSE at version 1.3\n"); *]
+                 '(' code ')' |
+       'POST_PROCESS' [* text__message(TEXT__ERROR_ECHO, "obsolete directive: POST_PROCESS renamed POST_PARSE at version 1.3\n"); *]
+                 '(' code ')' |
+       'SCANNER' [* text__message(TEXT__ERROR_ECHO, "unimplemented directive: SCANNER directive is a version 2.0 feature\n"); *]
+                 '(' ID ')' |
+       'SET_SIZE' [* text__message(TEXT__ERROR_ECHO, "obsolete directive: SET_SIZE deletd at version 1.4\n"); *]
+                 '(' INTEGER ')' |
+       'HASH_SIZE' [* text__message(TEXT__ERROR_ECHO, "obsolete directive: HASH_SIZE replaced by SYMBOL_TABLE at version 1.4\n"); *]
+                 '(' INTEGER ')' |
+       'HASH_PRIME' [* text__message(TEXT__ERROR_ECHO, "obsolete directive: HASH_PRIME replaced by SYMBOL_TABLE at version 1.4\n"); *]
+                 '(' INTEGER ')' |
+       'INTERPRETER' [* text__message(TEXT__ERROR_ECHO, "obsolete directive: INTERPRETER mode deleted at version 1.4\n"); *]
+                 '(' INTEGER ')'
+       .
+
+prod:rdp__data* ::= [* unsigned stars = 0; type = "void"; *]
+                   ID:name
+
+                   [* rdp__primary_id = name; rdp__component = 0;
+                      result = rdp__find(rdp__primary_id, K__PRIMARY, rdp__pass == 1 ? RDP__NEW : RDP__OLD);
+                      if (rdp__start_prod == NULL)
+                      {
+                        rdp__start_prod = result;
+                        result->call_count++;
+                      }
+                   *]
+
+                   ['(' [* result->parameterised = 1; *]
+                        { [* rdp__param_list *param = NULL; type = "void"; *]
+                          ID:name [ ':' ID:type ]
+                          [* param = (rdp__param_list* ) mem__calloc(sizeof(rdp__param_list), 1);
+                             param->id = name;
+                             param->type = type;
+                             param->next = result->params;
+                             result->params = param;
+                          *]@1
+                        }
+
+                    ')'
+                   ]
+
+                   [* type = "void"; stars = 0; *]
+
+                   [':' ID:type {'*' [* stars++; *] } ]
+                   '::=' alt:body [* result->list = body;
+                                     result->been_defined = 1;
+                                     result->return_type = type;
+                                     result->return_type_stars = stars;
+                                  *]@2
+                   '.'.
+
+alt:rdp__list* ::= [* rdp__list* end; *]
+                   [* end = result = (rdp__list*) mem__calloc(sizeof(rdp__list), 1); *]@2
+                   < seq: body [* end->next = (rdp__list*) mem__calloc(sizeof(rdp__list), 1);
+                                  end = end->next;
+                                  end->production = rdp__find(text__insert_substring(rdp__primary_id, rdp__component++), K__SEQUENCE, RDP__NEW);
+                                  end->production->call_count++;
+                                  end->production->list = body;
+                               *]@2
+                   > '|' [* result = result->next; *]@2 . (* could dispose header here *)
+
+
+seq:rdp__list* ::= [* rdp__list* end; *]
+                   [* end = result = (rdp__list*) mem__calloc(sizeof(rdp__list), 1); *]@2
+
+                   (* must be at least one item in a sequence *)
+                   [* ret_name = NULL; *]@2
+                   (item_ret:body [':'ID:ret_name] | item_inl: body)
+                   [* end->next = (rdp__list*) mem__calloc(sizeof(rdp__list), 1);
+                      end = end->next;
+                      end->production = body;
+                      end->actuals = body->actuals;
+                      end->return_name = ret_name;
+                   *]@2
+
+                   (* wish we had a positive closure operator! *)
+                   { [* ret_name = NULL; *]@2
+                     (item_ret:body [':' ID:ret_name] | item_inl: body)
+                     [* end->next = (rdp__list*) mem__calloc(sizeof(rdp__list), 1);
+                        end = end->next;
+                        end->production = body;
+                        end->actuals = body->actuals;
+                        end->return_name = ret_name;
+                     *]@2
+                   } [* result = result->next; *]@2 . (* could dispose header here *)
+
+item_ret:rdp__data* ::= ID:name [* result = rdp__find(name, K__PRIMARY, RDP__OLD);
+                                  rdp__check_eoln(name);
+                                  result->call_count++; /* increment call count */
+                                  result->actuals = NULL;
+                               *]@2
+
+
+                         [* if (rdp__pass == 2 && result->parameterised ) { *]
+                           '('
+                           { [* rdp__param_list *param = NULL; *]
+                             ID:name
+                             [* param = (rdp__param_list* ) mem__calloc(sizeof(rdp__param_list), 1);
+                                param->id = name;
+                                param->next = result->actuals;
+                                result->actuals = param;
+                             *]@2
+                           }
+
+                           ')'
+                         [* } *]
+
+                          |
+
+                       token:name [* rdp__check_token_valid(name);
+                                     result = rdp__find(name, K__TOKEN, RDP__ANY);
+                                     result->call_count++; /* increment call count */
+                                  *]@2 |
+
+                       'STRING' '(' token:name ')' [* result = rdp__find_extended(name, NULL, T__ISTRING); *]@2 |
+                       'STRING_ESC' '(' token:name token:quote ')' [* result = rdp__find_extended(name, quote, T__ISTRING_ESC); *]@2 |
+                       'COMMENT' '(' token:name token:close ')' [* result = rdp__find_extended(name, close, T__ICOMMENT); *]@2 |
+                       'COMMENT_VISIBLE' '(' token:name token:close ')' [* result = rdp__find_extended(name, close, T__ICOMMENT_VISIBLE); *]@2 |
+                       'COMMENT_NEST' '(' token:name token:close ')' [* result = rdp__find_extended(name, close, T__ICOMMENT_NEST); *]@2 |
+                       'COMMENT_NEST_VISIBLE' '(' token:name token:close ')' [* result = rdp__find_extended(name, close, T__ICOMMENT_NEST_VISIBLE); *]@2 |
+                       'COMMENT_LINE' '(' token:name ')' [* result = rdp__find_extended(name, NULL, T__ICOMMENT_LINE); *]@2 |
+                       'COMMENT_LINE_VISIBLE' '(' token:name ')' [* result = rdp__find_extended(name, NULL, T__ICOMMENT_LINE_VISIBLE); *]@2 |
+
+                       (* Obsolete scaner primitives *)
+                       'NUMBER' [* text__message(TEXT__ERROR_ECHO, "obsolete scanner primitive: NUMBER renamed INTEGER at version 1.3\n"); *] |
+                       'NEW_ID' [* text__message(TEXT__ERROR_ECHO, "obsolete scanner primitive: NEW_ID deleted at version 1.4\n"); *] |
+                       'ALT_ID' [* text__message(TEXT__ERROR_ECHO, "obsolete scanner primitive: ALT_ID deleted at version 1.4\n"); *]
+                       (* 'EOF'    [* text__message(TEXT__ERROR_ECHO, "obsolete scanner primitive: EOF deleted at version 1.4\n"); *] *)
+                       .
+
+item_inl:rdp__data* ::= code:name
+                     [* result = rdp__find(name, K__CODE, RDP__ANY);
+                        result->contains_null = 1;
+                        result->call_count++; /* increment call count */
+                     *]@2
+                     [ '@' INTEGER:pass [* result->code_pass = (unsigned) pass; *]@2 ] |
+
+                     '('alt:body')'
+                     [* result = rdp__find(text__insert_substring(rdp__primary_id, rdp__component++), K__DO_FIRST, RDP__ANY);
+                        result->list = body;
+                        result->call_count++;
+                     *]@2 |
+
+                     '{'alt:body'}'
+                     [* result = rdp__find(text__insert_substring(rdp__primary_id, rdp__component++), K__ITERATION, RDP__ANY);
+                        result->list = body; result->contains_null = 1;
+                        result->call_count++;
+                     *]@2 |
+
+                     '['alt:body']'
+                     [* result = rdp__find(text__insert_substring(rdp__primary_id, rdp__component++), K__CONDITIONAL, RDP__ANY);
+                        result->list = body; result->contains_null = 1;
+                        result->call_count++;
+                     *]@2 |
+
+                     '<'alt:body'>' token:delimiter
+                     [* result = rdp__find(text__insert_substring(rdp__primary_id, rdp__component++), K__LIST, RDP__ANY);
+                        result->list = body;
+                        result->supplementary_token = rdp__find(delimiter, K__TOKEN, RDP__ANY);
+                        result->call_count++;
+                     *]@2 .
+
+token:char*  ::= STRING_ESC('\'' '\\'):result .
+String:char* ::= STRING_ESC('"' '\\'):result .
+code:char*   ::= COMMENT_VISIBLE('[*' '*]'):result .
+comment      ::= COMMENT('(*' '*)').
+(* End of rdp.bnf *)

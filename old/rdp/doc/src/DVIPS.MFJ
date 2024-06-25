@@ -1,0 +1,9 @@
+% dvips.mfj - created by dvips 
+input [dvidrv]; 
+{ 
+base=plain; 
+font=cmmi12; 
+mag=1.200000000;  
+mode=laserjet[300]; 
+output=pk[C:\TEXFONTS\pixel.lj\@Rrdpi\@f]; 
+} 

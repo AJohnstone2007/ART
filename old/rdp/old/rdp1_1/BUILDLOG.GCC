@@ -1,0 +1,78 @@
+make
+gcc -Wstrict-prototypes -fno-common -Wall -ansi -pedantic -c rdp.c
+gcc -Wstrict-prototypes -fno-common -Wall -ansi -pedantic -c rdp_aux.c
+gcc -Wstrict-prototypes -fno-common -Wall -ansi -pedantic -c crash.c
+gcc -Wstrict-prototypes -fno-common -Wall -ansi -pedantic -c scan.c
+gcc -Wstrict-prototypes -fno-common -Wall -ansi -pedantic -c set.c
+gcc -Wstrict-prototypes -fno-common -Wall -ansi -pedantic -c symbol.c
+gcc -lm -Wstrict-prototypes -fno-common -Wall -ansi -pedantic -o ./rdp rdp.o rdp_aux.o crash.o scan.o set.o symbol.o
+rdp -omini mini
+gcc -Wstrict-prototypes -fno-common -Wall -ansi -pedantic -c mini.c
+mini.c:129: warning: `comment' defined but not used
+gcc -lm -Wstrict-prototypes -fno-common -Wall -ansi -pedantic -o ./mini mini.o crash.o scan.o set.o symbol.o
+mini -v test
+
+Mini V1.00 Mar 27 1994 03:50:20
+a is 7
+b is 14, -b is -14
+7
+ test.min: 0 errors, 0 warnings
+rdp -F -otoy toy
+Error: LL(1) violation in 'dis_statement':
+ sub-production [ 'else' dis_statement ] 
+ contains null but first and follow sets both include 'else'.
+Error: LL(1) violation in 'statement':
+ sub-production [ 'else' statement ] 
+ contains null but first and follow sets both include 'else'.
+ Total: 2 errors, 0 warnings
+Warning: Grammar is not LL(1) but -F switch set: writing output files
+gcc -Wstrict-prototypes -fno-common -Wall -ansi -pedantic -c toy.c
+toy.c:251: warning: `comment' defined but not used
+gcc -lm -Wstrict-prototypes -fno-common -Wall -ansi -pedantic -o ./toy toy.o crash.o scan.o set.o symbol.o
+toy -v test
+
+Toy V1.00 Mar 27 1994 03:50:23
+
+Toy test program
+
+(If true) y is greater than x
+(If false) x is not greater than y
+(Repeat) x = 1
+(Repeat) x = 4
+(Repeat) x = 7
+(Repeat) x = 10
+(While) x = 13
+(While) x = 10
+(While) x = 7
+(While) x = 4
+(While) x = 1
+(For up) x = 1
+(For up) x = 4
+(For up) x = 7
+(For up) x = 10
+(For down) x = 12
+(For down) x = 9
+(For down) x = 6
+(For down) x = 3
+ Text mode: 0 errors, 0 warnings
+rdp -opascal -F pascal
+Error: LL(1) violation in 'statement':
+ sub-production [ 'else' statement ] 
+ contains null but first and follow sets both include 'else'.
+ Total: 1 error, 0 warnings
+Warning: Grammar is not LL(1) but -F switch set: writing output files
+gcc -Wstrict-prototypes -fno-common -Wall -ansi -pedantic -c pascal.c
+pascal.c:591: warning: `comment' defined but not used
+gcc -lm -Wstrict-prototypes -fno-common -Wall -ansi -pedantic -o ./pascal pascal.o crash.o scan.o set.o symbol.o
+pascal -v test
+
+Pascal parser V1.00 (generated) Mar 27 1994 03:50:28
+ test.pas: 0 errors, 0 warnings
+rdp -ordp_gen rdp
+gcc -Wstrict-prototypes -fno-common -Wall -ansi -pedantic -c rdp_gen.c
+rdp_gen.c:236: warning: `comment' defined but not used
+gcc -lm -Wstrict-prototypes -fno-common -Wall -ansi -pedantic -o ./rdp_gen rdp_gen.o rdp_aux.o crash.o scan.o set.o symbol.o
+cp rdp_gen.c rdp_gen1.c
+rdp_gen -ordp_gen rdp
+diff rdp_gen.c rdp_gen1.c
+rm rdp_gen1.c

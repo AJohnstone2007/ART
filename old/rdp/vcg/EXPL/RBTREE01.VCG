@@ -1,0 +1,252 @@
+graph: {
+  title: "test"
+  color: aquamarine
+  iconcolors: 32
+  fast_icons: no
+  stretch: 36
+  shrink: 100
+  width: 640
+  height: 400
+  amax: 0
+  xmax: 1072
+  ymax: 816
+  xbase: 5
+  ybase: 5
+  xspace: 20
+  xlspace: 10
+  yspace: 70
+  xraster: 1
+  xlraster: 1
+  yraster: 1
+  layout_downfactor: 1
+  layout_upfactor: 1
+  layout_nearfactor: 1
+  layout_splinefactor: 70
+  spreadlevel: 1
+  treefactor: 0.500000
+  bmax: 100
+  cmin: 0
+  cmax: 32000 
+  pmin: 0
+  pmax: 100
+  rmin: 0
+  rmax: 100
+  smax: 100
+  node_alignment: center
+  orientation: top_to_bottom
+  late_edge_labels: no
+  display_edge_labels: no
+  dirty_edge_labels: no
+  finetuning: yes
+  nearedges: yes
+  splines: no
+  ignoresingles: no
+  straight_phase: no
+  priority_phase: no
+  manhatten_edges: no
+  smanhatten_edges: no
+  port_sharing: yes
+  crossingphase2: no
+  crossingoptimization: yes
+  crossingweight: bary
+  arrow_mode: fixed
+  infoname 1 : "()"
+  infoname 2 : "()"
+  colorentry 0 :  255 255 255
+  colorentry 1 :  0 0 255
+  colorentry 2 :  255 0 0
+  colorentry 3 :  0 255 0
+  colorentry 4 :  255 255 0
+  colorentry 5 :  255 0 255
+  colorentry 6 :  0 255 255
+  colorentry 7 :  85 85 85
+  colorentry 8 :  0 0 128
+  colorentry 9 :  128 0 0
+  colorentry 10 :  0 128 0
+  colorentry 11 :  128 128 0
+  colorentry 12 :  128 0 128
+  colorentry 13 :  0 128 128
+  colorentry 14 :  255 215 0
+  colorentry 15 :  170 170 170
+  colorentry 16 :  128 128 255
+  colorentry 17 :  255 128 128
+  colorentry 18 :  128 255 128
+  colorentry 19 :  255 255 128
+  colorentry 20 :  255 128 255
+  colorentry 21 :  128 255 255
+  colorentry 22 :  238 130 238
+  colorentry 23 :  64 224 208
+  colorentry 24 :  127 255 212
+  colorentry 25 :  240 230 140
+  colorentry 26 :  160 32 240
+  colorentry 27 :  154 205 50
+  colorentry 28 :  255 192 203
+  colorentry 29 :  255 165 0
+  colorentry 30 :  218 112 214
+  classname 1 : "()"
+  node: {
+    title: "35864"
+    label: "3"
+    info1: ""
+    info2: ""
+    info3: ""
+    shrink:  1
+    stretch: 1
+    color: black
+    textcolor: white
+    bordercolor: white
+    width: 34
+    height: 34
+    borderwidth: 2
+    loc: { x: 32 
+           y: 5 }
+    textmode: center
+    shape: box
+    level: 0
+    horizontal_order: 0
+  }
+  node: {
+    title: "35928"
+    label: "5"
+    info1: ""
+    info2: ""
+    info3: ""
+    shrink:  1
+    stretch: 1
+    color: red
+    textcolor: white
+    bordercolor: white
+    width: 34
+    height: 34
+    borderwidth: 2
+    loc: { x: 59 
+           y: 109 }
+    textmode: center
+    shape: rhomb
+    level: 1
+    horizontal_order: 1
+  }
+  node: {
+    title: "35800"
+    label: "3"
+    info1: ""
+    info2: ""
+    info3: ""
+    shrink:  1
+    stretch: 1
+    color: black
+    textcolor: white
+    bordercolor: white
+    width: 34
+    height: 34
+    borderwidth: 2
+    loc: { x: 5 
+           y: 109 }
+    textmode: center
+    shape: box
+    level: 1
+    horizontal_order: 0
+  }
+  node: {
+    title: "35832"
+    label: "5"
+    info1: ""
+    info2: ""
+    info3: ""
+    shrink:  1
+    stretch: 1
+    color: black
+    textcolor: white
+    bordercolor: white
+    width: 34
+    height: 34
+    borderwidth: 2
+    loc: { x: 32 
+           y: 213 }
+    textmode: center
+    shape: box
+    level: 2
+    horizontal_order: 0
+  }
+  node: {
+    title: "35896"
+    label: "7"
+    info1: ""
+    info2: ""
+    info3: ""
+    shrink:  1
+    stretch: 1
+    color: white
+    textcolor: blue
+    bordercolor: blue
+    width: 34
+    height: 34
+    borderwidth: 2
+    loc: { x: 86 
+           y: 213 }
+    textmode: center
+    shape: triangle
+    level: 2
+    horizontal_order: 1
+  }
+  edge: {
+    sourcename: "35864"
+    targetname: "35928"
+    color: red
+    textcolor: red
+    arrowcolor: red
+    backarrowcolor: red
+    linestyle: dotted
+    thickness: 5
+    class: 1
+    priority: 1
+    horizontal_order: -1
+    arrowsize: 10
+    backarrowsize: 0
+  }
+  edge: {
+    sourcename: "35864"
+    targetname: "35800"
+    color: black
+    textcolor: black
+    arrowcolor: black
+    backarrowcolor: black
+    linestyle: continuous
+    thickness: 5
+    class: 1
+    priority: 1
+    horizontal_order: -1
+    arrowsize: 10
+    backarrowsize: 0
+  }
+  edge: {
+    sourcename: "35928"
+    targetname: "35832"
+    color: black
+    textcolor: black
+    arrowcolor: black
+    backarrowcolor: black
+    linestyle: continuous
+    thickness: 5
+    class: 1
+    priority: 1
+    horizontal_order: -1
+    arrowsize: 10
+    backarrowsize: 0
+  }
+  edge: {
+    sourcename: "35928"
+    targetname: "35896"
+    color: black
+    textcolor: black
+    arrowcolor: black
+    backarrowcolor: black
+    linestyle: continuous
+    thickness: 5
+    class: 1
+    priority: 1
+    horizontal_order: -1
+    arrowsize: 10
+    backarrowsize: 0
+  }
+}
