@@ -2,3 +2,4 @@
 *.java linguist-vendored=false
 *.c linguist-vendored=false
 *.cpp linguist-vendored=false
+*.pdf linguist-vendored=false
