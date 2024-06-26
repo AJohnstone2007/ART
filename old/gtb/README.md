@@ -29,6 +29,6 @@ and [doc/lib_ex](https://github.com/AJohnstone2007/ART/tree/main/old/gtb/doc/lib
 
 ## ART first prototype
 
-From around 2007 up until January 2008 we were experimenting with the initial GLL implementation; this became the first version of ART. GLL support files are in [art_v1](https://github.com/AJohnstone2007/ART/tree/main/old/gtb/art_v1)
+From around 2007 up until January 2008 we were experimenting with the initial GLL implementation; this became the first version of ART. Some GLL support files are in [src/art_v1](https://github.com/AJohnstone2007/ART/tree/main/old/gtb/src/art_v1)
 
 Adrian Johnstone, June 2024
