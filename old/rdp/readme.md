@@ -1,4 +1,4 @@
-#### RDP V1.7 ALPHA
+# RDP V1.7 ALPHA
 
 This is the devlopment directory for the alpha version of RDP V1.7, which may not be a stable. RDP 1.7 has never been formally released, but it has been used successfully to build the examples here and is used to build the front ends for GTB and ART V2. 
 
