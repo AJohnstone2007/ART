@@ -14,7 +14,7 @@ The source code lives in two directories: [src/gtb_lib](https://github.com/AJohn
 
 To build using gcc or some other compiler, simply compile together the contents of these two directories using a command line such as
 
-`gcc -fpermissive -ogtb -ansi -Wno-write-strings -Isrc/gtb -Isrc/gtb_lib src\gtb\*.cpp src\gtb_lib
+`gcc -fpermissive -ogtb -ansi -Wno-write-strings -Isrc/gtb -Isrc/gtb_lib src\gtb\*.cpp src\gtb_lib\*.cpp`
 
 #### Important - compiler warnings
 
