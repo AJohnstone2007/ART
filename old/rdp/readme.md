@@ -23,6 +23,6 @@ We started using RDP for teaching in Autumn 1994 and one of our courses still ma
 
 ## A note on VCG
 
-RDP produces graph outputs in VCG (Visualisation of Compiler Graphs) format. VCG was written by Georg Sander as part of the Esprit project COMPARE in the 1990s. As of June 2024, the original web page is still available at https://www.rw.cdl.uni-saarland.de/people/sander/private/html/gsvcg1.html, but may dissapear. Many years ago Georg gave permission for the Windows VCG binaries to be distributed with RDP; you will find them in the [VCG](https://github.com/AJohnstone2007/ART/tree/main/old/rdp/vcg) directory.
+RDP produces graph outputs in VCG (Visualisation of Compiler Graphs) format. VCG was written by Georg Sander as part of the Esprit project COMPARE in the 1990s. As of June 2024, the original web page is still available at https://www.rw.cdl.uni-saarland.de/people/sander/private/html/gsvcg1.html, but may dissapear. Many years ago Georg gave permission for the Windows VCG binaries to be distributed with RDP; you will find them in the [VCG](https://github.com/AJohnstone2007/ART/tree/main/old/rdp/vcg) directory. Unfortunately these are 16-bit binaries and so will not run on 64-bit versions of Windows. There is a graph description language converter called [graph-easy](https://metacpan.org/dist/Graph-Easy/view/bin/graph-easy) that may be able to help, but I have not tried it.
 
 Adrian Johnstone, June 2024 
