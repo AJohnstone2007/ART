@@ -18,10 +18,9 @@ To build using gcc or some other compiler, simply compile together the contents 
 
 #### Important - compiler warnings
 
-GTB assumes that pointers and integers are the same size. On
-64-bit architectures (such as modern Intel based PCs) this assumption is not valid. g++ will issue warnings in such cases. The solution on Windows at least is to compile using a 32-bit compiler such as mingw32.
+GTB assumes that pointers and integers are the same size. This is not the case for 64-bit binaries. A solution is to compile using a 32-bit compiler such as mingw32.
 
-The GTB code also casts mutable arrays of characters to strings, and has some code that triggers dataflow analyser warnings in later versions of gcc; hence the `permissive` and `no-write-strings` options above.
+The GTB code also casts mutable arrays of characters to strings, and has some code that triggers dataflow analyser warnings in later versions of gcc; these warning scan be ignored, hence the `permissive` and `no-write-strings` options above.
 
 ## Using GTB
 
