@@ -12,7 +12,7 @@ GTB is written in ANSI C though the source files have filetype .cpp
 
 The source code lives in two directories: [src/gtb_lib](https://github.com/AJohnstone2007/ART/tree/main/old/gtb/src/gtb_lib) contains the library which is common to GTB and some of our other tools, and [src/gtb](https://github.com/AJohnstone2007/ART/tree/main/old/gtb/src/gtb) contains the modules which are specific to GTB.   
 
-To build using gcc compiler or some other compiler, simply compile together all of the files under src using a command line such as
+To build using gcc or some other compiler, simply compile together all of the files under src using a command line such as
 
 `gcc -fpermissive -ogtb -ansi -Wno-write-strings -I src/gtb -I src/gtb_lib src\gtb\*.cpp src\gtb_lib\*.cpp`
 
@@ -24,8 +24,8 @@ GTB assumes that pointers and integers are the same size. On some
 ## Using GTB
 
 Once built, we suggest that you start working through the tutorial
-manual doc\gtb_tut.ps which makes use of gtb scripts in directories doc\tut_ex
-and doc\lib_ex.
+manual [doc\gtb_tut.pdf](https://github.com/AJohnstone2007/ART/blob/main/old/gtb/doc/gtb_tut.pdf) which makes use of gtb scripts in directories [doc\tut_ex](https://github.com/AJohnstone2007/ART/tree/main/old/gtb/doc/tut_ex)
+and [doc\lib_ex](https://github.com/AJohnstone2007/ART/tree/main/old/gtb/doc/lib_ex).
 
 ## ART first prototype
 
