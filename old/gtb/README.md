@@ -14,13 +14,12 @@ The source code lives in two directories: [src/gtb_lib](https://github.com/AJohn
 
 To build using gcc or some other compiler, simply compile together the contents of these two directories using a command line such as
 
-`gcc -fpermissive -ogtb -ansi -Wno-write-strings -Isrc/gtb -Isrc/gtb_lib src\gtb\*.cpp src\gtb_lib\*.cpp`
-
+`gcc -ogtb -Wno-write-strings -Isrc/gtb -Isrc/gtb_lib src\gtb\*.cpp src\gtb_lib\*.cpp`
 #### Important - compiler warnings
 
 GTB assumes that pointers and integers are the same size. This is not the case for 64-bit binaries. A solution is to compile using a 32-bit compiler such as mingw32.
 
-The GTB code also casts mutable arrays of characters to strings, and has some code that triggers dataflow analyser warnings in later versions of gcc; these warning scan be ignored, hence the `permissive` and `no-write-strings` options above.
+The GTB code also casts mutable arrays of characters to strings, and has some code that triggers dataflow analyser warnings in later versions of gcc; these warnings can be ignored, hence the`no-write-strings` option above.
 
 ## Using GTB
 
