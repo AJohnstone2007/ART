@@ -10,7 +10,7 @@ In September 1993, I and my colleague Andy Betts from UCL were *en route* to the
 
 We started using RDP for teaching in Autumn 1994 and one of our courses still makes use of it. Development essentally stopped in mid-1997 but this internal 1.7 version includes a few changes  that were made during development of the script language front ends for [GTB](https://github.com/AJohnstone2007/ART/tree/main/old/gtb) and [ART_V2](https://github.com/AJohnstone2007/ART/tree/main/old/art_v2), some of them as late as 2012/
 
-####RDP release dates
+#### RDP release dates
 
 1.0 16 February 1994
 
