@@ -1,6 +1,6 @@
 # RDP V1.7 ALPHA
 
-This is the alpha version of RDP V1.7, which may not be a stable. RDP 1.7 has never been formally released, but it has been used successfully to build the examples here and is used to build the front ends for later tools. Both RDP and the parser it generates are written in ANSI C. 
+This is the alpha version of RDP V1.7, which may not be a stable. RDP 1.7 has never been formally released, but it has been used successfully to build the examples here and is used to build the front ends for later tools. Both RDP and the parsers	 it generates are written in ANSI C. 
 
 The stable distributed versions from V1.0 to V1.6 may be found in subdirectory [old](https://github.com/AJohnstone2007/ART/tree/main/old/rdp/old).
 
@@ -8,7 +8,7 @@ The stable distributed versions from V1.0 to V1.6 may be found in subdirectory [
 
 In September 1993, I and my colleague Andy Betts from UCL were *en route* to the fourth Eurochip conference in Toledo (Spain) and had an afternoon's wait at Madrid airport. He had a parsing problem: while we waited for our lift I sketched out a very simple LL(1) parser generator for him which I subsequently developed into RDP V1.0, released via comp.compilers on 16 February 1994. A short note on RDP was also published in [SIGPlan Notices](https://pure.royalholloway.ac.uk/en/publications/rdp-an-iterator-based-recursive-descent-parser-generator-with-tre).
 
-We started using RDP for teaching in Autumn 1994 and one of our courses still makes use of it. Development essentally stopped in mid-1997 but this internal 1.7 version includes a few changes  that were made during development of the script language front ends for [GTB](https://github.com/AJohnstone2007/ART/tree/main/old/gtb) and [ART_V2](https://github.com/AJohnstone2007/ART/tree/main/old/art_v2), some of them as late as 2012.
+We started using RDP for teaching in Autumn 1994 and one of our courses still makes use of it. Development essentally stopped in mid-1997 but this internal 1.7 version includes a few additions that were made during development of the script language front ends for [GTB](https://github.com/AJohnstone2007/ART/tree/main/old/gtb) and [ART_V2](https://github.com/AJohnstone2007/ART/tree/main/old/art_v2), some of them as late as 2012.
 
 #### RDP release dates - see [here](https://github.com/AJohnstone2007/ART/tree/main/old/rdp/old) for distribution zip files
 
