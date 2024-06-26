@@ -32,7 +32,7 @@ and [doc/lib_ex](https://github.com/AJohnstone2007/ART/tree/main/old/gtb/doc/lib
 
 From around 2007 up until January 2008 we were experimenting with the initial GLL implementation; this became the first version of ART. Some GLL support files are in [src/art_v1](https://github.com/AJohnstone2007/ART/tree/main/old/gtb/src/art_v1)
 
-#### VCG
-GTB produces various visualisations as VCG files. See the notes [here](https://github.com/AJohnstone2007/ART/tree/main/old/rdp#a-note-on-vcg) for information on VCG.
+## VCG
+GTB produces various visualisations as VCG files. See the notes [here](https://github.com/AJohnstone2007/ART/tree/main/old/rdp\#a-note-on-vcg) for information on VCG.
 
 Adrian Johnstone, June 2024
