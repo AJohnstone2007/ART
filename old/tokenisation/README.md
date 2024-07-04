@@ -1,3 +1,5 @@
+#### Tokenisation
+
 This is a technical note describing my technique for building
 tokenisation tools.
 
@@ -13,9 +15,9 @@ we cannot expect to simply put, say, the ANSI-C grammar through RDP to
 build a parser from which lexicalised strings are made. However, we do
 not really care about the parser, so in fact a grammar of the form
 
-S ::= { STRING | ID | INTEGER | ....   (* all RDP primitives *) |
+`S ::= { STRING | ID | INTEGER | ....   (* all RDP primitives *) |
         'keyword1' | 'keyword2' | ...  (* all keywords in the 'real' grammar *)
-      }.
+      }.`
 
 will be sufficient. This is just the Kleene closure over all the
 tokens in the 'real' grammar.
@@ -31,28 +33,20 @@ into a grammar of the form above. We then submit this lexicalising
 grammar to RDP, build the parser, and run it on our strings with the
 -L option.
 
-Here is a worked example for the ANSI-C grammar.
+## Worked example using the ANSI-C grammar.
 
 First get a grammar in rdp format: see the file ansi_c.bnf in this directory.
 
 Now pass through rdp to catch the symbol table output:
 
-rdp -S -F ansi_c.bnf > ansi_c_lex.bnf
+`rdp -S -F ansi_c.bnf > ansi_c_lex.bnf`
 
-Now edit the ansi_c_lex.bnf file to remove everything except for the
+Now edit the `ansi_c_lex.bnf` file to remove everything except for the
 dump by scope chain for tables tokens.
 
-Add to the top of the grammar
+Add to the top of the grammar `S ::= { INTEGER | REAL | STRING_ESC('"' '\\') | STRING_ESC('\'' '\\') | ID |`
 
-S ::= { 
-INTEGER | REAL | STRING_ESC('"' '\\') | STRING_ESC('\'' '\\') | ID |
-
-and 
-
-
-}.
-
-to the bottom.
+and add to the bottom of the grammar `}.`
 
 Wrap each token line with ' and ' |
 
@@ -62,9 +56,9 @@ STRING declarations above.
 Add in specifications for comments and preprocessor directives which
 are not in the main grammar:
 
-'#include' | '#if' | '#endif' | '#define' |
+`'#include' | '#if' | '#endif' | '#define' |`
 
 Now pass through rdp to make the lexical parser and build:
 
-rdp ansi_c_lex.bnf
+`rdp ansi_c_lex.bnf`
 
