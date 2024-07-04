@@ -1,7 +1,14 @@
-#### Tokenisation
+# Tokenisation
 
-This is a technical note describing my technique for building
-tokenisation tools.
+Some parsing algorithms perform lexicalisation as a separate phase that runs before the parsers starts; some parsers are in a producer-consumer relationship with the lexical phase.
+
+We have two approaches to smoothing out the overheads presented by lexicalisation:
+
+1. Use a 'character level' grammar, that is one in which the grammar's terminals are individual characters
+
+2. 'Tokenise' the input strings, by replacing (say) all identifiers with the keyword ID, and similarly for other paraterminal patterns.
+
+These tokenised strings have file type `.tok`; this is a technical note describing one technique for building tokenisation tools.
 
 RDP has a little-known option -L which prints out a tokenised version
 of an input string. Whitespace and comments are output as a single
