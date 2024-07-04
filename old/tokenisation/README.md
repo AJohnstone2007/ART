@@ -1,8 +1,8 @@
 # Tokenisation
 
-Some parsing algorithms perform lexicalisation as a separate phase that runs before the parsers starts; some parsers are in a producer-consumer relationship with the lexical phase.
+Some parsing algorithms perform lexicalisation as a separate phase that runs before the parsers starts; some parsers are in a producer-consumer relationship with the lexical phase. In the latter case, the lexicalisation computations are intermingled with the parser which complicates performance measurement.
 
-We have two approaches to smoothing out the overheads presented by lexicalisation:
+We have two approaches to smoothing out the overheads presented by lexicalisation.
 
 1. Use a 'character level' grammar, that is one in which the grammar's terminals are individual characters
 
@@ -23,8 +23,10 @@ build a parser from which lexicalised strings are made. However, we do
 not really care about the parser, so in fact a grammar of the form
 
 `S ::= { STRING | ID | INTEGER | ....   (* all RDP primitives *) |
-        'keyword1' | 'keyword2' | ...  (* all keywords in the 'real' grammar *)
-      }.`
+
+`        'keyword1' | 'keyword2' | ...  (* all keywords in the 'real' grammar *)`
+
+`      }.``
 
 will be sufficient. This is just the Kleene closure over all the
 tokens in the 'real' grammar.
