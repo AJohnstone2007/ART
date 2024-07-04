@@ -22,11 +22,11 @@ we cannot expect to simply put, say, the ANSI-C grammar through RDP to
 build a parser from which lexicalised strings are made. However, we do
 not really care about the parser, so in fact a grammar of the form
 
-`S ::= { STRING | ID | INTEGER | ....   (* all RDP primitives *) |
+`S ::= { STRING | ID | INTEGER | ....   (* all RDP primitives *) |`
 
 `        'keyword1' | 'keyword2' | ...  (* all keywords in the 'real' grammar *)`
 
-`      }.``
+`      }.`
 
 will be sufficient. This is just the Kleene closure over all the
 tokens in the 'real' grammar.
