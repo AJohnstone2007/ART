@@ -1,14 +1,20 @@
 # Grammar Tool Box 
 
-## GTB V2.5 1 November 2005
+## GTB V2.5 1 November 2005 Updated to version 3.0 July 2024
 
 The Grammar Tool Box (GTB) is a tool for analysing grammars and running a variety of parsers.
 
 It includes our RNGLR, BRNGLR and GLL algorithms for which this codebase includes the first implementations that were used to produce statistics for the relevant papers.
 
+GTB has no support at all for semantics, and so is not useful for building translators: we used t purely as a framework for our research on parsing algorithms.
+
 GTB is written in ANSI C though the source files have filetype .cpp
 
-## Compiling GTB
+## Updates to version 3.0
+
+GTB V3.0 is just the final development version of GTB from 2005, lightly massaged so that the BRNGLR and other parser functions produce a unified logging output suitable for mass experimental runs. The algorithm implementations have not been changed from those reported in the research papers.
+
+## Building GTB
 
 The source code resides in two directories: [src/gtb_lib](https://github.com/AJohnstone2007/ART/tree/main/old/gtb/src/gtb_lib) contains the utility library which is common to GTB and some of our other tools, and [src/gtb](https://github.com/AJohnstone2007/ART/tree/main/old/gtb/src/gtb) contains the code which is specific to GTB, including the parser implementations.
 
