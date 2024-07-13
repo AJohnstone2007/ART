@@ -1,12 +1,12 @@
 # Grammar Tool Box 
 
-## GTB V2.5 1 November 2005 Updated to version 3.0 July 2024
+## GTB V2.5 1 November 2005 (updated to version 3.0 July 2024)
 
 The Grammar Tool Box (GTB) is a tool for analysing grammars and running a variety of parsers.
 
 It includes our RNGLR, BRNGLR and GLL algorithms for which this codebase includes the first implementations that were used to produce statistics for the relevant papers.
 
-GTB has no support at all for semantics, and so is not useful for building translators: we used t purely as a framework for our research on parsing algorithms.
+GTB has no support at all for semantics, and so is not useful for building translators: we used it purely as a framework for our research on parsing algorithms.
 
 GTB is written in ANSI C though the source files have filetype .cpp
 
@@ -24,7 +24,7 @@ To build using gcc or some other compiler, simply compile together the contents 
 
 #### Important - compiler warnings
 
-GTB assumes that pointers and integers are the same size. This is not the case for 64-bit binaries, and as a result important parts of GTB will fail if compiled this way. A solution is to compile using a 32-bit compiler such as mingw32.
+GTB assumes that pointers and integers are the same size. This is not the case for 64-bit binaries, and as a result important parts of GTB will fail if compiled this way. A solution for 64-bit Windows systems is to compile using a 32-bit compiler such as mingw32.
 
 The GTB code also casts mutable arrays of characters to strings, and has some code that triggers dataflow analyser warnings in later versions of gcc; these warnings can be ignored, hence the`no-write-strings` option above.
 
