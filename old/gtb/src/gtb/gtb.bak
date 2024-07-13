@@ -1,6 +1,6 @@
 (*****************************************************************************
 *
-* GTB version 3.0 by Adrian Johnstone (A.Johnstone@rhbnc.ac.uk) 10 July 2024
+* GTB version 2.5 by Adrian Johnstone (A.Johnstone@rhbnc.ac.uk) 1 November 2005
 *
 * gtb.bnf - grammar for Algol-60 style BNF (with lexer rules and semantic
 *           actions) and GTB script language
@@ -8,7 +8,7 @@
 * This file may be freely distributed. Please mail improvements to the author.
 *
 *****************************************************************************)
-TITLE("GTB V3.0 (c) Adrian Johnstone 1997-2024")
+TITLE("GTB V2.5 (c) Adrian Johnstone 2000-2005")
 SUFFIX("gtb")
 MAX_ERRORS(0)
 MAX_WARNINGS(0)
@@ -17,8 +17,6 @@ PRE_PARSE([* script_initialise(rdp_sourcefilename); *])
 POST_PARSE([* script_process(rdp_tree); *])
 TEXT_SIZE(170000)
 USES("gtb_scr.h")
-GLOBAL([* char* c_value; *])
-ARG_STRING(C c_value "Add comment prefix to log line")
 
 PASSES(2)
 

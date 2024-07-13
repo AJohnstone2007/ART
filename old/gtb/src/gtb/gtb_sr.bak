@@ -152,6 +152,7 @@ static histogram_node *reduction_length_histogram = NULL;
 static histogram_node *reduction_histogram = NULL;
 static int max_queue_depth;
 
+#if 0
 void sr_ssg_statistics(FILE * output_file, void *ssg_trace)
 {
   ssg_node *this_node;
@@ -222,6 +223,7 @@ void sr_ssg_statistics(FILE * output_file, void *ssg_trace)
   hist_free(&edge_visit_histogram);
   text_redirect(old_text_stream);
 }
+#endif
 
 static derivation *sr_current_render_derivation;
 

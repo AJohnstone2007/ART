@@ -12,7 +12,6 @@ write["\n" gtb_version " processing '" gtb_main_file_name "' on " date_time "\n\
 
 gtb_verbose := true
 this_grammar := grammar[S]
-render[open["gll.vcg"] this_grammar]
 write[this_grammar]
 
 string := " b b a"

@@ -146,8 +146,6 @@ struct script_symbols_data
   script_value *value;
 };
 
-extern char* c_value;
-
 void script_check_for_errors(void);                    /* Fatal message if errors have been seen */
 void script_close_scope(void);                         /* Close the current scope region in the script symbol table */
 void script_initialise(char *sourcefilename);          /* Main post-parse function */
