@@ -1,4 +1,4 @@
-/*******************************************************************************
+/*******  ************************************************************************
 *
 * GTB release 2.0 by Adrian Johnstone (A.Johnstone@rhul.ac.uk) 15 October 2003
 *
@@ -224,8 +224,9 @@ static unsigned lex(void)
   }
   else
   {
-    text_printf("Lex: no match starting at %s\n", lex_ip);
-    lex_ip++;
+    text_printf("Lex: no match starting at ");
+    for (int i = 0; i < 10; i++)
+      if (*lex_ip == 0) break; else text_printf("%c", *lex_ip++);
     return GRAM_ILLEGAL_SYMBOL_NUMBER;
   }
 }
@@ -895,7 +896,7 @@ derivation* gp_earley_parse(grammar *this_grammar, char *string, int lookahead)
   finish_time = clock();
 
   /* 5. Debug: print out Earley sets */
-#if 1
+#if 0
   for (unsigned level = 0; level < token_count; level++)
   {
     unsigned cardinality = 0;
@@ -928,11 +929,12 @@ derivation* gp_earley_parse(grammar *this_grammar, char *string, int lookahead)
     if (acceptance_slots[slot] && earley_sets[slot][token_count -1 ] != NULL)
       this_derivation->accept = 1;
 
+  double run_time = (double) (finish_time - start_time) / (double) CLK_TCK;
+
+ if (script_gtb_verbose()) {
   text_printf("%s\n", this_derivation->accept ? "Accept" : "Reject");
 
   /* 7. Statistics output */
-
-  double run_time = (double) (finish_time - start_time) / (double) CLK_TCK;
 
   text_printf("Earley cubic parser ran in %lf CPU s\n", run_time);
 
@@ -986,6 +988,31 @@ derivation* gp_earley_parse(grammar *this_grammar, char *string, int lookahead)
 //    text_printf("slot, %u, level, %u, index, %u\n", this_node->slot, this_node->level, this_node->index);
 
   /* Return results */
+  }
+
+  // Now output CSV record
+  text_printf("%i,Earley,%s,%f,%f,%f,%f,%f,%f,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i\n",
+               strlen(string),
+               this_derivation->accept ? "Accept" : "Reject",
+               0.0,
+               0.0,
+               run_time,
+               0.0,
+               0.0,
+               0.0,
+               0,
+               0,
+               0,
+               0,
+               0,
+               0,
+               0,
+               0,
+               0,
+               0,
+               0,
+               0);
+
   return this_derivation;
 }
 

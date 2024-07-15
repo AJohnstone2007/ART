@@ -266,11 +266,13 @@ derivation *sr_rnglr_parse(dfa * this_dfa, char *string, int reduction_stack_siz
   this_derivation->ssg = graph_insert_graph("SSG");
   this_derivation->sppf = graph_insert_graph("SPPF");
   sppf_create_epsilon_sppf(this_derivation);
-  FILE *epsilon_sppf_vcg_file = fopen("esppf.vcg", "w");
-  text_redirect(epsilon_sppf_vcg_file);
-  sppf_set_render_derivation(this_derivation);
-  graph_vcg(this_derivation->sppf, sppf_vcg_epsilon_sppf_print_index, sppf_vcg_print_node, sppf_vcg_print_edge);
-  fclose(epsilon_sppf_vcg_file);
+  if (script_gtb_verbose()) {
+    FILE *epsilon_sppf_vcg_file = fopen("esppf.vcg", "w");
+    text_redirect(epsilon_sppf_vcg_file);
+    sppf_set_render_derivation(this_derivation);
+    graph_vcg(this_derivation->sppf, sppf_vcg_epsilon_sppf_print_index, sppf_vcg_print_node, sppf_vcg_print_edge);
+    fclose(epsilon_sppf_vcg_file);
+  }
   family_checks = 0;
   family_checks_failed = 0;
   text_redirect(stdout);
@@ -299,7 +301,8 @@ derivation *sr_rnglr_parse(dfa * this_dfa, char *string, int reduction_stack_siz
 
   d--;  /* don't count terminating $ */
 
-  text_message(TEXT_INFO, "RNGLR parse: input length %i character%s, %i lexeme%s\n", strlen(string), strlen(string) == 1 ? "" :"s", d, d == 1 ? "" : "s");
+  if (script_gtb_verbose())
+    text_message(TEXT_INFO, "RNGLR parse: input length %i character%s, %i lexeme%s\n", strlen(string), strlen(string) == 1 ? "" :"s", d, d == 1 ? "" : "s");
 
   int *a = (int*) mem_malloc((d+2) * sizeof(unsigned));  /* we don't use a[0], and we need an a[d+1] for $, hence length is d+2 */
 
@@ -365,10 +368,10 @@ derivation *sr_rnglr_parse(dfa * this_dfa, char *string, int reduction_stack_siz
       text_message(TEXT_ERROR, "attempt to prune SPPF that has no recognised root node\n");
     else
     {
-      sppf_statistics(this_derivation, "Before SPPF pruning");
+      if (script_gtb_verbose()) sppf_statistics(this_derivation, "Before SPPF pruning");
       graph_retain_set_of_nodes(this_derivation->sppf, graph_reachable_nodes(this_derivation->sppf, graph_root(this_derivation->sppf))
       );
-      sppf_statistics(this_derivation, "After SPPF pruning");
+      if (script_gtb_verbose()) sppf_statistics(this_derivation, "After SPPF pruning");
     }
   }
   else /* Non-empty string */
@@ -1028,12 +1031,13 @@ derivation *sr_rnglr_parse(dfa * this_dfa, char *string, int reduction_stack_siz
   reduction_search_generate_cleanup();
   mem_free(a);
 
-  if (this_derivation->accept)
-    text_message(TEXT_INFO, "RNGLR parse: accept\n");
-  else
-    text_message(TEXT_INFO, "RNGLR parse: reject after consuming %i out of %i lexemes\n", i - 1, d);
+  if (script_gtb_verbose())
+    if (this_derivation->accept)
+      text_message(TEXT_INFO, "RNGLR parse: accept\n");
+    else
+      text_message(TEXT_INFO, "RNGLR parse: reject after consuming %i out of %i lexemes\n", i - 1, d);
 
-  text_printf("Total of %u family checks of which %u failed\n", family_checks, family_checks_failed);
+  if (script_gtb_verbose()) text_printf("Total of %u family checks of which %u failed\n", family_checks, family_checks_failed);
   double run_time = (double) (finish_time - start_time) / (double) CLK_TCK;
 
   if (script_gtb_verbose() && run_time > 0.001)
@@ -1043,14 +1047,39 @@ derivation *sr_rnglr_parse(dfa * this_dfa, char *string, int reduction_stack_siz
     text_message(TEXT_INFO, "Parse rate: %i lexemes at %.1f lexeme/s\n", d, (double) d / ((double) (finish_time - start_time) / (double) CLK_TCK));
   }
 
-  text_printf("!!RNGLR, %f,%i\n", run_time, d);
+  if (script_gtb_verbose()) {
+    text_printf("!!RNGLR, %f,%i\n", run_time, d);
 
-  FILE *sppf_vcg_file = fopen("sppf.vcg", "w");
-  text_redirect(sppf_vcg_file);
-  sppf_set_render_derivation(this_derivation);
-  graph_vcg(this_derivation->sppf, NULL, sppf_vcg_print_node, sppf_vcg_print_edge);
-  fclose(sppf_vcg_file);
-  text_redirect(stdout);
+    FILE *sppf_vcg_file = fopen("sppf.vcg", "w");
+    text_redirect(sppf_vcg_file);
+    sppf_set_render_derivation(this_derivation);
+    graph_vcg(this_derivation->sppf, NULL, sppf_vcg_print_node, sppf_vcg_print_edge);
+    fclose(sppf_vcg_file);
+    text_redirect(stdout);
+  }
+
+    // Now output CSV record
+  text_printf("%i,RNGLR,%s,%f,%f,%f,%f,%f,%f,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i\n",
+               strlen(string),
+               this_derivation->accept ? "Accept" : "Reject",
+               0.0,
+               0.0,
+               run_time,
+               0.0,
+               0.0,
+               0.0,
+               0,
+               0,
+               0,
+               0,
+               0,
+               0,
+               0,
+               0,
+               0,
+               0,
+               0,
+               0);
 
   return this_derivation;
 }
