@@ -16,7 +16,11 @@ GTB V3.0 is the final development version of GTB from 2005 with two sets of modi
 
 1. All diagnostic outputs have been put under the control of the `verbose` script variable and a unified logging output has been established which is suitable for mass experimental runs. 
 
-2. Pointer variables have been changed from unsigned* to ptrdiff_t* which then adjusts automatically between 32- and 64-bit address spaces, so that GTB can be compiled woith both legacy compilers and mpdern 64-bit compilers.
+2. Pointer variables have been changed from unsigned* to ptrdiff_t* which then adjusts automatically between 32- and 64-bit address spaces, so that GTB can be compiled with both legacy compilers and modern 64-bit compilers. 
+
+## Prebuilt binaries
+
+The **bin** directory contains pre-built executables for Windows made using Borland C version 5.01, the Intel compiler from the Borland C 5.01 distribution, and the latest (in July 2024) version of mingw gcc in both 32- and 64-bit flavours.
 
 ## Building GTB
 
