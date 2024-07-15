@@ -34,14 +34,14 @@
 // Global variable by-passing what would be paramaters
 static dfa *ret_dfa;
 
-static unsigned *dfa_labels;
-static unsigned *dfa_labels_top;
-static unsigned *next_free_label_location;
-static unsigned *dfa_tables;
-static unsigned *dfa_tables_top;
-static unsigned *next_free_table_location;
-static unsigned *this_label_body;
-static unsigned *current_input_label;
+static ptrdiff_t *dfa_labels;
+static ptrdiff_t *dfa_labels_top;
+static ptrdiff_t *next_free_label_location;
+static ptrdiff_t *dfa_tables;
+static ptrdiff_t *dfa_tables_top;
+static ptrdiff_t *next_free_table_location;
+static ptrdiff_t *this_label_body;
+static ptrdiff_t *current_input_label;
 static unsigned first_slot;
 static unsigned first_level_2_slot;
 static unsigned first_level_3plus_slot;
@@ -181,7 +181,7 @@ We return the address of first location in the found symbol, or the found symbol
 not found
 */
 
-int compare_labels(unsigned *left, unsigned *right)
+int compare_labels(ptrdiff_t *left, ptrdiff_t *right)
 {
 #if defined(DFA_TRACE)
   text_printf("Comparing offset %u and offset %u\n", left - dfa_labels, right - dfa_labels);
@@ -241,9 +241,9 @@ int compare_labels(unsigned *left, unsigned *right)
 }
 
 
-unsigned *label_find_linear(unsigned *labels_start, unsigned* labels_one_past_end, unsigned *key)
+ptrdiff_t *label_find_linear(ptrdiff_t *labels_start, ptrdiff_t* labels_one_past_end, ptrdiff_t *key)
 {
-  unsigned *test_element = labels_start;
+  ptrdiff_t *test_element = labels_start;
   while (1)
   {
 #if defined(DFA_TRACE)
@@ -272,11 +272,11 @@ unsigned *label_find_linear(unsigned *labels_start, unsigned* labels_one_past_en
   }
 }
 
-unsigned **hash_table;
+ptrdiff_t **hash_table;
 unsigned hash_buckets;
 unsigned hash_prime;
 
-unsigned hash_label(unsigned hash_seed, unsigned *label)
+ptrdiff_t hash_label(ptrdiff_t hash_seed, ptrdiff_t *label)
 {
   hash_seed = *label++ + hash_prime * hash_seed; // Hash in the initial symbol
 
@@ -286,10 +286,10 @@ unsigned hash_label(unsigned hash_seed, unsigned *label)
   return hash_seed;
 }
 
-unsigned *label_find_hash(unsigned *labels_start, unsigned* labels_one_past_end, unsigned *key)
+ptrdiff_t *label_find_hash(ptrdiff_t *labels_start, ptrdiff_t* labels_one_past_end, ptrdiff_t *key)
 {
-  unsigned hash_index = hash_label(0, key);
-  unsigned *hash_value = hash_table[hash_index %hash_buckets];
+  ptrdiff_t hash_index = hash_label(0, key);
+  ptrdiff_t *hash_value = hash_table[hash_index %hash_buckets];
 
 
   while (hash_value != NULL && compare_labels(key, hash_value) != 0)
@@ -388,7 +388,7 @@ dfa *dfa_construct_dfa(nfa *this_nfa, unsigned table_buffer_size, unsigned label
   ret_dfa->grammar = this_nfa->grammar;
 
   // Initialisation step 2: create the labels array the table array and initialise associated pointers
-  dfa_labels = next_free_label_location = current_input_label = (unsigned*) mem_calloc(label_buffer_size, sizeof(unsigned));
+  dfa_labels = next_free_label_location = current_input_label = (ptrdiff_t*) mem_calloc(label_buffer_size, sizeof(unsigned));
   dfa_labels_top = dfa_labels + label_buffer_size;
   if (script_gtb_verbose())
     text_printf("Allocated %lu words for dfa labels\n", dfa_labels_top - dfa_labels);
@@ -401,7 +401,7 @@ dfa *dfa_construct_dfa(nfa *this_nfa, unsigned table_buffer_size, unsigned label
   }
   else
   {
-    dfa_tables = next_free_table_location = (unsigned*) mem_calloc(table_buffer_size, sizeof(unsigned));
+    dfa_tables = next_free_table_location = (ptrdiff_t*)  mem_calloc(table_buffer_size, sizeof(unsigned));
     dfa_tables_top = dfa_tables + table_buffer_size;
     if (script_gtb_verbose())
       text_printf("Allocated %lu words for dfa tables\n", dfa_tables_top - dfa_tables);
@@ -410,7 +410,7 @@ dfa *dfa_construct_dfa(nfa *this_nfa, unsigned table_buffer_size, unsigned label
     reduction_set_array = set_array(this_table_reductions);
     ret_dfa->reduction_count = set_cardinality(this_table_reductions);
     ret_dfa->reduction_table = (reduction*) mem_calloc(ret_dfa->reduction_count, sizeof(reduction));
-    ret_dfa->reductions_index = (unsigned*) mem_calloc(ret_dfa->reduction_count, sizeof(unsigned));
+    ret_dfa->reductions_index = (ptrdiff_t*) mem_calloc(ret_dfa->reduction_count, sizeof(unsigned));
 
     for (unsigned reduction_index = 0, *this_reduction_set_element = reduction_set_array; *this_reduction_set_element != SET_END; this_reduction_set_element++, reduction_index++)
     {
@@ -519,7 +519,7 @@ dfa *dfa_construct_dfa(nfa *this_nfa, unsigned table_buffer_size, unsigned label
       text_printf("There are %u non-empty header_epsilon_closures with a total of %u elements requiring %u bytes\n", non_empty_sets, sum_of_cardinalities, (this_nfa->header_count * sizeof(unsigned*)) +  (sum_of_cardinalities * sizeof(unsigned)));
 
   //Initialisation step 6: make hash table
-  hash_table = (unsigned**) mem_calloc(hash_buckets, sizeof(unsigned*));
+  hash_table = (ptrdiff_t**) mem_calloc(hash_buckets, sizeof(unsigned*));
   if (script_gtb_verbose())
     text_printf("Allocated %lu entries for DFA hash table requiring %lu bytes\n", hash_buckets, hash_buckets * sizeof(unsigned*));
 
@@ -625,7 +625,7 @@ dfa *dfa_construct_dfa(nfa *this_nfa, unsigned table_buffer_size, unsigned label
       text_printf("Out edge labelled %u (%s)\n", *this_out_edge_label, gram_find_symbol_by_number(this_nfa->grammar, *this_out_edge_label)->id);
 #endif
 
-     unsigned *current_output_label = next_free_label_location;
+     ptrdiff_t *current_output_label = next_free_label_location;
 
      DFA_LOAD_LABEL_ELEMENT(*this_out_edge_label);        //Output the symbol which marks the beginning of this state to labels array
 
@@ -635,7 +635,7 @@ dfa *dfa_construct_dfa(nfa *this_nfa, unsigned table_buffer_size, unsigned label
           DFA_LOAD_LABEL_ELEMENT(*this_global_epsilon_closure_element);
 
       //Worklist step 6: walk the input label looking for successor slots on this symbol
-      unsigned *first_slot_header_pair = next_free_label_location;                             // remember start of this block for subsequent sorting
+      ptrdiff_t *first_slot_header_pair = next_free_label_location;                             // remember start of this block for subsequent sorting
 
       current_input_label = this_label_body;
       while (*current_input_label >= first_header)                                       // while this is a header
@@ -663,7 +663,7 @@ dfa *dfa_construct_dfa(nfa *this_nfa, unsigned table_buffer_size, unsigned label
       if (ret_dfa->state_count >= hash_buckets)
         text_message(TEXT_FATAL, "DFA builder ran out of hash buckets\n");
 
-      unsigned *found_label = label_find_hash(dfa_labels, next_free_label_location, current_output_label);
+      ptrdiff_t *found_label = label_find_hash(dfa_labels, next_free_label_location, current_output_label);
 
       if (found_label == current_output_label)
       {
@@ -673,7 +673,7 @@ dfa *dfa_construct_dfa(nfa *this_nfa, unsigned table_buffer_size, unsigned label
 
         ret_dfa->state_count++;
         //update header_usage
-        for (unsigned *this_label_element = current_output_label + 1; this_label_element < next_free_label_location && *this_label_element >= first_header; this_label_element++)
+        for (ptrdiff_t *this_label_element = current_output_label + 1; this_label_element < next_free_label_location && *this_label_element >= first_header; this_label_element++)
           if (*this_label_element >= first_header)
           {
             header_usage[*this_label_element - first_header]++;
@@ -689,7 +689,7 @@ dfa *dfa_construct_dfa(nfa *this_nfa, unsigned table_buffer_size, unsigned label
         next_free_label_location = current_output_label;
       }
 
-      DFA_LOAD_TABLE_ELEMENT((unsigned) found_label);  // Put out edge into table
+      DFA_LOAD_TABLE_ELEMENT((ptrdiff_t) found_label);  // Put out edge into table
 
       if (script_gtb_verbose() && ++checked_states % 1000 == 0)
         text_printf("Checked %u states and created %u states of which %u processed (convergence %lf); %u bytes of memory consumed, %u bytes left, %u hash slots left\n", checked_states, ret_dfa->state_count, processed_state_count, (double) processed_state_count / (double) ret_dfa->state_count, next_free_label_location - dfa_labels, label_buffer_size - (next_free_label_location - dfa_labels), hash_buckets - ret_dfa->state_count);
@@ -726,8 +726,9 @@ dfa *dfa_construct_dfa(nfa *this_nfa, unsigned table_buffer_size, unsigned label
   // Wrap up step 3: make labels and tables indices
   if (dfa_tables != NULL)
   {
-    ret_dfa->labels_index = (unsigned**) mem_calloc(ret_dfa->state_count, sizeof (unsigned*));
-    for (unsigned state_number = 0, *this_label_element_pointer = dfa_labels; state_number < ret_dfa->state_count; state_number++)
+    ret_dfa->labels_index = (ptrdiff_t**) mem_calloc(ret_dfa->state_count, sizeof (ptrdiff_t*));
+    unsigned state_number = 0;
+    for (ptrdiff_t *this_label_element_pointer = dfa_labels; state_number < ret_dfa->state_count; state_number++)
     {
       ret_dfa->labels_index[state_number] = this_label_element_pointer;
 
@@ -743,8 +744,9 @@ dfa *dfa_construct_dfa(nfa *this_nfa, unsigned table_buffer_size, unsigned label
 
     }
 
-    ret_dfa->tables_index = (unsigned**) mem_calloc(ret_dfa->state_count, sizeof (unsigned*));
-    for (unsigned state_number = 0, *this_table_element_pointer = dfa_tables; state_number < ret_dfa->state_count; state_number++)
+    ret_dfa->tables_index = (ptrdiff_t**) mem_calloc(ret_dfa->state_count, sizeof (unsigned*));
+    state_number = 0;
+    for (ptrdiff_t *this_table_element_pointer = dfa_tables; state_number < ret_dfa->state_count; state_number++)
     {
       ret_dfa->tables_index[state_number] = this_table_element_pointer;
 
@@ -775,7 +777,8 @@ dfa *dfa_construct_dfa(nfa *this_nfa, unsigned table_buffer_size, unsigned label
   #endif
   if (dfa_tables != NULL)
   {
-    for (unsigned state_number = 0, *this_label_element_pointer = dfa_tables; state_number < ret_dfa->state_count; state_number++)
+    unsigned state_number = 0;
+    for (ptrdiff_t *this_label_element_pointer = dfa_tables; state_number < ret_dfa->state_count; state_number++)
     {
   #if defined(DFA_TRACE)
         text_printf("state %i, symbol %u\n", state_number, *this_label_element_pointer);
@@ -890,7 +893,7 @@ void dfa_write(FILE *output_file, dfa *this_dfa)
 
   for (unsigned state_number = 0; state_number < this_dfa->state_count; state_number++)
   {
-    unsigned *this_table_element_pointer = this_dfa->tables_index[state_number];
+    ptrdiff_t *this_table_element_pointer = this_dfa->tables_index[state_number];
 
     text_printf("\n%u %u: ", state_number + this_dfa->grammar->first_dfa_state, *this_table_element_pointer);
 
@@ -962,8 +965,8 @@ void dfa_render(FILE *output_file, dfa *this_dfa)
     bool is_reducing = false;
     bool is_accepting = false;
 
-    unsigned *this_label_element_pointer = this_dfa->labels_index[state_number];
-    unsigned *this_table_element_pointer = this_dfa->tables_index[state_number];
+    ptrdiff_t *this_label_element_pointer = this_dfa->labels_index[state_number];
+    ptrdiff_t *this_table_element_pointer = this_dfa->tables_index[state_number];
 
     text_printf("node:{title:\"%u\" label:\"%u:", state_number + this_dfa->grammar->first_dfa_state, state_number + this_dfa->grammar->first_dfa_state);
 
@@ -1072,7 +1075,7 @@ static int dfa_count_actions(dfa *this_dfa, unsigned state, unsigned symbol, int
    text_printf("Counting actions for state %u symbol %u\n", state, symbol);
   #endif
 
-  unsigned *this_table_element_pointer = this_dfa->tables_index[state - this_dfa->grammar->first_dfa_state];
+  ptrdiff_t *this_table_element_pointer = this_dfa->tables_index[state - this_dfa->grammar->first_dfa_state];
 
   #if defined(TBL_LOOKUP_TRACE)
     text_printf("State %u has in-edge symbol %u\n", state, *this_table_element_pointer);
@@ -1151,7 +1154,7 @@ int *dfa_retrieve_all_actions(dfa *this_dfa, unsigned state, unsigned symbol)
 
   int *return_actions = (int*) mem_calloc(action_count+1, sizeof(int));
   int *this_return_action = return_actions;
-  unsigned *this_table_element_pointer = this_dfa->tables_index[state - this_dfa->grammar->first_dfa_state];
+  ptrdiff_t *this_table_element_pointer = this_dfa->tables_index[state - this_dfa->grammar->first_dfa_state];
 
   if (shift_action != 0)
     *this_return_action++ = shift_action;
@@ -1169,7 +1172,7 @@ int *dfa_retrieve_all_actions(dfa *this_dfa, unsigned state, unsigned symbol)
   //Now check the reductions
   while (*this_table_element_pointer >=  this_dfa->grammar->first_level_0_slot && *this_table_element_pointer <= this_dfa->grammar->first_header)
   {
-    unsigned* first_reduction_pointer = this_table_element_pointer;
+    ptrdiff_t* first_reduction_pointer = this_table_element_pointer;
 
     while (*this_table_element_pointer >= this_dfa->grammar->first_level_0_slot && *this_table_element_pointer <= this_dfa->grammar->first_header)
     {
@@ -1185,7 +1188,7 @@ int *dfa_retrieve_all_actions(dfa *this_dfa, unsigned state, unsigned symbol)
 
     if (symbol == *this_table_element_pointer)
     {
-       memcpy(this_return_action, first_reduction_pointer, sizeof(unsigned) * (this_table_element_pointer - first_reduction_pointer));
+       memcpy(this_return_action, first_reduction_pointer, sizeof(ptrdiff_t) * (this_table_element_pointer - first_reduction_pointer));
 
   #if defined(TBL_LOOKUP_TRACE)
        text_printf("Return actions updated with %i reductions\n",this_table_element_pointer - first_reduction_pointer);
@@ -1208,7 +1211,7 @@ int dfa_retrieve_first_action(dfa *this_dfa, unsigned state, unsigned symbol)
    text_printf("Lookup one action for state %u symbol %u\n", state, symbol);
   #endif
 
-  unsigned *this_table_element_pointer = this_dfa->tables_index[state - this_dfa->grammar->first_dfa_state];
+  ptrdiff_t *this_table_element_pointer = this_dfa->tables_index[state - this_dfa->grammar->first_dfa_state];
 
   #if defined(TBL_LOOKUP_TRACE)
    text_printf("State %u has in-edge symbol %u\n", state, *this_table_element_pointer);
@@ -1321,8 +1324,8 @@ dfa* dfa_la_merge(dfa* this_dfa)
   for (unsigned state_number = 0; state_number < this_dfa->state_count; state_number++)
   {
     //Walk the state label, building up the set current_state
-    unsigned *label_pointer = this_dfa->labels_index[state_number];
-    unsigned *table_pointer = this_dfa->tables_index[state_number];
+    ptrdiff_t *label_pointer = this_dfa->labels_index[state_number];
+    ptrdiff_t *table_pointer = this_dfa->tables_index[state_number];
 
 #if defined(LA_MERGE_TRACE)
     text_printf("\nLabel for state %u: ", state_number + this_dfa->grammar->first_dfa_state);
@@ -1427,11 +1430,11 @@ dfa* dfa_la_merge(dfa* this_dfa)
   ret_dfa->nfa = this_dfa->nfa;
   ret_dfa->grammar = this_dfa->grammar;
   ret_dfa->state_count = merged_states;
-  ret_dfa->labels_index = (unsigned**) mem_calloc(ret_dfa->state_count, sizeof (unsigned*));
-  ret_dfa->tables_index = (unsigned**) mem_calloc(ret_dfa->state_count, sizeof (unsigned*));
+  ret_dfa->labels_index = (ptrdiff_t**) mem_calloc(ret_dfa->state_count, sizeof (unsigned*));
+  ret_dfa->tables_index = (ptrdiff_t**) mem_calloc(ret_dfa->state_count, sizeof (unsigned*));
 
   // Create the labels array the table array and initialise associated pointers
-  ret_dfa->labels = next_free_label_location = (unsigned*) mem_calloc(label_buffer_size, sizeof(unsigned));
+  ret_dfa->labels = next_free_label_location = (ptrdiff_t*) mem_calloc(label_buffer_size, sizeof(unsigned));
   dfa_labels_top = ret_dfa->labels + label_buffer_size;
   if (script_gtb_verbose())
     text_printf("Allocated %lu words for dfa labels\n", dfa_labels_top - ret_dfa->labels);
@@ -1450,7 +1453,7 @@ dfa* dfa_la_merge(dfa* this_dfa)
   }
 
   // and now do the action tables
-  dfa_tables = ret_dfa->tables = next_free_table_location = (unsigned*) mem_calloc(table_buffer_size, sizeof(unsigned));
+  dfa_tables = ret_dfa->tables = next_free_table_location = (ptrdiff_t*) mem_calloc(table_buffer_size, sizeof(unsigned));
   dfa_tables_top = ret_dfa->tables + table_buffer_size;
   if (script_gtb_verbose())
     text_printf("Allocated %u words for dfa tables\n", dfa_tables_top - ret_dfa->tables);
@@ -1470,7 +1473,7 @@ dfa* dfa_la_merge(dfa* this_dfa)
     {
       if (new_state_index[old_state] == this_symbol->state_number)  // Does this old state map to the current merged state
       {
-        unsigned *reduction_pointer = this_dfa->tables_index[old_state] + 1;      // Skip the symbol entry for the old table state
+        ptrdiff_t *reduction_pointer = this_dfa->tables_index[old_state] + 1;      // Skip the symbol entry for the old table state
 
         while (*reduction_pointer >= ret_dfa->grammar->first_level_0_slot && *reduction_pointer < ret_dfa->grammar->first_dfa_state)
         {
@@ -1486,7 +1489,7 @@ dfa* dfa_la_merge(dfa* this_dfa)
 
     ret_dfa->tables_index[this_symbol->state_number] = next_free_table_location;
 
-    unsigned *shift_pointer = this_dfa->tables_index[old_state_index[this_symbol->state_number]];
+    ptrdiff_t *shift_pointer = this_dfa->tables_index[old_state_index[this_symbol->state_number]];
 
     *next_free_table_location++ = *shift_pointer++; //Copy the old symbol value
 
@@ -1523,7 +1526,7 @@ dfa* dfa_la_merge(dfa* this_dfa)
   ret_dfa->reduction_count = this_dfa->reduction_count;
   ret_dfa->reduction_table = (reduction*) mem_calloc(ret_dfa->reduction_count, sizeof(reduction));
   memcpy(ret_dfa->reduction_table, this_dfa->reduction_table, ret_dfa->reduction_count * sizeof(reduction));
-  ret_dfa->reductions_index = (unsigned*) mem_calloc(ret_dfa->reduction_count, sizeof(unsigned));
+  ret_dfa->reductions_index = (ptrdiff_t*) mem_calloc(ret_dfa->reduction_count, sizeof(unsigned));
   memcpy(ret_dfa->reductions_index, this_dfa->reductions_index, ret_dfa->reduction_count * sizeof(unsigned));
 
   //Release all memory back to heap
@@ -1552,7 +1555,7 @@ void dfa_dfa_statistics(dfa* this_dfa)
 
   for (unsigned state = 0; state < this_dfa->state_count; state++)
   {
-    unsigned *action_pointer = this_dfa->tables_index[state];
+    ptrdiff_t *action_pointer = this_dfa->tables_index[state];
     memset(shift_count, 0, this_dfa->grammar->first_level_0_slot * sizeof(unsigned));
     memset(reduction_count, 0, this_dfa->grammar->first_level_0_slot * sizeof(unsigned));
 
@@ -1575,7 +1578,7 @@ void dfa_dfa_statistics(dfa* this_dfa)
 
     while (GRAM_IS_DFA_STATE(this_dfa->grammar, *action_pointer))
     {
-      unsigned* this_symbol = this_dfa->tables_index[*action_pointer - this_dfa->grammar->first_dfa_state];
+      ptrdiff_t* this_symbol = this_dfa->tables_index[*action_pointer - this_dfa->grammar->first_dfa_state];
 
       shift_count[*this_symbol]++;
 

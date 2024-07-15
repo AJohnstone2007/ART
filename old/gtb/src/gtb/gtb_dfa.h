@@ -10,6 +10,8 @@
 #ifndef GTB_DFA_H
 #define GTB_DFA_H
 #include "gtb_nfa.h"
+//#define ptrdiff_t long
+
 struct reduction
 {
   int length;
@@ -21,11 +23,11 @@ struct dfa
 {
   struct nfa *nfa;
   struct grammar *grammar;
-  unsigned *labels;
-  unsigned **labels_index;
-  unsigned *tables;
-  unsigned **tables_index;
-  unsigned *reductions_index;
+  ptrdiff_t *labels;
+  ptrdiff_t **labels_index;
+  ptrdiff_t *tables;
+  ptrdiff_t **tables_index;
+  ptrdiff_t *reductions_index;
   struct reduction *reduction_table;
   unsigned reduction_count;
 

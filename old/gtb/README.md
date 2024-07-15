@@ -12,7 +12,11 @@ GTB is written in ANSI C though the source files have filetype .cpp
 
 ## Updates to version 3.0
 
-GTB V3.0 is just the final development version of GTB from 2005, lightly massaged so that the BRNGLR and other parser functions produce a unified logging output suitable for mass experimental runs. The algorithm implementations have not been changed from those reported in the research papers.
+GTB V3.0 is the final development version of GTB from 2005 with two sets of modification. The algorithm implementations have not been changed from those reported in the research papers.
+
+1. All diagnostic outputs have been put under the control of the `verbose` script variable and a unified logging output has been established which is suitable for mass experimental runs. 
+
+2. Pointer variables have been changed from unsigned* to ptrdiff_t* which then adjusts automatically between 32- and 64-bit address spaces, so that GTB can be compiled woith both legacy compilers and mpdern 64-bit compilers.
 
 ## Building GTB
 
@@ -23,8 +27,6 @@ To build using gcc or some other compiler, simply compile together the contents 
 `gcc -ogtb -Wno-write-strings -Isrc/gtb -Isrc/gtb_lib src\gtb\*.cpp src\gtb_lib\*.cpp`
 
 #### Important - compiler warnings
-
-GTB assumes that pointers and integers are the same size. This is not the case for 64-bit binaries, and as a result important parts of GTB will fail if compiled this way. A solution for 64-bit Windows systems is to compile using a 32-bit compiler such as mingw32.
 
 The GTB code also casts mutable arrays of characters to strings, and has some code that triggers dataflow analyser warnings in later versions of gcc; these warnings can be ignored, hence the`no-write-strings` option above.
 
@@ -41,4 +43,4 @@ From around 2007 up until January 2008 we were experimenting with the initial GL
 ## VCG
 GTB produces various visualisations as VCG files. See the notes [here](https://github.com/AJohnstone2007/ART/tree/main/old/rdp\#a-note-on-vcg) for information on VCG.
 
-Adrian Johnstone, June 2024
+Adrian Johnstone, July 2024
