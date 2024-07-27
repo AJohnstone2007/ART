@@ -39,8 +39,8 @@ public class ARTEarleyTableIndexedPool extends ARTParserBase {
 
   public ARTEarleyTableIndexedPool(ARTGrammar artGrammar) {
     super(artGrammar);
-    System.out.println("Entered cnstructor: super() executed");
-    artGrammar.getARTManager().printMemory(this.getClass().getSimpleName() + " start of constructor");
+    // System.out.println("Entered constructor: super() executed");
+    // artGrammar.getARTManager().printMemory(this.getClass().getSimpleName() + " start of constructor");
     epsilon = artGrammar.getEpsilon().getElementNumber();
     eos = artGrammar.getEoS().getElementNumber();
 
@@ -53,6 +53,11 @@ public class ARTEarleyTableIndexedPool extends ARTParserBase {
   private int[] E;
   private int[] EList;
   private int[] rdn;
+
+  @Override
+  public void artParse(String stringInput) {
+    artParse(stringInput, " --- ", false);
+  }
 
   public void artParse(String stringInput, String inputFilename, boolean useRDNSet) {
     artIsInLanguage = false;
@@ -103,7 +108,7 @@ public class ARTEarleyTableIndexedPool extends ARTParserBase {
       pool.mapFind_2_0(E[0], 0, 0);
       pool.listAdd_2(EList[0], 0, 0);
 
-      earleyTableIndexed.getGrammar().getARTManager().printMemory(this.getClass().getSimpleName() + " start of parse");
+      // earleyTableIndexed.getGrammar().getARTManager().printMemory(this.getClass().getSimpleName() + " start of parse");
       artRestartClock();
 
       // for (0 \le j \= n)
@@ -160,7 +165,7 @@ public class ARTEarleyTableIndexedPool extends ARTParserBase {
       }
 
       artParseCompleteTime = artReadClock();
-      earleyTableIndexed.getGrammar().getARTManager().printMemory(this.getClass().getSimpleName() + " end of parse");
+      // earleyTableIndexed.getGrammar().getARTManager().printMemory(this.getClass().getSimpleName() + " end of parse");
 
       artIsInLanguage = false;
 
@@ -174,14 +179,15 @@ public class ARTEarleyTableIndexedPool extends ARTParserBase {
             artIsInLanguage |= earleyTableIndexed.acceptingProductions[ppc];
           }
       }
-      System.out.println("EarleyTableIndexedPool " + (artIsInLanguage ? "accept" : "reject") + " in " + artParseCompleteTime * 1E-6 + "ms");
-      System.out.println("Total removals from R =  " + rSetRemovals);
-      System.out.println("Final raw P with Chi set based BSRs: |PChi| = " + upsilonCardinality);
-
-      System.out.println("Statistics for E[] " + pool.mapArrayStatistics(E));
-      System.out.println("Statistics for Upsilon" + pool.mapStatistics(upsilon));
+      System.out.println("EarleyTableIndexedPool," + artGrammar.getARTManager().artDirectives.inputFilenames.get(0) + ","
+          + (artIsInLanguage ? "accept" : "reject") + "," + artParseCompleteTime * 1E-6 + ",ms");
+      // System.out.println("Total removals from R = " + rSetRemovals);
+      // System.out.println("Final raw P with Chi set based BSRs: |PChi| = " + upsilonCardinality);
+      //
+      // System.out.println("Statistics for E[] " + pool.mapArrayStatistics(E));
+      // System.out.println("Statistics for Upsilon" + pool.mapStatistics(upsilon));
     }
-    System.out.println("Exiting parse function");
+    // System.out.println("Exiting parse function");
   }
 
   private void add(int G, int x, int i, int k, int j, int t) {
@@ -220,10 +226,6 @@ public class ARTEarleyTableIndexedPool extends ARTParserBase {
         }
       }
     }
-  }
-
-  @Override
-  public void artParse(String inputString) {
   }
 
   @Override

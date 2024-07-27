@@ -184,13 +184,11 @@ public abstract class ParserBase {
 
   final int displayPrefixLength = 20;
 
-  public void statistics(boolean outcome) {
+  public String statistics(boolean outcome) {
     int inputLength = input == null ? 0 : input.length;
-    System.out.println(timestamp() + "," + this.getClass().getSimpleName() + "," + grammar.name + "," + inputStringName + ",'"
-        + inputString.substring(0, Math.min(displayPrefixLength, inputString.length())).replace("\n", "\\n").replace("\r", "\\r")
-        + (displayPrefixLength < inputString.length() ? "...'" : "'") + "," + inputString.length() + "," + inputLength + ","
-        + (inadmissable ? "Inadmissable" : accepted ? "Accept" : "Reject") + "," + (!inadmissable && accepted == outcome ? "Good," : "Bad,")
-        + String.format("%.2f", intervalAsSeconds()) + "," + String.format("%.2f", inputLength / intervalAsSeconds()) + "," + subStatistics());
+    return inputString.length() + "," + getClass().getSimpleName() + "," + (inadmissable ? "Inadmissable" : accepted ? "Accept" : "Reject") + ","
+        + (!inadmissable && accepted == outcome ? "Good," : "Bad,") + "0,0," + String.format("%.2f", intervalAsSeconds()) + ",0,0,0," + inputLength + ","
+        + subStatistics();
   }
 
   protected String subStatistics() {

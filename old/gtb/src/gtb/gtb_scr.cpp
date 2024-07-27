@@ -2169,7 +2169,7 @@ void script_process(void *rdt)
   script_rules_root = (rdp_tree_node_data *) graph_destination(graph_next_out_edge(graph_root(rdt)));
 
   // script_render_rdt(rdt, "gtb_rdt.vcg");
-  text_printf("%s,", c_value);
+  if (c_value != NULL) text_printf("%s,", c_value);
   
   set_assign_list(&script_homogenous_diadic,
                   RDP_T_124 /* | */,

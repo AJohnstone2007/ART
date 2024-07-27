@@ -4,16 +4,15 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
-import uk.ac.rhul.cs.csle.art.old.v3.ARTV3;
 import uk.ac.rhul.cs.csle.art.old.v4.core.ARTV4;
 import uk.ac.rhul.cs.csle.art.old.v4.core.Version;
 
-public class ART {
-  public static void main(String[] args) {
-    new ART(args);
-  }
+public class ARTV4underV5 {
+  // public static void main(String[] args) {
+  // new ARTV4underV5(args);
+  // }
 
-  public ART(String[] args) {
+  public ARTV4underV5(String[] args) {
     StringBuilder sb = new StringBuilder();
     if (args.length == 0) {
       System.err.println("ART " + Version.version() + ": no arguments supplied");
@@ -37,11 +36,6 @@ public class ART {
 
     if (args.length > 1 && args[1].charAt(0) != '!') sb.append("!try \"" + args[1] + "\"\n");
 
-    // System.out.println("ART specification string: " + sb);
-    String specification = sb.toString();
-    if (specification.contains("!v3"))
-      new ARTV3(specification);
-    else if (specification.contains("!v4old ")) new ARTV4(specification);
-
+    new ARTV4(sb.toString());
   }
 }

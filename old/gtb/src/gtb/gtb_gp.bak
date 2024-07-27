@@ -226,7 +226,7 @@ static unsigned lex(void)
   {
     text_printf("Lex: no match starting at ");
     for (int i = 0; i < 10; i++)
-      if (*lex_ip == 0) break; else text_print("%c", *lex_ip++);
+      if (*lex_ip == 0) break; else text_printf("%c", *lex_ip++);
     return GRAM_ILLEGAL_SYMBOL_NUMBER;
   }
 }
@@ -1000,7 +1000,7 @@ derivation* gp_earley_parse(grammar *this_grammar, char *string, int lookahead)
                0.0,
                0.0,
                0.0,
-               0,
+               context->n,
                0,
                0,
                0,

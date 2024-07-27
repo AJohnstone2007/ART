@@ -1,8 +1,5 @@
 package uk.ac.rhul.cs.csle.art.cfg.grammar;
 
-import java.util.Set;
-import java.util.TreeSet;
-
 import uk.ac.rhul.cs.csle.art.util.Util;
 
 public class GrammarNode {
@@ -11,34 +8,23 @@ public class GrammarNode {
   public static String characterTerminalStrop = "`";
   public static String builtinTerminalStrop = "&";
 
-  static Grammar grammar;
   public int num;
   public final GrammarElement elm; // Grammar element
   public GrammarNode seq; // sequence link
   public GrammarNode alt; // alternate link
-  public GIFTKind giftKind = GIFTKind.NONE;
+  public final GIFTKind giftKind;
   public int action; // Holds an action term used by attribute evaluators
-
-  public final Set<GrammarElement> instanceFirst = new TreeSet<>();
-  public final Set<GrammarElement> instanceFollow = new TreeSet<>();
-  public boolean isInitialSlot = false, isPenultimateSlot = false, isFinalSlot = false, isNullablePrefix = false, isNullableSuffix = false;
 
   private static int nextUniqueNumericLabel = 1;
 
-  public GrammarNode(GrammarKind kind, String str, Grammar grammar) {
-    GrammarNode.grammar = grammar;
-    grammar.endOfStringElement = elm = GrammarNode.grammar.findElement(kind, str);
-  }
-
-  public GrammarNode(GrammarKind kind, String str, int action, GIFTKind fold, GrammarNode previous, GrammarNode parent) {
+  public GrammarNode(Grammar grammar, GrammarKind kind, String str, int action, GIFTKind giftKInd, GrammarNode previous, GrammarNode parent) {
     super();
     if (str == null) str = "" + nextUniqueNumericLabel++; // EBNF and ALT nodes have null string - uniquify
-    this.elm = GrammarNode.grammar.findElement(kind, str);
+    this.elm = grammar.findElement(kind, str);
     this.action = action;
-    this.giftKind = fold;
+    this.giftKind = giftKInd;
     if (previous != null) previous.seq = this;
     if (parent != null) parent.alt = this;
-    if (kind == GrammarKind.END) isNullableSuffix = true;
   }
 
   @Override
@@ -91,7 +77,6 @@ public class GrammarNode {
     default:
       return "???";
     }
-
   }
 
   @Override

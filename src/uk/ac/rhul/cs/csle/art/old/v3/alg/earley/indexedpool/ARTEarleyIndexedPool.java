@@ -87,7 +87,7 @@ public class ARTEarleyIndexedPool extends ARTParserBase {
   // For Java...
   public ARTEarleyIndexedPool(ARTSlotArray artSlotArray) {
     super(artSlotArray);
-    artSlotArray.artGrammar.getARTManager().printMemory(this.getClass().getSimpleName() + " start of constructor");
+    // artSlotArray.artGrammar.getARTManager().printMemory(this.getClass().getSimpleName() + " start of constructor");
   }
   // End of language customisation
 
@@ -277,6 +277,11 @@ public class ARTEarleyIndexedPool extends ARTParserBase {
   }
 
   @Override
+  public void artParse(String stringInput) {
+    artParse(stringInput, null);
+  }
+
+  @Override
   public void artParse(String stringInput, ARTGLLAttributeBlock startAttributes) {
     if (artNotBNF()) {
       System.out.println(this.getClass() + " called on EBNF grammar aborting");
@@ -328,7 +333,7 @@ public class ARTEarleyIndexedPool extends ARTParserBase {
     sppf = pool.mapMake(sppfNodeFullBucketCount);
     // sppf = pool.makeMap(7, 13); // debug set has only 19
 
-    artSlotArray.artGrammar.getARTManager().printMemory(this.getClass().getSimpleName() + " start of parse");
+    // artSlotArray.artGrammar.getARTManager().printMemory(this.getClass().getSimpleName() + " start of parse");
     artRestartClock();
 
     // for all (S ::= α) ∈ P { if α ∈ ΣN add (S ::= ·α, 0, null) to E0
@@ -492,7 +497,7 @@ public class ARTEarleyIndexedPool extends ARTParserBase {
     }
 
     artParseCompleteTime = artReadClock();
-    artSlotArray.artGrammar.getARTManager().printMemory(this.getClass().getSimpleName() + " end of parse");
+    // artSlotArray.artGrammar.getARTManager().printMemory(this.getClass().getSimpleName() + " end of parse");
 
     // if (S ::= τ ·, 0, w) ∈ En return w
 
@@ -510,7 +515,8 @@ public class ARTEarleyIndexedPool extends ARTParserBase {
 
       if (offset == 0 && pool.mapLookup_1(acceptingSlotsSet, slot) != 0) {
         artIsInLanguage = true;
-        System.out.println("EarleyIndexedPool " + (artIsInLanguage ? "accept" : "reject") + " in " + artParseCompleteTime * 1E-6 + "ms");
+        System.out.println("EarleyIndexedPool," /* + artGrammar.getARTManager().artDirectives.inputFilenames.get(0) */ + ","
+            + (artIsInLanguage ? "accept" : "reject") + "," + artParseCompleteTime * 1E-6 + ",ms");
         if (artTrace > 0) {
           artTraceText.println("EarleyIndexedPool: accept");
           printSets();
@@ -540,11 +546,6 @@ public class ARTEarleyIndexedPool extends ARTParserBase {
   }
 
   // For Java...
-
-  @Override
-  public void artParse(String inputString) {
-    System.out.println("Internal error: no input supplied to " + this.getClass());
-  }
 
   @Override
   public void artWriteRDT(String filename) {

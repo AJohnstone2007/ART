@@ -1,8 +1,6 @@
 package uk.ac.rhul.cs.csle.art.test;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -13,6 +11,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
+import uk.ac.rhul.cs.csle.art.ART;
 import uk.ac.rhul.cs.csle.art.cfg.grammar.Grammar;
 import uk.ac.rhul.cs.csle.art.cfg.grammar.GrammarElement;
 import uk.ac.rhul.cs.csle.art.cfg.grammar.GrammarKind;
@@ -33,7 +32,6 @@ import uk.ac.rhul.cs.csle.art.old.v3.manager.grammar.instance.ARTGrammarInstance
 import uk.ac.rhul.cs.csle.art.old.v3.manager.module.ARTV3Module;
 import uk.ac.rhul.cs.csle.art.script.ARTScriptTermInterpreter;
 import uk.ac.rhul.cs.csle.art.term.ITermsLowLevelAPI;
-import uk.ac.rhul.cs.csle.art.util.Relation;
 import uk.ac.rhul.cs.csle.art.util.Util;
 
 public class AJDebug {
@@ -45,7 +43,7 @@ public class AJDebug {
 
   public AJDebug(String[] args) {
     try {
-      System.out.println("ajDebug " + args[1]);
+      System.out.println("ajdebug " + args[1]);
       Path arg1AsPath = Paths.get(args[1]);
       if (args[1].endsWith(".art"))
         processFile(arg1AsPath);
@@ -60,29 +58,18 @@ public class AJDebug {
   }
 
   private void processFile(Path filePath) throws IOException {
-    System.out.println("AJDebug on file " + filePath);
     boolean good = v5v3RegressionFirstAndFollowSets(Files.readString(filePath));
     System.out.println("File " + filePath + " " + (good ? " Good " : "Bad"));
 
-    System.out.println("gen1:\n" + grammarV5.gen1.toString());
-    PrintStream gen1Out = new PrintStream(new File("gen1.dot"));
-    gen1Out.println(grammarV5.gen1.toDotString());
-    gen1Out.close();
-
-    Relation<GrammarElement, GrammarElement> gen = new Relation<>(grammarV5.gen1);
-    gen.transitiveClosure();
-
-    System.out.println("gen:\n" + gen.toString());
-    PrintStream reachableOut = new PrintStream(new File("gen.dot"));
-    reachableOut.println(gen.toDotString());
-    reachableOut.close();
   }
 
   private boolean v5v3RegressionFirstAndFollowSets(String scriptString) {
+
     regressionScriptInterpreter = new ARTScriptTermInterpreter(new ITermsLowLevelAPI());
 
     // System.out.print("v5v3RegressionFirstAndFollowSets");
 
+    ART.tracing = true;
     regressionScriptInterpreter.interpret(scriptString);
 
     ARTV3 artV3 = new ARTV3(scriptString);
@@ -106,21 +93,23 @@ public class AJDebug {
       // "V3 nonterminal " + v3Nonterminal + " first " + new TreeSet<>(v3Nonterminal.getFirst()) + " follow " + new TreeSet<>(v3Nonterminal.getFollow()));
       // System.out.println("V5 nonterminal " + v5Nonterminal + " first " + v5Nonterminal.first + " follow " + v5Nonterminal.follow + "\n");
 
-      if (!v5v3ElementSetSame(v5Nonterminal.first, new TreeSet<>(v3Nonterminal.getFirst()), artV3.artManager.getDefaultMainModule(), v5Nonterminal)) {
-        System.out.println("First for " + v5Nonterminal + " differ:\nV5 " + v5Nonterminal.first + "\nV3 " + new TreeSet<>(v3Nonterminal.getFirst()) + "\n");
+      if (!v5v3ElementSetSame(grammarV5.first.get(v5Nonterminal), new TreeSet<>(v3Nonterminal.getFirst()), artV3.artManager.getDefaultMainModule(),
+          v5Nonterminal)) {
+        System.out.println(
+            "First for " + v5Nonterminal + " differ:\nV5 " + grammarV5.first.get(v5Nonterminal) + "\nV3 " + new TreeSet<>(v3Nonterminal.getFirst()) + "\n");
         good = false;
       }
 
-      if (!v5v3ElementSetSame(v5Nonterminal.follow, new TreeSet<>(v3Nonterminal.getFollow()), artV3.artManager.getDefaultMainModule(), null)) {
+      if (!v5v3ElementSetSame(grammarV5.first.get(v5Nonterminal), new TreeSet<>(v3Nonterminal.getFollow()), artV3.artManager.getDefaultMainModule(), null)) {
         // Bug in V3? Spurious $ check
-        Set<GrammarElement> v5prime = new TreeSet<>(v5Nonterminal.follow);
-        v5prime.add(grammarV5.endOfStringElement);
+        // Set<GrammarElement> v5prime = new TreeSet<>(grammarV5.follow.get(v5Nonterminal));
+        // v5prime.add(grammarV5.endOfStringElement);
         // if (!v5v3ElementSetSame(v5prime, new TreeSet<>(v3Nonterminal.getFollow()), artV3.artManager.getDefaultMainModule()))
         {
 
-          System.out
-              .println("Follow for " + v5Nonterminal + " differ:\nV5 " + v5Nonterminal.follow + "\nV3 " + new TreeSet<>(v3Nonterminal.getFollow()) + "\n");
-          // System.out.println("v5:v3 cardinality " + v5Nonterminal.follow.size() + " : " + v3Nonterminal.getFollow().size() + "\n");
+          System.out.println("Follow for " + v5Nonterminal + " differ:\nV5 " + grammarV5.follow.get(v5Nonterminal) + "\nV3 "
+              + new TreeSet<>(v3Nonterminal.getFollow()) + "\n");
+          System.out.println("v5:v3 cardinality " + grammarV5.follow.get(v5Nonterminal).size() + " : " + v3Nonterminal.getFollow().size() + "\n");
           good = false;
         }
       }

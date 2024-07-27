@@ -1000,7 +1000,7 @@ derivation* gp_earley_parse(grammar *this_grammar, char *string, int lookahead)
                0.0,
                0.0,
                0.0,
-               0,
+               token_count,
                0,
                0,
                0,

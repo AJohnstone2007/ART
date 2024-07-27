@@ -76,6 +76,10 @@ public class ARTV4 {
     new Pipeline(pp).interpretDynamicDirectives(pp.mainModule);
   }
 
+  public ARTV4(String[] copyOfRange) {
+    // TODO Auto-generated constructor stub
+  }
+
   Module findModule(int moduleTerm) {
     Module ret = pp.modules.get(moduleTerm);
     if (ret != null)

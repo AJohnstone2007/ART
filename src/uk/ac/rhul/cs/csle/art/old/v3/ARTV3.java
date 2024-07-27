@@ -29,15 +29,31 @@ import uk.ac.rhul.cs.csle.art.old.v4.util.text.ARTTextHandlerFile;
 import uk.ac.rhul.cs.csle.art.old.v4.util.text.ARTTextHandlerString;
 
 public class ARTV3 {
-  public ARTManager artManager;
+  public ARTManager artManager = new ARTManager();
 
-  public ARTV3() {
-    artManager = new ARTManager();
+  public ARTV3(String[] args) {
+    // New at V5; command line processing
+    if (args.length == 0) throw new ARTUncheckedException("no arguments supplied");
+    StringBuilder sb = new StringBuilder();
+
+    // Concate
+    for (String arg : args) {
+      if (arg.endsWith(".art")) {
+        artManager.defaultName = arg;
+        sb.append(ARTText.readFile(arg) + "\n");
+      } else if (arg.indexOf('.') != -1) {
+        artManager.artDirectives.inputFilenames.add(arg);
+        artManager.artDirectives.inputs.add(ARTText.readFile(arg));
+      } else
+        sb.append(arg + "\n");
+    }
+    artManager.parseARTSpecification(sb.toString());
+    runFromDirectives();
   }
 
-  public ARTV3(String specification) {
-    this();
-    artManager.parseARTSpecification(specification);
+  // This constructor used by AJDebug for regression testing
+  public ARTV3(String scriptString) {
+    artManager.parseARTSpecification(scriptString);
     runFromDirectives();
   }
 
@@ -55,11 +71,7 @@ public class ARTV3 {
 
   public static void main(final String[] args) throws FileNotFoundException {
     try {
-      ARTV3 artv3 = new ARTV3();
-      String processedCommandLine = artv3.processCommandLine(args);
-      artv3.artManager.parseARTSpecification(processedCommandLine);
-      // System.out.println("*** Debug - module choosers%n" + artManager.getDefaultMainModule().getChoosers());
-      artv3.runFromDirectives();
+      ARTV3 artv3 = new ARTV3(args);
     } catch (ARTUncheckedException e) {
       ARTText.printFatal(e.getMessage());
     }
@@ -243,27 +255,5 @@ public class ARTV3 {
     default:
       throw new ARTUncheckedException("no implementation for algorithm mode " + artManager.artDirectives.algorithmMode());
     }
-  }
-
-  public String processCommandLine(final String[] args) {
-    // Process command line - if an argument has exactly one dot in it, treat it as a filename
-
-    if (args.length == 0) throw new ARTUncheckedException("no arguments supplied");
-    StringBuilder sb = new StringBuilder();
-
-    for (String arg : args) {
-      int dotCount = 0;
-      for (int i = 0; i < arg.length(); i++)
-        if (arg.charAt(i) == '.') dotCount++;
-
-      if (dotCount == 1) {
-        artManager.defaultName = arg;
-        sb.append(ARTText.readFile(arg) + "\n");
-      } else
-        sb.append(arg + "\n");
-    }
-
-    // System.out.println("Command line - " + sb);
-    return sb.toString();
   }
 }

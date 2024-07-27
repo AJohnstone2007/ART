@@ -11,79 +11,163 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import uk.ac.rhul.cs.csle.art.ART;
 import uk.ac.rhul.cs.csle.art.term.ITerms;
 import uk.ac.rhul.cs.csle.art.util.Relation;
 import uk.ac.rhul.cs.csle.art.util.Util;
 
 public class Grammar {
-  public String name = "";
   public final ITerms iTerms;
-  public final Map<GrammarElement, GrammarElement> elements = new TreeMap<>();
-  public final Map<Integer, GrammarElement> elementsByNumber = new TreeMap<>();
-  public int lexSize;
-  public final Map<Integer, GrammarNode> nodesByNumber = new TreeMap<>();
-  public final Set<LKind> whitespaces = new HashSet<>();
-  public final Map<GrammarElement, GrammarNode> rules = new TreeMap<>(); // Map from nonterminals to list of productions represented by their LHS node
-  public GrammarElement epsilonElement;
-  public GrammarElement endOfStringElement;
+
+  // Constants
+  private final Set<GrammarKind> lexKinds = Set.of(GrammarKind.B, GrammarKind.C, GrammarKind.T, GrammarKind.TI);
+  private final Set<GrammarKind> selfFirst = Set.of(GrammarKind.B, GrammarKind.C, GrammarKind.EOS, GrammarKind.T, GrammarKind.TI, GrammarKind.EPS);
+  private int nextFreeEnumerationElement;
+  public final GrammarElement epsilonElement;
+  public final GrammarElement endOfStringElement;
   public final GrammarNode endOfStringNode;
 
+  public String name = "";
+  public GrammarElement startNonterminal;
+
+  public final Map<GrammarElement, GrammarElement> elements = new TreeMap<>();
+  public final Map<Integer, GrammarElement> elementsByNumber = new TreeMap<>();
+  public final Map<Integer, GrammarNode> nodesByNumber = new TreeMap<>();
+  public final Map<GrammarElement, GrammarNode> rules = new TreeMap<>(); // Map from nonterminals to list of productions represented by their LHS node
+
+  public int lexSize;
+  public final Set<LKind> whitespaces = new HashSet<>(); // This should be a set of elements, with the builtins added to elements
   public LKind[] lexicalKindsArray;
   public String[] lexicalStringsArray;
   public LKind[] whitespacesArray;
 
-  public GrammarElement startNonterminal;
-  public Set<Integer> acceptingNodeNumbers = new TreeSet<>(); // Set of nodes which are END nodes of the start production
+  // Grammar analysis data
+  public final Relation<GrammarElement, GrammarElement> reach1 = new Relation<>(); // { (X,Y) | X ::= \alpha Y \beta }
+  public final Relation<GrammarElement, GrammarElement> singleton1 = new Relation<>(); // { (X,Y) | X ::= \alpha Y \beta, \alpha, \beta \derives \epsilon }
 
-  private int nextFreeEnumerationElement;
-  public boolean empty;
+  public final Relation<GrammarElement, GrammarElement> reach = new Relation<>(); // reach1*
+  public final Relation<GrammarElement, GrammarElement> first = new Relation<>(); // first1*
+  public final Relation<GrammarElement, GrammarElement> follow = new Relation<>(); // definition?
+  public final Relation<GrammarElement, GrammarElement> last = new Relation<>(); // last1*
+  public final Relation<GrammarElement, GrammarElement> singleton = new Relation<>(); // singleton1*
 
-  Set<GrammarKind> lexKinds = Set.of(GrammarKind.B, GrammarKind.C, GrammarKind.T, GrammarKind.TI);
-  Set<GrammarKind> genKinds = Set.of(GrammarKind.B, GrammarKind.C, GrammarKind.T, GrammarKind.TI, GrammarKind.N);
+  public final Relation<GrammarNode, GrammarElement> instanceFirst = new Relation<>(); // definition?
+  public final Relation<GrammarNode, GrammarElement> instanceFollow = new Relation<>(); // definition?
 
-  public Relation<GrammarElement, GrammarElement> gen1 = new Relation<>();
+  public final Set<GrammarNode> initialSlots = new HashSet<>(); // { X ::= \alpha . \beta} | \alpha = \epsilon }
+  public final Set<GrammarNode> penultimateSlots = new HashSet<>(); // { X ::= \alpha . Y \beta} | \beta = \epsilon } (note: Y is not epsilon)
+  public final Set<GrammarNode> finalSlots = new HashSet<>(); // { X ::= \alpha . \beta} | \beta = \epsilon }
+
+  public final Set<GrammarNode> nullablePrefixSlots = new HashSet<>(); // { X ::= \alpha . \beta} | \alpha =>* \epsilon }
+  public final Set<GrammarNode> nullableSuffixSlots = new HashSet<>(); // { X ::= \alpha . \beta} | \beta =>* \epsilon }
+  public final Set<GrammarElement> cyclicNonterminals = new HashSet<>(); // { X ::= \alpha X \beta} | \alpha,\beta =>* \epsilon }
+
+  public final Set<GrammarNode> acceptingSlots = new HashSet<>(); // Set of slots which are END nodes of the start production
+  public final Set<Integer> acceptingNodeNumbers = new TreeSet<>(); // Set of node number for the slots on accepting slots
 
   public Grammar(String name, ITerms iTerms) {
     this.name = name;
     this.iTerms = iTerms;
-    endOfStringNode = new GrammarNode(GrammarKind.EOS, "$", this); // Note that this first GNode to be created fills in static grammar field
-    endOfStringNode.seq = endOfStringNode; // trick to ensure initial call collects rootNode
     epsilonElement = findElement(GrammarKind.EPS, "#");
+    endOfStringElement = findElement(GrammarKind.EOS, "$");
+
+    endOfStringNode = new GrammarNode(this, GrammarKind.EOS, "$", 0, GIFTKind.NONE, null, null);
+    endOfStringNode.seq = endOfStringNode; // trick to ensure initial call collects rootNode
+
     whitespaces.add(LKind.SIMPLE_WHITESPACE); // default whitespace if non declared
   }
 
-  public Grammar normalise() {
+  private boolean changed;
+
+  public void normalise() {
+    // Element and node numbering
     nextFreeEnumerationElement = 0;
     numberElementsAndNodes();
-
     setEndNodeLinks();
 
-    checkRules();
+    // Report nonterminals with no rules
+    Set<GrammarElement> tmp = new HashSet<>();
+    for (GrammarElement e : elements.keySet())
+      if (e.kind == GrammarKind.N) {
+        if (rules.get(e) == null) tmp.add(e);
+      }
 
-    computeAttributes();
-
-    // System.out.println(this.toStringDot());
-    // System.out.println(this.toString());
-    // System.out.println("Grammar " + name + " has whitespace elements: " + whitespaces);
-    genBuild();
-
-    return this;
-  }
-
-  private void genBuild() {
-    for (GrammarElement e : elements.keySet()) {
-      if (genKinds.contains(e.kind)) gen1.add(e, e);
-
-      if (e.kind == GrammarKind.N) gen1LoadRec(e, rules.get(e).alt);
+    if (tmp.size() > 0) {
+      StringBuilder sb = new StringBuilder();
+      sb.append("Nonterminal" + (tmp.size() == 1 ? " " : "s ") + "used but not defined: ");
+      for (GrammarElement n : tmp)
+        sb.append(n.str + " ");
+      Util.fatal(sb.toString());
     }
-  }
 
-  private void gen1LoadRec(GrammarElement lhs, GrammarNode gn) {
-    if (gn == null || gn.elm.kind == GrammarKind.END) return;
-    gen1LoadRec(lhs, gn.seq);
-    gen1LoadRec(lhs, gn.alt);
+    // Compute lexical data
+    lexicalKindsArray = new LKind[lexSize];
+    lexicalStringsArray = new String[lexSize];
 
-    if (genKinds.contains(gn.elm.kind)) gen1.add(gn.elm, lhs);
+    int token = 0;
+    lexicalStringsArray[0] = "EOS";
+    for (GrammarElement e1 : elements.keySet()) {
+      // System.out.println("Computing lexical arrays for " + e);
+      switch (e1.kind) {
+      case B:
+        try {
+          lexicalKindsArray[token] = LKind.valueOf(e1.str);
+        } catch (IllegalArgumentException ex) {
+          Util.fatal("Unknown builtin &" + e1.str);
+        }
+        lexicalStringsArray[token] = e1.str;
+        break;
+      case C:
+        lexicalKindsArray[token] = LKind.CHARACTER;
+        lexicalStringsArray[token] = e1.str;
+        break;
+      case T:
+        lexicalKindsArray[token] = LKind.SINGLETON_CASE_SENSITIVE;
+        lexicalStringsArray[token] = e1.str;
+        break;
+      case TI:
+        lexicalKindsArray[token] = LKind.SINGLETON_CASE_INSENSITIVE;
+        lexicalStringsArray[token] = e1.str;
+        break;
+      default:
+        break;
+      }
+      token++;
+    }
+
+    whitespacesArray = whitespaces.toArray(new LKind[0]);
+
+    // Set positional attributes and accepting slots, and seed nullablePrefixSlots and nullableSuffixSlots
+    for (GrammarElement ge : elements.keySet())
+      if (ge.kind == GrammarKind.N) for (GrammarNode gn = rules.get(ge).alt; gn != null; gn = gn.alt) {
+        GrammarNode gs = gn.seq;
+        initialSlots.add(gs);
+        nullablePrefixSlots.add(gs);
+        while (gs.seq.elm.kind != GrammarKind.END)
+          gs = gs.seq;
+        penultimateSlots.add(gs);
+        finalSlots.add(gs.seq);
+        nullableSuffixSlots.add(gs.seq);
+        if (ge == startNonterminal) {
+          acceptingSlots.add(gs.seq);
+          acceptingNodeNumbers.add(gs.seq.num);
+        }
+      }
+
+    // Seed first sets
+    for (GrammarElement ge : elements.keySet())
+      if (selfFirst.contains(ge.kind)) first.add(ge, ge);
+
+    // Seed follow sets
+    if (startNonterminal != null) follow.get(startNonterminal).add(endOfStringElement);
+
+    // Closure loop over first and follow set computation
+    changed = true;
+    while (changed) {
+      changed = false;
+      for (GrammarElement ge : elements.keySet())
+        if (ge.kind == GrammarKind.N) firstAndFollowSetsAlt(rules.get(ge), rules.get(ge).alt);
+    }
   }
 
   private void numberElementsAndNodes() {
@@ -131,172 +215,62 @@ public class Grammar {
     // System.out.println("processEndNodes updated alt and seq to " + gn.alt.ni + " " + gn.seq.ni);
   }
 
-  void checkRules() {
-    empty = true;
-    Set<GrammarElement> tmp = new HashSet<>();
-    for (GrammarElement e : elements.keySet())
-      if (e.kind == GrammarKind.N) {
-        if (rules.get(e) == null)
-          tmp.add(e);
-        else
-          empty = false;
-      }
-
-    if (tmp.size() > 0) {
-      StringBuilder sb = new StringBuilder();
-      sb.append("Nonterminal" + (tmp.size() == 1 ? " " : "s ") + "used but not defined: ");
-      for (GrammarElement n : tmp)
-        sb.append(n.str + " ");
-      Util.fatal(sb.toString());
-    }
-
-    // reachable nonterminal test
-
-    // cycle test
-  }
-
-  private void computeAttributes() {
-    // 1. Compute lexical data
-    lexicalKindsArray = new LKind[lexSize];
-    lexicalStringsArray = new String[lexSize];
-
-    int token = 0;
-    lexicalStringsArray[0] = "EOS";
-    for (GrammarElement e : elements.keySet()) {
-      // System.out.println("Computing lexical arrays for " + e);
-      switch (e.kind) {
-      case B:
-        try {
-          lexicalKindsArray[token] = LKind.valueOf(e.str);
-        } catch (IllegalArgumentException ex) {
-          Util.fatal("Unknown builtin &" + e.str);
-        }
-        lexicalStringsArray[token] = e.str;
-        break;
-      case C:
-        lexicalKindsArray[token] = LKind.CHARACTER;
-        lexicalStringsArray[token] = e.str;
-        break;
-      case T:
-        lexicalKindsArray[token] = LKind.SINGLETON_CASE_SENSITIVE;
-        lexicalStringsArray[token] = e.str;
-        break;
-      case TI:
-        lexicalKindsArray[token] = LKind.SINGLETON_CASE_INSENSITIVE;
-        lexicalStringsArray[token] = e.str;
-        break;
-      default:
-        break;
-      }
-      token++;
-    }
-    whitespacesArray = whitespaces.toArray(new LKind[0]);
-
-    // 2. Positional attributes
-    for (GrammarElement e : elements.keySet())
-      if (e.kind == GrammarKind.N) for (GrammarNode gn = rules.get(e).alt; gn != null; gn = gn.alt) {
-        GrammarNode gs = gn.seq;
-        gs.isInitialSlot = true;
-        while (true)
-          if (gs.seq.elm.kind == GrammarKind.END) {
-            gs.isPenultimateSlot = true;
-            gs.seq.isFinalSlot = true;
-            break;
-          } else
-            gs = gs.seq;
-      }
-
-    // 3. Self reference in element first sets
-    for (GrammarElement e : elements.keySet())
-      switch (e.kind) {
-      case T, TI, B, C, EOS, EPS, N:
-        e.first.add(e);
-      }
-
-    // 4. First and follow sets
-    firstAndFollowSets();
-  }
-
-  /*
-   * 1. Add $ to follow(S)
-   *
-   * 2. while-loop-closure {
-   *
-   *
-   * }
-   */
-  private boolean changed;
-
   Set<GrammarElement> removeEpsilon(Set<GrammarElement> set) {
     Set<GrammarElement> tmp = new HashSet<>(set);
     tmp.remove(epsilonElement);
     return tmp;
   }
 
-  private void firstAndFollowSets() {
-    if (startNonterminal != null) startNonterminal.follow.add(endOfStringElement);
-    changed = true;
-    while (changed) {
-      changed = false;
-      for (GrammarElement e : elements.keySet())
-        firstAndFollowSetsAlt(rules.get(e));
-    }
+  void firstAndFollowSetsAlt(GrammarNode bracketNode, GrammarNode gn) {
+    if (ART.tracing) System.out.println("firstAndFollowSetsAlt at " + gn.num);
+    if (gn.alt != null) firstAndFollowSetsAlt(bracketNode, gn.alt); // recurse over ALT nodes
+    firstAndFollowSetsRec(gn, gn.seq); // recurse over sequence
+
+    // changed |= instanceFirst.addAll(gn, removeEpsilon(instanceFirst.get(gn.seq)));
+    // changed |= instanceFirst.addAll(bracketNode, instanceFirst.get(gn));
+    // changed |= first.addAll(bracketNode.elm, instanceFirst.get(bracketNode));
+    //
+    // // For closure nodes, fold first into follow
+    // if (bracketNode.elm.kind == GrammarKind.POS || bracketNode.elm.kind == GrammarKind.KLN)
+    // changed |= instanceFollow.addAll(bracketNode, removeEpsilon(instanceFirst.get(bracketNode)));
+    //
+    // if (bracketNode.elm.kind == GrammarKind.OPT || bracketNode.elm.kind == GrammarKind.KLN) changed |= instanceFirst.add(bracketNode, epsilonElement);
   }
 
-  void firstAndFollowSetsAlt(GrammarNode root) {
-    if (root == null) return;
+  // Note: initial and final already computed; nullablePrefix and nullableSuffix also updated accordingly
+  private void firstAndFollowSetsRec(GrammarNode bracketNode, GrammarNode gn) { // Returns seen only nullable - could be replaced by
+    if (ART.tracing) System.out.println("firstAndFollowSetsRec at " + gn.num);
 
-    for (GrammarNode gnAlt = root.alt; gnAlt != null; gnAlt = gnAlt.alt) {
-      // System.out.println("firstAndFollowAlt at " + gnAlt.num + " with root " + root.num);
-      gnAlt.instanceFollow.addAll(root.elm.follow);
+    // if (leftNullable) nullablePrefixSlots.add(gn);
 
-      if (firstAndFollowSetsSeqRec(gnAlt.seq, gnAlt)) changed |= gnAlt.instanceFirst.add(epsilonElement); // If the sequence retuned true, then
-                                                                                                          // seenOnlyNullable
-      changed |= gnAlt.instanceFirst.addAll(removeEpsilon(gnAlt.seq.instanceFirst));
-      changed |= root.instanceFirst.addAll(gnAlt.instanceFirst);
-      changed |= root.elm.first.addAll(root.instanceFirst);
-    }
+    if (gn.elm.kind == GrammarKind.END) return;
+    firstAndFollowSetsRec(bracketNode, gn.seq);
 
-    // For closure nodes, fold first into follow
-    if (root.elm.kind == GrammarKind.POS || root.elm.kind == GrammarKind.KLN) changed |= root.instanceFollow.addAll(removeEpsilon(root.instanceFirst));
+    // 5. Fold into instanceFirst our element's FIRST
+    // if (gn.elm.kind == GrammarKind.EPS)
+    // changed |= instanceFirst.addAll(gn, first.get(gn.elm));
+    // else
+    // changed |= instanceFirst.addAll(gn, removeEpsilon(first.get(gn.elm)));
 
-    if (root.elm.kind == GrammarKind.OPT || root.elm.kind == GrammarKind.KLN) changed |= root.instanceFirst.add(epsilonElement);
-  }
+    // 6. If our element first contains epsilon, fold in our successor's first as well
+    // if (first.get(gn.elm).contains(epsilonElement)) {
+    // changed |= instanceFirst.get(gn).addAll(instanceFirst.get(gn.seq));
+    // if (instanceFirst.get(gn.seq).contains(epsilonElement)) changed |= nullableSuffixSlots.add(gn);
+    // }
 
-  private boolean firstAndFollowSetsSeqRec(GrammarNode gn, GrammarNode rootNode) { // Returns seen only nullable - could be replaced by epsilon in first set
-    // System.out.println("firstAndFollowSetsSeqRec at " + gn.num);
+    // 7. Now update nonterminal elements first set with this instanceFirst
+    // if (gn.elm.kind == GrammarKind.N) changed |= first.addAll(gn.elm, instanceFirst.get(gn));
 
-    // 1. Recursion base case: if we are at end of sequence; set instance first to {epsilon}, fold in parent follow set and return
-    if (gn.elm.kind == GrammarKind.END) {
-      changed |= gn.instanceFirst.add(epsilonElement);
-      return true;
-    }
+    // 8. If we are an initial slot, update our root instanceFirst set with our instanceFirstSet
+    // if (initialSlots.contains(gn)) changed |= instanceFirst.get(bracketNode).addAll(instanceFirst.get(gn));
 
-    // 2. Seq recursion case: process postorder to work sequence in reverse; reducing number of passes
-    gn.isNullableSuffix = firstAndFollowSetsSeqRec(gn.seq, rootNode);
-
-    // 4. Alt recursion case: process postorder to work sequence in reverse; reducing number of passes
-    if (gn.alt != null) firstAndFollowSetsAlt(gn);
-
-    // 5. For grammar atoms, fold instance element itself into instanceFirst
-    if (Set.of(GrammarKind.N, GrammarKind.T, GrammarKind.B, GrammarKind.C, GrammarKind.TI, GrammarKind.EPS).contains(gn.elm.kind))
-      changed |= gn.instanceFirst.add(gn.elm);
-
-    // 6. For all nodes, fold into instanceFirst our element's FIRST
-    changed |= gn.instanceFirst.addAll(gn.elm.first);
-
-    // 7. If our instanceFirst contains epsilon, fold in our successor
-    if (gn.instanceFirst.contains(epsilonElement))
-      changed |= gn.instanceFirst.addAll(gn.seq.instanceFirst);
-    else
-      gn.isNullableSuffix = false;
+    // 9. If we have both a nullable suffix and a nullable prefix, and this element is the bracketNode's element (LHS) then we are cyclic
+    // if (nullablePrefixSlots.contains(gn) && nullableSuffixSlots.contains(gn) && gn.elm.equals(bracketNode.elm)) cyclicNonterminals.add(gn.elm);
 
     // 8. Update follow sets with first set of successor, and update instance element follow set
-    changed |= gn.instanceFollow.addAll(removeEpsilon(gn.seq.instanceFirst));
-    if (gn.seq.isNullableSuffix) changed |= gn.instanceFollow.addAll(rootNode.instanceFollow);
-    changed |= gn.elm.follow.addAll(gn.instanceFollow);
-
-    return gn.isNullableSuffix;
+    // changed |= instanceFollow.get(gn).addAll(removeEpsilon(instanceFirst.get(gn.seq)));
+    // if (nullableSuffixSlots.contains(gn.seq)) changed |= instanceFollow.get(gn).addAll(instanceFollow.get(rootNode));
+    // changed |= follow.get(gn.elm).addAll(instanceFollow.get(gn));
   }
 
   // Data access for lexers
@@ -340,7 +314,7 @@ public class Grammar {
     stack.push(workingNode);
     while (workingNode.alt != null) // Maintain specification order by adding new alternate at the end
       workingNode = workingNode.alt;
-    workingNode = new GrammarNode(GrammarKind.ALT, null, workingAction, workingFold, null, workingNode);
+    workingNode = new GrammarNode(this, GrammarKind.ALT, null, workingAction, workingFold, null, workingNode);
     workingAction = 0;
     workingFold = GIFTKind.NONE;
   }
@@ -351,7 +325,7 @@ public class Grammar {
   }
 
   public GrammarNode updateWorkingNode(GrammarKind kind, String str) {
-    workingNode = new GrammarNode(kind, str, workingAction, workingFold, workingNode, null);
+    workingNode = new GrammarNode(this, kind, str, workingAction, workingFold, workingNode, null);
     workingAction = 0;
     workingFold = GIFTKind.NONE;
     return workingNode;
@@ -411,7 +385,7 @@ public class Grammar {
     else
       sb.append("Grammar " + name + " with empty start nonterminal\n");
 
-    if (empty) return "Grammar has no rules";
+    if (isEmpty()) return "Grammar has no rules";
 
     sb.append("Grammar rules:\n");
     for (GrammarElement n : rules.keySet()) {
@@ -429,11 +403,11 @@ public class Grammar {
     sb.append("Grammar elements:\n");
     for (GrammarElement s : elements.keySet()) {
       sb.append(" (" + s.toStringDetailed() + ") " + s);
-      if (showProperties && s.first != null) {
+      if (showProperties && first.get(s) != null) {
         sb.append(" first = {");
-        appendElements(sb, s.first);
+        appendElements(sb, first.get(s));
         sb.append("} follow = {");
-        appendElements(sb, s.follow);
+        appendElements(sb, follow.get(s));
         sb.append("}");
       }
       sb.append("\n");
@@ -443,29 +417,40 @@ public class Grammar {
       GrammarNode gn = nodesByNumber.get(i);
       sb.append(" " + i + ": " + gn.toStringAsProduction());
       if (showProperties) {
-        if (gn.isInitialSlot) sb.append(" Initial");
-        if (gn.isPenultimateSlot) sb.append(" Penultimate");
-        if (gn.isFinalSlot) sb.append(" Final");
-        if (gn.isNullableSuffix) sb.append(" Nullable");
+        if (initialSlots.contains(gn)) sb.append(" initial");
+        if (penultimateSlots.contains(gn)) sb.append(" penultimate");
+        if (finalSlots.contains(gn)) sb.append(" final");
+        if (nullableSuffixSlots.contains(gn)) sb.append(" nullableSuffix");
+        if (nullablePrefixSlots.contains(gn)) sb.append(" nullablePrefix");
 
-        if (gn.instanceFirst != null && gn.elm.kind != GrammarKind.END) {
-          sb.append(" instfirst = {");
-          appendElements(sb, gn.instanceFirst);
-          sb.append("} instfollow = {");
-          appendElements(sb, gn.instanceFollow);
-          sb.append("}");
-        }
+        sb.append(" instfirst = {");
+        appendElements(sb, instanceFirst.get(gn));
+        sb.append("} instfollow = {");
+        appendElements(sb, instanceFollow.get(gn));
+        sb.append("}");
       }
       sb.append("\n");
     }
-    sb.append("Accepting node" + (acceptingNodeNumbers.size() == 1 ? "" : "s") + ":");
-    for (Integer a : acceptingNodeNumbers)
-      sb.append(" " + a);
+
+    sb.append("Accepting slot" + (acceptingSlots.size() == 1 ? "" : "s") + ":\n");
+    for (var gn : acceptingSlots)
+      sb.append(" " + gn.toStringAsProduction() + "\n");
+
+    sb.append("Accepting node number" + (acceptingSlots.size() == 1 ? "" : "s") + ":");
+    for (var gn : acceptingNodeNumbers)
+      sb.append(" " + gn);
+
     sb.append("\nWhitespaces: " + whitespaces);
+
     return sb.toString();
   }
 
+  public boolean isEmpty() {
+    return rules.keySet().isEmpty();
+  }
+
   private void appendElements(StringBuilder sb, Set<GrammarElement> elements) {
+    if (elements == null) return;
     boolean first = true;
     for (GrammarElement e : elements) {
       if (first)
@@ -546,5 +531,4 @@ public class Grammar {
   public static boolean isLHS(GrammarNode gn) {
     return gn.elm != null && gn.elm.kind == GrammarKind.N && gn.seq == null;
   }
-
 }

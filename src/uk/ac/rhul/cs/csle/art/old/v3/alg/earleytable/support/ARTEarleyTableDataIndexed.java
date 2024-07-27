@@ -79,8 +79,9 @@ public class ARTEarleyTableDataIndexed {
         rLHS[s][elementSetElement++] = e.getElementNumber();
     }
 
-    System.out.printf("Earley table data: %d states by %d vector length x 4 x 6 = %d bytes (%d Mbytes)\n", earleyTableLinked.nfa.size(), firstUnusedSlotNumber,
-        6 * earleyTableLinked.nfa.size() * firstUnusedSlotNumber * 4, (6 * earleyTableLinked.nfa.size() * firstUnusedSlotNumber * 4) / (1024 * 2014));
+    // System.out.printf("Earley table data: %d states by %d vector length x 4 x 6 = %d bytes (%d Mbytes)\n", earleyTableLinked.nfa.size(),
+    // firstUnusedSlotNumber,
+    // 6 * earleyTableLinked.nfa.size() * firstUnusedSlotNumber * 4, (6 * earleyTableLinked.nfa.size() * firstUnusedSlotNumber * 4) / (1024 * 2014));
 
     for (Set<ARTGrammarInstanceSlot> v : earleyTableLinked.nfa.keySet()) {
       ARTEarleyNFAVertex vertex = earleyTableLinked.nfa.get(v);

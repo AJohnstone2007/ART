@@ -301,6 +301,10 @@ public class ARTScriptTermInterpreter {
           System.out.println(currentRewriter.trRulesToString(trRules));
           break;
 
+        case "statistics":
+          System.out.println(currentParser.statistics(false));
+          break;
+
         case "__string":
           System.out.println(iTerms.getTermSymbolString(iTerms.getSubterm(term, 0, 0, 0)));
           break;
@@ -346,7 +350,7 @@ public class ARTScriptTermInterpreter {
   private void doParse(String inputStringName, String inputString, boolean outcome, boolean suppressOutput) {
     // System.out.println("Try parse on input \"" + inputString + "\"");
     currentGrammar.normalise();
-    if (!currentGrammar.empty) {
+    if (!currentGrammar.isEmpty()) {
       currentParser.traceLevel = Util.traceLevel;
       currentParser.inputStringName = inputStringName;
       currentParser.inputString = inputString;
@@ -358,7 +362,7 @@ public class ARTScriptTermInterpreter {
       currentParser.input = currentLexer.tokens;
       currentParser.positions = currentLexer.positions;
       if (currentParser.input != null) currentParser.parse();
-      Util.trace(3, 0, currentParser.accepted ? "Accept" : "Reject");
+      // Util.trace(3, 0, currentParser.accepted ? "Accept" : "Reject");
       // System.out.println("Parse complete: accept " + currentParser.accepted);
       if (currentParser.inadmissable)
         inadmissableCount++;

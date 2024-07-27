@@ -72,7 +72,8 @@ public class ADLInterpreter {
     }
     adlLexer = new LexerLM();
     adlParser = new GLLBaseLine();
-    adlParser.grammar = artScriptInterpreter.getGrammar().normalise();
+    adlParser.grammar = artScriptInterpreter.getGrammar();
+    adlParser.grammar.normalise();
   }
 
   public Value adlInterpret(String inputString) {

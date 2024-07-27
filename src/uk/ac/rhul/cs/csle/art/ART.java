@@ -4,6 +4,7 @@ import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.Arrays;
 
 import javafx.application.Application;
 import uk.ac.rhul.cs.csle.art.fx.FXStart;
@@ -18,14 +19,15 @@ import uk.ac.rhul.cs.csle.art.util.Version;
 public class ART {
   public static String specificationString = null;
   public static String tryFilename = null;
+  public static boolean tracing = false;
 
   // @formatter:off
   public static void main(String[] args) {
     if (args.length > 0) switch (args[0]) { // Test for initial special mode argument
     case "incVersion": incVersion(); return;              // Undocumented internal mode
-    case "aj": new AJDebug(args); return;             // Undocumented internal mode
-    case "v3": new ARTV3(Util.scriptString(args)); return; // Undocumented internal mode
-    case "v4": new ARTV4(Util.scriptString(args)); return; // Undocumented internal mode
+    case "ajdebug": new AJDebug(args); return;             // Undocumented internal mode
+    case "v3": new ARTV3(Arrays.copyOfRange(args, 1, args.length)); return; // Undocumented internal mode
+    case "v4": new ARTV4(Arrays.copyOfRange(args, 1, args.length)); return; // Undocumented internal mode
     case "noFX": new ARTScriptTermInterpreter(new ITermsLowLevelAPI()).interpret(Util.scriptString(args)); return; // Run batch mode without fx in this context
     case "noIDE": specificationString = Util.scriptString(args); Application.launch(FXStart.class, args); return; // Run batch mode in a JavaFX application
     case "version": System.out.println("ART Version " + Version.version()); return; // Run batch mode in a JavaFX application
