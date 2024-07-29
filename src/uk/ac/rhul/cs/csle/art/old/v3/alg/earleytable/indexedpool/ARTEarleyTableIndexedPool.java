@@ -61,7 +61,7 @@ public class ARTEarleyTableIndexedPool extends ARTParserBase {
 
   public void artParse(String stringInput, String inputFilename, boolean useRDNSet) {
     artIsInLanguage = false;
-
+    inputStringLength = stringInput.length();
     if (artNotBNF()) {
       if (artTrace > 0) artTraceText.println(this.getClass() + " called on EBNF grammar aborting");
       artInadmissable = true;
@@ -87,7 +87,7 @@ public class ARTEarleyTableIndexedPool extends ARTParserBase {
       System.out.println("Reject lexical");
     else {
       inputLength = input.length - 2; // input[0] is not used and input[n+1] is $
-
+      inputTokenLength = inputLength;
       pool = new ARTPool(21, 2048); // 2048 x 2Mlocation blocks: at 32-bit integers that 8G of memory when fully
 
       // Declare arrays of sets representing R and E (curly E in document) and rdn
@@ -179,8 +179,9 @@ public class ARTEarleyTableIndexedPool extends ARTParserBase {
             artIsInLanguage |= earleyTableIndexed.acceptingProductions[ppc];
           }
       }
-      System.out.println("EarleyTableIndexedPool," + artGrammar.getARTManager().artDirectives.inputFilenames.get(0) + ","
-          + (artIsInLanguage ? "accept" : "reject") + "," + artParseCompleteTime * 1E-6 + ",ms");
+      artLog("???", true);
+      // System.out.println("EarleyTableIndexedPool," + artGrammar.getARTManager().artDirectives.inputFilenames.get(0) + ","
+      // + (artIsInLanguage ? "accept" : "reject") + "," + artParseCompleteTime * 1E-6 + ",ms");
       // System.out.println("Total removals from R = " + rSetRemovals);
       // System.out.println("Final raw P with Chi set based BSRs: |PChi| = " + upsilonCardinality);
       //

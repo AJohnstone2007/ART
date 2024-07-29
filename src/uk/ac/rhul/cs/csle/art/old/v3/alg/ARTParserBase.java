@@ -1,9 +1,5 @@
 package uk.ac.rhul.cs.csle.art.old.v3.alg;
 
-import java.io.FileNotFoundException;
-import java.io.PrintStream;
-import java.util.Date;
-
 import uk.ac.rhul.cs.csle.art.old.v3.alg.gll.support.ARTGLLAttributeBlock;
 import uk.ac.rhul.cs.csle.art.old.v3.alg.gll.support.ARTGLLRDTHandle;
 import uk.ac.rhul.cs.csle.art.old.v3.alg.gll.support.ARTGLLRDTVertex;
@@ -17,7 +13,6 @@ import uk.ac.rhul.cs.csle.art.old.v4.util.slotarray.ARTSlotArray;
 import uk.ac.rhul.cs.csle.art.old.v4.util.text.ARTText;
 import uk.ac.rhul.cs.csle.art.old.v4.util.text.ARTTextHandlerConsole;
 import uk.ac.rhul.cs.csle.art.old.v4.util.text.ARTTextHandlerFile;
-import uk.ac.rhul.cs.csle.art.old.v4.util.text.ARTTextLevel;
 
 public abstract class ARTParserBase {
   /**
@@ -89,6 +84,9 @@ public abstract class ARTParserBase {
   // information
 
   public ARTLexerV3 artLexer;
+  public int inputStringLength;
+  public int inputTokenLength;
+
   public String[] artLabelStrings; // These strings are used by some lexers to find keywords. Slot element sare set
                                    // to ""
 
@@ -125,10 +123,12 @@ public abstract class ARTParserBase {
   public long artStartTime;
   public long artSetupCompleteTime = 0;
   public long artLexCompleteTime = 0;
+  public long artLexChooseCompleteTime = 0;
   public long artParseCompleteTime = 0;
+  public long artParseChooseCompleteTime = 0;
   public long artDerivationSelectCompleteTime = 0;
-  public long artAttributeEvaluateCompleteTime = 0;
-  public long arteSOSInterpretCompleteTime = 0;
+  public long artTermGenerateCompleteTime = 0;
+  public long artSemanticsCompleteTime = 0;
   public long artParseStartMemory = 0, artParseEndMemory = 0;
 
   // Statistics
@@ -265,9 +265,9 @@ public abstract class ARTParserBase {
   }
 
   public String artGetTimes() {
-    return String.format("%s, Setup, %.3f, Lex, %.3f, Parse, %.3f, Derivation select, %.3f, Attribute evaluate, %.3f, eSOS interpret, %.3f", artParserKind,
-        artTimeAsSeconds(artSetupCompleteTime), artTimeAsSeconds(artLexCompleteTime), artTimeAsSeconds(artParseCompleteTime),
-        artTimeAsSeconds(artDerivationSelectCompleteTime), artTimeAsSeconds(artAttributeEvaluateCompleteTime), artTimeAsSeconds(arteSOSInterpretCompleteTime));
+    return artTimeAsSeconds(artSetupCompleteTime) + "," + artTimeAsSeconds(artLexCompleteTime) + "," + artTimeAsSeconds(artLexChooseCompleteTime) + ","
+        + artTimeAsSeconds(artParseCompleteTime) + "," + artTimeAsSeconds(artParseChooseCompleteTime) + "," + artTimeAsSeconds(artDerivationSelectCompleteTime)
+        + "," + artTimeAsSeconds(artTermGenerateCompleteTime) + "," + artTimeAsSeconds(artSemanticsCompleteTime);
   }
 
   /**
@@ -365,48 +365,48 @@ public abstract class ARTParserBase {
     return false;
   }
 
+  // July 2024 - rework to fit with RunExp outputs
   public void artLog(String inputFilename, Boolean console) {
-    try {
-      PrintStream logStream = new PrintStream("log.csv");
 
-      int left = inputFilename.lastIndexOf('.') + 1;
-      int right = Math.min(inputFilename.length(), left + 3);
+    // try {
+    // PrintStream logStream = new PrintStream("log.csv");
 
-      String inputFiletype = inputFilename.substring(left, right);
+    int left = inputFilename.lastIndexOf('.') + 1;
+    int right = Math.min(inputFilename.length(), left + 3);
 
-      int pathSeparatorIndex = 0;
-      if (inputFilename.lastIndexOf('/') != -1)
-        pathSeparatorIndex = inputFilename.lastIndexOf('/') + 1;
-      else if (inputFilename.lastIndexOf('\\') != -1) pathSeparatorIndex = inputFilename.lastIndexOf('\\') + 1;
-      String shortInputFilename = inputFilename.substring(pathSeparatorIndex);
+    String inputFiletype = inputFilename.substring(left, right);
 
-      String status = "--";
-      if (inputFiletype.equals("acc") || inputFiletype.equals("rej")) {
-        status = "bad";
-        if ((inputFiletype.equals("acc") && artIsInLanguage) || (inputFiletype.equals("rej") && !artIsInLanguage)) status = "good";
-      }
-      if (artInadmissable) status = "inadmissable";
+    int pathSeparatorIndex = 0;
+    if (inputFilename.lastIndexOf('/') != -1)
+      pathSeparatorIndex = inputFilename.lastIndexOf('/') + 1;
+    else if (inputFilename.lastIndexOf('\\') != -1) pathSeparatorIndex = inputFilename.lastIndexOf('\\') + 1;
+    String shortInputFilename = inputFilename.substring(pathSeparatorIndex);
 
-      int localInputLength = artLexer == null ? 0 : artLexer.artInputLength - 1;
-      if (localInputLength <= 0) localInputLength = 1;
-
-      String msg = String.format("%s,%s,%s,%s,%s,%s,%d,%s", this.getClass().getSimpleName(), artGrammarKind.toString(), shortInputFilename,
-          artIsInLanguage ? "accept" : "reject", status, new Date(), localInputLength, artGetTimes());
-
-      msg += artLogStats();
-      // msg += String.format(",%s", artBuildOptions);
-
-      if (console)
-        System.out.println(msg);
-      else
-        logStream.println(msg);
-
-      logStream.close();
-
-      if (inputFilename.indexOf("deliberatelyCrash") != -1) artText.printf(ARTTextLevel.FATAL, "Exiting");
-    } catch (FileNotFoundException e) {
-      System.out.println("Unable to write to 'log.csv'");
+    String status = "--";
+    if (inputFiletype.equals("acc") || inputFiletype.equals("rej")) {
+      status = "bad";
+      if ((inputFiletype.equals("acc") && artIsInLanguage) || (inputFiletype.equals("rej") && !artIsInLanguage)) status = "good";
     }
+    if (artInadmissable) status = "inadmissable";
+
+    int localInputLength = artLexer == null ? 0 : artLexer.artInputLength - 1;
+    if (localInputLength <= 0) localInputLength = 1;
+
+    String msg = inputStringLength + "," + getClass().getSimpleName() + "," + (artIsInLanguage ? "accept" : "reject") + "," + artGetTimes() + ","
+        + inputTokenLength + "," + (inputTokenLength - 1) + ",1";
+
+    // msg += artLogStats();
+
+    if (console) System.out.println(msg);
+    // else
+    // logStream.println(msg);
+
+    // logStream.close();
+
+    // if (inputFilename.indexOf("deliberatelyCrash") != -1) artText.printf(ARTTextLevel.FATAL, "Exiting");
+    // } catch (FileNotFoundException e) {
+    // System.out.println("Unable to write to 'log.csv'");
+    // }
   }
 
   public String artLogStats() {

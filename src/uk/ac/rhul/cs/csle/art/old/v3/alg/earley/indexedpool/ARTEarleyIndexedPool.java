@@ -42,7 +42,6 @@ public class ARTEarleyIndexedPool extends ARTParserBase {
   private ARTPool pool;
   // End of language customisation
 
-  private int inputLength;
   private int epsilonSPPFNode;
 
   // An accepting slot is a single integer index into the tables in the
@@ -148,7 +147,7 @@ public class ARTEarleyIndexedPool extends ARTParserBase {
   // This method uses iterator1: call at your risk...
   private void printSets() {
     artTraceText.println("Earley sets");
-    for (int i = 0; i <= inputLength; i++) {
+    for (int i = 0; i <= inputTokenLength; i++) {
       for (int j = pool.mapIteratorFirst1(eSets[i]); j != 0; j = pool.mapIteratorNext1())
         artTraceText.println(i + ": " + earleyItemToString(j));
     }
@@ -188,12 +187,13 @@ public class ARTEarleyIndexedPool extends ARTParserBase {
 
   // For Java...
   public int[] dynamicLexicaliseLongestMatch(String inputString, int startIndex) {
+    inputStringLength = inputString.length();
     char[] input = (inputString + "\0").toCharArray();
     // For C...
     // int* dynamicLexicaliseLongestMatch(String input, int startIndex) {
     // End of language customisation
 
-    int inputStringLength = strlen(input);
+    inputStringLength = strlen(input);
     int[] ret = null;
     int stringStart, retIndex;
 
@@ -235,6 +235,8 @@ public class ARTEarleyIndexedPool extends ARTParserBase {
 
       if (ret == null) ret = new int[retIndex];
     }
+
+    inputTokenLength = ret.length - 1;
     return ret;
   }
 
@@ -317,13 +319,13 @@ public class ARTEarleyIndexedPool extends ARTParserBase {
       return;
     }
 
-    inputLength = input.length - 2; // input[0] is not used and input[n+1] is $
+    inputTokenLength = input.length - 2; // input[0] is not used and input[n+1] is $
 
-    if (artTrace > 0) artTraceText.println("EarleySlotArrayPool runnng on " + inputLength + " tokens");
+    if (artTrace > 0) artTraceText.println("EarleySlotArrayPool runnng on " + inputTokenLength + " tokens");
 
     // E0 , . . . , En , R, Q′ , V = ∅
-    eSets = new int[inputLength + 1];
-    for (int i = 0; i < inputLength + 1; i++)
+    eSets = new int[inputTokenLength + 1];
+    for (int i = 0; i < inputTokenLength + 1; i++)
       eSets[i] = pool.mapMake(earleyItemPerLevelBucketCount);
     rSet = pool.mapMake(earleyItemPerLevelBucketCount);
     qSet = pool.mapMake(earleyItemPerLevelBucketCount);
@@ -350,7 +352,7 @@ public class ARTEarleyIndexedPool extends ARTParserBase {
       }
     }
     // for 0 ≤ i ≤ n {
-    for (int i = 0; i <= inputLength; i++) {
+    for (int i = 0; i <= inputTokenLength; i++) {
       // printSets();
       // H = ∅, R = Ei , Q = Q′
       pool.mapClear(hMap);
@@ -469,7 +471,7 @@ public class ARTEarleyIndexedPool extends ARTParserBase {
       // V=∅
       pool.mapClear(vSet);
       // create an SPPF node v labelled (ai+1 , i, i + 1)
-      if (i != inputLength) {
+      if (i != inputTokenLength) {
         int v = pool.mapFind_3_1(sppf, input[i + 1], i, i + 1);
         // while Q ! = ∅ {
         while (pool.mapCardinality(qSet) != 0) {
@@ -503,11 +505,11 @@ public class ARTEarleyIndexedPool extends ARTParserBase {
 
     // Scan eSets.get(inputLength) to look for accepting slots and some w, then
     // return w
-    if (artTrace > 0) artTraceText.println(
-        "input length is " + inputLength + "\naccepting slots are " + acceptingSlotsSet + "\nfinal Earley set is " + earleySetToString(eSets[inputLength]));
+    if (artTrace > 0) artTraceText.println("input length is " + inputTokenLength + "\naccepting slots are " + acceptingSlotsSet + "\nfinal Earley set is "
+        + earleySetToString(eSets[inputTokenLength]));
 
     // System.out.printf("Scannning final Earley set\n");
-    for (int e = pool.mapIteratorFirst1(eSets[inputLength]); e != 0; e = pool.mapIteratorNext1()) {
+    for (int e = pool.mapIteratorFirst1(eSets[inputTokenLength]); e != 0; e = pool.mapIteratorNext1()) {
       int offset = pool.poolGet(e + earleyItemIndexOffset);
       int slot = pool.poolGet(e + earleyItemSlotOffset);
 
@@ -515,8 +517,9 @@ public class ARTEarleyIndexedPool extends ARTParserBase {
 
       if (offset == 0 && pool.mapLookup_1(acceptingSlotsSet, slot) != 0) {
         artIsInLanguage = true;
-        System.out.println("EarleyIndexedPool," /* + artGrammar.getARTManager().artDirectives.inputFilenames.get(0) */ + ","
-            + (artIsInLanguage ? "accept" : "reject") + "," + artParseCompleteTime * 1E-6 + ",ms");
+        // System.out.println("EarleyIndexedPool," /* + artGrammar.getARTManager().artDirectives.inputFilenames.get(0) */ + ","
+        // + (artIsInLanguage ? "accept" : "reject") + "," + artParseCompleteTime * 1E-6 + ",ms");
+        artLog("???", true);
         if (artTrace > 0) {
           artTraceText.println("EarleyIndexedPool: accept");
           printSets();

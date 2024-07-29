@@ -333,14 +333,6 @@ public abstract class ARTGLLParserBase extends ARTParserBase {
     this.artLabelInternalStrings = artLabelInternalStrings;
   }
 
-  public long getArteSOSInterpretCompleteTime() {
-    return arteSOSInterpretCompleteTime;
-  }
-
-  public void setArteSOSInterpretCompleteTime(long arteSOSInterpretCompleteTime) {
-    this.arteSOSInterpretCompleteTime = arteSOSInterpretCompleteTime;
-  }
-
   /*
    * Parser global variables
    */
@@ -1633,7 +1625,7 @@ public abstract class ARTGLLParserBase extends ARTParserBase {
     artRDT.setRoot(artNewParent);
     boolean artNewWriteable = true;
     artEvaluate(new ARTGLLRDTHandle(artRootSPPFNode), artAttributes, artNewParent, artNewWriteable);
-    artAttributeEvaluateCompleteTime = artReadClock();
+    artSemanticsCompleteTime = artReadClock();
   }
 
   @Override
