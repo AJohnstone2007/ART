@@ -1009,7 +1009,7 @@ public abstract class ARTGLLParserBase extends ARTParserBase {
     artSPPFResetVisitedFlags();
     artDerivationSelectFirstRec(artSPPFRoot());
     artSPPFResetVisitedFlags();
-    artDerivationSelectCompleteTime = artReadClock();
+    loadDerivationSelectTime();
   }
 
   private void artDerivationSelectAllRec(int element) {
@@ -1625,7 +1625,7 @@ public abstract class ARTGLLParserBase extends ARTParserBase {
     artRDT.setRoot(artNewParent);
     boolean artNewWriteable = true;
     artEvaluate(new ARTGLLRDTHandle(artRootSPPFNode), artAttributes, artNewParent, artNewWriteable);
-    artSemanticsCompleteTime = artReadClock();
+    loadSemanticsTime();
   }
 
   @Override

@@ -2358,8 +2358,7 @@ public abstract class ARTGLLParserHashPool extends ARTGLLParserBase {
 
   @Override
   protected void artInitialise() {
-    artParseStartMemory = artMemoryUsed();
-    artRestartClock();
+    loadStartMemory();
 
     artpoolBlockCount = artpoolBlockInitialCount;
     if (artpool == null) {
@@ -2453,12 +2452,12 @@ public abstract class ARTGLLParserHashPool extends ARTGLLParserBase {
 
     long tokens = artInputPairBuffer.length / 2;
 
-    long memoryDelta = artParseEndMemory - artParseStartMemory;
+    // long memoryDelta = artParseEndMemory - artParseStartMemory;
 
     return descriptorCount + "," + gssNodeCount + "," + gssEdgeCount + "," + popElementCount + "," + sppfNodeCount + "," + sppfPackNodeCount + "," + ","
-        + artSPPFAmbiguityNodes + "," + memoryDelta + "," + ((double) memoryDelta / tokens) + "," + exactSize + "," + (double) exactSize / tokens + ","
-        + tableSize + "," + (double) tableSize / tokens + "," + poolSize + "," + (double) poolSize / tokens + "," + artOverallHistogram.bucketValue(0) + ","
-        + artOverallHistogram.bucketValue(1) + "," + artOverallHistogram.bucketValue(2) + "," + artOverallHistogram.bucketValue(3) + ","
+        + artSPPFAmbiguityNodes + "," /* + memoryDelta */ + "," + /* ((double) memoryDelta / tokens) + */"," + exactSize + "," + (double) exactSize / tokens
+        + "," + tableSize + "," + (double) tableSize / tokens + "," + poolSize + "," + (double) poolSize / tokens + "," + artOverallHistogram.bucketValue(0)
+        + "," + artOverallHistogram.bucketValue(1) + "," + artOverallHistogram.bucketValue(2) + "," + artOverallHistogram.bucketValue(3) + ","
         + artOverallHistogram.sumBucketsFrom(4);
   }
 

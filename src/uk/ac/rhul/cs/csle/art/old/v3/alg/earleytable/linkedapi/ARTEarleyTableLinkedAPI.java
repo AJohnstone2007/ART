@@ -117,7 +117,6 @@ public class ARTEarleyTableLinkedAPI extends ARTParserBase {
       E[0].add(new ARTEarleyConfiguration(nfa.getState(0), 0));
 
       artGrammar.getARTManager().printMemory(this.getClass().getSimpleName() + " start of parse");
-      artRestartClock();
 
       // for (0 \le j \= n)
       for (int j = 0; j <= inputLength; j++) {
@@ -166,7 +165,6 @@ public class ARTEarleyTableLinkedAPI extends ARTParserBase {
         }
       }
 
-      artParseCompleteTime = artReadClock();
       artGrammar.getARTManager().printMemory(this.getClass().getSimpleName() + " end of parse");
 
       // System.out.println("Input length = " + inputLength);
@@ -177,12 +175,12 @@ public class ARTEarleyTableLinkedAPI extends ARTParserBase {
         }
 
       simpleBSRSet = makeBSRSet();
-      System.out.println("EarleyTableLinkedAPI " + (artIsInLanguage ? "accept" : "reject") + " in " + artParseCompleteTime * 1E-6 + "ms");
+      System.out.println("EarleyTableLinkedAPI " + (artIsInLanguage ? "accept" : "reject"));
       System.out.println("Total removals from R = " + rSetRemovals);
       System.out.println("Final raw P with Chi set based BSRs: |PChi| = " + p.getSet().size());
       System.out.println("Final raw P with simple BSRs: |Psimple| = " + simpleBSRSet.getBSRSet().size());
       if (artTrace > 0) {
-        artTraceText.println("\n" + (artIsInLanguage ? "Accept" : "Reject") + " in " + artParseCompleteTime * 1E-6 + "ms");
+        artTraceText.println("\n" + (artIsInLanguage ? "Accept" : "Reject"));
         artTraceText.println("Total removals from R = " + rSetRemovals);
         artTraceText.println("Final raw P with Chi set based BSRs: |PChi| = " + p.getSet().size());
         artTraceText.println("Final raw P with simple BSRs: |Psimple| = " + simpleBSRSet.getBSRSet().size());

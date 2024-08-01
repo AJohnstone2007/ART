@@ -289,7 +289,7 @@ public class ARTEarleyIndexedPool extends ARTParserBase {
       System.out.println(this.getClass() + " called on EBNF grammar aborting");
       return;
     }
-
+    resetStats();
     // ARTTRACE = true;
     pool = new ARTPool(20, 1024); // 1024 x 1Mlocation blocks: at 32-buit integers that 4G of memory when fully
                                   // allocated
@@ -308,6 +308,7 @@ public class ARTEarleyIndexedPool extends ARTParserBase {
 
       pool.mapFind_1_0(acceptingSlotsSet, p);
     }
+    loadSetupTime();
 
     int[] input = dynamicLexicaliseLongestMatch(stringInput, 1);
 
@@ -322,6 +323,7 @@ public class ARTEarleyIndexedPool extends ARTParserBase {
     inputTokenLength = input.length - 2; // input[0] is not used and input[n+1] is $
 
     if (artTrace > 0) artTraceText.println("EarleySlotArrayPool runnng on " + inputTokenLength + " tokens");
+    loadLexTime();
 
     // E0 , . . . , En , R, Q′ , V = ∅
     eSets = new int[inputTokenLength + 1];
@@ -336,7 +338,6 @@ public class ARTEarleyIndexedPool extends ARTParserBase {
     // sppf = pool.makeMap(7, 13); // debug set has only 19
 
     // artSlotArray.artGrammar.getARTManager().printMemory(this.getClass().getSimpleName() + " start of parse");
-    artRestartClock();
 
     // for all (S ::= α) ∈ P { if α ∈ ΣN add (S ::= ·α, 0, null) to E0
     // if α = a1 α′ add (S ::= ·α, 0, null) to Q′ } !! Q' is now Q[0] for this
@@ -498,7 +499,6 @@ public class ARTEarleyIndexedPool extends ARTParserBase {
       }
     }
 
-    artParseCompleteTime = artReadClock();
     // artSlotArray.artGrammar.getARTManager().printMemory(this.getClass().getSimpleName() + " end of parse");
 
     // if (S ::= τ ·, 0, w) ∈ En return w
@@ -515,36 +515,8 @@ public class ARTEarleyIndexedPool extends ARTParserBase {
 
       // System.out.printf("e=%d, offset = %d, slot = %d\n", e, offset, slot);
 
-      if (offset == 0 && pool.mapLookup_1(acceptingSlotsSet, slot) != 0) {
-        artIsInLanguage = true;
-        // System.out.println("EarleyIndexedPool," /* + artGrammar.getARTManager().artDirectives.inputFilenames.get(0) */ + ","
-        // + (artIsInLanguage ? "accept" : "reject") + "," + artParseCompleteTime * 1E-6 + ",ms");
-        artLog("???", true);
-        if (artTrace > 0) {
-          artTraceText.println("EarleyIndexedPool: accept");
-          printSets();
-          artTraceText.close();
-        }
-        // System.out.println("Accepting slot set statistics " + pool.mapStatistics(acceptingSlotsSet));
-        // System.out.println("Q set statistics " + pool.mapStatistics(qSet));
-        // System.out.println("Q' set statistics " + pool.mapStatistics(qPrimeSet));
-        // System.out.println("R set statistics " + pool.mapStatistics(rSet));
-        // System.out.println("V set statistics " + pool.mapStatistics(vSet));
-        // for (int i = 0; i < inputLength + 1; i++)
-        // System.out.println("Earley set [" + i + "] statistics " + pool.mapStatistics(eSets[i]));
-
-        return /* w */ /* pool.poolGet(e + earleyItemSPPFNodeOffset) */;
-      }
-    }
-    // else return failure
-    {
-      System.out.println("EarleyIndexedPool " + (artIsInLanguage ? "accept" : "reject") + " in " + artParseCompleteTime * 1E-6 + "ms");
-      if (artTrace > 0) {
-        artTraceText.println("EarleyIndexedPool: reject");
-        printSets();
-        artTraceText.close();
-      }
-      return;
+      artIsInLanguage = offset == 0 && pool.mapLookup_1(acceptingSlotsSet, slot) != 0;
+      loadParseTime();
     }
   }
 

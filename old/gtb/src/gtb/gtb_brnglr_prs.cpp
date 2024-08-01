@@ -8,7 +8,7 @@
 *
 *******************************************************************************/
 #include <string.h>
-#include <time.h>
+//#include <time.h>
 #include "graph.h"
 #include "memalloc.h"
 #include "hist.h"
@@ -1647,9 +1647,10 @@ sr_brnglr_parse (dfa * this_dfa, char *string, int reduction_stack_size)
                context->sppf_edge_count);
 
   // Now output CSV record
-  text_printf("%i,BRNGLR,%s,%f,%f,%f,%f,%f,%f,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i\n",
+  printf("%i,BRNGLR,%s,%s,%f,%f,%f,%f,%f,%f,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i\n",
                strlen(string),
                this_derivation->accept ? "Accept" : "Reject",
+               "OK",
                0.0,
                0.0,
                run_time,

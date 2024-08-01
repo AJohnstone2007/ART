@@ -257,7 +257,6 @@ public class ARTLCNPLinkedAPI extends ARTParserBase {
         if (tweSet[i][t] != null) for (int jj = 0; jj < tweSet[i][t].length; jj++)
           tweSet[i][t][jj] -= i;
 
-    artRestartClock();
     m = tweSet.length - 2;
     if (artTrace) artTraceText.println("Parsing " + m + " tokens");
 
@@ -273,7 +272,6 @@ public class ARTLCNPLinkedAPI extends ARTParserBase {
 
     while (true) {
       if (R.isEmpty()) { // Acceptance testing
-        artParseCompleteTime = artReadClock();
 
         artIsInLanguage = false;
 
@@ -290,13 +288,13 @@ public class ARTLCNPLinkedAPI extends ARTParserBase {
           artTraceText.println("Final descriptor set (U): " + U);
           artTraceText.println("Final BSR set (upsilon): " + upsilon);
           artTraceText.println("Final CRF: " + CRF);
-          artTraceText.println((artIsInLanguage ? "Accept" : "Reject") + " in " + artParseCompleteTime * 1E-6 + "ms");
+          artTraceText.println((artIsInLanguage ? "Accept" : "Reject"));
           artTraceText.close();
         }
 
         System.out.println("Descriptor set (U) cardinality = " + U.size());
         System.out.println("BSR set (upsilon) cardinality = " + upsilon.size());
-        System.out.println("LCNPInterpretLinkedAPI " + (artIsInLanguage ? "accept" : "reject") + " in " + artParseCompleteTime * 1E-6 + "ms");
+        System.out.println("LCNPInterpretLinkedAPI " + (artIsInLanguage ? "accept" : "reject"));
         if (artTrace) artTraceText.close();
         if (lexer.artDirectives.b("twePrint")) processSLEdata();
         return;

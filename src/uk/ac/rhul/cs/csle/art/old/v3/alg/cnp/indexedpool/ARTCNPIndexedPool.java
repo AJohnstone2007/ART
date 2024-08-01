@@ -379,7 +379,6 @@ public class ARTCNPIndexedPool extends ARTParserBase {
 
     pool = new ARTPool(20, 1024); // 1024 x 1Mlocation blocks: at 32-buit integers that is 4G of memory when fully allocated
 
-    artRestartClock();
     m = input == null ? 0 : input.length - 1;
     if (artTrace > 0) {
       artTraceText.println("Parsing " + m + " tokens");
@@ -402,7 +401,6 @@ public class ARTCNPIndexedPool extends ARTParserBase {
 
     while (true) {
       if (R == 0) {
-        artParseCompleteTime = artReadClock();
 
         artIsInLanguage = false;
 
@@ -426,11 +424,11 @@ public class ARTCNPIndexedPool extends ARTParserBase {
             artTraceText.print(bsrElementToString(i));
           artTraceText.println();
           artTraceText.println("Final CRF: " + CRF);
-          artTraceText.println((artIsInLanguage ? "Accept" : "Reject") + " in " + artParseCompleteTime * 1E-6 + "ms");
+          artTraceText.println((artIsInLanguage ? "Accept" : "Reject"));
           artTraceText.close();
         }
 
-        System.out.println("CNPIndexedPool " + (artIsInLanguage ? "accept" : "reject") + " in " + artParseCompleteTime * 1E-6 + "ms");
+        System.out.println("CNPIndexedPool " + (artIsInLanguage ? "accept" : "reject"));
 
         if (artTrace > 0) artTraceText.close();
         return;

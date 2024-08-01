@@ -114,7 +114,6 @@ public class ARTEarleyTableIndexedAPI extends ARTParserBase {
       E[0].add(new ARTEarleyConfiguration(0, 0));
 
       artGrammar.getARTManager().printMemory(this.getClass().getSimpleName() + " start of parse");
-      artRestartClock();
 
       // for (0 \le j \= n)
       for (int j = 0; j <= inputLength; j++) {
@@ -164,7 +163,6 @@ public class ARTEarleyTableIndexedAPI extends ARTParserBase {
         }
       }
 
-      artParseCompleteTime = artReadClock();
       artGrammar.getARTManager().printMemory(this.getClass().getSimpleName() + " end of parse");
 
       if (artTrace > 0) artTraceText.println("Acceptance testing against start symbol "
@@ -178,11 +176,11 @@ public class ARTEarleyTableIndexedAPI extends ARTParserBase {
           artIsInLanguage |= earleyTableIndexed.acceptingProductions[ppc];
         }
       }
-      System.out.println("EarleyTableIndexedAPI " + (artIsInLanguage ? "accept" : "reject") + " in " + artParseCompleteTime * 1E-6 + "ms");
+      System.out.println("EarleyTableIndexedAPI " + (artIsInLanguage ? "accept" : "reject"));
       System.out.println("Total removals from R =  " + rSetRemovals);
       System.out.println("Final raw P with Chi set based BSRs: |PChi| = " + upsilonCardinality);
       if (artTrace > 0) {
-        artTraceText.println("\n" + (artIsInLanguage ? "Accept" : "Reject") + " in " + artParseCompleteTime * 1E-6 + "ms");
+        artTraceText.println("\n" + (artIsInLanguage ? "Accept" : "Reject"));
         artTraceText.println("\nFinal raw P with Chi set based BSRs: |PChi| = " + p.getSet().size() + "\n" + p);
 
         simpleBSRSet = makeBSRSet();

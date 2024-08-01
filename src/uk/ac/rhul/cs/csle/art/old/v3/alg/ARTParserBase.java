@@ -112,24 +112,100 @@ public abstract class ARTParserBase {
   public int[] artlhsL;
   public boolean artFIFODescriptors;
   // protected boolean[] artNonterminalsDeclaredAsTerminals;
-  protected uk.ac.rhul.cs.csle.art.old.v4.util.bitset.ARTBitSet[] artHigher;
+  protected ARTBitSet[] artHigher;
   protected ARTBitSet[] artLonger;
   protected ARTBitSet[] artShorter;
 
   // Outcome and timing variables set by each run of the parse function
   public ARTModeGrammarKind artGrammarKind = ARTModeGrammarKind.UNKNOWN;
-  public boolean artInadmissable = false; // set when, say, a BNF parser is called with an EBNF grammar
+  public boolean artInadmissable; // set when, say, a BNF parser is called with an EBNF grammar
   public boolean artIsInLanguage;
-  public long artStartTime;
-  public long artSetupCompleteTime = 0;
-  public long artLexCompleteTime = 0;
-  public long artLexChooseCompleteTime = 0;
-  public long artParseCompleteTime = 0;
-  public long artParseChooseCompleteTime = 0;
-  public long artDerivationSelectCompleteTime = 0;
-  public long artTermGenerateCompleteTime = 0;
-  public long artSemanticsCompleteTime = 0;
-  public long artParseStartMemory = 0, artParseEndMemory = 0;
+  private long startTime;
+  private long setupTime;
+  private long lexTime;
+  private long lexChooseTime;
+  private long parseTime;
+  private long parseChooseTime;
+  private long derivationSelectTime;
+  private long termGenerateTime;
+  private long semanticsTime;
+  private long artParseStartMemory;
+  private long artParseEndMemory;
+  private long artParseStartPool;
+  private long artParseEndPool;
+
+  public void loadSetupTime() {
+    setupTime = System.nanoTime();
+  }
+
+  public void loadLexTime() {
+    lexTime = System.nanoTime();
+  }
+
+  public void loadLexChooseTime() {
+    lexChooseTime = System.nanoTime();
+  }
+
+  public void loadParseTime() {
+    parseTime = System.nanoTime();
+  }
+
+  public void loadParseChooseTime() {
+    parseChooseTime = System.nanoTime();
+  }
+
+  public void loadDerivationSelectTime() {
+    derivationSelectTime = System.nanoTime();
+  }
+
+  public void loadTermGenerateTime() {
+    termGenerateTime = System.nanoTime();
+  }
+
+  public void loadSemanticsTime() {
+    semanticsTime = System.nanoTime();
+  }
+
+  public void loadStartMemory() {
+    artParseStartMemory = artMemoryUsed();
+  }
+
+  public void loadEndMemory() {
+    artParseEndMemory = artMemoryUsed();
+  }
+
+  protected void resetStats() {
+    startTime = System.nanoTime();
+    setupTime = lexTime = lexChooseTime = parseTime = parseChooseTime = derivationSelectTime = termGenerateTime = semanticsTime = artParseStartMemory = artParseEndMemory = artParseStartPool = artParseEndPool = 0;
+  }
+
+  protected void normaliseStats() {
+    if (setupTime < startTime) setupTime = startTime;
+    if (lexTime < setupTime) lexTime = setupTime;
+    if (lexChooseTime < lexTime) lexChooseTime = lexTime;
+    if (parseTime < lexChooseTime) parseTime = lexChooseTime;
+    if (parseChooseTime < parseTime) parseChooseTime = parseTime;
+    if (derivationSelectTime < parseChooseTime) derivationSelectTime = parseChooseTime;
+    if (termGenerateTime < derivationSelectTime) termGenerateTime = derivationSelectTime;
+    if (semanticsTime < termGenerateTime) semanticsTime = termGenerateTime;
+  }
+
+  public String artTimeAsSeconds(long startTime, long stopTime) {
+    return String.format("%10.6f", (stopTime - startTime) * 1E-9);
+  }
+
+  public String artGetTimes() {
+    return artTimeAsSeconds(startTime, setupTime) + "," + artTimeAsSeconds(setupTime, lexTime) + "," + artTimeAsSeconds(lexTime, lexChooseTime) + ","
+        + artTimeAsSeconds(lexChooseTime, parseTime) + "," + artTimeAsSeconds(parseTime, parseChooseTime) + ","
+        + artTimeAsSeconds(parseChooseTime, derivationSelectTime) + "," + artTimeAsSeconds(derivationSelectTime, termGenerateTime) + ","
+        + artTimeAsSeconds(termGenerateTime, semanticsTime);
+  }
+
+  public void artLog(String inputFilename, Boolean console) {
+    normaliseStats();
+    System.out.println(inputStringLength + "," + getClass().getSimpleName() + "," + (artIsInLanguage ? "accept" : "reject") + ",OK," + artGetTimes() + ","
+        + inputTokenLength + "," + (inputTokenLength - 1) + ",1");
+  }
 
   // Statistics
   public String artSpecificationName = "Specification name not set";
@@ -248,29 +324,6 @@ public abstract class ARTParserBase {
   }
 
   /**
-   * Timing methods
-   */
-  public void artRestartClock() {
-    artStartTime = System.currentTimeMillis();
-  }
-
-  public long artReadClock() {
-    return System.currentTimeMillis() - artStartTime;
-  }
-
-  public double artTimeAsSeconds(long time) {
-    double ret = time / 1.0E3;
-    if (ret < 1.0E-9) ret = 0.0;
-    return ret;
-  }
-
-  public String artGetTimes() {
-    return artTimeAsSeconds(artSetupCompleteTime) + "," + artTimeAsSeconds(artLexCompleteTime) + "," + artTimeAsSeconds(artLexChooseCompleteTime) + ","
-        + artTimeAsSeconds(artParseCompleteTime) + "," + artTimeAsSeconds(artParseChooseCompleteTime) + "," + artTimeAsSeconds(artDerivationSelectCompleteTime)
-        + "," + artTimeAsSeconds(artTermGenerateCompleteTime) + "," + artTimeAsSeconds(artSemanticsCompleteTime);
-  }
-
-  /**
    * Public parser access - many of these are expected to be overridden. They have not been made abstract so as to reduce the burden on derived classes
    *
    * @
@@ -365,50 +418,6 @@ public abstract class ARTParserBase {
     return false;
   }
 
-  // July 2024 - rework to fit with RunExp outputs
-  public void artLog(String inputFilename, Boolean console) {
-
-    // try {
-    // PrintStream logStream = new PrintStream("log.csv");
-
-    int left = inputFilename.lastIndexOf('.') + 1;
-    int right = Math.min(inputFilename.length(), left + 3);
-
-    String inputFiletype = inputFilename.substring(left, right);
-
-    int pathSeparatorIndex = 0;
-    if (inputFilename.lastIndexOf('/') != -1)
-      pathSeparatorIndex = inputFilename.lastIndexOf('/') + 1;
-    else if (inputFilename.lastIndexOf('\\') != -1) pathSeparatorIndex = inputFilename.lastIndexOf('\\') + 1;
-    String shortInputFilename = inputFilename.substring(pathSeparatorIndex);
-
-    String status = "--";
-    if (inputFiletype.equals("acc") || inputFiletype.equals("rej")) {
-      status = "bad";
-      if ((inputFiletype.equals("acc") && artIsInLanguage) || (inputFiletype.equals("rej") && !artIsInLanguage)) status = "good";
-    }
-    if (artInadmissable) status = "inadmissable";
-
-    int localInputLength = artLexer == null ? 0 : artLexer.artInputLength - 1;
-    if (localInputLength <= 0) localInputLength = 1;
-
-    String msg = inputStringLength + "," + getClass().getSimpleName() + "," + (artIsInLanguage ? "accept" : "reject") + "," + artGetTimes() + ","
-        + inputTokenLength + "," + (inputTokenLength - 1) + ",1";
-
-    // msg += artLogStats();
-
-    if (console) System.out.println(msg);
-    // else
-    // logStream.println(msg);
-
-    // logStream.close();
-
-    // if (inputFilename.indexOf("deliberatelyCrash") != -1) artText.printf(ARTTextLevel.FATAL, "Exiting");
-    // } catch (FileNotFoundException e) {
-    // System.out.println("Unable to write to 'log.csv'");
-    // }
-  }
-
   public String artLogStats() {
     String msg = "";
     if (artSPPFNodeHistogram != null) msg += String.format(
@@ -445,5 +454,4 @@ public abstract class ARTParserBase {
     System.gc();
     return Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
   }
-
 }

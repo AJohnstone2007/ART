@@ -200,7 +200,6 @@ public class ARTCNPLinkedAPI extends ARTParserBase {
       // System.out.println("Lexed: " + input)
       ;
 
-    artRestartClock();
     m = input == null ? 0 : input.size() - 1;
     if (artTrace > 0) {
       artTraceText.println("Parsing " + m + " tokens");
@@ -218,7 +217,6 @@ public class ARTCNPLinkedAPI extends ARTParserBase {
 
     while (true) {
       if (R.isEmpty()) {
-        artParseCompleteTime = artReadClock();
 
         artIsInLanguage = false;
 
@@ -236,11 +234,11 @@ public class ARTCNPLinkedAPI extends ARTParserBase {
           artTraceText.println("Final descriptor set (U): " + U);
           artTraceText.println("Final BSR set (upsilon): " + upsilon);
           artTraceText.println("Final CRF: " + CRF);
-          artTraceText.println((artIsInLanguage ? "Accept" : "Reject") + " in " + artParseCompleteTime * 1E-6 + "ms");
+          artTraceText.println((artIsInLanguage ? "Accept" : "Reject"));
           artTraceText.close();
         }
 
-        System.out.println("CNPLinkedAPI " + (artIsInLanguage ? "accept" : "reject") + " in " + artParseCompleteTime * 1E-6 + "ms");
+        System.out.println("CNPLinkedAPI " + (artIsInLanguage ? "accept" : "reject"));
 
         if (artTrace > 0) artTraceText.close();
         return;

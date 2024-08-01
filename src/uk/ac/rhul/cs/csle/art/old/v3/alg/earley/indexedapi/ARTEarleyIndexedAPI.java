@@ -136,7 +136,6 @@ public class ARTEarleyIndexedAPI extends ARTParserBase {
     sppf = new HashSet<>();
 
     // artGrammar.getARTManager().forceGC(this.getClass().getSimpleName() + " start of parse");
-    artRestartClock();
 
     // for all (S ::= α) ∈ P { if α ∈ ΣN add (S ::= ·α, 0, null) to E0
     // if α = a1 α′ add (S ::= ·α, 0, null) to Q′ } !! Q' is now Q[0] for this
@@ -278,7 +277,6 @@ public class ARTEarleyIndexedAPI extends ARTParserBase {
         }
       }
     }
-    artParseCompleteTime = artReadClock();
     // artGrammar.getARTManager().forceGC(this.getClass().getSimpleName() + " end of parse");
 
     // if (S ::= τ ·, 0, w) ∈ En return wb
@@ -291,7 +289,7 @@ public class ARTEarleyIndexedAPI extends ARTParserBase {
     for (ARTEarleyItem e : eSets.get(inputLength))
       if (e.i == 0 && acceptingSlotsSet.contains(e.slot)) {
         artIsInLanguage = true;
-        System.out.println("EarleyIndexedAPI " + (artIsInLanguage ? "accept" : "reject") + " in " + artParseCompleteTime * 1E-6 + "ms");
+        System.out.println("EarleyIndexedAPI " + (artIsInLanguage ? "accept" : "reject"));
         if (artTrace > 0) {
           artTraceText.println("EarleyIndexedAPI: accept");
           printSets();
@@ -303,7 +301,7 @@ public class ARTEarleyIndexedAPI extends ARTParserBase {
     {
       System.out.println("EarleyIndexedAPI: reject");
       artIsInLanguage = false;
-      System.out.println("EarleyIndexedAPI " + (artIsInLanguage ? "accept" : "reject") + " in " + artParseCompleteTime * 1E-6 + "ms");
+      System.out.println("EarleyIndexedAPI " + (artIsInLanguage ? "accept" : "reject"));
       if (artTrace > 0) {
         artTraceText.println("EarleyIndexedAPI: reject");
         printSets();

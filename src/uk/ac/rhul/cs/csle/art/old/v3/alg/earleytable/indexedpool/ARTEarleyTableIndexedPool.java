@@ -79,6 +79,7 @@ public class ARTEarleyTableIndexedPool extends ARTParserBase {
         ret[j1] = input1.get(j1).getElementNumber();
     }
 
+    loadLexTime();
     // End of inlining
 
     int[] input = ret;
@@ -109,7 +110,6 @@ public class ARTEarleyTableIndexedPool extends ARTParserBase {
       pool.listAdd_2(EList[0], 0, 0);
 
       // earleyTableIndexed.getGrammar().getARTManager().printMemory(this.getClass().getSimpleName() + " start of parse");
-      artRestartClock();
 
       // for (0 \le j \= n)
       for (int j = 0; j <= inputLength; j++) {
@@ -161,10 +161,10 @@ public class ARTEarleyTableIndexedPool extends ARTParserBase {
           if (j < inputLength) {
             add(G, input[j + 1], k, j, j + 1, input[j + 2]);
           }
+          loadParseTime();
         }
       }
 
-      artParseCompleteTime = artReadClock();
       // earleyTableIndexed.getGrammar().getARTManager().printMemory(this.getClass().getSimpleName() + " end of parse");
 
       artIsInLanguage = false;
@@ -179,16 +179,8 @@ public class ARTEarleyTableIndexedPool extends ARTParserBase {
             artIsInLanguage |= earleyTableIndexed.acceptingProductions[ppc];
           }
       }
-      artLog("???", true);
-      // System.out.println("EarleyTableIndexedPool," + artGrammar.getARTManager().artDirectives.inputFilenames.get(0) + ","
-      // + (artIsInLanguage ? "accept" : "reject") + "," + artParseCompleteTime * 1E-6 + ",ms");
-      // System.out.println("Total removals from R = " + rSetRemovals);
-      // System.out.println("Final raw P with Chi set based BSRs: |PChi| = " + upsilonCardinality);
-      //
-      // System.out.println("Statistics for E[] " + pool.mapArrayStatistics(E));
-      // System.out.println("Statistics for Upsilon" + pool.mapStatistics(upsilon));
+      loadParseTime();
     }
-    // System.out.println("Exiting parse function");
   }
 
   private void add(int G, int x, int i, int k, int j, int t) {
