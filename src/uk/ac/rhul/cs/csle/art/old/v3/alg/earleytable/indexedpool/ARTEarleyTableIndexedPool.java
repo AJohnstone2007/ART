@@ -67,7 +67,7 @@ public class ARTEarleyTableIndexedPool extends ARTParserBase {
       artInadmissable = true;
       return;
     }
-
+    loadSetupTime();
     // This has been inlined. Needs to be tidied up by calling relevant routine in ARTLexer
     int[] ret;
     ArrayList<ARTGrammarElementTerminal> input1 = new ARTLexerV3(earleyTableIndexed.getGrammar()).lexicaliseToArrayListOfTerminals(stringInput, 1);
@@ -79,7 +79,6 @@ public class ARTEarleyTableIndexedPool extends ARTParserBase {
         ret[j1] = input1.get(j1).getElementNumber();
     }
 
-    loadLexTime();
     // End of inlining
 
     int[] input = ret;
@@ -87,9 +86,11 @@ public class ARTEarleyTableIndexedPool extends ARTParserBase {
     if (input == null)
       System.out.println("Reject lexical");
     else {
+      loadLexTime();
       inputLength = input.length - 2; // input[0] is not used and input[n+1] is $
       inputTokenLength = inputLength;
       pool = new ARTPool(21, 2048); // 2048 x 2Mlocation blocks: at 32-bit integers that 8G of memory when fully
+      loadStartPool(pool.poolSize());
 
       // Declare arrays of sets representing R and E (curly E in document) and rdn
       R = new int[inputLength + 1];
@@ -161,7 +162,6 @@ public class ARTEarleyTableIndexedPool extends ARTParserBase {
           if (j < inputLength) {
             add(G, input[j + 1], k, j, j + 1, input[j + 2]);
           }
-          loadParseTime();
         }
       }
 
@@ -180,6 +180,8 @@ public class ARTEarleyTableIndexedPool extends ARTParserBase {
           }
       }
       loadParseTime();
+      loadEndPool(pool.poolSize());
+      loadEndPoolAllocated(pool.poolAllocated());
     }
   }
 

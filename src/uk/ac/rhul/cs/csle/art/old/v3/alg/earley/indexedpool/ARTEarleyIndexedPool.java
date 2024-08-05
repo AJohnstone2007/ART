@@ -293,6 +293,7 @@ public class ARTEarleyIndexedPool extends ARTParserBase {
     // ARTTRACE = true;
     pool = new ARTPool(20, 1024); // 1024 x 1Mlocation blocks: at 32-buit integers that 4G of memory when fully
                                   // allocated
+    loadStartPool(pool.poolSize());
     epsilonSPPFNode = pool.poolAllocate(4);
     pool.poolPut(epsilonSPPFNode, artSlotArray.epsilon);
 
@@ -515,8 +516,10 @@ public class ARTEarleyIndexedPool extends ARTParserBase {
 
       // System.out.printf("e=%d, offset = %d, slot = %d\n", e, offset, slot);
 
-      artIsInLanguage = offset == 0 && pool.mapLookup_1(acceptingSlotsSet, slot) != 0;
+      if (offset == 0 && pool.mapLookup_1(acceptingSlotsSet, slot) != 0) artIsInLanguage = true;
       loadParseTime();
+      loadEndPool(pool.poolSize());
+      loadEndPoolAllocated(pool.poolAllocated());
     }
   }
 

@@ -1261,11 +1261,10 @@ public abstract class ARTGLLParserBase extends ARTParserBase {
 
     }
 
-    String inputFilename = "";
     if (artDirectives.b("parseCounts")) {
       artComputeParseCounts();
-      artLog(inputFilename, true);
-      artLog(inputFilename, false);
+      artLog(true);
+      artLog(false);
     }
 
     if (artParserKind.indexOf("MGLL") != 0 && !artSPPFHasCycles) {

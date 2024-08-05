@@ -12,26 +12,27 @@ import javafx.stage.Stage;
 import uk.ac.rhul.cs.csle.art.ART;
 import uk.ac.rhul.cs.csle.art.script.ARTScriptTermInterpreter;
 import uk.ac.rhul.cs.csle.art.term.ITermsLowLevelAPI;
+import uk.ac.rhul.cs.csle.art.util.Util;
 
 public class FXStart extends Application {
 
   @Override
   public void start(Stage primaryStage) {
-    if (ART.tryFilename == null) {
-      new ARTScriptTermInterpreter(new ITermsLowLevelAPI()).interpret(ART.specificationString);
+    if (!ART.useIDE) {
+      new ARTScriptTermInterpreter(new ITermsLowLevelAPI()).interpret(Util.scriptString(ART.clargs));
       Platform.exit();
       System.exit(0);
     }
 
-    String specContents = "";
+    String specFilename = ART.clargs.length > 1 ? ART.clargs[1] : "", specContents = "";
     try {
-      specContents = Files.readString(Paths.get((ART.specificationString)));
+      specContents = Files.readString(Paths.get(specFilename));
     } catch (IOException e) {
       /* Silently absorb a missing file */ }
 
-    String tryContents = "";
+    String tryFilename = ART.clargs.length > 2 ? ART.clargs[2] : "", tryContents = "";
     try {
-      tryContents = Files.readString(Paths.get((ART.tryFilename)));
+      tryContents = Files.readString(Paths.get((tryFilename)));
     } catch (IOException e) {
       /* Silently absorb a missing file */ }
 
@@ -44,9 +45,9 @@ public class FXStart extends Application {
         new MenuBuilderARTGraphics(), 500.0);
 
     var tryEditor = new EditorWithConsoleWindow(new Stage(), windowWidth - w10Vff, 0, windowWidth + 2 * w10Vff, screen.getHeight(),
-        "Source program: " + ART.tryFilename, new MenuBuilderARTText(), tryContents);
+        "Source program: " + tryFilename, new MenuBuilderARTText(), tryContents);
 
-    var specEditor = new EditorWithConsoleWindow(new Stage(), -w10Vff, 0, windowWidth + 2 * w10Vff, screen.getHeight(),
-        "ART specification: " + ART.specificationString, new MenuBuilderARTText(), specContents);
+    var specEditor = new EditorWithConsoleWindow(new Stage(), -w10Vff, 0, windowWidth + 2 * w10Vff, screen.getHeight(), "ART specification: " + specFilename,
+        new MenuBuilderARTText(), specContents);
   }
 }

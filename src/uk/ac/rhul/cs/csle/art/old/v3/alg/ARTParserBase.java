@@ -129,10 +129,11 @@ public abstract class ARTParserBase {
   private long derivationSelectTime;
   private long termGenerateTime;
   private long semanticsTime;
-  private long artParseStartMemory;
-  private long artParseEndMemory;
-  private long artParseStartPool;
-  private long artParseEndPool;
+  private long artStartMemory;
+  private long artEndMemory;
+  private long artStartPool;
+  private long artEndPool;
+  private long artEndPoolAllocated;
 
   public void loadSetupTime() {
     setupTime = System.nanoTime();
@@ -167,19 +168,31 @@ public abstract class ARTParserBase {
   }
 
   public void loadStartMemory() {
-    artParseStartMemory = artMemoryUsed();
+    artStartMemory = artMemoryUsed();
   }
 
   public void loadEndMemory() {
-    artParseEndMemory = artMemoryUsed();
+    artEndMemory = artMemoryUsed();
   }
 
-  protected void resetStats() {
+  public void loadStartPool(long m) {
+    artStartPool = m;
+  }
+
+  public void loadEndPool(long m) {
+    artEndPool = m;
+  }
+
+  public void loadEndPoolAllocated(long m) {
+    artEndPoolAllocated = m;
+  }
+
+  public void resetStats() {
     startTime = System.nanoTime();
-    setupTime = lexTime = lexChooseTime = parseTime = parseChooseTime = derivationSelectTime = termGenerateTime = semanticsTime = artParseStartMemory = artParseEndMemory = artParseStartPool = artParseEndPool = 0;
+    setupTime = lexTime = lexChooseTime = parseTime = parseChooseTime = derivationSelectTime = termGenerateTime = semanticsTime = artStartMemory = artEndMemory = artStartPool = artEndPool = artEndPoolAllocated = 0;
   }
 
-  protected void normaliseStats() {
+  private void normaliseTimes() {
     if (setupTime < startTime) setupTime = startTime;
     if (lexTime < setupTime) lexTime = setupTime;
     if (lexChooseTime < lexTime) lexChooseTime = lexTime;
@@ -190,21 +203,25 @@ public abstract class ARTParserBase {
     if (semanticsTime < termGenerateTime) semanticsTime = termGenerateTime;
   }
 
-  public String artTimeAsSeconds(long startTime, long stopTime) {
-    return String.format("%10.6f", (stopTime - startTime) * 1E-9);
+  private String artTimeAsMilliseconds(long startTime, long stopTime) {
+    return String.format("%6.3f", (stopTime - startTime) * 1E-6);
   }
 
-  public String artGetTimes() {
-    return artTimeAsSeconds(startTime, setupTime) + "," + artTimeAsSeconds(setupTime, lexTime) + "," + artTimeAsSeconds(lexTime, lexChooseTime) + ","
-        + artTimeAsSeconds(lexChooseTime, parseTime) + "," + artTimeAsSeconds(parseTime, parseChooseTime) + ","
-        + artTimeAsSeconds(parseChooseTime, derivationSelectTime) + "," + artTimeAsSeconds(derivationSelectTime, termGenerateTime) + ","
-        + artTimeAsSeconds(termGenerateTime, semanticsTime);
+  private String artGetTimes() {
+    return artTimeAsMilliseconds(startTime, setupTime) + "," + artTimeAsMilliseconds(setupTime, lexTime) + "," + artTimeAsMilliseconds(lexTime, lexChooseTime)
+        + "," + artTimeAsMilliseconds(lexChooseTime, parseTime) + "," + artTimeAsMilliseconds(parseTime, parseChooseTime) + ","
+        + artTimeAsMilliseconds(parseChooseTime, derivationSelectTime) + "," + artTimeAsMilliseconds(derivationSelectTime, termGenerateTime) + ","
+        + artTimeAsMilliseconds(termGenerateTime, semanticsTime);
   }
 
-  public void artLog(String inputFilename, Boolean console) {
-    normaliseStats();
+  private String artGetMemoryStats() {
+    return artStartMemory + "," + artEndMemory + "," + artStartPool + "," + artEndPool + "," + artEndPoolAllocated;
+  }
+
+  public void artLog(Boolean console) {
+    normaliseTimes();
     System.out.println(inputStringLength + "," + getClass().getSimpleName() + "," + (artIsInLanguage ? "accept" : "reject") + ",OK," + artGetTimes() + ","
-        + inputTokenLength + "," + (inputTokenLength - 1) + ",1");
+        + inputTokenLength + "," + (inputTokenLength - 1) + ",1," + artGetMemoryStats());
   }
 
   // Statistics
@@ -451,6 +468,7 @@ public abstract class ARTParserBase {
   public abstract void artPrintRDT();
 
   public long artMemoryUsed() {
+    System.gc();
     System.gc();
     return Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
   }

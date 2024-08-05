@@ -17,24 +17,27 @@ import uk.ac.rhul.cs.csle.art.util.Util;
 import uk.ac.rhul.cs.csle.art.util.Version;
 
 public class ART {
-  public static String specificationString = null;
-  public static String tryFilename = null;
+  public static boolean useIDE = false;
+  public static String clargs[];
   public static boolean tracing = false;
 
   // @formatter:off
   public static void main(String[] args) {
-    if (args.length > 0) switch (args[0]) { // Test for initial special mode argument
-    case "incVersion": incVersion(); return;              // Undocumented internal mode
-    case "ajdebug": new AJDebug(args); return;             // Undocumented internal mode
-    case "v3": new ARTV3(Arrays.copyOfRange(args, 1, args.length)); return; // Undocumented internal mode
-    case "v4": new ARTV4(Arrays.copyOfRange(args, 1, args.length)); return; // Undocumented internal mode
-    case "noFX": new ARTScriptTermInterpreter(new ITermsLowLevelAPI()).interpret(Util.scriptString(args)); return; // Run batch mode without fx in this context
-    case "noIDE": specificationString = Util.scriptString(args); Application.launch(FXStart.class, args); return; // Run batch mode in a JavaFX application
-    case "version": System.out.println("ART Version " + Version.version()); return; // Run batch mode in a JavaFX application
+    clargs = args;
+    if (args.length > 0) switch (args[0].toLowerCase()) {            // Test for initial special mode argument
+    case "incver":  incVersion(); return;                                        // Undocumented internal mode
+    case "ajdebug": new AJDebug(args); return;                                   // Undocumented internal mode
+    case "v3":      new ARTV3(Arrays.copyOfRange(args, 1, args.length)); return; // Undocumented internal mode
+    case "v4":      new ARTV4(Arrays.copyOfRange(args, 1, args.length)); return; // Undocumented internal mode
+    case "ide":     useIDE = true; Application.launch(FXStart.class, args); return;
+    case "fx":      Application.launch(FXStart.class, args); return;
+    default:        new ARTScriptTermInterpreter(new ITermsLowLevelAPI()).interpret(Util.scriptString(args)); return; // Run batch mode without fx in this context
     }
-    specificationString = args.length < 1 ? "" : args[0];
-    tryFilename = args.length < 2 ? "" : args[1];
-    Application.launch(FXStart.class, args);  // We arrive here only if none of the special modes is activated; hence use the IDE
+    // No args
+    System.out.println("ART " + Version.version() + "\nUsage:");
+    System.out.println("  ide <specfilename> <tryfilename> - open IDE windows on ART specification in file <specfilename> and try input in file <tryfilename>");
+    System.out.println("  fx <spec> - interpret <spec> directly under JavaFX");
+    System.out.println("  <spec> - interpret <spec> directly without JavaFX");
   }
   // @formatter:on
 
@@ -51,13 +54,13 @@ public class ART {
           "package uk.ac.rhul.cs.csle.art.util;%n" + "public class Version {%n" + "  public static int major() {return %d;}%n"
               + "  public static int minor() {return %d;}%n" + "  public static int build() {return %d;}%n"
               + "  public static String timeStamp() {return \"%s\";}%n"
-              + "  public static String version() { return major()+\".\"+minor()+\".\"+build() + \" \" + timeStamp(); };%n" + "}%n",
+              + "  public static String version() { return major()+\"_\"+minor()+\"_\"+build() + \" \" + timeStamp(); };%n" + "}%n",
           Version.major(), Version.minor(), newBuild, timeStamp);
       pw.close();
 
       pw = new PrintWriter("manifest.local.new");
       pw.printf("Specification-Vendor: Center for Software Language Engineering, RHUL%n" + "Specification-Title: ART%n" + "Specification-Version: 5%n"
-          + "Implementation-Vendor: Center for Software Language Engineering, RHUL%n" + "Implementation-Title: ART%n" + "Implementation-Version: %d.%d.%d%n"
+          + "Implementation-Vendor: Center for Software Language Engineering, RHUL%n" + "Implementation-Title: ART%n" + "Implementation-Version: %d_%d_%d%n"
           + "Implementation-Build-Date: %s%n" + "Main-Class: uk.ac.rhul.cs.csle.art.ART%n", Version.major(), Version.minor(), newBuild, timeStamp);
       pw.close();
     } catch (FileNotFoundException e) {

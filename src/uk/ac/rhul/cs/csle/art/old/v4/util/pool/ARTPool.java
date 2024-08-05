@@ -54,8 +54,8 @@ public class ARTPool {
 
   private final int blockSizeExponent; // Blocks are 2^blockSizeExponent so as to allow rapid separation of block and offset
   private final int blockSize; // The block size computed by the constructor
-  private final int blockSizeMask; // The computed mask for this block size
   private final int blockCount; // The maximumsize of this pool
+  private final int blockSizeMask; // The computed mask for this block size
   private int highWaterBlock = 0; // The currently extending block
   private int highWaterOffset = 1; // The first free location in the currently extending block: start at 1 because 0 means null
 
@@ -786,5 +786,13 @@ public class ARTPool {
 
     System.out.println("\n*****************************************\n");
 
+  }
+
+  public long poolSize() {
+    return ((long) blockCount) * ((long) blockSize) * 4l;
+  }
+
+  public long poolAllocated() {
+    return (((long) highWaterBlock) * ((long) blockSize) + (highWaterOffset) - 1l) * 4l;
   }
 }

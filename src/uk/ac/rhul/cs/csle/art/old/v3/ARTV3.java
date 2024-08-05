@@ -59,13 +59,14 @@ public class ARTV3 {
 
   private static void runInterpreter(ARTManager artManager, ARTParserBase interpreter) {
     // System.out.println("runInterpreter with option block " + artManager.artDirectives);
+    interpreter.resetStats();
     if (artManager.artDirectives.inputs.size() == 0)
       throw new ARTUncheckedException("No input specified\n\n");
     else {
-      String inputFilename = "???";
-      if (!artManager.artDirectives.inputFilenames.isEmpty()) inputFilename = artManager.artDirectives.inputFilenames.get(0);
+      interpreter.loadStartMemory();
       interpreter.artParse(artManager.artDirectives.inputs.get(0));
-      interpreter.artLog(inputFilename, false);
+      interpreter.loadEndMemory();
+      interpreter.artLog(false);
     }
   }
 
