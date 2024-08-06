@@ -788,11 +788,7 @@ public class ARTPool {
 
   }
 
-  public long poolSize() {
-    return ((long) blockCount) * ((long) blockSize) * 4l;
-  }
-
   public long poolAllocated() {
-    return (((long) highWaterBlock) * ((long) blockSize) + (highWaterOffset) - 1l) * 4l;
+    return ((((long) highWaterBlock) * ((long) blockSize)) + (highWaterOffset) - 1l) * 4l;
   }
 }

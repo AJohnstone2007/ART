@@ -89,8 +89,7 @@ public class ARTEarleyTableIndexedPool extends ARTParserBase {
       loadLexTime();
       inputLength = input.length - 2; // input[0] is not used and input[n+1] is $
       inputTokenLength = inputLength;
-      pool = new ARTPool(21, 2048); // 2048 x 2Mlocation blocks: at 32-bit integers that 8G of memory when fully
-      loadStartPool(pool.poolSize());
+      pool = new ARTPool(21, 1024); // Up to 2048 8MByte blocks (2^21 * 4bytes in an integer)
 
       // Declare arrays of sets representing R and E (curly E in document) and rdn
       R = new int[inputLength + 1];
@@ -180,7 +179,6 @@ public class ARTEarleyTableIndexedPool extends ARTParserBase {
           }
       }
       loadParseTime();
-      loadEndPool(pool.poolSize());
       loadEndPoolAllocated(pool.poolAllocated());
     }
   }

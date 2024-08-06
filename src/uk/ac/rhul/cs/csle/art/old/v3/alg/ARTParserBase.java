@@ -131,8 +131,6 @@ public abstract class ARTParserBase {
   private long semanticsTime;
   private long artStartMemory;
   private long artEndMemory;
-  private long artStartPool;
-  private long artEndPool;
   private long artEndPoolAllocated;
 
   public void loadSetupTime() {
@@ -175,21 +173,13 @@ public abstract class ARTParserBase {
     artEndMemory = artMemoryUsed();
   }
 
-  public void loadStartPool(long m) {
-    artStartPool = m;
-  }
-
-  public void loadEndPool(long m) {
-    artEndPool = m;
-  }
-
   public void loadEndPoolAllocated(long m) {
     artEndPoolAllocated = m;
   }
 
   public void resetStats() {
     startTime = System.nanoTime();
-    setupTime = lexTime = lexChooseTime = parseTime = parseChooseTime = derivationSelectTime = termGenerateTime = semanticsTime = artStartMemory = artEndMemory = artStartPool = artEndPool = artEndPoolAllocated = 0;
+    setupTime = lexTime = lexChooseTime = parseTime = parseChooseTime = derivationSelectTime = termGenerateTime = semanticsTime = artStartMemory = artEndMemory = artEndPoolAllocated = 0;
   }
 
   private void normaliseTimes() {
@@ -214,14 +204,10 @@ public abstract class ARTParserBase {
         + artTimeAsMilliseconds(termGenerateTime, semanticsTime);
   }
 
-  private String artGetMemoryStats() {
-    return artStartMemory + "," + artEndMemory + "," + artStartPool + "," + artEndPool + "," + artEndPoolAllocated;
-  }
-
   public void artLog(Boolean console) {
     normaliseTimes();
     System.out.println(inputStringLength + "," + getClass().getSimpleName() + "," + (artIsInLanguage ? "accept" : "reject") + ",OK," + artGetTimes() + ","
-        + inputTokenLength + "," + (inputTokenLength - 1) + ",1," + artGetMemoryStats());
+        + inputTokenLength + "," + (inputTokenLength - 1) + ",1," + artEndPoolAllocated);
   }
 
   // Statistics
