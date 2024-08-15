@@ -11,7 +11,8 @@
 #include "textio.h"
 #include "memalloc.h"
 
-#define memalloc_instrument 1
+#define memalloc_instrument 0
+#define memalloc_trace 0
 
 #if (memalloc_instrument)
 static unsigned long mem_free_calls = 0;
@@ -37,6 +38,10 @@ void * mem_calloc(size_t nitems, size_t size)
   mem_calloced +=(nitems * size);
   #endif
 
+  #if (memalloc_trace)
+  printf("mem_calloc(%i, %i)\n", nitems, size);
+  #endif
+
   return mem_check(calloc(nitems, size), "c");
 }
 
@@ -45,6 +50,10 @@ void * mem_malloc(size_t size)
   #if (memalloc_instrument)
   mem_malloc_calls++;
   mem_malloced += size;
+  #endif
+
+  #if (memalloc_trace)
+  printf("mem_malloc(%i)\n", size);
   #endif
 
   return mem_check(malloc(size), "m");

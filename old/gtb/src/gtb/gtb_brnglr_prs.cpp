@@ -2,13 +2,14 @@
 *
 * GTB release 2.0 by Adrian Johnstone (A.Johnstone@rhul.ac.uk) 28 September 2000
 *
-* gtb_rnglr_prs.cpp - an RNGLR parser, as per the TOPLAS paper - this (temporary) file is #included by rnglr_prs.cpp
+* gtb_brnglr_prs.cpp - an RNGLR parser, as per the TOPLAS paper
 *
 * This file may be freely distributed. Please mail improvements to the author.
 *
 *******************************************************************************/
 #include <string.h>
-//#include <time.h>
+#include <time.h>
+#include <stdlib.h>
 #include "graph.h"
 #include "memalloc.h"
 #include "hist.h"
@@ -23,10 +24,59 @@
 #include "gtb_scr.h"
 #include "gtb_sppf.h"
 #include "gtb_brnglr_prs.h"
+#include "stats.h"
+
+char** blocks;
+int blockSizeExponent; // Blocks are 2^blockSizeExponent so as to allow rapid separation of block and offset
+int blockSize; // The block size computed by the constructor
+int blockSizeMask; // The computed mask for this block size
+int blockCount; // The maximumsize of this pool
+int highWaterBlock = 0; // The currently extending block
+int highWaterOffset = 1; // The first free location in the currently extending block: start at 1 because 0 means null
+
+void poolInit(int bSE, int bC) {
+  blockSizeExponent = bSE;
+  blockCount = bC;
+  blockSize = 1 << blockSizeExponent;
+  blockSizeMask = blockSize - 1;
+  blocks = (char**) mem_calloc(sizeof(char*), blockCount);
+  blocks[0] = (char*) mem_calloc(sizeof(char), blockSize);
+}
+
+void*  pool_malloc(int count) { // C version returning pointer
+  if (blockSize - highWaterOffset < count) {// allocate new block
+    if (++highWaterBlock >= blockCount) { printf("Pool overflow"); exit(1);} // Note: we could resize the array here easily
+    blocks[highWaterBlock] = (char*) mem_calloc(sizeof(char), blockSize);
+    highWaterOffset = 0;
+  }
+
+  void* ret = blocks[highWaterBlock] + highWaterOffset;
+  highWaterOffset += count;
+  return ret;
+}
+
+void*  pool_calloc(int size, int count) { // C version returning pointer
+  return pool_malloc(size*count);
+}
+
+void poolFree(void *p) {}
 
 //#define BRNGLR_TRACE
 #define COMPACT_EXTENDED_STATES
 //#define edge_table
+
+//#define BRNGLR_POOL 1
+#if defined(BRNGLR_POOL)
+#define mm_init() (poolInit(21, 2048))
+#define mm_malloc(n) (pool_malloc(n))
+#define mm_calloc(n,m) (pool_calloc(n,m))
+#define mm_free(p) (poolFree(p))
+#else
+#define mm_init()
+#define mm_malloc(n) mem_malloc(n)
+#define mm_calloc(n,m) mem_calloc(n,m)
+#define mm_free(p) mem_free(p)
+#endif
 
 /******************************************************************************/
 typedef struct ssg_edge_table_element_struct
@@ -134,22 +184,20 @@ typedef struct bnglr_context_struct
   clock_t finish_time;
 
   unsigned family_checks;
-
-
 }
 brnglr_context;
 
 /******************************************************************************/
-static unsigned **extended_state_nonterminal_vector;
+ unsigned **extended_state_nonterminal_vector;
 
 #if defined(COMPACT_EXTENDED_STATES)
-static unsigned
+ unsigned
 extended_state(brnglr_context *context)
 {
   return context->state_count + extended_state_nonterminal_vector[context->X - context->first_nonterminal][context->m - 1 - 2];
 }
 #else
-static int
+ int
 extended_state(brnglr_context *context)
 {
   return context->state_count + ((context->X - context->first_nonterminal) * context->max_reduction_length) + context->m;
@@ -158,12 +206,12 @@ extended_state(brnglr_context *context)
 
 /******************************************************************************/
 
-static void
+ void
 N_alpha_equivalence_classes_create (dfa * this_dfa, brnglr_context * context)
 {
   unsigned first_slot = this_dfa->grammar->first_level_0_slot;
   unsigned slot_count = this_dfa->grammar->first_header - this_dfa->grammar->first_level_0_slot;
-  context->N_alpha_equivalence_classes = (unsigned *) mem_calloc (slot_count, sizeof (unsigned));
+  context->N_alpha_equivalence_classes = (unsigned *) mm_calloc (slot_count, sizeof (unsigned));
 
   for (int i = 0; i < slot_count; i++)
     context->N_alpha_equivalence_classes[i] = UINT_MAX;
@@ -237,7 +285,7 @@ N_alpha_equivalence_classes_create (dfa * this_dfa, brnglr_context * context)
 }
 
 /******************************************************************************/
-static void ssg_edge_table_create(derivation * this_derivation, brnglr_context * context)
+ void ssg_edge_table_create(derivation * this_derivation, brnglr_context * context)
 {
   context->ssg_edge_table_state_count = this_derivation->dfa->state_count + context->extended_state_count;
 
@@ -251,11 +299,11 @@ static void ssg_edge_table_create(derivation * this_derivation, brnglr_context *
     text_message(TEXT_FATAL, "table size overflows memory address range\n");
   if (script_gtb_verbose())
     text_printf("Allocating %i bytes (%.3f Mbytes) for edge table\n", table_size * sizeof(int), ((double)(table_size*sizeof(int)) /(1024.0*1024.0)));
-  context->ssg_edge_table = (ssg_edge_table_element*) mem_calloc(table_size, sizeof(ssg_edge_table_element));
+  context->ssg_edge_table = (ssg_edge_table_element*) mm_calloc(table_size, sizeof(ssg_edge_table_element));
 
 }
 
-static void ssg_edge_table_set(brnglr_context *context, ssg_node *v, ssg_node *w)
+ void ssg_edge_table_set(brnglr_context *context, ssg_node *v, ssg_node *w)
 {
 #if defined(edge_table)
   text_printf("ssg_edge_table_set: w->value = %i, w->level = %i, v->value = %i, v->level = %i, context->n = %i, context->i = %i\n",
@@ -274,7 +322,7 @@ static void ssg_edge_table_set(brnglr_context *context, ssg_node *v, ssg_node *w
   set_unite_element(&this_element->elements, v->value - context->first_dfa_state);
 }
 
-static int ssg_edge_table_get(brnglr_context *context, ssg_node *v, ssg_node *w)
+ int ssg_edge_table_get(brnglr_context *context, ssg_node *v, ssg_node *w)
 {
 #if defined(edge_table)
   text_printf("ssg_edge_table_get: w->value = %i, w->level = %i, v->value = %i, v->level = %i, context->n = %i, context->i = %i\n",
@@ -313,14 +361,14 @@ static int ssg_edge_table_get(brnglr_context *context, ssg_node *v, ssg_node *w)
    Already packed nodes are represented by an applied reduction value of 1+|reductions|.
 */
 
-static void
+ void
 sppf_node_table_create (derivation * this_derivation, brnglr_context * context)
 {
   context->sppf_node_table_size = (context->n + 2) *
                              (context-> N_alpha_equivalence_class_count + this_derivation->dfa->grammar->first_level_0_slot -
                                                                           this_derivation->dfa->grammar->first_nonterminal);
   context->sppf_node_table =
-    (sppf_node_table_element *) mem_calloc (context->sppf_node_table_size, sizeof (sppf_node_table_element));
+    (sppf_node_table_element *) mm_calloc (context->sppf_node_table_size, sizeof (sppf_node_table_element));
   context->sppf_node_table_base = 0;
   context->sppf_node_table_base_increment = this_derivation->dfa->reduction_count + 1;  /* We need an illegal value to mark already-packed values, hence the + 1 */
   context->sppf_node_table_pack_value = context->sppf_node_table_base_increment - 1;
@@ -343,7 +391,7 @@ sppf_node_table_create (derivation * this_derivation, brnglr_context * context)
 }
 
 /* Load context->sppf_node_table_element with a valid node. No other changes made to sppf_node_table */
-static void
+ void
 sppf_node_table_find_N (derivation * this_derivation, brnglr_context * context)
 {
 #if defined(BRNGLR_TRACE)
@@ -407,7 +455,7 @@ sppf_node_table_find_N (derivation * this_derivation, brnglr_context * context)
 #endif
 }
 
-static void
+ void
 sppf_node_table_find_I (derivation * this_derivation, brnglr_context * context)
 {
   unsigned q_slot_number = context->q_slot_number;
@@ -494,7 +542,7 @@ sppf_node_table_find_I (derivation * this_derivation, brnglr_context * context)
 /* In the paper, we have COMPLETE_REDUCTION(u, X, i) */
 /* Here u, X and i are taken directly from the context block */
 /* COMPLETE_REDUCTION is called twice, once with parameters (v,X,i) and once with (u,X,i) */
-static void
+ void
 complete_reduction (derivation * this_derivation, brnglr_context * context)
 {
   ssg_node *w;
@@ -564,7 +612,7 @@ complete_reduction (derivation * this_derivation, brnglr_context * context)
           context->reduction_stack_pointer++;              /* Bump R pointer */
         }
       }
-      mem_free (these_goto_parse_actions);
+      mm_free (these_goto_parse_actions);
     }
   }
   else
@@ -624,6 +672,7 @@ complete_reduction (derivation * this_derivation, brnglr_context * context)
           sr_print_action (this_derivation->dfa, w->value, context->a[context->i + 1], *this_goto_parse_action);
           text_printf ("\n");
 #endif
+
           context->reduction_stack_pointer++;              /* Bump R pointer */
         }
         else                                               /* |t| != 0 */
@@ -638,16 +687,17 @@ complete_reduction (derivation * this_derivation, brnglr_context * context)
           sr_print_action (this_derivation->dfa, w->value, context->a[context->i + 1], *this_goto_parse_action);
           text_printf ("\n");
 #endif
+
           context->reduction_stack_pointer++;              /* Bump R pointer */
         }
     }
-    mem_free (these_goto_parse_actions);
+    mm_free (these_goto_parse_actions);
   }
 }
 
 /******************************************************************************/
 
-static int
+ int
 brnglr_family_element_is_context (brnglr_context * context, sppf_node * parent)
 {
   void *second_edge = graph_next_out_edge (graph_next_out_edge (parent));
@@ -661,7 +711,7 @@ brnglr_family_element_is_context (brnglr_context * context, sppf_node * parent)
   return context->j_prime == ((sppf_node *) graph_destination (second_edge))->j;
 }
 
-static void
+ void
 add_children_brnglr (derivation * this_derivation, brnglr_context * context)
 {
 #if defined(BRNGLR_TRACE)
@@ -764,7 +814,7 @@ add_children_brnglr (derivation * this_derivation, brnglr_context * context)
       {
         //Weird allocation: the pack vector has an array of fixed size [1] built in: we're overallocating to give an array of size [n+1]
         //An analysis of the algotithm may show that we only need 0..n-1 = [n] elements, but we're playing safe here
-        context->node_table_element->vector = (sppf_pack_vector*) mem_calloc(1, sizeof(sppf_pack_vector) + ((context->n) * sizeof(sppf_pack_edge_block)));
+        context->node_table_element->vector = (sppf_pack_vector*) mm_calloc(1, sizeof(sppf_pack_vector) + ((context->n) * sizeof(sppf_pack_edge_block)));
 
         // Now set the pack vector valid fields to INT_MIN
         for (unsigned i = 0; i <= context->n; i++)
@@ -914,8 +964,13 @@ sr_brnglr_parse (dfa * this_dfa, char *string, int reduction_stack_size)
   brnglr_context *context;
   derivation *this_derivation;         /* derivation structure to hold output of parse */
 
+  /*step zero - added in 2024 to support new experimental framework with optional pool based memory management */
+  mm_init();
+  resetStats();
+  loadAlgorithm("BRNGLR");
 
   /* Initialisation step 1: sign on */
+
   if (script_gtb_verbose()) {
     text_printf ("\n");
     text_message (TEXT_INFO, "BRNGLR parse: \'%s\'\n", string);
@@ -923,8 +978,8 @@ sr_brnglr_parse (dfa * this_dfa, char *string, int reduction_stack_size)
 
   /* Initialisation step 2: create derivation structure and SSG structure */
 
-  context = (brnglr_context *) mem_calloc (1, sizeof (brnglr_context));
-  this_derivation = (derivation *) mem_calloc (1, sizeof (derivation));
+  context = (brnglr_context *) mm_calloc (1, sizeof (brnglr_context));
+  this_derivation = (derivation *) mm_calloc (1, sizeof (derivation));
   this_derivation->dfa = this_dfa;
   this_derivation->ssg = graph_insert_graph ("SSG");
   this_derivation->sppf = graph_insert_graph ("SPPF");
@@ -939,14 +994,14 @@ sr_brnglr_parse (dfa * this_dfa, char *string, int reduction_stack_size)
     fclose (epsilon_sppf_vcg_file);
     text_redirect (stdout);
   }
-  
+
   /* Initialisation step 3a: create the extended state looup table*/
 
   context->state_count = this_dfa->state_count;
   context->first_nonterminal = this_dfa->grammar->first_nonterminal;
   context->nonterminal_count = this_dfa->grammar->first_level_0_slot - context->first_nonterminal;
 
-  extended_state_nonterminal_vector = (unsigned**) mem_calloc(this_derivation->dfa->nfa->grammar->first_level_0_slot - context->first_nonterminal, sizeof(unsigned*));
+  extended_state_nonterminal_vector = (unsigned**) mm_calloc(this_derivation->dfa->nfa->grammar->first_level_0_slot - context->first_nonterminal, sizeof(unsigned*));
 
   context->extended_state_count = 0;
 
@@ -961,19 +1016,20 @@ sr_brnglr_parse (dfa * this_dfa, char *string, int reduction_stack_size)
         if (this_dfa->reduction_table[i].length > longest_reduction)
           longest_reduction = this_dfa->reduction_table[i].length;
 
-//    text_printf("Nonterminal %i: longest production has length %i\n", nonterminal, longest_reduction);
+//        text_printf("Nonterminal %i: longest production has length %i\n", nonterminal, longest_reduction);
 
     if (longest_reduction > 2)
     {
-      extended_state_nonterminal_vector[nonterminal - context->first_nonterminal] = (unsigned*) mem_calloc(longest_reduction - 2 + 1, sizeof(unsigned));
+      extended_state_nonterminal_vector[nonterminal - context->first_nonterminal] = (unsigned*) mm_calloc(longest_reduction - 2 + 1, sizeof(unsigned));
 
-      for (int step_number = 0; step_number < longest_reduction - 2; step_number++)
-        extended_state_nonterminal_vector[nonterminal - context->first_nonterminal][step_number] = context->extended_state_count++;
+      for (int step_number = 0; step_number < longest_reduction - 2; step_number++) {
+         extended_state_nonterminal_vector[nonterminal - context->first_nonterminal][step_number] = context->extended_state_count++;
+      }
     }
   }
 
 #if defined(BRNGLR_TRACE)
-  text_printf ("Total of %i extended states\n", current_extended_state_number);
+  //  text_printf ("Total of %i extended states\n", current_extended_state_number);
 #endif
 
   context->max_reduction_length = 0;
@@ -993,17 +1049,18 @@ sr_brnglr_parse (dfa * this_dfa, char *string, int reduction_stack_size)
   context->nonterminal_count = this_dfa->grammar->first_level_0_slot - this_dfa->grammar->first_nonterminal;
 
   /* Initialisation step 3b: create the frontiers. In BRNGLR we must leave enough space for the pseudo states too! */
-  context->current_frontier =
-    (ssg_node **) mem_calloc (sizeof (ssg_node *), this_dfa->state_count + context->extended_state_count);
-  context->next_frontier = (ssg_node **) mem_calloc (sizeof (ssg_node *), this_dfa->state_count + context->extended_state_count);
+  context->current_frontier = (ssg_node **) mm_calloc (sizeof (ssg_node *), this_dfa->state_count + context->extended_state_count);
+  context->next_frontier =    (ssg_node **) mm_calloc (sizeof (ssg_node *), this_dfa->state_count + context->extended_state_count);
   context->first_dfa_state = this_dfa->nfa->grammar->first_dfa_state;
 
   /* Initialisation step 4: create and initialise reduction (R) and shift (Q) sets as stacks */
   context->reduction_stack =
-    (reduction_stack_element *) mem_calloc (reduction_stack_size ==
+    (reduction_stack_element *) mm_calloc (reduction_stack_size ==
                                             0 ? 4096 : reduction_stack_size, sizeof (reduction_stack_element));
-  context->shift_stack = (shift_stack_element *) mem_calloc (this_dfa->state_count, sizeof (shift_stack_element));
-  context->shift_stack_prime = (shift_stack_element *) mem_calloc (this_dfa->state_count, sizeof (shift_stack_element));
+  context->shift_stack = (shift_stack_element *) mm_calloc (this_dfa->state_count, sizeof (shift_stack_element));
+  context->shift_stack_prime = (shift_stack_element *) mm_calloc (this_dfa->state_count, sizeof (shift_stack_element));
+
+  loadSetupTime();
 
   /* Initialisation step 5: initialise lexer and load input symbol array */
   context->n = 0;                           /* Our n is actually the n+1 from the paper since we include terminating $ */
@@ -1024,7 +1081,7 @@ sr_brnglr_parse (dfa * this_dfa, char *string, int reduction_stack_size)
                 "BRNGLR parse: input length %i character%s, %i lexeme%s\n",
                 strlen (string), strlen (string) == 1 ? "" : "s", context->n, context->n == 1 ? "" : "s");
 
-  context->a = (unsigned *) mem_malloc ((context->n + 2) * sizeof (unsigned));   /* we don't use a[0], and we need an a[d+1] for $, hence length is d+2 */
+  context->a = (unsigned *) mm_malloc ((context->n + 2) * sizeof (unsigned));   /* we don't use a[0], and we need an a[d+1] for $, hence length is d+2 */
 
   lex_init (string, this_dfa->nfa->grammar);
 
@@ -1041,6 +1098,9 @@ sr_brnglr_parse (dfa * this_dfa, char *string, int reduction_stack_size)
 
   /* Initialisation step 8: start the clock */
   context->start_time = clock();
+  loadInputStringLength(strlen(string));
+  loadInputTokenLength(context->n);
+  loadLexTime();
 
   /* End of initialisation */
 /******************************************************************************/
@@ -1120,7 +1180,7 @@ sr_brnglr_parse (dfa * this_dfa, char *string, int reduction_stack_size)
       }
     }
 
-    mem_free (these_parse_actions);                        /* Reclaim memory for T(0, a_1) */
+    mm_free (these_parse_actions);                        /* Reclaim memory for T(0, a_1) */
 
 /******************************************************************************/
 
@@ -1136,7 +1196,7 @@ sr_brnglr_parse (dfa * this_dfa, char *string, int reduction_stack_size)
       ssg_node **frontier_exchanger = context->current_frontier;
       context->current_frontier = context->next_frontier;
       context->next_frontier = frontier_exchanger;
-      memset (context->next_frontier, 0, sizeof (ssg_node *) * (this_dfa->state_count + context->extended_state_count));
+      memset (context->next_frontier, 0, sizeof (ssg_node *) * (this_dfa->state_count + context->extended_state_count));     // SOMETHING WRONG HERE!!!
 
       context->sppf_node_table_base += context->sppf_node_table_base_increment; /* Effectively, clear \cal N and \cal I */
       context->sppf_node_table_pack_value += context->sppf_node_table_base_increment;   /* Set the pack 'constant' to the next value */
@@ -1151,11 +1211,13 @@ sr_brnglr_parse (dfa * this_dfa, char *string, int reduction_stack_size)
 
         context->v = context->reduction_stack_pointer->v;
         context->q = context->reduction_stack_pointer->rt;
+
         /* Pointer into reduction table */ ;
         context->q_reduction_number = context->reduction_stack_pointer->rt - this_dfa->reduction_table; /* in */ ;
+
         context->q_slot_number = this_dfa->reductions_index[context->q_reduction_number];
         context->m = context->reduction_stack_pointer->m;
-        context->X = context->q->symbol_number;
+        context->X = context->q->symbol_number;     // This is where the pool implemenrarion breaks
         context->mod_alpha = context->q->length;
         context->y = context->reduction_stack_pointer->y;
 
@@ -1259,6 +1321,7 @@ sr_brnglr_parse (dfa * this_dfa, char *string, int reduction_stack_size)
                   sr_print_action (this_dfa, w->value, context->a[context->i + 1], *this_parse_action);
                   text_printf ("\n");
 #endif
+
                   context->reduction_stack_pointer++;      /* Bump R pointer */
                 }
               }
@@ -1368,6 +1431,7 @@ sr_brnglr_parse (dfa * this_dfa, char *string, int reduction_stack_size)
                 text_printf ("On new intermediate node: Add to R: ");
                 text_printf ("\n");
 #endif
+
                 context->reduction_stack_pointer++;      /* Bump R pointer */
               }
               else
@@ -1504,6 +1568,7 @@ sr_brnglr_parse (dfa * this_dfa, char *string, int reduction_stack_size)
                   &this_dfa->reduction_table[*this_parse_action - this_dfa->nfa->grammar->first_level_0_slot];
                 context->reduction_stack_pointer->m = context->reduction_stack_pointer->rt->length;     /* This is the 'parent' reduction */
                 context->reduction_stack_pointer->y = context->z;
+
 #if defined(BRNGLR_TRACE)
                 text_printf ("Shifter new node: Add to R: ");
                 sr_print_action (this_dfa,
@@ -1513,6 +1578,7 @@ sr_brnglr_parse (dfa * this_dfa, char *string, int reduction_stack_size)
               }
               else
               {
+                // !!! This load seems to be putting in zeroes, leading to subsequent reducer crash in pool implementation
                 context->reduction_stack_pointer->v = context->next_frontier[context->shift_stack_pointer->k - context->first_dfa_state];       /* We store the start node on the search path for zero length reductions */
                 context->reduction_stack_pointer->rt =
                   &this_dfa->reduction_table[*this_parse_action - this_dfa->nfa->grammar->first_level_0_slot];
@@ -1526,10 +1592,11 @@ sr_brnglr_parse (dfa * this_dfa, char *string, int reduction_stack_size)
                                  reduction_stack_pointer->v->value, context->a[context->i + 2], *this_parse_action);
 #endif
               }
+
               context->reduction_stack_pointer++;          /* Bump R pointer */
             }
           }
-          mem_free (these_parse_actions);                  /* Reclaim memory for T(k, a_i+2) */
+          mm_free (these_parse_actions);                  /* Reclaim memory for T(k, a_i+2) */
         }
 
         /* copy Q' to Q by exchanging pointers */
@@ -1608,11 +1675,14 @@ sr_brnglr_parse (dfa * this_dfa, char *string, int reduction_stack_size)
             }
           }
         }
-      mem_free (these_parse_actions);
+      mm_free (these_parse_actions);
     }
   }
 
 /******************************************************************************/
+
+  loadParseTime();
+  loadAccept(this_derivation->accept);
 
   if (script_gtb_verbose())
     if (this_derivation->accept)
@@ -1646,29 +1716,6 @@ sr_brnglr_parse (dfa * this_dfa, char *string, int reduction_stack_size)
                context->sppf_pack_node_count,
                context->sppf_edge_count);
 
-  // Now output CSV record
-  printf("%i,BRNGLR,%s,%s,%f,%f,%f,%f,%f,%f,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i\n",
-               strlen(string),
-               this_derivation->accept ? "Accept" : "Reject",
-               "OK",
-               0.0,
-               0.0,
-               run_time,
-               0.0,
-               0.0,
-               0.0,
-               context->n,
-               0,
-               0,
-               context->gss_state_node_count,
-               context->gss_extended_node_count,
-               context->gss_edge_count,
-               context->sppf_epsilon_node_count,
-               context->sppf_terminal_node_count,
-               context->sppf_nonterminal_node_count,
-               context->sppf_intermediate_node_count,
-               context->sppf_pack_node_count,
-               context->sppf_edge_count);
 
   if (script_gtb_verbose()) {
     FILE *sppf_vcg_file = fopen ("sppf.vcg", "w");
@@ -1681,14 +1728,16 @@ sr_brnglr_parse (dfa * this_dfa, char *string, int reduction_stack_size)
   }
 
   /* Cleanup: free memory */
-  mem_free (context->current_frontier);
-  mem_free (context->next_frontier);
-  mem_free (context->shift_stack);
-  mem_free (context->shift_stack_prime);
-  mem_free (context->a);
-  mem_free (context->sppf_node_table);
-  mem_free (context->N_alpha_equivalence_classes);
-  mem_free (context);
+  mm_free (context->current_frontier);
+  mm_free (context->next_frontier);
+  mm_free (context->shift_stack);
+  mm_free (context->shift_stack_prime);
+  mm_free (context->a);
+  mm_free (context->sppf_node_table);
+  mm_free (context->N_alpha_equivalence_classes);
+  mm_free (context);
+
+  artLog();
 
   return this_derivation;
 }

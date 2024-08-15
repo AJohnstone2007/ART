@@ -23,6 +23,7 @@
 #include "gtb_scr.h"
 #include "gtb_sppf.h"
 #include "gtb_rnglr_prs.h"
+#include "stats.h"
 
 /* 8 July 2006: created by splitting off this code from gtb_sr.cpp */
 /* 8 July 2006: added edge histogram code to check behaviour of Chi set traversal algorithm */
@@ -257,8 +258,11 @@ derivation *sr_rnglr_parse(dfa * this_dfa, char *string, int reduction_stack_siz
   ssg_node **frontier_exchanger;        /* dummy frontier pointer used when swapping over frontiers */
 
   /* Initialisation step 1: sign on */
-  text_printf("\n");
-  text_message(TEXT_INFO, "RNGLR parse: \'%s\'\n", string);
+//  text_printf("\n");
+//  text_message(TEXT_INFO, "RNGLR parse: \'%s\'\n", string);
+
+  resetStats();
+  loadAlgorithm("RNGLR");
 
   /* Initialisation step 2: create derivation structure and SSG structure */
   this_derivation = (derivation *) mem_calloc(1, sizeof(derivation));
@@ -301,6 +305,8 @@ derivation *sr_rnglr_parse(dfa * this_dfa, char *string, int reduction_stack_siz
 
   d--;  /* don't count terminating $ */
 
+  loadSetupTime();
+
   if (script_gtb_verbose())
     text_message(TEXT_INFO, "RNGLR parse: input length %i character%s, %i lexeme%s\n", strlen(string), strlen(string) == 1 ? "" :"s", d, d == 1 ? "" : "s");
 
@@ -312,6 +318,9 @@ derivation *sr_rnglr_parse(dfa * this_dfa, char *string, int reduction_stack_siz
 
   for (i = 1; i <= d + 1; i++)
     a[i] = lex_lex();
+
+  loadInputStringLength(strlen(string));
+  loadInputTokenLength(d);
 
   /* Initialisation step 6: create SPPF_node_cache */
 
@@ -343,6 +352,7 @@ derivation *sr_rnglr_parse(dfa * this_dfa, char *string, int reduction_stack_siz
 
   /* Initialisation step 7: start the clock */
   start_time = clock();
+  loadLexTime();
 
   /* Main algorithm, as per pages 20-21 of the TOPLAS paper */
   /* Test against 1 here, not zero, because our d is one plus the d in the paper */
@@ -1009,9 +1019,9 @@ derivation *sr_rnglr_parse(dfa * this_dfa, char *string, int reduction_stack_siz
                 text_message(TEXT_ERROR, "attempt to prune SPPF that has no recognised root node\n");
               else
               {
-                sppf_statistics(this_derivation, "Before SPPF pruning");
+//                sppf_statistics(this_derivation, "Before SPPF pruning");
                 graph_retain_set_of_nodes(this_derivation->sppf, graph_reachable_nodes(this_derivation->sppf, graph_root(this_derivation->sppf)));
-                sppf_statistics(this_derivation, "After SPPF pruning");
+//                sppf_statistics(this_derivation, "After SPPF pruning");
               }
               break; /* No need to check the rest of the states on the final frontier */
             }
@@ -1030,6 +1040,9 @@ derivation *sr_rnglr_parse(dfa * this_dfa, char *string, int reduction_stack_siz
   mem_free(sppf_node_cache);
   reduction_search_generate_cleanup();
   mem_free(a);
+
+  loadParseTime();
+  loadAccept(this_derivation->accept);
 
   if (script_gtb_verbose())
     if (this_derivation->accept)
@@ -1059,6 +1072,7 @@ derivation *sr_rnglr_parse(dfa * this_dfa, char *string, int reduction_stack_siz
   }
 
     // Now output CSV record
+/*
   text_printf("%i,RNGLR,%s,%f,%f,%f,%f,%f,%f,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i\n",
                strlen(string),
                this_derivation->accept ? "Accept" : "Reject",
@@ -1080,7 +1094,8 @@ derivation *sr_rnglr_parse(dfa * this_dfa, char *string, int reduction_stack_siz
                0,
                0,
                0);
-
+*/
+  artLog();
   return this_derivation;
 }
 

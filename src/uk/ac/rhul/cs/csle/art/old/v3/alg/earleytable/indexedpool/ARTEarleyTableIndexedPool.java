@@ -89,7 +89,7 @@ public class ARTEarleyTableIndexedPool extends ARTParserBase {
       loadLexTime();
       inputLength = input.length - 2; // input[0] is not used and input[n+1] is $
       inputTokenLength = inputLength;
-      pool = new ARTPool(21, 1024); // Up to 2048 8MByte blocks (2^21 * 4bytes in an integer)
+      pool = new ARTPool(21, 2048); // Up to 2048 8MByte blocks (2^21 * 4bytes in an integer)
 
       // Declare arrays of sets representing R and E (curly E in document) and rdn
       R = new int[inputLength + 1];

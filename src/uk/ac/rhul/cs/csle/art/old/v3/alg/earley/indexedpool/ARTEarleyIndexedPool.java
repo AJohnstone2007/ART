@@ -291,7 +291,7 @@ public class ARTEarleyIndexedPool extends ARTParserBase {
     }
     resetStats();
     // ARTTRACE = true;
-    pool = new ARTPool(21, 1024); // Up to 2048 8MByte blocks (2^21 * 4bytes in an integer)
+    pool = new ARTPool(21, 2048); // Up to 2048 8MByte blocks (2^21 * 4bytes in an integer)
     epsilonSPPFNode = pool.poolAllocate(4);
     pool.poolPut(epsilonSPPFNode, artSlotArray.epsilon);
 
