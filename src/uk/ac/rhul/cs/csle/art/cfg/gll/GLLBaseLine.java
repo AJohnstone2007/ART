@@ -458,7 +458,7 @@ private String constructorOf(SPPFN sppfn, GrammarNode gn) {
 
 private String derivationAsTermRec(SPPFN sppfn, LinkedList<Integer> childrenFromParent, GrammarNode gn) {
 //   System.out.println("\nEntered derivationAsTermRec() at node " + sppfn + " instance " + gn);
-//  if (visited.contains(sppfn)) Util.fatal("derivationAsTermRec() found cycle in derivation");
+  if (visited.contains(sppfn)) return "-!-"; //Util.fatal("derivationAsTermRec() found cycle in derivation");
 
   visited.add(sppfn);
 
