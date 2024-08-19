@@ -99,7 +99,7 @@ public class Util {
     StringBuilder scriptStringBuilder = new StringBuilder();
     final Pattern filenamePattern = Pattern.compile("[a-zA-Z0-9/\\\\]+\\.[a-zA-Z0-9]+"); // This is a very limited idea of a filename
 
-    for (int argp = 1; argp < args.length; argp++)
+    for (int argp = 0; argp < args.length; argp++)
       if (!filenamePattern.matcher(args[argp]).matches())
         scriptStringBuilder.append(" " + args[argp]);
       else if (args[argp].endsWith(".art"))

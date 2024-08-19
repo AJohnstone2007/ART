@@ -78,7 +78,7 @@ public class ADLInterpreter {
 
   public Value adlInterpret(String inputString) {
     try {
-      adlParser.accepted = false;
+      adlParser.inLanguage = false;
       adlLexer.lex(inputString, adlParser.grammar.lexicalKindsArray(), adlParser.grammar.lexicalStringsArray(), adlParser.grammar.whitespacesArray());
 
       if (adlLexer.tokens != null) {
@@ -88,7 +88,7 @@ public class ADLInterpreter {
         adlParser.parse();
       }
 
-      if (adlParser.accepted) {
+      if (adlParser.inLanguage) {
         adlParser.chooseLongestMatch();
         adlParser.selectFirst();
         int derivationTerm = adlParser.derivationAsTerm();

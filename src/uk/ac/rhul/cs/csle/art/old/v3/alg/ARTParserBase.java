@@ -194,7 +194,7 @@ public abstract class ARTParserBase {
   }
 
   private String artTimeAsMilliseconds(long startTime, long stopTime) {
-    return String.format("%6.3f", (stopTime - startTime) * 1E-6);
+    return String.format("%.3f", (stopTime - startTime) * 1E-6);
   }
 
   private String artGetTimes() {

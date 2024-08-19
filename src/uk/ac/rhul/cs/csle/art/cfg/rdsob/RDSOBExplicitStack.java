@@ -85,7 +85,7 @@ public class RDSOBExplicitStack extends ParserBase {
     i = 0;
     dnRoot = dn = new DerivationSingletonNode(grammar.endOfStringNode, null);
     sn = new SNode(grammar.endOfStringNode, 0, null, dn);
-    accepted = rdsobExplicitStack() && input[i] == 0;
+    inLanguage = rdsobExplicitStack() && input[i] == 0;
   }
 
   @Override

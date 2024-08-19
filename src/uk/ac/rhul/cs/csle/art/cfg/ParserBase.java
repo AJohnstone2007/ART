@@ -1,12 +1,11 @@
 package uk.ac.rhul.cs.csle.art.cfg;
 
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.LinkedList;
 
 import uk.ac.rhul.cs.csle.art.cfg.grammar.Grammar;
 import uk.ac.rhul.cs.csle.art.cfg.grammar.GrammarKind;
 import uk.ac.rhul.cs.csle.art.cfg.grammar.GrammarNode;
+import uk.ac.rhul.cs.csle.art.old.v3.manager.mode.ARTModeGrammarKind;
 import uk.ac.rhul.cs.csle.art.util.Util;
 
 public abstract class ParserBase {
@@ -17,10 +16,107 @@ public abstract class ParserBase {
   public int[] input;
   public int[] positions;
   protected int i;
-  public boolean accepted;
-  public boolean inadmissable;
   public int rightmostParseIndex;
   public boolean suppressEcho = false;
+
+  public ARTModeGrammarKind artGrammarKind = ARTModeGrammarKind.UNKNOWN;
+  public boolean inadmissable; // set when, say, a BNF parser is called with an EBNF grammar
+  public boolean inLanguage;
+  private long startTime;
+  private long setupTime;
+  private long lexTime;
+  private long lexChooseTime;
+  private long parseTime;
+  private long parseChooseTime;
+  private long derivationSelectTime;
+  private long termGenerateTime;
+  private long semanticsTime;
+  private long artStartMemory;
+  private long artEndMemory;
+  private long artEndPoolAllocated;
+
+  public void loadSetupTime() {
+    setupTime = System.nanoTime();
+  }
+
+  public void loadLexTime() {
+    lexTime = System.nanoTime();
+  }
+
+  public void loadLexChooseTime() {
+    lexChooseTime = System.nanoTime();
+  }
+
+  public void loadParseTime() {
+    parseTime = System.nanoTime();
+  }
+
+  public void loadParseChooseTime() {
+    parseChooseTime = System.nanoTime();
+  }
+
+  public void loadDerivationSelectTime() {
+    derivationSelectTime = System.nanoTime();
+  }
+
+  public void loadTermGenerateTime() {
+    termGenerateTime = System.nanoTime();
+  }
+
+  public void loadSemanticsTime() {
+    semanticsTime = System.nanoTime();
+  }
+
+  public void loadStartMemory() {
+    artStartMemory = artMemoryUsed();
+  }
+
+  public void loadEndMemory() {
+    artEndMemory = artMemoryUsed();
+  }
+
+  public void loadEndPoolAllocated(long m) {
+    artEndPoolAllocated = m;
+  }
+
+  private void normaliseTimes() {
+    if (setupTime < startTime) setupTime = startTime;
+    if (lexTime < setupTime) lexTime = setupTime;
+    if (lexChooseTime < lexTime) lexChooseTime = lexTime;
+    if (parseTime < lexChooseTime) parseTime = lexChooseTime;
+    if (parseChooseTime < parseTime) parseChooseTime = parseTime;
+    if (derivationSelectTime < parseChooseTime) derivationSelectTime = parseChooseTime;
+    if (termGenerateTime < derivationSelectTime) termGenerateTime = derivationSelectTime;
+    if (semanticsTime < termGenerateTime) semanticsTime = termGenerateTime;
+  }
+
+  private String artTimeAsMilliseconds(long startTime, long stopTime) {
+    return String.format("%.3f", (stopTime - startTime) * 1E-6);
+  }
+
+  private String artGetTimes() {
+    return artTimeAsMilliseconds(startTime, setupTime) + "," + artTimeAsMilliseconds(setupTime, lexTime) + "," + artTimeAsMilliseconds(lexTime, lexChooseTime)
+        + "," + artTimeAsMilliseconds(lexChooseTime, parseTime) + "," + artTimeAsMilliseconds(parseTime, parseChooseTime) + ","
+        + artTimeAsMilliseconds(parseChooseTime, derivationSelectTime) + "," + artTimeAsMilliseconds(derivationSelectTime, termGenerateTime) + ","
+        + artTimeAsMilliseconds(termGenerateTime, semanticsTime);
+  }
+
+  public long artMemoryUsed() {
+    System.gc();
+    System.gc();
+    return Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+  }
+
+  public void resetStats() {
+    startTime = System.nanoTime();
+    setupTime = lexTime = lexChooseTime = parseTime = parseChooseTime = derivationSelectTime = termGenerateTime = semanticsTime = artStartMemory = artEndMemory = artEndPoolAllocated = 0;
+  }
+
+  public String stats() {
+    normaliseTimes();
+    return inputString.length() + "," + getClass().getSimpleName() + "," + (inLanguage ? "accept" : "reject") + ",OK," + artGetTimes() + "," + input.length
+        + "," + (input.length - 1) + ",1," + artEndPoolAllocated;
+  }
 
   // TODO: this needs to be merged with gllBaseLine.constructorOf(,)
   protected String lexemeForBuiltin(int inputIndex) {
@@ -137,62 +233,12 @@ public abstract class ParserBase {
   }
 
   public int derivationAsTerm() {
-    System.out.println("derivationTerm() not implemented for parser class " + this.getClass().getSimpleName());
+    System.out.println("derivationAsTerm() not implemented for parser class " + this.getClass().getSimpleName());
     return 0;
   }
 
   protected GrammarNode lhs(GrammarNode gn) {
     return grammar.rules.get(gn.elm);
-  }
-
-  SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-
-  public String timestamp() {
-    return dateFormat.format(Calendar.getInstance().getTime());
-  }
-
-  public long readClock() {
-    return System.currentTimeMillis();
-  }
-
-  public double timeAsSeconds(long time) {
-    double ret = time / 1.0E3;
-    if (ret < 1.0E-9) ret = 0.0;
-    return ret;
-  }
-
-  public long startTime, endTime;
-
-  public double intervalAsSeconds() {
-    double ret = (endTime - startTime) / 1.0E3;
-    if (ret < 1.0E-9) ret = 0.0;
-    return ret;
-  }
-
-  public long startMemory, endMemory;
-
-  public long memoryUsed() {
-    System.gc();
-    return Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-  }
-
-  public void report(boolean outcome) {
-    System.out.println((!inadmissable && accepted == outcome ? "Good: " : "Bad: ") + this.getClass().getSimpleName() + " " + grammar.name + " "
-        + (inadmissable ? "Inadmissable" : (input == null ? "Lexical error" : accepted ? "Accept" : "Reject")) + " '"
-        + inputString.substring(inputString.length() < 10 ? inputString.length() : 10) + "'");
-  }
-
-  final int displayPrefixLength = 20;
-
-  public String statistics(boolean outcome) {
-    int inputLength = input == null ? 0 : input.length;
-    return inputString.length() + "," + getClass().getSimpleName() + "," + (inadmissable ? "Inadmissable" : accepted ? "Accept" : "Reject") + ","
-        + (!inadmissable && accepted == outcome ? "Good," : "Bad,") + "0,0," + String.format("%.2f", intervalAsSeconds()) + ",0,0,0," + inputLength + ","
-        + subStatistics();
-  }
-
-  protected String subStatistics() {
-    return "";
   }
 
   protected void trace(int level, String msg) {

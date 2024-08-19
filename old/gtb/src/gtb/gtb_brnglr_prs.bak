@@ -41,11 +41,9 @@ void poolInit(int bSE, int bC) {
   blockSizeMask = blockSize - 1;
   blocks = (char**) mem_calloc(sizeof(char*), blockCount);
   blocks[0] = (char*) mem_calloc(sizeof(char), blockSize);
-  printf("Initialised pool with blockCount now %i and blockSize %i\n", blockCount, blockSize);
 }
 
 void*  pool_malloc(int count) { // C version returning pointer
-  printf("pool_malloc %i bytes\n", count);
   if (blockSize - highWaterOffset < count) {// allocate new block
     if (++highWaterBlock >= blockCount) { printf("Pool overflow"); exit(1);} // Note: we could resize the array here easily
     blocks[highWaterBlock] = (char*) mem_calloc(sizeof(char), blockSize);
@@ -58,31 +56,24 @@ void*  pool_malloc(int count) { // C version returning pointer
 }
 
 void*  pool_calloc(int size, int count) { // C version returning pointer
-  printf("pool_calloc %i,%i bytes\n", size, count);
-  if (blockSize - highWaterOffset < count) {// allocate new block
-    if (++highWaterBlock >= blockCount) { printf("Pool overflow"); exit(1);} // Note: we could resize the array here easily
-    blocks[highWaterBlock] = (char*) mem_calloc(sizeof(char), blockSize);
-    highWaterOffset = 0;
-  }
-
-  void* ret = blocks[highWaterBlock] + highWaterOffset;
-  highWaterOffset += count;
-  return ret;
+  return pool_malloc(size*count);
 }
 
 void poolFree(void *p) {}
 
-#define BRNGLR_TRACE
+//#define BRNGLR_TRACE
 #define COMPACT_EXTENDED_STATES
 //#define edge_table
 
 #define BRNGLR_POOL 1
 #if defined(BRNGLR_POOL)
+#define algorithm "BRNLGR (GTB; Pool)"
 #define mm_init() (poolInit(21, 2048))
 #define mm_malloc(n) (pool_malloc(n))
 #define mm_calloc(n,m) (pool_calloc(n,m))
 #define mm_free(p) (poolFree(p))
 #else
+#define algorithm "BRNLGR (GTB; standard memory allocator)"
 #define mm_init()
 #define mm_malloc(n) mem_malloc(n)
 #define mm_calloc(n,m) mem_calloc(n,m)
@@ -379,7 +370,7 @@ sppf_node_table_create (derivation * this_derivation, brnglr_context * context)
                              (context-> N_alpha_equivalence_class_count + this_derivation->dfa->grammar->first_level_0_slot -
                                                                           this_derivation->dfa->grammar->first_nonterminal);
   context->sppf_node_table =
-    (sppf_node_table_element *) mm_calloc (context->sppf_node_table_size, sizeof (sppf_node_table_element));
+    (sppf_node_table_element *) mem_calloc (context->sppf_node_table_size, sizeof (sppf_node_table_element));
   context->sppf_node_table_base = 0;
   context->sppf_node_table_base_increment = this_derivation->dfa->reduction_count + 1;  /* We need an illegal value to mark already-packed values, hence the + 1 */
   context->sppf_node_table_pack_value = context->sppf_node_table_base_increment - 1;
@@ -683,6 +674,7 @@ complete_reduction (derivation * this_derivation, brnglr_context * context)
           sr_print_action (this_derivation->dfa, w->value, context->a[context->i + 1], *this_goto_parse_action);
           text_printf ("\n");
 #endif
+
           context->reduction_stack_pointer++;              /* Bump R pointer */
         }
         else                                               /* |t| != 0 */
@@ -697,6 +689,7 @@ complete_reduction (derivation * this_derivation, brnglr_context * context)
           sr_print_action (this_derivation->dfa, w->value, context->a[context->i + 1], *this_goto_parse_action);
           text_printf ("\n");
 #endif
+
           context->reduction_stack_pointer++;              /* Bump R pointer */
         }
     }
@@ -973,14 +966,10 @@ sr_brnglr_parse (dfa * this_dfa, char *string, int reduction_stack_size)
   brnglr_context *context;
   derivation *this_derivation;         /* derivation structure to hold output of parse */
 
-  printf("Running modified BRNLGR algorithm\n"); 
-  
   /*step zero - added in 2024 to support new experimental framework with optional pool based memory management */
-  printf("About to initialise pool\n");
   mm_init();
-  printf("Returned from initialise pool\n");
   resetStats();
-  loadAlgorithm("BRNGLR");
+  loadAlgorithm(algorithm);
 
   /* Initialisation step 1: sign on */
 
@@ -990,7 +979,6 @@ sr_brnglr_parse (dfa * this_dfa, char *string, int reduction_stack_size)
   }
 
   /* Initialisation step 2: create derivation structure and SSG structure */
-  printf("Step 2\n");
 
   context = (brnglr_context *) mm_calloc (1, sizeof (brnglr_context));
   this_derivation = (derivation *) mm_calloc (1, sizeof (derivation));
@@ -1008,9 +996,8 @@ sr_brnglr_parse (dfa * this_dfa, char *string, int reduction_stack_size)
     fclose (epsilon_sppf_vcg_file);
     text_redirect (stdout);
   }
-  
+
   /* Initialisation step 3a: create the extended state looup table*/
-  printf("Step 3\n");
 
   context->state_count = this_dfa->state_count;
   context->first_nonterminal = this_dfa->grammar->first_nonterminal;
@@ -1031,17 +1018,14 @@ sr_brnglr_parse (dfa * this_dfa, char *string, int reduction_stack_size)
         if (this_dfa->reduction_table[i].length > longest_reduction)
           longest_reduction = this_dfa->reduction_table[i].length;
 
-        text_printf("Nonterminal %i: longest production has length %i\n", nonterminal, longest_reduction);
+//        text_printf("Nonterminal %i: longest production has length %i\n", nonterminal, longest_reduction);
 
     if (longest_reduction > 2)
     {
       extended_state_nonterminal_vector[nonterminal - context->first_nonterminal] = (unsigned*) mm_calloc(longest_reduction - 2 + 1, sizeof(unsigned));
-      printf("Step 3 load SNV\n");
 
       for (int step_number = 0; step_number < longest_reduction - 2; step_number++) {
-	printf("Load SVN at step %i, nonterminal %i, context %p\n", step_number, nonterminal, context);
          extended_state_nonterminal_vector[nonterminal - context->first_nonterminal][step_number] = context->extended_state_count++;
-	printf("Loaded SVN at step %i done\n", step_number);
       }
     }
   }
@@ -1052,7 +1036,6 @@ sr_brnglr_parse (dfa * this_dfa, char *string, int reduction_stack_size)
 
   context->max_reduction_length = 0;
 
-  printf("Step 3i\n");
   for (int i = 0; i < this_dfa->reduction_count; i++)
     if (this_dfa->reduction_table[i].length > context->max_reduction_length)
       context->max_reduction_length = this_dfa->reduction_table[i].length;
@@ -1065,18 +1048,14 @@ sr_brnglr_parse (dfa * this_dfa, char *string, int reduction_stack_size)
   context->extended_state_count = extended_state_count(this_derivation, context);
 #endif
 
-  printf("Step 3ii\n");
   context->nonterminal_count = this_dfa->grammar->first_level_0_slot - this_dfa->grammar->first_nonterminal;
 
   /* Initialisation step 3b: create the frontiers. In BRNGLR we must leave enough space for the pseudo states too! */
-   printf("Step 3b\n");
- context->current_frontier =
-    (ssg_node **) mm_calloc (sizeof (ssg_node *), this_dfa->state_count + context->extended_state_count);
-  context->next_frontier = (ssg_node **) mm_calloc (sizeof (ssg_node *), this_dfa->state_count + context->extended_state_count);
+  context->current_frontier = (ssg_node **) mm_calloc (sizeof (ssg_node *), this_dfa->state_count + context->extended_state_count);
+  context->next_frontier =    (ssg_node **) mm_calloc (sizeof (ssg_node *), this_dfa->state_count + context->extended_state_count);
   context->first_dfa_state = this_dfa->nfa->grammar->first_dfa_state;
 
   /* Initialisation step 4: create and initialise reduction (R) and shift (Q) sets as stacks */
-  printf("Step 4\n");
   context->reduction_stack =
     (reduction_stack_element *) mm_calloc (reduction_stack_size ==
                                             0 ? 4096 : reduction_stack_size, sizeof (reduction_stack_element));
@@ -1086,7 +1065,6 @@ sr_brnglr_parse (dfa * this_dfa, char *string, int reduction_stack_size)
   loadSetupTime();
 
   /* Initialisation step 5: initialise lexer and load input symbol array */
-  printf("Step 5\n");
   context->n = 0;                           /* Our n is actually the n+1 from the paper since we include terminating $ */
   lex_init (string, this_dfa->nfa->grammar);
 
@@ -1114,16 +1092,13 @@ sr_brnglr_parse (dfa * this_dfa, char *string, int reduction_stack_size)
 
 
   /* Initialisation step 6: create {N,alpha} equivalence classes */
-  printf("Step 6\n");
   N_alpha_equivalence_classes_create (this_dfa, context);
 
   /* Initialisation step 7: create sppf_node_table and ssg_edge table*/
-  printf("Step 7\n");
   ssg_edge_table_create(this_derivation, context);
   sppf_node_table_create (this_derivation, context);       //picks up N_alpha_equivalence_class_count from a global
 
   /* Initialisation step 8: start the clock */
-  printf("Step 8\n");
   context->start_time = clock();
   loadInputStringLength(strlen(string));
   loadInputTokenLength(context->n);
@@ -1223,7 +1198,7 @@ sr_brnglr_parse (dfa * this_dfa, char *string, int reduction_stack_size)
       ssg_node **frontier_exchanger = context->current_frontier;
       context->current_frontier = context->next_frontier;
       context->next_frontier = frontier_exchanger;
-      memset (context->next_frontier, 0, sizeof (ssg_node *) * (this_dfa->state_count + context->extended_state_count));
+      memset (context->next_frontier, 0, sizeof (ssg_node *) * (this_dfa->state_count + context->extended_state_count));     // SOMETHING WRONG HERE!!!
 
       context->sppf_node_table_base += context->sppf_node_table_base_increment; /* Effectively, clear \cal N and \cal I */
       context->sppf_node_table_pack_value += context->sppf_node_table_base_increment;   /* Set the pack 'constant' to the next value */
@@ -1232,28 +1207,20 @@ sr_brnglr_parse (dfa * this_dfa, char *string, int reduction_stack_size)
 
       /* REDUCER */
 
-      printf("Starting reducer with reduction stack pointer = %p and reduction stack base %p\n", context->reduction_stack_pointer, context->reduction_stack);
-      
       while (context->reduction_stack_pointer != context->reduction_stack)
       {
-        printf("In reducer\n");
         context->reduction_stack_pointer--;
 
         context->v = context->reduction_stack_pointer->v;
-        printf("In reducer1\n");
         context->q = context->reduction_stack_pointer->rt;
+
         /* Pointer into reduction table */ ;
-        printf("In reducer2\n");
         context->q_reduction_number = context->reduction_stack_pointer->rt - this_dfa->reduction_table; /* in */ ;
-        printf("In reducer3 with context->q_slot_number= %i and this_dfa->reductions_index=%p and context->q_reduction_number=%i\n", context->q_slot_number, this_dfa->reductions_index, context->q_reduction_number);
+
         context->q_slot_number = this_dfa->reductions_index[context->q_reduction_number];
-        printf("In reducer4\n");
         context->m = context->reduction_stack_pointer->m;
-        printf("In reducer5\n");
-        context->X = context->q->symbol_number;
-        printf("In reducer6\n");
+        context->X = context->q->symbol_number;     // This is where the pool implemenrarion breaks
         context->mod_alpha = context->q->length;
-        printf("In reducer7\n");
         context->y = context->reduction_stack_pointer->y;
 
 
@@ -1356,6 +1323,7 @@ sr_brnglr_parse (dfa * this_dfa, char *string, int reduction_stack_size)
                   sr_print_action (this_dfa, w->value, context->a[context->i + 1], *this_parse_action);
                   text_printf ("\n");
 #endif
+
                   context->reduction_stack_pointer++;      /* Bump R pointer */
                 }
               }
@@ -1465,6 +1433,7 @@ sr_brnglr_parse (dfa * this_dfa, char *string, int reduction_stack_size)
                 text_printf ("On new intermediate node: Add to R: ");
                 text_printf ("\n");
 #endif
+
                 context->reduction_stack_pointer++;      /* Bump R pointer */
               }
               else
@@ -1601,6 +1570,7 @@ sr_brnglr_parse (dfa * this_dfa, char *string, int reduction_stack_size)
                   &this_dfa->reduction_table[*this_parse_action - this_dfa->nfa->grammar->first_level_0_slot];
                 context->reduction_stack_pointer->m = context->reduction_stack_pointer->rt->length;     /* This is the 'parent' reduction */
                 context->reduction_stack_pointer->y = context->z;
+
 #if defined(BRNGLR_TRACE)
                 text_printf ("Shifter new node: Add to R: ");
                 sr_print_action (this_dfa,
@@ -1610,6 +1580,7 @@ sr_brnglr_parse (dfa * this_dfa, char *string, int reduction_stack_size)
               }
               else
               {
+                // !!! This load seems to be putting in zeroes, leading to subsequent reducer crash in pool implementation
                 context->reduction_stack_pointer->v = context->next_frontier[context->shift_stack_pointer->k - context->first_dfa_state];       /* We store the start node on the search path for zero length reductions */
                 context->reduction_stack_pointer->rt =
                   &this_dfa->reduction_table[*this_parse_action - this_dfa->nfa->grammar->first_level_0_slot];
@@ -1623,6 +1594,7 @@ sr_brnglr_parse (dfa * this_dfa, char *string, int reduction_stack_size)
                                  reduction_stack_pointer->v->value, context->a[context->i + 2], *this_parse_action);
 #endif
               }
+
               context->reduction_stack_pointer++;          /* Bump R pointer */
             }
           }
@@ -1650,7 +1622,7 @@ sr_brnglr_parse (dfa * this_dfa, char *string, int reduction_stack_size)
     {
       int *these_parse_actions = dfa_retrieve_all_actions (this_dfa, h + context->first_dfa_state, GRAM_EOS_SYMBOL_NUMBER);    /* Get T(i, $) */
 
-#if 0
+#if 1
       text_printf("Acceptance check: state %u is occupied\n", h + context->first_dfa_state);
 #endif
 
@@ -1659,7 +1631,7 @@ sr_brnglr_parse (dfa * this_dfa, char *string, int reduction_stack_size)
         {
           if (this_dfa->reduction_table[*this_parse_action - this_dfa->nfa->grammar->first_level_0_slot].is_accepting)
           {
-#if 0
+#if 1
             text_printf("Acceptance check at level %u: in state %u found accepting reduction number %u with lookahead symbol %u\n",
             context->i,
             h + context->first_dfa_state,
@@ -1685,7 +1657,7 @@ sr_brnglr_parse (dfa * this_dfa, char *string, int reduction_stack_size)
                 }
               }
 
-#if 1
+#if 0
               if (graph_root (this_derivation->sppf) == NULL)
                 text_message (TEXT_ERROR, "attempt to prune SPPF that has no recognised root node\n");
               else

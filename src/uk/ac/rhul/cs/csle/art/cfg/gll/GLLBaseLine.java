@@ -35,7 +35,6 @@ public class GLLBaseLine extends ParserBase {
     new SPPF2Dot(sppf, sppfRootNode, "sppf_derivation_annotated_binarised_last.dot", SPPF2DotKind.DERIVATION, true, true);
   }
 
-  @Override
   protected String subStatistics() {
     if (input == null) return "";
     int descriptorCount = descS.size(), gssNodeCount = gss.keySet().size(), gssEdgeCount = 0, popCount = 0, sppfNodeCount = sppf.keySet().size(),
@@ -59,7 +58,7 @@ public class GLLBaseLine extends ParserBase {
     }
 
     return descriptorCount + "," + gssNodeCount + "," + gssEdgeCount + "," + popCount + "," + sppfNodeCount + "," + sppfPCount + "," + sppfEdgeCount + ","
-        + sppfAmbiguityCount + "," + (endMemory - startMemory) + "," + String.format("%.2f", (double) (endMemory - startMemory) / input.length);
+        + sppfAmbiguityCount + "," + String.format("%.2f");
   }
 
   private void clearSelected() {
@@ -219,9 +218,7 @@ public class GLLBaseLine extends ParserBase {
   @Override
   public void parse() {
     gllBL();
-    endTime = readClock();
-    endMemory = memoryUsed();
-    if (!accepted && !suppressEcho) parserError("GLLBL ");
+    if (!inLanguage && !suppressEcho) parserError("GLLBL ");
   }
 
   private void parserError(String msg) {
@@ -277,7 +274,7 @@ void ret() {
  if (sn.equals(gssRoot)) { // Stack base
   if (accepting(gn) && (i == input.length - 1)) {
     sppfRootNode = sppf.get(new SPPFN(grammar.rules.get(grammar.startNonterminal), 0, input.length - 1));
-    accepted = true;
+    inLanguage = true;
   } else {
     rightmostParseIndex = sppfWidestIndex();
   }
@@ -326,9 +323,7 @@ void initialise() {
  i = 0; sn = gssRoot; dn = null;
  for (GrammarNode p = grammar.rules.get(grammar.startNonterminal).alt; p != null; p = p.alt)
   queueDesc(p.seq, i, sn, dn);
- startMemory = memoryUsed();
- startTime = readClock();
- accepted = false;
+ inLanguage = false;
 }
 
 
@@ -463,7 +458,8 @@ private String constructorOf(SPPFN sppfn, GrammarNode gn) {
 
 private String derivationAsTermRec(SPPFN sppfn, LinkedList<Integer> childrenFromParent, GrammarNode gn) {
 //   System.out.println("\nEntered derivationAsTermRec() at node " + sppfn + " instance " + gn);
-  if (visited.contains(sppfn)) Util.fatal("derivationAsTermRec() found cycle in derivation");
+//  if (visited.contains(sppfn)) Util.fatal("derivationAsTermRec() found cycle in derivation");
+
   visited.add(sppfn);
 
   LinkedList<Integer> children = (gn.giftKind == GIFTKind.OVER || gn.giftKind == GIFTKind.UNDER) ? childrenFromParent : new LinkedList<>();

@@ -102,7 +102,7 @@ paraterminalElements ::= paraterminalElement | paraterminalElement ','^ paraterm
 paraterminalElement  ::= cfgNonterminal^^
 
 parserElements ::= parserElement | parserElement ','^ parserElements^
-parserElement ::= 'gllBaseLine'^^ | 'rdsobFunction'^^ | 'algX'^^ | 'cyk'^^
+parserElement ::= ID^^
 
 rewriterElements ::= rewriterElement | rewriterElement ','^ rewriterElements^
 rewriterElement ::= 'eSOS'^^

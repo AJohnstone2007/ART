@@ -13,6 +13,7 @@
 #include "textio.h"
 #include "memalloc.h"
 #include "set.h"
+#define mem_free(x){} // kludge to avoid trying to free pool memory
 
 /* lookup table of bit masks for bits 0 to 7 */
 /*                                   0  1  2  3   4   5   6    7 */
@@ -233,7 +234,7 @@ void set_difference_set(const set_ * dst, const set_ * src)
 {
   unsigned length = dst->length < src->length ? dst->length: src->length;  /* only iterate over shortest set */
 
-  SET_ITERATE_SET((dst->elements[count]&=(unsigned char)(~src->elements[count])), length); 
+  SET_ITERATE_SET((dst->elements[count]&=(unsigned char)(~src->elements[count])), length);
 }
 
 /* free storage associated with a set's elements and return set to SET_NULL */

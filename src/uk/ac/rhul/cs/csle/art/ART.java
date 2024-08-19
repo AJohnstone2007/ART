@@ -29,8 +29,8 @@ public class ART {
     case "ajdebug": new AJDebug(args); return;                                   // Undocumented internal mode
     case "v3":      new ARTV3(Arrays.copyOfRange(args, 1, args.length)); return; // Undocumented internal mode
     case "v4":      new ARTV4(Arrays.copyOfRange(args, 1, args.length)); return; // Undocumented internal mode
-    case "ide":     useIDE = true; Application.launch(FXStart.class, args); return;
-    case "fx":      Application.launch(FXStart.class, args); return;
+    case "ide":     useIDE = true; Application.launch(FXStart.class, Arrays.copyOfRange(args, 1, args.length)); return;
+    case "fx":      Application.launch(FXStart.class, Arrays.copyOfRange(args, 1, args.length)); return;
     default:        new ARTScriptTermInterpreter(new ITermsLowLevelAPI()).interpret(Util.scriptString(args)); return; // Run batch mode without fx in this context
     }
     // No args

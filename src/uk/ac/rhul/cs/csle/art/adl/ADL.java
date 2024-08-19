@@ -63,14 +63,14 @@ public class ADL {
     adlGrammar.normalise();
     adlParser.grammar = adlGrammar;
     int adlDerivationTerm = 0;
-    adlParser.accepted = false;
+    adlParser.inLanguage = false;
 
     adlLexer.lex(inputString, adlGrammar.lexicalKindsArray(), adlGrammar.lexicalStringsArray(), adlGrammar.whitespacesArray());
     // lexer.report();
     adlParser.input = adlLexer.tokens;
     adlParser.positions = adlLexer.positions;
     if (adlParser.input != null) adlParser.parse();
-    if (adlParser.accepted) {
+    if (adlParser.inLanguage) {
       adlParser.chooseLongestMatch();
       adlParser.selectFirst();
       adlDerivationTerm = adlParser.derivationAsTerm();

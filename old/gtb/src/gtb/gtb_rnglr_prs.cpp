@@ -38,6 +38,21 @@ static histogram_node *chi_prime_edge_histogram = NULL;
 static histogram_node *chi_prime_node_histogram = NULL;
 #endif
 
+//#define BRNGLR_POOL 1
+#if defined(BRNGLR_POOL)
+#define algorithm "RNLGR (GTB with Pool)"
+#define mm_init() (poolInit(21, 2048))
+#define mm_malloc(n) (pool_malloc(n))
+#define mm_calloc(n,m) (pool_calloc(n,m))
+#define mm_free(p) (poolFree(p))
+#else
+#define algorithm "RNLGR (GTB with standard memory allocator)"
+#define mm_init()
+#define mm_malloc(n) mem_malloc(n)
+#define mm_calloc(n,m) mem_calloc(n,m)
+#define mm_free(p) mem_free(p)
+#endif
+
 static unsigned family_checks;
 static unsigned family_checks_failed;
 
@@ -262,7 +277,7 @@ derivation *sr_rnglr_parse(dfa * this_dfa, char *string, int reduction_stack_siz
 //  text_message(TEXT_INFO, "RNGLR parse: \'%s\'\n", string);
 
   resetStats();
-  loadAlgorithm("RNGLR");
+  loadAlgorithm(algorithm);
 
   /* Initialisation step 2: create derivation structure and SSG structure */
   this_derivation = (derivation *) mem_calloc(1, sizeof(derivation));

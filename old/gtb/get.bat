@@ -14,5 +14,5 @@ xcopy  /Q /S \csle\dev\gtb\gll\*.* gll
 xcopy  /Q /S \csle\dev\gtb\src\*.* src
 
 pushd bin
-call build
+call buildgpp
 popd

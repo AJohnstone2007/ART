@@ -67,11 +67,13 @@ void poolFree(void *p) {}
 
 //#define BRNGLR_POOL 1
 #if defined(BRNGLR_POOL)
+#define algorithm "BRNLGR (GTB with Pool)"
 #define mm_init() (poolInit(21, 2048))
 #define mm_malloc(n) (pool_malloc(n))
 #define mm_calloc(n,m) (pool_calloc(n,m))
 #define mm_free(p) (poolFree(p))
 #else
+#define algorithm "BRNLGR (GTB with standard memory allocator)"
 #define mm_init()
 #define mm_malloc(n) mem_malloc(n)
 #define mm_calloc(n,m) mem_calloc(n,m)
@@ -299,7 +301,7 @@ N_alpha_equivalence_classes_create (dfa * this_dfa, brnglr_context * context)
     text_message(TEXT_FATAL, "table size overflows memory address range\n");
   if (script_gtb_verbose())
     text_printf("Allocating %i bytes (%.3f Mbytes) for edge table\n", table_size * sizeof(int), ((double)(table_size*sizeof(int)) /(1024.0*1024.0)));
-  context->ssg_edge_table = (ssg_edge_table_element*) mm_calloc(table_size, sizeof(ssg_edge_table_element));
+  context->ssg_edge_table = (ssg_edge_table_element*) mem_calloc(table_size, sizeof(ssg_edge_table_element));
 
 }
 
@@ -368,7 +370,7 @@ sppf_node_table_create (derivation * this_derivation, brnglr_context * context)
                              (context-> N_alpha_equivalence_class_count + this_derivation->dfa->grammar->first_level_0_slot -
                                                                           this_derivation->dfa->grammar->first_nonterminal);
   context->sppf_node_table =
-    (sppf_node_table_element *) mm_calloc (context->sppf_node_table_size, sizeof (sppf_node_table_element));
+    (sppf_node_table_element *) mem_calloc (context->sppf_node_table_size, sizeof (sppf_node_table_element));
   context->sppf_node_table_base = 0;
   context->sppf_node_table_base_increment = this_derivation->dfa->reduction_count + 1;  /* We need an illegal value to mark already-packed values, hence the + 1 */
   context->sppf_node_table_pack_value = context->sppf_node_table_base_increment - 1;
@@ -967,7 +969,7 @@ sr_brnglr_parse (dfa * this_dfa, char *string, int reduction_stack_size)
   /*step zero - added in 2024 to support new experimental framework with optional pool based memory management */
   mm_init();
   resetStats();
-  loadAlgorithm("BRNGLR");
+  loadAlgorithm(algorithm);
 
   /* Initialisation step 1: sign on */
 
@@ -1655,7 +1657,7 @@ sr_brnglr_parse (dfa * this_dfa, char *string, int reduction_stack_size)
                 }
               }
 
-#if 1
+#if 0
               if (graph_root (this_derivation->sppf) == NULL)
                 text_message (TEXT_ERROR, "attempt to prune SPPF that has no recognised root node\n");
               else
@@ -1669,7 +1671,7 @@ sr_brnglr_parse (dfa * this_dfa, char *string, int reduction_stack_size)
                   if (script_gtb_verbose()) sppf_statistics (this_derivation, "After SPPF pruning");
               }
 #else
-                text_message(TEXT_INFO, "pruning disabled in this version\n");
+     //           text_message(TEXT_INFO, "pruning disabled in this version\n");
 #endif
               break;                                         /* No need to check the rest of the states on the final frontier */
             }

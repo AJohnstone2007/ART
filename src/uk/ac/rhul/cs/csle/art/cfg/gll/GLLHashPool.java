@@ -142,7 +142,6 @@ public class GLLHashPool extends HashPool {
   }
 
   // TODO: set occupancies should be presented separately
-  @Override
   protected String subStatistics() {
     int descriptorCount = cardinality(descriptorBuckets), gssNodeCount = cardinality(gssNodeBuckets), gssEdgeCount = cardinality(gssEdgeBuckets),
         popElementCount = cardinality(popElementBuckets), sppfNodeCount = cardinality(sppfNodeBuckets), sppfPackNodeCount = cardinality(sppfPackNodeBuckets);
@@ -156,10 +155,9 @@ public class GLLHashPool extends HashPool {
     long poolSize = 4 * getFirstUnusedElement();
 
     return descriptorCount + "," + gssNodeCount + "," + gssEdgeCount + "," + popElementCount + "," + sppfNodeCount + "," + sppfPackNodeCount + ","
-        + sppfEdgeCount() + "," + sppfAmbiguityCount() + "," + (endMemory - startMemory) + ","
-        + String.format("%.2f", ((double) (endMemory - startMemory) / input.length)) + "," + exactSize + ","
-        + String.format("%.2f", (double) exactSize / input.length) + "," + tableSize + "," + String.format("%.2f", (double) tableSize / input.length) + ","
-        + poolSize + "," + String.format("%.2f", (double) poolSize / input.length);
+        + sppfEdgeCount() + "," + sppfAmbiguityCount() + "," + "," + exactSize + "," + String.format("%.2f", (double) exactSize / input.length) + ","
+        + tableSize + "," + String.format("%.2f", (double) tableSize / input.length) + "," + poolSize + ","
+        + String.format("%.2f", (double) poolSize / input.length);
   }
 
   /* Stack handling **********************************************************/
@@ -183,7 +181,7 @@ public class GLLHashPool extends HashPool {
 
   private void ret() {
     if (poolGet(sn + gssNode_gn) == endOfStringNodeNi) {
-      if (grammar.acceptingNodeNumbers.contains(gn)) accepted |= (i == input.length - 1); // Make gni to boolean array for acceptance testing
+      if (grammar.acceptingNodeNumbers.contains(gn)) inLanguage |= (i == input.length - 1); // Make gni to boolean array for acceptance testing
       return;
     }
     find(popElementBuckets, popElementBucketCount, popElement_SIZE, i, sn, dn);
@@ -316,16 +314,12 @@ public class GLLHashPool extends HashPool {
     sn = gssRoot;
     dn = 0;
     enqueueDescriptorsFor(startNonterminalNodeNi, i, sn, dn);
-    startMemory = memoryUsed();
-    startTime = readClock();
   }
 
   @Override
   public void parse() {
     gllHashPool();
-    endTime = readClock();
-    endMemory = memoryUsed();
-    if (!accepted) {
+    if (!inLanguage) {
       // int rightmost = 0;
       // TODO Implement
       // Scan all SPPF modes for rightmost index
@@ -333,6 +327,20 @@ public class GLLHashPool extends HashPool {
       // rightmost = Math.max(rightmost, sppf.get(s).rightIndex);
       // System.out.println("Reject: widest parse consumed " + rightmost + " tokens");
     }
+  }
+
+  /* These are here just to quieten error messages - need to be implemented */
+  @Override
+  public void chooseLongestMatch() {
+  }
+
+  @Override
+  public void selectFirst() {
+  }
+
+  @Override
+  public int derivationAsTerm() {
+    return 0;
   }
 
 // @formatter:off
