@@ -56,7 +56,8 @@ public class RunExp {
               + "GSS SN,GSS EN,GGS E,SPPF Eps,SPPF T,SPPF NT,SPPF Inter,SPPF PN,SPPF Edge\n");
     }
 
-    for (var s : getFiles(rlc + "/experiments/try/scripts"))
+    for (var s : getFiles(rlc + "/experiments/try/scripts")) {
+      System.out.println("Trying " + s);
       for (var l : getFiles(rlc + "/languages"))
         for (var g : getFiles(l + "/grammar"))
           for (var c : getFiles(l + "/corpus"))
@@ -114,6 +115,7 @@ public class RunExp {
                     default:
                       fatal("Unknown script file type " + s.getName() + " must be one of: art gtb bat");
                     }
+    }
     Files.deleteIfExists(Paths.get("test.gtb"));
     Files.deleteIfExists(Paths.get("test.art"));
     Files.deleteIfExists(Paths.get("test.str"));
