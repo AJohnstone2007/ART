@@ -3,7 +3,6 @@ package uk.ac.rhul.cs.csle.art.util;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.regex.Pattern;
 
 public class Util {
 
@@ -97,20 +96,18 @@ public class Util {
 
   public static String scriptString(String[] args) { // Construct an ART script string, processing embedded filenames accordingly
     StringBuilder scriptStringBuilder = new StringBuilder();
-    final Pattern filenamePattern = Pattern.compile("[a-zA-Z0-9/\\\\]+\\.[a-zA-Z0-9]+"); // This is a very limited idea of a filename
-
     for (int argp = 0; argp < args.length; argp++)
-      if (!filenamePattern.matcher(args[argp]).matches())
-        scriptStringBuilder.append(" " + args[argp]);
-      else if (args[argp].endsWith(".art"))
+      if (args[argp].endsWith(".art"))
         try {
           // System.out.println("Appending contents of ART script file" + args[argp]);
           scriptStringBuilder.append(Files.readString(Paths.get((args[argp]))));
         } catch (IOException e) {
           Util.fatal("Unable to open script file " + args[argp]);
         }
-      else
+      else if (!args[argp].startsWith("\"") && !args[argp].startsWith("'") && args[argp].contains("."))
         scriptStringBuilder.append("!try '" + args[argp] + "'");
+      else
+        scriptStringBuilder.append(" " + args[argp]);
     return scriptStringBuilder.toString();
   }
 

@@ -120,6 +120,10 @@ public abstract class ARTParserBase {
   public ARTModeGrammarKind artGrammarKind = ARTModeGrammarKind.UNKNOWN;
   public boolean artInadmissable; // set when, say, a BNF parser is called with an EBNF grammar
   public boolean artIsInLanguage;
+
+  /*
+   * New timing approach added August 2024
+   */
   private long startTime;
   private long setupTime;
   private long lexTime;
@@ -133,53 +137,48 @@ public abstract class ARTParserBase {
   private long artEndMemory;
   private long artEndPoolAllocated;
 
-  public void loadSetupTime() {
+  public void artLoadSetupTime() {
     setupTime = System.nanoTime();
   }
 
-  public void loadLexTime() {
+  public void artLoadLexTime() {
     lexTime = System.nanoTime();
   }
 
-  public void loadLexChooseTime() {
+  public void artLoadLexChooseTime() {
     lexChooseTime = System.nanoTime();
   }
 
-  public void loadParseTime() {
+  public void artLoadParseTime() {
     parseTime = System.nanoTime();
   }
 
-  public void loadParseChooseTime() {
+  public void artLoadParseChooseTime() {
     parseChooseTime = System.nanoTime();
   }
 
-  public void loadDerivationSelectTime() {
+  public void artLoadDerivationSelectTime() {
     derivationSelectTime = System.nanoTime();
   }
 
-  public void loadTermGenerateTime() {
+  public void artLoadTermGenerateTime() {
     termGenerateTime = System.nanoTime();
   }
 
-  public void loadSemanticsTime() {
+  public void artLoadSemanticsTime() {
     semanticsTime = System.nanoTime();
   }
 
-  public void loadStartMemory() {
+  public void artLoadStartMemory() {
     artStartMemory = artMemoryUsed();
   }
 
-  public void loadEndMemory() {
+  public void artLoadEndMemory() {
     artEndMemory = artMemoryUsed();
   }
 
-  public void loadEndPoolAllocated(long m) {
+  public void artLoadEndPoolAllocated(long m) {
     artEndPoolAllocated = m;
-  }
-
-  public void resetStats() {
-    startTime = System.nanoTime();
-    setupTime = lexTime = lexChooseTime = parseTime = parseChooseTime = derivationSelectTime = termGenerateTime = semanticsTime = artStartMemory = artEndMemory = artEndPoolAllocated = 0;
   }
 
   private void normaliseTimes() {
@@ -204,10 +203,15 @@ public abstract class ARTParserBase {
         + artTimeAsMilliseconds(termGenerateTime, semanticsTime);
   }
 
-  public void artLog(Boolean console) {
+  public void artResetStats() {
+    startTime = System.nanoTime();
+    setupTime = lexTime = lexChooseTime = parseTime = parseChooseTime = derivationSelectTime = termGenerateTime = semanticsTime = artStartMemory = artEndMemory = artEndPoolAllocated = 0;
+  }
+
+  public String artStats() {
     normaliseTimes();
-    System.out.println(inputStringLength + "," + getClass().getSimpleName() + "," + (artIsInLanguage ? "accept" : "reject") + ",OK," + artGetTimes() + ","
-        + inputTokenLength + "," + (inputTokenLength - 1) + ",1," + artEndPoolAllocated);
+    return inputStringLength + "," + getClass().getSimpleName() + "," + (artIsInLanguage ? "accept" : "reject") + ",OK," + artGetTimes() + ","
+        + inputTokenLength + "," + (inputTokenLength - 1) + ",1," + artEndPoolAllocated;
   }
 
   // Statistics

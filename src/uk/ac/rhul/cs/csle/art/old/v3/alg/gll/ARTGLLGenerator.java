@@ -1062,7 +1062,7 @@ public class ARTGLLGenerator {
       gt.indent();
       gt.getText().printf("tweSet.tweSetUpdateExactMakeLeftSet(0, artInputString.length(), artInputString.length() + 1); // Add terminating EOS");
     }
-    gt.functionAssignCall("artSetupCompleteTime", "artReadClock");
+    gt.functionCall("artLoadSetupTime");
     gt.assignString("artSpecificationName", grammar.getId());
     gt.assign("artStartSymbolLabel", "artStartLabel");
     gt.assign("artIsInLanguage", "false");
@@ -1075,7 +1075,7 @@ public class ARTGLLGenerator {
       gt.functionCall("artLexBuildTriplesFromFile", "\"ARTTWE.twe\"");
       gt.functionCall("artLexBuildSuccessorSets");
     }
-    gt.functionAssignCall("artLexCompleteTime", "artReadClock");
+    gt.functionCall("artLoadLexTime");
 
     if (mgllOrGllGeneratorPool) gt.functionAssignCall("artDummySPPFNode", "artFindSPPFInitial", "ARTL_DUMMY", "0", "0");
     if (mgllOrGllGeneratorPool) gt.assign("artCurrentSPPFNode", "artDummySPPFNode");
@@ -1136,8 +1136,8 @@ public class ARTGLLGenerator {
     gt.indentUp();
     if (mgllOrGllGeneratorPool) gt.functionCall("artCheckAcceptance");
 
-    gt.functionAssignCall("artParseCompleteTime", "artReadClock");
-    gt.functionAssignCall("artParseEndMemory", "artMemoryUsed");
+    gt.functionCall("artLoadParseTime");
+    gt.functionCall("artLoadEndMemory");
 
     gt.ret();
     gt.indentDown();

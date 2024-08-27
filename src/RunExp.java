@@ -10,169 +10,269 @@ import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
 
-public class RunExp {
-  int line = 1;
+class RunExp {
   DateTimeFormatter dtf = DateTimeFormatter.ofPattern("YYYY-MM-dd,HH:mm:ss");
-  static String logFileName = "RunExpLog.csv", expScriptFileName = "RunExpScr.bat";
-  static File log = null, expScr = null, empty[] = new File[0]; // When expScr is non-null, execute() writes out commands rather than directly performing them
-  static Set<String> groups = new HashSet<>();
+  int line = 1;
+  static String logFileName = "log.csv", summaryFileName = "summary.csv";
 
   public static void main(String[] args) throws IOException, InterruptedException {
-    if (args.length < 3) fatal("Usage: java RunExp <RLC> <count> <group> <group>? ...\n"
-        + "where <RLC> is the path to the ReferenceLanguageCorpora directory root\n" + "      <count> is the number of iterations per experiment\n"
-        + "      <group> is a group of grammars and strings to test\n\n" + "      If <count> is negative then write the commands needed for this run to file "
-        + expScriptFileName + " rather than running them directly\n" + "      If <count> is non-negative then run directly, with output logged to "
-        + logFileName + "\n" + "      There must be at least one group. Standard groups include: str tok bulk");
-    int count = Integer.parseInt(args[1]);
-
-    if (count < 0) { // Output commands; so delete any existing file and open file expScr
-      Files.deleteIfExists(Paths.get(expScriptFileName));
-      expScr = new File(expScriptFileName);
-      count = -count;
-    }
-
-    for (int i = 2; i < args.length; i++) // Load groups set from command line
-      groups.add(args[i]);
-
-    new RunExp(args[0], count);
+    new RunExp(args);
+    new MakeSummary(logFileName, summaryFileName);
   }
 
-  RunExp(String rlc, int count) throws IOException, InterruptedException {
-    System.out.print("RLC experimental framework scanning " + rlc + " on group" + (groups.size() > 1 ? "s" : ""));
-    for (var a : groups)
+  RunExp(String[] args) throws IOException, InterruptedException {
+    if (args.length < 3) fatal("Usage: java RunExp <RLC> <count> <group> <group>? ...\n"
+        + "where <RLC> is the path to the ReferenceLanguageCorpora directory root\n" + "      <count> is the number of iterations per experiment\n"
+        + "      <group> is a group of grammars and strings to test\n\n" + "      There must be at least one group. Standard groups include: str tok bulk");
+
+    Files.deleteIfExists(Paths.get(logFileName));
+    File logFile = new File(logFileName);
+
+    String rlc = args[0];
+    int count = Integer.parseInt(args[1]);
+    Set<String> groupSet = new HashSet<>();
+    for (int i = 2; i < args.length; i++) // Load groups set from command line
+      groupSet.add(args[i]);
+
+    System.out.print("RLC experimental framework scanning " + rlc + " on group" + (groupSet.size() > 1 ? "s" : ""));
+    for (var a : groupSet)
       System.out.print(" " + a);
     System.out.println();
 
-    if (expScr == null) { // If we are directly executing then delete the old log, open file log.csv and write header line
-      Files.deleteIfExists(Paths.get(logFileName));
-      log = new File(logFileName);
-      appendTo(log,
-          "line,date,time,tool,script,iter,language,grammar,string,length,algorithm,result,status,"
-              + "TSetup,TLex,TLChoose,TParse,TPChoose,TSelect,TTerm,TSem,tweN,tweE,lexes,Pool,H0,H1,H2,H3,H4,H5,H6+,"
-              + "GSS SN,GSS EN,GGS E,SPPF Eps,SPPF T,SPPF NT,SPPF Inter,SPPF PN,SPPF Edge\n");
-    }
+    for (var s : getFiles(rlc + "/experiments/try/scripts"))
+      for (var a : groupSet) // group directories as specified on command line
+        for (var l : getFiles(rlc + "/languages")) // language directories
+          for (var g : getFiles(l + "/grammar")) // grammar directories for this language
+            for (var gg : getFiles(g + "/" + a)) // individual file this grammar's group
+              for (var c : getFiles(l + "/corpus")) // corpus directories for this language
+                for (var cc : getFiles(c + "/" + a)) // individual file from this corpus' group
+                  if (getFileType(s.getName()).equals("gtb")) {
+                    if (!getFileType(gg.getName()).equals("gtb")) continue;
+                    String toolsDir = rlc + "/experiments/try/tools/gtb";
+                    var t = getFiles(toolsDir);
+                    if (t.length == 0) fatal("Script " + gg + " requires GTB, but no relevant tools found in " + toolsDir);
+                    fileCat("test.str", cc);
+                    fileCat("test.gtb", gg, s);
+                    for (var tt : t)
+                      for (int i = 0; i < count; i++) {// iteration count
+                        logExperiment(logFile, i, s, l, a, g, c, tt, gg, cc);
+                        System.out.println("** " + tt + "test.gtb");
+                        execute(logFile, tt.toString(), "test.gtb");
+                      }
+                  } else if (getFileType(s.getName()).equals("bat") || getFileType(s.getName()).equals("sh")) {
+                    if (!getFileType(gg.getName()).equals("art")) continue;
+                    String toolsDir = rlc + "/experiments/try/tools/art";
+                    var t = getFiles(toolsDir); // collect tools
+                    if (t.length == 0) fatal("Script " + gg + " requires ART, but no relevant tools found in " + toolsDir);
+                    for (var tt : t) { // tool
+                      for (int i = 0; i < count; i++) {// iteration count
+                        logExperiment(logFile, i, s, l, a, g, c, tt, gg, cc);
+                        Scanner scanner = new Scanner(s);
+                        while (scanner.hasNext()) {
+                          String ss = scanner.nextLine();
+                          if (ss.startsWith("#") || ss.startsWith("rem")) continue; // skip comments
+                          String ttPath = tt.getPath().replace('\\', '/');
+                          String ggPath = gg.getPath().replace('\\', '/');
+                          String ccPath = cc.getPath().replace('\\', '/');
 
-    for (var s : getFiles(rlc + "/experiments/try/scripts")) {
-      System.out.println("Trying " + s);
-      for (var l : getFiles(rlc + "/languages"))
-        for (var g : getFiles(l + "/grammar"))
-          for (var c : getFiles(l + "/corpus"))
-            for (var a : groups)
-              for (var gg : getFiles(g + "/" + a))
-                for (var cc : getFiles(c + "/" + a))
-                  for (int i = 0; i < count; i++)
-                    switch (s.toString().substring(s.toString().lastIndexOf('.') + 1).toLowerCase()) {
-                    case "art":
-                      if (!gg.toString().endsWith("art")) continue;
-                      fileCat("test.str", cc);
-                      fileCat("test.art", gg, s);
-                      var tf = getFiles(rlc + "/experiments/try/tools/art");
-                      if (tf.length == 0) fatal("Script " + gg + " requires ART, but no relevant tools found");
-                      for (var t : tf) {
-                        logExperiment(i, s, l, a, g, c, gg, cc, t);
-                        execute(log, "java", "-jar", t.toString(), "test.art");
+                          ss = ss.replaceAll("%1", ttPath); // P1 is the tool filename (MS)
+                          ss = ss.replaceAll("%2", ggPath); // P2 is the grammar filename (MS)
+                          ss = ss.replaceAll("%3", ccPath); // P3 is the corpus string filename (MS)
+                          ss = ss.replaceAll("$1", ttPath); // P1 is the tool filename (Un*x)
+                          ss = ss.replaceAll("$2", ggPath); // P2 is the grammar filename (Un*x)
+                          ss = ss.replaceAll("$3", ccPath); // P3 is the corpus string filename (Un*x)
+                          System.out.println("** " + ss);
+                          execute(logFile, ss.split(" "));
+                        }
                       }
-                      break;
-                    case "artv3":
-                      if (!gg.toString().endsWith("art")) continue;
-                      fileCat("test.str", cc);
-                      fileCat("test.art", gg, s);
-                      tf = getFiles(rlc + "/experiments/try/tools/art");
-                      if (tf.length == 0) fatal("Script " + gg + " requires ART, but no relevant tools found");
-                      for (var t : tf) {
-                        logExperiment(i, s, l, a, g, c, gg, cc, t);
-                        execute(log, "java", "-jar", t.toString(), "v3", "test.art", "test.str");
-                      }
-                      break;
-                    case "gtb":
-                      if (!gg.toString().endsWith("gtb")) continue;
-                      fileCat("test.str", cc);
-                      fileCat("test.gtb", gg, s);
-                      tf = getFiles(rlc + "/experiments/try/tools/gtb");
-                      if (tf.length == 0) fatal("Script " + gg + " requires GTB, but no relevant tools found");
-                      for (var t : getFiles(rlc + "/experiments/try/tools/gtb")) {
-                        logExperiment(i, s, l, a, g, c, gg, cc, t);
-                        execute(log, t.toString(), "test.gtb");
-                      }
-                      break;
-                    case "bat":
-                      if (!gg.toString().endsWith("art")) continue;
-                      fileCat("test.str", cc);
-                      fileCat("test.art", gg);
-                      logExperiment(i, s, l, a, g, c, gg, cc, null);
-                      Scanner scanner = new Scanner(s);
-                      while (scanner.hasNext()) {
-                        String ss = scanner.nextLine();
-                        ss = ss.replaceAll("%1", "test.art");
-                        ss = ss.replaceAll("%2", "test.str");
-                        execute(log, ss.split(" "));
-                      }
-                      break;
-                    default:
-                      fatal("Unknown script file type " + s.getName() + " must be one of: art gtb bat");
                     }
-    }
-    Files.deleteIfExists(Paths.get("test.gtb"));
-    Files.deleteIfExists(Paths.get("test.art"));
-    Files.deleteIfExists(Paths.get("test.str"));
+                  } else
+                    System.out.println("Warning - skipping unknown script file type " + s.getName() + " must be one of: bat gtb sh");
   }
 
-  public void logExperiment(int iteration, File s, File l, String a, File g, File c, File gg, File cc, File t) throws IOException {
-    System.out.println(line + " " + dtf.format(LocalDateTime.now(ZoneId.systemDefault())) + " " + (t == null ? "script" : t.getName()) + " " + s.getName() + " "
-        + l.getName() + " " + g.getName() + "/" + a + "/" + gg.getName() + " " + c.getName() + "/" + a + "/" + cc.getName() + " " + iteration);
-    if (log != null)
-      appendTo(log, (line++) + "," + dtf.format(LocalDateTime.now(ZoneId.systemDefault())) + "," + (t == null ? "script" : t.getName()) + "," + s.getName()
-          + "," + iteration + "," + l.getName() + "," + g.getName() + "/" + a + "/" + gg.getName() + "," + c.getName() + "/" + a + "/" + cc.getName() + ",");
+  void logExperiment(File log, int iteration, File s, File l, String a, File g, File c, File tt, File gg, File cc) throws IOException {
+    String toolName = tt == null ? "bat" : tt.getName();
+    System.out.println(line + " " + dtf.format(LocalDateTime.now(ZoneId.systemDefault())) + " " + toolName + " " + s.getName() + " " + l.getName() + " "
+        + g.getName() + "/" + a + "/" + gg.getName() + " " + c.getName() + "/" + a + "/" + cc.getName() + " " + iteration);
+    appendTo(log, (line++) + "," + dtf.format(LocalDateTime.now(ZoneId.systemDefault())) + "," + toolName + "," + s.getName() + "," + iteration + ","
+        + l.getName() + "," + g.getName() + "/" + a + "/" + gg.getName() + "," + c.getName() + "/" + a + "/" + cc.getName() + ",");
   }
 
-  private void appendTo(File f, String string) throws IOException {
+  void appendTo(File f, String string) throws IOException {
     var fw = new FileWriter(f, true);
     fw.write(string);
     fw.close();
   }
 
-  private void fileCat(String dstFilename, File... files) throws IOException {
-    if (expScr != null) {
-      appendTo(expScr, "cat");
-      for (var f : files)
-        appendTo(expScr, " " + f);
-      appendTo(expScr, " > " + dstFilename + "\n");
-    } else {
-      FileChannel dst = new FileOutputStream(dstFilename).getChannel();
-      for (var file : files) {
-        FileChannel src = new FileInputStream(file).getChannel();
-        src.transferTo(0, src.size(), dst);
-        src.close();
-      }
-      dst.close();
+  void fileCat(String dstFilename, File... files) throws IOException {
+    FileChannel dst = new FileOutputStream(dstFilename).getChannel();
+    for (var file : files) {
+      FileChannel src = new FileInputStream(file).getChannel();
+      src.transferTo(0, src.size(), dst);
+      src.close();
     }
+    dst.close();
   }
 
-  private void execute(File log, String... command) throws IOException, InterruptedException {
-    if (expScr != null) {
-      for (var s : command)
-        appendTo(expScr, s + " ");
-      appendTo(expScr, "\n");
-    } else {
-      ProcessBuilder pb = new ProcessBuilder(command); // Launch and wait for command process
-      pb.redirectErrorStream(true);
-      pb.redirectOutput(Redirect.appendTo(log));
-      Process p = pb.start();
-      p.waitFor();
-    }
+  String getFileType(String filename) {
+    return filename.substring(filename.lastIndexOf('.') + 1).toLowerCase();
   }
 
-  static File[] getFiles(String directory) {
+  void execute(File log, String... command) throws IOException, InterruptedException {
+    ProcessBuilder pb = new ProcessBuilder(command); // Launch and wait for command process
+    pb.redirectErrorStream(true);
+    pb.redirectOutput(Redirect.appendTo(log));
+    Process p = pb.start();
+    p.waitFor();
+  }
+
+  File empty[] = new File[0];
+
+  File[] getFiles(String directory) {
     var tmp = new File(directory).listFiles();
     return tmp == null ? empty : tmp;
   }
 
-  static void fatal(String msg) {
+  void fatal(String msg) {
     System.err.println(msg);
     System.exit(0);
+  }
+}
+
+class SummaryKey {
+  String tool, script, language, grammar, string, length, algorithm, result;
+
+  public SummaryKey(String tool, String script, String language, String grammar, String string, String length, String algorithm, String result) {
+    super();
+    this.tool = tool;
+    this.script = script;
+    this.language = language;
+    this.grammar = grammar;
+    this.string = string;
+    this.length = length;
+    this.algorithm = algorithm;
+    this.result = result;
+  }
+
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + ((algorithm == null) ? 0 : algorithm.hashCode());
+    result = prime * result + ((grammar == null) ? 0 : grammar.hashCode());
+    result = prime * result + ((language == null) ? 0 : language.hashCode());
+    result = prime * result + ((length == null) ? 0 : length.hashCode());
+    result = prime * result + ((this.result == null) ? 0 : this.result.hashCode());
+    result = prime * result + ((script == null) ? 0 : script.hashCode());
+    result = prime * result + ((string == null) ? 0 : string.hashCode());
+    result = prime * result + ((tool == null) ? 0 : tool.hashCode());
+    return result;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) return true;
+    if (obj == null) return false;
+    if (getClass() != obj.getClass()) return false;
+    SummaryKey other = (SummaryKey) obj;
+    if (algorithm == null) {
+      if (other.algorithm != null) return false;
+    } else if (!algorithm.equals(other.algorithm)) return false;
+    if (grammar == null) {
+      if (other.grammar != null) return false;
+    } else if (!grammar.equals(other.grammar)) return false;
+    if (language == null) {
+      if (other.language != null) return false;
+    } else if (!language.equals(other.language)) return false;
+    if (length == null) {
+      if (other.length != null) return false;
+    } else if (!length.equals(other.length)) return false;
+    if (result == null) {
+      if (other.result != null) return false;
+    } else if (!result.equals(other.result)) return false;
+    if (script == null) {
+      if (other.script != null) return false;
+    } else if (!script.equals(other.script)) return false;
+    if (string == null) {
+      if (other.string != null) return false;
+    } else if (!string.equals(other.string)) return false;
+    if (tool == null) {
+      if (other.tool != null) return false;
+    } else if (!tool.equals(other.tool)) return false;
+    return true;
+  }
+
+  @Override
+  public String toString() {
+    StringBuilder builder = new StringBuilder();
+    builder.append(tool);
+    builder.append(",");
+    builder.append(script);
+    builder.append(",");
+    builder.append(language);
+    builder.append(",");
+    builder.append(grammar);
+    builder.append(",");
+    builder.append(string);
+    builder.append(",");
+    builder.append(length);
+    builder.append(",");
+    builder.append(algorithm);
+    builder.append(",");
+    builder.append(result);
+    return builder.toString();
+  }
+}
+
+class MakeSummary {
+  MakeSummary(String logFileName, String summaryFileName) throws IOException {
+    Files.deleteIfExists(Paths.get(summaryFileName));
+    var fw = new FileWriter(new File(summaryFileName), true);
+    fw.write("tool,script,language,grammar,string,length,algorithm,result," + "Runs,TParseMin,TParseMax,TParseMean,TParseBestFiveMean,,Results...\n");
+
+    var scanner = new Scanner(new File(logFileName));
+    var header = scanner.nextLine();
+    Map<SummaryKey, ArrayList<Double>> map = new HashMap<>();
+    while (scanner.hasNext()) {
+      String line = scanner.nextLine();
+      var fields = line.split(",");
+      if (fields.length < 17) {
+        System.out.println("Bad format: " + line);
+        continue;
+      }
+      var key = new SummaryKey(fields[3], fields[4], fields[6], fields[7], fields[8], fields[9], fields[10], fields[11]);
+      if (map.get(key) == null) map.put(key, new ArrayList<Double>());
+      map.get(key).add(Double.parseDouble(fields[16])); // Add parse time
+    }
+
+    for (var k : map.keySet()) {
+      double mean = 0;
+      double meanOfBestFive = 0;
+
+      ArrayList<Double> list = map.get(k);
+      Collections.sort(list);
+
+      for (var l : list)
+        mean += l;
+
+      for (int i = 0; i < 5 && i < list.size(); i++)
+        meanOfBestFive += list.get(i);
+
+      fw.write(k + "," + list.size() + "," + list.get(0) + "," + list.get(list.size() - 1) + "," + String.format("%6.3f", mean / list.size()) + ","
+          + String.format("%6.3f", meanOfBestFive / 5));
+      fw.write(",***,");
+      for (var l : list)
+        fw.write(l + ",");
+      fw.write("\n");
+    }
+    fw.close();
   }
 }

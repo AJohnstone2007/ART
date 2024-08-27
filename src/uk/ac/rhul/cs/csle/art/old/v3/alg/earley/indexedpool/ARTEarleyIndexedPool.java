@@ -289,7 +289,7 @@ public class ARTEarleyIndexedPool extends ARTParserBase {
       System.out.println(this.getClass() + " called on EBNF grammar aborting");
       return;
     }
-    resetStats();
+    artResetStats();
     // ARTTRACE = true;
     pool = new ARTPool(21, 2048); // Up to 2048 8MByte blocks (2^21 * 4bytes in an integer)
     epsilonSPPFNode = pool.poolAllocate(4);
@@ -307,7 +307,7 @@ public class ARTEarleyIndexedPool extends ARTParserBase {
 
       pool.mapFind_1_0(acceptingSlotsSet, p);
     }
-    loadSetupTime();
+    artLoadSetupTime();
 
     int[] input = dynamicLexicaliseLongestMatch(stringInput, 1);
 
@@ -322,7 +322,7 @@ public class ARTEarleyIndexedPool extends ARTParserBase {
     inputTokenLength = input.length - 2; // input[0] is not used and input[n+1] is $
 
     if (artTrace > 0) artTraceText.println("EarleySlotArrayPool runnng on " + inputTokenLength + " tokens");
-    loadLexTime();
+    artLoadLexTime();
 
     // E0 , . . . , En , R, Q′ , V = ∅
     eSets = new int[inputTokenLength + 1];
@@ -515,8 +515,8 @@ public class ARTEarleyIndexedPool extends ARTParserBase {
       // System.out.printf("e=%d, offset = %d, slot = %d\n", e, offset, slot);
 
       if (offset == 0 && pool.mapLookup_1(acceptingSlotsSet, slot) != 0) artIsInLanguage = true;
-      loadParseTime();
-      loadEndPoolAllocated(pool.poolAllocated());
+      artLoadParseTime();
+      artLoadEndPoolAllocated(pool.poolAllocated());
     }
   }
 

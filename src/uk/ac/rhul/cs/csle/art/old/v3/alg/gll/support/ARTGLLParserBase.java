@@ -38,9 +38,9 @@ public abstract class ARTGLLParserBase extends ARTParserBase {
   protected int artWhitespaceEOSPrefixLength; // The amount of whitespace at the end of the file for acceptance handling
 
   // Pairs
-  public int artInputPairBuffer[]; // Holds all unique input pairs; index into this buffer of a pair (a,i) is its handle in descriptors
   public int artInputPairIndex[][]; // Index of input pairs: contents of location (a, i) is the address of (a,i) in inputPair Buffer, a.k.a the pair's
-                                    // handle
+  public int artInputPairBuffer[]; // Holds all unique input pairs; index into this buffer of a pair (a,i) is its handle in descriptors
+                                   // handle
   public int artInputFirstPairAtLeftExtent[]; // For a given leftExtent, this holds the handle of the first pair in the inputPairBuffer. This is used as a
   public int artInputSuccessorIndex[][]; // Index of successor handles: contents of location (a, i) is the addess of first successor of (a,i)
   public int artCurrentInputPairReference; // handle for current input pair; index of this pair into inputPairBuffer
@@ -1009,7 +1009,6 @@ public abstract class ARTGLLParserBase extends ARTParserBase {
     artSPPFResetVisitedFlags();
     artDerivationSelectFirstRec(artSPPFRoot());
     artSPPFResetVisitedFlags();
-    loadDerivationSelectTime();
   }
 
   private void artDerivationSelectAllRec(int element) {
@@ -1219,6 +1218,7 @@ public abstract class ARTGLLParserBase extends ARTParserBase {
 
   @Override
   public void artParse(String inputString, int nonterminalLabel, ARTGLLAttributeBlock startAttributes) {
+    artResetStats();
     artInputString = inputString;
     artIsInLanguage = false;
 
@@ -1259,12 +1259,6 @@ public abstract class ARTGLLParserBase extends ARTParserBase {
         System.out.println("Unable to write term file 'ARTTokenGrammar.str'");
       }
 
-    }
-
-    if (artDirectives.b("parseCounts")) {
-      artComputeParseCounts();
-      artLog(true);
-      artLog(false);
     }
 
     if (artParserKind.indexOf("MGLL") != 0 && !artSPPFHasCycles) {
@@ -1624,7 +1618,6 @@ public abstract class ARTGLLParserBase extends ARTParserBase {
     artRDT.setRoot(artNewParent);
     boolean artNewWriteable = true;
     artEvaluate(new ARTGLLRDTHandle(artRootSPPFNode), artAttributes, artNewParent, artNewWriteable);
-    loadSemanticsTime();
   }
 
   @Override

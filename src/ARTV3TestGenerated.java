@@ -33,7 +33,7 @@ public class ARTV3TestGenerated {
     try {
       input = ARTText.readFile(inputFilename);
       parser.artParse(input);
-      System.out.println(parser.artIsInLanguage ? "Accept" : "Reject");
+      System.out.println(parser.artStats());
     } catch (ARTUncheckedException e) {
       System.out.println("Fatal error: " + e.getMessage());
     }

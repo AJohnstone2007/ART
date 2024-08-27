@@ -2358,7 +2358,7 @@ public abstract class ARTGLLParserHashPool extends ARTGLLParserBase {
 
   @Override
   protected void artInitialise() {
-    loadStartMemory();
+    artLoadStartMemory();
 
     artpoolBlockCount = artpoolBlockInitialCount;
     if (artpool == null) {
