@@ -21,20 +21,22 @@ import java.util.Set;
 class RunExp {
   DateTimeFormatter dtf = DateTimeFormatter.ofPattern("YYYY-MM-dd,HH:mm:ss");
   int line = 1;
-  static String logFileName = "log.csv", summaryFileName = "summary.csv";
+  static String logFileName = "log.csv", timeSummaryFileName = "timeSummary.csv", spaceSummaryFileName = "spaceSummary.csv";
 
   public static void main(String[] args) throws IOException, InterruptedException {
     new RunExp(args);
-    new MakeSummary(logFileName, summaryFileName);
+    new MakeTimeSummary(logFileName, timeSummaryFileName);
+    new MakeSpaceSummary(logFileName, spaceSummaryFileName);
   }
 
   RunExp(String[] args) throws IOException, InterruptedException {
     if (args.length < 3) fatal("Usage: java RunExp <RLC> <count> <group> <group>? ...\n"
         + "where <RLC> is the path to the ReferenceLanguageCorpora directory root\n" + "      <count> is the number of iterations per experiment\n"
-        + "      <group> is a group of grammars and strings to test\n\n" + "      There must be at least one group. Standard groups include: str tok bulk");
+        + "      <group> is a group of grammars and strings to test\n\n" + "      There must be at least one group. Standard groups include: org cws tok amb");
 
     Files.deleteIfExists(Paths.get(logFileName));
     File logFile = new File(logFileName);
+    appendTo(logFile, "tool,script,language,grammar,string,length,algorithm,result,...\n");
 
     String rlc = args[0];
     int count = Integer.parseInt(args[1]);
@@ -62,9 +64,9 @@ class RunExp {
                     fileCat("test.str", cc);
                     fileCat("test.gtb", gg, s);
                     for (var tt : t)
-                      for (int i = 0; i < count; i++) {// iteration count
+                      for (int i = 1; i <= count; i++) {// iteration count
                         logExperiment(logFile, i, s, l, a, g, c, tt, gg, cc);
-                        System.out.println("** " + tt + "test.gtb");
+                        System.out.println("   " + tt + "test.gtb");
                         execute(logFile, tt.toString(), "test.gtb");
                       }
                   } else if (getFileType(s.getName()).equals("bat") || getFileType(s.getName()).equals("sh")) {
@@ -73,7 +75,7 @@ class RunExp {
                     var t = getFiles(toolsDir); // collect tools
                     if (t.length == 0) fatal("Script " + gg + " requires ART, but no relevant tools found in " + toolsDir);
                     for (var tt : t) { // tool
-                      for (int i = 0; i < count; i++) {// iteration count
+                      for (int i = 1; i <= count; i++) {// iteration count
                         logExperiment(logFile, i, s, l, a, g, c, tt, gg, cc);
                         Scanner scanner = new Scanner(s);
                         while (scanner.hasNext()) {
@@ -89,7 +91,7 @@ class RunExp {
                           ss = ss.replaceAll("$1", ttPath); // P1 is the tool filename (Un*x)
                           ss = ss.replaceAll("$2", ggPath); // P2 is the grammar filename (Un*x)
                           ss = ss.replaceAll("$3", ccPath); // P3 is the corpus string filename (Un*x)
-                          System.out.println("** " + ss);
+                          System.out.println("   " + ss);
                           execute(logFile, ss.split(" "));
                         }
                       }
@@ -232,11 +234,56 @@ class SummaryKey {
   }
 }
 
-class MakeSummary {
-  MakeSummary(String logFileName, String summaryFileName) throws IOException {
+class MakeTimeSummary {
+  MakeTimeSummary(String logFileName, String summaryFileName) throws IOException {
     Files.deleteIfExists(Paths.get(summaryFileName));
     var fw = new FileWriter(new File(summaryFileName), true);
     fw.write("tool,script,language,grammar,string,length,algorithm,result," + "Runs,TParseMin,TParseMax,TParseMean,TParseBestFiveMean,,Results...\n");
+
+    var scanner = new Scanner(new File(logFileName));
+    var header = scanner.nextLine();
+    Map<SummaryKey, ArrayList<Double>> map = new HashMap<>();
+    while (scanner.hasNext()) {
+      String line = scanner.nextLine();
+      var fields = line.split(",");
+      if (fields.length < 17) {
+        System.out.println("Bad format: " + line);
+        continue;
+      }
+      var key = new SummaryKey(fields[3], fields[4], fields[6], fields[7], fields[8], fields[9], fields[10], fields[11]);
+      if (map.get(key) == null) map.put(key, new ArrayList<Double>());
+      map.get(key).add(Double.parseDouble(fields[16])); // Add parse time
+    }
+
+    for (var k : map.keySet()) {
+      double mean = 0;
+      double meanOfBestFive = 0;
+
+      ArrayList<Double> list = map.get(k);
+      Collections.sort(list);
+
+      for (var l : list)
+        mean += l;
+
+      for (int i = 0; i < 5 && i < list.size(); i++)
+        meanOfBestFive += list.get(i);
+
+      fw.write(k + "," + list.size() + "," + list.get(0) + "," + list.get(list.size() - 1) + "," + String.format("%6.3f", mean / list.size()) + ","
+          + String.format("%6.3f", meanOfBestFive / 5));
+      fw.write(",***,");
+      for (var l : list)
+        fw.write(l + ",");
+      fw.write("\n");
+    }
+    fw.close();
+  }
+}
+
+class MakeSpaceSummary {
+  MakeSpaceSummary(String logFileName, String summaryFileName) throws IOException {
+    Files.deleteIfExists(Paths.get(summaryFileName));
+    var fw = new FileWriter(new File(summaryFileName), true);
+    fw.write("tool,script,language,grammar,string,length,algorithm,result," + "Runs,...\n");
 
     var scanner = new Scanner(new File(logFileName));
     var header = scanner.nextLine();

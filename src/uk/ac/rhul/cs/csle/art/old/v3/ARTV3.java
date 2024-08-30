@@ -66,6 +66,7 @@ public class ARTV3 {
       interpreter.artLoadStartMemory();
       interpreter.artParse(artManager.artDirectives.inputs.get(0));
       interpreter.artLoadEndMemory();
+      System.out.println(interpreter.artStats());
     }
   }
 
