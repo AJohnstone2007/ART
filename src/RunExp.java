@@ -36,8 +36,9 @@ class RunExp {
 
     Files.deleteIfExists(Paths.get(logFileName));
     File logFile = new File(logFileName);
-    appendTo(logFile, "tool,script,language,grammar,string,length,algorithm,result,...\n");
-
+    appendTo(logFile,
+        "line,date,time,tool,script,iter,language,grammar,string,length,algorithm,result," + "TLex,TLChoose,TParse,TPChoose,TSelect,TTerm,tweN,tweE,lexes,"
+            + "GSS SN,GSS EN,GGS E,SPPF Eps,SPPF T,SPPF NT,SPPF Inter,SPPF PN,SPPF Edge,Pool,H0,H1,H2,H3,H4,H5,H6+\n");
     String rlc = args[0];
     int count = Integer.parseInt(args[1]);
     Set<String> groupSet = new HashSet<>();
@@ -60,7 +61,10 @@ class RunExp {
                     if (!getFileType(gg.getName()).equals("gtb")) continue;
                     String toolsDir = rlc + "/experiments/try/tools/gtb";
                     var t = getFiles(toolsDir);
-                    if (t.length == 0) fatal("Script " + gg + " requires GTB, but no relevant tools found in " + toolsDir);
+                    if (t.length == 0) {
+                      System.out.println("Warning - script " + gg + " requires GTB, but no relevant tools found in " + toolsDir);
+                      continue;
+                    }
                     fileCat("test.str", cc);
                     fileCat("test.gtb", gg, s);
                     for (var tt : t)
@@ -73,7 +77,10 @@ class RunExp {
                     if (!getFileType(gg.getName()).equals("art")) continue;
                     String toolsDir = rlc + "/experiments/try/tools/art";
                     var t = getFiles(toolsDir); // collect tools
-                    if (t.length == 0) fatal("Script " + gg + " requires ART, but no relevant tools found in " + toolsDir);
+                    if (t.length == 0) {
+                      System.out.println("Warning - script " + gg + " requires ART, but no relevant tools found in " + toolsDir);
+                      continue;
+                    }
                     for (var tt : t) { // tool
                       for (int i = 1; i <= count; i++) {// iteration count
                         logExperiment(logFile, i, s, l, a, g, c, tt, gg, cc);
@@ -150,16 +157,16 @@ class RunExp {
 }
 
 class SummaryKey {
-  String tool, script, language, grammar, string, length, algorithm, result;
+  String tool, script, language, grammar, string, tokens, algorithm, result;
 
-  public SummaryKey(String tool, String script, String language, String grammar, String string, String length, String algorithm, String result) {
+  public SummaryKey(String tool, String script, String language, String grammar, String string, String tokens, String algorithm, String result) {
     super();
     this.tool = tool;
     this.script = script;
     this.language = language;
     this.grammar = grammar;
     this.string = string;
-    this.length = length;
+    this.tokens = tokens;
     this.algorithm = algorithm;
     this.result = result;
   }
@@ -171,7 +178,7 @@ class SummaryKey {
     result = prime * result + ((algorithm == null) ? 0 : algorithm.hashCode());
     result = prime * result + ((grammar == null) ? 0 : grammar.hashCode());
     result = prime * result + ((language == null) ? 0 : language.hashCode());
-    result = prime * result + ((length == null) ? 0 : length.hashCode());
+    result = prime * result + ((tokens == null) ? 0 : tokens.hashCode());
     result = prime * result + ((this.result == null) ? 0 : this.result.hashCode());
     result = prime * result + ((script == null) ? 0 : script.hashCode());
     result = prime * result + ((string == null) ? 0 : string.hashCode());
@@ -194,9 +201,9 @@ class SummaryKey {
     if (language == null) {
       if (other.language != null) return false;
     } else if (!language.equals(other.language)) return false;
-    if (length == null) {
-      if (other.length != null) return false;
-    } else if (!length.equals(other.length)) return false;
+    if (tokens == null) {
+      if (other.tokens != null) return false;
+    } else if (!tokens.equals(other.tokens)) return false;
     if (result == null) {
       if (other.result != null) return false;
     } else if (!result.equals(other.result)) return false;
@@ -225,7 +232,7 @@ class SummaryKey {
     builder.append(",");
     builder.append(string);
     builder.append(",");
-    builder.append(length);
+    builder.append(tokens);
     builder.append(",");
     builder.append(algorithm);
     builder.append(",");
@@ -238,7 +245,7 @@ class MakeTimeSummary {
   MakeTimeSummary(String logFileName, String summaryFileName) throws IOException {
     Files.deleteIfExists(Paths.get(summaryFileName));
     var fw = new FileWriter(new File(summaryFileName), true);
-    fw.write("tool,script,language,grammar,string,length,algorithm,result," + "Runs,TParseMin,TParseMax,TParseMean,TParseBestFiveMean,,Results...\n");
+    fw.write("tool,script,language,grammar,string,tokens,algorithm,result," + "Runs,TParseMin,TParseMax,TParseMean,TParseBestFiveMean,,Results...\n");
 
     var scanner = new Scanner(new File(logFileName));
     var header = scanner.nextLine();
@@ -250,7 +257,7 @@ class MakeTimeSummary {
         System.out.println("Bad format: " + line);
         continue;
       }
-      var key = new SummaryKey(fields[3], fields[4], fields[6], fields[7], fields[8], fields[9], fields[10], fields[11]);
+      var key = new SummaryKey(fields[3], fields[4], fields[6], fields[7], fields[8], fields[21], fields[10], fields[11]);
       if (map.get(key) == null) map.put(key, new ArrayList<Double>());
       map.get(key).add(Double.parseDouble(fields[16])); // Add parse time
     }
@@ -283,7 +290,7 @@ class MakeSpaceSummary {
   MakeSpaceSummary(String logFileName, String summaryFileName) throws IOException {
     Files.deleteIfExists(Paths.get(summaryFileName));
     var fw = new FileWriter(new File(summaryFileName), true);
-    fw.write("tool,script,language,grammar,string,length,algorithm,result," + "Runs,...\n");
+    fw.write("tool,script,language,grammar,string,tokens,algorithm,result," + "Runs,...\n");
 
     var scanner = new Scanner(new File(logFileName));
     var header = scanner.nextLine();
