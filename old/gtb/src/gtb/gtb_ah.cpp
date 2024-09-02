@@ -1620,7 +1620,7 @@ int ah_ah_recognise(ah_table* this_table, char *string)
   int nodes = 0;
   int edges = 0;
 
-  double run_time = (double) (finish_time - start_time) / (double) CLK_TCK;
+  double run_time = 0;
 
   text_printf("RIGLR recogniser ran in %lf CPU s\n", run_time);
 

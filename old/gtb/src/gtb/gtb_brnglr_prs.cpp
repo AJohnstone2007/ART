@@ -1692,13 +1692,12 @@ sr_brnglr_parse (dfa * this_dfa, char *string, int reduction_stack_size)
     else
       text_message (TEXT_INFO, "BRNGLR parse: reject after consuming %i out of %i lexemes\n", context->i - 1, context->n);
 
-  double run_time = (double) (context->finish_time - context->start_time) / (double) CLK_TCK;
+  double run_time = 0;
 
   if (script_gtb_verbose() && run_time > 0.001)
   {
     text_message(TEXT_INFO, "Run time: %fs\n", run_time);
 
-    text_message(TEXT_INFO, "Parse rate: %i lexemes at %.1f lexeme/s\n", context->n, (double) context->n / ((double) (context->finish_time - context->start_time) / (double) CLK_TCK));
   }
 
   if (script_gtb_verbose())

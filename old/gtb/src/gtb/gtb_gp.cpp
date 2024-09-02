@@ -929,7 +929,7 @@ derivation* gp_earley_parse(grammar *this_grammar, char *string, int lookahead)
     if (acceptance_slots[slot] && earley_sets[slot][token_count -1 ] != NULL)
       this_derivation->accept = 1;
 
-  double run_time = (double) (finish_time - start_time) / (double) CLK_TCK;
+  double run_time = 0;
 
  if (script_gtb_verbose()) {
   text_printf("%s\n", this_derivation->accept ? "Accept" : "Reject");
@@ -1412,7 +1412,7 @@ derivation* gp_earley_recognise(grammar *this_grammar, char *string, int lookahe
 
   /* 7. Statistics output */
 
-  double run_time = (double) (finish_time - start_time) / (double) CLK_TCK;
+  double run_time = 0;
 
   text_printf("Earley cubic parser ran in %lf CPU s\n", run_time);
 

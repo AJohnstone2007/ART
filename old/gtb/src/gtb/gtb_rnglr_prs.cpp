@@ -1066,13 +1066,12 @@ derivation *sr_rnglr_parse(dfa * this_dfa, char *string, int reduction_stack_siz
       text_message(TEXT_INFO, "RNGLR parse: reject after consuming %i out of %i lexemes\n", i - 1, d);
 
   if (script_gtb_verbose()) text_printf("Total of %u family checks of which %u failed\n", family_checks, family_checks_failed);
-  double run_time = (double) (finish_time - start_time) / (double) CLK_TCK;
+  double run_time = 0;
 
   if (script_gtb_verbose() && run_time > 0.001)
   {
     text_message(TEXT_INFO, "Run time: %fs\n", run_time);
 
-    text_message(TEXT_INFO, "Parse rate: %i lexemes at %.1f lexeme/s\n", d, (double) d / ((double) (finish_time - start_time) / (double) CLK_TCK));
   }
 
   if (script_gtb_verbose()) {
