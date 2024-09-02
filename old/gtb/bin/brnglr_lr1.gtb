@@ -1,6 +1,0 @@
-this_nfa := nfa[this_grammar lr 1 nullable_reductions]
-lr1_dfa := dfa[this_nfa]
-gtb_verbose := false
-this_derivation := brnglr_parse[lr1_dfa open["test.str" read_text]]
-)
-
