@@ -388,7 +388,7 @@ dfa *dfa_construct_dfa(nfa *this_nfa, unsigned table_buffer_size, unsigned label
   ret_dfa->grammar = this_nfa->grammar;
 
   // Initialisation step 2: create the labels array the table array and initialise associated pointers
-  dfa_labels = next_free_label_location = current_input_label = (ptrdiff_t*) mem_calloc(label_buffer_size, sizeof(unsigned));
+  dfa_labels = next_free_label_location = current_input_label = (ptrdiff_t*) mem_calloc(label_buffer_size, sizeof(ptrdiff_t));
   dfa_labels_top = dfa_labels + label_buffer_size;
   if (script_gtb_verbose())
     text_printf("Allocated %lu words for dfa labels\n", dfa_labels_top - dfa_labels);
@@ -401,7 +401,7 @@ dfa *dfa_construct_dfa(nfa *this_nfa, unsigned table_buffer_size, unsigned label
   }
   else
   {
-    dfa_tables = next_free_table_location = (ptrdiff_t*)  mem_calloc(table_buffer_size, sizeof(unsigned));
+    dfa_tables = next_free_table_location = (ptrdiff_t*)  mem_calloc(table_buffer_size, sizeof(ptrdiff_t));
     dfa_tables_top = dfa_tables + table_buffer_size;
     if (script_gtb_verbose())
       text_printf("Allocated %lu words for dfa tables\n", dfa_tables_top - dfa_tables);
@@ -410,7 +410,7 @@ dfa *dfa_construct_dfa(nfa *this_nfa, unsigned table_buffer_size, unsigned label
     reduction_set_array = set_array(this_table_reductions);
     ret_dfa->reduction_count = set_cardinality(this_table_reductions);
     ret_dfa->reduction_table = (reduction*) mem_calloc(ret_dfa->reduction_count, sizeof(reduction));
-    ret_dfa->reductions_index = (ptrdiff_t*) mem_calloc(ret_dfa->reduction_count, sizeof(unsigned));
+    ret_dfa->reductions_index = (ptrdiff_t*) mem_calloc(ret_dfa->reduction_count, sizeof(ptrdiff_t));
 
     for (unsigned reduction_index = 0, *this_reduction_set_element = reduction_set_array; *this_reduction_set_element != SET_END; this_reduction_set_element++, reduction_index++)
     {
@@ -431,7 +431,7 @@ dfa *dfa_construct_dfa(nfa *this_nfa, unsigned table_buffer_size, unsigned label
       else
         ret_dfa->reduction_table[reduction_index].is_accepting = set_includes_element(&this_nfa->grammar->start_rule_reductions, *this_reduction_set_element);
 
-      ret_dfa->reductions_index[reduction_index] = *this_reduction_set_element;
+/* bug */      ret_dfa->reductions_index[reduction_index] = *this_reduction_set_element;
     }
 
 #if defined(DFA_TRACE)
@@ -519,7 +519,7 @@ dfa *dfa_construct_dfa(nfa *this_nfa, unsigned table_buffer_size, unsigned label
       text_printf("There are %u non-empty header_epsilon_closures with a total of %u elements requiring %u bytes\n", non_empty_sets, sum_of_cardinalities, (this_nfa->header_count * sizeof(unsigned*)) +  (sum_of_cardinalities * sizeof(unsigned)));
 
   //Initialisation step 6: make hash table
-  hash_table = (ptrdiff_t**) mem_calloc(hash_buckets, sizeof(unsigned*));
+  hash_table = (ptrdiff_t**) mem_calloc(hash_buckets, sizeof(ptrdiff_t));
   if (script_gtb_verbose())
     text_printf("Allocated %lu entries for DFA hash table requiring %lu bytes\n", hash_buckets, hash_buckets * sizeof(unsigned*));
 
@@ -744,7 +744,7 @@ dfa *dfa_construct_dfa(nfa *this_nfa, unsigned table_buffer_size, unsigned label
 
     }
 
-    ret_dfa->tables_index = (ptrdiff_t**) mem_calloc(ret_dfa->state_count, sizeof (unsigned*));
+    ret_dfa->tables_index = (ptrdiff_t**) mem_calloc(ret_dfa->state_count, sizeof (ptrdiff_t));
     state_number = 0;
     for (ptrdiff_t *this_table_element_pointer = dfa_tables; state_number < ret_dfa->state_count; state_number++)
     {
@@ -1430,11 +1430,11 @@ dfa* dfa_la_merge(dfa* this_dfa)
   ret_dfa->nfa = this_dfa->nfa;
   ret_dfa->grammar = this_dfa->grammar;
   ret_dfa->state_count = merged_states;
-  ret_dfa->labels_index = (ptrdiff_t**) mem_calloc(ret_dfa->state_count, sizeof (unsigned*));
-  ret_dfa->tables_index = (ptrdiff_t**) mem_calloc(ret_dfa->state_count, sizeof (unsigned*));
+  ret_dfa->labels_index = (ptrdiff_t**) mem_calloc(ret_dfa->state_count, sizeof (ptrdiff_t*));
+  ret_dfa->tables_index = (ptrdiff_t**) mem_calloc(ret_dfa->state_count, sizeof (ptrdiff_t*));
 
   // Create the labels array the table array and initialise associated pointers
-  ret_dfa->labels = next_free_label_location = (ptrdiff_t*) mem_calloc(label_buffer_size, sizeof(unsigned));
+  ret_dfa->labels = next_free_label_location = (ptrdiff_t*) mem_calloc(label_buffer_size, sizeof(ptrdiff_t));
   dfa_labels_top = ret_dfa->labels + label_buffer_size;
   if (script_gtb_verbose())
     text_printf("Allocated %lu words for dfa labels\n", dfa_labels_top - ret_dfa->labels);
@@ -1453,7 +1453,7 @@ dfa* dfa_la_merge(dfa* this_dfa)
   }
 
   // and now do the action tables
-  dfa_tables = ret_dfa->tables = next_free_table_location = (ptrdiff_t*) mem_calloc(table_buffer_size, sizeof(unsigned));
+  dfa_tables = ret_dfa->tables = next_free_table_location = (ptrdiff_t*) mem_calloc(table_buffer_size, sizeof(ptrdiff_t));
   dfa_tables_top = ret_dfa->tables + table_buffer_size;
   if (script_gtb_verbose())
     text_printf("Allocated %u words for dfa tables\n", dfa_tables_top - ret_dfa->tables);
@@ -1526,8 +1526,8 @@ dfa* dfa_la_merge(dfa* this_dfa)
   ret_dfa->reduction_count = this_dfa->reduction_count;
   ret_dfa->reduction_table = (reduction*) mem_calloc(ret_dfa->reduction_count, sizeof(reduction));
   memcpy(ret_dfa->reduction_table, this_dfa->reduction_table, ret_dfa->reduction_count * sizeof(reduction));
-  ret_dfa->reductions_index = (ptrdiff_t*) mem_calloc(ret_dfa->reduction_count, sizeof(unsigned));
-  memcpy(ret_dfa->reductions_index, this_dfa->reductions_index, ret_dfa->reduction_count * sizeof(unsigned));
+  ret_dfa->reductions_index = (ptrdiff_t*) mem_calloc(ret_dfa->reduction_count, sizeof(ptrdiff_t));
+  memcpy(ret_dfa->reductions_index, this_dfa->reductions_index, ret_dfa->reduction_count * sizeof(ptrdiff_t));
 
   //Release all memory back to heap
   for (this_symbol = (merged_state_element*) symbol_next_symbol_in_scope(symbol_get_scope(state_table));
