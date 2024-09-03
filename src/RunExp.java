@@ -37,7 +37,7 @@ class RunExp {
     Files.deleteIfExists(Paths.get(logFileName));
     File logFile = new File(logFileName);
     appendTo(logFile,
-        "line,date,time,tool,script,iter,language,grammar,string,length,algorithm,result," + "TLex,TLChoose,TParse,TPChoose,TSelect,TTerm,tweN,tweE,lexes,"
+        "line,date,time,tool,script,iter,language,grammar,string,length,algorithm,result,status,TSetup,TLex,TLChoose,TParse,TPChoose,TTerm,TSem,tweN,tweE,lexes,"
             + "GSS SN,GSS EN,GGS E,SPPF Eps,SPPF T,SPPF NT,SPPF Inter,SPPF PN,SPPF Edge,Pool,H0,H1,H2,H3,H4,H5,H6+\n");
     String rlc = args[0];
     int count = Integer.parseInt(args[1]);

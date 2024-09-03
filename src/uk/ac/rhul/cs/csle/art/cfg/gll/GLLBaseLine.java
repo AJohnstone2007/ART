@@ -22,17 +22,8 @@ public class GLLBaseLine extends ParserBase {
   @Override
   public void show() {
     new GSS2Dot(gss, "gssA.dot");
-    new SPPF2Dot(sppf, sppfRootNode, "sppf_full.dot", SPPF2DotKind.FULL, true, true);
-    new SPPF2Dot(sppf, sppfRootNode, "sppf_core.dot", SPPF2DotKind.CORE, true, true);
-    if (sppfRootNode == null) return; // Can only visualise derivations of there are some
-    selectFirst();
-    new SPPF2Dot(sppf, sppfRootNode, "sppf_derivation_first.dot", SPPF2DotKind.DERIVATION, false, false);
-    new SPPF2Dot(sppf, sppfRootNode, "sppf_derivation_annotated_first.dot", SPPF2DotKind.DERIVATION, true, false);
-    new SPPF2Dot(sppf, sppfRootNode, "sppf_derivation_annotated_binarised_first.dot", SPPF2DotKind.DERIVATION, true, true);
-    selectLast();
-    new SPPF2Dot(sppf, sppfRootNode, "sppf_derivation_last.dot", SPPF2DotKind.DERIVATION, false, false);
-    new SPPF2Dot(sppf, sppfRootNode, "sppf_derivation_annotated_last.dot", SPPF2DotKind.DERIVATION, true, false);
-    new SPPF2Dot(sppf, sppfRootNode, "sppf_derivation_annotated_binarised_last.dot", SPPF2DotKind.DERIVATION, true, true);
+    new SPPF2Dot(sppf, sppfRootNode, "sppf_full.dot", true, true, true);
+    new SPPF2Dot(sppf, sppfRootNode, "sppf_core.dot", false, true, true);
   }
 
   protected String subStatistics() {
@@ -61,27 +52,26 @@ public class GLLBaseLine extends ParserBase {
         + sppfAmbiguityCount + "," + String.format("%.2f");
   }
 
-  private void clearSelected() {
-    for (SPPFN s : sppf.keySet())
-      for (SPPFPN p : s.packNS)
-        p.selected = false;
-  }
-
   private void clearSuppressed() {
     for (SPPFN s : sppf.keySet())
       for (SPPFPN p : s.packNS)
         p.suppressed = false;
   }
 
-  private Set<SPPFN> visitedSPPFNodes;
+  private final Set<SPPFN> visitedSPPFNodes = new HashSet();
 
   @Override
   public void chooseLongestMatch() {
-    visitedSPPFNodes = new HashSet<>();
+    // chooseLongestMatchRecCount = 0;
+    visitedSPPFNodes.clear();
     chooseLongestMatchRec(sppfRootNode);
+    // System.err.println("chooseLongestMatchRecCount = " + chooseLongestMatchRecCount);
   }
 
+  // int chooseLongestMatchRecCount = 0;
+
   private void chooseLongestMatchRec(SPPFN sn) {
+    // chooseLongestMatchRecCount++;
     if (visitedSPPFNodes.contains(sn)) return;
     visitedSPPFNodes.add(sn);
 
@@ -98,53 +88,6 @@ public class GLLBaseLine extends ParserBase {
 
     for (SPPFPN p : sn.packNS)
       if (p != candidate) p.suppressed = true;
-  }
-
-  @Override
-  public void selectFirst() {
-    visitedSPPFNodes = new HashSet<>();
-    clearSelected();
-    sppfSelectFirstRec(sppfRootNode);
-  }
-
-  @Override
-  public void selectLast() {
-    visitedSPPFNodes = new HashSet<>();
-    clearSelected();
-    sppfSelectLastRec(sppfRootNode);
-  }
-
-  private void sppfSelectFirstRec(SPPFN sn) {
-    if (visitedSPPFNodes.contains(sn)) return;
-    visitedSPPFNodes.add(sn);
-
-    SPPFPN selectedNode = null;
-    for (SPPFPN p : sn.packNS)
-      if (!p.suppressed) {
-        selectedNode = p;
-        break;
-      }
-
-    if (selectedNode != null) {
-      selectedNode.selected = true;
-      if (selectedNode.leftChild != null) sppfSelectFirstRec(selectedNode.leftChild);
-      if (selectedNode.rightChild != null) sppfSelectFirstRec(selectedNode.rightChild);
-    }
-  }
-
-  private void sppfSelectLastRec(SPPFN sn) {
-    if (visitedSPPFNodes.contains(sn)) return;
-    visitedSPPFNodes.add(sn);
-
-    SPPFPN selectedNode = null;
-    for (SPPFPN p : sn.packNS)
-      if (!p.suppressed) selectedNode = p;
-
-    if (selectedNode != null) {
-      selectedNode.selected = true;
-      if (selectedNode.leftChild != null) sppfSelectLastRec(selectedNode.leftChild);
-      if (selectedNode.rightChild != null) sppfSelectLastRec(selectedNode.rightChild);
-    }
   }
 
   private GrammarNode rules(GrammarNode gn) {
@@ -357,158 +300,168 @@ void gllBL() {
     break;
 }}}
 
-/* Baseline parser term generation *********************************************************/
-HashSet<SPPFN> visited;
+//@formatter:on
 
-private SPPFPN firstSelectedPackNode(SPPFN sppfn) {
-  SPPFPN candidate = null;
-  for (SPPFPN p : sppfn.packNS)
-    if (p.selected)
-    if (candidate == null)
-      candidate = p;
-    else
-      System.out.println("Multiple selected pack nodes at SPPF node " + sppfn);
-  if (candidate == null) System.out.println("No selected pack nodes found at SPPF node " + sppfn);
-  return candidate;
-}
-
-private boolean isSymbol(SPPFN sppfn) {
-  return sppfn.packNS.size() == 0 /* terminal or epsilon */ || (sppfn.gn.elm.kind == GrammarKind.N && sppfn.gn.seq == null /* LHS */);
-}
-
-// TODO: this needs to be merged with referenceParser.lexemeForBuiltin()
-private String constructorOf(SPPFN sppfn, GrammarNode gn) {
-  if (gn.elm.kind == GrammarKind.B) switch (LKind.valueOf(gn.elm.str)) {
-  case ID: {
-    int right = positions[sppfn.li];
-    while (right< inputString.length() &&( Character.isAlphabetic(inputString.charAt(right)) || Character.isDigit(inputString.charAt(right))|| inputString.charAt(right)=='_')) right++;
-
-    return inputString.substring(positions[sppfn.li],right) ;
-  }
-  case CHARACTER:
-    return inputString.substring(positions[sppfn.li]+1,positions[sppfn.li]+2) ;
-
-  case CHAR_BQ:
-    return inputString.substring(positions[sppfn.li]+1,positions[sppfn.li]+2) ;
-  case COMMENT_BLOCK_C:
-    break;
-  case COMMENT_LINE_C:
-    break;
-  case COMMENT_NEST_ART:
-    break;
-  case INTEGER:
-  { int right = positions[sppfn.li];
-    while (right< inputString.length() &&(Character.isDigit(inputString.charAt(right))|| inputString.charAt(right)=='_')) right++;
-    return inputString.substring(positions[sppfn.li],right) ;
-  }
-  case REAL:
-  { int right = positions[sppfn.li];
-    while (right< inputString.length() && Character.isDigit(inputString.charAt(right))) right++;
-    right++; // skip decimal point
-    while (right< inputString.length() && Character.isDigit(inputString.charAt(right))) right++;
-    return inputString.substring(positions[sppfn.li],right) ;
-  }
-  case SIGNED_INTEGER:
-  { int right = positions[sppfn.li];
-    if (inputString.charAt(right) == '-') right++;
-    while (right< inputString.length() &&(Character.isDigit(inputString.charAt(right))|| inputString.charAt(right)=='_')) right++;
-    return inputString.substring(positions[sppfn.li],right) ;
-  }
-  case SIGNED_REAL:
-  { int right = positions[sppfn.li];
-    if (inputString.charAt(right) == '-') right++;
-    while (right< inputString.length() && Character.isDigit(inputString.charAt(right))) right++;
-    right++; // skip decimal point
-    while (right< inputString.length() && Character.isDigit(inputString.charAt(right))) right++;
-    return inputString.substring(positions[sppfn.li],right) ;
-  }
-  case SIMPLE_WHITESPACE:
-    break;
-  case SINGLETON_CASE_INSENSITIVE:
-    break;
-  case SINGLETON_CASE_SENSITIVE:
-    break;
-  case STRING_PLAIN_SQ:{
-    int right = positions[sppfn.li]+1;
-    while (inputString.charAt(right) != '\'') right++;
-
-    return inputString.substring(positions[sppfn.li]+1,right) ;
+  /* Baseline parser term generation *********************************************************/
+  private SPPFPN firstAvailablePackNode(SPPFN sppfn) {
+    SPPFPN candidate = null;
+    for (SPPFPN p : sppfn.packNS)
+      if (!p.suppressed) if (candidate == null)
+        candidate = p;
+      else
+        System.out.println("Ambiguous pack nodes at SPPF node " + sppfn);
+    if (candidate == null) System.out.println("No unsuppressed pack nodes found at SPPF node " + sppfn);
+    return candidate;
   }
 
-  case STRING_DQ:{
-    int right = positions[sppfn.li]+1;
-    while (inputString.charAt(right) != '\"') right++;
-
-    return inputString.substring(positions[sppfn.li]+1,right) ;
+  private boolean isSymbol(SPPFN sppfn) {
+    return sppfn.packNS.size() == 0 /* terminal or epsilon */ || (sppfn.gn.elm.kind == GrammarKind.N && sppfn.gn.seq == null /* LHS */);
   }
-  case STRING_BRACE_NEST:
-    break;
-  case STRING_BRACKET_NEST:
-    break;
-  case STRING_DOLLAR:
-    break;
-  case STRING_SQ:
-  { int right = positions[sppfn.li]+1;
-    while (inputString.charAt(right) != '\'') right++;
-    return inputString.substring(positions[sppfn.li]+1,right) ;
-  }
-  }
-  return gn.elm.str;
-}
 
-private String derivationAsTermRec(SPPFN sppfn, LinkedList<Integer> childrenFromParent, GrammarNode gn) {
-//   System.out.println("\nEntered derivationAsTermRec() at node " + sppfn + " instance " + gn);
-  if (visited.contains(sppfn)) return "-!-"; //Util.fatal("derivationAsTermRec() found cycle in derivation");
+  // TODO: this needs to be merged with referenceParser.lexemeForBuiltin()
+  private String constructorOf(SPPFN sppfn, GrammarNode gn) {
+    if (gn.elm.kind == GrammarKind.B) switch (LKind.valueOf(gn.elm.str)) {
+    case ID: {
+      int right = positions[sppfn.li];
+      while (right < inputString.length()
+          && (Character.isAlphabetic(inputString.charAt(right)) || Character.isDigit(inputString.charAt(right)) || inputString.charAt(right) == '_'))
+        right++;
 
-  visited.add(sppfn);
-
-  LinkedList<Integer> children = (gn.giftKind == GIFTKind.OVER || gn.giftKind == GIFTKind.UNDER) ? childrenFromParent : new LinkedList<>();
-  String constructor = null;
-
-  if (sppfn.packNS.size() != 0) { // Non leaf symbol nodes
-    SPPFPN sppfpn = firstSelectedPackNode(sppfn);
-    GrammarNode childgn = sppfpn.gn.alt.seq;
-    LinkedList<SPPFN> childSymbolNodes = new LinkedList<>();
-    collectChildNodesRec(sppfpn, childSymbolNodes);
-    for (SPPFN s : childSymbolNodes) {
-      String newConstructor = derivationAsTermRec(s, children, childgn);
-      if (newConstructor != null) constructor = newConstructor; // Update on every ^^ child so that the last one wins
-      childgn = childgn.seq; // Step to next child grammar node
+      return inputString.substring(positions[sppfn.li], right);
     }
+    case CHARACTER:
+      return inputString.substring(positions[sppfn.li] + 1, positions[sppfn.li] + 2);
+
+    case CHAR_BQ:
+      return inputString.substring(positions[sppfn.li] + 1, positions[sppfn.li] + 2);
+    case COMMENT_BLOCK_C:
+      break;
+    case COMMENT_LINE_C:
+      break;
+    case COMMENT_NEST_ART:
+      break;
+    case INTEGER: {
+      int right = positions[sppfn.li];
+      while (right < inputString.length() && (Character.isDigit(inputString.charAt(right)) || inputString.charAt(right) == '_'))
+        right++;
+      return inputString.substring(positions[sppfn.li], right);
+    }
+    case REAL: {
+      int right = positions[sppfn.li];
+      while (right < inputString.length() && Character.isDigit(inputString.charAt(right)))
+        right++;
+      right++; // skip decimal point
+      while (right < inputString.length() && Character.isDigit(inputString.charAt(right)))
+        right++;
+      return inputString.substring(positions[sppfn.li], right);
+    }
+    case SIGNED_INTEGER: {
+      int right = positions[sppfn.li];
+      if (inputString.charAt(right) == '-') right++;
+      while (right < inputString.length() && (Character.isDigit(inputString.charAt(right)) || inputString.charAt(right) == '_'))
+        right++;
+      return inputString.substring(positions[sppfn.li], right);
+    }
+    case SIGNED_REAL: {
+      int right = positions[sppfn.li];
+      if (inputString.charAt(right) == '-') right++;
+      while (right < inputString.length() && Character.isDigit(inputString.charAt(right)))
+        right++;
+      right++; // skip decimal point
+      while (right < inputString.length() && Character.isDigit(inputString.charAt(right)))
+        right++;
+      return inputString.substring(positions[sppfn.li], right);
+    }
+    case SIMPLE_WHITESPACE:
+      break;
+    case SINGLETON_CASE_INSENSITIVE:
+      break;
+    case SINGLETON_CASE_SENSITIVE:
+      break;
+    case STRING_PLAIN_SQ: {
+      int right = positions[sppfn.li] + 1;
+      while (inputString.charAt(right) != '\'')
+        right++;
+
+      return inputString.substring(positions[sppfn.li] + 1, right);
+    }
+
+    case STRING_DQ: {
+      int right = positions[sppfn.li] + 1;
+      while (inputString.charAt(right) != '\"')
+        right++;
+
+      return inputString.substring(positions[sppfn.li] + 1, right);
+    }
+    case STRING_BRACE_NEST:
+      break;
+    case STRING_BRACKET_NEST:
+      break;
+    case STRING_DOLLAR:
+      break;
+    case STRING_SQ: {
+      int right = positions[sppfn.li] + 1;
+      while (inputString.charAt(right) != '\'')
+        right++;
+      return inputString.substring(positions[sppfn.li] + 1, right);
+    }
+    }
+    return gn.elm.str;
   }
 
-  if (constructor == null) constructor = constructorOf(sppfn, gn); // If there were no OVERs, then set the constructor to be our symbol
-  if (children != childrenFromParent)
-    childrenFromParent.add(grammar.iTerms.findTerm(constructor, children));
+  private String derivationAsTermRec(SPPFN sppfn, LinkedList<Integer> childrenFromParent, GrammarNode gn) {
+    // System.out.println("\nEntered derivationAsTermRec() at node " + sppfn + " instance " + gn);
+    if (visitedSPPFNodes.contains(sppfn)) return "-!-"; // Util.fatal("derivationAsTermRec() found cycle in derivation");
 
-  visited.remove(sppfn);
-  return (gn.giftKind == GIFTKind.OVER) ? constructor : null;
-}
+    visitedSPPFNodes.add(sppfn);
 
-private void collectChildNodesRec(SPPFPN sppfpn, LinkedList<SPPFN> childNodes) {
-//  System.out.println("CollectChildNodesRec() at pack node " + sppfpn);
-  SPPFN leftChild = sppfpn.leftChild, rightChild = sppfpn.rightChild;
-  if (leftChild != null) {
-    if (isSymbol(leftChild)) // found a symbol
-      childNodes.add(leftChild);
+    LinkedList<Integer> children = (gn.giftKind == GIFTKind.OVER || gn.giftKind == GIFTKind.UNDER) ? childrenFromParent : new LinkedList<>();
+    String constructor = null;
+
+    if (sppfn.packNS.size() != 0) { // Non leaf symbol nodes
+      SPPFPN sppfpn = firstAvailablePackNode(sppfn);
+      GrammarNode childgn = sppfpn.gn.alt.seq;
+      LinkedList<SPPFN> childSymbolNodes = new LinkedList<>();
+      collectChildNodesRec(sppfpn, childSymbolNodes);
+      for (SPPFN s : childSymbolNodes) {
+        String newConstructor = derivationAsTermRec(s, children, childgn);
+        if (newConstructor != null) constructor = newConstructor; // Update on every ^^ child so that the last one wins
+        childgn = childgn.seq; // Step to next child grammar node
+      }
+    }
+
+    if (constructor == null) constructor = constructorOf(sppfn, gn); // If there were no OVERs, then set the constructor to be our symbol
+    if (children != childrenFromParent) childrenFromParent.add(grammar.iTerms.findTerm(constructor, children));
+
+    visitedSPPFNodes.remove(sppfn);
+    return (gn.giftKind == GIFTKind.OVER) ? constructor : null;
+  }
+
+  private void collectChildNodesRec(SPPFPN sppfpn, LinkedList<SPPFN> childNodes) {
+    // System.out.println("CollectChildNodesRec() at pack node " + sppfpn);
+    SPPFN leftChild = sppfpn.leftChild, rightChild = sppfpn.rightChild;
+    if (leftChild != null) {
+      if (isSymbol(leftChild)) // found a symbol
+        childNodes.add(leftChild);
+      else
+        collectChildNodesRec(firstAvailablePackNode(leftChild), childNodes);
+    }
+
+    if (isSymbol(rightChild)) // found a symbol
+      childNodes.add(rightChild);
     else
-      collectChildNodesRec(firstSelectedPackNode(leftChild), childNodes);
+      collectChildNodesRec(firstAvailablePackNode(rightChild), childNodes);
   }
 
-  if (isSymbol(rightChild)) // found a symbol
-    childNodes.add(rightChild);
-  else
-    collectChildNodesRec(firstSelectedPackNode(rightChild), childNodes);
-}
-
-@Override
-public int derivationAsTerm() {
-  if (sppfRootNode == null) return 0;
-  visited = new HashSet<>();
-  LinkedList<Integer> carrier = new LinkedList<>();
-  derivationAsTermRec(sppfRootNode, carrier, firstSelectedPackNode(sppfRootNode).gn.seq); // Root packed node must have a grammar node that is the end of a start production
-  return carrier.getFirst();
-}
+  @Override
+  public int derivationAsTerm() {
+    if (sppfRootNode == null) return 0;
+    visitedSPPFNodes.clear();
+    LinkedList<Integer> carrier = new LinkedList<>();
+    derivationAsTermRec(sppfRootNode, carrier, firstAvailablePackNode(sppfRootNode).gn.seq); // Root packed node must have a grammar node that is the end of a
+                                                                                             // start production
+    return carrier.getFirst();
+  }
 }
 
 class Desc {
@@ -706,7 +659,6 @@ class SPPFPN {
   public final SPPFN leftChild;
   public final SPPFN rightChild;
   public boolean suppressed = false;
-  public boolean selected = false;
 
   public SPPFPN(GrammarNode gn, int pivot, SPPFN leftChild, SPPFN rightChild) {
     super();
@@ -744,19 +696,13 @@ class SPPFPN {
     builder.append(gn.toStringAsProduction());
     builder.append(", " + pivot);
     builder.append(suppressed ? "(suppressed)" : "");
-    builder.append(selected ? "(selected)" : "");
     return builder.toString();
   }
-}
-
-enum SPPF2DotKind {
-  FULL, CORE, DERIVATION
 }
 
 class SPPF2Dot {
   final String packNodeStyle = "[style=rounded]";
   final String ambiguousStyle = "[color=red]";
-  final String selectedStyle = "[color=blue]";
   final String intermediateNodeStyle = "[style=filled fillcolor=grey92]";
   final String symbolNodeStyle = "";
   PrintStream sppfOut = null;
@@ -798,8 +744,8 @@ class SPPF2Dot {
     }
   }
 
-  public SPPF2Dot(Map<SPPFN, SPPFN> sppf, SPPFN rootNode, String filename, SPPF2DotKind renderKind, boolean showIndicies, boolean showIntermediates) {
-this.sppf = sppf;
+  public SPPF2Dot(Map<SPPFN, SPPFN> sppf, SPPFN rootNode, String filename, boolean full, boolean showIndicies, boolean showIntermediates) {
+    this.sppf = sppf;
     this.showIndicies = showIndicies;
     this.showIntermediates = showIntermediates;
     if (sppf == null) return;
@@ -807,43 +753,15 @@ this.sppf = sppf;
       sppfOut = new PrintStream(new File(filename));
       sppfOut.println("digraph \"SPPF\" {\n"
           + "graph[ordering=out ranksep=0.1]\n node[fontname=Helvetica fontsize=9 shape=box height=0 width=0 margin=0.04 color=gray]\nedge[arrowsize=0.1 color=gray]");
-      if (sppf != null) switch (renderKind) {
-      case CORE:
-        coreSPPFRec(rootNode);
-        break;
-      case DERIVATION:
-        derivationSPPFRec(rootNode, null);
-        break;
-      case FULL:
+      if (sppf != null) if (full)
         fullSPPF(rootNode);
-        break;
-      default:
-        break;
-      }
+      else
+        coreSPPFRec(rootNode);
+      fullSPPF(rootNode);
       sppfOut.println("}");
       sppfOut.close();
     } catch (FileNotFoundException e) {
       System.out.println("Unable to write SPPF visualisation to " + filename);
-    }
-  }
-
-  private void derivationSPPFRec(SPPFN s, SPPFN parent) {
-    if (isSymbol(s) | showIntermediates) {
-      sppfOut.println(renderSPPFNode(s));
-      if (parent != null) sppfOut.println(renderSPPFNodeLabel(parent) + "->" + renderSPPFNodeLabel(s));
-      parent = s;
-    }
-
-    SPPFPN selectedNode = null;
-    for (SPPFPN p : s.packNS)
-      if (p.selected) {
-        selectedNode = p;
-        break;
-      }
-
-    if (selectedNode != null) {
-      if (selectedNode.leftChild != null) derivationSPPFRec(selectedNode.leftChild, parent);
-      if (selectedNode.rightChild != null) derivationSPPFRec(selectedNode.rightChild, parent);
     }
   }
 

@@ -15,7 +15,7 @@ import uk.ac.rhul.cs.csle.art.adl.ADLException;
 import uk.ac.rhul.cs.csle.art.cfg.ParserBase;
 import uk.ac.rhul.cs.csle.art.cfg.gll.GLLBaseLine;
 import uk.ac.rhul.cs.csle.art.cfg.lexer.LexerLM;
-import uk.ac.rhul.cs.csle.art.script.ARTScriptTermInterpreter;
+import uk.ac.rhul.cs.csle.art.script.ScriptTermInterpreter;
 import uk.ac.rhul.cs.csle.art.term.ITerms;
 import uk.ac.rhul.cs.csle.art.term.ITermsLowLevelAPI;
 import uk.ac.rhul.cs.csle.art.term.Value;
@@ -63,7 +63,7 @@ public class ADLInterpreter {
 
   public ADLInterpreter(ITerms iTerms) {
     this.iTerms = iTerms;
-    ARTScriptTermInterpreter artScriptInterpreter = new ARTScriptTermInterpreter(iTerms);
+    ScriptTermInterpreter artScriptInterpreter = new ScriptTermInterpreter(iTerms);
     try {
       artScriptInterpreter
           .interpret(new String(getClass().getClassLoader().getResourceAsStream("uk/ac/rhul/cs/csle/alero/language/ADL0_Alero.art").readAllBytes()));

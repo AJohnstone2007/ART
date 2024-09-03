@@ -30,7 +30,7 @@ import uk.ac.rhul.cs.csle.art.old.v3.manager.grammar.element.ARTGrammarElementTe
 import uk.ac.rhul.cs.csle.art.old.v3.manager.grammar.instance.ARTGrammarInstance;
 import uk.ac.rhul.cs.csle.art.old.v3.manager.grammar.instance.ARTGrammarInstanceSlot;
 import uk.ac.rhul.cs.csle.art.old.v3.manager.module.ARTV3Module;
-import uk.ac.rhul.cs.csle.art.script.ARTScriptTermInterpreter;
+import uk.ac.rhul.cs.csle.art.script.ScriptTermInterpreter;
 import uk.ac.rhul.cs.csle.art.term.ITermsLowLevelAPI;
 import uk.ac.rhul.cs.csle.art.util.Util;
 
@@ -39,7 +39,7 @@ public class AJDebug {
   Grammar grammarV5; // regression V5 grammar
   ARTGrammar grammarV3; // regression V3 grammar
 
-  ARTScriptTermInterpreter regressionScriptInterpreter;
+  ScriptTermInterpreter regressionScriptInterpreter;
 
   public AJDebug(String[] args) {
     try {
@@ -65,7 +65,7 @@ public class AJDebug {
 
   private boolean v5v3RegressionFirstAndFollowSets(String scriptString) {
 
-    regressionScriptInterpreter = new ARTScriptTermInterpreter(new ITermsLowLevelAPI());
+    regressionScriptInterpreter = new ScriptTermInterpreter(new ITermsLowLevelAPI());
 
     // System.out.print("v5v3RegressionFirstAndFollowSets");
 

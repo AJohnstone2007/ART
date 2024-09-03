@@ -10,7 +10,7 @@ import javafx.geometry.Rectangle2D;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import uk.ac.rhul.cs.csle.art.ART;
-import uk.ac.rhul.cs.csle.art.script.ARTScriptTermInterpreter;
+import uk.ac.rhul.cs.csle.art.script.ScriptTermInterpreter;
 import uk.ac.rhul.cs.csle.art.term.ITermsLowLevelAPI;
 import uk.ac.rhul.cs.csle.art.util.Util;
 
@@ -19,7 +19,7 @@ public class FXStart extends Application {
   @Override
   public void start(Stage primaryStage) {
     if (!ART.useIDE) {
-      new ARTScriptTermInterpreter(new ITermsLowLevelAPI()).interpret(Util.scriptString(ART.clargs));
+      new ScriptTermInterpreter(new ITermsLowLevelAPI()).interpret(Util.scriptString(ART.clargs));
       Platform.exit();
       System.exit(0);
     }

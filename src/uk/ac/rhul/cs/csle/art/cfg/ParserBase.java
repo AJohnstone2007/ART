@@ -28,7 +28,6 @@ public abstract class ParserBase {
   private long lexChooseTime;
   private long parseTime;
   private long parseChooseTime;
-  private long derivationSelectTime;
   private long termGenerateTime;
   private long semanticsTime;
   private long artStartMemory;
@@ -53,10 +52,6 @@ public abstract class ParserBase {
 
   public void loadParseChooseTime() {
     parseChooseTime = System.nanoTime();
-  }
-
-  public void loadDerivationSelectTime() {
-    derivationSelectTime = System.nanoTime();
   }
 
   public void loadTermGenerateTime() {
@@ -85,8 +80,7 @@ public abstract class ParserBase {
     if (lexChooseTime < lexTime) lexChooseTime = lexTime;
     if (parseTime < lexChooseTime) parseTime = lexChooseTime;
     if (parseChooseTime < parseTime) parseChooseTime = parseTime;
-    if (derivationSelectTime < parseChooseTime) derivationSelectTime = parseChooseTime;
-    if (termGenerateTime < derivationSelectTime) termGenerateTime = derivationSelectTime;
+    if (termGenerateTime < parseChooseTime) termGenerateTime = parseChooseTime;
     if (semanticsTime < termGenerateTime) semanticsTime = termGenerateTime;
   }
 
@@ -96,9 +90,16 @@ public abstract class ParserBase {
 
   private String artGetTimes() {
     return artTimeAsMilliseconds(startTime, setupTime) + "," + artTimeAsMilliseconds(setupTime, lexTime) + "," + artTimeAsMilliseconds(lexTime, lexChooseTime)
-        + "," + artTimeAsMilliseconds(lexChooseTime, parseTime) + "," + artTimeAsMilliseconds(parseTime, parseChooseTime) + ","
-        + artTimeAsMilliseconds(parseChooseTime, derivationSelectTime) + "," + artTimeAsMilliseconds(derivationSelectTime, termGenerateTime) + ","
-        + artTimeAsMilliseconds(termGenerateTime, semanticsTime);
+        + "," + artTimeAsMilliseconds(lexChooseTime, parseTime) + "," + artTimeAsMilliseconds(parseTime, parseChooseTime) + "," + ","
+        + artTimeAsMilliseconds(parseChooseTime, termGenerateTime) + "," + artTimeAsMilliseconds(termGenerateTime, semanticsTime);
+  }
+
+  private String getSPPFCounts() {
+    return "GSS SN,GSS EN,GGS E,SPPF Eps,SPPF T,SPPF NT,SPPF Inter,SPPF PN,SPPF Edge,";
+  }
+
+  private String getPoolCounts() {
+    return "Pool,H0,H1,H2,H3,H4,H5,H6+";
   }
 
   public long artMemoryUsed() {
@@ -109,13 +110,13 @@ public abstract class ParserBase {
 
   public void resetStats() {
     startTime = System.nanoTime();
-    setupTime = lexTime = lexChooseTime = parseTime = parseChooseTime = derivationSelectTime = termGenerateTime = semanticsTime = artStartMemory = artEndMemory = artEndPoolAllocated = 0;
+    setupTime = lexTime = lexChooseTime = parseTime = parseChooseTime = termGenerateTime = semanticsTime = artStartMemory = artEndMemory = artEndPoolAllocated = 0;
   }
 
   public String stats() {
     normaliseTimes();
     return inputString.length() + "," + getClass().getSimpleName() + "," + (inLanguage ? "accept" : "reject") + ",OK," + artGetTimes() + "," + input.length
-        + "," + (input.length - 1) + ",1," + artEndPoolAllocated;
+        + "," + (input.length - 1) + ",1," + getSPPFCounts() + getPoolCounts();
   }
 
   // TODO: this needs to be merged with gllBaseLine.constructorOf(,)
