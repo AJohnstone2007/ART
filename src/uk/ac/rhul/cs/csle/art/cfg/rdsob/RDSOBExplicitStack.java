@@ -52,7 +52,7 @@ public class RDSOBExplicitStack extends ParserBase {
 
   void call(GrammarNode caller) {
     sn = new SNode(caller.seq, i, sn, dn);
-    gn = lhs(gn).alt.seq;
+    gn = getLHS(gn).alt.seq;
   }
 
   GrammarNode retrn() {

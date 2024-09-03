@@ -27,7 +27,7 @@ public class RDSOBFunction extends ParserBase {
           } else
             continue altLoop;
         case N:
-          if (rdsobFunction(lhs(gn))) {
+          if (rdsobFunction(getLHS(gn))) {
             gn = gn.seq;
             break;
           } else

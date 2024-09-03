@@ -3,6 +3,7 @@ package uk.ac.rhul.cs.csle.art.cfg.gll;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
+import java.util.BitSet;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -58,7 +59,7 @@ public class GLLBaseLine extends ParserBase {
         p.suppressed = false;
   }
 
-  private final Set<SPPFN> visitedSPPFNodes = new HashSet();
+  private final BitSet visitedSPPFNodes = new BitSet();
 
   @Override
   public void chooseLongestMatch() {
@@ -72,8 +73,8 @@ public class GLLBaseLine extends ParserBase {
 
   private void chooseLongestMatchRec(SPPFN sn) {
     // chooseLongestMatchRecCount++;
-    if (visitedSPPFNodes.contains(sn)) return;
-    visitedSPPFNodes.add(sn);
+    if (visitedSPPFNodes.get(sn.number)) return;
+    visitedSPPFNodes.set(sn.number);
 
     int rightMostPivot = -1;
     SPPFPN candidate = null;
@@ -90,11 +91,11 @@ public class GLLBaseLine extends ParserBase {
       if (p != candidate) p.suppressed = true;
   }
 
-  private GrammarNode rules(GrammarNode gn) {
+  private GrammarNode getRules(GrammarNode gn) {
     return grammar.rules.get(gn.elm);
   }
 
-  private boolean accepting(GrammarNode gn) {
+  private boolean isAccepting(GrammarNode gn) {
     return grammar.acceptingNodeNumbers.contains(gn.num);
   }
 
@@ -161,14 +162,8 @@ public class GLLBaseLine extends ParserBase {
   @Override
   public void parse() {
     gllBL();
-    if (!inLanguage && !suppressEcho) parserError("GLLBL ");
+    if (!inLanguage && !suppressEcho) System.out.print(Util.echo("GLLBL " + "syntax error", positions[sppfWidestIndex()], inputString));
   }
-
-  private void parserError(String msg) {
-    System.out.print(Util.echo(msg + "syntax error", positions[sppfWidestIndex()], inputString));
-  }
-
-  // Paper material below this line
 
 //@formatter:off
 
@@ -209,13 +204,13 @@ void call(GrammarNode gn) {
   for (SPPFN rc : gssN.pops)
    queueDesc(gn.seq, rc.ri, sn, sppfUpdate(gn.seq, dn, rc));
  }
- for (GrammarNode p = rules(gn).alt; p != null; p = p.alt)
+ for (GrammarNode p = getRules(gn).alt; p != null; p = p.alt)
   queueDesc(p.seq, i, gssN, null);
 }
 
 void ret() {
  if (sn.equals(gssRoot)) { // Stack base
-  if (accepting(gn) && (i == input.length - 1)) {
+  if (isAccepting(gn) && (i == input.length - 1)) {
     sppfRootNode = sppf.get(new SPPFN(grammar.rules.get(grammar.startNonterminal), 0, input.length - 1));
     inLanguage = true;
   } else {
@@ -269,7 +264,6 @@ void initialise() {
  inLanguage = false;
 }
 
-
 void gllBL() {
  initialise();
  nextDescriptor: while (dequeueDesc())
@@ -281,8 +275,6 @@ void gllBL() {
    case N: call(gn); continue nextDescriptor;
    case EPS: du(0); gn = gn.seq; break;
    case END: ret(); continue nextDescriptor;
-
-
    case DO: gn = gn.alt; break;
    case ALT:
      for (GrammarNode tmp = gn; tmp != null; tmp = tmp.alt)
@@ -382,15 +374,12 @@ void gllBL() {
       int right = positions[sppfn.li] + 1;
       while (inputString.charAt(right) != '\'')
         right++;
-
       return inputString.substring(positions[sppfn.li] + 1, right);
     }
-
     case STRING_DQ: {
       int right = positions[sppfn.li] + 1;
       while (inputString.charAt(right) != '\"')
         right++;
-
       return inputString.substring(positions[sppfn.li] + 1, right);
     }
     case STRING_BRACE_NEST:
@@ -411,10 +400,9 @@ void gllBL() {
 
   private String derivationAsTermRec(SPPFN sppfn, LinkedList<Integer> childrenFromParent, GrammarNode gn) {
     // System.out.println("\nEntered derivationAsTermRec() at node " + sppfn + " instance " + gn);
-    if (visitedSPPFNodes.contains(sppfn)) return "-!-"; // Util.fatal("derivationAsTermRec() found cycle in derivation");
+    if (visitedSPPFNodes.get(sppfn.number)) return "-!-"; // Util.fatal("derivationAsTermRec() found cycle in derivation");
 
-    visitedSPPFNodes.add(sppfn);
-
+    visitedSPPFNodes.set(sppfn.number);
     LinkedList<Integer> children = (gn.giftKind == GIFTKind.OVER || gn.giftKind == GIFTKind.UNDER) ? childrenFromParent : new LinkedList<>();
     String constructor = null;
 
@@ -433,7 +421,7 @@ void gllBL() {
     if (constructor == null) constructor = constructorOf(sppfn, gn); // If there were no OVERs, then set the constructor to be our symbol
     if (children != childrenFromParent) childrenFromParent.add(grammar.iTerms.findTerm(constructor, children));
 
-    visitedSPPFNodes.remove(sppfn);
+    visitedSPPFNodes.clear(sppfn.number);
     return (gn.giftKind == GIFTKind.OVER) ? constructor : null;
   }
 
@@ -462,356 +450,362 @@ void gllBL() {
                                                                                              // start production
     return carrier.getFirst();
   }
-}
 
-class Desc {
-  public GrammarNode gn;
-  public int i;
-  public GSSN sn;
-  public SPPFN dn;
+  class Desc {
+    public GrammarNode gn;
+    public int i;
+    public GSSN sn;
+    public SPPFN dn;
 
-  public Desc(GrammarNode gn, int index, GSSN sn, SPPFN dn) {
-    super();
-    this.gn = gn;
-    this.i = index;
-    this.sn = sn;
-    this.dn = dn;
-  }
+    public Desc(GrammarNode gn, int index, GSSN sn, SPPFN dn) {
+      super();
+      this.gn = gn;
+      this.i = index;
+      this.sn = sn;
+      this.dn = dn;
+    }
 
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("(");
-    sb.append(i);
-    sb.append(", ");
-    sb.append(gn.toStringAsProduction());
-    sb.append(", ");
-    sb.append(sn);
-    sb.append(", ");
-    sb.append(dn);
-    sb.append(")");
-    return sb.toString();
-  }
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder();
+      sb.append("(");
+      sb.append(i);
+      sb.append(", ");
+      sb.append(gn.toStringAsProduction());
+      sb.append(", ");
+      sb.append(sn);
+      sb.append(", ");
+      sb.append(dn);
+      sb.append(")");
+      return sb.toString();
+    }
 
-  @Override
-  public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + ((sn == null) ? 0 : sn.hashCode());
-    result = prime * result + i;
-    result = prime * result + ((gn == null) ? 0 : gn.hashCode());
-    result = prime * result + ((dn == null) ? 0 : dn.hashCode());
-    return result;
-  }
+    @Override
+    public int hashCode() {
+      final int prime = 31;
+      int result = 1;
+      result = prime * result + ((sn == null) ? 0 : sn.hashCode());
+      result = prime * result + i;
+      result = prime * result + ((gn == null) ? 0 : gn.hashCode());
+      result = prime * result + ((dn == null) ? 0 : dn.hashCode());
+      return result;
+    }
 
-  @Override
-  public boolean equals(Object obj) {
-    if (this == obj) return true;
-    if (obj == null) return false;
-    if (getClass() != obj.getClass()) return false;
-    Desc other = (Desc) obj;
-    if (sn == null) {
-      if (other.sn != null) return false;
-    } else if (!sn.equals(other.sn)) return false;
-    if (i != other.i) return false;
-    if (gn == null) {
-      if (other.gn != null) return false;
-    } else if (!gn.equals(other.gn)) return false;
-    if (dn == null) {
-      if (other.dn != null) return false;
-    } else if (!dn.equals(other.dn)) return false;
-    return true;
-  }
-}
-
-class GSSN {
-  public final GrammarNode gn;
-  final int i;
-  public final Set<GSSE> edges = new HashSet<>();
-  public final Set<SPPFN> pops = new HashSet<>();
-
-  public GSSN(GrammarNode gn, int i) {
-    super();
-    this.gn = gn;
-    this.i = i;
-  }
-
-  @Override
-  public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + i;
-    result = prime * result + ((gn == null) ? 0 : gn.hashCode());
-    return result;
-  }
-
-  @Override
-  public boolean equals(Object obj) {
-    if (this == obj) return true;
-    if (obj == null) return false;
-    if (getClass() != obj.getClass()) return false;
-    GSSN other = (GSSN) obj;
-    if (i != other.i) return false;
-    if (gn == null) {
-      if (other.gn != null) return false;
-    } else if (!gn.equals(other.gn)) return false;
-    return true;
-  }
-
-  @Override
-  public String toString() {
-    return "(" + gn.toStringAsProduction() + ", " + i + ")";
-  }
-
-}
-
-class GSSE {
-  public final GSSN dst;
-  public final SPPFN sppfnode;
-
-  public GSSE(GSSN dst, SPPFN sppfNode) {
-    this.sppfnode = sppfNode;
-    this.dst = dst;
-  }
-
-  @Override
-  public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + ((dst == null) ? 0 : dst.hashCode());
-    result = prime * result + ((sppfnode == null) ? 0 : sppfnode.hashCode());
-    return result;
-  }
-
-  @Override
-  public boolean equals(Object obj) {
-    if (this == obj) return true;
-    if (obj == null) return false;
-    if (getClass() != obj.getClass()) return false;
-    GSSE other = (GSSE) obj;
-    if (dst == null) {
-      if (other.dst != null) return false;
-    } else if (!dst.equals(other.dst)) return false;
-    if (sppfnode == null) {
-      if (other.sppfnode != null) return false;
-    } else if (!sppfnode.equals(other.sppfnode)) return false;
-    return true;
-  }
-}
-
-class SPPFN {
-  public final GrammarNode gn;
-  public final int li;
-  public final int ri;
-  public final Set<SPPFPN> packNS = new HashSet<>();
-
-  public SPPFN(GrammarNode gn, int li, int ri) {
-    super();
-    this.gn = gn;
-    this.li = li;
-    this.ri = ri;
-  }
-
-  @Override
-  public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + ((gn == null) ? 0 : gn.hashCode());
-    result = prime * result + li;
-    result = prime * result + ri;
-    return result;
-  }
-
-  @Override
-  public boolean equals(Object obj) {
-    if (this == obj) return true;
-    if (obj == null) return false;
-    if (getClass() != obj.getClass()) return false;
-    SPPFN other = (SPPFN) obj;
-    if (gn == null) {
-      if (other.gn != null) return false;
-    } else if (!gn.equals(other.gn)) return false;
-    if (li != other.li) return false;
-    if (ri != other.ri) return false;
-    return true;
-  }
-
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("(");
-    if (gn == null)
-      sb.append("NULL");
-    else
-      sb.append(gn.toString());
-    sb.append(", ");
-    sb.append(li);
-    sb.append(", ");
-    sb.append(ri);
-    sb.append(")");
-    return sb.toString();
-  }
-}
-
-class SPPFPN {
-  public final GrammarNode gn;
-  public final int pivot;
-  public final SPPFN leftChild;
-  public final SPPFN rightChild;
-  public boolean suppressed = false;
-
-  public SPPFPN(GrammarNode gn, int pivot, SPPFN leftChild, SPPFN rightChild) {
-    super();
-    this.gn = gn;
-    this.pivot = pivot;
-    this.leftChild = leftChild;
-    this.rightChild = rightChild;
-  }
-
-  @Override
-  public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + ((gn == null) ? 0 : gn.hashCode());
-    result = prime * result + pivot;
-    return result;
-  }
-
-  @Override
-  public boolean equals(Object obj) {
-    if (this == obj) return true;
-    if (obj == null) return false;
-    if (getClass() != obj.getClass()) return false;
-    SPPFPN other = (SPPFPN) obj;
-    if (gn == null) {
-      if (other.gn != null) return false;
-    } else if (!gn.equals(other.gn)) return false;
-    if (pivot != other.pivot) return false;
-    return true;
-  }
-
-  @Override
-  public String toString() {
-    StringBuilder builder = new StringBuilder();
-    builder.append(gn.toStringAsProduction());
-    builder.append(", " + pivot);
-    builder.append(suppressed ? "(suppressed)" : "");
-    return builder.toString();
-  }
-}
-
-class SPPF2Dot {
-  final String packNodeStyle = "[style=rounded]";
-  final String ambiguousStyle = "[color=red]";
-  final String intermediateNodeStyle = "[style=filled fillcolor=grey92]";
-  final String symbolNodeStyle = "";
-  PrintStream sppfOut = null;
-  private final Map<SPPFN, SPPFN> sppf;
-  private final boolean showIndicies;
-  private final boolean showIntermediates;
-
-  private String renderSPPFPackNode(SPPFN parent, SPPFPN node) {
-    return renderSPPFPackNodeLabel(parent, node) + "[label = \"" + node.gn.toStringAsProduction() + " " + node.pivot + "\" ]" + packNodeStyle;
-  }
-
-  private String renderSPPFPackNodeLabel(SPPFN parent, SPPFPN node) {
-    return "\"" + parent.gn.toStringAsProduction() + "," + parent.li + "," + parent.ri + " " + node.gn.toStringAsProduction() + " " + node.pivot + "\"";
-  }
-
-  private String renderSPPFNode(SPPFN node) {
-    // if (node == null) return "null";
-    return renderSPPFNodeLabel(node) + (node.packNS.size() > 1 ? ambiguousStyle : "") + (isSymbol(node) ? symbolNodeStyle : intermediateNodeStyle);
-  }
-
-  private boolean isSymbol(SPPFN node) {
-    return node.packNS.size() == 0 || Grammar.isLHS(node.gn);
-  }
-
-  private String renderSPPFNodeLabel(SPPFN node) {
-    String label;
-    if (node == null)
-      return "NULL node";
-    else {
-      if (node.gn == null)
-        label = "NULL label";
-      else if (node.packNS.size() == 0)
-        label = node.gn.toString();
-      else if (Grammar.isLHS(node.gn)) {
-        label = node.gn.elm.str;
-      } else
-        label = node.gn.toStringAsProduction();
-      return "\"" + label + (showIndicies ? (" " + node.li + "," + node.ri) : "") + "\"";
+    @Override
+    public boolean equals(Object obj) {
+      if (this == obj) return true;
+      if (obj == null) return false;
+      if (getClass() != obj.getClass()) return false;
+      Desc other = (Desc) obj;
+      if (sn == null) {
+        if (other.sn != null) return false;
+      } else if (!sn.equals(other.sn)) return false;
+      if (i != other.i) return false;
+      if (gn == null) {
+        if (other.gn != null) return false;
+      } else if (!gn.equals(other.gn)) return false;
+      if (dn == null) {
+        if (other.dn != null) return false;
+      } else if (!dn.equals(other.dn)) return false;
+      return true;
     }
   }
 
-  public SPPF2Dot(Map<SPPFN, SPPFN> sppf, SPPFN rootNode, String filename, boolean full, boolean showIndicies, boolean showIntermediates) {
-    this.sppf = sppf;
-    this.showIndicies = showIndicies;
-    this.showIntermediates = showIntermediates;
-    if (sppf == null) return;
-    try {
-      sppfOut = new PrintStream(new File(filename));
-      sppfOut.println("digraph \"SPPF\" {\n"
-          + "graph[ordering=out ranksep=0.1]\n node[fontname=Helvetica fontsize=9 shape=box height=0 width=0 margin=0.04 color=gray]\nedge[arrowsize=0.1 color=gray]");
-      if (sppf != null) if (full)
-        fullSPPF(rootNode);
+  class GSSN {
+    public final GrammarNode gn;
+    final int i;
+    public final Set<GSSE> edges = new HashSet<>();
+    public final Set<SPPFN> pops = new HashSet<>();
+
+    public GSSN(GrammarNode gn, int i) {
+      super();
+      this.gn = gn;
+      this.i = i;
+    }
+
+    @Override
+    public int hashCode() {
+      final int prime = 31;
+      int result = 1;
+      result = prime * result + i;
+      result = prime * result + ((gn == null) ? 0 : gn.hashCode());
+      return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (this == obj) return true;
+      if (obj == null) return false;
+      if (getClass() != obj.getClass()) return false;
+      GSSN other = (GSSN) obj;
+      if (i != other.i) return false;
+      if (gn == null) {
+        if (other.gn != null) return false;
+      } else if (!gn.equals(other.gn)) return false;
+      return true;
+    }
+
+    @Override
+    public String toString() {
+      return "(" + gn.toStringAsProduction() + ", " + i + ")";
+    }
+
+  }
+
+  class GSSE {
+    public final GSSN dst;
+    public final SPPFN sppfnode;
+
+    public GSSE(GSSN dst, SPPFN sppfNode) {
+      this.sppfnode = sppfNode;
+      this.dst = dst;
+    }
+
+    @Override
+    public int hashCode() {
+      final int prime = 31;
+      int result = 1;
+      result = prime * result + ((dst == null) ? 0 : dst.hashCode());
+      result = prime * result + ((sppfnode == null) ? 0 : sppfnode.hashCode());
+      return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (this == obj) return true;
+      if (obj == null) return false;
+      if (getClass() != obj.getClass()) return false;
+      GSSE other = (GSSE) obj;
+      if (dst == null) {
+        if (other.dst != null) return false;
+      } else if (!dst.equals(other.dst)) return false;
+      if (sppfnode == null) {
+        if (other.sppfnode != null) return false;
+      } else if (!sppfnode.equals(other.sppfnode)) return false;
+      return true;
+    }
+  }
+
+  int nextFreeSPPFNodeNumber = 0;
+
+  class SPPFN {
+    public final int number; // to allow a bitset to be used as visited set
+    public final GrammarNode gn;
+    public final int li;
+    public final int ri;
+    public final Set<SPPFPN> packNS = new HashSet<>();
+
+    public SPPFN(GrammarNode gn, int li, int ri) {
+      super();
+      this.number = nextFreeSPPFNodeNumber++;
+      this.gn = gn;
+      this.li = li;
+      this.ri = ri;
+    }
+
+    @Override
+    public int hashCode() {
+      final int prime = 31;
+      int result = 1;
+      result = prime * result + ((gn == null) ? 0 : gn.hashCode());
+      result = prime * result + li;
+      result = prime * result + ri;
+      return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (this == obj) return true;
+      if (obj == null) return false;
+      if (getClass() != obj.getClass()) return false;
+      SPPFN other = (SPPFN) obj;
+      if (gn == null) {
+        if (other.gn != null) return false;
+      } else if (!gn.equals(other.gn)) return false;
+      if (li != other.li) return false;
+      if (ri != other.ri) return false;
+      return true;
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder();
+      sb.append("(");
+      if (gn == null)
+        sb.append("NULL");
       else
-        coreSPPFRec(rootNode);
-      fullSPPF(rootNode);
-      sppfOut.println("}");
-      sppfOut.close();
-    } catch (FileNotFoundException e) {
-      System.out.println("Unable to write SPPF visualisation to " + filename);
+        sb.append(gn.toString());
+      sb.append(", ");
+      sb.append(li);
+      sb.append(", ");
+      sb.append(ri);
+      sb.append(")");
+      return sb.toString();
     }
   }
 
-  private void coreSPPFRec(SPPFN s) {
-    if (sppf == null || s == null) return;
-    sppfOut.println(renderSPPFNode(s));
-    for (SPPFPN p : s.packNS) {
-      sppfOut.println(renderSPPFPackNode(s, p));
-      sppfOut.println(renderSPPFNodeLabel(s) + "->" + renderSPPFPackNodeLabel(s, p) + (s.packNS.size() > 1 ? ambiguousStyle : ""));
+  class SPPFPN {
+    public final int number; // to allow a bitset to be used as visited set
+    public final GrammarNode gn;
+    public final int pivot;
+    public final SPPFN leftChild;
+    public final SPPFN rightChild;
+    public boolean suppressed = false;
 
-      if (p.leftChild != null) sppfOut.println(renderSPPFPackNodeLabel(s, p) + "->" + renderSPPFNodeLabel(p.leftChild));
-      sppfOut.println(renderSPPFPackNodeLabel(s, p) + "->" + renderSPPFNodeLabel(p.rightChild));
+    public SPPFPN(GrammarNode gn, int pivot, SPPFN leftChild, SPPFN rightChild) {
+      super();
+      this.number = nextFreeSPPFNodeNumber++;
+      this.gn = gn;
+      this.pivot = pivot;
+      this.leftChild = leftChild;
+      this.rightChild = rightChild;
+    }
 
-      if (p.leftChild != null) coreSPPFRec(p.leftChild);
-      if (p.rightChild != null) coreSPPFRec(p.rightChild);
+    @Override
+    public int hashCode() {
+      final int prime = 31;
+      int result = 1;
+      result = prime * result + ((gn == null) ? 0 : gn.hashCode());
+      result = prime * result + pivot;
+      return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (this == obj) return true;
+      if (obj == null) return false;
+      if (getClass() != obj.getClass()) return false;
+      SPPFPN other = (SPPFPN) obj;
+      if (gn == null) {
+        if (other.gn != null) return false;
+      } else if (!gn.equals(other.gn)) return false;
+      if (pivot != other.pivot) return false;
+      return true;
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder builder = new StringBuilder();
+      builder.append(gn.toStringAsProduction());
+      builder.append(", " + pivot);
+      builder.append(suppressed ? "(suppressed)" : "");
+      return builder.toString();
     }
   }
 
-  private void fullSPPF(SPPFN rootnode) {
-    if (sppf == null || rootnode == null) return;
-    for (SPPFN s : sppf.keySet()) {
+  class SPPF2Dot {
+    final String packNodeStyle = "[style=rounded]";
+    final String ambiguousStyle = "[color=red]";
+    final String intermediateNodeStyle = "[style=filled fillcolor=grey92]";
+    final String symbolNodeStyle = "";
+    PrintStream sppfOut = null;
+    private final Map<SPPFN, SPPFN> sppf;
+    private final boolean showIndicies;
+    private final boolean showIntermediates;
+
+    private String renderSPPFPackNode(SPPFN parent, SPPFPN node) {
+      return renderSPPFPackNodeLabel(parent, node) + "[label = \"" + node.gn.toStringAsProduction() + " " + node.pivot + "\" ]" + packNodeStyle;
+    }
+
+    private String renderSPPFPackNodeLabel(SPPFN parent, SPPFPN node) {
+      return "\"" + parent.gn.toStringAsProduction() + "," + parent.li + "," + parent.ri + " " + node.gn.toStringAsProduction() + " " + node.pivot + "\"";
+    }
+
+    private String renderSPPFNode(SPPFN node) {
+      // if (node == null) return "null";
+      return renderSPPFNodeLabel(node) + (node.packNS.size() > 1 ? ambiguousStyle : "") + (isSymbol(node) ? symbolNodeStyle : intermediateNodeStyle);
+    }
+
+    private boolean isSymbol(SPPFN node) {
+      return node.packNS.size() == 0 || Grammar.isLHS(node.gn);
+    }
+
+    private String renderSPPFNodeLabel(SPPFN node) {
+      String label;
+      if (node == null)
+        return "NULL node";
+      else {
+        if (node.gn == null)
+          label = "NULL label";
+        else if (node.packNS.size() == 0)
+          label = node.gn.toString();
+        else if (Grammar.isLHS(node.gn)) {
+          label = node.gn.elm.str;
+        } else
+          label = node.gn.toStringAsProduction();
+        return "\"" + label + (showIndicies ? (" " + node.li + "," + node.ri) : "") + "\"";
+      }
+    }
+
+    public SPPF2Dot(Map<SPPFN, SPPFN> sppf, SPPFN rootNode, String filename, boolean full, boolean showIndicies, boolean showIntermediates) {
+      this.sppf = sppf;
+      this.showIndicies = showIndicies;
+      this.showIntermediates = showIntermediates;
+      if (sppf == null) return;
+      try {
+        sppfOut = new PrintStream(new File(filename));
+        sppfOut.println("digraph \"SPPF\" {\n"
+            + "graph[ordering=out ranksep=0.1]\n node[fontname=Helvetica fontsize=9 shape=box height=0 width=0 margin=0.04 color=gray]\nedge[arrowsize=0.1 color=gray]");
+        if (sppf != null) if (full)
+          fullSPPF(rootNode);
+        else
+          coreSPPFRec(rootNode);
+        fullSPPF(rootNode);
+        sppfOut.println("}");
+        sppfOut.close();
+      } catch (FileNotFoundException e) {
+        System.out.println("Unable to write SPPF visualisation to " + filename);
+      }
+    }
+
+    private void coreSPPFRec(SPPFN s) {
+      if (sppf == null || s == null) return;
       sppfOut.println(renderSPPFNode(s));
       for (SPPFPN p : s.packNS) {
         sppfOut.println(renderSPPFPackNode(s, p));
         sppfOut.println(renderSPPFNodeLabel(s) + "->" + renderSPPFPackNodeLabel(s, p) + (s.packNS.size() > 1 ? ambiguousStyle : ""));
+
         if (p.leftChild != null) sppfOut.println(renderSPPFPackNodeLabel(s, p) + "->" + renderSPPFNodeLabel(p.leftChild));
         sppfOut.println(renderSPPFPackNodeLabel(s, p) + "->" + renderSPPFNodeLabel(p.rightChild));
+
+        if (p.leftChild != null) coreSPPFRec(p.leftChild);
+        if (p.rightChild != null) coreSPPFRec(p.rightChild);
+      }
+    }
+
+    private void fullSPPF(SPPFN rootnode) {
+      if (sppf == null || rootnode == null) return;
+      for (SPPFN s : sppf.keySet()) {
+        sppfOut.println(renderSPPFNode(s));
+        for (SPPFPN p : s.packNS) {
+          sppfOut.println(renderSPPFPackNode(s, p));
+          sppfOut.println(renderSPPFNodeLabel(s) + "->" + renderSPPFPackNodeLabel(s, p) + (s.packNS.size() > 1 ? ambiguousStyle : ""));
+          if (p.leftChild != null) sppfOut.println(renderSPPFPackNodeLabel(s, p) + "->" + renderSPPFNodeLabel(p.leftChild));
+          sppfOut.println(renderSPPFPackNodeLabel(s, p) + "->" + renderSPPFNodeLabel(p.rightChild));
+        }
       }
     }
   }
-}
 
-class GSS2Dot {
-  public GSS2Dot(Map<GSSN, GSSN> gss, String filename) {
-    if (gss == null) return;
-    PrintStream gssOut;
-    try {
-      gssOut = new PrintStream(new File(filename));
-      gssOut.println("digraph \"GSS\" {\n" + "node[fontname=Helvetica fontsize=9 shape=box height = 0 width = 0 margin= 0.04  color=gray]\n"
-          + "graph[ordering=out ranksep=0.1]\n" + "edge[arrowsize = 0.3  color=gray]");
+  class GSS2Dot {
+    public GSS2Dot(Map<GSSN, GSSN> gss, String filename) {
+      if (gss == null) return;
+      PrintStream gssOut;
+      try {
+        gssOut = new PrintStream(new File(filename));
+        gssOut.println("digraph \"GSS\" {\n" + "node[fontname=Helvetica fontsize=9 shape=box height = 0 width = 0 margin= 0.04  color=gray]\n"
+            + "graph[ordering=out ranksep=0.1]\n" + "edge[arrowsize = 0.3  color=gray]");
 
-      if (gss != null) for (GSSN s : gss.keySet()) {
-        gssOut.println("\"" + s + "\" [label=\"" + s.gn.toStringAsProduction() + "\n" + s.i + "\"]");
-        for (GSSE c : s.edges) // iterate over children
-          gssOut.println("\"" + s + "\"->\"" + c.dst + "\"");
+        if (gss != null) for (GSSN s : gss.keySet()) {
+          gssOut.println("\"" + s + "\" [label=\"" + s.gn.toStringAsProduction() + "\n" + s.i + "\"]");
+          for (GSSE c : s.edges) // iterate over children
+            gssOut.println("\"" + s + "\"->\"" + c.dst + "\"");
+        }
+        gssOut.println("}");
+        gssOut.close();
+      } catch (FileNotFoundException e) {
+        System.out.println("Unable to write GSS visualisation to " + filename);
       }
-      gssOut.println("}");
-      gssOut.close();
-    } catch (FileNotFoundException e) {
-      System.out.println("Unable to write GSS visualisation to " + filename);
     }
   }
 }

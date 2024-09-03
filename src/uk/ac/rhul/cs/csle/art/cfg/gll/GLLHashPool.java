@@ -335,10 +335,6 @@ public class GLLHashPool extends HashPool {
   }
 
   @Override
-  public void selectFirst() {
-  }
-
-  @Override
   public int derivationAsTerm() {
     return 0;
   }

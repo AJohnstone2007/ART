@@ -290,7 +290,7 @@ public class ScriptTermInterpreter {
           break;
 
         case "statistics":
-          System.out.println(currentParser.stats());
+          System.out.println(currentParser.statisticsToString());
           break;
 
         case "__string":

@@ -245,7 +245,7 @@ class MakeTimeSummary {
   MakeTimeSummary(String logFileName, String summaryFileName) throws IOException {
     Files.deleteIfExists(Paths.get(summaryFileName));
     var fw = new FileWriter(new File(summaryFileName), true);
-    fw.write("tool,script,language,grammar,string,tokens,algorithm,result," + "Runs,TParseMin,TParseMax,TParseMean,TParseBestFiveMean,,Results...\n");
+    fw.write("tool,script,language,grammar,string,tokens,algorithm,result," + "Runs,TMin,TMax,TMean,TBest5Mean,,Results...\n");
 
     var scanner = new Scanner(new File(logFileName));
     var header = scanner.nextLine();
@@ -259,7 +259,8 @@ class MakeTimeSummary {
       }
       var key = new SummaryKey(fields[3], fields[4], fields[6], fields[7], fields[8], fields[21], fields[10], fields[11]);
       if (map.get(key) == null) map.put(key, new ArrayList<Double>());
-      map.get(key).add(Double.parseDouble(fields[16])); // Add parse time
+      // map.get(key).add(Double.parseDouble(fields[16])); // Add parse time
+      map.get(key).add(Double.parseDouble(fields[17])); // Add parse chooser time
     }
 
     for (var k : map.keySet()) {

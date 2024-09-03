@@ -72,7 +72,6 @@ public class ADL {
     if (adlParser.input != null) adlParser.parse();
     if (adlParser.inLanguage) {
       adlParser.chooseLongestMatch();
-      adlParser.selectFirst();
       adlDerivationTerm = adlParser.derivationAsTerm();
       __mapChain topLevelEnvironment = new __mapChain();
       Value topLevelReturn = interpret(adlDerivationTerm, topLevelEnvironment);

@@ -90,7 +90,6 @@ public class ADLInterpreter {
 
       if (adlParser.inLanguage) {
         adlParser.chooseLongestMatch();
-        adlParser.selectFirst();
         int derivationTerm = adlParser.derivationAsTerm();
         System.out.println("ADL derivation: " + iTerms.toString(derivationTerm, true, -1, null));
         return adlInterpretRec(derivationTerm, topLevelSymbols);

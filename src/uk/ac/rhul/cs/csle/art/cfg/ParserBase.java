@@ -63,11 +63,11 @@ public abstract class ParserBase {
   }
 
   public void loadStartMemory() {
-    artStartMemory = artMemoryUsed();
+    artStartMemory = memoryUsed();
   }
 
   public void loadEndMemory() {
-    artEndMemory = artMemoryUsed();
+    artEndMemory = memoryUsed();
   }
 
   public void loadEndPoolAllocated(long m) {
@@ -84,14 +84,14 @@ public abstract class ParserBase {
     if (semanticsTime < termGenerateTime) semanticsTime = termGenerateTime;
   }
 
-  private String artTimeAsMilliseconds(long startTime, long stopTime) {
+  private String timeAsMilliseconds(long startTime, long stopTime) {
     return String.format("%.3f", (stopTime - startTime) * 1E-6);
   }
 
   private String artGetTimes() {
-    return artTimeAsMilliseconds(startTime, setupTime) + "," + artTimeAsMilliseconds(setupTime, lexTime) + "," + artTimeAsMilliseconds(lexTime, lexChooseTime)
-        + "," + artTimeAsMilliseconds(lexChooseTime, parseTime) + "," + artTimeAsMilliseconds(parseTime, parseChooseTime) + "," + ","
-        + artTimeAsMilliseconds(parseChooseTime, termGenerateTime) + "," + artTimeAsMilliseconds(termGenerateTime, semanticsTime);
+    return timeAsMilliseconds(startTime, setupTime) + "," + timeAsMilliseconds(setupTime, lexTime) + "," + timeAsMilliseconds(lexTime, lexChooseTime) + ","
+        + timeAsMilliseconds(lexChooseTime, parseTime) + "," + timeAsMilliseconds(parseTime, parseChooseTime) + ","
+        + timeAsMilliseconds(parseChooseTime, termGenerateTime) + "," + timeAsMilliseconds(termGenerateTime, semanticsTime);
   }
 
   private String getSPPFCounts() {
@@ -102,7 +102,7 @@ public abstract class ParserBase {
     return "Pool,H0,H1,H2,H3,H4,H5,H6+";
   }
 
-  public long artMemoryUsed() {
+  public long memoryUsed() {
     System.gc();
     System.gc();
     return Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
@@ -113,7 +113,7 @@ public abstract class ParserBase {
     setupTime = lexTime = lexChooseTime = parseTime = parseChooseTime = termGenerateTime = semanticsTime = artStartMemory = artEndMemory = artEndPoolAllocated = 0;
   }
 
-  public String stats() {
+  public String statisticsToString() {
     normaliseTimes();
     return inputString.length() + "," + getClass().getSimpleName() + "," + (inLanguage ? "accept" : "reject") + ",OK," + artGetTimes() + "," + input.length
         + "," + (input.length - 1) + ",1," + getSPPFCounts() + getPoolCounts();
@@ -225,20 +225,12 @@ public abstract class ParserBase {
     System.out.println("chooseLongestMatch() not implemented for parser class " + this.getClass().getSimpleName());
   }
 
-  public void selectFirst() {
-    System.out.println("selectFirst() not implemented for parser class " + this.getClass().getSimpleName());
-  }
-
-  public void selectLast() {
-    System.out.println("selectLast() not implemented for parser class " + this.getClass().getSimpleName());
-  }
-
   public int derivationAsTerm() {
     System.out.println("derivationAsTerm() not implemented for parser class " + this.getClass().getSimpleName());
     return 0;
   }
 
-  protected GrammarNode lhs(GrammarNode gn) {
+  protected GrammarNode getLHS(GrammarNode gn) {
     return grammar.rules.get(gn.elm);
   }
 
