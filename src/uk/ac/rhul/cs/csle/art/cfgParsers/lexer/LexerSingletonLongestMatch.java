@@ -1,11 +1,11 @@
-package uk.ac.rhul.cs.csle.art.cfg.lexer;
+package uk.ac.rhul.cs.csle.art.cfgParsers.lexer;
 
 import java.util.ArrayList;
 
-import uk.ac.rhul.cs.csle.art.cfg.LexerBase;
-import uk.ac.rhul.cs.csle.art.cfg.grammar.LKind;
+import uk.ac.rhul.cs.csle.art.cfgParsers.ParserBase;
+import uk.ac.rhul.cs.csle.art.cfgParsers.grammar.LKind;
 
-public class LexerLM extends LexerBase {
+public class LexerSingletonLongestMatch extends ParserBase {
   private ArrayList<Integer> tokenList;
   private ArrayList<Integer> positionList;
   public int[] tokens;
@@ -18,7 +18,7 @@ public class LexerLM extends LexerBase {
     this.strings = strings;
     this.whitespaces = whitespaces;
 
-    input = inputString.toCharArray();
+    inputAsCharArray = inputString.toCharArray();
     inputIndex = 0;
     inputLength = inputString.length();
 
@@ -30,7 +30,7 @@ public class LexerLM extends LexerBase {
     longestMatchToken = 0;
     // System.out.println("Input: " + inputString);
 
-    while (inputIndex < input.length) {
+    while (inputIndex < inputAsCharArray.length) {
       // Absorb a run of whitespace tokens
       while (true) {
         int wsStart = inputIndex;

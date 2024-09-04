@@ -11,21 +11,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import uk.ac.rhul.cs.csle.art.cfg.Chooser;
-import uk.ac.rhul.cs.csle.art.cfg.ParserBase;
-import uk.ac.rhul.cs.csle.art.cfg.chart.AlgX;
-import uk.ac.rhul.cs.csle.art.cfg.chart.CYK;
-import uk.ac.rhul.cs.csle.art.cfg.gll.GLLBaseLine;
-import uk.ac.rhul.cs.csle.art.cfg.gll.GLLHashPool;
-import uk.ac.rhul.cs.csle.art.cfg.grammar.GIFTKind;
-import uk.ac.rhul.cs.csle.art.cfg.grammar.Grammar;
-import uk.ac.rhul.cs.csle.art.cfg.grammar.GrammarKind;
-import uk.ac.rhul.cs.csle.art.cfg.grammar.GrammarNode;
-import uk.ac.rhul.cs.csle.art.cfg.grammar.LKind;
-import uk.ac.rhul.cs.csle.art.cfg.lexer.LexerLM;
-import uk.ac.rhul.cs.csle.art.cfg.rdsob.RDSOBExplicitStack;
-import uk.ac.rhul.cs.csle.art.cfg.rdsob.RDSOBFunction;
-import uk.ac.rhul.cs.csle.art.cfg.rdsob.RDSOBGenerator;
+import uk.ac.rhul.cs.csle.art.cfgParsers.Chooser;
+import uk.ac.rhul.cs.csle.art.cfgParsers.ParserBase;
+import uk.ac.rhul.cs.csle.art.cfgParsers.chart.AlgX;
+import uk.ac.rhul.cs.csle.art.cfgParsers.chart.CYK;
+import uk.ac.rhul.cs.csle.art.cfgParsers.gll.GLLBaseLine;
+import uk.ac.rhul.cs.csle.art.cfgParsers.gll.GLLHashPool;
+import uk.ac.rhul.cs.csle.art.cfgParsers.grammar.GIFTKind;
+import uk.ac.rhul.cs.csle.art.cfgParsers.grammar.Grammar;
+import uk.ac.rhul.cs.csle.art.cfgParsers.grammar.GrammarKind;
+import uk.ac.rhul.cs.csle.art.cfgParsers.grammar.GrammarNode;
+import uk.ac.rhul.cs.csle.art.cfgParsers.grammar.LKind;
+import uk.ac.rhul.cs.csle.art.cfgParsers.lexer.LexerSingletonLongestMatch;
+import uk.ac.rhul.cs.csle.art.cfgParsers.rdsob.RDSOBExplicitStack;
+import uk.ac.rhul.cs.csle.art.cfgParsers.rdsob.RDSOBFunction;
+import uk.ac.rhul.cs.csle.art.cfgParsers.rdsob.RDSOBGenerator;
 import uk.ac.rhul.cs.csle.art.term.ITerms;
 import uk.ac.rhul.cs.csle.art.term.Rewriter;
 import uk.ac.rhul.cs.csle.art.term.TermTool;
@@ -44,7 +44,7 @@ public class ScriptTermInterpreter {
   public final ITerms iTerms;
 
   private final GLLBaseLine scriptParser = new GLLBaseLine();
-  private final LexerLM scriptLexer = new LexerLM();
+  private final LexerSingletonLongestMatch scriptLexer = new LexerSingletonLongestMatch();
   private final int scriptParserTerm;
 
   private int scriptDerivationTerm;
@@ -53,7 +53,7 @@ public class ScriptTermInterpreter {
   public final TermTraverserText latexTraverser;
 
   private ParserBase currentParser = new GLLBaseLine(); // default current parser is GLL base line - change to MGLL when available
-  private final LexerLM currentLexer = new LexerLM(); // default current lexer is longest match - change to TWE set lexer when available
+  private final LexerSingletonLongestMatch currentLexer = new LexerSingletonLongestMatch(); // default current lexer is longest match - change to TWE set lexer when available
   public Grammar currentGrammar; // scriptTraverser builds grammar rules into this grammar
   private int currentDerivationTerm = 0;
   private int currentConfiguration = 0;
@@ -337,7 +337,7 @@ public class ScriptTermInterpreter {
 
   private void tryParse(String inputStringName, String inputString, boolean outcome, boolean suppressOutput) {
     // System.out.println("Try parse on input \"" + inputString + "\"");
-    currentParser.resetStats();
+    currentParser.resetStatistics();
     currentGrammar.normalise();
     if (currentGrammar.isEmpty()) {
       System.out.println("Try failed: grammar has no rules");

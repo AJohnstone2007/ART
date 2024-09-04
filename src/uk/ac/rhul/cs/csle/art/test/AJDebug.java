@@ -12,10 +12,10 @@ import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import uk.ac.rhul.cs.csle.art.ART;
-import uk.ac.rhul.cs.csle.art.cfg.grammar.Grammar;
-import uk.ac.rhul.cs.csle.art.cfg.grammar.GrammarElement;
-import uk.ac.rhul.cs.csle.art.cfg.grammar.GrammarKind;
-import uk.ac.rhul.cs.csle.art.cfg.grammar.GrammarNode;
+import uk.ac.rhul.cs.csle.art.cfgParsers.grammar.Grammar;
+import uk.ac.rhul.cs.csle.art.cfgParsers.grammar.GrammarElement;
+import uk.ac.rhul.cs.csle.art.cfgParsers.grammar.GrammarKind;
+import uk.ac.rhul.cs.csle.art.cfgParsers.grammar.GrammarNode;
 import uk.ac.rhul.cs.csle.art.old.v3.ARTV3;
 import uk.ac.rhul.cs.csle.art.old.v3.manager.grammar.ARTGrammar;
 import uk.ac.rhul.cs.csle.art.old.v3.manager.grammar.element.ARTGrammarElement;

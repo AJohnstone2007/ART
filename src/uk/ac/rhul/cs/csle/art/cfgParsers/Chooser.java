@@ -1,8 +1,8 @@
-package uk.ac.rhul.cs.csle.art.cfg;
+package uk.ac.rhul.cs.csle.art.cfgParsers;
 
 import java.util.Set;
 
-import uk.ac.rhul.cs.csle.art.cfg.grammar.Grammar;
+import uk.ac.rhul.cs.csle.art.cfgParsers.grammar.Grammar;
 import uk.ac.rhul.cs.csle.art.term.ITerms;
 
 public class Chooser {

@@ -12,9 +12,9 @@ import java.util.Scanner;
 import uk.ac.rhul.cs.csle.alero.Alero;
 import uk.ac.rhul.cs.csle.alero.AleroException;
 import uk.ac.rhul.cs.csle.art.adl.ADLException;
-import uk.ac.rhul.cs.csle.art.cfg.ParserBase;
-import uk.ac.rhul.cs.csle.art.cfg.gll.GLLBaseLine;
-import uk.ac.rhul.cs.csle.art.cfg.lexer.LexerLM;
+import uk.ac.rhul.cs.csle.art.cfgParsers.ParserBase;
+import uk.ac.rhul.cs.csle.art.cfgParsers.gll.GLLBaseLine;
+import uk.ac.rhul.cs.csle.art.cfgParsers.lexer.LexerSingletonLongestMatch;
 import uk.ac.rhul.cs.csle.art.script.ScriptTermInterpreter;
 import uk.ac.rhul.cs.csle.art.term.ITerms;
 import uk.ac.rhul.cs.csle.art.term.ITermsLowLevelAPI;
@@ -35,7 +35,7 @@ import uk.ac.rhul.cs.csle.art.util.Util;
 
 public class ADLInterpreter {
   private final ITerms iTerms;
-  private final LexerLM adlLexer;
+  private final LexerSingletonLongestMatch adlLexer;
   private final ParserBase adlParser;
   Scanner keyboard = new Scanner(System.in);
   public __mapChain topLevelSymbols = new __mapChain();
@@ -70,7 +70,7 @@ public class ADLInterpreter {
     } catch (IOException e) {
       Util.fatal("Unable to read ADL specification");
     }
-    adlLexer = new LexerLM();
+    adlLexer = new LexerSingletonLongestMatch();
     adlParser = new GLLBaseLine();
     adlParser.grammar = artScriptInterpreter.getGrammar();
     adlParser.grammar.normalise();

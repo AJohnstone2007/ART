@@ -1,10 +1,10 @@
-package uk.ac.rhul.cs.csle.art.cfg.chart;
+package uk.ac.rhul.cs.csle.art.cfgParsers.chart;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import uk.ac.rhul.cs.csle.art.cfg.ParserBase;
+import uk.ac.rhul.cs.csle.art.cfgParsers.ParserBase;
 import uk.ac.rhul.cs.csle.art.term.ITerms;
 
 public class ChartBase extends ParserBase {

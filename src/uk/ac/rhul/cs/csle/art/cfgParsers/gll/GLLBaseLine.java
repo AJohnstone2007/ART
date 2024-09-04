@@ -1,4 +1,4 @@
-package uk.ac.rhul.cs.csle.art.cfg.gll;
+package uk.ac.rhul.cs.csle.art.cfgParsers.gll;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -11,12 +11,12 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 
-import uk.ac.rhul.cs.csle.art.cfg.ParserBase;
-import uk.ac.rhul.cs.csle.art.cfg.grammar.GIFTKind;
-import uk.ac.rhul.cs.csle.art.cfg.grammar.Grammar;
-import uk.ac.rhul.cs.csle.art.cfg.grammar.GrammarKind;
-import uk.ac.rhul.cs.csle.art.cfg.grammar.GrammarNode;
-import uk.ac.rhul.cs.csle.art.cfg.grammar.LKind;
+import uk.ac.rhul.cs.csle.art.cfgParsers.ParserBase;
+import uk.ac.rhul.cs.csle.art.cfgParsers.grammar.GIFTKind;
+import uk.ac.rhul.cs.csle.art.cfgParsers.grammar.Grammar;
+import uk.ac.rhul.cs.csle.art.cfgParsers.grammar.GrammarKind;
+import uk.ac.rhul.cs.csle.art.cfgParsers.grammar.GrammarNode;
+import uk.ac.rhul.cs.csle.art.cfgParsers.grammar.LKind;
 import uk.ac.rhul.cs.csle.art.util.Util;
 
 public class GLLBaseLine extends ParserBase {
@@ -130,7 +130,7 @@ public class GLLBaseLine extends ParserBase {
           break;
         }
       }
-    if (!inLanguage && !suppressEcho) System.out.print(Util.echo("GLLBL " + "syntax error", positions[sppfWidestIndex()], inputString));
+    if (!inLanguage) System.out.print(Util.echo("GLLBL " + "syntax error", positions[sppfWidestIndex()], inputString));
   }
 
   /* Thread handling *********************************************************/
@@ -182,8 +182,6 @@ public class GLLBaseLine extends ParserBase {
       if (grammar.acceptingNodeNumbers.contains(gn.num) && (i == input.length - 1)) {
         sppfRootNode = sppf.get(new SPPFN(grammar.rules.get(grammar.startNonterminal), 0, input.length - 1));
         inLanguage = true;
-      } else {
-        rightmostParseIndex = sppfWidestIndex();
       }
       return; // End of parse
     }

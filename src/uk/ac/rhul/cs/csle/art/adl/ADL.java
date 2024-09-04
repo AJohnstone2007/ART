@@ -9,10 +9,10 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 
-import uk.ac.rhul.cs.csle.art.cfg.ParserBase;
-import uk.ac.rhul.cs.csle.art.cfg.gll.GLLBaseLine;
-import uk.ac.rhul.cs.csle.art.cfg.grammar.Grammar;
-import uk.ac.rhul.cs.csle.art.cfg.lexer.LexerLM;
+import uk.ac.rhul.cs.csle.art.cfgParsers.ParserBase;
+import uk.ac.rhul.cs.csle.art.cfgParsers.gll.GLLBaseLine;
+import uk.ac.rhul.cs.csle.art.cfgParsers.grammar.Grammar;
+import uk.ac.rhul.cs.csle.art.cfgParsers.lexer.LexerSingletonLongestMatch;
 import uk.ac.rhul.cs.csle.art.script.ScriptTermInterpreter;
 import uk.ac.rhul.cs.csle.art.term.ITerms;
 import uk.ac.rhul.cs.csle.art.term.ITermsLowLevelAPI;
@@ -53,13 +53,12 @@ public class ADL {
     String inputString = "3+4";
 
     Grammar adlGrammar = artScriptInterpreter.getGrammar();
-    LexerLM adlLexer = new LexerLM();
+    LexerSingletonLongestMatch adlLexer = new LexerSingletonLongestMatch();
     ParserBase adlParser = new GLLBaseLine();
 
     adlParser.traceLevel = 0;
     adlParser.inputStringName = "";
     adlParser.inputString = inputString;
-    adlParser.suppressEcho = true;
     adlGrammar.normalise();
     adlParser.grammar = adlGrammar;
     int adlDerivationTerm = 0;

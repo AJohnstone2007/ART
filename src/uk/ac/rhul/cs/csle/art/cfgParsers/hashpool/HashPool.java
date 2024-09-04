@@ -1,6 +1,6 @@
-package uk.ac.rhul.cs.csle.art.cfg.hashpool;
+package uk.ac.rhul.cs.csle.art.cfgParsers.hashpool;
 
-import uk.ac.rhul.cs.csle.art.cfg.ParserBase;
+import uk.ac.rhul.cs.csle.art.cfgParsers.ParserBase;
 
 /**
  * An expandable pool of integers which supports sequential allocation of small blocks. There is no facility to free memory once it has been allocated.

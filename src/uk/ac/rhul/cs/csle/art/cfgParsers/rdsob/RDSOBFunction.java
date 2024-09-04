@@ -1,7 +1,7 @@
-package uk.ac.rhul.cs.csle.art.cfg.rdsob;
+package uk.ac.rhul.cs.csle.art.cfgParsers.rdsob;
 
-import uk.ac.rhul.cs.csle.art.cfg.ParserBase;
-import uk.ac.rhul.cs.csle.art.cfg.grammar.GrammarNode;
+import uk.ac.rhul.cs.csle.art.cfgParsers.ParserBase;
+import uk.ac.rhul.cs.csle.art.cfgParsers.grammar.GrammarNode;
 import uk.ac.rhul.cs.csle.art.util.Util;
 
 public class RDSOBFunction extends ParserBase {

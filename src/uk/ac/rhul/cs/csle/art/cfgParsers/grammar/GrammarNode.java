@@ -1,4 +1,4 @@
-package uk.ac.rhul.cs.csle.art.cfg.grammar;
+package uk.ac.rhul.cs.csle.art.cfgParsers.grammar;
 
 import uk.ac.rhul.cs.csle.art.util.Util;
 

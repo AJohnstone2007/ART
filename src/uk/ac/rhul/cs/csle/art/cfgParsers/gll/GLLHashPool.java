@@ -1,7 +1,7 @@
-package uk.ac.rhul.cs.csle.art.cfg.gll;
+package uk.ac.rhul.cs.csle.art.cfgParsers.gll;
 
-import uk.ac.rhul.cs.csle.art.cfg.grammar.GrammarKind;
-import uk.ac.rhul.cs.csle.art.cfg.hashpool.HashPool;
+import uk.ac.rhul.cs.csle.art.cfgParsers.grammar.GrammarKind;
+import uk.ac.rhul.cs.csle.art.cfgParsers.hashpool.HashPool;
 import uk.ac.rhul.cs.csle.art.util.Util;
 
 public class GLLHashPool extends HashPool {
