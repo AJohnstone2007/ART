@@ -133,18 +133,15 @@ public class ParserBase {
     if (level <= traceLevel) System.out.println(msg);
   }
 
-  /* Timing statistics support for RunExp below this line ***************************/
-  private long startTime;
-  private long setupTime;
-  private long lexTime;
-  private long lexChooseTime;
-  private long parseTime;
-  private long parseChooseTime;
-  private long termGenerateTime;
-  private long semanticsTime;
-  private long artStartMemory;
-  private long artEndMemory;
-  private long artEndPoolAllocated;
+  /* Statistics support for RunExp below this line ***************************/
+  private long startTime, setupTime, lexTime, lexChooseTime, parseTime, parseChooseTime, termGenerateTime, semanticsTime;
+  private long tweNodeCount, tweEdgeCount, tweLexCount;
+  private long descriptorCount;
+  private long gssNodeCount, gssEdgeCount, popCount;
+  private long sppfEpsilonNodeCount, sppfTerminalNodeCount, sppfNonterminalNodeCount, sppfIntermediateNodeCount, sppfSymbolPlusIntermediateNodeCount,
+      sppfPackNodeCount, sppfAmbiguityCount, sppfEdgeCount, sppfCyclicSCCCount, derivationNodeCount;
+  private long startMemory, endMemory;
+  private long poolAllocated, h0, h1, h2, h3, h4, h5, h6more;
 
   public void loadSetupTime() {
     setupTime = System.nanoTime();
@@ -174,16 +171,65 @@ public class ParserBase {
     semanticsTime = System.nanoTime();
   }
 
+  public void loadTWECounts(long tweNodeCount, long tweEdgeCount, long tweLexCount) {
+    this.tweNodeCount = tweNodeCount;
+    this.tweEdgeCount = tweEdgeCount;
+    this.tweLexCount = tweLexCount;
+  }
+
+  public void loadGSSCounts(long descriptorCount, long gssNodeCount, long gssEdgeCount, long popCount) {
+    this.descriptorCount = descriptorCount;
+    this.gssNodeCount = gssNodeCount;
+    this.gssEdgeCount = gssEdgeCount;
+    this.popCount = popCount;
+  }
+
+  public void loadSPPFCounts(long sppfEpsilonNodeCount, long sppfTerminalNodeCount, long sppfNonterminalNodeCount, long sppfIntermediateNodeCount,
+      long sppfSymbolPlusIntermediateNodeCount, long sppfPackNodeCount, long sppfAmbiguityCount, long sppfEdgeCount) {
+    this.sppfEpsilonNodeCount = sppfEpsilonNodeCount;
+    this.sppfTerminalNodeCount = sppfTerminalNodeCount;
+    this.sppfNonterminalNodeCount = sppfNonterminalNodeCount;
+    this.sppfIntermediateNodeCount = sppfIntermediateNodeCount;
+    this.sppfSymbolPlusIntermediateNodeCount = sppfSymbolPlusIntermediateNodeCount;
+    this.sppfPackNodeCount = sppfPackNodeCount;
+    this.sppfAmbiguityCount = sppfAmbiguityCount;
+    this.sppfEdgeCount = sppfEdgeCount;
+  }
+
+  public void loadSPPFCyclicSCCCount(long sppfCyclicSCCCount) {
+    this.sppfCyclicSCCCount = sppfCyclicSCCCount;
+  }
+
+  public void loadderivationNodeCount(long derivationNodeCount) {
+    this.derivationNodeCount = derivationNodeCount;
+  }
+
   public void loadStartMemory() {
-    artStartMemory = memoryUsed();
+    startMemory = memoryUsed();
   }
 
   public void loadEndMemory() {
-    artEndMemory = memoryUsed();
+    endMemory = memoryUsed();
   }
 
-  public void loadEndPoolAllocated(long m) {
-    artEndPoolAllocated = m;
+  private long memoryUsed() {
+    System.gc();
+    System.gc();
+    return Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+  }
+
+  public void loadPoolAllocated(long m) {
+    poolAllocated = m;
+  }
+
+  public void loadHashCounts(long h0, long h1, long h2, long h3, long h4, long h5, long h6more) {
+    this.h0 = h0;
+    this.h1 = h1;
+    this.h2 = h2;
+    this.h3 = h3;
+    this.h4 = h4;
+    this.h5 = h5;
+    this.h6more = h6more;
   }
 
   private void normaliseTimes() {
@@ -206,29 +252,38 @@ public class ParserBase {
         + timeAsMilliseconds(parseChooseTime, termGenerateTime) + "," + timeAsMilliseconds(termGenerateTime, semanticsTime);
   }
 
+  private String getTWECounts() {
+    return tweNodeCount + "," + tweEdgeCount + "," + tweLexCount;
+  }
+
+  private String getGSSCounts() {
+    return descriptorCount + "," + gssNodeCount + "," + gssEdgeCount + "," + popCount;
+  }
+
   private String getSPPFCounts() {
-    return "GSS SN,GSS EN,GGS E,SPPF Eps,SPPF T,SPPF NT,SPPF Inter,SPPF PN,SPPF Edge,";
+    return sppfEpsilonNodeCount + "," + sppfTerminalNodeCount + "," + sppfNonterminalNodeCount + "," + sppfIntermediateNodeCount + ","
+        + sppfSymbolPlusIntermediateNodeCount + "," + sppfPackNodeCount + "," + sppfAmbiguityCount + "," + sppfEdgeCount + "," + sppfCyclicSCCCount + ","
+        + derivationNodeCount;
   }
 
   private String getPoolCounts() {
-    return "Pool,H0,H1,H2,H3,H4,H5,H6+";
-  }
-
-  private long memoryUsed() {
-    System.gc();
-    System.gc();
-    return Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+    return poolAllocated + "," + h0 + "," + h1 + "," + h2 + "," + h3 + "," + h4 + "," + h5 + "," + h6more;
   }
 
   public void resetStatistics() {
     startTime = System.nanoTime();
-    setupTime = lexTime = lexChooseTime = parseTime = parseChooseTime = termGenerateTime = semanticsTime = artStartMemory = artEndMemory = artEndPoolAllocated = 0;
+    setupTime = lexTime = lexChooseTime = parseTime = parseChooseTime = termGenerateTime = semanticsTime = 0;
+    tweNodeCount = tweEdgeCount = tweLexCount = -1;
+    descriptorCount = gssNodeCount = gssEdgeCount = popCount = -1;
+    sppfEpsilonNodeCount = sppfTerminalNodeCount = sppfNonterminalNodeCount = sppfIntermediateNodeCount = sppfSymbolPlusIntermediateNodeCount = sppfPackNodeCount = sppfAmbiguityCount = sppfEdgeCount = -1;
+    startMemory = endMemory = poolAllocated = h0 = h1 = h2 = h3 = h4 = h5 = h6more = -1;
+    derivationNodeCount = sppfCyclicSCCCount = -1;
   }
 
   public String statisticsToString() {
     normaliseTimes();
-    return inputString.length() + "," + getClass().getSimpleName() + "," + (inLanguage ? "accept" : "reject") + ",OK," + artGetTimes() + "," + input.length
-        + "," + (input.length - 1) + ",1," + getSPPFCounts() + getPoolCounts();
+    return inputString.length() + "," + getClass().getSimpleName() + "," + (inLanguage ? "accept" : "reject") + ",OK," + artGetTimes() + "," + getTWECounts()
+        + "," + getGSSCounts() + "," + getSPPFCounts() + "," + (endMemory - startMemory) + "," + getPoolCounts();
   }
 
   /* Lexers **********************************************************************/

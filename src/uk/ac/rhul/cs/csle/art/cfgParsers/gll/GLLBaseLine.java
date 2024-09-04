@@ -20,32 +20,6 @@ import uk.ac.rhul.cs.csle.art.cfgParsers.grammar.LKind;
 import uk.ac.rhul.cs.csle.art.util.Util;
 
 public class GLLBaseLine extends ParserBase {
-  protected String subStatistics() {
-    if (input == null) return "";
-    int descriptorCount = descS.size(), gssNodeCount = gss.keySet().size(), gssEdgeCount = 0, popCount = 0, sppfNodeCount = sppf.keySet().size(),
-        sppfPCount = 0, sppfEdgeCount = 0, sppfAmbiguityCount = 0;
-    for (GSSN g : gss.keySet()) {
-      gssEdgeCount += g.edges.size();
-      popCount += g.pops.size();
-    }
-    for (SPPFN s : sppf.keySet()) {
-      sppfPCount += s.packNS.size();
-      if (s.packNS.size() > 1) sppfAmbiguityCount++;
-      for (SPPFPN p : s.packNS) {
-        sppfEdgeCount++; // inedge
-        if (p.leftChild != null) sppfEdgeCount++;
-        if (p.rightChild != null) sppfEdgeCount++;
-        // System.out.println("SPPF node " + s.gn.toStringAsProduction() + ", " + s.li + ", " + s.ri + " pack node " + p.gn.toStringAsProduction() + ", " +
-        // p.pivot
-        // + ": " + "[" + (p.leftChild == null ? "null SPPF node" : (p.leftChild.gn.toStringAsProduction()) + ", " + p.leftChild.li + ", " + p.leftChild.ri)
-        // + "] [" + p.rightChild.gn.toStringAsProduction() + ", " + p.rightChild.li + ", " + p.rightChild.ri + "]");
-      }
-    }
-
-    return descriptorCount + "," + gssNodeCount + "," + gssEdgeCount + "," + popCount + "," + sppfNodeCount + "," + sppfPCount + "," + sppfEdgeCount + ","
-        + sppfAmbiguityCount + "," + String.format("%.2f");
-  }
-
   private final BitSet visitedSPPFNodes = new BitSet(), suppressedSPPFNode = new BitSet(), deletedSPPFNode = new BitSet();
 
   /* Temporary disambiguation before choosers are implemented ****************/
@@ -131,6 +105,7 @@ public class GLLBaseLine extends ParserBase {
         }
       }
     if (!inLanguage) System.out.print(Util.echo("GLLBL " + "syntax error", positions[sppfWidestIndex()], inputString));
+    loadCounts();
   }
 
   /* Thread handling *********************************************************/
@@ -655,4 +630,35 @@ public class GLLBaseLine extends ParserBase {
     }
   }
 
+  private void loadCounts() {
+    this.loadTWECounts(input.length, input.length - 1, 1);
+    this.loadGSSCounts(descS.size(), gss.keySet().size(), -10, -11);
+    this.loadSPPFCounts(21, 22, 23, 24, sppf.keySet().size(), 26, 27, 28);
+    this.loadPoolAllocated(-10);
+    this.loadHashCounts(-20, -21, -22, -23, -24, -25, -26);
+
+    // int descriptorCount = descS.size(), gssNodeCount =
+    // gss.keySet().size(), gssEdgeCount = 0, popCount = 0,
+    // sppfNodeCount = sppf.keySet().size(),
+    // sppfPCount = 0, sppfEdgeCount = 0, sppfAmbiguityCount = 0;
+    // for (GSSN g : gss.keySet()) {
+    // gssEdgeCount += g.edges.size();
+    // popCount += g.pops.size();
+    // }
+    // for (SPPFN s : sppf.keySet()) {
+    // sppfPCount += s.packNS.size();
+    // if (s.packNS.size() > 1) sppfAmbiguityCount++;
+    // for (SPPFPN p : s.packNS) {
+    // sppfEdgeCount++; // inedge
+    // if (p.leftChild != null) sppfEdgeCount++;
+    // if (p.rightChild != null) sppfEdgeCount++;
+    // // System.out.println("SPPF node " + s.gn.toStringAsProduction() + ", " + s.li + ", " + s.ri + " pack node " + p.gn.toStringAsProduction() + ", " +
+    // // p.pivot
+    // // + ": " + "[" + (p.leftChild == null ? "null SPPF node" : (p.leftChild.gn.toStringAsProduction()) + ", " + p.leftChild.li + ", " + p.leftChild.ri)
+    // // + "] [" + p.rightChild.gn.toStringAsProduction() + ", " + p.rightChild.li + ", " + p.rightChild.ri + "]");
+    // }
+    // }
+    //
+    // }
+  }
 }
