@@ -53,8 +53,22 @@ public class RDSOBFunction extends ParserBase {
     if (!inLanguage) Util.echo("Syntax error at location " + i, Util.lineNumber(i, inputString), inputString);
   }
 
-  @Override
-  public int derivationAsTerm() {
-    return derivationSingletonAsTerm();
+  protected DerivationSingletonNode dnRoot, dn;
+
+  public class DerivationSingletonNode {
+    public GrammarNode gn;
+    public DerivationSingletonNode next;
+
+    public DerivationSingletonNode(GrammarNode gn, DerivationSingletonNode next) {
+      super();
+      this.gn = gn;
+      this.next = next;
+    }
+
+    @Override
+    public String toString() {
+      return gn.toString();
+    }
   }
+
 }

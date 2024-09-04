@@ -88,8 +88,22 @@ public class RDSOBExplicitStack extends ParserBase {
     inLanguage = rdsobExplicitStack() && input[i] == 0;
   }
 
-  @Override
-  public int derivationAsTerm() {
-    return derivationSingletonAsTerm();
+  protected DerivationSingletonNode dnRoot, dn;
+
+  public class DerivationSingletonNode {
+    public GrammarNode gn;
+    public DerivationSingletonNode next;
+
+    public DerivationSingletonNode(GrammarNode gn, DerivationSingletonNode next) {
+      super();
+      this.gn = gn;
+      this.next = next;
+    }
+
+    @Override
+    public String toString() {
+      return gn.toString();
+    }
   }
+
 }

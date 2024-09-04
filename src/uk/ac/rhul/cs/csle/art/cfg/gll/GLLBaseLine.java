@@ -20,13 +20,6 @@ import uk.ac.rhul.cs.csle.art.cfg.grammar.LKind;
 import uk.ac.rhul.cs.csle.art.util.Util;
 
 public class GLLBaseLine extends ParserBase {
-  @Override
-  public void show() {
-    new GSS2Dot(gss, "gssA.dot");
-    new SPPF2Dot(sppf, sppfRootNode, "sppf_full.dot", true, true, true);
-    new SPPF2Dot(sppf, sppfRootNode, "sppf_core.dot", false, true, true);
-  }
-
   protected String subStatistics() {
     if (input == null) return "";
     int descriptorCount = descS.size(), gssNodeCount = gss.keySet().size(), gssEdgeCount = 0, popCount = 0, sppfNodeCount = sppf.keySet().size(),
@@ -53,26 +46,16 @@ public class GLLBaseLine extends ParserBase {
         + sppfAmbiguityCount + "," + String.format("%.2f");
   }
 
-  private void clearSuppressed() {
-    for (SPPFN s : sppf.keySet())
-      for (SPPFPN p : s.packNS)
-        p.suppressed = false;
-  }
+  private final BitSet visitedSPPFNodes = new BitSet(), suppressedSPPFNode = new BitSet(), deletedSPPFNode = new BitSet();
 
-  private final BitSet visitedSPPFNodes = new BitSet();
-
+  /* Temporary disambiguation before choosers are implemented ****************/
   @Override
   public void chooseLongestMatch() {
-    // chooseLongestMatchRecCount = 0;
     visitedSPPFNodes.clear();
     chooseLongestMatchRec(sppfRootNode);
-    // System.err.println("chooseLongestMatchRecCount = " + chooseLongestMatchRecCount);
   }
 
-  // int chooseLongestMatchRecCount = 0;
-
   private void chooseLongestMatchRec(SPPFN sn) {
-    // chooseLongestMatchRecCount++;
     if (visitedSPPFNodes.get(sn.number)) return;
     visitedSPPFNodes.set(sn.number);
 
@@ -91,311 +74,160 @@ public class GLLBaseLine extends ParserBase {
       if (p != candidate) p.suppressed = true;
   }
 
-  private GrammarNode getRules(GrammarNode gn) {
-    return grammar.rules.get(gn.elm);
-  }
+  /* Parser ******************************************************************/
+  @Override
+  public void parse() {
+    descS = new HashSet<>();
+    descQ = new LinkedList<>();
+    sppf = new HashMap<>();
+    gss = new HashMap<>();
+    gssRoot = new GSSN(grammar.endOfStringNode, 0);
+    gss.put(gssRoot, gssRoot);
+    i = 0;
+    sn = gssRoot;
+    dn = null;
+    for (GrammarNode p = grammar.rules.get(grammar.startNonterminal).alt; p != null; p = p.alt)
+      queueDesc(p.seq, i, sn, dn);
+    inLanguage = false;
 
-  private boolean isAccepting(GrammarNode gn) {
-    return grammar.acceptingNodeNumbers.contains(gn.num);
-  }
-
-  private void gllBLT() {
-    initialise();
-    nextDescriptor: while (dequeueDesc()) {
-      trace(1, "\n****** Processing descriptor (" + gn.toStringAsProduction() + ", " + i + ", " + sn + ", " + dn + ")");
+    nextDescriptor: while (dequeueDesc())
       while (true) {
         switch (gn.elm.kind) {
-        case EPS:
-          du(0);
-          gn = gn.seq;
-          trace(1, "Index " + i + " Node " + gn.num + " Epsilon - continue thread");
-          break;
-        case C, B, T, TI:
-          if (match(gn)) {
-            trace(1, "Index " + i + " Node " + gn.num + " " + gn + " Terminal match - continue thread");
+        case B, T, TI, C:
+          if (input[i] == gn.elm.ei) {
             du(1);
             i++;
             gn = gn.seq;
             break;
-          } else {
-            trace(1, "Index " + i + " Node " + gn.num + " " + gn + " Terminal mismatch - abort thread");
+          } else
             continue nextDescriptor;
-          }
         case N:
           call(gn);
-          trace(1, "Index " + i + " Node " + gn.num + " Nonterminal call - end of  thread");
           continue nextDescriptor;
+        case EPS:
+          du(0);
+          gn = gn.seq;
+          break;
         case END:
-          if (Grammar.isLHS(gn.seq)) {
-            ret();
-            trace(1, "Index " + i + " Node " + gn.num + " End of production - end of thread");
-            continue nextDescriptor;
-          }
-          gn = gn.seq.seq;
-          trace(1, "Index " + i + " Node " + gn.num + " End of alternate under bracket - continue thread with successor of bracket");
+          ret();
+          continue nextDescriptor;
+        case DO:
+          gn = gn.alt;
           break;
         case ALT:
           for (GrammarNode tmp = gn; tmp != null; tmp = tmp.alt)
             queueDesc(tmp.seq, i, sn, dn);
-          trace(1, "Index " + i + " Node " + gn.num + " Alternates queued - end of thread");
           continue nextDescriptor;
-        case DO:
-          gn = gn.alt;
-          trace(1, "Index " + i + " Node " + gn.num + " Do first - continue thread with alternates under bracket");
-          break;
-
-        case OPT:
-        case POS:
-        case KLN:
-          inadmissable = true;
-          System.out.println("Inadmissable: unsupported EBNF element with kind " + gn.elm.kind);
-          return;
         case EOS:
-          inadmissable = true;
-          System.out.println("Inadmissable: production contains invalid element with kind " + gn.elm.kind);
-          return;
+          break;
+        case KLN:
+          break;
+        case OPT:
+          break;
+        case POS:
+          break;
+        default:
+          break;
         }
       }
-    }
-  }
-
-  @Override
-  public void parse() {
-    gllBL();
     if (!inLanguage && !suppressEcho) System.out.print(Util.echo("GLLBL " + "syntax error", positions[sppfWidestIndex()], inputString));
   }
 
-//@formatter:off
+  /* Thread handling *********************************************************/
+  Set<Desc> descS;
+  Deque<Desc> descQ;
+  GrammarNode gn;
+  GSSN sn;
+  SPPFN dn;
 
-/* Thread handling *********************************************************/
-Set<Desc> descS;
-Deque<Desc> descQ;
-GrammarNode gn;
-GSSN sn;
-SPPFN dn;
-
-void queueDesc(GrammarNode gn, int i, GSSN gssN, SPPFN sppfN) {
-  Desc tmp = new Desc(gn, i, gssN, sppfN);
-  if (descS.add(tmp)) descQ.addFirst(tmp);
- }
-
-boolean dequeueDesc() {
- Desc tmp = descQ.poll();
- if (tmp == null) return false;
- gn = tmp.gn; i = tmp.i; sn = tmp.sn; dn = tmp.dn;
- return true;
-}
-
-/* Stack handling **********************************************************/
-Map<GSSN, GSSN> gss;
-GSSN gssRoot;
-
-GSSN gssFind(GrammarNode gn, int i) {
- GSSN gssN = new GSSN(gn, i);
- if (gss.get(gssN) == null) gss.put(gssN, gssN);
- return gss.get(gssN);
-}
-
-void call(GrammarNode gn) {
- GSSN gssN = gssFind(gn.seq, i);
- GSSE gssE = new GSSE(sn, dn);
- if (!gssN.edges.contains(gssE)) {
-  gssN.edges.add(gssE);
-  for (SPPFN rc : gssN.pops)
-   queueDesc(gn.seq, rc.ri, sn, sppfUpdate(gn.seq, dn, rc));
- }
- for (GrammarNode p = getRules(gn).alt; p != null; p = p.alt)
-  queueDesc(p.seq, i, gssN, null);
-}
-
-void ret() {
- if (sn.equals(gssRoot)) { // Stack base
-  if (isAccepting(gn) && (i == input.length - 1)) {
-    sppfRootNode = sppf.get(new SPPFN(grammar.rules.get(grammar.startNonterminal), 0, input.length - 1));
-    inLanguage = true;
-  } else {
-    rightmostParseIndex = sppfWidestIndex();
-  }
-  return; // End of parse
- }
- sn.pops.add(dn);
- for (GSSE e : sn.edges)
-  queueDesc(sn.gn, i, e.dst, sppfUpdate(sn.gn, e.sppfnode, dn));
-}
-
-/* Derivation handling *****************************************************/
-Map<SPPFN, SPPFN> sppf;
-SPPFN sppfRootNode;
-
-SPPFN sppfFind(GrammarNode dn, int li, int ri) {
- SPPFN tmp = new SPPFN(dn, li, ri);
- if (!sppf.containsKey(tmp)) sppf.put(tmp, tmp);
- return sppf.get(tmp);
-}
-
-SPPFN sppfUpdate(GrammarNode gn, SPPFN ln, SPPFN rn) {
- SPPFN ret = sppfFind(gn.elm.kind == GrammarKind.END ? gn.seq : gn,
-                 ln == null ? rn.li : ln.li,
-                 rn.ri);
- ret.packNS.add(
-  new SPPFPN(gn, ln == null ? rn.li : ln.ri, ln, rn));
- return ret;
-}
-
-void du(int width) {
-  dn = sppfUpdate(gn.seq, dn, sppfFind(gn, i, i + width));
-}
-
-private int sppfWidestIndex() {
-  int ret = 0;
-  for (SPPFN s:sppf.keySet()) if (ret<s.ri) ret = s.ri;
-  return ret;
-}
-
-/* Parser ******************************************************************/
-void initialise() {
- descS = new HashSet<>(); descQ = new LinkedList<>();
- sppf = new HashMap<>(); gss = new HashMap<>();
- gssRoot = new GSSN(grammar.endOfStringNode, 0);
- gss.put(gssRoot, gssRoot);
- i = 0; sn = gssRoot; dn = null;
- for (GrammarNode p = grammar.rules.get(grammar.startNonterminal).alt; p != null; p = p.alt)
-  queueDesc(p.seq, i, sn, dn);
- inLanguage = false;
-}
-
-void gllBL() {
- initialise();
- nextDescriptor: while (dequeueDesc())
- while (true) {
-  switch (gn.elm.kind) {
-   case B,T,TI,C: if (input[i] == gn.elm.ei)
-           {du(1); i++; gn = gn.seq; break;}
-           else continue nextDescriptor;
-   case N: call(gn); continue nextDescriptor;
-   case EPS: du(0); gn = gn.seq; break;
-   case END: ret(); continue nextDescriptor;
-   case DO: gn = gn.alt; break;
-   case ALT:
-     for (GrammarNode tmp = gn; tmp != null; tmp = tmp.alt)
-       queueDesc(tmp.seq, i, sn, dn);
-     continue nextDescriptor;
-  case EOS:
-    break;
-  case KLN:
-    break;
-  case OPT:
-    break;
-  case POS:
-    break;
-  default:
-    break;
-}}}
-
-//@formatter:on
-
-  /* Baseline parser term generation *********************************************************/
-  private SPPFPN firstAvailablePackNode(SPPFN sppfn) {
-    SPPFPN candidate = null;
-    for (SPPFPN p : sppfn.packNS)
-      if (!p.suppressed) if (candidate == null)
-        candidate = p;
-      else
-        System.out.println("Ambiguous pack nodes at SPPF node " + sppfn);
-    if (candidate == null) System.out.println("No unsuppressed pack nodes found at SPPF node " + sppfn);
-    return candidate;
+  void queueDesc(GrammarNode gn, int i, GSSN gssN, SPPFN sppfN) {
+    Desc tmp = new Desc(gn, i, gssN, sppfN);
+    if (descS.add(tmp)) descQ.addFirst(tmp);
   }
 
-  private boolean isSymbol(SPPFN sppfn) {
-    return sppfn.packNS.size() == 0 /* terminal or epsilon */ || (sppfn.gn.elm.kind == GrammarKind.N && sppfn.gn.seq == null /* LHS */);
+  boolean dequeueDesc() {
+    Desc tmp = descQ.poll();
+    if (tmp == null) return false;
+    gn = tmp.gn;
+    i = tmp.i;
+    sn = tmp.sn;
+    dn = tmp.dn;
+    return true;
   }
 
-  // TODO: this needs to be merged with referenceParser.lexemeForBuiltin()
-  private String constructorOf(SPPFN sppfn, GrammarNode gn) {
-    if (gn.elm.kind == GrammarKind.B) switch (LKind.valueOf(gn.elm.str)) {
-    case ID: {
-      int right = positions[sppfn.li];
-      while (right < inputString.length()
-          && (Character.isAlphabetic(inputString.charAt(right)) || Character.isDigit(inputString.charAt(right)) || inputString.charAt(right) == '_'))
-        right++;
+  /* Stack handling **********************************************************/
+  Map<GSSN, GSSN> gss;
+  GSSN gssRoot;
 
-      return inputString.substring(positions[sppfn.li], right);
-    }
-    case CHARACTER:
-      return inputString.substring(positions[sppfn.li] + 1, positions[sppfn.li] + 2);
+  GSSN gssFind(GrammarNode gn, int i) {
+    GSSN gssN = new GSSN(gn, i);
+    if (gss.get(gssN) == null) gss.put(gssN, gssN);
+    return gss.get(gssN);
+  }
 
-    case CHAR_BQ:
-      return inputString.substring(positions[sppfn.li] + 1, positions[sppfn.li] + 2);
-    case COMMENT_BLOCK_C:
-      break;
-    case COMMENT_LINE_C:
-      break;
-    case COMMENT_NEST_ART:
-      break;
-    case INTEGER: {
-      int right = positions[sppfn.li];
-      while (right < inputString.length() && (Character.isDigit(inputString.charAt(right)) || inputString.charAt(right) == '_'))
-        right++;
-      return inputString.substring(positions[sppfn.li], right);
+  void call(GrammarNode gn) {
+    GSSN gssN = gssFind(gn.seq, i);
+    GSSE gssE = new GSSE(sn, dn);
+    if (!gssN.edges.contains(gssE)) {
+      gssN.edges.add(gssE);
+      for (SPPFN rc : gssN.pops)
+        queueDesc(gn.seq, rc.ri, sn, sppfUpdate(gn.seq, dn, rc));
     }
-    case REAL: {
-      int right = positions[sppfn.li];
-      while (right < inputString.length() && Character.isDigit(inputString.charAt(right)))
-        right++;
-      right++; // skip decimal point
-      while (right < inputString.length() && Character.isDigit(inputString.charAt(right)))
-        right++;
-      return inputString.substring(positions[sppfn.li], right);
+    for (GrammarNode p = grammar.rules.get(gn.elm).alt; p != null; p = p.alt)
+      queueDesc(p.seq, i, gssN, null);
+  }
+
+  void ret() {
+    if (sn.equals(gssRoot)) { // Stack base
+      if (grammar.acceptingNodeNumbers.contains(gn.num) && (i == input.length - 1)) {
+        sppfRootNode = sppf.get(new SPPFN(grammar.rules.get(grammar.startNonterminal), 0, input.length - 1));
+        inLanguage = true;
+      } else {
+        rightmostParseIndex = sppfWidestIndex();
+      }
+      return; // End of parse
     }
-    case SIGNED_INTEGER: {
-      int right = positions[sppfn.li];
-      if (inputString.charAt(right) == '-') right++;
-      while (right < inputString.length() && (Character.isDigit(inputString.charAt(right)) || inputString.charAt(right) == '_'))
-        right++;
-      return inputString.substring(positions[sppfn.li], right);
-    }
-    case SIGNED_REAL: {
-      int right = positions[sppfn.li];
-      if (inputString.charAt(right) == '-') right++;
-      while (right < inputString.length() && Character.isDigit(inputString.charAt(right)))
-        right++;
-      right++; // skip decimal point
-      while (right < inputString.length() && Character.isDigit(inputString.charAt(right)))
-        right++;
-      return inputString.substring(positions[sppfn.li], right);
-    }
-    case SIMPLE_WHITESPACE:
-      break;
-    case SINGLETON_CASE_INSENSITIVE:
-      break;
-    case SINGLETON_CASE_SENSITIVE:
-      break;
-    case STRING_PLAIN_SQ: {
-      int right = positions[sppfn.li] + 1;
-      while (inputString.charAt(right) != '\'')
-        right++;
-      return inputString.substring(positions[sppfn.li] + 1, right);
-    }
-    case STRING_DQ: {
-      int right = positions[sppfn.li] + 1;
-      while (inputString.charAt(right) != '\"')
-        right++;
-      return inputString.substring(positions[sppfn.li] + 1, right);
-    }
-    case STRING_BRACE_NEST:
-      break;
-    case STRING_BRACKET_NEST:
-      break;
-    case STRING_DOLLAR:
-      break;
-    case STRING_SQ: {
-      int right = positions[sppfn.li] + 1;
-      while (inputString.charAt(right) != '\'')
-        right++;
-      return inputString.substring(positions[sppfn.li] + 1, right);
-    }
-    }
-    return gn.elm.str;
+    sn.pops.add(dn);
+    for (GSSE e : sn.edges)
+      queueDesc(sn.gn, i, e.dst, sppfUpdate(sn.gn, e.sppfnode, dn));
+  }
+
+  /* Derivation handling *****************************************************/
+  Map<SPPFN, SPPFN> sppf;
+  SPPFN sppfRootNode;
+
+  SPPFN sppfFind(GrammarNode dn, int li, int ri) {
+    SPPFN tmp = new SPPFN(dn, li, ri);
+    if (!sppf.containsKey(tmp)) sppf.put(tmp, tmp);
+    return sppf.get(tmp);
+  }
+
+  SPPFN sppfUpdate(GrammarNode gn, SPPFN ln, SPPFN rn) {
+    SPPFN ret = sppfFind(gn.elm.kind == GrammarKind.END ? gn.seq : gn, ln == null ? rn.li : ln.li, rn.ri);
+    ret.packNS.add(new SPPFPN(gn, ln == null ? rn.li : ln.ri, ln, rn));
+    return ret;
+  }
+
+  void du(int width) {
+    dn = sppfUpdate(gn.seq, dn, sppfFind(gn, i, i + width));
+  }
+
+  private int sppfWidestIndex() {
+    int ret = 0;
+    for (SPPFN s : sppf.keySet())
+      if (ret < s.ri) ret = s.ri;
+    return ret;
+  }
+
+  /* Term generation **************************************************************************/
+  @Override
+  public int derivationAsTerm() {
+    if (sppfRootNode == null) return 0;
+    visitedSPPFNodes.clear();
+    LinkedList<Integer> carrier = new LinkedList<>();
+    derivationAsTermRec(sppfRootNode, carrier, firstAvailablePackNode(sppfRootNode).gn.seq); // Root packed node must have a grammar node that is the end of a
+                                                                                             // start production
+    return carrier.getFirst();
   }
 
   private String derivationAsTermRec(SPPFN sppfn, LinkedList<Integer> childrenFromParent, GrammarNode gn) {
@@ -418,7 +250,9 @@ void gllBL() {
       }
     }
 
-    if (constructor == null) constructor = constructorOf(sppfn, gn); // If there were no OVERs, then set the constructor to be our symbol
+    if (constructor == null) // If there were no OVERs, then set the constructor to be our symbol
+      constructor = (gn.elm.kind == GrammarKind.B) ? lexemeOfBuiltin(LKind.valueOf(gn.elm.str), positions[sppfn.li]) : gn.elm.str;
+
     if (children != childrenFromParent) childrenFromParent.add(grammar.iTerms.findTerm(constructor, children));
 
     visitedSPPFNodes.clear(sppfn.number);
@@ -441,16 +275,22 @@ void gllBL() {
       collectChildNodesRec(firstAvailablePackNode(rightChild), childNodes);
   }
 
-  @Override
-  public int derivationAsTerm() {
-    if (sppfRootNode == null) return 0;
-    visitedSPPFNodes.clear();
-    LinkedList<Integer> carrier = new LinkedList<>();
-    derivationAsTermRec(sppfRootNode, carrier, firstAvailablePackNode(sppfRootNode).gn.seq); // Root packed node must have a grammar node that is the end of a
-                                                                                             // start production
-    return carrier.getFirst();
+  private SPPFPN firstAvailablePackNode(SPPFN sppfn) {
+    SPPFPN candidate = null;
+    for (SPPFPN p : sppfn.packNS)
+      if (!p.suppressed) if (candidate == null)
+        candidate = p;
+      else
+        System.out.println("Ambiguous pack nodes at SPPF node " + sppfn);
+    if (candidate == null) System.out.println("No unsuppressed pack nodes found at SPPF node " + sppfn);
+    return candidate;
   }
 
+  private boolean isSymbol(SPPFN sppfn) {
+    return sppfn.packNS.size() == 0 /* terminal or epsilon */ || (sppfn.gn.elm.kind == GrammarKind.N && sppfn.gn.seq == null /* LHS */);
+  }
+
+  /* Set element classes **********************************************************************/
   class Desc {
     public GrammarNode gn;
     public int i;
@@ -693,6 +533,36 @@ void gllBL() {
     }
   }
 
+  /* GSS and SPPF rendering *******************************************************************/
+  @Override
+  public void show() {
+    new GSS2Dot(gss, "gssA.dot");
+    new SPPF2Dot(sppf, sppfRootNode, "sppf_full.dot", true, true, true); // full SPPF
+    new SPPF2Dot(sppf, sppfRootNode, "sppf_core.dot", false, true, true); // core SPPF - only nodes reachable from (S,0,n)
+  }
+
+  class GSS2Dot {
+    public GSS2Dot(Map<GSSN, GSSN> gss, String filename) {
+      if (gss == null) return;
+      PrintStream gssOut;
+      try {
+        gssOut = new PrintStream(new File(filename));
+        gssOut.println("digraph \"GSS\" {\n" + "node[fontname=Helvetica fontsize=9 shape=box height = 0 width = 0 margin= 0.04  color=gray]\n"
+            + "graph[ordering=out ranksep=0.1]\n" + "edge[arrowsize = 0.3  color=gray]");
+
+        if (gss != null) for (GSSN s : gss.keySet()) {
+          gssOut.println("\"" + s + "\" [label=\"" + s.gn.toStringAsProduction() + "\n" + s.i + "\"]");
+          for (GSSE c : s.edges) // iterate over children
+            gssOut.println("\"" + s + "\"->\"" + c.dst + "\"");
+        }
+        gssOut.println("}");
+        gssOut.close();
+      } catch (FileNotFoundException e) {
+        System.out.println("Unable to write GSS visualisation to " + filename);
+      }
+    }
+  }
+
   class SPPF2Dot {
     final String packNodeStyle = "[style=rounded]";
     final String ambiguousStyle = "[color=red]";
@@ -787,25 +657,4 @@ void gllBL() {
     }
   }
 
-  class GSS2Dot {
-    public GSS2Dot(Map<GSSN, GSSN> gss, String filename) {
-      if (gss == null) return;
-      PrintStream gssOut;
-      try {
-        gssOut = new PrintStream(new File(filename));
-        gssOut.println("digraph \"GSS\" {\n" + "node[fontname=Helvetica fontsize=9 shape=box height = 0 width = 0 margin= 0.04  color=gray]\n"
-            + "graph[ordering=out ranksep=0.1]\n" + "edge[arrowsize = 0.3  color=gray]");
-
-        if (gss != null) for (GSSN s : gss.keySet()) {
-          gssOut.println("\"" + s + "\" [label=\"" + s.gn.toStringAsProduction() + "\n" + s.i + "\"]");
-          for (GSSE c : s.edges) // iterate over children
-            gssOut.println("\"" + s + "\"->\"" + c.dst + "\"");
-        }
-        gssOut.println("}");
-        gssOut.close();
-      } catch (FileNotFoundException e) {
-        System.out.println("Unable to write GSS visualisation to " + filename);
-      }
-    }
-  }
 }
