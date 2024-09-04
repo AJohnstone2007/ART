@@ -53,7 +53,8 @@ public class ScriptTermInterpreter {
   public final TermTraverserText latexTraverser;
 
   private ParserBase currentParser = new GLLBaseLine(); // default current parser is GLL base line - change to MGLL when available
-  private final LexerSingletonLongestMatch currentLexer = new LexerSingletonLongestMatch(); // default current lexer is longest match - change to TWE set lexer when available
+  private final LexerSingletonLongestMatch currentLexer = new LexerSingletonLongestMatch(); // default current lexer is longest match - change to TWE set lexer
+                                                                                            // when available
   public Grammar currentGrammar; // scriptTraverser builds grammar rules into this grammar
   private int currentDerivationTerm = 0;
   private int currentConfiguration = 0;
@@ -338,6 +339,7 @@ public class ScriptTermInterpreter {
   private void tryParse(String inputStringName, String inputString, boolean outcome, boolean suppressOutput) {
     // System.out.println("Try parse on input \"" + inputString + "\"");
     currentParser.resetStatistics();
+    currentParser.loadStartMemory();
     currentGrammar.normalise();
     if (currentGrammar.isEmpty()) {
       System.out.println("Try failed: grammar has no rules");
@@ -364,6 +366,7 @@ public class ScriptTermInterpreter {
       currentParser.loadTermGenerateTime();
     } else
       System.out.println("Try failed: syntax error");
+    currentParser.loadEndMemory();
   }
 
   // This version interprets the string with no tricks

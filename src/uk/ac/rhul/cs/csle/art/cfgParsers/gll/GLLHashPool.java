@@ -1,5 +1,8 @@
 package uk.ac.rhul.cs.csle.art.cfgParsers.gll;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import uk.ac.rhul.cs.csle.art.cfgParsers.grammar.GrammarKind;
 import uk.ac.rhul.cs.csle.art.cfgParsers.hashpool.HashPool;
 import uk.ac.rhul.cs.csle.art.util.Util;
@@ -139,25 +142,6 @@ public class GLLHashPool extends HashPool {
     int pivot = poolGet(n + sppfPackNode_pivot);
 
     return grammar.nodesByNumber.get(gn).toStringAsProduction() + ", " + pivot;
-  }
-
-  // TODO: set occupancies should be presented separately
-  protected String subStatistics() {
-    int descriptorCount = cardinality(descriptorBuckets), gssNodeCount = cardinality(gssNodeBuckets), gssEdgeCount = cardinality(gssEdgeBuckets),
-        popElementCount = cardinality(popElementBuckets), sppfNodeCount = cardinality(sppfNodeBuckets), sppfPackNodeCount = cardinality(sppfPackNodeBuckets);
-
-    long exactSize = 4 * descriptorCount * descriptor_SIZE + gssNodeCount * gssNode_SIZE + gssEdgeCount * gssEdge_SIZE + popElementCount * popElement_SIZE
-        + sppfNodeCount * sppfNode_SIZE + sppfPackNodeCount * sppfPackNode_SIZE;
-
-    long tableSize = 4 * descriptorBuckets.length + gssNodeBuckets.length + gssEdgeBuckets.length + popElementBuckets.length + sppfNodeBuckets.length
-        + sppfPackNodeBuckets.length;
-
-    long poolSize = 4 * getFirstUnusedElement();
-
-    return descriptorCount + "," + gssNodeCount + "," + gssEdgeCount + "," + popElementCount + "," + sppfNodeCount + "," + sppfPackNodeCount + ","
-        + sppfEdgeCount() + "," + sppfAmbiguityCount() + "," + "," + exactSize + "," + String.format("%.2f", (double) exactSize / input.length) + ","
-        + tableSize + "," + String.format("%.2f", (double) tableSize / input.length) + "," + poolSize + ","
-        + String.format("%.2f", (double) poolSize / input.length);
   }
 
   /* Stack handling **********************************************************/
@@ -327,6 +311,7 @@ public class GLLHashPool extends HashPool {
       // rightmost = Math.max(rightmost, sppf.get(s).rightIndex);
       // System.out.println("Reject: widest parse consumed " + rightmost + " tokens");
     }
+    loadCounts();
   }
 
   /* These are here just to quieten error messages - need to be implemented */
@@ -339,18 +324,62 @@ public class GLLHashPool extends HashPool {
     return 0;
   }
 
-// @formatter:off
-void gllHashPool() {
- initialise();
- nextDescriptor: while (dequeueDescriptor())
- while (true) {
-  switch (kindOf[gn]) {
-  case T: if (input[i] == elementOf[gn])
-           {d(1); i++; gn++; break;}
-           else continue nextDescriptor;
-   case N: call(gn); continue nextDescriptor;
-   case EPS: d(0); gn++; break;
-   case END: ret(); continue nextDescriptor;
-   default: Util.fatal("internal error - unexpected grammar node in gllHashPool");
-   }}}
+  void gllHashPool() {
+    initialise();
+    nextDescriptor: while (dequeueDescriptor())
+      while (true) {
+        switch (kindOf[gn]) {
+        case T:
+          if (input[i] == elementOf[gn]) {
+            d(1);
+            i++;
+            gn++;
+            break;
+          } else
+            continue nextDescriptor;
+        case N:
+          call(gn);
+          continue nextDescriptor;
+        case EPS:
+          d(0);
+          gn++;
+          break;
+        case END:
+          ret();
+          continue nextDescriptor;
+        default:
+          Util.fatal("internal error - unexpected grammar node in gllHashPool");
+        }
+      }
+  }
+
+  private void loadCounts() {
+    loadTWECounts(input.length, input.length - 1, 1);
+    loadGSSCounts(cardinality(descriptorBuckets), cardinality(gssNodeBuckets), cardinality(gssEdgeBuckets), cardinality(popElementBuckets));
+
+    int sppfEpsilonNodeCount = 0, sppfTerminalNodeCount = 0, sppfNonterminalNodeCount = 0, sppfIntermediateNodeCount = 0, sppfAmbiguityCount = 0,
+        sppfEdgeCount = 0;
+    loadSPPFCounts(sppfEpsilonNodeCount, sppfTerminalNodeCount, sppfNonterminalNodeCount, sppfIntermediateNodeCount, cardinality(sppfNodeBuckets),
+        cardinality(sppfPackNodeBuckets), sppfAmbiguityCount, sppfEdgeCount);
+    loadPoolAllocated(getFirstUnusedElement());
+
+    Map<Integer, Integer> hist = new HashMap<>();
+    hist.put(0, 0);
+    hist.put(1, 0);
+    hist.put(2, 0);
+    hist.put(3, 0);
+    hist.put(4, 0);
+    hist.put(5, 0);
+    hist.put(-1, 0); // Anything else goes in the -1 bucket
+
+    accumulateOccupancies(hist, descriptorBuckets);
+    accumulateOccupancies(hist, gssNodeBuckets);
+    accumulateOccupancies(hist, gssEdgeBuckets);
+    accumulateOccupancies(hist, popElementBuckets);
+    accumulateOccupancies(hist, sppfNodeBuckets);
+    accumulateOccupancies(hist, sppfPackNodeBuckets);
+
+    loadHashCounts(hist.get(0), hist.get(1), hist.get(2), hist.get(3), hist.get(4), hist.get(5), hist.get(-1));
+  }
+
 }

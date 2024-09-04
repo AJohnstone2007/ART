@@ -139,7 +139,8 @@ public class ParserBase {
   private long descriptorCount;
   private long gssNodeCount, gssEdgeCount, popCount;
   private long sppfEpsilonNodeCount, sppfTerminalNodeCount, sppfNonterminalNodeCount, sppfIntermediateNodeCount, sppfSymbolPlusIntermediateNodeCount,
-      sppfPackNodeCount, sppfAmbiguityCount, sppfEdgeCount, sppfCyclicSCCCount, derivationNodeCount;
+      sppfPackNodeCount, sppfAmbiguityCount, sppfEdgeCount, sppfCyclicSCCCount;
+  private long derivationNodeCount, derivationAmbiguityNodeCount;
   private long startMemory, endMemory;
   private long poolAllocated, h0, h1, h2, h3, h4, h5, h6more;
 
@@ -200,8 +201,9 @@ public class ParserBase {
     this.sppfCyclicSCCCount = sppfCyclicSCCCount;
   }
 
-  public void loadderivationNodeCount(long derivationNodeCount) {
+  public void loadDerivationCounts(long derivationNodeCount, long derivationAmbiguityNodeCount) {
     this.derivationNodeCount = derivationNodeCount;
+    this.derivationAmbiguityNodeCount = derivationAmbiguityNodeCount;
   }
 
   public void loadStartMemory() {
@@ -262,8 +264,11 @@ public class ParserBase {
 
   private String getSPPFCounts() {
     return sppfEpsilonNodeCount + "," + sppfTerminalNodeCount + "," + sppfNonterminalNodeCount + "," + sppfIntermediateNodeCount + ","
-        + sppfSymbolPlusIntermediateNodeCount + "," + sppfPackNodeCount + "," + sppfAmbiguityCount + "," + sppfEdgeCount + "," + sppfCyclicSCCCount + ","
-        + derivationNodeCount;
+        + sppfSymbolPlusIntermediateNodeCount + "," + sppfPackNodeCount + "," + sppfAmbiguityCount + "," + sppfEdgeCount + "," + sppfCyclicSCCCount;
+  }
+
+  private String getDerivationCounts() {
+    return derivationNodeCount + "," + derivationAmbiguityNodeCount;
   }
 
   private String getPoolCounts() {
@@ -275,15 +280,15 @@ public class ParserBase {
     setupTime = lexTime = lexChooseTime = parseTime = parseChooseTime = termGenerateTime = semanticsTime = 0;
     tweNodeCount = tweEdgeCount = tweLexCount = -1;
     descriptorCount = gssNodeCount = gssEdgeCount = popCount = -1;
-    sppfEpsilonNodeCount = sppfTerminalNodeCount = sppfNonterminalNodeCount = sppfIntermediateNodeCount = sppfSymbolPlusIntermediateNodeCount = sppfPackNodeCount = sppfAmbiguityCount = sppfEdgeCount = -1;
+    sppfEpsilonNodeCount = sppfTerminalNodeCount = sppfNonterminalNodeCount = sppfIntermediateNodeCount = sppfSymbolPlusIntermediateNodeCount = sppfPackNodeCount = sppfAmbiguityCount = sppfEdgeCount = sppfCyclicSCCCount = -1;
     startMemory = endMemory = poolAllocated = h0 = h1 = h2 = h3 = h4 = h5 = h6more = -1;
-    derivationNodeCount = sppfCyclicSCCCount = -1;
+    derivationNodeCount = derivationAmbiguityNodeCount = -1;
   }
 
   public String statisticsToString() {
     normaliseTimes();
     return inputString.length() + "," + getClass().getSimpleName() + "," + (inLanguage ? "accept" : "reject") + ",OK," + artGetTimes() + "," + getTWECounts()
-        + "," + getGSSCounts() + "," + getSPPFCounts() + "," + (endMemory - startMemory) + "," + getPoolCounts();
+        + "," + getGSSCounts() + "," + getSPPFCounts() + "," + getDerivationCounts() + "," + (endMemory - startMemory) + "," + getPoolCounts();
   }
 
   /* Lexers **********************************************************************/

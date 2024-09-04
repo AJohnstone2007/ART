@@ -193,6 +193,9 @@ public class GLLBaseLine extends ParserBase {
   }
 
   /* Term generation **************************************************************************/
+  /* This version handles promotion operators, but does not create ambiguity nodes */
+  long derivationNodeCount = 0, derivationAmbiguityNodeCount = 0;
+
   @Override
   public int derivationAsTerm() {
     if (sppfRootNode == null) return 0;
@@ -200,6 +203,7 @@ public class GLLBaseLine extends ParserBase {
     LinkedList<Integer> carrier = new LinkedList<>();
     derivationAsTermRec(sppfRootNode, carrier, firstAvailablePackNode(sppfRootNode).gn.seq); // Root packed node must have a grammar node that is the end of a
                                                                                              // start production
+    loadDerivationCounts(derivationNodeCount, derivationAmbiguityNodeCount);
     return carrier.getFirst();
   }
 
@@ -226,7 +230,10 @@ public class GLLBaseLine extends ParserBase {
     if (constructor == null) // If there were no OVERs, then set the constructor to be our symbol
       constructor = (gn.elm.kind == GrammarKind.B) ? lexemeOfBuiltin(LKind.valueOf(gn.elm.str), positions[sppfn.li]) : gn.elm.str;
 
-    if (children != childrenFromParent) childrenFromParent.add(grammar.iTerms.findTerm(constructor, children));
+    if (children != childrenFromParent) {
+      childrenFromParent.add(grammar.iTerms.findTerm(constructor, children));
+      derivationNodeCount++;
+    }
 
     visitedSPPFNodes.clear(sppfn.number);
     return (gn.giftKind == GIFTKind.OVER) ? constructor : null;
@@ -631,34 +638,39 @@ public class GLLBaseLine extends ParserBase {
   }
 
   private void loadCounts() {
-    this.loadTWECounts(input.length, input.length - 1, 1);
-    this.loadGSSCounts(descS.size(), gss.keySet().size(), -10, -11);
-    this.loadSPPFCounts(21, 22, 23, 24, sppf.keySet().size(), 26, 27, 28);
-    this.loadPoolAllocated(-10);
-    this.loadHashCounts(-20, -21, -22, -23, -24, -25, -26);
+    loadTWECounts(input.length, input.length - 1, 1);
 
-    // int descriptorCount = descS.size(), gssNodeCount =
-    // gss.keySet().size(), gssEdgeCount = 0, popCount = 0,
-    // sppfNodeCount = sppf.keySet().size(),
-    // sppfPCount = 0, sppfEdgeCount = 0, sppfAmbiguityCount = 0;
-    // for (GSSN g : gss.keySet()) {
-    // gssEdgeCount += g.edges.size();
-    // popCount += g.pops.size();
-    // }
-    // for (SPPFN s : sppf.keySet()) {
-    // sppfPCount += s.packNS.size();
-    // if (s.packNS.size() > 1) sppfAmbiguityCount++;
-    // for (SPPFPN p : s.packNS) {
-    // sppfEdgeCount++; // inedge
-    // if (p.leftChild != null) sppfEdgeCount++;
-    // if (p.rightChild != null) sppfEdgeCount++;
-    // // System.out.println("SPPF node " + s.gn.toStringAsProduction() + ", " + s.li + ", " + s.ri + " pack node " + p.gn.toStringAsProduction() + ", " +
-    // // p.pivot
-    // // + ": " + "[" + (p.leftChild == null ? "null SPPF node" : (p.leftChild.gn.toStringAsProduction()) + ", " + p.leftChild.li + ", " + p.leftChild.ri)
-    // // + "] [" + p.rightChild.gn.toStringAsProduction() + ", " + p.rightChild.li + ", " + p.rightChild.ri + "]");
-    // }
-    // }
-    //
-    // }
+    int gssEdgeCount = 0, popCount = 0;
+    for (GSSN g : gss.keySet()) {
+      gssEdgeCount += g.edges.size();
+      popCount += g.pops.size();
+    }
+    loadGSSCounts(descS.size(), gss.keySet().size(), gssEdgeCount, popCount);
+
+    int sppfEpsilonNodeCount = 0, sppfTerminalNodeCount = 0, sppfNonterminalNodeCount = 0, sppfIntermediateNodeCount = 0, sppfPackNodeCount = 0,
+        sppfAmbiguityCount = 0, sppfEdgeCount = 0;
+    for (SPPFN s : sppf.keySet()) {
+      switch (s.gn.elm.kind) {
+      // Dodgy - how do we test the flavour of an SPPF node?
+      case T, TI, C, B:
+        sppfTerminalNodeCount++;
+        break;
+      case EPS:
+        sppfEpsilonNodeCount++;
+        break;
+      }
+      sppfPackNodeCount += s.packNS.size();
+      if (s.packNS.size() > 1) sppfAmbiguityCount++;
+      for (SPPFPN p : s.packNS) {
+        sppfEdgeCount++; // inedge
+        if (p.leftChild != null) sppfEdgeCount++;
+        if (p.rightChild != null) sppfEdgeCount++;
+      }
+    }
+
+    loadSPPFCounts(sppfEpsilonNodeCount, sppfTerminalNodeCount, sppfNonterminalNodeCount, sppfIntermediateNodeCount, sppf.keySet().size(), sppfPackNodeCount,
+        sppfAmbiguityCount, sppfEdgeCount);
+    // loadPoolAllocated(-1);
+    // loadHashCounts(-20, -21, -22, -23, -24, -25, -26);
   }
 }

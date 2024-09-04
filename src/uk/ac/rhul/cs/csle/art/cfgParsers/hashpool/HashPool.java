@@ -1,5 +1,7 @@
 package uk.ac.rhul.cs.csle.art.cfgParsers.hashpool;
 
+import java.util.Map;
+
 import uk.ac.rhul.cs.csle.art.cfgParsers.ParserBase;
 
 /**
@@ -25,6 +27,19 @@ public class HashPool extends ParserBase { // Uncomment this line for HashPool t
 
   protected int getFirstUnusedElement() {
     return (poolBlockTop * poolBlockSize) + poolOffsetTop + 1;
+  }
+
+  protected void accumulateOccupancies(Map<Integer, Integer> hist, int[] hashTable) {
+    for (var bucket : hashTable) {
+      int count = 0;
+      for (int element = bucket; element != 0; element = poolGet(element))
+        count++;
+
+      if (hist.get(count) == null) // out of bounds
+        hist.put(-1, hist.get(-1) + 1);
+      else
+        hist.put(count, hist.get(count) + 1);
+    }
   }
 
   // The allocation function: check to see if the current poolBlock has enough space; if not make a new one.
