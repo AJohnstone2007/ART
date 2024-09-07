@@ -21,11 +21,11 @@ public class Chooser {
   }
 
   public void normalise(Grammar grammar, Set<Integer> chooseRules) {
-    System.out.println("Building chooser relation on " + chooseRules);
-    for (var i : chooseRules) {
-      System.out.println("Term i:");
-
-    }
+    // System.out.println("Building chooser relation on " + chooseRules);
+    // for (var i : chooseRules) {
+    // System.out.println("Term i:");
+    //
+    // }
 
     // Create an array of bindings that will be used to 'evaluate' chooser expressions using the value system
     int[] bindings = new int[9]; // Note binding zero is reserved for wildcard...
@@ -89,14 +89,14 @@ public class Chooser {
     bindings[anyTerminal] = iTerms.findTerm(anyStr);
 
     // Debug: announce what we have just constructed
-    System.out.println("Characters: " + iTerms.toString(bindings[1]));
-    System.out.println("Builtins: " + iTerms.toString(bindings[2]));
-    System.out.println("CaseSensitives: " + iTerms.toString(bindings[3]));
-    System.out.println("CaseInsensitives: " + iTerms.toString(bindings[4]));
-    System.out.println("Paras: " + iTerms.toString(bindings[5]));
-    System.out.println("Nons: " + iTerms.toString(bindings[6]));
-    System.out.println("Literals: " + iTerms.toString(bindings[7]));
-    System.out.println("Any: " + iTerms.toString(bindings[8]));
+    // System.out.println("Characters: " + iTerms.toString(bindings[1]));
+    // System.out.println("Builtins: " + iTerms.toString(bindings[2]));
+    // System.out.println("CaseSensitives: " + iTerms.toString(bindings[3]));
+    // System.out.println("CaseInsensitives: " + iTerms.toString(bindings[4]));
+    // System.out.println("Paras: " + iTerms.toString(bindings[5]));
+    // System.out.println("Nons: " + iTerms.toString(bindings[6]));
+    // System.out.println("Literals: " + iTerms.toString(bindings[7]));
+    // System.out.println("Any: " + iTerms.toString(bindings[8]));
 
     // for (String chooserSetID : ARTV3Module.getChoosers().keySet()) {
     // List<String> chooseExpressionList = ARTV3Module.getChoosers().get(chooserSetID);

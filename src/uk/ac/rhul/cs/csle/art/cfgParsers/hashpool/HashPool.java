@@ -108,6 +108,7 @@ public class HashPool extends ParserBase { // Uncomment this line for HashPool t
 
   // Knuth style multiplier hash functions for 32-bits - these functions have been inlined into the find functions below but are retained here for docuumntary
   // purposes
+  // About to be de-inlined for the September 2024 hash function experiments
   private void hash(int hashBucketCount, int a, int b) {
     hashResult = (a + (b * hashPrime));
     hashResult %= hashBucketCount;

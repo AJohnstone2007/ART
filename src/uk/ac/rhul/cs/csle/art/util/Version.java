@@ -2,7 +2,7 @@ package uk.ac.rhul.cs.csle.art.util;
 public class Version {
   public static int major() {return 5;}
   public static int minor() {return 0;}
-  public static int build() {return 186;}
-  public static String timeStamp() {return "2024-09-07 20:55:37";}
+  public static int build() {return 188;}
+  public static String timeStamp() {return "2024-09-07 21:57:47";}
   public static String version() { return major()+"_"+minor()+"_"+build() + " " + timeStamp(); };
 }
