@@ -16,8 +16,8 @@ public class GLLHashPool extends HashPool {
   int seqOf[];
   int targetOf[];
   int elementOf[];
-  final int T = 1; // This is a bit weird - these constants must be compile time, and GKind.T.ordinal() is runtime, so we hardcode and check for agreement with
-                   // the runtime values below
+  final int T = 1; // This is a bit weird - these constants must be compile time so that we can use them in a switch statement, and GKind.T.ordinal() is
+                   // runtime, so we hardcode and check for agreement with the runtime values below
   final int EPS = 5;
   final int N = 6;
   final int END = 8;

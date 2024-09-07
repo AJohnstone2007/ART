@@ -15,7 +15,7 @@ public class Relation<T1, T2> {
     map = new HashMap<>();
   }
 
-  public Relation(Relation<T1, T2> relation) {
+  public Relation(Relation<T1, T2> relation) { // copy constructor
     this();
     for (T1 t1 : relation.getDomain())
       map.put(t1, new TreeSet<>(relation.get(t1)));

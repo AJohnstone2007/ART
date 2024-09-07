@@ -2,7 +2,7 @@
 //!parser rdsobFunction // Uncomment this line to try bootstrapping with Recursive Descent Singleton Ordered Backtracking parser instead of default GLL parser
 !whitespace &SIMPLE_WHITESPACE, &COMMENT_NEST_ART, &COMMENT_LINE_C 
 rules ::= rule rules^ | rule
-rule  ::= cfgRule^^ | trRule^^ | 'choose'^ chooseRules^ | '!'^ directive^^   
+rule  ::= cfgRule^^ | trRule^^ | chooseRule^^ | '!'^ directive^^   
 
 (* Context Free Grammar rules ************************************************)
 cfgRule  ::= cfgLHS '::='^ cfgAlts^  
@@ -54,20 +54,34 @@ trArgList ::= trTerm | trTerm ','^ trArgList^ | trInlineTransition | trInlineTra
 trInlineTransition ::= trTerm TRRELATION^ trTerm
 
 (* Choose rules ***************************************************************)
-chooseRules ::= chooseRule | chooseRule chooseRules^
-chooseRule ::= chooseDiff chooserOp^^ chooseDiff 
-chooseDiff ::= chooseUnionIntersection^^ | chooseDiff '||'^ chooseUnionIntersection
-chooseUnionIntersection ::= chooseElement^^ | chooseUnionIntersection chooseUnion^^ chooseElement^ | chooseUnionIntersection chooseIntersection^^ chooseElement^
-chooseUnion ::= '|'^
-chooseIntersection ::= '/'^
-chooseElement ::= cfgNonterminal | cfgCharacterTerminal | cfgBuiltinTerminal | cfgCaseInsensitiveTerminal | cfgCaseSensitiveTerminal | choosePredefinedSet^ | '('^ chooseDiff ')'^
-choosePredefinedSet ::= 'anyCharacterTerminal' | 'anyBuiltinTerminal' | 'anyCaseSensitiveTerminal' | 'anyCaseInsensitiveTerminal' 
-                      | 'anyParaterminal'      | 'anyLiteralTerminal' | 'anyTerminal'              | 'anyNonterminal'
+chooseRule ::= chooseElementRule^^ | chooseSlotRule^^
+
+chooseElementRule ::= chooseElementExpr chooserOp^^ chooseElementExpr 
+chooseSlotRule ::= chooseSlotExpr chooserOp^^ chooseSlotExpr  
+
+chooseElementExpr ::= chooseElement^^ | chooseElementExpr chooseSetOp^^ chooseElement 
+chooseSlotExpr    ::= chooseSlot^^    | chooseSlotExpr    chooseSetOp^^ chooseSlot
+
+chooseElement ::= cfgNonterminal | cfgCharacterTerminal | cfgBuiltinTerminal | cfgCaseInsensitiveTerminal | cfgCaseSensitiveTerminal | choosePredefinedElementSet^ | '('^ chooseElementExpr ')'^
+chooseSlot ::= cfgLHS '::=' cfgAlt | '('^ chooseSlotExpr ')'^
+
+choosePredefinedElementSet ::=
+  'anyCharacterTerminal' | 'anyBuiltinTerminal' | 'anyCaseSensitiveTerminal' | 'anyCaseInsensitiveTerminal' 
+| 'anyParaterminal'      | 'anyLiteralTerminal' | 'anyTerminal'              | 'anyNonterminal' 
+
+choosePredefinedSlotSet ::= 'anySlot'
+
 chooserOp ::= chooseHigher^^ | chooseLower^^ | chooseLonger^^ | chooseShorter^^
 chooseHigher ::= '>'^
 chooseLower ::= '<'^
 chooseLonger ::= '>>'^
 chooseShorter ::= '<<'^
+
+chooseSetOp ::= chooseUnion | chooseDifference| chooseIntersection  | chooseSymmetricDifference
+chooseUnion ::= '+'^
+chooseDifference ::= '-'^
+chooseIntersection ::= '*'^
+chooseSymmetricDifference ::= '/'^
 
 (* Directives ****************************************************************)
 directive ::= directiveElement

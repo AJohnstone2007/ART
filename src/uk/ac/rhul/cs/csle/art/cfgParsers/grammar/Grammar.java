@@ -41,6 +41,8 @@ public class Grammar {
   public String[] lexicalStringsArray;
   public LKind[] whitespacesArray;
 
+  public Set<GrammarElement> paraterminals = new HashSet<>();
+
   // Grammar analysis data
   public final Relation<GrammarElement, GrammarElement> reach1 = new Relation<>(); // { (X,Y) | X ::= \alpha Y \beta }
   public final Relation<GrammarElement, GrammarElement> singleton1 = new Relation<>(); // { (X,Y) | X ::= \alpha Y \beta, \alpha, \beta \derives \epsilon }

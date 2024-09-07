@@ -96,7 +96,7 @@ public class Util {
 
   public static String scriptString(String[] args) { // Construct an ART script string, processing embedded filenames accordingly
     StringBuilder scriptStringBuilder = new StringBuilder();
-    for (int argp = 0; argp < args.length; argp++)
+    for (int argp = 0; argp < args.length; argp++) {
       if (args[argp].endsWith(".art"))
         try {
           // System.out.println("Appending contents of ART script file" + args[argp]);
@@ -107,7 +107,10 @@ public class Util {
       else if (!args[argp].startsWith("\"") && !args[argp].startsWith("'") && args[argp].contains("."))
         scriptStringBuilder.append("!try '" + args[argp] + "'");
       else
-        scriptStringBuilder.append(" " + args[argp]);
+        scriptStringBuilder.append(args[argp]);
+      scriptStringBuilder.append("\n");
+    }
+
     return scriptStringBuilder.toString();
   }
 

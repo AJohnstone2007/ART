@@ -36,7 +36,7 @@ public class ARTV3 {
     if (args.length == 0) throw new ARTUncheckedException("no arguments supplied");
     StringBuilder sb = new StringBuilder();
 
-    // Concate
+    // Concatenate
     for (String arg : args) {
       if (arg.endsWith(".art")) {
         artManager.defaultName = arg;
