@@ -106,9 +106,7 @@ public class HashPool extends ParserBase { // Uncomment this line for HashPool t
   private final int hashPrime = 1013; // Another large prime
   private int hashResult;
 
-  // Knuth style multiplier hash functions for 32-bits - these functions have been inlined into the find functions below but are retained here for docuumntary
-  // purposes
-  // About to be de-inlined for the September 2024 hash function experiments
+  // Knuth style multiplier hash functions for 32-bits
   private void hash(int hashBucketCount, int a, int b) {
     hashResult = (a + (b * hashPrime));
     hashResult %= hashBucketCount;
@@ -127,6 +125,232 @@ public class HashPool extends ParserBase { // Uncomment this line for HashPool t
     if (hashResult < 0) hashResult = -hashResult;
   }
 
+  /*
+   * Eclipse-style generated hashes
+   *
+   * final int prime = 31; int result = 1; result = prime * result + ((sn == null) ? 0 : sn.hashCode());
+   */
+
+  // private void hash(int hashBucketCount, int a, int b) {
+  // final int prime = 31;
+  // hashResult = 1;
+  // hashResult = prime * hashResult + a;
+  // hashResult = prime * hashResult + b;
+  // hashResult %= hashBucketCount;
+  // if (hashResult < 0) hashResult = -hashResult;
+  // }
+  //
+  // private void hash(int hashBucketCount, int a, int b, int c) {
+  // final int prime = 31;
+  // hashResult = 1;
+  // hashResult = prime * hashResult + a;
+  // hashResult = prime * hashResult + b;
+  // hashResult = prime * hashResult + c;
+  // hashResult %= hashBucketCount;
+  // if (hashResult < 0) hashResult = -hashResult;
+  // }
+  //
+  // private void hash(int hashBucketCount, int a, int b, int c, int d) {
+  // final int prime = 31;
+  // hashResult = 1;
+  // hashResult = prime * hashResult + a;
+  // hashResult = prime * hashResult + b;
+  // hashResult = prime * hashResult + c;
+  // hashResult = prime * hashResult + d;
+  // hashResult %= hashBucketCount;
+  // if (hashResult < 0) hashResult = -hashResult;
+  // }
+
+  /* FNV style hashing */
+
+  // private void hash(int hashBucketCount, int a, int b) {
+  // final long prime = 1099511628211l;
+  // long result = prime;
+  //
+  // result = result * prime;
+  // result = result ^ (a & 0xFF);
+  //
+  // result = result * prime;
+  // result = result ^ ((a >> 8) & 0xFF);
+  //
+  // result = result * prime;
+  // result = result ^ ((a >> 16) & 0xFF);
+  //
+  // result = result * prime;
+  // result = result ^ ((a >> 24) & 0xFF);
+  //
+  // result = result * prime;
+  // result = result ^ (b & 0xFF);
+  //
+  // result = result * prime;
+  // result = result ^ ((b >> 8) & 0xFF);
+  //
+  // result = result * prime;
+  // result = result ^ ((b >> 16) & 0xFF);
+  //
+  // result = result * prime;
+  // result = result ^ ((b >> 24) & 0xFF);
+  //
+  // hashResult = (int) (result % hashBucketCount);
+  // if (hashResult < 0) hashResult = -hashResult;
+  // }
+  //
+  // private void hash(int hashBucketCount, int a, int b, int c) {
+  // final long prime = 1099511628211l;
+  // long result = prime;
+  //
+  // result = result * prime;
+  // result = result ^ (a & 0xFF);
+  //
+  // result = result * prime;
+  // result = result ^ ((a >> 8) & 0xFF);
+  //
+  // result = result * prime;
+  // result = result ^ ((a >> 16) & 0xFF);
+  //
+  // result = result * prime;
+  // result = result ^ ((a >> 24) & 0xFF);
+  //
+  // result = result * prime;
+  // result = result ^ (b & 0xFF);
+  //
+  // result = result * prime;
+  // result = result ^ ((b >> 8) & 0xFF);
+  //
+  // result = result * prime;
+  // result = result ^ ((b >> 16) & 0xFF);
+  //
+  // result = result * prime;
+  // result = result ^ ((b >> 24) & 0xFF);
+  //
+  // result = result * prime;
+  // result = result ^ (c & 0xFF);
+  //
+  // result = result * prime;
+  // result = result ^ ((c >> 8) & 0xFF);
+  //
+  // result = result * prime;
+  // result = result ^ ((c >> 16) & 0xFF);
+  //
+  // result = result * prime;
+  // result = result ^ ((c >> 24) & 0xFF);
+  //
+  // hashResult = (int) (result % hashBucketCount);
+  // if (hashResult < 0) hashResult = -hashResult;
+  // }
+  //
+  // private void hash(int hashBucketCount, int a, int b, int c, int d) {
+  // final long prime = 1099511628211l;
+  // long result = prime;
+  //
+  // result = result * prime;
+  // result = result ^ (a & 0xFF);
+  //
+  // result = result * prime;
+  // result = result ^ ((a >> 8) & 0xFF);
+  //
+  // result = result * prime;
+  // result = result ^ ((a >> 16) & 0xFF);
+  //
+  // result = result * prime;
+  // result = result ^ ((a >> 24) & 0xFF);
+  //
+  // result = result * prime;
+  // result = result ^ (b & 0xFF);
+  //
+  // result = result * prime;
+  // result = result ^ ((b >> 8) & 0xFF);
+  //
+  // result = result * prime;
+  // result = result ^ ((b >> 16) & 0xFF);
+  //
+  // result = result * prime;
+  // result = result ^ ((b >> 24) & 0xFF);
+  //
+  // result = result * prime;
+  // result = result ^ (c & 0xFF);
+  //
+  // result = result * prime;
+  // result = result ^ ((c >> 8) & 0xFF);
+  //
+  // result = result * prime;
+  // result = result ^ ((c >> 16) & 0xFF);
+  //
+  // result = result * prime;
+  // result = result ^ ((c >> 24) & 0xFF);
+  //
+  // result = result * prime;
+  // result = result ^ (d & 0xFF);
+  //
+  // result = result * prime;
+  // result = result ^ ((d >> 8) & 0xFF);
+  //
+  // result = result * prime;
+  // result = result ^ ((d >> 16) & 0xFF);
+  //
+  // result = result * prime;
+  // result = result ^ ((d >> 24) & 0xFF);
+  //
+  // hashResult = (int) (result % hashBucketCount);
+  // if (hashResult < 0) hashResult = -hashResult;
+  // }
+
+  /* CRC32 using Java CRC32 class */
+
+  // private void hash(int hashBucketCount, int a, int b) {
+  // var crc = new CRC32();
+  // crc.update(a);
+  // crc.update(a >> 8);
+  // crc.update(a >> 16);
+  // crc.update(a >> 24);
+  // crc.update(b);
+  // crc.update(b >> 8);
+  // crc.update(b >> 16);
+  // crc.update(b >> 24);
+  // hashResult = (int) (crc.getValue() % hashBucketCount);
+  // if (hashResult < 0) hashResult = -hashResult;
+  // }
+  //
+  // private void hash(int hashBucketCount, int a, int b, int c) {
+  // var crc = new CRC32();
+  // crc.update(a);
+  // crc.update(a >> 8);
+  // crc.update(a >> 16);
+  // crc.update(a >> 24);
+  // crc.update(b);
+  // crc.update(b >> 8);
+  // crc.update(b >> 16);
+  // crc.update(b >> 24);
+  // crc.update(c);
+  // crc.update(c >> 8);
+  // crc.update(c >> 16);
+  // crc.update(c >> 24);
+  // hashResult = (int) (crc.getValue() % hashBucketCount);
+  // if (hashResult < 0) hashResult = -hashResult;
+  // }
+  //
+  // private void hash(int hashBucketCount, int a, int b, int c, int d) {
+  // var crc = new CRC32();
+  // crc.update(a);
+  // crc.update(a >> 8);
+  // crc.update(a >> 16);
+  // crc.update(a >> 24);
+  // crc.update(b);
+  // crc.update(b >> 8);
+  // crc.update(b >> 16);
+  // crc.update(b >> 24);
+  // crc.update(c);
+  // crc.update(c >> 8);
+  // crc.update(c >> 16);
+  // crc.update(c >> 24);
+  // crc.update(d);
+  // crc.update(d >> 8);
+  // crc.update(d >> 16);
+  // crc.update(d >> 24);
+  // hashResult = (int) (crc.getValue() % hashBucketCount);
+  // if (hashResult < 0) hashResult = -hashResult;
+  // }
+
   /** Low level find functions: lookup an element and create if not present ***/
 
   /* The result of a find is left in these variables */
@@ -139,9 +363,7 @@ public class HashPool extends ParserBase { // Uncomment this line for HashPool t
 
   /* Lookup key <a,b> on hashBuckets. If not found, allocate allocationSize and load <a,b> to offsets (1,2) */
   protected void find(int[] hashTable, int hashBucketCount, int allocationSize, int a, int b) {
-    hashResult = (a + (b * hashPrime));
-    hashResult %= hashBucketCount;
-    if (hashResult < 0) hashResult = -hashResult;
+    hash(hashBucketCount, a, b);
 
     findIndex = hashTable[hashResult];
     do {
@@ -177,9 +399,7 @@ public class HashPool extends ParserBase { // Uncomment this line for HashPool t
 
   /* Lookup key <a,b,c> on hashBuckets. If not found, allocate allocationSize and load <a,b> to offsets (1,2,3) */
   protected void find(int[] hashTable, int hashBucketCount, int allocationSize, int a, int b, int c) {
-    hashResult = ((a + (b * hashPrime)) + (c * hashPrime));
-    hashResult %= hashBucketCount;
-    if (hashResult < 0) hashResult = -hashResult;
+    hash(hashBucketCount, a, b, c);
 
     findIndex = hashTable[hashResult];
     do {
@@ -215,9 +435,7 @@ public class HashPool extends ParserBase { // Uncomment this line for HashPool t
 
   /* Lookup key <a,b,c,d> on hashBuckets. If not found, allocate allocationSize and load <a,b> to offsets (1,2,3,4) */
   protected void find(int[] hashTable, int hashBucketCount, int allocationSize, int a, int b, int c, int d) {
-    hashResult = ((a + (b * hashPrime)) + (c * hashPrime) + (d * hashPrime));
-    hashResult %= hashBucketCount;
-    if (hashResult < 0) hashResult = -hashResult;
+    hash(hashBucketCount, a, b, c, d);
 
     findIndex = hashTable[hashResult];
     do {

@@ -259,8 +259,8 @@ class MakeTimeSummary {
       }
       var key = new SummaryKey(fields[3], fields[4], fields[6], fields[7], fields[8], fields[21], fields[10], fields[11]);
       if (map.get(key) == null) map.put(key, new ArrayList<Double>());
-      // map.get(key).add(Double.parseDouble(fields[16])); // Add parse time
-      map.get(key).add(Double.parseDouble(fields[17])); // Add parse chooser time
+      map.get(key).add(Double.parseDouble(fields[16])); // Add parse time
+      // map.get(key).add(Double.parseDouble(fields[17])); // Add parse chooser time
     }
 
     for (var k : map.keySet()) {
@@ -273,11 +273,17 @@ class MakeTimeSummary {
       for (var l : list)
         mean += l;
 
-      for (int i = 0; i < 5 && i < list.size(); i++)
-        meanOfBestFive += list.get(i);
+      mean /= list.size();
 
-      fw.write(k + "," + list.size() + "," + list.get(0) + "," + list.get(list.size() - 1) + "," + String.format("%6.3f", mean / list.size()) + ","
-          + String.format("%6.3f", meanOfBestFive / 5));
+      if (list.size() < 5)
+        meanOfBestFive = mean;
+      else {
+        for (int i = 0; i < 5 && i < list.size(); i++)
+          meanOfBestFive += list.get(i);
+        meanOfBestFive /= 5;
+      }
+      fw.write(k + "," + list.size() + "," + list.get(0) + "," + list.get(list.size() - 1) + "," + String.format("%6.3f", mean) + ","
+          + String.format("%6.3f", meanOfBestFive));
       fw.write(",***,");
       for (var l : list)
         fw.write(l + ",");
