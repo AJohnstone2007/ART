@@ -207,11 +207,11 @@ public class ParserBase {
   }
 
   public void loadStartMemory() {
-    startMemory = memoryUsed();
+    // startMemory = memoryUsed();
   }
 
   public void loadEndMemory() {
-    endMemory = memoryUsed();
+    // endMemory = memoryUsed();
   }
 
   private long memoryUsed() {

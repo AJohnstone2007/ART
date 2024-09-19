@@ -125,11 +125,7 @@ public class HashPool extends ParserBase { // Uncomment this line for HashPool t
     if (hashResult < 0) hashResult = -hashResult;
   }
 
-  /*
-   * Eclipse-style generated hashes
-   *
-   * final int prime = 31; int result = 1; result = prime * result + ((sn == null) ? 0 : sn.hashCode());
-   */
+  /* Eclipse-style generated hashes *****************************************************************************/
 
   // private void hash(int hashBucketCount, int a, int b) {
   // final int prime = 31;
@@ -161,7 +157,7 @@ public class HashPool extends ParserBase { // Uncomment this line for HashPool t
   // if (hashResult < 0) hashResult = -hashResult;
   // }
 
-  /* FNV style hashing */
+  /* FNV style hashing **************************************************************************************/
 
   // private void hash(int hashBucketCount, int a, int b) {
   // final long prime = 1099511628211l;

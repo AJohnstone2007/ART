@@ -65,7 +65,7 @@ public class GLLHashPool extends HashPool {
   private final int loadFactor = 2;
 
   // DescriptorMax data from ansi_c and gtb_src; primes set for load factor 2. This is the experimental setup for the SLE23 paper
-  int sizeKludge = 1; // Leave this at one for normal operations. Can be used to zoom up the bucket count, but probably loses coprime property
+  int sizeKludge = 7; // Leave this at one for normal operations. Can be used to zoom up the bucket count, but probably loses coprime property
   final int descriptorMax = 6_578_603;
   final int descriptorPrime = 13_157_231;
   final int descriptorBucketInitialCount = descriptorPrime * sizeKludge;

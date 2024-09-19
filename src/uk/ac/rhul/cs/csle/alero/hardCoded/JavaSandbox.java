@@ -19,7 +19,8 @@ public class JavaSandbox {
     // Mesh mesh = new LOM(new float[] { 0, 0, 0, 0, 0, 30, 0, 30, 30, 0, 30, 0 }, new float[] { 10, 0, 0, 20, 5, 0 }); // LOM in YZ
     // showMesh(mesh);
 
-    new TriangleExperiments();
+    // new TriangleExperiments();
+    new PrintonOnSea().createWorld();
 
     // // Start of CSG testing
     // LOM lomA = new LOM(new float[] { 0, 0, 0, 30, 0, 0, 30, 30, 0, 0, 30, 0 }, new float[] { 0, 0, 30 });

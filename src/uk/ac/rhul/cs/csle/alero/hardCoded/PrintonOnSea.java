@@ -82,12 +82,12 @@ public class PrintonOnSea {
 
   Node straight(double length, double originX, double originY, double orientationAngle, double... sleeperPosition) {
     Group ret = new Group();
-    Box centreLine = new Box(length, 2, 20);
+    Box centreLine = new Box(length, 2, 4);
     centreLine.setMaterial(Alero.greenMaterial);
-    Box leftBar = new Box(8, 10, 20);
+    Box leftBar = new Box(8, 10, 2);
     leftBar.setMaterial(Alero.redMaterial);
     leftBar.setTranslateX(-length / 2 + 4);
-    Box rightBar = new Box(8, 10, 20);
+    Box rightBar = new Box(8, 10, 2);
     rightBar.setMaterial(Alero.blueMaterial);
     rightBar.setTranslateX(length / 2 - 4);
 
@@ -121,9 +121,10 @@ public class PrintonOnSea {
   }
 
   public void createWorld() {
-    board(boardX, boardY);
-    board(boardX, boardY).setTranslateX(boardX);
-    board(boardX, boardY).setTranslateX(boardX * 2);
+    board(boardX, boardY).setTranslateX(boardX * -1.5);
+    board(boardX, boardY).setTranslateX(boardX * -0.5);
+    board(boardX, boardY).setTranslateX(boardX * 0.5);
+    board(boardX, boardY).setTranslateX(boardX * 1.5);
     for (int i = -6; i < 6; i++)
       straightLBSCR(i * Alero.fi(30, 0), 0, 0);
 
