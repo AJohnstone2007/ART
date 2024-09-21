@@ -6,7 +6,7 @@ rule  ::= cfgRule^^ | trRule^^ | chooseRule^^ | '!'^ directive^^
 
 (* Context Free Grammar rules ************************************************)
 cfgRule  ::= cfgLHS '::='^ cfgAlts^  
-  cfgLHS ::= &ID  
+  cfgLHS ::= ID  
 cfgAlts ::= cfgAlt '|'^ cfgAlts^ | cfgAlt  
 cfgAlt  ::= cfgSeq^^ cfgActions cfgEpsilonCarrier | cfgSeq^^ cfgActions cfgEpsilon | cfgSeq^^ cfgElems^ cfgActions (* final actions in sequence *)  
   cfgEpsilonCarrier ::= cfgEpsilon cfgAnnotation^^  
@@ -34,8 +34,8 @@ cfgActions ::= cfgSlot^^ cfgActionSeq^ | cfgSlot^^
   cfgAction  ::= cfgEquation^^ | cfgAssignment^^ | cfgInsert  
 cfgEquation ::= cfgAttribute '='^ trTerm  
 cfgAssignment ::= cfgAttribute ':='^ trTerm  
-cfgInsert ::= '^+'^ &ID  
-cfgAttribute ::= &ID '.'^ &ID   
+cfgInsert ::= '^+'^ ID  
+cfgAttribute ::= ID '.'^ ID   
 cfgSeq ::= #^   // Dirty trick: both cfgAlt and cfgAltNoAction promote cfgSeq to achieve gather operation
 cfgSlot ::= #^  
 
@@ -49,7 +49,7 @@ trTransition ::= trTuple TRRELATION^ trTuple
 trTuple ::= trTerm^^ | trTerm ','^ trTupleList^
 trTupleList ::= trTerm | trTerm ','^ trTupleList^
 
-trTerm ::= __bool^^ | __int32^^ | __real64^^ | __string^^ | __char^^ | ID^^ | ID^^  '('^  ')'^ | ID^^ '('^  trArgList^ ')'^
+trTerm ::= __bool^^ | __int32^^ | __real64^^ | __string^^ | __char^^ | ID^^ | ID^^ '.'^ ID | ID^^  '('^  ')'^ | ID^^ '('^  trArgList^ ')'^
 trArgList ::= trTerm | trTerm ','^ trArgList^ | trInlineTransition | trInlineTransition ','^ trArgList^
 trInlineTransition ::= trTerm TRRELATION^ trTerm
 
@@ -122,7 +122,7 @@ rewriterElements ::= rewriterElement | rewriterElement ','^ rewriterElements^
 rewriterElement ::= 'eSOS'^^
 
 displayElements ::= displayElement | displayElement ','^ displayElements^
-displayElement  ::= 'grammar'^^ | 'grammarProperties'^^ |'scriptDerivation'^^ | 'input'^^ | 'tokens'^^ | 'sppf'^^ | 'derivation'^^ | 'outcome'^^ | 'statistics'^^ | __string^^
+displayElement  ::= 'grammar'^^ | 'grammarProperties'^^ |'scriptDerivation'^^ | 'input'^^ | 'tokens'^^ | 'sppf'^^ | 'derivation'^^ | 'rewrite'^^ | 'outcome'^^ | 'statistics'^^ | __string^^
 
 (* Lexical elements **********************************************************)
 __bool ::= 'true' | 'false'
