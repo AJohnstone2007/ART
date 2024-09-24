@@ -12,10 +12,10 @@ cfgAlt  ::= cfgSeq^^ cfgActions cfgEpsilonCarrier | cfgSeq^^ cfgActions cfgEpsil
   cfgEpsilonCarrier ::= cfgEpsilon cfgAnnotation^^  
 cfgEpsilon ::= '#'^
 
-cfgAltNoAction ::= cfgSeq^^ cfgSlot cfgPrim cfgSlot   // This matches a single element with no actions allowed for use in abbreviated Kleene operations
+cfgAltNoAction ::= cfgSeq^^ cfgSlot cfgName cfgSlot   // This matches a single element with no actions allowed for use in abbreviated Kleene operations
 cfgElems ::= cfgActions cfgExtended cfgElems^ | cfgActions cfgExtended  
 
-cfgExtended ::= cfgPrim cfgAnnotation^^ | cfgPrim^^ | cfgOptional^^ | cfgKleene^^ | cfgPositive^^ | cfgDoFirst^^  
+cfgExtended ::= cfgName cfgAnnotation^^ | cfgName^^ | cfgOptional^^ | cfgKleene^^ | cfgPositive^^ | cfgDoFirst^^  
 cfgAnnotation ::= cfgFoldUnder^^ | cfgFoldOver^^  
   cfgFoldUnder ::= '^'^  
   cfgFoldOver ::= '^^'^  
@@ -25,8 +25,8 @@ cfgOptional ::= '('^ cfgAlts^ ')'^ '?'^ | cfgAltNoAction '?'^
 cfgPositive ::= '('^ cfgAlts^ ')'^ '+'^ | cfgAltNoAction '+'^  
 cfgKleene   ::= '('^ cfgAlts^ ')'^ '*'^ | cfgAltNoAction '*'^  
 
-cfgPrim ::= cfgPrimCarrier^^ | cfgPrimCarrier^^ ':'^ ID           // second child if present is a local name
-cfgPrimCarrier ::= cfgNonterminal^^ | cfgCaseSensitiveTerminal^^| cfgCaseInsensitiveTerminal^^ | cfgBuiltinTerminal^^ | cfgCharacterTerminal^^ | cfgCharacterRangeTerminal^^   
+cfgName ::= cfgPrim^^ | cfgPrim ':'^ ID           // second child if present is a local name
+cfgPrim ::= cfgNonterminal^^ | cfgCaseSensitiveTerminal^^| cfgCaseInsensitiveTerminal^^ | cfgBuiltinTerminal^^ | cfgCharacterTerminal^^ | cfgCharacterRangeTerminal^^   
   cfgNonterminal ::= ID | STRING_DOLLAR
   cfgCaseSensitiveTerminal ::= STRING_PLAIN_SQ
   cfgCaseInsensitiveTerminal ::= STRING_DQ
