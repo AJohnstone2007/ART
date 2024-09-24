@@ -100,7 +100,7 @@ directiveElement ::=
 | 'paraterminal'^^ '#'^ | 'paraterminal'^^ paraterminalElements^
 | 'parser'^^ '#'^ | 'parser'^^ parserElements^
 | 'start'^^ '#'^ | 'start'^^ cfgNonterminal // Set parser start nonterminal
-| 'rewriter'^^ '#'^ | 'rewriter'^^ rewriterElements^
+| 'interpreter'^^ '#'^ | 'interpreter'^^ interpreterElements^
 | 'configuration'^^ '#'^ | 'configuration'^^ TRRELATION | 'configuration'^^ TRRELATION ','^ trTerm
 | 'trace'^^ __int32
 | 'print'^^ displayElements^
@@ -125,11 +125,13 @@ paraterminalElement  ::= cfgNonterminal^^
 parserElements ::= parserElement | parserElement ','^ parserElements^
 parserElement ::= ID^^
 
-rewriterElements ::= rewriterElement | rewriterElement ','^ rewriterElements^
-rewriterElement ::= 'eSOS'^^
+interpreterElements ::= interpreterElement | interpreterElement ','^ interpreterElements^
+interpreterElement ::= 'eSOS'^^ | 'attribute'^^
 
 displayElements ::= displayElement | displayElement ','^ displayElements^
-displayElement  ::= 'grammar'^^ | 'grammarProperties'^^ |'scriptDerivation'^^ | 'input'^^ | 'tokens'^^ | 'sppf'^^ | 'derivation'^^ | 'rewrite'^^ | 'outcome'^^ | 'statistics'^^ | __string^^
+displayElement  ::= 
+  'script'^^ | 'scriptExpansion'^^ | 'scriptProperties'^^ | 'scriptDerivation'^^ 
+| 'input'^^ | 'tokens'^^ | 'sppf'^^ | 'derivation'^^ | 'interpretation'^^ | 'outcome'^^ | 'statistics'^^ | __string^^
 
 (* Lexical elements **********************************************************)
 __bool ::= 'true' | 'false'
