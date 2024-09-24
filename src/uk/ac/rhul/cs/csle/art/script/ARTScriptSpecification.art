@@ -10,25 +10,31 @@ cfgRule  ::= cfgLHS '::='^ cfgAlts^
 cfgAlts ::= cfgAlt '|'^ cfgAlts^ | cfgAlt  
 cfgAlt  ::= cfgSeq^^ cfgActions cfgEpsilonCarrier | cfgSeq^^ cfgActions cfgEpsilon | cfgSeq^^ cfgElems^ cfgActions (* final actions in sequence *)  
   cfgEpsilonCarrier ::= cfgEpsilon cfgAnnotation^^  
+cfgEpsilon ::= '#'^
+
 cfgAltNoAction ::= cfgSeq^^ cfgSlot cfgPrim cfgSlot   // This matches a single element with no actions allowed for use in abbreviated Kleene operations
 cfgElems ::= cfgActions cfgExtended cfgElems^ | cfgActions cfgExtended  
+
 cfgExtended ::= cfgPrim cfgAnnotation^^ | cfgPrim^^ | cfgOptional^^ | cfgKleene^^ | cfgPositive^^ | cfgDoFirst^^  
 cfgAnnotation ::= cfgFoldUnder^^ | cfgFoldOver^^  
   cfgFoldUnder ::= '^'^  
   cfgFoldOver ::= '^^'^  
+
 cfgDoFirst  ::= '('^ cfgAlts^ ')'^  
 cfgOptional ::= '('^ cfgAlts^ ')'^ '?'^ | cfgAltNoAction '?'^  
 cfgPositive ::= '('^ cfgAlts^ ')'^ '+'^ | cfgAltNoAction '+'^  
 cfgKleene   ::= '('^ cfgAlts^ ')'^ '*'^ | cfgAltNoAction '*'^  
-cfgPrim ::= cfgNonterminal^^ | cfgCaseSensitiveTerminal^^| cfgCaseInsensitiveTerminal^^ | cfgCharacterTerminal | cfgCharacterRangeTerminal | cfgBuiltinTerminal^^  
+
+cfgPrim ::= cfgPrimCarrier^^ | cfgPrimCarrier^^ ':'^ ID           // second child if present is a local name
+cfgPrimCarrier ::= cfgNonterminal^^ | cfgCaseSensitiveTerminal^^| cfgCaseInsensitiveTerminal^^ | cfgBuiltinTerminal^^ | cfgCharacterTerminal^^ | cfgCharacterRangeTerminal^^   
   cfgNonterminal ::= ID | STRING_DOLLAR
   cfgCaseSensitiveTerminal ::= STRING_PLAIN_SQ
   cfgCaseInsensitiveTerminal ::= STRING_DQ
-  cfgCharacterTerminal ::= CHAR_BQ
-  cfgCharacterRangeTerminal ::= CHAR_BQ '..'^ CHAR_BQ
   cfgBuiltinTerminal ::= '&'^ ID
-  cfgEpsilon ::= '#'^
-  cfgSlotSymbol ::= '.'
+  cfgCharacterTerminal ::= CHAR_BQ
+  cfgCharacterRangeTerminal ::= cfgRange
+    cfgRange ::= CHAR_BQ '..'^ CHAR_BQ
+
 cfgActions ::= cfgSlot^^ cfgActionSeq^ | cfgSlot^^   
   cfgActionSeq ::= cfgAction cfgActionSeq^ | cfgAction  
   cfgAction  ::= cfgEquation^^ | cfgAssignment^^ | cfgInsert  
@@ -36,6 +42,7 @@ cfgEquation ::= cfgAttribute '='^ trTerm
 cfgAssignment ::= cfgAttribute ':='^ trTerm  
 cfgInsert ::= '^+'^ ID  
 cfgAttribute ::= ID '.'^ ID   
+
 cfgSeq ::= #^   // Dirty trick: both cfgAlt and cfgAltNoAction promote cfgSeq to achieve gather operation
 cfgSlot ::= #^  
 
@@ -46,12 +53,12 @@ tr ::= trPremises '---'^ trTransition
 trPremises ::= #^ | trMatch trPremises^ | trTransition trPremises^
 trMatch ::= trTuple '|>'^ trTuple
 trTransition ::= trTuple TRRELATION^ trTuple
-trTuple ::= trTerm^^ | trTerm ','^ trTupleList^
-trTupleList ::= trTerm | trTerm ','^ trTupleList^
+trTuple ::= trTerm^^ | trTerm ','^ trTupleTail^ | '<'^ trTerm ','^ trTupleTail^ '>'^ 
+trTupleTail ::= trTerm | trTerm ','^ trTupleTail^
 
 trTerm ::= __bool^^ | __int32^^ | __real64^^ | __string^^ | __char^^ | ID^^ | ID^^ '.'^ ID | ID^^  '('^  ')'^ | ID^^ '('^  trArgList^ ')'^
-trArgList ::= trTerm | trTerm ','^ trArgList^ | trInlineTransition | trInlineTransition ','^ trArgList^
-trInlineTransition ::= trTerm TRRELATION^ trTerm
+trArgList ::= trTuple | trTuple ','^ trArgList^ | trInlineTransition | trInlineTransition ','^ trArgList^
+trInlineTransition ::= trTransition^
 
 (* Choose rules ***************************************************************)
 chooseRule ::= chooseElementRule^^ | chooseSlotRule^^

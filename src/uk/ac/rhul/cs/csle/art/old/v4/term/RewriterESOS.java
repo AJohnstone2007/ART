@@ -65,7 +65,7 @@ public class RewriterESOS extends Rewriter {
     }
 
     if (ruleList == null) {
-      trace(3, level, "No rules in" + pp.render(relationTerm) + "for constructor " + pp.iTerms.getTermSymbolString(rootTheta));
+      trace(3, level, "No rules in relation " + pp.render(relationTerm) + " for constructor " + pp.iTerms.getTermSymbolString(rootTheta));
       return term;
     }
 

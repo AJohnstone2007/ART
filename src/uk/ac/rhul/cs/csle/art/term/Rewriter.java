@@ -97,7 +97,7 @@ public class Rewriter {
     }
 
     if (ruleList == null) {
-      Util.trace(3, level, "No rules in" + render(relationTerm) + "for constructor " + iTerms.getTermSymbolString(rootTheta));
+      Util.trace(3, level, "No rules in relation " + render(relationTerm) + " for constructor " + iTerms.getTermSymbolString(rootTheta));
       return term;
     }
 
