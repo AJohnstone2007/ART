@@ -16,14 +16,15 @@ cfgAltNoAction ::= cfgSeq^^ cfgSlot cfgName cfgSlot   // This matches a single e
 cfgElems ::= cfgActions cfgExtended cfgElems^ | cfgActions cfgExtended  
 
 cfgExtended ::= cfgName cfgAnnotation^^ | cfgName^^ | cfgOptional^^ | cfgKleene^^ | cfgPositive^^ | cfgDoFirst^^  
-cfgAnnotation ::= cfgFoldUnder^^ | cfgFoldOver^^  
+cfgAnnotation ::= cfgFoldUnder^^ | cfgFoldOver^^  | cfgTear^^ | cfgTearNamed^^
   cfgFoldUnder ::= '^'^  
   cfgFoldOver ::= '^^'^  
-
-cfgDoFirst  ::= '('^ cfgAlts^ ')'^  
-cfgOptional ::= '('^ cfgAlts^ ')'^ '?'^ | cfgAltNoAction '?'^  
-cfgPositive ::= '('^ cfgAlts^ ')'^ '+'^ | cfgAltNoAction '+'^  
-cfgKleene   ::= '('^ cfgAlts^ ')'^ '*'^ | cfgAltNoAction '*'^  
+  cfgTear ::= '^^^'^
+  cfgTearNamed ::= '^^^'^ ':'^ ID 
+cfgDoFirst  ::= '('^ cfgAlts ')'^  
+cfgOptional ::= '('^ cfgAlts ')'^ '?'^ | cfgAltNoAction '?'^  
+cfgPositive ::= '('^ cfgAlts ')'^ '+'^ | cfgAltNoAction '+'^  
+cfgKleene   ::= '('^ cfgAlts ')'^ '*'^ | cfgAltNoAction '*'^  
 
 cfgName ::= cfgPrim^^ | cfgPrim ':'^ ID           // second child if present is a local name
 cfgPrim ::= cfgNonterminal^^ | cfgCaseSensitiveTerminal^^| cfgCaseInsensitiveTerminal^^ | cfgBuiltinTerminal^^ | cfgCharacterTerminal^^ | cfgCharacterRangeTerminal^^   
@@ -37,7 +38,7 @@ cfgPrim ::= cfgNonterminal^^ | cfgCaseSensitiveTerminal^^| cfgCaseInsensitiveTer
 
 cfgActions ::= cfgSlot^^ cfgActionSeq^ | cfgSlot^^   
   cfgActionSeq ::= cfgAction cfgActionSeq^ | cfgAction  
-  cfgAction  ::= cfgEquation^^ | cfgAssignment^^ | cfgInsert  
+  cfgAction  ::= cfgEquation^^ | cfgAssignment^^ | cfgInsert^^  
 cfgEquation ::= cfgAttribute '='^ cfgExpression  
 cfgAssignment ::= cfgAttribute ':='^ cfgExpression
 cfgInsert ::= '^+'^ ID  
