@@ -11,7 +11,7 @@ public class TermTraverserText extends TermTraverser {
   private Map<Integer, Integer> localAliases;
   public final StringBuilder sb = new StringBuilder();
   private int depthLimit = -1;
-  private final int defaultDepthLimit = 4;
+  private final int defaultDepthLimit = 100;
   private boolean indent = false;
 
   public TermTraverserText(ITerms iTerms) {
@@ -54,6 +54,10 @@ public class TermTraverserText extends TermTraverser {
   }
 
   public void appendAlias(int stringIndex) {
+    appendAlias("", stringIndex, "");
+  }
+
+  public void appendAlias(String prefix, int stringIndex, String postfix) {
     Integer candidate = null;
 
     // First try local aliases
@@ -63,7 +67,7 @@ public class TermTraverserText extends TermTraverser {
     if (candidate == null && globalAliases != null) candidate = globalAliases.get(stringIndex);
 
     // If we haven't found an alias yet, then just use original stringIndex; append correspondong string
-    sb.append(iTerms.getString(candidate == null ? stringIndex : candidate));
+    sb.append(prefix + iTerms.getString(candidate == null ? stringIndex : candidate) + postfix);
   }
 
   public void append(String string) {

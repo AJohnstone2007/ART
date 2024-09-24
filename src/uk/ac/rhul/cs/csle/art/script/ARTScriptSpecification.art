@@ -5,7 +5,7 @@ rules ::= rule rules^ | rule
 rule  ::= cfgRule^^ | trRule^^ | chooseRule^^ | '!'^ directive^^   
 
 (* Context Free Grammar rules ************************************************)
-cfgRule  ::= cfgLHS '::='^ cfgAlts^  
+cfgRule  ::= cfgLHS '::='^ cfgAlts
   cfgLHS ::= ID  
 cfgAlts ::= cfgAlt '|'^ cfgAlts^ | cfgAlt  
 cfgAlt  ::= cfgSeq^^ cfgActions cfgEpsilonCarrier | cfgSeq^^ cfgActions cfgEpsilon | cfgSeq^^ cfgElems^ cfgActions (* final actions in sequence *)  
@@ -38,10 +38,13 @@ cfgPrimCarrier ::= cfgNonterminal^^ | cfgCaseSensitiveTerminal^^| cfgCaseInsensi
 cfgActions ::= cfgSlot^^ cfgActionSeq^ | cfgSlot^^   
   cfgActionSeq ::= cfgAction cfgActionSeq^ | cfgAction  
   cfgAction  ::= cfgEquation^^ | cfgAssignment^^ | cfgInsert  
-cfgEquation ::= cfgAttribute '='^ trTerm  
-cfgAssignment ::= cfgAttribute ':='^ trTerm  
+cfgEquation ::= cfgAttribute '='^ cfgExpression  
+cfgAssignment ::= cfgAttribute ':='^ cfgExpression
 cfgInsert ::= '^+'^ ID  
-cfgAttribute ::= ID '.'^ ID   
+cfgAttribute ::= ID | ID '.'^ ID   
+
+cfgExpression ::= __bool^^ | __int32^^ | __real64^^ | __string^^ | __char^^ | cfgAttribute^^ | ID^^  '('^  ')'^ | ID^^ '('^  cfgExpressionList^ ')'^
+cfgExpressionList ::= cfgExpression | cfgExpression ','^ cfgExpressionList^
 
 cfgSeq ::= #^   // Dirty trick: both cfgAlt and cfgAltNoAction promote cfgSeq to achieve gather operation
 cfgSlot ::= #^  
@@ -53,7 +56,7 @@ tr ::= trPremises '---'^ trTransition
 trPremises ::= #^ | trMatch trPremises^ | trTransition trPremises^
 trMatch ::= trTuple '|>'^ trTuple
 trTransition ::= trTuple TRRELATION^ trTuple
-trTuple ::= trTerm^^ | trTerm ','^ trTupleTail^ | '<'^ trTerm ','^ trTupleTail^ '>'^ 
+trTuple ::= trTerm^^ | '<'^ trTerm ','^ trTupleTail^ '>'^ 
 trTupleTail ::= trTerm | trTerm ','^ trTupleTail^
 
 trTerm ::= __bool^^ | __int32^^ | __real64^^ | __string^^ | __char^^ | ID^^ | ID^^ '.'^ ID | ID^^  '('^  ')'^ | ID^^ '('^  trArgList^ ')'^
@@ -104,6 +107,7 @@ directiveElement ::=
 | 'configuration'^^ '#'^ | 'configuration'^^ TRRELATION | 'configuration'^^ TRRELATION ','^ trTerm
 | 'trace'^^ __int32
 | 'print'^^ displayElements^
+| 'latex'^^ displayElements^
 | 'show'^^ displayElements^
 | 'log'^^ displayElements^
 | 'try'^^ file | 'try'^^ trTuple | 'try'^^ __string 
@@ -130,8 +134,12 @@ interpreterElement ::= 'eSOS'^^ | 'attribute'^^
 
 displayElements ::= displayElement | displayElement ','^ displayElements^
 displayElement  ::= 
-  'script'^^ | 'scriptExpansion'^^ | 'scriptProperties'^^ | 'scriptDerivation'^^ 
-| 'input'^^ | 'tokens'^^ | 'sppf'^^ | 'derivation'^^ | 'interpretation'^^ | 'outcome'^^ | 'statistics'^^ | __string^^
+  'script'^^ | 'scriptExpansion'^^ | 'scriptDerivation'^^ 
+| 'lexer'^^ | 'lexerProperties'^^ | 'input'^^ | 'twe'^^ | 'lexicalisation'^^
+| 'grammar'^^ | 'grammarProperties'^^
+| 'parser'^^ | 'gss' | 'sppf'^^ | 'bsr'^^ | 'derivation'^^ 
+| 'interpreter'^^ | 'interpretation'^^ 
+| 'outcome'^^ | 'statistics'^^ | __string^^
 
 (* Lexical elements **********************************************************)
 __bool ::= 'true' | 'false'
