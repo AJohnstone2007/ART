@@ -2,6 +2,7 @@
 package uk.ac.rhul.cs.csle.art.script;
 
 import java.io.IOException;
+import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
@@ -309,7 +310,7 @@ public class ScriptTermInterpreter {
     String directive = iTerms.getTermSymbolString(iTerms.getSubterm(term, 0));
     String displayElement = iTerms.toString(iTerms.getSubterm(term, 0, i));
     TermTraverserText rtt = directive.equals("latex") ? latexTraverser : plainTextTraverser;
-
+    PrintStream ps = System.out;
     switch (displayElement) {
     case "script":
       System.out.println(rtt.toString(scriptDerivationTerm, null));
@@ -425,9 +426,10 @@ public class ScriptTermInterpreter {
 
   private TermTraverserText loadPlainTextTraverser() {
     TermTraverserText ret = new TermTraverserText(iTerms);
-    // -1: uncomment these to suppress types have interpreted type renditions
-    // ret.addEmptyAction("__bool", "__char", "__int32", "__real64", "__string");
+    // -1: uncomment these to have shorthand type renditions rather than plain terms
+    ret.addEmptyAction("__bool", "__char", "__int32", "__real64", "__string");
     ret.addAction("__map", "{", ", ", "}");
+    ret.addAction("__list", "[", ", ", "]");
 
     // 0. Directive and top level pretty print controls
     ret.addEmptyAction("rules");
@@ -489,7 +491,7 @@ public class ScriptTermInterpreter {
     // 3. Term rewrite pretty print controls
     ret.addAction("trRule", null, null, "\n\n");
     ret.addAction("tr", null, " --- ", null);
-    ret.addAction("trPremises", null, "    ", null);
+    ret.addAction("trPremises", null, "  ", null);
     ret.addActionBreak("trLabel", (Integer t) -> ret.append(iTerms.getTermArity(t) > 0 ? ("-" + ret.childSymbolString(t, 0) + " ") : " "), null, null);
     ret.addAction("trMatch", null, (Integer t) -> ret.append(" |> "), null);
     ret.addEmptyAction("trTransition");
@@ -503,7 +505,7 @@ public class ScriptTermInterpreter {
   private TermTraverserText loadLaTeXTraverser() {
     TermTraverserText ret = new TermTraverserText(iTerms);
     // -1: uncomment these to suppress types have interpreted type renditions
-    // ret.addEmptyAction("__bool", "__char", "__int32", "__real64", "__string");
+    ret.addEmptyAction("__bool", "__char", "__int32", "__real64", "__string");
     ret.addAction("__map", "{", ", ", "}");
 
     // 0. Directive and top level pretty print controls
@@ -577,4 +579,79 @@ public class ScriptTermInterpreter {
     return ret;
   }
 
+  class FromOld {
+    void fromOld() { // Pre-load LaTeX pretty printer maps
+      Object latexRenderMap = null;
+      loadRendererMapInvisible(latexRenderMap, "srCat");
+      loadRendererMapInvisible(latexRenderMap, "srSlot");
+      loadRendererMap(latexRenderMap, "srCharacterTerminal", "{", "", "}");
+      loadRendererMap(latexRenderMap, "srCharacterRangeTerminal", "{", "..", "}");
+      loadRendererMapInvisible(latexRenderMap, "srNonterminal");
+      loadRendererMap(latexRenderMap, "srKleeneClosure", "", "", "^*");
+      loadRendererMap(latexRenderMap, "srPositiveClosure", "", "", "^+");
+
+      loadRendererMap(latexRenderMap, "termRewrite", "\\begin{equation}\n", "", "\n\\end{equation}\n");
+      loadRendererMap(latexRenderMap, "tr", "\\frac{", "}{", "}");
+      loadRendererMapInvisible(latexRenderMap, "trAxiom"); // Alternate form of tr where there are zero premises
+      loadRendererMap(latexRenderMap, "trPremises", "", "\\quad ", "");
+      loadRendererMap(latexRenderMap, "trLabel", "\\tag*{[", "", "]}");
+      loadRendererMap(latexRenderMap, "trMatch", " ", "\\triangleright ", " ");
+      loadRendererMap(latexRenderMap, "trConfiguration", "\\langle\\, ", ", ", "\\,\\rangle ");
+      loadRendererMapInvisible(latexRenderMap, "trConfigurationSingleton"); // ALternate form of trConfiguration for 1-tuples
+      loadRendererMapInvisible(latexRenderMap, "trTransition");
+
+      loadRendererMap(latexRenderMap, "ragRewriteRule", "\\begin{equation}\n", "", "\n\\end{equation}\n");
+      loadRendererMap(latexRenderMap, "ragRule", "\\begin{equation}\n", "", "\n\\end{equation}\n");
+      loadRendererMap(latexRenderMap, "ragPair", " \\langle ", ", ", " \\rangle ");
+      loadRendererMap(latexRenderMap, "ragCat", "", "\\artCatenation ", "");
+      loadRendererMap(latexRenderMap, "ragQueryOp", "(", "\\mathrel{?}", ")");
+      loadRendererMap(latexRenderMap, "ragR", "", "\\rightarrow ", "");
+      loadRendererMap(latexRenderMap, "ragRW", "", "\\Rightarrow ", "");
+      loadRendererMap(latexRenderMap, "ragInverse", "\\overline{", " ", "}");
+
+      loadRendererMapInvisible(latexRenderMap, "ragLiteral");
+      loadRendererMapInvisible(latexRenderMap, "ragID");
+      loadRendererMap(latexRenderMap, "ragType", "\\artType{ ", "", "}");
+      loadRendererMap(latexRenderMap, "ragEmptySet", "\\emptyset ", "", "");
+      loadRendererMap(latexRenderMap, "ragEmptyString", "\\epsilon ", "", "");
+    }
+
+    private void loadRendererMap(Object latexRenderMap, String string, String string2, String string3, String string4) {
+      // TODO Auto-generated method stub
+
+    }
+
+    private void loadRendererMapInvisible(Object latexRenderMap, String string) {
+      // TODO Auto-generated method stub
+
+    }
+
+    private void loadAliaseStrings() {
+      // Pre-load LaTeX aliases for transition symbols
+      loadLatexAliasMap("'->'", "\\rightarrow ");
+      loadLatexAliasMap("'->*'", "\\stackrel{*}{\\rightarrow} ");
+      loadLatexAliasMap("'->>'", "\\stackrel{\\righttoleftarrow}{\\rightarrow} ");
+
+      loadLatexAliasMap("'=>'", "\\Rightarrow ");
+      loadLatexAliasMap("'=>*'", "\\stackrel{*}{\\Rightarrow} ");
+      loadLatexAliasMap("'=>>'", "\\stackrel{\\righttoleftarrow}{\\Rightarrow} ");
+
+      loadLatexAliasMap("'-\\'", "\\rightharpoonup ");
+      loadLatexAliasMap("'-\\*'", "\\stackrel{*}{\\rightharpoonup} ");
+      loadLatexAliasMap("'-\\>'", "\\stackrel{\\righttoleftarrow}{\\rightharpoonup} ");
+
+      loadLatexAliasMap("'-/'", "\\rightharpoondown ");
+      loadLatexAliasMap("'-/*'", "\\stackrel{*}{\\rightharpoondown} ");
+      loadLatexAliasMap("'-/>'", "\\stackrel{\\righttoleftarrow}{\\rightharpoondown} ");
+
+      loadLatexAliasMap("'~>'", "\\leadsto ");
+      loadLatexAliasMap("'~>*'", "\\stackrel{*}{\\leadsto} ");
+      loadLatexAliasMap("'~>>'", "\\stackrel{\\righttoleftarrow}{\\leadsto} ");
+    }
+
+    private void loadLatexAliasMap(String string, String string2) {
+      // TODO Auto-generated method stub
+
+    }
+  }
 }
