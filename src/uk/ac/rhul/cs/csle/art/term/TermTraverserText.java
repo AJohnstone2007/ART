@@ -7,15 +7,18 @@ import java.util.Map;
 */
 
 public class TermTraverserText extends TermTraverser {
-  private final Map<Integer, Integer> globalAliases = new HashMap<>();
+  private final Map<Integer, Integer> globalAliases;
   private Map<Integer, Integer> localAliases;
-  public final StringBuilder sb = new StringBuilder();
-  private int depthLimit = -1;
-  private final int defaultDepthLimit = 100;
-  private boolean indent = false;
+  public final StringBuilder sb;
+  private int depthLimit;
+  private boolean indent;
 
   public TermTraverserText(ITerms iTerms) {
     super(iTerms);
+    globalAliases = new HashMap<>();
+    sb = new StringBuilder();
+    depthLimit = -1;
+    indent = false;
   }
 
   //@formatter:off
@@ -27,13 +30,17 @@ public class TermTraverserText extends TermTraverser {
   }
   //@formatter:on
 
-  public void addBreakAndAction(String symbol, String preorder, String inorder, String postorder) {
+  public void addActionBreak(String symbol, String preorder, String inorder, String postorder) {
     addBreak(symbol);
     addAction(symbol, preorder, inorder, postorder);
   }
 
   public void addGlobalAlias(Integer key, Integer value) {
     globalAliases.put(key, value);
+  }
+
+  public void addGlobalAlias(String key, String value) {
+    addGlobalAlias(iTerms.findString(key), iTerms.findString(value));
   }
 
   public int childSymbolIndex(int root, int childNumber) {
@@ -49,15 +56,18 @@ public class TermTraverserText extends TermTraverser {
   // return str.substring(1, str.length() - 1);
   // }
 
-  public void clear() {
-    sb.setLength(0);
-  }
-
   public void appendAlias(int stringIndex) {
     appendAlias("", stringIndex, "");
   }
 
   public void appendAlias(String prefix, int stringIndex, String postfix) {
+    Integer candidate = aliasLookup(stringIndex);
+
+    // If we haven't found an alias yet, then just use original stringIndex; append corresponding string
+    sb.append(prefix + iTerms.getString(aliasLookup(stringIndex)) + postfix);
+  }
+
+  public Integer aliasLookup(int stringIndex) {
     Integer candidate = null;
 
     // First try local aliases
@@ -66,8 +76,8 @@ public class TermTraverserText extends TermTraverser {
     // If we haven't found a string yet, try the global aliases
     if (candidate == null && globalAliases != null) candidate = globalAliases.get(stringIndex);
 
-    // If we haven't found an alias yet, then just use original stringIndex; append correspondong string
-    sb.append(prefix + iTerms.getString(candidate == null ? stringIndex : candidate) + postfix);
+    // If still not found, return original
+    return candidate == null ? stringIndex : candidate;
   }
 
   public void append(String string) {
@@ -79,8 +89,9 @@ public class TermTraverserText extends TermTraverser {
   }
 
   public void traverse(int termIndex, int depth) {
-    // System.out
-    // .println("Traverser at " + termIndex + " " + iTerms.getTermSymbolString(termIndex) + " with string index " + iTerms.getTermSymbolIndex(termIndex));
+    // System.out.println("Traverser at " + termIndex + " " + iTerms.getTermSymbolString(termIndex) + " with string index " +
+    // iTerms.getTermSymbolIndex(termIndex)
+    // + " and string " + sb);
     if (indent) {
       sb.append("\n");
       for (int i = 0; i < depth; i++)
@@ -106,17 +117,18 @@ public class TermTraverserText extends TermTraverser {
   }
 
   public String toString(Integer term, Map<Integer, Integer> localAliases) {
-    return toString(term, false, defaultDepthLimit, localAliases);
+    return toString(term, false, -1, localAliases);
   }
 
   public String toString(Integer term, Boolean indent, Integer depthLimit, Map<Integer, Integer> localAliases) {
     this.localAliases = localAliases;
     this.indent = indent;
     this.depthLimit = depthLimit;
-    clear();
+    sb.setLength(0); // clear string builder
     traverse(term, 0);
     this.depthLimit = -1;
     this.localAliases = null;
     return sb.toString();
   }
+
 }

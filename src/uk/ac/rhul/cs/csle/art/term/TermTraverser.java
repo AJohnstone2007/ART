@@ -8,13 +8,17 @@ import java.util.function.Consumer;
 
 public class TermTraverser {
   protected final ITerms iTerms;
-  protected final Map<Integer, Consumer<Integer>> opsPreorder = new HashMap<>();
-  protected final Map<Integer, Consumer<Integer>> opsInorder = new HashMap<>();
-  protected final Map<Integer, Consumer<Integer>> opsPostorder = new HashMap<>();
-  protected final Set<Integer> breakSet = new HashSet<>();
+  protected final Map<Integer, Consumer<Integer>> opsPreorder;
+  protected final Map<Integer, Consumer<Integer>> opsInorder;
+  protected final Map<Integer, Consumer<Integer>> opsPostorder;
+  protected final Set<Integer> breakSet;
 
   public TermTraverser(ITerms iTerms) {
     this.iTerms = iTerms;
+    opsPreorder = new HashMap<>();
+    opsInorder = new HashMap<>();
+    opsPostorder = new HashMap<>();
+    breakSet = new HashSet<>();
   }
 
   public void addBreak(Integer... term) {

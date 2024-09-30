@@ -1,6 +1,8 @@
 
 package uk.ac.rhul.cs.csle.art.script;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.file.Files;
@@ -84,32 +86,8 @@ public class ScriptTermInterpreter {
 
   public ScriptTermInterpreter(ITerms iTerms) {
     this.iTerms = iTerms;
-
     plainTextTraverser = loadPlainTextTraverser();
-    // 2a. Debug - load text traverser default action to print message if we encounter an unknown constructor
-    // plainTextTraverser.addAction(-1, (Integer t) -> plainTextTraverser.append("??" + iTerms.toString(t) + "?? "), null, null);
-    plainTextTraverser.addAction(-1, (Integer t) -> { // Load default actions
-
-      // Preorder
-      plainTextTraverser.appendAlias(iTerms.getTermSymbolIndex(t));
-      if (iTerms.getTermArity(t) > 0) plainTextTraverser.append("(");
-    },
-
-        // Inorder
-        (Integer t) -> {
-          plainTextTraverser.append(", ");
-        },
-
-        // Postorder
-        (Integer t) -> {
-          if (iTerms.getTermArity(t) > 0) plainTextTraverser.append(")");
-        });
-
-    // 2b. Debug - print keys from text traverser tables
-    // System.out.println("text traverser: " + pp.tt);
-
     latexTraverser = loadLaTeXTraverser();
-
     scriptTraverser = new TermTraverser(iTerms);
     initialiseScriptTraverser();
     scriptParserTerm = iTerms.findTerm(scriptParserTermString);
@@ -308,12 +286,22 @@ public class ScriptTermInterpreter {
 
   private void renderDisplayElement(int term, int i) {
     String directive = iTerms.getTermSymbolString(iTerms.getSubterm(term, 0));
-    String displayElement = iTerms.toString(iTerms.getSubterm(term, 0, i));
+    String displayElement = iTerms.getTermSymbolString(iTerms.getSubterm(term, 0, i));
     TermTraverserText rtt = directive.equals("latex") ? latexTraverser : plainTextTraverser;
-    PrintStream ps = System.out;
+    PrintStream ps = null;
+
+    if (directive.equals("latex"))
+      try {
+        ps = new PrintStream(new File("arttypeset.tex"));
+      } catch (FileNotFoundException e) {
+        Util.fatal("Unable to open LaTeX output 'arttypeset.tex'");
+      }
+    else
+      ps = System.out;
+
     switch (displayElement) {
     case "script":
-      System.out.println(rtt.toString(scriptDerivationTerm, null));
+      ps.println(rtt.toString(scriptDerivationTerm, null));
       break;
 
     case "scriptExpansion":
@@ -355,7 +343,7 @@ public class ScriptTermInterpreter {
       break;
 
     case "__string":
-      System.out.println(iTerms.getTermSymbolString(iTerms.getSubterm(term, 0, 0, 0)));
+      System.out.println(iTerms.getTermSymbolString(iTerms.getSubterm(term, 0, i, 0)));
       break;
     default:
       Util.fatal("No implementation for !" + directive + " " + displayElement);
@@ -427,18 +415,12 @@ public class ScriptTermInterpreter {
   private TermTraverserText loadPlainTextTraverser() {
     TermTraverserText ret = new TermTraverserText(iTerms);
     // -1: uncomment these to have shorthand type renditions rather than plain terms
-    ret.addEmptyAction("__bool", "__char", "__int32", "__real64", "__string");
+    ret.addEmptyAction("__bool", "__char", "__int32", "__real64");
+    ret.addAction("__string", "\"", "", "\"");
     ret.addAction("__map", "{", ", ", "}");
     ret.addAction("__list", "[", ", ", "]");
 
-    // 0. Directive and top level pretty print controls
     ret.addEmptyAction("rules");
-    ret.addActionBreak("directive", (Integer t) -> {
-      ret.append("!" + iTerms.getTermSymbolString(iTerms.getSubterm(t, 0)));
-      for (int i = 0; i < iTerms.getTermArity(iTerms.getSubterm(t, 0)); i++)
-        ret.append(" " + iTerms.getTermSymbolString(iTerms.getSubterm(t, 0, i)));
-    }, null, (Integer t) -> ret.append("\n\n"));
-    ret.addAction("latexDeclaration", null, " = ", null);
 
     // 1. Context Free Grammar pretty print controls
     ret.addEmptyAction("cfgSlot");
@@ -452,9 +434,10 @@ public class ScriptTermInterpreter {
     ret.addAction("cfgAlts", null, "|", null);
     ret.addAction("cfgSeq", null, " ", null);
     ret.addAction("cfgName", null, ":", null);
-    ret.addActionBreak("cfgNonterminal", (Integer t) -> ret.appendAlias(iTerms.getTermSymbolIndex(iTerms.getSubterm(t, 0))), null, null);
-    ret.addActionBreak("cfgCaseInsensitiveTerminal", (Integer t) -> ret.appendAlias("\"", iTerms.getTermSymbolIndex(iTerms.getSubterm(t, 0)), "\""), null,
+    ret.addActionBreak("cfgNonterminal", (Integer t) -> ret.append(texEscape(iTerms.getString(iTerms.getTermSymbolIndex(iTerms.getSubterm(t, 0))))), null,
         null);
+    ret.addActionBreak("cfgCaseInsensitiveTerminal",
+        (Integer t) -> ret.append("\"" + texEscape(iTerms.getString(iTerms.getTermSymbolIndex(iTerms.getSubterm(t, 0)))) + "\""), null, null);
     ret.addActionBreak("cfgCaseSensitiveTerminal", (Integer t) -> ret.appendAlias("'", iTerms.getTermSymbolIndex(iTerms.getSubterm(t, 0)), "'"), null, null);
     ret.addActionBreak("cfgCharacterTerminal", (Integer t) -> ret.appendAlias("`", iTerms.getTermSymbolIndex(iTerms.getSubterm(t, 0)), ""), null, null);
     ret.addActionBreak("cfgCharacterRangeTerminal", (Integer t) -> ret
@@ -499,159 +482,236 @@ public class ScriptTermInterpreter {
     ret.addActionBreak("trTerm", (Integer t) -> ret.append(iTerms.toString(iTerms.getSubterm(t, 0))), null, null);
     ret.addAction("trTuple", "<", ", ", ">");
 
+    // 4. Default actions
+    // Debug - load text traverser default action to print message if we encounter an unknown constructor
+    // ret.addAction(-1, (Integer t) -> ret.append("??" + iTerms.toString(t) + "?? "), null, null);
+    ret.addAction(-1, (Integer t) -> {
+      ret.appendAlias(iTerms.getTermSymbolIndex(t));
+      if (iTerms.getTermArity(t) > 0) ret.append("(");
+    }, (Integer t) -> ret.append(", "), (Integer t) -> {
+      if (iTerms.getTermArity(t) > 0) ret.append(")");
+    });
+
+    // Debug - print keys from text traverser tables
+    // System.out.println("text traverser: " + pp.tt);
+
     return ret;
+  }
+
+  private String texEscape(String s) {
+    StringBuilder sb = new StringBuilder();
+    for (int i = 0; i < s.length(); i++) {
+      switch (s.charAt(i)) {
+      case '_', '$', '^', '%', '\\':
+        sb.append('\\');
+      }
+      sb.append(s.charAt(i));
+    }
+    return sb.toString();
+  }
+
+  private String typesetConstant(int t) {
+    String label = iTerms.getTermSymbolString(t);
+    String argument = "";
+    if (iTerms.getTermArity(t) > 0) argument = iTerms.getTermSymbolString(iTerms.getSubterm(t, 0));
+    if (!argument.equals("_")) switch (label) {
+    case "__bool":
+      return "\\artBoolean{" + argument + "}";
+    case "__char":
+      return "\\artCharacter{" + iTerms.getTermSymbolString(iTerms.getSubterm(t, 0)) + "}";
+    case "__int32":
+      return "\\artInteger{" + iTerms.getTermSymbolString(iTerms.getSubterm(t, 0)) + "}";
+    case "__real64":
+      return "\\artReal{" + iTerms.getTermSymbolString(iTerms.getSubterm(t, 0)) + "}";
+    case "__string":
+      return "\\artString{" + iTerms.getTermSymbolString(iTerms.getSubterm(t, 0)) + "}";
+    }
+    return texEscape(label);
   }
 
   private TermTraverserText loadLaTeXTraverser() {
     TermTraverserText ret = new TermTraverserText(iTerms);
-    // -1: uncomment these to suppress types have interpreted type renditions
-    ret.addEmptyAction("__bool", "__char", "__int32", "__real64", "__string");
-    ret.addAction("__map", "{", ", ", "}");
+    // -1: uncomment these to have shorthand type renditions rather than plain terms
+    ret.addActionBreak("__bool", (Integer t) -> ret.append(typesetConstant(t)), null, null);
+    ret.addActionBreak("__char", (Integer t) -> ret.append(typesetConstant(t)), null, null);
+    ret.addActionBreak("__int32", (Integer t) -> ret.append(typesetConstant(t)), null, null);
+    ret.addActionBreak("__real64", (Integer t) -> ret.append(typesetConstant(t)), null, null);
+    ret.addActionBreak("__string", (Integer t) -> ret.append(typesetConstant(t)), null, null);
+    ret.addAction("__map", "\\artMap{", ", ", "}");
+    ret.addAction("__list", "\\artList{", ", ", "}");
 
-    // 0. Directive and top level pretty print controls
-    ret.addEmptyAction("rules");
-    ret.addActionBreak("directive", (Integer t) -> {
-      ret.append("!" + iTerms.getTermSymbolString(iTerms.getSubterm(t, 0)));
-      for (int i = 0; i < iTerms.getTermArity(iTerms.getSubterm(t, 0)); i++)
-        ret.append(" " + iTerms.getTermSymbolString(iTerms.getSubterm(t, 0, i)));
-    }, null, (Integer t) -> ret.append("\n\n"));
-    ret.addAction("latexDeclaration", null, " = ", null);
+    // -1B: load global aliases
+    ret.addGlobalAlias("->", "\\rightarrow ");
+    ret.addGlobalAlias("->*", "\\stackrel{*}{\\rightarrow} ");
+    ret.addGlobalAlias("->>", "\\stackrel{\\righttoleftarrow}{\\rightarrow} ");
+
+    ret.addGlobalAlias("=>", "\\Rightarrow ");
+    ret.addGlobalAlias("=>", "\\stackrel{*}{\\Rightarrow} ");
+    ret.addGlobalAlias("=>>", "\\stackrel{\\righttoleftarrow}{\\Rightarrow} ");
+
+    ret.addGlobalAlias("-\\", "\\rightharpoonup ");
+    ret.addGlobalAlias("-\\*", "\\stackrel{*}{\\rightharpoonup} ");
+    ret.addGlobalAlias("-\\>", "\\stackrel{\\righttoleftarrow}{\\rightharpoonup} ");
+
+    ret.addGlobalAlias("-/", "\\rightharpoondown ");
+    ret.addGlobalAlias("-/*", "\\stackrel{*}{\\rightharpoondown} ");
+    ret.addGlobalAlias("-/>", "\\stackrel{\\righttoleftarrow}{\\rightharpoondown} ");
+
+    ret.addGlobalAlias("~>", "\\leadsto ");
+    ret.addGlobalAlias("~>*", "\\stackrel{*}{\\leadsto} ");
+    ret.addGlobalAlias("~>>", "\\stackrel{\\righttoleftarrow}{\\leadsto} ");
+
+    // 0. Top level pretty print controls
+    ret.addAction("rules", "%!TEX root = typeset.tex\n", "", "");
 
     // 1. Context Free Grammar pretty print controls
     ret.addEmptyAction("cfgSlot");
 
-    ret.addActionBreak("cfgLHS", (Integer t) -> {
-      ret.appendAlias(iTerms.getTermSymbolIndex(iTerms.getSubterm(t, 0)));
-      ret.append(" ::=");
-    }, null, null);
+    ret.addAction("cfgRule", "\\artCFGRule{", "", "}\n");
+    ret.addActionBreak("cfgLHS", (Integer t) -> ret.append("\\artLHS{" + texEscape(iTerms.getTermSymbolString(iTerms.getSubterm(t, 0))) + "}\\artExpandsTo"),
+        null, null);
 
-    ret.addAction("cfgRule", null, null, "\n\n");
-    ret.addAction("cfgAlts", null, "|", null);
+    ret.addAction("cfgAlts", null, "\\mid", null);
     ret.addAction("cfgSeq", null, " ", null);
     ret.addAction("cfgName", null, ":", null);
-    ret.addActionBreak("cfgNonterminal", (Integer t) -> ret.appendAlias(iTerms.getTermSymbolIndex(iTerms.getSubterm(t, 0))), null, null);
-    ret.addActionBreak("cfgCaseInsensitiveTerminal", (Integer t) -> ret.appendAlias("\"", iTerms.getTermSymbolIndex(iTerms.getSubterm(t, 0)), "\""), null,
+    ret.addActionBreak("cfgNonterminal",
+        (Integer t) -> ret.append("\\artNonterminal{" + texEscape(iTerms.getString(iTerms.getTermSymbolIndex(iTerms.getSubterm(t, 0)))) + "}"), null, null);
+    ret.addActionBreak("cfgCaseInsensitiveTerminal",
+        (Integer t) -> ret.append("\\artCaseInsensitiveTerminal{" + texEscape(iTerms.getString(iTerms.getTermSymbolIndex(iTerms.getSubterm(t, 0)))) + "}"),
+        null, null);
+    ret.addActionBreak("cfgCaseSensitiveTerminal",
+        (Integer t) -> ret.append("\\artCaseSensitiveTerminal{" + texEscape(iTerms.getString(iTerms.getTermSymbolIndex(iTerms.getSubterm(t, 0)))) + "}"), null,
         null);
-    ret.addActionBreak("cfgCaseSensitiveTerminal", (Integer t) -> ret.appendAlias("'", iTerms.getTermSymbolIndex(iTerms.getSubterm(t, 0)), "'"), null, null);
-    ret.addActionBreak("cfgCharacterTerminal", (Integer t) -> ret.appendAlias("`", iTerms.getTermSymbolIndex(iTerms.getSubterm(t, 0)), ""), null, null);
-    ret.addActionBreak("cfgCharacterRangeTerminal", (Integer t) -> ret
-        .append("`" + iTerms.getTermSymbolString(iTerms.getSubterm(t, 0, 0)) + "..`" + iTerms.getTermSymbolString(iTerms.getSubterm(t, 0, 1))), null, null);
-    ret.addActionBreak("cfgBuiltinTerminal", (Integer t) -> ret.appendAlias("&", iTerms.getTermSymbolIndex(iTerms.getSubterm(t, 0)), ""), null, null);
-    ret.addAction("cfgOptional", "(", null, ")?");
-    ret.addAction("cfgKleene", "(", null, ")*");
-    ret.addAction("cfgPositive", "(", null, ")+");
-    ret.addAction("cfgDoFirst", "(", null, ")");
-    ret.addAction("cfgEpsilon", "#", null, null);
+    ret.addActionBreak("cfgCharacterTerminal",
+        (Integer t) -> ret.append("\\artCharacterTerminal{" + texEscape(iTerms.getString(iTerms.getTermSymbolIndex(iTerms.getSubterm(t, 0)))) + "}"), null,
+        null);
 
-    ret.addAction("cfgFoldUnder", null, null, "^");
-    ret.addAction("cfgFoldOver", null, null, "^^");
-    ret.addAction("cfgTear", null, null, "^^^");
-    ret.addAction("cfgTearNamed", null, "^^^:", null);
-    ret.addAction("cfgInsert", " ^+", null, null);
+    ret.addActionBreak("cfgCharacterRangeTerminal",
+        (Integer t) -> ret.append("\\artCharacterRangeTerminal{" + texEscape(iTerms.getString(iTerms.getTermSymbolIndex(iTerms.getSubterm(t, 0)))) + "}{"
+            + texEscape(iTerms.getString(iTerms.getTermSymbolIndex(iTerms.getSubterm(t, 0)))) + "}"),
+        null, null);
 
-    ret.addAction("cfgAttribute", null, ".", null);
-    ret.addAction("cfgEquation", null, " = ", null);
-    ret.addAction("cfgAssignment", null, " := ", null);
+    ret.addActionBreak("cfgBuiltinTerminal",
+        (Integer t) -> ret.append("\\artBuiltinTerminal{" + texEscape(iTerms.getString(iTerms.getTermSymbolIndex(iTerms.getSubterm(t, 0)))) + "}"), null, null);
+
+    ret.addAction("cfgEpsilon", "\\artEpsilon", null, null);
+
+    ret.addAction("cfgDoFirst", "\\artDoFirst{", "}{", "}\n");
+    ret.addAction("cfgPositive", "\\artPositive{", "}{", "}\n");
+    ret.addAction("cfgOptional", "\\artOptional{", "}{", "}\n");
+    ret.addAction("cfgKleene", "\\artKleene{", "}{", "}\n");
+
+    ret.addAction("cfgFoldUnder", null, null, "\\artFoldUnder");
+    ret.addAction("cfgFoldOver", null, null, "\\artFoldOver");
+    ret.addAction("cfgTear", null, null, "\\artTear");
+    ret.addAction("cfgTearNamed", "\\artFoldUnder{", "}{", "}");
+    ret.addAction("cfgInsert", "\\artInsert{", null, "}");
+
+    ret.addAction("cfgAttribute", "\\artAttribute{", ".", "}");
+    ret.addAction("cfgEquation", "\\artEquation{", "}{", "}");
+    ret.addAction("cfgAssignment", "\\artAssignment{", "}{", "}");
 
     // 2. Chooser pretty print controls
     ret.addEmptyAction("chooseElement");
-    ret.addAction("chooseRule", null, null, "\n");
-    ret.addAction("chooseHigher", " > ", null, null);
-    ret.addAction("chooseLower", " < ", null, null);
-    ret.addAction("chooseLonger", " >> ", null, null);
-    ret.addAction("chooseShorter", " << ", null, null);
+    ret.addAction("chooseRule", "\\artChooseRule{", "}{", "}\n");
+    ret.addAction("chooseHigher", "\\artChooseHigher{", "}{", "}\n");
+    ret.addAction("chooseLower", "\\artChooseLower{", "}{", "}\n");
+    ret.addAction("chooseLonger", "\\artChooseLonger{", "}{", "}\n");
+    ret.addAction("chooseShorter", "\\artChooseShorter{", "}{", "}\n");
     ret.addAction("chooseDiff", "(", " \\ ", ")");
     ret.addAction("chooseUnion", "(", " | ", ")");
     ret.addAction("chooseIntersection", "(", " / ", ")");
     ret.addActionBreak("choosePredefinedSet", (Integer t) -> ret.append(ret.childSymbolString(t, 0)), null, null);
 
     // 3. Term rewrite pretty print controls
-    ret.addAction("trRule", null, null, "\n\n");
-    ret.addAction("tr", null, " --- ", null);
-    ret.addAction("trPremises", null, "    ", null);
-    ret.addActionBreak("trLabel", (Integer t) -> ret.append(iTerms.getTermArity(t) > 0 ? ("-" + ret.childSymbolString(t, 0) + " ") : " "), null, null);
-    ret.addAction("trMatch", null, (Integer t) -> ret.append(" |> "), null);
-    ret.addEmptyAction("trTransition");
-    ret.addActionBreak("TRRELATION", (Integer t) -> ret.append(" " + ret.childSymbolString(t, 0) + " "), null, null);
-    ret.addActionBreak("trTerm", (Integer t) -> ret.append(iTerms.toString(iTerms.getSubterm(t, 0))), null, null);
-    ret.addAction("trTuple", "<", ", ", ">");
+    ret.addAction("trRule", "\\artTRRule{", "", "}\n");
+    ret.addAction("tr", "\\frac{", "}{", "}");
+    ret.addAction("trPremises", null, "\\quad ", null);
+    ret.addActionBreak("trLabel", (Integer t) -> {
+      if (iTerms.getTermArity(t) > 0) {
+        ret.append("\\artTRLabel{");
+        ret.appendAlias(iTerms.getTermSymbolIndex(iTerms.getSubterm(t, 0)));
+        ret.append("}");
+      }
+    }, null, null);
+    ret.addAction("trMatch", " ", "\\triangleright ", " ");
+    ret.addAction("trTransition", "\\artTransition{", "", "}\n");
+    ret.addAction("trTuple", "\\artTuple{", ", ", "}\n");
+
+    // 4. Directives
+    ret.addActionBreak("directive", (Integer t) -> {
+      ret.append("\\artDirective{!" + iTerms.getTermSymbolString(iTerms.getSubterm(t, 0)));
+      for (int i = 0; i < iTerms.getTermArity(iTerms.getSubterm(t, 0)); i++) {
+        ret.append(" " + typesetConstant(iTerms.getSubterm(t, 0, 0)));
+      }
+    }, null, (Integer t) -> ret.append("}\n"));
+
+    // 5. Default action
+    // Debug - load text traverser default action to print message if we encounter an unknown constructor
+    // ret.addAction(-1, (Integer t) -> ret.append("??" + iTerms.toString(t) + "?? "), null, null);
+    ret.addAction(-1, (Integer t) -> {
+      ret.append(typesetID(iTerms.getString(ret.aliasLookup(iTerms.getTermSymbolIndex(t)))));
+
+      if (iTerms.getTermArity(t) > 0) ret.append("(");
+    }, (Integer t) -> ret.append(", "), (Integer t) -> {
+      if (iTerms.getTermArity(t) > 0) ret.append(")");
+    });
+
+    // Debug - print keys from text traverser tables
+    // System.out.println("text traverser: " + pp.tt);
 
     return ret;
   }
 
-  class FromOld {
-    void fromOld() { // Pre-load LaTeX pretty printer maps
-      Object latexRenderMap = null;
-      loadRendererMapInvisible(latexRenderMap, "srCat");
-      loadRendererMapInvisible(latexRenderMap, "srSlot");
-      loadRendererMap(latexRenderMap, "srCharacterTerminal", "{", "", "}");
-      loadRendererMap(latexRenderMap, "srCharacterRangeTerminal", "{", "..", "}");
-      loadRendererMapInvisible(latexRenderMap, "srNonterminal");
-      loadRendererMap(latexRenderMap, "srKleeneClosure", "", "", "^*");
-      loadRendererMap(latexRenderMap, "srPositiveClosure", "", "", "^+");
+  public String typesetID(String s) {
+    // System.out.print("typesetID() formatting " + s);
 
-      loadRendererMap(latexRenderMap, "termRewrite", "\\begin{equation}\n", "", "\n\\end{equation}\n");
-      loadRendererMap(latexRenderMap, "tr", "\\frac{", "}{", "}");
-      loadRendererMapInvisible(latexRenderMap, "trAxiom"); // Alternate form of tr where there are zero premises
-      loadRendererMap(latexRenderMap, "trPremises", "", "\\quad ", "");
-      loadRendererMap(latexRenderMap, "trLabel", "\\tag*{[", "", "]}");
-      loadRendererMap(latexRenderMap, "trMatch", " ", "\\triangleright ", " ");
-      loadRendererMap(latexRenderMap, "trConfiguration", "\\langle\\, ", ", ", "\\,\\rangle ");
-      loadRendererMapInvisible(latexRenderMap, "trConfigurationSingleton"); // ALternate form of trConfiguration for 1-tuples
-      loadRendererMapInvisible(latexRenderMap, "trTransition");
+    boolean hasIndex = false;
+    int underscores = 0, index = 0, primes = 0, digits = 0, cc = 0;
+    // Prefix processing
+    while (cc < s.length() && s.charAt(cc) == '_')
+      cc++;
+    underscores = cc;
 
-      loadRendererMap(latexRenderMap, "ragRewriteRule", "\\begin{equation}\n", "", "\n\\end{equation}\n");
-      loadRendererMap(latexRenderMap, "ragRule", "\\begin{equation}\n", "", "\n\\end{equation}\n");
-      loadRendererMap(latexRenderMap, "ragPair", " \\langle ", ", ", " \\rangle ");
-      loadRendererMap(latexRenderMap, "ragCat", "", "\\artCatenation ", "");
-      loadRendererMap(latexRenderMap, "ragQueryOp", "(", "\\mathrel{?}", ")");
-      loadRendererMap(latexRenderMap, "ragR", "", "\\rightarrow ", "");
-      loadRendererMap(latexRenderMap, "ragRW", "", "\\Rightarrow ", "");
-      loadRendererMap(latexRenderMap, "ragInverse", "\\overline{", " ", "}");
-
-      loadRendererMapInvisible(latexRenderMap, "ragLiteral");
-      loadRendererMapInvisible(latexRenderMap, "ragID");
-      loadRendererMap(latexRenderMap, "ragType", "\\artType{ ", "", "}");
-      loadRendererMap(latexRenderMap, "ragEmptySet", "\\emptyset ", "", "");
-      loadRendererMap(latexRenderMap, "ragEmptyString", "\\epsilon ", "", "");
+    // Suffix processing
+    cc = s.length() - 1;
+    while (cc >= 0 && s.charAt(cc) == 'P') {
+      cc--;
+      primes++;
+    }
+    while (cc >= 0 && Character.isDigit(s.charAt(cc))) {
+      hasIndex = true;
+      cc--;
+      digits++;
     }
 
-    private void loadRendererMap(Object latexRenderMap, String string, String string2, String string3, String string4) {
-      // TODO Auto-generated method stub
+    for (int i = 0; i < digits; i++)
+      index = index * 10 + (s.charAt(cc + 1 + i) - '0');
 
+    // Extract core
+    String ret = s.substring(underscores, cc + 1);
+
+    // Add suffix
+    if (hasIndex) ret += "_{" + index + "}";
+    for (int i = 0; i < primes; i++)
+      ret += "^\\prime";
+
+    // Classify
+    switch (underscores) {
+    case 0:
+      ret = "\\artConstructor{" + ret + "}";
+      break;
+    case 1:
+      ret = "\\artVariable{" + ret + "}";
+      break;
+    case 2:
+      ret = "\\artValue{" + ret + "}";
+      break;
+    default:
+      Util.fatal("identifier " + s + " begins with three or more underscores");
     }
 
-    private void loadRendererMapInvisible(Object latexRenderMap, String string) {
-      // TODO Auto-generated method stub
-
-    }
-
-    private void loadAliaseStrings() {
-      // Pre-load LaTeX aliases for transition symbols
-      loadLatexAliasMap("'->'", "\\rightarrow ");
-      loadLatexAliasMap("'->*'", "\\stackrel{*}{\\rightarrow} ");
-      loadLatexAliasMap("'->>'", "\\stackrel{\\righttoleftarrow}{\\rightarrow} ");
-
-      loadLatexAliasMap("'=>'", "\\Rightarrow ");
-      loadLatexAliasMap("'=>*'", "\\stackrel{*}{\\Rightarrow} ");
-      loadLatexAliasMap("'=>>'", "\\stackrel{\\righttoleftarrow}{\\Rightarrow} ");
-
-      loadLatexAliasMap("'-\\'", "\\rightharpoonup ");
-      loadLatexAliasMap("'-\\*'", "\\stackrel{*}{\\rightharpoonup} ");
-      loadLatexAliasMap("'-\\>'", "\\stackrel{\\righttoleftarrow}{\\rightharpoonup} ");
-
-      loadLatexAliasMap("'-/'", "\\rightharpoondown ");
-      loadLatexAliasMap("'-/*'", "\\stackrel{*}{\\rightharpoondown} ");
-      loadLatexAliasMap("'-/>'", "\\stackrel{\\righttoleftarrow}{\\rightharpoondown} ");
-
-      loadLatexAliasMap("'~>'", "\\leadsto ");
-      loadLatexAliasMap("'~>*'", "\\stackrel{*}{\\leadsto} ");
-      loadLatexAliasMap("'~>>'", "\\stackrel{\\righttoleftarrow}{\\leadsto} ");
-    }
-
-    private void loadLatexAliasMap(String string, String string2) {
-      // TODO Auto-generated method stub
-
-    }
+    // System.out.println(" to yield " + ret);
+    return ret;
   }
 }
