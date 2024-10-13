@@ -105,7 +105,7 @@ public class EditorWithConsoleWindow {
   /*
    * Styling handler below here
    */
-  private final String[] KEYWORDS = new String[] { "---", "->", "fn", "_add" };
+  private final String[] KEYWORDS = new String[] { "---", "->", "fn", "__add" };
 
   private final String KEYWORD_PATTERN = "\\b(" + String.join("|", KEYWORDS) + ")\\b";
   private final String PAREN_PATTERN = "\\(|\\)";

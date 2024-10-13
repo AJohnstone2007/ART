@@ -257,12 +257,20 @@ public class GLLBaseLine extends ParserBase {
 
   private SPPFPN firstAvailablePackNode(SPPFN sppfn) {
     SPPFPN candidate = null;
+    boolean ambiguous = false;
     for (SPPFPN p : sppfn.packNS)
       if (!p.suppressed) if (candidate == null)
         candidate = p;
       else
-        System.out.println("Ambiguous pack nodes at SPPF node " + sppfn);
+        ambiguous = true;
+
     if (candidate == null) System.out.println("No unsuppressed pack nodes found at SPPF node " + sppfn);
+
+    if (ambiguous) {
+      System.out.println("Ambiguous SPPF node " + sppfn.toString() + " involving slots: ");
+      for (SPPFPN p : sppfn.packNS)
+        if (!p.suppressed) System.out.println("  " + p);
+    }
     return candidate;
   }
 

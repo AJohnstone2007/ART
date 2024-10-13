@@ -369,7 +369,7 @@ public class ParserBase {
   }
 
   protected void lexicalError(String msg) {
-    System.out.print(Util.echo(msg, inputIndex, inputString));
+    Util.fatal(Util.echo(msg, inputIndex, inputString));
   }
 
   /******************************************************************************

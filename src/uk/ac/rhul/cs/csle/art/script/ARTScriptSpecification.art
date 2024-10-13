@@ -44,7 +44,7 @@ cfgAssignment ::= cfgAttribute ':='^ cfgExpression
 cfgInsert ::= '^+'^ ID  
 cfgAttribute ::= ID | ID '.'^ ID   
 
-cfgExpression ::= __bool^^ | __int32^^ | __real64^^ | __string^^ | __char^^ | cfgAttribute^^ | ID^^  '('^  ')'^ | ID^^ '('^  cfgExpressionList^ ')'^
+cfgExpression ::= __bool^^ | __int32^^ | __real64^^ | __string^^ | __char^^ | cfgAttribute^^ | ID^^ | ID^^ '('^  cfgExpressionList^ ')'^
 cfgExpressionList ::= cfgExpression | cfgExpression ','^ cfgExpressionList^
 
 cfgSeq ::= #^   // Dirty trick: both cfgAlt and cfgAltNoAction promote cfgSeq to achieve gather operation
@@ -55,14 +55,25 @@ trRule ::= trLabel tr
 trLabel ::= #^ | '-'^ ID  
 tr ::= trPremises '---'^ trTransition
 trPremises ::= #^ | trMatch trPremises^ | trTransition trPremises^
-trMatch ::= trTuple '|>'^ trTuple
-trTransition ::= trTuple TRRELATION^ trTuple
-trTuple ::= trTerm^^ | '<'^ trTerm ','^ trTupleTail^ '>'^ 
-trTupleTail ::= trTerm | trTerm ','^ trTupleTail^
+trMatch ::= trTopTuple '|>'^ trTopTuple
 
-trTerm ::= __bool^^ | __int32^^ | __real64^^ | __string^^ | __char^^ | ID^^ | ID^^ '.'^ ID | ID^^  '('^  ')'^ | ID^^ '('^  trArgList^ ')'^
-trArgList ::= trTuple | trTuple ','^ trArgList^ | trInlineTransition | trInlineTransition ','^ trArgList^
-trInlineTransition ::= trTransition^
+trTransition ::= trTopTuple trRelation^ trTopTuple
+trTopTuple ::= trTerm | trTuple^^ terms^
+trTuple ::= #^  
+terms ::= trTerm termsTail^
+termsTail ::= ','^ trTerm | ','^ trTerm termsTail^
+
+trTerm ::= __bool^^ | __int32^^ | __real64^^ | __string^^ | __char^^ | list^^ | __map^^ | ID^^ | ID^^ '('^ ')'^ | ID^^ '('^ trTerm ')'^ | ID^^ '('^ terms^ ')'^ | trTuple^^ '<'^ terms^ '>'^
+
+list ::= '['^ listElements^^ ']'^
+
+listElements ::= emptyList^^ |  __list^^ trTerm emptyList | __list^^ trTerm ','^ listElements
+emptyList ::=  __list^^ __empty
+__list ::= #^
+__empty ::= #^
+
+
+trRelation ::= '->' | '=>'  | '/>' | '\>' | '~>'  
 
 (* Choose rules ***************************************************************)
 chooseRule ::= chooseElementRule^^ | chooseSlotRule^^
@@ -105,16 +116,20 @@ directiveElement ::=
 | 'parser'^^ '#'^ | 'parser'^^ parserElements^
 | 'start'^^ '#'^ | 'start'^^ cfgNonterminal // Set parser start nonterminal
 | 'interpreter'^^ '#'^ | 'interpreter'^^ interpreterElements^
-| 'configuration'^^ '#'^ | 'configuration'^^ TRRELATION | 'configuration'^^ TRRELATION ','^ trTerm
+| 'configuration'^^ trRelation | 'configuration'^^ trRelation ','^ trTerm
 | 'trace'^^ __int32
 | 'print'^^ displayElements^
 | 'latex'^^ displayElements^
 | 'show'^^ displayElements^
 | 'log'^^ displayElements^
-| 'try'^^ file | 'try'^^ trTuple | 'try'^^ __string 
-| 'try'^^ file '='^ trTuple | 'try'^^ trTuple '='^ trTuple | 'try'^^ __string '='^ trTuple
+| 'try'^^ file              
+| 'try'^^ file '='^ trTopTuple 
+| 'try'^^ trTopTuple  
+| 'try'^^ trTopTuple '='^ trTopTuple
 | 'termTool'^^
 | 'nop'^^
+| 'clear'^^ 'all' | 'clear'^^ 'grammarRules'| 'clear'^^ 'chooseRules' | 'clear'^^ 'rewriteRules'
+| 'prompt'^^ | 'prompt'^^ &STRING_DQ
 
 file ::= &STRING_PLAIN_SQ
 
@@ -135,10 +150,10 @@ interpreterElement ::= 'eSOS'^^ | 'attribute'^^
 
 displayElements ::= displayElement | displayElement ','^ displayElements^
 displayElement  ::= 
-  'script'^^ | 'scriptExpansion'^^ | 'scriptDerivation'^^ 
-| 'lexer'^^ | 'lexerProperties'^^ | 'input'^^ | 'twe'^^ | 'lexicalisation'^^
+  'script'^^ | 'scriptExpansion'^^ | 'scriptTWE' | 'scriptLexicalisation' | 'scriptGSS' | 'scriptSPPF' | 'scriptBSR' | 'scriptDerivation'^^ 
+| 'lexer'^^ | 'lexerProperties'^^ | 'input'^^ | 'TWE'^^ | 'lexicalisation'^^
 | 'grammar'^^ | 'grammarProperties'^^
-| 'parser'^^ | 'gss' | 'sppf'^^ | 'bsr'^^ | 'derivation'^^ 
+| 'parser'^^ | 'GSS' | 'SPPF'^^ | 'BSR'^^ | 'derivation'^^ 
 | 'interpreter'^^ | 'interpretation'^^ 
 | 'outcome'^^ | 'statistics'^^ | __string^^
 
@@ -148,12 +163,12 @@ __char ::= &CHAR_BQ
 __int32 ::= &SIGNED_INTEGER
 __real64 ::= &SIGNED_REAL 
 __string ::= &STRING_DQ
+__map ::= '{'^ elements '}'^ | '{'^ elements '}'^  ':'^ trTerm
+elements ::= #^ | trTopTuple^
+
 ID ::= &ID^^
 ID_ATTRIBUTE ::= &ID '.'^ &ID
 STRING_DQ ::= &STRING_DQ^^ 
 STRING_DOLLAR ::= &STRING_DOLLAR^^
 STRING_PLAIN_SQ ::= &STRING_PLAIN_SQ^^
 CHAR_BQ ::= &CHAR_BQ^^
-STRING_BRACE_NEST ::= &STRING_BRACE_NEST^^
-STRING_BRACKET_NEST ::= &STRING_BRACKET_NEST^^
-TRRELATION ::= '->' | '->*' | '=>'  | '=>*' | '~>'  | '~>*'  

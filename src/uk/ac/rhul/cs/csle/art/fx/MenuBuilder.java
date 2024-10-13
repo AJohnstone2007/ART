@@ -23,6 +23,7 @@ public abstract class MenuBuilder {
   public void menuAction(String s) {
     switch (s) {
     case "_Run":
+
       break;
     case "E_xit":
       Platform.exit();

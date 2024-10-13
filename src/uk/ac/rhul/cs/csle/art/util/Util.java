@@ -12,7 +12,7 @@ public class Util {
     if (traceLevel >= level) {
       for (int i = 0; i < indent; i++)
         System.out.print("  ");
-      System.out.println(string);
+      System.out.print(string);
     }
   }
 

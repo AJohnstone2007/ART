@@ -74,15 +74,14 @@ public class Rewriter {
 
     if (relationTerm == 0) Util.fatal("ESOS rewrite attempted on null relation");
 
-    Util.trace(3, level, "Rewrite attempt " + ++rewriteAttemptCounter + ": " + render(term) + render(relationTerm));
-    Util.trace(3, level, "Rewrite call " + ++rewriteAttemptCounter + " " + render(term) + render(relationTerm));
+    Util.trace(3, level, "Rewrite attempt " + ++rewriteAttemptCounter + ": " + render(term) + " " + render(relationTerm) + "\n");
     if (!cycleCheck.containsKey(relationTerm)) cycleCheck.put(relationTerm, new HashSet<Integer>());
     Set<Integer> cycleSet = cycleCheck.get(relationTerm);
     // if (cycleSet.contains(configuration)) throw new ARTExceptionFatal("cycle detected " +iTerms.toString(configuration) +iTerms.toString(relationTerm));
     cycleSet.add(term);
 
     if (isTerminatingConfiguration(term, relationTerm)) {
-      Util.trace(3, level + 1, "Terminal " + tt.toString(term));
+      Util.trace(3, level + 1, "Terminal " + tt.toString(term) + "\n");
       return term;
     }
 
@@ -93,11 +92,11 @@ public class Rewriter {
 
     if (rulesForThisRelation != null) { // There may be no rules at all in this relation!
       ruleList = rulesForThisRelation.get(iTerms.getTermSymbolIndex(rootTheta));
-      if (ruleList == null) ruleList = rulesForThisRelation.get(iTerms.findString("")); // Deafult rules
+      if (ruleList == null) ruleList = rulesForThisRelation.get(iTerms.findString("")); // Default rules - 1 Oct 24 What are these?
     }
 
     if (ruleList == null) {
-      Util.trace(3, level, "No rules in relation " + render(relationTerm) + " for constructor " + iTerms.getTermSymbolString(rootTheta));
+      Util.trace(3, level, "No rules in relation " + render(relationTerm) + " for constructor " + iTerms.getTermSymbolString(rootTheta) + "\n");
       return term;
     }
 
@@ -115,18 +114,18 @@ public class Rewriter {
 
       int ruleLabel = thetaFromConfiguration(ruleIndex);
       if (!iTerms.matchZeroSV(term, lhs, bindings)) {
-        Util.trace(3, level, render(iTerms.getSubterm(ruleLabel, 0)) + " Theta match failed: seek another rule");
+        Util.trace(3, level, render(iTerms.getSubterm(ruleLabel, 0)) + " Theta match failed: seek another rule\n");
         continue nextRule;
       }
-      Util.trace(5, level, render(iTerms.getSubterm(ruleLabel, 0)) + "bindings after Theta match " + bindingsToString(bindings, variableMap));
+      Util.trace(5, level, render(iTerms.getSubterm(ruleLabel, 0)) + "bindings after Theta match " + bindingsToString(bindings, variableMap) + "\n");
 
       // Now work through the premises
       for (int premiseNumber = 0; premiseNumber < premiseCount; premiseNumber++) {
         int premise = iTerms.getSubterm(premises, premiseNumber);
-        Util.trace(4, level, render(iTerms.getSubterm(ruleLabel, 0)) + "premise " + (premiseNumber + 1) + " " + render(premise));
+        Util.trace(4, level, render(iTerms.getSubterm(ruleLabel, 0)) + "premise " + (premiseNumber + 1) + " " + render(premise) + "\n");
         if (iTerms.hasSymbol(premise, "trMatch")) {// |> match expressions
           if (!iTerms.matchZeroSV(iTerms.substitute(bindings, iTerms.getSubterm(premise, 0), 0), iTerms.getSubterm(premise, 1), bindings)) {
-            Util.trace(4, level, render(iTerms.getSubterm(ruleLabel, 0)) + "premise " + (premiseNumber + 1) + " failed: seek another rule");
+            Util.trace(4, level, render(iTerms.getSubterm(ruleLabel, 0)) + "premise " + (premiseNumber + 1) + " failed: seek another rule\n");
             continue nextRule;
           }
         } else { // transition
@@ -135,7 +134,7 @@ public class Rewriter {
             int rewriteRelation = iTerms.getSubterm(premise, 1);
             int rewrittenTerm = rewriteAttempt(rewriteTerm, rewriteRelation, level + 1);
             if (rewrittenTerm < 0) {
-              Util.trace(4, level, render(iTerms.getSubterm(ruleLabel, 0)) + "premise" + (premiseNumber + 1) + " failed: seek another rule");
+              Util.trace(4, level, render(iTerms.getSubterm(ruleLabel, 0)) + "premise" + (premiseNumber + 1) + " failed: seek another rule\n");
               continue nextRule;
             }
             if (!iTerms.matchZeroSV(rewrittenTerm, iTerms.getSubterm(premise, 2), bindings)) continue nextRule;
@@ -143,11 +142,11 @@ public class Rewriter {
             Util.fatal("ESOS - unknown premise kind " + render(premise));
         }
         Util.trace(5, level,
-            render(iTerms.getSubterm(ruleLabel, 0)) + "bindings after premise " + (premiseNumber + 1) + " " + bindingsToString(bindings, variableMap));
+            render(iTerms.getSubterm(ruleLabel, 0)) + "bindings after premise " + (premiseNumber + 1) + " " + bindingsToString(bindings, variableMap) + "\n");
       }
 
       term = iTerms.substitute(bindings, rhs, 0);
-      Util.trace(level == 1 ? 2 : 3, level, render(iTerms.getSubterm(ruleLabel, 0)) + "rewrites to " + render(term));
+      Util.trace(level == 1 ? 2 : 3, level, render(iTerms.getSubterm(ruleLabel, 0)) + "rewrites to " + render(term) + "\n");
       rewriteActive = rewriteResume;
 
       if (rewriteContractum) {
@@ -161,7 +160,7 @@ public class Rewriter {
   }
 
   private int thetaFromConfiguration(int term) {
-    return iTerms.hasSymbol(term, "trConfiguration") ? iTerms.getSubterm(term, 0) : term;
+    return (iTerms.hasSymbol(term, "trTopTuple") || iTerms.hasSymbol(term, "trTuple")) ? iTerms.getSubterm(term, 0) : term;
   }
 
   private int thetaLHSFromConfiguration(int term) {
@@ -170,7 +169,7 @@ public class Rewriter {
 
   private int rewriteTraverse(int term, int relationTerm, int level) {
     if (isTerminatingConfiguration(term, relationTerm)) {
-      Util.trace(3, level + 1, "Found" + render(relationTerm) + "terminal " + render(term));
+      Util.trace(3, level + 1, "Found" + render(relationTerm) + "terminal " + render(term) + "\n");
       return term;
     }
 
@@ -203,7 +202,7 @@ public class Rewriter {
       for (int i : cycleCheck.keySet())
         cycleCheck.get(i).clear();
       rewriteActive = true; // reset rewriteActive flag before attempting traversal
-      Util.trace(1, 0, "Step " + ++rewriteStepCounter);
+      Util.trace(1, 0, "Step " + ++rewriteStepCounter + "\n");
       if (rewritePure)
         newTerm = rewriteAttempt(oldTerm, relation, 1);
       else
@@ -212,8 +211,9 @@ public class Rewriter {
       oldTerm = newTerm;
     }
 
-    Util.trace(1, 0, (isTerminatingConfiguration(newTerm, relation) ? "Normal termination on " : "Stuck on ") + render(newTerm) + " after " + rewriteStepCounter
-        + " step" + (rewriteStepCounter == 1 ? "" : "s") + " and " + rewriteAttemptCounter + " rewrite attempt" + (rewriteAttemptCounter == 1 ? "" : "s"));
+    Util.trace(1, 0,
+        (isTerminatingConfiguration(newTerm, relation) ? "Normal termination on " : "Stuck on ") + render(newTerm) + " after " + rewriteStepCounter + " step"
+            + (rewriteStepCounter == 1 ? "" : "s") + " and " + rewriteAttemptCounter + " rewrite attempt" + (rewriteAttemptCounter == 1 ? "" : "s") + "\n");
     return newTerm;
   }
 
@@ -234,14 +234,8 @@ public class Rewriter {
     termRewriteConstructorDefinitions.put(iTerms.findString("_"), 1);
     termRewriteConstructorDefinitions.put(iTerms.findString("_*"), 1);
     termRewriteConstructorDefinitions.put(iTerms.findString("->"), 1);
-    termRewriteConstructorDefinitions.put(iTerms.findString("->*"), 1);
-    termRewriteConstructorDefinitions.put(iTerms.findString("->>"), 1);
     termRewriteConstructorDefinitions.put(iTerms.findString("=>"), 1);
-    termRewriteConstructorDefinitions.put(iTerms.findString("=>*"), 1);
-    termRewriteConstructorDefinitions.put(iTerms.findString("=>>"), 1);
     termRewriteConstructorDefinitions.put(iTerms.findString("~>"), 1);
-    termRewriteConstructorDefinitions.put(iTerms.findString("~>*"), 1);
-    termRewriteConstructorDefinitions.put(iTerms.findString("~>>"), 1);
     termRewriteConstructorDefinitions.put(iTerms.findString("true"), 1);
     termRewriteConstructorDefinitions.put(iTerms.findString("false"), 1);
     termRewriteConstructorDefinitions.put(iTerms.findString("trLabel"), 1);
@@ -249,12 +243,11 @@ public class Rewriter {
     termRewriteConstructorDefinitions.put(iTerms.findString("trMatch"), 1);
     termRewriteConstructorDefinitions.put(iTerms.findString("trPremises"), 1);
     termRewriteConstructorDefinitions.put(iTerms.findString("tr"), 1);
-    termRewriteConstructorDefinitions.put(iTerms.findString("trConfiguration"), 1);
+    termRewriteConstructorDefinitions.put(iTerms.findString("trTopTuple"), 1);
+    termRewriteConstructorDefinitions.put(iTerms.findString("trTuple"), 1);
     termRewriteConstructorDefinitions.put(iTerms.findString("trRule"), 1);
 
-    termRewriteConstructorDefinitions.put(iTerms.findString("TRRELATION"), 1);
-    termRewriteConstructorDefinitions.put(iTerms.findString("trPrimaryTerm"), 1);
-    termRewriteConstructorDefinitions.put(iTerms.findString("trEntityReferences"), 1);
+    termRewriteConstructorDefinitions.put(iTerms.findString("trRelation"), 1);
 
     // System.out.println("IndexToTerm:" + ((ITermsLowLevelAPI) iTerms).getIndexToTerm());
     for (Integer scanRelationIndex : trRules.keySet()) { // Step through the relations
@@ -424,10 +417,6 @@ public class Rewriter {
     startRelation = defaultStartRelation;
     this.trRules = trRules;
     normaliseAndStaticCheckRewriteRules();
-    if (currentDerivationTerm != 0 && startRelation != 0) {
-      // System.out.println("Rewriting under relation " + iTerms.getTermSymbolString(startRelation) + " " + iTerms.toString(currentDerivationTerm));
-      return stepper(currentDerivationTerm);
-    } else
-      return currentDerivationTerm;
+    return stepper(currentDerivationTerm);
   }
 }
