@@ -70,7 +70,7 @@ public class AJDebug {
     // System.out.print("v5v3RegressionFirstAndFollowSets");
 
     ART.tracing = true;
-    regressionScriptInterpreter.interpret(scriptString);
+    regressionScriptInterpreter.interpretARTScript(scriptString);
 
     ARTV3 artV3 = new ARTV3(scriptString);
 

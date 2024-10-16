@@ -49,7 +49,7 @@ public class ADL {
     }
     // System.out.println(ADLSpecification);
     ScriptTermInterpreter artScriptInterpreter = new ScriptTermInterpreter(iTerms);
-    artScriptInterpreter.interpret(ADLSpecification);
+    artScriptInterpreter.interpretARTScript(ADLSpecification);
     String inputString = "3+4";
 
     Grammar adlGrammar = artScriptInterpreter.getGrammar();

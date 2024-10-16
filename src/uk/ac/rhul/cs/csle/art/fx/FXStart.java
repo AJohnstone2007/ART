@@ -19,7 +19,7 @@ public class FXStart extends Application {
   @Override
   public void start(Stage primaryStage) {
     if (!ART.useIDE) {
-      new ScriptTermInterpreter(new ITermsLowLevelAPI()).interpret(Util.scriptString(ART.clargs));
+      new ScriptTermInterpreter(new ITermsLowLevelAPI()).interpretARTScript(Util.scriptString(ART.clargs));
       Platform.exit();
       System.exit(0);
     }

@@ -66,7 +66,7 @@ public class ADLInterpreter {
     ScriptTermInterpreter artScriptInterpreter = new ScriptTermInterpreter(iTerms);
     try {
       artScriptInterpreter
-          .interpret(new String(getClass().getClassLoader().getResourceAsStream("uk/ac/rhul/cs/csle/alero/language/ADL0_Alero.art").readAllBytes()));
+          .interpretARTScript(new String(getClass().getClassLoader().getResourceAsStream("uk/ac/rhul/cs/csle/alero/language/ADL0_Alero.art").readAllBytes()));
     } catch (IOException e) {
       Util.fatal("Unable to read ADL specification");
     }

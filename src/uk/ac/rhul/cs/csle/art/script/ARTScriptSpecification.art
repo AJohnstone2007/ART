@@ -63,7 +63,7 @@ trTuple ::= #^
 terms ::= trTerm termsTail^
 termsTail ::= ','^ trTerm | ','^ trTerm termsTail^
 
-trTerm ::= __bool^^ | __int32^^ | __real64^^ | __string^^ | __char^^ | list^^ | __map^^ | ID^^ | ID^^ '('^ ')'^ | ID^^ '('^ trTerm ')'^ | ID^^ '('^ terms^ ')'^ | trTuple^^ '<'^ terms^ '>'^
+trTerm ::= __bool^^ | __int32^^ | __real64^^ | __string^^ | __char^^ | list^^ | __map^^ | ID^^ | IDSTAR^^ | ID^^ '('^ ')'^ | ID^^ '('^ trTerm ')'^ | ID^^ '('^ terms^ ')'^ | trTuple^^ '<'^ terms^ '>'^
 
 list ::= '['^ listElements^^ ']'^
 
@@ -167,6 +167,7 @@ __map ::= '{'^ elements '}'^ | '{'^ elements '}'^  ':'^ trTerm
 elements ::= #^ | trTopTuple^
 
 ID ::= &ID^^
+IDSTAR ::= ID '*'^
 ID_ATTRIBUTE ::= &ID '.'^ &ID
 STRING_DQ ::= &STRING_DQ^^ 
 STRING_DOLLAR ::= &STRING_DOLLAR^^

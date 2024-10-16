@@ -31,7 +31,7 @@ public class ART {
     case "v4":      new ARTV4(Arrays.copyOfRange(args, 1, args.length)); return; // Undocumented internal mode
     case "ide":     useIDE = true; Application.launch(FXStart.class, Arrays.copyOfRange(args, 1, args.length)); return;
     case "fx":      Application.launch(FXStart.class, Arrays.copyOfRange(args, 1, args.length)); return;
-    default:        new ScriptTermInterpreter(new ITermsLowLevelAPI()).interpret(Util.scriptString(args)); return; // Run batch mode without fx in this context
+    default:        new ScriptTermInterpreter(new ITermsLowLevelAPI()).interpretARTScript(Util.scriptString(args)); return; // Run batch mode without fx in this context
     }
     // No args
     System.out.println("ART " + Version.version() + "\nUsage:");
