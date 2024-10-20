@@ -15,16 +15,6 @@ public class Rewriter {
 
   private int rewriteAttemptCounter;
   private int rewriteStepCounter;
-  // Control flags for various rewrite modes; as of October 2024 not in use because we are just running 'pure' rewrites
-  // private final boolean rewriteDisable = false;
-  // private final boolean rewritePure = true;
-  // private final boolean rewritePreorder = false;
-  // private final boolean rewritePostorder = false;
-  // private final boolean rewriteOneStep = false;
-  // private final boolean rewriteResume = false;
-  // private final boolean rewriteContractum = false;
-  // private boolean rewriteTraverse = false;
-  // private boolean rewriteActive = false;
   private final Map<Integer, Set<Integer>> rewriteTerminals = new HashMap<>();
   private int startRelation = 0;
   private final Map<Integer, Integer> termToEnumElementMap = new HashMap<>();
@@ -148,12 +138,6 @@ public class Rewriter {
 
       term = iTerms.substitute(bindings, rhs, 0);
       Util.trace(level == 1 ? 2 : 3, level, render(iTerms.getSubterm(ruleLabel, 0)) + "rewrites to " + render(term) + "\n");
-      // rewriteActive = rewriteResume;
-
-      // if (rewriteContractum) {
-      // Util.trace(5, level, render(iTerms.getSubterm(ruleLabel, 0)) + "rewrites contractum\n");
-      // term = rewriteTraverse(term, relationTerm, level + 1);
-      // }
       return term;
     }
     // If we get here, then no rules succeeded
@@ -168,31 +152,7 @@ public class Rewriter {
     return iTerms.getSubterm(thetaFromConfiguration(term), 0);
   }
 
-  // private int rewriteTraverse(int term, int relationTerm, int level) {
-  // if (isTerminatingConfiguration(term, relationTerm)) {
-  // Util.trace(3, level + 1, "Found" + render(relationTerm) + "terminal " + render(term) + "\n");
-  // return term;
-  // }
-  //
-  // if (rewriteActive && rewritePreorder) term = rewriteAttempt(term, relationTerm, level);
-  //
-  // if (rewriteTraverse) {
-  // int[] children = iTerms.getTermChildren(term);
-  // for (int i = 0; i < iTerms.getTermArity(term); i++)
-  // if (rewriteActive)
-  // children[i] = rewriteTraverse(children[i], relationTerm, level + 1);
-  // else
-  // break;
-  // }
-  //
-  // if (rewriteActive && rewritePostorder) term = rewriteAttempt(term, relationTerm, level);
-  //
-  // return term;
-  // }
-
   private int stepper(int inputTerm) {
-    // rewriteTraverse = rewritePreorder || rewritePostorder;
-    // rewriteActive = !rewriteDisable;
     rewriteAttemptCounter = rewriteStepCounter = 0;
 
     int oldTerm = inputTerm;
@@ -202,13 +162,9 @@ public class Rewriter {
     while (true) {
       for (int i : cycleCheck.keySet())
         cycleCheck.get(i).clear();
-      // rewriteActive = true; // reset rewriteActive flag before attempting traversal
       Util.trace(2, 0, "Step " + ++rewriteStepCounter + "\n");
-      // if (rewritePure)
       newTerm = rewriteAttempt(oldTerm, relation, 1);
-      // else
-      // newTerm = rewriteTraverse(oldTerm, relation, 1);
-      if (/* rewriteOneStep || */isTerminatingConfiguration(newTerm, relation) || newTerm == oldTerm /* nothing changed */) break;
+      if (isTerminatingConfiguration(newTerm, relation) || newTerm == oldTerm /* nothing changed */) break;
       oldTerm = newTerm;
     }
 
@@ -258,13 +214,6 @@ public class Rewriter {
 
       for (Integer ruleRoot : trRules.get(scanRelationIndex).keySet()) { // Step through constructor symbol strings
         // System.out.println("Processing constructor " + iTerms.getString(ruleRoot));
-        // if (ruleRoot == iTerms.findString("")) { // Add in the 'empty' default constructor rules at the end of this list
-        // List<Integer> emptyConstructorSet = trRules.get(scanRelationIndex).get(iTerms.findString(""));
-        // if (emptyConstructorSet != null) for (Integer emptyConstructorRule : emptyConstructorSet) {
-        // trRules.get(scanRelationIndex).get(ruleRoot).add(emptyConstructorRule);
-        // System.out.println("Adding empty constructor rule " + tt.toString(emptyConstructorRule));
-        // }
-        // }
         // Collect the map of rules for this relation
         for (Integer ruleIndex : trRules.get(scanRelationIndex).get(ruleRoot)) {// Step through the list of rules
           if (termRewriteConstructorDefinitions.get(ruleRoot) == null)
