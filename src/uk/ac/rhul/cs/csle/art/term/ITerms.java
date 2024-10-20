@@ -472,21 +472,20 @@ public abstract class ITerms {
   }
 
   public boolean matchZeroSV(int closedTermIndex, int openTermIndex, int[] bindings) { // This matcher does not allow sequence
-    // // variables
-    System.out
-        .println("matchZeroSV() " + closedTermIndex + ":" + toString(closedTermIndex) + " against open term " + openTermIndex + ":" + toString(openTermIndex));
+    // System.out
+    // .println("matchZeroSV() " + closedTermIndex + ":" + toString(closedTermIndex) + " against open term " + openTermIndex + ":" + toString(openTermIndex));
 
     if (isSequenceVariableTerm(openTermIndex)) throw new RewriteException("in matchZeroSV() right hand side must not contain sequence variables");
 
     if (isVariableTerm(openTermIndex)) {
       int variableNumber = getTermVariableNumber(openTermIndex);
       if (variableNumber == 0) {
-        System.out.println("matchZeroSV() matches wildcard and returns true with no update to bindings");
+        // System.out.println("matchZeroSV() matches wildcard and returns true with no update to bindings");
         return true;
       }
 
       bindings[variableNumber] = closedTermIndex; // Variable zero means match anything but don't bind
-      System.out.println("matchZeroSV() binds to variable and returns true");
+      // System.out.println("matchZeroSV() binds to variable and returns true");
       return true;
     }
 
@@ -495,7 +494,7 @@ public abstract class ITerms {
     for (int i = 0; i < getTermArity(openTermIndex); i++)
       if (!matchZeroSV(getTermChildren(closedTermIndex)[i], getTermChildren(openTermIndex)[i], bindings)) return false;
 
-    System.out.println("matchZeroSV() matched children and root, and returns true");
+    // System.out.println("matchZeroSV() matched children and root, and returns true");
 
     return true;
   }

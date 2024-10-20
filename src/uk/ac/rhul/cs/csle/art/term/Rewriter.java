@@ -203,7 +203,7 @@ public class Rewriter {
       for (int i : cycleCheck.keySet())
         cycleCheck.get(i).clear();
       // rewriteActive = true; // reset rewriteActive flag before attempting traversal
-      Util.trace(1, 0, "Step " + ++rewriteStepCounter + "\n");
+      Util.trace(2, 0, "Step " + ++rewriteStepCounter + "\n");
       // if (rewritePure)
       newTerm = rewriteAttempt(oldTerm, relation, 1);
       // else
@@ -258,13 +258,13 @@ public class Rewriter {
 
       for (Integer ruleRoot : trRules.get(scanRelationIndex).keySet()) { // Step through constructor symbol strings
         // System.out.println("Processing constructor " + iTerms.getString(ruleRoot));
-        if (ruleRoot == iTerms.findString("")) { // Add in the 'empty' constructer rules at the end of this list
-          List<Integer> emptyConstructorSet = trRules.get(scanRelationIndex).get(iTerms.findString(""));
-          if (emptyConstructorSet != null) for (Integer emptyConstructorRule : emptyConstructorSet) {
-            trRules.get(scanRelationIndex).get(ruleRoot).add(emptyConstructorRule);
-            System.out.println("Adding empty constructor rule " + tt.toString(emptyConstructorRule));
-          }
-        }
+        // if (ruleRoot == iTerms.findString("")) { // Add in the 'empty' default constructor rules at the end of this list
+        // List<Integer> emptyConstructorSet = trRules.get(scanRelationIndex).get(iTerms.findString(""));
+        // if (emptyConstructorSet != null) for (Integer emptyConstructorRule : emptyConstructorSet) {
+        // trRules.get(scanRelationIndex).get(ruleRoot).add(emptyConstructorRule);
+        // System.out.println("Adding empty constructor rule " + tt.toString(emptyConstructorRule));
+        // }
+        // }
         // Collect the map of rules for this relation
         for (Integer ruleIndex : trRules.get(scanRelationIndex).get(ruleRoot)) {// Step through the list of rules
           if (termRewriteConstructorDefinitions.get(ruleRoot) == null)
