@@ -153,7 +153,7 @@ public class ScriptTermInterpreter {
   private void buildTRRule(int term) {
     // System.out.println("Processing trRule: " + iTerms.toString(term));
     int relation = iTerms.getSubterm(term, 1, 1, 1);
-    int constructorIndex = iTerms.getTermSymbolIndex((iTerms.getSubterm(term, 1, 1, 0, 0)));
+    int constructorIndex = iTerms.getTermSymbolStringIndex((iTerms.getSubterm(term, 1, 1, 0, 0)));
     // System.out.println("Building TR rule " + iTerms.toString(term) + "\nwith relation " + iTerms.toString(relation) + "\nand constructor "
     // + iTerms.getString(constructorIndex));
     if (trRules.get(relation) == null) trRules.put(relation, new HashMap<>());
@@ -433,7 +433,6 @@ public class ScriptTermInterpreter {
     } else {
       currentDerivationTerm = 0;
       System.out.println("Try failed: syntax error");
-
     }
     currentParser.loadEndMemory();
   }
@@ -476,7 +475,7 @@ public class ScriptTermInterpreter {
     ret.addEmptyAction("cfgSlot");
 
     ret.addActionBreak("cfgLHS", (Integer t) -> {
-      ret.appendAlias(iTerms.getTermSymbolIndex(iTerms.getSubterm(t, 0)));
+      ret.appendAlias(iTerms.getTermSymbolStringIndex(iTerms.getSubterm(t, 0)));
       ret.append(" ::=");
     }, null, null);
 
@@ -484,15 +483,16 @@ public class ScriptTermInterpreter {
     ret.addAction("cfgAlts", null, "|", null);
     ret.addAction("cfgSeq", null, " ", null);
     ret.addAction("cfgName", null, ":", null);
-    ret.addActionBreak("cfgNonterminal", (Integer t) -> ret.append(texEscape(iTerms.getString(iTerms.getTermSymbolIndex(iTerms.getSubterm(t, 0))))), null,
+    ret.addActionBreak("cfgNonterminal", (Integer t) -> ret.append(texEscape(iTerms.getString(iTerms.getTermSymbolStringIndex(iTerms.getSubterm(t, 0))))), null,
         null);
     ret.addActionBreak("cfgCaseInsensitiveTerminal",
-        (Integer t) -> ret.append("\"" + texEscape(iTerms.getString(iTerms.getTermSymbolIndex(iTerms.getSubterm(t, 0)))) + "\""), null, null);
-    ret.addActionBreak("cfgCaseSensitiveTerminal", (Integer t) -> ret.appendAlias("'", iTerms.getTermSymbolIndex(iTerms.getSubterm(t, 0)), "'"), null, null);
-    ret.addActionBreak("cfgCharacterTerminal", (Integer t) -> ret.appendAlias("`", iTerms.getTermSymbolIndex(iTerms.getSubterm(t, 0)), ""), null, null);
+        (Integer t) -> ret.append("\"" + texEscape(iTerms.getString(iTerms.getTermSymbolStringIndex(iTerms.getSubterm(t, 0)))) + "\""), null, null);
+    ret.addActionBreak("cfgCaseSensitiveTerminal", (Integer t) -> ret.appendAlias("'", iTerms.getTermSymbolStringIndex(iTerms.getSubterm(t, 0)), "'"), null,
+        null);
+    ret.addActionBreak("cfgCharacterTerminal", (Integer t) -> ret.appendAlias("`", iTerms.getTermSymbolStringIndex(iTerms.getSubterm(t, 0)), ""), null, null);
     ret.addActionBreak("cfgCharacterRangeTerminal", (Integer t) -> ret
         .append("`" + iTerms.getTermSymbolString(iTerms.getSubterm(t, 0, 0)) + "..`" + iTerms.getTermSymbolString(iTerms.getSubterm(t, 0, 1))), null, null);
-    ret.addActionBreak("cfgBuiltinTerminal", (Integer t) -> ret.appendAlias("&", iTerms.getTermSymbolIndex(iTerms.getSubterm(t, 0)), ""), null, null);
+    ret.addActionBreak("cfgBuiltinTerminal", (Integer t) -> ret.appendAlias("&", iTerms.getTermSymbolStringIndex(iTerms.getSubterm(t, 0)), ""), null, null);
     ret.addAction("cfgOptional", "(", null, ")?");
     ret.addAction("cfgKleene", "(", null, ")*");
     ret.addAction("cfgPositive", "(", null, ")+");
@@ -537,7 +537,7 @@ public class ScriptTermInterpreter {
     // Debug - load text traverser default action to print message if we encounter an unknown constructor
     // ret.addAction(-1, (Integer t) -> ret.append("??" + iTerms.toString(t) + "?? "), null, null);
     ret.addAction(-1, (Integer t) -> {
-      ret.appendAlias(iTerms.getTermSymbolIndex(t));
+      ret.appendAlias(iTerms.getTermSymbolStringIndex(t));
       if (iTerms.getTermArity(t) > 0) ret.append("(");
     }, (Integer t) -> ret.append(", "), (Integer t) -> {
       if (iTerms.getTermArity(t) > 0) ret.append(")");
@@ -612,24 +612,25 @@ public class ScriptTermInterpreter {
     ret.addAction("cfgSeq", null, "\\artSequenceSpace", null);
     ret.addAction("cfgName", null, ":", null);
     ret.addActionBreak("cfgNonterminal",
-        (Integer t) -> ret.append("\\artNonterminal{" + texEscape(iTerms.getString(iTerms.getTermSymbolIndex(iTerms.getSubterm(t, 0)))) + "}"), null, null);
-    ret.addActionBreak("cfgCaseInsensitiveTerminal",
-        (Integer t) -> ret.append("\\artCaseInsensitiveTerminal{" + texEscape(iTerms.getString(iTerms.getTermSymbolIndex(iTerms.getSubterm(t, 0)))) + "}"),
-        null, null);
+        (Integer t) -> ret.append("\\artNonterminal{" + texEscape(iTerms.getString(iTerms.getTermSymbolStringIndex(iTerms.getSubterm(t, 0)))) + "}"), null,
+        null);
+    ret.addActionBreak("cfgCaseInsensitiveTerminal", (Integer t) -> ret
+        .append("\\artCaseInsensitiveTerminal{" + texEscape(iTerms.getString(iTerms.getTermSymbolStringIndex(iTerms.getSubterm(t, 0)))) + "}"), null, null);
     ret.addActionBreak("cfgCaseSensitiveTerminal",
-        (Integer t) -> ret.append("\\artCaseSensitiveTerminal{" + texEscape(iTerms.getString(iTerms.getTermSymbolIndex(iTerms.getSubterm(t, 0)))) + "}"), null,
-        null);
+        (Integer t) -> ret.append("\\artCaseSensitiveTerminal{" + texEscape(iTerms.getString(iTerms.getTermSymbolStringIndex(iTerms.getSubterm(t, 0)))) + "}"),
+        null, null);
     ret.addActionBreak("cfgCharacterTerminal",
-        (Integer t) -> ret.append("\\artCharacterTerminal{" + texEscape(iTerms.getString(iTerms.getTermSymbolIndex(iTerms.getSubterm(t, 0)))) + "}"), null,
-        null);
+        (Integer t) -> ret.append("\\artCharacterTerminal{" + texEscape(iTerms.getString(iTerms.getTermSymbolStringIndex(iTerms.getSubterm(t, 0)))) + "}"),
+        null, null);
 
     ret.addActionBreak("cfgCharacterRangeTerminal",
-        (Integer t) -> ret.append("\\artCharacterRangeTerminal{" + texEscape(iTerms.getString(iTerms.getTermSymbolIndex(iTerms.getSubterm(t, 0, 0)))) + "}{"
-            + texEscape(iTerms.getString(iTerms.getTermSymbolIndex(iTerms.getSubterm(t, 0, 1)))) + "}"),
+        (Integer t) -> ret.append("\\artCharacterRangeTerminal{" + texEscape(iTerms.getString(iTerms.getTermSymbolStringIndex(iTerms.getSubterm(t, 0, 0))))
+            + "}{" + texEscape(iTerms.getString(iTerms.getTermSymbolStringIndex(iTerms.getSubterm(t, 0, 1)))) + "}"),
         null, null);
 
     ret.addActionBreak("cfgBuiltinTerminal",
-        (Integer t) -> ret.append("\\artBuiltinTerminal{" + texEscape(iTerms.getString(iTerms.getTermSymbolIndex(iTerms.getSubterm(t, 0)))) + "}"), null, null);
+        (Integer t) -> ret.append("\\artBuiltinTerminal{" + texEscape(iTerms.getString(iTerms.getTermSymbolStringIndex(iTerms.getSubterm(t, 0)))) + "}"), null,
+        null);
 
     ret.addAction("cfgEpsilon", "\\artEpsilon", null, null);
 
@@ -667,7 +668,7 @@ public class ScriptTermInterpreter {
     ret.addActionBreak("trLabel", (Integer t) -> {
       if (iTerms.getTermArity(t) > 0) {
         ret.append("\\artTRLabel{");
-        ret.appendAlias(iTerms.getTermSymbolIndex(iTerms.getSubterm(t, 0)));
+        ret.appendAlias(iTerms.getTermSymbolStringIndex(iTerms.getSubterm(t, 0)));
         ret.append("}");
       }
     }, null, null);
@@ -688,7 +689,7 @@ public class ScriptTermInterpreter {
     // Debug - load text traverser default action to print message if we encounter an unknown constructor
     // ret.addAction(-1, (Integer t) -> ret.append("??" + iTerms.toString(t) + "?? "), null, null);
     ret.addAction(-1, (Integer t) -> {
-      ret.append(typesetID(iTerms.getString(ret.aliasLookup(iTerms.getTermSymbolIndex(t)))));
+      ret.append(typesetID(iTerms.getString(ret.aliasLookup(iTerms.getTermSymbolStringIndex(t)))));
 
       if (iTerms.getTermArity(t) > 0) ret.append("(");
     }, (Integer t) -> ret.append(", "), (Integer t) -> {

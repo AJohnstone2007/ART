@@ -159,7 +159,7 @@ public abstract class ITerms {
 
   abstract public int findTerm(int symbolStringIndex, LinkedList<Integer> children);
 
-  abstract public int getTermSymbolIndex(int termIndex);
+  abstract public int getTermSymbolStringIndex(int termIndex);
 
   abstract public String getTermSymbolString(int termIndex);
 
@@ -451,8 +451,8 @@ public abstract class ITerms {
 
     for (int termIndex = 1; termIndex <= termCardinality(); termIndex++) {
       out.print(termIndex + " ");
-      out.print(getTermSymbolIndex(termIndex));
-      if (getTermSymbolIndex(termIndex) != 0) // variables have stringIndex = 0, in which case arity is highjacked as a variable number
+      out.print(getTermSymbolStringIndex(termIndex));
+      if (getTermSymbolStringIndex(termIndex) != 0) // variables have stringIndex = 0, in which case arity is highjacked as a variable number
         for (int j = 0; j < getTermChildren(termIndex).length; j++)
         out.print(" " + getTermChildren(termIndex)[j]);
       out.println(out == System.out ? (" " + tt.toString(termIndex)) : "");
@@ -490,7 +490,7 @@ public abstract class ITerms {
       return true;
     }
 
-    if (!(getTermSymbolIndex(closedTermIndex) == getTermSymbolIndex(openTermIndex) && getTermArity(closedTermIndex) == getTermArity(openTermIndex)))
+    if (!(getTermSymbolStringIndex(closedTermIndex) == getTermSymbolStringIndex(openTermIndex) && getTermArity(closedTermIndex) == getTermArity(openTermIndex)))
       return false;
     for (int i = 0; i < getTermArity(openTermIndex); i++)
       if (!matchZeroSV(getTermChildren(closedTermIndex)[i], getTermChildren(openTermIndex)[i], bindings)) return false;
@@ -549,7 +549,7 @@ public abstract class ITerms {
     } else if (isSpecialTerm(openTermIndex))
       ret = evaluateTerm(openTermIndex, children);
     else
-      ret = findTerm(getTermSymbolIndex(openTermIndex), children);
+      ret = findTerm(getTermSymbolStringIndex(openTermIndex), children);
 
     // System.out.println("Substitute " + toString(openTermIndex) + " with bindings " + toStringBindings(bindings) + " returns " + toString(ret));
     return ret;
@@ -569,7 +569,7 @@ public abstract class ITerms {
   }
 
   protected int typeCheck(int termIndex, int typeStringIndex) {
-    if (getTermSymbolIndex(termIndex) != typeStringIndex)
+    if (getTermSymbolStringIndex(termIndex) != typeStringIndex)
       throw new RewriteException("Term must have type " + getString(typeStringIndex) + ": " + tt.toString(termIndex));
     return termIndex;
   }
@@ -604,7 +604,7 @@ public abstract class ITerms {
   }
 
   public int evaluateTerm(int term, int[] children) {
-    int rootSpecialSymbol = getTermSymbolIndex(term);
+    int rootSpecialSymbol = getTermSymbolStringIndex(term);
     String rootSymbolString = getString(rootSpecialSymbol);
 
     // First do typed literals
@@ -634,7 +634,7 @@ public abstract class ITerms {
     case __setStringIndex:
     case __mapStringIndex:
     case __mapChainStringIndex:
-      return findTerm(getTermSymbolIndex(term), children);
+      return findTerm(getTermSymbolStringIndex(term), children);
 
     case __termArityStringIndex:
       arityCheck(term, 1);
@@ -661,7 +661,7 @@ public abstract class ITerms {
       int[] newChildren = new int[rightChildIndex - leftChildIndex + 1];
       for (int i = leftChildIndex; i <= rightChildIndex; i++)
         newChildren[i - leftChildIndex] = oldTermChildren[i];
-      int rootSymbol = getTermSymbolIndex(children[1]);
+      int rootSymbol = getTermSymbolStringIndex(children[1]);
       int ret = findTerm(rootSymbol, newChildren);
       return ret;
 
@@ -823,8 +823,8 @@ public abstract class ITerms {
         return findTerm(l.__difference(r).toString());
       // Now the cast despatcher
       case __castStringIndex: {
-        int targetType = getTermSymbolIndex(children[1]);
-        if (targetType == __quoteStringIndex) targetType = getTermSymbolIndex(this.getTermChildren(children[1])[0]);
+        int targetType = getTermSymbolStringIndex(children[1]);
+        if (targetType == __quoteStringIndex) targetType = getTermSymbolStringIndex(this.getTermChildren(children[1])[0]);
         switch (targetType) {
         case __boolStringIndex:
           return findTerm(l.__cast__bool().toString());
@@ -871,7 +871,7 @@ public abstract class ITerms {
   }
 
   public Value valueFromTerm(int term) {
-    int rootSpecialSymbol = getTermSymbolIndex(term);
+    int rootSpecialSymbol = getTermSymbolStringIndex(term);
 
     switch (rootSpecialSymbol) {
     case __bottomStringIndex:
@@ -979,6 +979,6 @@ public abstract class ITerms {
 
   public boolean hasSymbol(Integer term, String string) {
     // System.out.println("Checking term " + toString(term) + " against symbol " + string);
-    return this.getTermSymbolIndex(term) == this.findString(string);
+    return this.getTermSymbolStringIndex(term) == this.findString(string);
   }
 }

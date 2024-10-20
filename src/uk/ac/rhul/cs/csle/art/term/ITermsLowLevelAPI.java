@@ -362,7 +362,7 @@ public class ITermsLowLevelAPI extends ITerms {
   }
 
   @Override
-  public int getTermSymbolIndex(int term) {
+  public int getTermSymbolStringIndex(int term) {
     var apiTerm = indexToTerm.get(term);
     return apiTerm.getSymbolIndex();
   }
@@ -374,7 +374,7 @@ public class ITermsLowLevelAPI extends ITerms {
 
   @Override
   public int getTermVariableNumber(int term) {
-    return getTermSymbolIndex(term) - firstVariableIndex;
+    return getTermSymbolStringIndex(term) - firstVariableIndex;
   }
 
   /*

@@ -15,15 +15,16 @@ public class Rewriter {
 
   private int rewriteAttemptCounter;
   private int rewriteStepCounter;
-  private final boolean rewriteDisable = false;
-  private final boolean rewritePure = true;
-  private final boolean rewritePreorder = false;
-  private final boolean rewritePostorder = false;
-  private final boolean rewriteOneStep = false;
-  private final boolean rewriteResume = false;
-  private final boolean rewriteContractum = false;
-  private boolean rewriteTraverse = false;
-  private boolean rewriteActive = false;
+  // Control flags for various rewrite modes; as of October 2024 not in use because we are just running 'pure' rewrites
+  // private final boolean rewriteDisable = false;
+  // private final boolean rewritePure = true;
+  // private final boolean rewritePreorder = false;
+  // private final boolean rewritePostorder = false;
+  // private final boolean rewriteOneStep = false;
+  // private final boolean rewriteResume = false;
+  // private final boolean rewriteContractum = false;
+  // private boolean rewriteTraverse = false;
+  // private boolean rewriteActive = false;
   private final Map<Integer, Set<Integer>> rewriteTerminals = new HashMap<>();
   private int startRelation = 0;
   private final Map<Integer, Integer> termToEnumElementMap = new HashMap<>();
@@ -91,7 +92,7 @@ public class Rewriter {
     List<Integer> ruleList = null;
 
     if (rulesForThisRelation != null) { // There may be no rules at all in this relation!
-      ruleList = rulesForThisRelation.get(iTerms.getTermSymbolIndex(rootTheta));
+      ruleList = rulesForThisRelation.get(iTerms.getTermSymbolStringIndex(rootTheta));
       if (ruleList == null) ruleList = rulesForThisRelation.get(iTerms.findString("")); // Default rules - 1 Oct 24 What are these?
     }
 
@@ -147,12 +148,12 @@ public class Rewriter {
 
       term = iTerms.substitute(bindings, rhs, 0);
       Util.trace(level == 1 ? 2 : 3, level, render(iTerms.getSubterm(ruleLabel, 0)) + "rewrites to " + render(term) + "\n");
-      rewriteActive = rewriteResume;
+      // rewriteActive = rewriteResume;
 
-      if (rewriteContractum) {
-        Util.trace(5, level, render(iTerms.getSubterm(ruleLabel, 0)) + "rewrites contractum\n");
-        term = rewriteTraverse(term, relationTerm, level + 1);
-      }
+      // if (rewriteContractum) {
+      // Util.trace(5, level, render(iTerms.getSubterm(ruleLabel, 0)) + "rewrites contractum\n");
+      // term = rewriteTraverse(term, relationTerm, level + 1);
+      // }
       return term;
     }
     // If we get here, then no rules succeeded
@@ -167,31 +168,31 @@ public class Rewriter {
     return iTerms.getSubterm(thetaFromConfiguration(term), 0);
   }
 
-  private int rewriteTraverse(int term, int relationTerm, int level) {
-    if (isTerminatingConfiguration(term, relationTerm)) {
-      Util.trace(3, level + 1, "Found" + render(relationTerm) + "terminal " + render(term) + "\n");
-      return term;
-    }
-
-    if (rewriteActive && rewritePreorder) term = rewriteAttempt(term, relationTerm, level);
-
-    if (rewriteTraverse) {
-      int[] children = iTerms.getTermChildren(term);
-      for (int i = 0; i < iTerms.getTermArity(term); i++)
-        if (rewriteActive)
-          children[i] = rewriteTraverse(children[i], relationTerm, level + 1);
-        else
-          break;
-    }
-
-    if (rewriteActive && rewritePostorder) term = rewriteAttempt(term, relationTerm, level);
-
-    return term;
-  }
+  // private int rewriteTraverse(int term, int relationTerm, int level) {
+  // if (isTerminatingConfiguration(term, relationTerm)) {
+  // Util.trace(3, level + 1, "Found" + render(relationTerm) + "terminal " + render(term) + "\n");
+  // return term;
+  // }
+  //
+  // if (rewriteActive && rewritePreorder) term = rewriteAttempt(term, relationTerm, level);
+  //
+  // if (rewriteTraverse) {
+  // int[] children = iTerms.getTermChildren(term);
+  // for (int i = 0; i < iTerms.getTermArity(term); i++)
+  // if (rewriteActive)
+  // children[i] = rewriteTraverse(children[i], relationTerm, level + 1);
+  // else
+  // break;
+  // }
+  //
+  // if (rewriteActive && rewritePostorder) term = rewriteAttempt(term, relationTerm, level);
+  //
+  // return term;
+  // }
 
   private int stepper(int inputTerm) {
-    rewriteTraverse = rewritePreorder || rewritePostorder;
-    rewriteActive = !rewriteDisable;
+    // rewriteTraverse = rewritePreorder || rewritePostorder;
+    // rewriteActive = !rewriteDisable;
     rewriteAttemptCounter = rewriteStepCounter = 0;
 
     int oldTerm = inputTerm;
@@ -201,13 +202,13 @@ public class Rewriter {
     while (true) {
       for (int i : cycleCheck.keySet())
         cycleCheck.get(i).clear();
-      rewriteActive = true; // reset rewriteActive flag before attempting traversal
+      // rewriteActive = true; // reset rewriteActive flag before attempting traversal
       Util.trace(1, 0, "Step " + ++rewriteStepCounter + "\n");
-      if (rewritePure)
-        newTerm = rewriteAttempt(oldTerm, relation, 1);
-      else
-        newTerm = rewriteTraverse(oldTerm, relation, 1);
-      if (rewriteOneStep || isTerminatingConfiguration(newTerm, relation) || newTerm == oldTerm /* nothing changed */) break;
+      // if (rewritePure)
+      newTerm = rewriteAttempt(oldTerm, relation, 1);
+      // else
+      // newTerm = rewriteTraverse(oldTerm, relation, 1);
+      if (/* rewriteOneStep || */isTerminatingConfiguration(newTerm, relation) || newTerm == oldTerm /* nothing changed */) break;
       oldTerm = newTerm;
     }
 
@@ -274,24 +275,27 @@ public class Rewriter {
           // System.out.println("Checking for invalid function calls on " + iTerms.toString(ruleIndex));
           reportInvalidFunctionCallsRec(ruleIndex, iTerms.getSubterm(ruleIndex, 1, 1, 0));
 
-          Map<Integer, Integer> variableNumbers = new HashMap<>();
-          Set<Integer> numericVariablesInUse = new HashSet<>(); // The set of functions in use
-          nextFreeVariableNumber = 2;
-          collectVariablesAndConstructorsRec(ruleIndex, variableNumbers, constructorCount, functionsInUse, numericVariablesInUse, ruleIndex);
+          Map<Integer, Integer> variableStringIndexToVariableNumberMap = new HashMap<>();
+          Map<Integer, Integer> variableNumberMapToVariableStringIndex = new HashMap<>();
 
-          if (numericVariablesInUse.size() > 0 && variableNumbers.size() > 0)
+          Set<Integer> numericVariablesInUse = new HashSet<>();
+          nextFreeVariableNumber = 2;
+
+          collectVariablesAndConstructorsRec(ruleIndex, variableStringIndexToVariableNumberMap, constructorCount, functionsInUse, numericVariablesInUse,
+              ruleIndex);
+
+          if (numericVariablesInUse.size() > 0 && variableStringIndexToVariableNumberMap.size() > 0)
             System.out.println("*** Error - mix of numeric and alphanumeric variables in " + tt.toString(ruleIndex));
           for (int v : numericVariablesInUse)
             if (!iTerms.isVariableSymbol(v))
               System.out.println("*** Error - variable outside available range of _1 to _" + ITerms.variableCount + " in " + tt.toString(ruleIndex));
-          if (variableNumbers.size() > ITerms.variableCount)
+          if (variableStringIndexToVariableNumberMap.size() > ITerms.variableCount)
             System.out.println("*** Error - more than " + ITerms.variableCount + " variables used in " + tt.toString(ruleIndex));
 
-          Map<Integer, Integer> reverseVariableNumbers = new HashMap<>();
-          for (int v : variableNumbers.keySet())
-            reverseVariableNumbers.put(variableNumbers.get(v), v);
-          variableNamesByRule.put(ruleIndex, variableNumbers);
-          reverseVariableNamesByRule.put(ruleIndex, reverseVariableNumbers);
+          for (int v : variableStringIndexToVariableNumberMap.keySet())
+            variableNumberMapToVariableStringIndex.put(variableStringIndexToVariableNumberMap.get(v), v);
+          variableNamesByRule.put(ruleIndex, variableStringIndexToVariableNumberMap);
+          reverseVariableNamesByRule.put(ruleIndex, variableNumberMapToVariableStringIndex);
         }
       }
     }
@@ -338,7 +342,7 @@ public class Rewriter {
   private int normaliseRuleRec(Integer ruleIndex, Map<Integer, Integer> variableNameMap) {
     // System.out.println("normaliseRuleRec at " + iTerms.toString(ruleIndex));
     int arity = iTerms.getTermArity(ruleIndex);
-    int ruleStringIndex = iTerms.getTermSymbolIndex(ruleIndex);
+    int ruleStringIndex = iTerms.getTermSymbolStringIndex(ruleIndex);
     // Special case processing for unlabelled rules - generate a label ofthe form Rx
     if (arity == 0 && iTerms.hasSymbol(ruleIndex, "trLabel")) {
       // System.out.println("Generating new label R" + unlabeledRuleNumber);
@@ -362,11 +366,11 @@ public class Rewriter {
 
   private int nextFreeVariableNumber = 1;
 
-  private void collectVariablesAndConstructorsRec(int parentRewriteTermIndex, Map<Integer, Integer> variableNumbers, Map<Integer, Integer> constructorCount,
-      Set<Integer> functionsInUse, Set<Integer> numericVariablesInUse, Integer termIndex) {
+  private void collectVariablesAndConstructorsRec(int parentRewriteTermIndex, Map<Integer, Integer> variableStringIndexToVariableNumberMap,
+      Map<Integer, Integer> constructorCount, Set<Integer> functionsInUse, Set<Integer> numericVariablesInUse, Integer termIndex) {
     // System.out.println("collectVariablesAndConstructorsRec() at " +tt.toString(termIndex, null));
 
-    int termStringIndex = iTerms.getTermSymbolIndex(termIndex);
+    int termSymbolStringIndex = iTerms.getTermSymbolStringIndex(termIndex);
     if (iTerms.hasSymbol(termIndex, "trLabel")) return; // Do not go down into labels
     String termSymbolString = iTerms.getTermSymbolString(termIndex);
 
@@ -378,29 +382,29 @@ public class Rewriter {
         if (termSymbolString.charAt(i) < '0' || termSymbolString.charAt(i) > '9') isNumeric = false;
       if (isNumeric) {
         // System.out.println("Updating numericVariablesInUse with " + termSymbolString);
-        numericVariablesInUse.add(termStringIndex);
-      } else if (variableNumbers.get(termStringIndex) == null) {
+        numericVariablesInUse.add(termSymbolStringIndex);
+      } else if (variableStringIndexToVariableNumberMap.get(termSymbolStringIndex) == null) {
         // System.out.println("Updating variableNumbers with " + termSymbolString + " mapped to " + nextFreeVariableNumber);
         // variableNumbers.put(nextFreeVariableNumber++, termStringIndex);
-        variableNumbers.put(termStringIndex, nextFreeVariableNumber++);
+        variableStringIndexToVariableNumberMap.put(termSymbolStringIndex, nextFreeVariableNumber++);
       }
     } else if (termSymbolString.length() > 1 && termSymbolString.charAt(0) == '_' && termSymbolString.charAt(1) == '_') { // Function
       // System.out.println("Updating functionsInUse with " + termSymbolString);
-      functionsInUse.add(termStringIndex);
+      functionsInUse.add(termSymbolStringIndex);
     } else { // Normal constructor
-      if (constructorCount.get(termStringIndex) == null) constructorCount.put(termStringIndex, 0);
+      if (constructorCount.get(termSymbolStringIndex) == null) constructorCount.put(termSymbolStringIndex, 0);
       // System.out.println("Updating constructor counts for " + iTerms.getString(termStringIndex));
-      constructorCount.put(termStringIndex, constructorCount.get(termStringIndex) + 1);
+      constructorCount.put(termSymbolStringIndex, constructorCount.get(termSymbolStringIndex) + 1);
     }
 
     for (int i = 0; i < iTerms.getTermArity(termIndex); i++)
-      collectVariablesAndConstructorsRec(parentRewriteTermIndex, variableNumbers, constructorCount, functionsInUse, numericVariablesInUse,
-          iTerms.getSubterm(termIndex, i));
+      collectVariablesAndConstructorsRec(parentRewriteTermIndex, variableStringIndexToVariableNumberMap, constructorCount, functionsInUse,
+          numericVariablesInUse, iTerms.getSubterm(termIndex, i));
   }
 
   private void reportInvalidFunctionCallsRec(int parentRewriteTermIndex, int termIndex) {
     String termSymbolString = iTerms.getTermSymbolString(termIndex);
-    int termStringIndex = iTerms.getTermSymbolIndex(termIndex);
+    int termStringIndex = iTerms.getTermSymbolStringIndex(termIndex);
     if (termSymbolString.length() > 0 && termSymbolString.charAt(0) != '_') {
       if (termRewriteConstructorUsages.get(termStringIndex) == null)
         termRewriteConstructorUsages.put(termStringIndex, 1);

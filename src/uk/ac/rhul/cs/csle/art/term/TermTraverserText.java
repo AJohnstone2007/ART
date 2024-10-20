@@ -104,7 +104,7 @@ public class TermTraverserText extends TermTraverser {
       int[] children = iTerms.getTermChildren(termIndex);
       int length = children.length;
       int lengthLessOne = length - 1;
-      if (!breakSet.contains(iTerms.getTermSymbolIndex(termIndex))) for (int i = 0; i < length; i++) {
+      if (!breakSet.contains(iTerms.getTermSymbolStringIndex(termIndex))) for (int i = 0; i < length; i++) {
         traverse(children[i], depth + 1);
         if (i < lengthLessOne) perform(opsInorder, termIndex);
       }

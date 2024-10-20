@@ -44,7 +44,7 @@ public class __mapChain extends Value {
     javaValue = new HashMap<>();
     // Now walk the children of termIndex, adding them to the list
     int[] children = iTerms.getTermChildren(termIndex);
-    if (iTerms.getTermSymbolIndex(children[0]) != iTerms.__mapChainStringIndex && iTerms.getTermSymbolIndex(children[0]) != iTerms.__emptyStringIndex)
+    if (iTerms.getTermSymbolStringIndex(children[0]) != iTerms.__mapChainStringIndex && iTerms.getTermSymbolStringIndex(children[0]) != iTerms.__emptyStringIndex)
       throw new ValueException("First argument of __mapChain muct be of type __mapChain or __empty: " + toString());
 
     for (int i = 1; i < children.length; i++) {
