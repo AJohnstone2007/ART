@@ -151,8 +151,8 @@ interpreterElement ::= 'eSOS'^^ | 'attribute'^^
 displayElements ::= displayElement | displayElement ','^ displayElements^
 displayElement  ::= 
   'script'^^ | 'scriptExpansion'^^ | 'scriptTWE' | 'scriptLexicalisation' | 'scriptGSS' | 'scriptSPPF' | 'scriptBSR' | 'scriptDerivation'^^ 
+| 'allRules'^^ | 'cfgRules'^^ | 'trRules'^^ | 'annotatedRules'^^
 | 'lexer'^^ | 'lexerProperties'^^ | 'input'^^ | 'TWE'^^ | 'lexicalisation'^^
-| 'grammar'^^ | 'grammarProperties'^^
 | 'parser'^^ | 'GSS' | 'SPPF'^^ | 'BSR'^^ | 'derivation'^^ 
 | 'interpreter'^^ | 'interpretation'^^ 
 | 'outcome'^^ | 'statistics'^^ | __string^^
