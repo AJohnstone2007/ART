@@ -162,6 +162,7 @@ public class ScriptTermInterpreter {
     if (map.get(constructorIndex) == null) map.put(constructorIndex, new LinkedList<>());
     map.get(constructorIndex).add(term);
     if (defaultStartRelation == 0) defaultStartRelation = relation;
+    Util.trace(3, 0, "*** Added rewrite rule " + iTerms.toString(term));
   }
 
   private void clearTrRules() {
@@ -170,7 +171,8 @@ public class ScriptTermInterpreter {
   }
 
   private void directiveAction(int term) {
-    // System.out.println("Processing " + iTerms.toString(term));
+
+    Util.trace(5, 0, "*** !" + iTerms.toString(iTerms.getSubterm(term, 0)) + "\n");
     switch (iTerms.getTermSymbolString(iTerms.getSubterm(term, 0))) {
     case "termTool":
       new TermTool(iTerms);
@@ -285,22 +287,19 @@ public class ScriptTermInterpreter {
       break;
     case "try":
       // System.out.println("try at " + iTerms.toString(term));
-      switch (iTerms.getTermSymbolString(iTerms.getSubterm(term, 0, 0))) {
-      case "__string":
-        tryParse("", iTerms.getTermSymbolString(iTerms.getSubterm(term, 0, 0, 0)), true, true);
-        break;
-      case "file":
+      if (iTerms.getTermSymbolString(iTerms.getSubterm(term, 0, 0)).equals("file"))
         try {
           String filename = iTerms.getTermSymbolString(iTerms.getSubterm(term, 0, 0, 0));
           // System.out.println("Attempting to open file " + filename);
-          tryParse(filename, Files.readString(Paths.get(filename)), true, true);
+          tryParse(filename, Files.readString(Paths.get(filename)));
         } catch (IOException e) {
           Util.fatal("Unable to open try file; skipping " + iTerms.toString(term));
         }
-        break;
-      default:
+      else if (iTerms.getTermSymbolString(iTerms.getSubterm(term, 0, 0, 0)).equals("__string"))
+        tryParse("", iTerms.getTermSymbolString(iTerms.getSubterm(term, 0, 0, 0, 0)));
+      else
         currentDerivationTerm = iTerms.getSubterm(term, 0, 0); // Go straight to the rewrite stage
-      }
+
       if (currentDerivationTerm == 0 || defaultStartRelation == 0)
         currentRewriteTerm = 0;
       else {
@@ -329,6 +328,7 @@ public class ScriptTermInterpreter {
     default:
       Util.fatal("Unknown directive !" + iTerms.toString(iTerms.getSubterm(term, 0)));
     }
+
   }
 
   private void renderDisplayElement(int term, int i) {
@@ -374,7 +374,7 @@ public class ScriptTermInterpreter {
       break;
     case "derivation":
       // Switch comments if you wanted one line or indented derivations
-      System.out.println("Current derivation term: [" + currentDerivationTerm + "]\n" + iTerms.toString(currentDerivationTerm, false, -1, null));
+      System.out.println("Current derivation term = " + currentDerivationTerm + " " + iTerms.toString(currentDerivationTerm, false, -1, null));
       // System.out.println("current derivation term: [" + currentDerivationTerm + "]\n" + iTerms.toString(currentDerivationTerm, true, -1, null));
       if (scriptParserTerm == currentDerivationTerm) System.out.println("Bootstrap achieved: script parser term and current derivation term identical");
       break;
@@ -401,8 +401,8 @@ public class ScriptTermInterpreter {
     return iTerms.getTermSymbolString(iTerms.getSubterm(t, 0));
   }
 
-  private void tryParse(String inputStringName, String inputString, boolean outcome, boolean suppressOutput) {
-    // System.out.println("Try parse on input \"" + inputString + "\"");
+  private void tryParse(String inputStringName, String inputString) {
+    System.out.println("tryParse on " + inputString);
     currentParser.resetStatistics();
     currentParser.loadStartMemory();
     currentGrammar.normalise();
