@@ -12,10 +12,10 @@ import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import uk.ac.rhul.cs.csle.art.ART;
-import uk.ac.rhul.cs.csle.art.cfgParsers.grammar.Grammar;
-import uk.ac.rhul.cs.csle.art.cfgParsers.grammar.GrammarElement;
-import uk.ac.rhul.cs.csle.art.cfgParsers.grammar.GrammarKind;
-import uk.ac.rhul.cs.csle.art.cfgParsers.grammar.GrammarNode;
+import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGElement;
+import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGKind;
+import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
+import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGRules;
 import uk.ac.rhul.cs.csle.art.old.v3.ARTV3;
 import uk.ac.rhul.cs.csle.art.old.v3.manager.grammar.ARTGrammar;
 import uk.ac.rhul.cs.csle.art.old.v3.manager.grammar.element.ARTGrammarElement;
@@ -36,7 +36,7 @@ import uk.ac.rhul.cs.csle.art.util.Util;
 
 public class AJDebug {
   /* AJ debug material below this line */
-  Grammar grammarV5; // regression V5 grammar
+  CFGRules grammarV5; // regression V5 grammar
   ARTGrammar grammarV3; // regression V3 grammar
 
   ScriptTermInterpreter regressionScriptInterpreter;
@@ -77,7 +77,7 @@ public class AJDebug {
     grammarV3 = artV3.artManager.addGrammar("Parser grammar", artV3.artManager.getDefaultMainModule(), false, artV3.artManager.artDirectives);
 
     // System.out.print("\n*** V3 grammar\n" + grammarV3.toString());
-    grammarV5 = regressionScriptInterpreter.currentGrammar;
+    grammarV5 = regressionScriptInterpreter.currentCFGRules;
     grammarV5.normalise();
     grammarV5.show("grammar.dot");
 
@@ -87,7 +87,7 @@ public class AJDebug {
 
     // First check the nonterminals
     for (ARTGrammarElementNonterminal v3Nonterminal : grammarV3.getNonterminals()) {
-      GrammarElement v5Nonterminal = grammarV5.elements.get(new GrammarElement(GrammarKind.N, v3Nonterminal.getId()));
+      CFGElement v5Nonterminal = grammarV5.elements.get(new CFGElement(CFGKind.N, v3Nonterminal.getId()));
 
       // System.out.println(
       // "V3 nonterminal " + v3Nonterminal + " first " + new TreeSet<>(v3Nonterminal.getFirst()) + " follow " + new TreeSet<>(v3Nonterminal.getFollow()));
@@ -121,7 +121,7 @@ public class AJDebug {
     return good;
   }
 
-  private boolean v5v3RegressionCheckFirstAndFollowInstanceSetsRec(GrammarNode v5, ARTV3 artV3) {
+  private boolean v5v3RegressionCheckFirstAndFollowInstanceSetsRec(CFGNode v5, ARTV3 artV3) {
     if (v5 == null) return true;
 
     boolean good = true;
@@ -143,7 +143,7 @@ public class AJDebug {
       // }
     }
     // System.out.println();
-    if (v5.elm.kind == GrammarKind.END) return good;
+    if (v5.elm.kind == CFGKind.END) return good;
 
     good &= v5v3RegressionCheckFirstAndFollowInstanceSetsRec(v5.seq, artV3);
     good &= v5v3RegressionCheckFirstAndFollowInstanceSetsRec(v5.alt, artV3);
@@ -151,10 +151,10 @@ public class AJDebug {
     return good;
   }
 
-  private boolean v5v3RegressionCheckFirstAndFollowInstanceSets(Grammar grammarV5, ARTV3 artV3) {
+  private boolean v5v3RegressionCheckFirstAndFollowInstanceSets(CFGRules grammarV5, ARTV3 artV3) {
     boolean good = true;
-    for (GrammarElement e : grammarV5.elements.keySet())
-      if (e.kind == GrammarKind.N) good &= v5v3RegressionCheckFirstAndFollowInstanceSetsRec(grammarV5.rules.get(e).alt, artV3);
+    for (CFGElement e : grammarV5.elements.keySet())
+      if (e.kind == CFGKind.N) good &= v5v3RegressionCheckFirstAndFollowInstanceSetsRec(grammarV5.rules.get(e).alt, artV3);
 
     return good;
   }
@@ -176,17 +176,17 @@ public class AJDebug {
     v5v3RegressionGatherV3FirstAndFollowInstanceSetsRec(v3.getSibling());
   }
 
-  private boolean v5v3ElementSetSame(Set<GrammarElement> v5, Set<ARTGrammarElement> v3, ARTV3Module artv3Module, GrammarElement v5IgnoreElement) {
+  private boolean v5v3ElementSetSame(Set<CFGElement> v5, Set<ARTGrammarElement> v3, ARTV3Module artv3Module, CFGElement v5IgnoreElement) {
     boolean ret = true;
 
-    for (GrammarElement ve5 : v5) {
+    for (CFGElement ve5 : v5) {
       if (ve5.equals(v5IgnoreElement)) continue;
       ret &= v3.contains(v5Element2v3Element(ve5, artv3Module));
       // System.out.println("Checked v5 " + ve5 + " " + ret);
     }
 
     for (ARTGrammarElement ve3 : v3) {
-      GrammarElement ve5 = v3Element2v5Element(ve3);
+      CFGElement ve5 = v3Element2v5Element(ve3);
 
       ret &= v5.contains(ve5);
       // System.out.println("Checked v3 " + ve3 + " " + ret + " with v5 as " + ve5);
@@ -194,19 +194,19 @@ public class AJDebug {
     return ret;
   }
 
-  GrammarElement v3Element2v5Element(ARTGrammarElement elem) {
-    if (elem instanceof ARTGrammarElementTerminalBuiltin) return new GrammarElement(GrammarKind.B, ((ARTGrammarElementTerminal) elem).getId());
-    if (elem instanceof ARTGrammarElementTerminalCharacter) return new GrammarElement(GrammarKind.C, ((ARTGrammarElementTerminal) elem).getId());
-    if (elem instanceof ARTGrammarElementEoS) return new GrammarElement(GrammarKind.EOS, "$");
-    if (elem instanceof ARTGrammarElementEpsilon) return new GrammarElement(GrammarKind.EPS, "#");
-    if (elem instanceof ARTGrammarElementNonterminal) return new GrammarElement(GrammarKind.N, elem.toString());
-    if (elem instanceof ARTGrammarElementTerminalCaseSensitive) return new GrammarElement(GrammarKind.T, ((ARTGrammarElementTerminal) elem).getId());
-    if (elem instanceof ARTGrammarElementTerminalCaseInsensitive) return new GrammarElement(GrammarKind.TI, ((ARTGrammarElementTerminal) elem).getId());
+  CFGElement v3Element2v5Element(ARTGrammarElement elem) {
+    if (elem instanceof ARTGrammarElementTerminalBuiltin) return new CFGElement(CFGKind.B, ((ARTGrammarElementTerminal) elem).getId());
+    if (elem instanceof ARTGrammarElementTerminalCharacter) return new CFGElement(CFGKind.C, ((ARTGrammarElementTerminal) elem).getId());
+    if (elem instanceof ARTGrammarElementEoS) return new CFGElement(CFGKind.EOS, "$");
+    if (elem instanceof ARTGrammarElementEpsilon) return new CFGElement(CFGKind.EPS, "#");
+    if (elem instanceof ARTGrammarElementNonterminal) return new CFGElement(CFGKind.N, elem.toString());
+    if (elem instanceof ARTGrammarElementTerminalCaseSensitive) return new CFGElement(CFGKind.T, ((ARTGrammarElementTerminal) elem).getId());
+    if (elem instanceof ARTGrammarElementTerminalCaseInsensitive) return new CFGElement(CFGKind.TI, ((ARTGrammarElementTerminal) elem).getId());
 
     return null;
   }
 
-  ARTGrammarElement v5Element2v3Element(GrammarElement elem, ARTV3Module artV3Module) {
+  ARTGrammarElement v5Element2v3Element(CFGElement elem, ARTV3Module artV3Module) {
     switch (elem.kind) {
     case ALT, DO, END, KLN, OPT, POS:
       return null; // These should not appear

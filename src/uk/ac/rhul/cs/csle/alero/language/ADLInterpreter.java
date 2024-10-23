@@ -9,12 +9,12 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.Scanner;
 
+import uk.ac.rhul.cs.csle.adl.ADLException;
 import uk.ac.rhul.cs.csle.alero.Alero;
 import uk.ac.rhul.cs.csle.alero.AleroException;
-import uk.ac.rhul.cs.csle.art.adl.ADLException;
-import uk.ac.rhul.cs.csle.art.cfgParsers.ParserBase;
-import uk.ac.rhul.cs.csle.art.cfgParsers.gll.GLLBaseLine;
-import uk.ac.rhul.cs.csle.art.cfgParsers.lexer.LexerSingletonLongestMatch;
+import uk.ac.rhul.cs.csle.art.cfg.ParserBase;
+import uk.ac.rhul.cs.csle.art.cfg.gll.GLLBaseLine;
+import uk.ac.rhul.cs.csle.art.cfg.lexer.LexerSingletonLongestMatch;
 import uk.ac.rhul.cs.csle.art.script.ScriptTermInterpreter;
 import uk.ac.rhul.cs.csle.art.term.ITerms;
 import uk.ac.rhul.cs.csle.art.term.ITermsLowLevelAPI;
