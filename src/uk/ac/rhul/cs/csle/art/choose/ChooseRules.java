@@ -1,5 +1,6 @@
 package uk.ac.rhul.cs.csle.art.choose;
 
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGElement;
@@ -15,12 +16,17 @@ public class ChooseRules {
   private final Relation higher = new Relation();
   private final Relation longer = new Relation();
   private final Relation shorter = new Relation();
+  private final Set<Integer> chooseTerms = new LinkedHashSet<>();
 
   public ChooseRules(ITerms iTerms) {
     this.iTerms = iTerms;
   }
 
-  public void normalise(CFGRules grammar, Set<Integer> chooseRules) {
+  public void buildChooseRule(int term) {
+    chooseTerms.add(term);
+  }
+
+  public void normalise(CFGRules grammar) {
     // System.out.println("Building chooser relation on " + chooseRules);
     // for (var i : chooseRules) {
     // System.out.println("Term i:");

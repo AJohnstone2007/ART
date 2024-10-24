@@ -1,7 +1,10 @@
 package uk.ac.rhul.cs.csle.art;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Arrays;
@@ -31,7 +34,7 @@ public class ART {
     case "v4":      new ARTV4(Arrays.copyOfRange(args, 1, args.length)); return; // Undocumented internal mode
     case "ide":     useIDE = true; Application.launch(FXStart.class, Arrays.copyOfRange(args, 1, args.length)); return;
     case "fx":      Application.launch(FXStart.class, Arrays.copyOfRange(args, 1, args.length)); return;
-    default:        new ScriptTermInterpreter(new ITermsLowLevelAPI()).interpretARTScript(Util.scriptString(args)); return; // Run batch mode without fx in this context
+    default:        new ScriptTermInterpreter(new ITermsLowLevelAPI()).interpretARTScript(scriptString(args)); return; // Run batch mode without fx in this context
     }
     // No args
     System.out.println("ART " + Version.version() + "\nUsage:");
@@ -40,6 +43,26 @@ public class ART {
     System.out.println("  <spec> - interpret <spec> directly without JavaFX");
   }
   // @formatter:on
+
+  public static String scriptString(String[] args) { // Construct an ART script string, processing embedded filenames accordingly
+    StringBuilder scriptStringBuilder = new StringBuilder();
+    for (int argp = 0; argp < args.length; argp++) {
+      if (args[argp].endsWith(".art"))
+        try {
+          // System.out.println("Appending contents of ART script file" + args[argp]);
+          scriptStringBuilder.append(Files.readString(Paths.get((args[argp]))));
+        } catch (IOException e) {
+          Util.fatal("Unable to open script file " + args[argp]);
+        }
+      else if (!args[argp].startsWith("\"") && !args[argp].startsWith("'") && args[argp].contains("."))
+        scriptStringBuilder.append("!try '" + args[argp] + "'");
+      else
+        scriptStringBuilder.append(args[argp]);
+      scriptStringBuilder.append("\n");
+    }
+
+    return scriptStringBuilder.toString();
+  }
 
   private static void incVersion() {
     try {

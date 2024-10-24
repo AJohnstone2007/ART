@@ -63,6 +63,7 @@ public class ADLInterpreter {
 
   public ADLInterpreter(ITerms iTerms) {
     this.iTerms = iTerms;
+    // TODO: We need an encapsulated bootstrap grammarbuilder here
     ScriptTermInterpreter artScriptInterpreter = new ScriptTermInterpreter(iTerms);
     try {
       artScriptInterpreter
@@ -72,7 +73,7 @@ public class ADLInterpreter {
     }
     adlLexer = new LexerSingletonLongestMatch();
     adlParser = new GLLBaseLine();
-    adlParser.grammar = artScriptInterpreter.getGrammar();
+    adlParser.grammar = null; // TODO: !!! fix this ! artScriptInterpreter.getGrammar();
     adlParser.grammar.normalise();
   }
 

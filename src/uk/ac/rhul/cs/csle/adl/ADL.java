@@ -48,11 +48,12 @@ public class ADL {
       Util.fatal("Unable to read ADL specification");
     }
     // System.out.println(ADLSpecification);
+    // TODO: We need an encapsulated bootstrap grammarbuilder here
     ScriptTermInterpreter artScriptInterpreter = new ScriptTermInterpreter(iTerms);
     artScriptInterpreter.interpretARTScript(ADLSpecification);
     String inputString = "3+4";
 
-    CFGRules adlGrammar = artScriptInterpreter.getGrammar();
+    CFGRules adlGrammar = null; // TODO: !!! Fix this artScriptInterpreter.getGrammar();
     LexerSingletonLongestMatch adlLexer = new LexerSingletonLongestMatch();
     ParserBase adlParser = new GLLBaseLine();
 

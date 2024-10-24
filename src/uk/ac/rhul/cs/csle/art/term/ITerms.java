@@ -10,6 +10,8 @@ import java.util.Set;
 public abstract class ITerms {
   private final TermTraverserText tt = new TermTraverserText(this); // This is intended for debugging - show the term without any
                                                                     // translations
+  public TermTraverserText plainTextTraverser; // Plain text pretty printer - loaded by user
+  public TermTraverserText latexTraverser; // LaTeX pretty printer - loaded by user
   public static int variableCount = 20;
   public static int sequenceVariableCount = 10;
 

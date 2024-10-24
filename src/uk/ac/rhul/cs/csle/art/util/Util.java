@@ -1,9 +1,5 @@
 package uk.ac.rhul.cs.csle.art.util;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-
 public class Util {
 
   public static int traceLevel = 3;
@@ -93,25 +89,4 @@ public class Util {
       if (buffer.charAt(tmp) == '\n') lineCount++;
     return lineCount;
   }
-
-  public static String scriptString(String[] args) { // Construct an ART script string, processing embedded filenames accordingly
-    StringBuilder scriptStringBuilder = new StringBuilder();
-    for (int argp = 0; argp < args.length; argp++) {
-      if (args[argp].endsWith(".art"))
-        try {
-          // System.out.println("Appending contents of ART script file" + args[argp]);
-          scriptStringBuilder.append(Files.readString(Paths.get((args[argp]))));
-        } catch (IOException e) {
-          Util.fatal("Unable to open script file " + args[argp]);
-        }
-      else if (!args[argp].startsWith("\"") && !args[argp].startsWith("'") && args[argp].contains("."))
-        scriptStringBuilder.append("!try '" + args[argp] + "'");
-      else
-        scriptStringBuilder.append(args[argp]);
-      scriptStringBuilder.append("\n");
-    }
-
-    return scriptStringBuilder.toString();
-  }
-
 }
