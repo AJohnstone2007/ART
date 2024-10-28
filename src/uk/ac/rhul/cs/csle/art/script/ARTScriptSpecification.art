@@ -126,7 +126,7 @@ directiveElement ::=
 | 'try'^^ trTopTuple  
 | 'try'^^ trTopTuple '='^ trTopTuple
 | 'nop'^^
-| 'clear'^^ (* reset everything *)  | 'clear'^^ 'parser'| 'clear'^^ 'chooser' | 'clear'^^ 'interpreter'
+| 'clear'^^ 'all' | 'clear'^^ 'parser' | 'clear'^^ 'chooser' | 'clear'^^ 'interpreter'
 | 'prompt'^^ | 'prompt'^^ &STRING_DQ
 
 file ::= &STRING_PLAIN_SQ

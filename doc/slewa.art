@@ -1,0 +1,12 @@
+!trace 3
+
+!prompt "Increment 3 to 4"
+---  increment(3) -> 4
+!try increment(3) = 4
+
+!prompt "Attempt to increment 4 with no appropriate rule - this will stick"
+!try increment(4)
+
+!prompt "Add rule to increment 4 to 5"
+---  increment(4) -> 5
+!try increment(4) = 5

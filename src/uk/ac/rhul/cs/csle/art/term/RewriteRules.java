@@ -28,6 +28,6 @@ public class RewriteRules {
     if (map.get(constructorIndex) == null) map.put(constructorIndex, new LinkedList<>());
     map.get(constructorIndex).add(term);
     if (defaultStartRelation == 0) defaultStartRelation = relation;
-    Util.trace(3, 0, "*** Added rewrite rule " + iTerms.toString(term));
+    Util.trace(6, 0, "*** Added rewrite rule " + iTerms.toString(term));
   }
 }
