@@ -112,22 +112,27 @@ directiveElement ::=
   'include' file
 | 'whitespace'^^ '#'^ | 'whitespace'^^ whiteSpaceElements^ | 'whitespace'^^ '('^ whiteSpaceElements^ ')'^
 | 'paraterminal'^^ '#'^ | 'paraterminal'^^ paraterminalElements^
-| 'parser'^^ '#'^ | 'parser'^^ parserElements^
+
+| 'lexer'^^ '#'^ | 'lexer'^^ ID
+| 'parser'^^ '#'^ | 'parser'^^ ID
+| 'interpreter'^^ '#'^ | 'interpreter'^^ ID
+
 | 'start'^^ cfgNonterminal | 'start'^^ trRelation // Set parser start nonterminal or rewriter start relation
-| 'interpreter'^^ '#'^ | 'interpreter'^^ interpreterElements^
-| 'configuration'^^ trRelation ','^ trTerm
+| 'configuration'^^  '#'^ | 'configuration'^^ trRelation ','^ trTerm
+
+| 'clear'^^ 'all' | 'clear'^^ 'parser' | 'clear'^^ 'chooser' | 'clear'^^ 'interpreter'
+
 | 'trace'^^ __int32
 | 'print'^^ displayElements^
-| 'latex'^^ displayElements^
 | 'show'^^ displayElements^
-| 'log'^^ displayElements^
+| 'prompt'^^ | 'prompt'^^ &STRING_DQ
+
 | 'try'^^ file              
 | 'try'^^ file '='^ trTopTuple 
 | 'try'^^ trTopTuple  
 | 'try'^^ trTopTuple '='^ trTopTuple
+
 | 'nop'^^
-| 'clear'^^ 'all' | 'clear'^^ 'parser' | 'clear'^^ 'chooser' | 'clear'^^ 'interpreter'
-| 'prompt'^^ | 'prompt'^^ &STRING_DQ
 
 file ::= &STRING_PLAIN_SQ
 
@@ -137,18 +142,14 @@ whiteSpaceElement  ::= cfgNonterminal^^ | cfgBuiltinTerminal^^
 paraterminalElements ::= paraterminalElement | paraterminalElement ','^ paraterminalElements^
 paraterminalElement  ::= cfgNonterminal^^
 
-parserElements ::= parserElement | parserElement ','^ parserElements^
-parserElement ::= ID^^
-
-interpreterElements ::= interpreterElement | interpreterElement ','^ interpreterElements^
-interpreterElement ::= 'eSOS'^^ | 'attribute'^^
-
-displayElements ::= displayElement | displayElement ','^ displayElements^
+displayElements ::= displayElement^ | displayElement^ displayElements^
 displayElement  ::= 
-  'script'^^ | 'scriptDerivation'^^ | 'allrules'^^
-| 'lexer'^^ | 'parser'^^ | 'interpreter'^^ 
-| 'input'^^ | 'TWE'^^ | 'lexicalisation'^^ | 'GSS' | 'SPPF'^^ | 'BSR'^^ | 'derivation'^^ | 'interpretation'^^ 
-| 'statistics'^^ | __string^^
+  'latex' | file 
+| 'script' | 'scriptDerivation' | 'allrules'
+| 'lexer' | 'parser' | 'interpreter'
+| 'input' | 'TWE' | 'lexicalisation' | 'GSS' | 'SPPF' | 'BSR' | 'derivation' | 'interpretation' 
+| 'statistics' | __string
+| 'sppfCycles'
 
 (* Lexical elements **********************************************************)
 __bool ::= 'true' | 'false'

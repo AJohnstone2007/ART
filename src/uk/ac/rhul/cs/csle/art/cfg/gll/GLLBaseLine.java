@@ -192,6 +192,27 @@ public class GLLBaseLine extends ParserBase {
     return ret;
   }
 
+  /* SPPF rendering experiments */
+  private void sppfPrintRec(SPPFN sppfn) {
+    if (visitedSPPFNodes.get(sppfn.number)) return;
+    visitedSPPFNodes.set(sppfn.number);
+    System.out.println(sppfn);
+    for (var pn : sppfn.packNS)
+      System.out.println(pn);
+
+    for (var pn : sppfn.packNS) {
+      if (pn.leftChild != null) sppfPrintRec(pn.leftChild);
+      sppfPrintRec(pn.rightChild);
+    }
+  }
+
+  @Override
+  public void sppfPrint() {
+    visitedSPPFNodes.clear();
+    if (sppfRootNode == null) Util.fatal("No SPPF to print");
+    sppfPrintRec(sppfRootNode);
+  }
+
   /* Term generation **************************************************************************/
   /* This version handles promotion operators, but does not create ambiguity nodes */
   long derivationNodeCount = 0, derivationAmbiguityNodeCount = 0;
@@ -516,7 +537,7 @@ public class GLLBaseLine extends ParserBase {
       StringBuilder builder = new StringBuilder();
       builder.append(gn.toStringAsProduction());
       builder.append(", " + pivot);
-      builder.append(suppressed ? "(suppressed)" : "");
+      builder.append(suppressed ? " (suppressed)" : "");
       return builder.toString();
     }
   }
