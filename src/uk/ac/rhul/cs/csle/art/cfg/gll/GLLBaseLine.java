@@ -3,6 +3,7 @@ package uk.ac.rhul.cs.csle.art.cfg.gll;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
+import java.util.ArrayDeque;
 import java.util.BitSet;
 import java.util.Deque;
 import java.util.HashMap;
@@ -208,9 +209,43 @@ public class GLLBaseLine extends ParserBase {
 
   @Override
   public void sppfPrint() {
+    if (sppfRootNode == null) Util.fatal("Current parser does not have a current SPPF that can be printed");
     visitedSPPFNodes.clear();
-    if (sppfRootNode == null) Util.fatal("No SPPF to print");
+    System.out.println("Cycle checking SPPF");
     sppfPrintRec(sppfRootNode);
+  }
+
+  Deque visitedStack = new ArrayDeque();
+
+  private void sppfCycleRec(SPPFN sppfn) {
+    if (visitedSPPFNodes.get(sppfn.number)) {
+      System.out.print("SPPF cycle detected at node " + sppfn);
+      for (var v : visitedStack)
+        System.out.print(" " + v);
+      System.out.println();
+      return;
+    }
+    visitedSPPFNodes.set(sppfn.number);
+    visitedStack.push(sppfn);
+    System.out.println("sc: " + sppfn);
+    for (var pn : sppfn.packNS)
+      System.out.println("sc: " + pn);
+
+    for (var pn : sppfn.packNS) {
+      visitedStack.push(pn);
+      if (pn.leftChild != null) sppfCycleRec(pn.leftChild);
+      sppfCycleRec(pn.rightChild);
+      visitedStack.pop();
+    }
+    visitedSPPFNodes.clear(sppfn.number);
+    visitedStack.pop();
+  }
+
+  @Override
+  public void sppfCycle() {
+    if (sppfRootNode == null) Util.fatal("Current parser does not have a current SPPF that can be cycle checked");
+    visitedSPPFNodes.clear();
+    sppfCycleRec(sppfRootNode);
   }
 
   /* Term generation **************************************************************************/
@@ -535,9 +570,11 @@ public class GLLBaseLine extends ParserBase {
     @Override
     public String toString() {
       StringBuilder builder = new StringBuilder();
+      builder.append("[");
       builder.append(gn.toStringAsProduction());
       builder.append(", " + pivot);
       builder.append(suppressed ? " (suppressed)" : "");
+      builder.append("]");
       return builder.toString();
     }
   }
@@ -574,7 +611,8 @@ public class GLLBaseLine extends ParserBase {
 
   class SPPF2Dot {
     final String packNodeStyle = "[style=rounded]";
-    final String ambiguousStyle = "[color=red]";
+    final String ambiguousStyle = "[color=orange]";
+    final String cyclicStyle = "[color=red]";
     final String intermediateNodeStyle = "[style=filled fillcolor=grey92]";
     final String symbolNodeStyle = "";
     PrintStream sppfOut = null;
@@ -620,7 +658,9 @@ public class GLLBaseLine extends ParserBase {
       this.sppf = sppf;
       this.showIndicies = showIndicies;
       this.showIntermediates = showIntermediates;
+
       if (sppf == null) return;
+      visitedSPPFNodes.clear();
       try {
         sppfOut = new PrintStream(new File(filename));
         sppfOut.println("digraph \"SPPF\" {\n"
@@ -629,7 +669,6 @@ public class GLLBaseLine extends ParserBase {
           fullSPPF(rootNode);
         else
           coreSPPFRec(rootNode);
-        fullSPPF(rootNode);
         sppfOut.println("}");
         sppfOut.close();
       } catch (FileNotFoundException e) {
@@ -637,15 +676,19 @@ public class GLLBaseLine extends ParserBase {
       }
     }
 
-    private void coreSPPFRec(SPPFN s) {
-      if (sppf == null || s == null) return;
-      sppfOut.println(renderSPPFNode(s));
-      for (SPPFPN p : s.packNS) {
-        sppfOut.println(renderSPPFPackNode(s, p));
-        sppfOut.println(renderSPPFNodeLabel(s) + "->" + renderSPPFPackNodeLabel(s, p) + (s.packNS.size() > 1 ? ambiguousStyle : ""));
+    private void coreSPPFRec(SPPFN sppfn) {
+      if (sppf == null || sppfn == null) return;
 
-        if (p.leftChild != null) sppfOut.println(renderSPPFPackNodeLabel(s, p) + "->" + renderSPPFNodeLabel(p.leftChild));
-        sppfOut.println(renderSPPFPackNodeLabel(s, p) + "->" + renderSPPFNodeLabel(p.rightChild));
+      if (visitedSPPFNodes.get(sppfn.number)) return;
+      visitedSPPFNodes.set(sppfn.number);
+
+      sppfOut.println(renderSPPFNode(sppfn));
+      for (SPPFPN p : sppfn.packNS) {
+        sppfOut.println(renderSPPFPackNode(sppfn, p));
+        sppfOut.println(renderSPPFNodeLabel(sppfn) + "->" + renderSPPFPackNodeLabel(sppfn, p) + (sppfn.packNS.size() > 1 ? ambiguousStyle : ""));
+
+        if (p.leftChild != null) sppfOut.println(renderSPPFPackNodeLabel(sppfn, p) + "->" + renderSPPFNodeLabel(p.leftChild));
+        sppfOut.println(renderSPPFPackNodeLabel(sppfn, p) + "->" + renderSPPFNodeLabel(p.rightChild));
 
         if (p.leftChild != null) coreSPPFRec(p.leftChild);
         if (p.rightChild != null) coreSPPFRec(p.rightChild);
@@ -654,6 +697,10 @@ public class GLLBaseLine extends ParserBase {
 
     private void fullSPPF(SPPFN rootnode) {
       if (sppf == null || rootnode == null) return;
+
+      if (visitedSPPFNodes.get(rootnode.number)) return;
+      visitedSPPFNodes.set(rootnode.number);
+
       for (SPPFN s : sppf.keySet()) {
         sppfOut.println(renderSPPFNode(s));
         for (SPPFPN p : s.packNS) {

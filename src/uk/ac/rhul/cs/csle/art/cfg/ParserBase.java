@@ -129,6 +129,10 @@ public class ParserBase {
     System.out.println("sppfPrint() not implemented for parser class " + this.getClass().getSimpleName());
   }
 
+  public void sppfCycle() {
+    System.out.println("sppfCycle() not implemented for parser class " + this.getClass().getSimpleName());
+  }
+
   protected CFGNode getLHS(CFGNode gn) {
     return grammar.rules.get(gn.elm);
   }

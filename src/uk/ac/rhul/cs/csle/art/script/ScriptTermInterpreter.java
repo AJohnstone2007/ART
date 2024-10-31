@@ -318,9 +318,15 @@ public class ScriptTermInterpreter {
       System.out.println(iTerms.getTermSymbolString(iTerms.getSubterm(term, 0, i, 0)));
       break;
 
-    case "sppfCycles":
+    case "sppf":
       currentParser.sppfPrint();
+      currentParser.show();
       break;
+
+    case "sppfCycles":
+      currentParser.sppfCycle();
+      break;
+
     default:
       Util.fatal("No implementation for !" + directive + " " + displayElement);
     }
