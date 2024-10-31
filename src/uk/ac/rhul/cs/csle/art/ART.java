@@ -61,6 +61,7 @@ public class ART {
       scriptStringBuilder.append("\n");
     }
 
+    // System.out.println("Script string builder returns\n" + scriptStringBuilder);
     return scriptStringBuilder.toString();
   }
 
