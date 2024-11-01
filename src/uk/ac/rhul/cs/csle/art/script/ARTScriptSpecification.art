@@ -147,9 +147,9 @@ displayElement  ::=
   'latex' | file 
 | 'script' | 'scriptDerivation' | 'allrules'
 | 'lexer' | 'parser' | 'interpreter'
-| 'input' | 'TWE' | 'lexicalisation' | 'GSS' | 'SPPF' | 'BSR' | 'derivation' | 'interpretation' 
+| 'input' | 'twe' | 'lexicalisation' | 'gss' | 'sppf' | 'bsr' | 'derivation' | 'interpretation' 
 | 'statistics' | __string
-| 'sppfCycles'
+| 'cycles'
 
 (* Lexical elements **********************************************************)
 __bool ::= 'true' | 'false'

@@ -112,10 +112,6 @@ public class ParserBase {
     System.out.println("parse() not implemented for parser class " + this.getClass().getSimpleName());
   }
 
-  public void show() {
-    System.out.println("show() not implemented for parser class " + this.getClass().getSimpleName());
-  }
-
   public void chooseLongestMatch() {
     System.out.println("chooseLongestMatch() not implemented for parser class " + this.getClass().getSimpleName());
   }
@@ -123,6 +119,18 @@ public class ParserBase {
   public int derivationAsTerm() {
     System.out.println("derivationAsTerm() not implemented for parser class " + this.getClass().getSimpleName());
     return 0;
+  }
+
+  public void gss2Dot() {
+    System.out.println("gss2Dot() not implemented for parser class " + this.getClass().getSimpleName());
+  }
+
+  public void gssPrint() {
+    System.out.println("gssPrint() not implemented for parser class " + this.getClass().getSimpleName());
+  }
+
+  public void sppf2Dot() {
+    System.out.println("sppf2Dot() not implemented for parser class " + this.getClass().getSimpleName());
   }
 
   public void sppfPrint() {

@@ -211,7 +211,6 @@ public class GLLBaseLine extends ParserBase {
   public void sppfPrint() {
     if (sppfRootNode == null) Util.fatal("Current parser does not have a current SPPF that can be printed");
     visitedSPPFNodes.clear();
-    System.out.println("Cycle checking SPPF");
     sppfPrintRec(sppfRootNode);
   }
 
@@ -244,6 +243,7 @@ public class GLLBaseLine extends ParserBase {
   @Override
   public void sppfCycle() {
     if (sppfRootNode == null) Util.fatal("Current parser does not have a current SPPF that can be cycle checked");
+    System.out.println("Cycle checking SPPF");
     visitedSPPFNodes.clear();
     sppfCycleRec(sppfRootNode);
   }
@@ -581,8 +581,12 @@ public class GLLBaseLine extends ParserBase {
 
   /* GSS and SPPF rendering *******************************************************************/
   @Override
-  public void show() {
-    new GSS2Dot(gss, "gssA.dot");
+  public void gss2Dot() {
+    new GSS2Dot(gss, "gss.dot");
+  }
+
+  @Override
+  public void sppf2Dot() {
     new SPPF2Dot(sppf, sppfRootNode, "sppf_full.dot", true, true, true); // full SPPF
     new SPPF2Dot(sppf, sppfRootNode, "sppf_core.dot", false, true, true); // core SPPF - only nodes reachable from (S,0,n)
   }
