@@ -18,6 +18,7 @@ import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGRules;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.GIFTKind;
 import uk.ac.rhul.cs.csle.art.cfg.lexer.LexemeKind;
+import uk.ac.rhul.cs.csle.art.util.Relation;
 import uk.ac.rhul.cs.csle.art.util.Util;
 
 public class GLLBaseLine extends ParserBase {
@@ -191,61 +192,6 @@ public class GLLBaseLine extends ParserBase {
     for (SPPFN s : sppf.keySet())
       if (ret < s.ri) ret = s.ri;
     return ret;
-  }
-
-  /* SPPF rendering experiments */
-  private void sppfPrintRec(SPPFN sppfn) {
-    if (visitedSPPFNodes.get(sppfn.number)) return;
-    visitedSPPFNodes.set(sppfn.number);
-    System.out.println(sppfn);
-    for (var pn : sppfn.packNS)
-      System.out.println(pn);
-
-    for (var pn : sppfn.packNS) {
-      if (pn.leftChild != null) sppfPrintRec(pn.leftChild);
-      sppfPrintRec(pn.rightChild);
-    }
-  }
-
-  @Override
-  public void sppfPrint() {
-    if (sppfRootNode == null) Util.fatal("Current parser does not have a current SPPF that can be printed");
-    visitedSPPFNodes.clear();
-    sppfPrintRec(sppfRootNode);
-  }
-
-  Deque visitedStack = new ArrayDeque();
-
-  private void sppfCycleRec(SPPFN sppfn) {
-    if (visitedSPPFNodes.get(sppfn.number)) {
-      System.out.print("SPPF cycle detected at node " + sppfn);
-      for (var v : visitedStack)
-        System.out.print(" " + v);
-      System.out.println();
-      return;
-    }
-    visitedSPPFNodes.set(sppfn.number);
-    visitedStack.push(sppfn);
-    System.out.println("sc: " + sppfn);
-    for (var pn : sppfn.packNS)
-      System.out.println("sc: " + pn);
-
-    for (var pn : sppfn.packNS) {
-      visitedStack.push(pn);
-      if (pn.leftChild != null) sppfCycleRec(pn.leftChild);
-      sppfCycleRec(pn.rightChild);
-      visitedStack.pop();
-    }
-    visitedSPPFNodes.clear(sppfn.number);
-    visitedStack.pop();
-  }
-
-  @Override
-  public void sppfCycle() {
-    if (sppfRootNode == null) Util.fatal("Current parser does not have a current SPPF that can be cycle checked");
-    System.out.println("Cycle checking SPPF");
-    visitedSPPFNodes.clear();
-    sppfCycleRec(sppfRootNode);
   }
 
   /* Term generation **************************************************************************/
@@ -472,7 +418,10 @@ public class GLLBaseLine extends ParserBase {
 
   int nextFreeSPPFNodeNumber = 0;
 
-  class SPPFN {
+  class SPPFnode { // Carrier to unify SPPFN and SPPPPN
+  };
+
+  class SPPFN extends SPPFnode {
     public final int number; // to allow a bitset to be used as visited set
     public final CFGNode gn;
     public final int li;
@@ -524,11 +473,13 @@ public class GLLBaseLine extends ParserBase {
       sb.append(", ");
       sb.append(ri);
       sb.append(")");
+
+      if (sppfReachable != null && sppfReachable.get(this).contains(this)) sb.append(" (cyclic)");
       return sb.toString();
     }
   }
 
-  class SPPFPN {
+  class SPPFPN extends SPPFnode {
     public final int number; // to allow a bitset to be used as visited set
     public final CFGNode gn;
     public final int pivot;
@@ -569,17 +520,92 @@ public class GLLBaseLine extends ParserBase {
 
     @Override
     public String toString() {
-      StringBuilder builder = new StringBuilder();
-      builder.append("[");
-      builder.append(gn.toStringAsProduction());
-      builder.append(", " + pivot);
-      builder.append(suppressed ? " (suppressed)" : "");
-      builder.append("]");
-      return builder.toString();
+      StringBuilder sb = new StringBuilder();
+      sb.append("[");
+      sb.append(gn.toStringAsProduction());
+      sb.append(", " + pivot);
+      sb.append("]");
+      if (sppfReachable != null && sppfReachable.get(this).contains(this)) sb.append(" (cyclic)");
+      if (suppressed) sb.append(" (suppressed)");
+      return sb.toString();
     }
   }
 
   /* GSS and SPPF rendering *******************************************************************/
+  private void sppfPrintRec(SPPFN sppfn) {
+    if (visitedSPPFNodes.get(sppfn.number)) return;
+    visitedSPPFNodes.set(sppfn.number);
+    System.out.println(sppfn);
+    for (var pn : sppfn.packNS)
+      System.out.println(pn);
+
+    for (var pn : sppfn.packNS) {
+      if (pn.leftChild != null) sppfPrintRec(pn.leftChild);
+      sppfPrintRec(pn.rightChild);
+    }
+  }
+
+  @Override
+  public void sppfPrint() {
+    if (sppfRootNode == null) Util.fatal("Current parser does not have a current SPPF that can be printed");
+    sppfComputeReachability();
+
+    // Output SPPF
+    visitedSPPFNodes.clear();
+    sppfPrintRec(sppfRootNode);
+  }
+
+  Relation<SPPFnode, SPPFnode> sppfReachable;
+
+  private boolean isCyclic(SPPFnode sppfn) {
+    return sppfReachable.get(sppfn).contains(sppfn);
+  }
+
+  private void sppfComputeReachability() {
+    sppfReachable = new Relation<>();
+    for (var n : sppf.keySet())
+      for (var p : n.packNS) {
+        sppfReachable.add(n, p);
+        if (p.leftChild != null) sppfReachable.add(p, p.leftChild);
+        sppfReachable.add(p, p.rightChild);
+      }
+    sppfReachable.transitiveClosure();
+  }
+
+  Deque visitedStack = new ArrayDeque();
+
+  private void sppfCycleRec(SPPFN sppfn) {
+    if (visitedSPPFNodes.get(sppfn.number)) {
+      System.out.print("SPPF cycle detected at node " + sppfn);
+      for (var v : visitedStack)
+        System.out.print(" " + v);
+      System.out.println();
+      return;
+    }
+    visitedSPPFNodes.set(sppfn.number);
+    visitedStack.push(sppfn);
+    // System.out.println("sc: " + sppfn);
+    // for (var pn : sppfn.packNS)
+    // System.out.println("sc: " + pn);
+
+    for (var pn : sppfn.packNS) {
+      visitedStack.push(pn);
+      if (pn.leftChild != null) sppfCycleRec(pn.leftChild);
+      sppfCycleRec(pn.rightChild);
+      visitedStack.pop();
+    }
+    visitedSPPFNodes.clear(sppfn.number);
+    visitedStack.pop();
+  }
+
+  @Override
+  public void sppfPrintCycles() {
+    if (sppfRootNode == null) Util.fatal("Current parser does not have a current SPPF that can be cycle checked");
+    System.out.println("Cycle listing for SPPF");
+    visitedSPPFNodes.clear();
+    sppfCycleRec(sppfRootNode);
+  }
+
   @Override
   public void gss2Dot() {
     new GSS2Dot(gss, "gss.dot");
@@ -587,6 +613,8 @@ public class GLLBaseLine extends ParserBase {
 
   @Override
   public void sppf2Dot() {
+    sppfComputeReachability();
+    // System.out.println("SPPF reachability\n" + sppfReachable.toString());
     new SPPF2Dot(sppf, sppfRootNode, "sppf_full.dot", true, true, true); // full SPPF
     new SPPF2Dot(sppf, sppfRootNode, "sppf_core.dot", false, true, true); // core SPPF - only nodes reachable from (S,0,n)
   }
@@ -616,7 +644,7 @@ public class GLLBaseLine extends ParserBase {
   class SPPF2Dot {
     final String packNodeStyle = "[style=rounded]";
     final String ambiguousStyle = "[color=orange]";
-    final String cyclicStyle = "[color=red]";
+    final String cycleStyle = "[color=red]";
     final String intermediateNodeStyle = "[style=filled fillcolor=grey92]";
     final String symbolNodeStyle = "";
     PrintStream sppfOut = null;
@@ -664,6 +692,7 @@ public class GLLBaseLine extends ParserBase {
       this.showIntermediates = showIntermediates;
 
       if (sppf == null) return;
+      sppfComputeReachability();
       visitedSPPFNodes.clear();
       try {
         sppfOut = new PrintStream(new File(filename));
@@ -688,11 +717,21 @@ public class GLLBaseLine extends ParserBase {
 
       sppfOut.println(renderSPPFNode(sppfn));
       for (SPPFPN p : sppfn.packNS) {
-        sppfOut.println(renderSPPFPackNode(sppfn, p));
-        sppfOut.println(renderSPPFNodeLabel(sppfn) + "->" + renderSPPFPackNodeLabel(sppfn, p) + (sppfn.packNS.size() > 1 ? ambiguousStyle : ""));
+        boolean isCyclicP = isCyclic(p);
 
-        if (p.leftChild != null) sppfOut.println(renderSPPFPackNodeLabel(sppfn, p) + "->" + renderSPPFNodeLabel(p.leftChild));
+        sppfOut.println(renderSPPFPackNode(sppfn, p));
+        if (isCyclicP) sppfOut.println(cycleStyle);
+        sppfOut.println(renderSPPFNodeLabel(sppfn) + "->" + renderSPPFPackNodeLabel(sppfn, p));
+        if (isCyclicP)
+          sppfOut.println(cycleStyle);
+        else if (sppfn.packNS.size() > 1) sppfOut.println(ambiguousStyle);
+
+        if (p.leftChild != null) {
+          sppfOut.println(renderSPPFPackNodeLabel(sppfn, p) + "->" + renderSPPFNodeLabel(p.leftChild));
+          if (isCyclicP) sppfOut.println(cycleStyle);
+        }
         sppfOut.println(renderSPPFPackNodeLabel(sppfn, p) + "->" + renderSPPFNodeLabel(p.rightChild));
+        if (isCyclicP) sppfOut.println(cycleStyle);
 
         if (p.leftChild != null) coreSPPFRec(p.leftChild);
         if (p.rightChild != null) coreSPPFRec(p.rightChild);

@@ -208,9 +208,14 @@ public class ScriptTermInterpreter {
         }
       break;
 
-    case "print", "show":
+    case "print":
       for (int i = 0; i < iTerms.getTermArity(iTerms.getSubterm(term, 0)); i++)
-        renderDisplayElement(term, i);
+        printDisplayElement(term, i);
+      break;
+
+    case "show":
+      for (int i = 0; i < iTerms.getTermArity(iTerms.getSubterm(term, 0)); i++)
+        showDisplayElement(term, i);
       break;
     case "try":
       // System.out.println("try at " + iTerms.toString(term));
@@ -253,7 +258,7 @@ public class ScriptTermInterpreter {
 
   }
 
-  private void renderDisplayElement(int term, int i) {
+  private void printDisplayElement(int term, int i) {
     boolean isLatex = false;
     String directive = iTerms.getTermSymbolString(iTerms.getSubterm(term, 0));
     String displayElement = iTerms.getTermSymbolString(iTerms.getSubterm(term, 0, i));
@@ -320,6 +325,56 @@ public class ScriptTermInterpreter {
       break;
 
     case "gss":
+      currentParser.gssPrint();
+      break;
+
+    case "sppf":
+      currentParser.sppfPrint();
+      break;
+
+    case "cycles":
+      currentParser.sppfPrintCycles();
+      break;
+
+    default:
+      Util.fatal("No implementation for !" + directive + " " + displayElement);
+    }
+  }
+
+  private void showDisplayElement(int term, int i) {
+    String directive = iTerms.getTermSymbolString(iTerms.getSubterm(term, 0));
+    String displayElement = iTerms.getTermSymbolString(iTerms.getSubterm(term, 0, i));
+    TermTraverserText rtt = iTerms.plainTextTraverser;
+    PrintStream ps = null;
+
+    switch (displayElement) {
+    case "file":
+      try {
+        ps = new PrintStream(new File(iTerms.getTermSymbolString(iTerms.getSubterm(term, 0, i, 0))));
+      } catch (FileNotFoundException e) {
+        Util.fatal("Unable to open LaTeX output 'arttypeset.tex'");
+      }
+      break;
+
+    case "scriptDerivation":
+      // Switch comments if you wanted one line or indented derivations
+      // System.out.println("script derivation term: [" + scriptDerivationTerm + "]\n" + iTerms.toString(scriptDerivationTerm, false, -1, null));
+      System.out.println("Script derivation term: [" + scriptDerivationTerm + "]\n" + iTerms.toString(scriptDerivationTerm, true, -1, null));
+      break;
+
+    case "grammar":
+      currentCFGRules.normalise();
+      System.out.println(currentCFGRules);
+      break;
+
+    case "derivation":
+      // Switch comments if you wanted one line or indented derivations
+      System.out.println("Current derivation term = " + currentDerivationTerm + " " + iTerms.toString(currentDerivationTerm, false, -1, null));
+      // System.out.println("current derivation term: [" + currentDerivationTerm + "]\n" + iTerms.toString(currentDerivationTerm, true, -1, null));
+      if (scriptParserTerm == currentDerivationTerm) System.out.println("Bootstrap achieved: script parser term and current derivation term identical");
+      break;
+
+    case "gss":
       // currentParser.gssPrint();
       currentParser.gss2Dot();
       break;
@@ -329,12 +384,8 @@ public class ScriptTermInterpreter {
       currentParser.sppf2Dot();
       break;
 
-    case "cycles":
-      currentParser.sppfCycle();
-      break;
-
     default:
-      Util.fatal("No implementation for !" + directive + " " + displayElement);
+      Util.fatal("No visualisation available for !" + directive + " " + displayElement);
     }
   }
 

@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
 
 public class Relation<T1, T2> {
   private final Map<T1, Set<T2>> map;
@@ -18,7 +17,7 @@ public class Relation<T1, T2> {
   public Relation(Relation<T1, T2> relation) { // copy constructor
     this();
     for (T1 t1 : relation.getDomain())
-      map.put(t1, new TreeSet<>(relation.get(t1)));
+      map.put(t1, new HashSet<>(relation.get(t1)));
   }
 
   public Set<T1> getDomain() {
@@ -34,12 +33,12 @@ public class Relation<T1, T2> {
   }
 
   public boolean add(T1 src, T2 dst) {
-    if (map.get(src) == null) map.put(src, new TreeSet<>());
+    if (map.get(src) == null) map.put(src, new HashSet<>());
     return map.get(src).add(dst);
   }
 
   public boolean addAll(T1 src, Set<T2> dsts) {
-    if (map.get(src) == null) map.put(src, new TreeSet<>());
+    if (map.get(src) == null) map.put(src, new HashSet<>());
     return map.get(src).addAll(dsts);
   }
 

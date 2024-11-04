@@ -137,7 +137,7 @@ public class ParserBase {
     System.out.println("sppfPrint() not implemented for parser class " + this.getClass().getSimpleName());
   }
 
-  public void sppfCycle() {
+  public void sppfPrintCycles() {
     System.out.println("sppfCycle() not implemented for parser class " + this.getClass().getSimpleName());
   }
 
