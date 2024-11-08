@@ -609,11 +609,13 @@ public class GLLBaseLine extends ParserBase {
     private final boolean showIntermediates;
 
     private String renderSPPFPackNode(SPPFN parent, SPPFPN node) {
-      return renderSPPFPackNodeLabel(parent, node) + "[label = \"" + node.gn.toStringAsProduction() + " " + node.pivot + "\" ]" + packNodeStyle;
+      return renderSPPFPackNodeLabel(parent, node) + "[label = \"" + node.number + ": " + node.gn.toStringAsProduction() + " " + node.pivot + "\" ]"
+          + packNodeStyle;
     }
 
     private String renderSPPFPackNodeLabel(SPPFN parent, SPPFPN node) {
-      return "\"" + parent.gn.toStringAsProduction() + "," + parent.li + "," + parent.ri + " " + node.gn.toStringAsProduction() + " " + node.pivot + "\"";
+      return "\"" + node.number + ": " + parent.gn.toStringAsProduction() + "," + parent.li + "," + parent.ri + " " + node.gn.toStringAsProduction() + " "
+          + node.pivot + "\"";
     }
 
     private String renderSPPFNode(SPPFN node) {
@@ -626,20 +628,17 @@ public class GLLBaseLine extends ParserBase {
     }
 
     private String renderSPPFNodeLabel(SPPFN node) {
-      String label;
-      if (node == null)
-        return "NULL node";
-      else {
-        if (node.gn == null)
-          label = "NULL label";
-        else if (node.packNS.size() == 0)
-          label = node.gn.toString();
-        else if (CFGRules.isLHS(node.gn)) {
-          label = node.gn.elm.str;
-        } else
-          label = node.gn.toStringAsProduction();
-        return "\"" + label + (showIndicies ? (" " + node.li + "," + node.ri) : "") + "\"";
-      }
+      if (node == null) return "NULL node";
+      String label = node.number + ": ";
+      if (node.gn == null)
+        label += "NULL label";
+      else if (node.packNS.size() == 0)
+        label += node.gn.toString();
+      else if (CFGRules.isLHS(node.gn))
+        label += node.gn.elm.str;
+      else
+        label += node.gn.toStringAsProduction();
+      return "\"" + label + (showIndicies ? (" " + node.li + "," + node.ri) : "") + "\"";
     }
 
     public SPPF2Dot(Map<SPPFN, SPPFN> sppf, SPPFN rootNode, String filename, boolean full, boolean showIndicies, boolean showIntermediates) {
@@ -653,7 +652,7 @@ public class GLLBaseLine extends ParserBase {
       try {
         sppfOut = new PrintStream(new File(filename));
         sppfOut.println("digraph \"SPPF\" {\n"
-            + "graph[ordering=out ranksep=0.1]\n node[fontname=Helvetica fontsize=9 shape=box height=0 width=0 margin=0.04 color=gray]\nedge[arrowsize=0.1 color=gray]");
+            + "graph[ordering=out ranksep=0.1]\n node[fontname=Helvetica fontsize=9 shape=box height=0 width=0 margin=0.04 color=gray]\nedge[arrowsize=0.3 color=gray]");
         if (sppf != null) if (full)
           fullSPPF(rootNode);
         else
