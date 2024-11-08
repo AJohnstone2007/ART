@@ -1,6 +1,7 @@
 package uk.ac.rhul.cs.csle.art.cfg.cfgRules;
 
 public class CFGElement implements Comparable<Object> {
+
   public int ei;
   public final CFGKind kind;
   public final String str;

@@ -80,6 +80,23 @@ public class CFGRules {
     whitespaces.add(LexemeKind.SIMPLE_WHITESPACE); // default whitespace if non declared
   }
 
+  public CFGRules(CFGRules that, boolean binarise) {
+    this.name = that.name;
+    this.iTerms = that.iTerms;
+    epsilonElement = findElement(CFGKind.EPS, "#");
+    endOfStringElement = findElement(CFGKind.EOS, "$");
+
+    endOfStringNode = new CFGNode(this, CFGKind.EOS, "$", 0, GIFTKind.NONE, null, null);
+    endOfStringNode.seq = endOfStringNode; // trick to ensure initial call collects rootNode
+    for (var w : that.whitespaces) // TODO: This will need beefing up when whitespaces extends to nonterminals
+      whitespaces.add(w);
+
+    for (var r : that.rules.keySet()) {
+      lhsAction(r.str);
+      // TODO: recursive traversal of rules required because of EBNF
+    }
+  }
+
   private boolean changed;
 
   public void normalise() {
@@ -384,13 +401,13 @@ public class CFGRules {
   public String toStringBody(boolean showProperties) {
     StringBuilder sb = new StringBuilder();
     if (startNonterminal != null)
-      sb.append("Grammar " + name + " with start nonterminal " + startNonterminal.str + "\n");
+      sb.append("CFG rules with start nonterminal " + startNonterminal.str + "\n");
     else
-      sb.append("Grammar " + name + " with empty start nonterminal\n");
+      sb.append("CFG rules with empty start nonterminal\n");
 
     if (isEmpty()) return "Grammar has no rules";
 
-    sb.append("Grammar rules:\n");
+    sb.append("Rules:\n");
     for (CFGElement n : rules.keySet()) {
       boolean first = true;
       for (CFGNode production = rules.get(n).alt; production != null; production = production.alt) {
@@ -403,7 +420,7 @@ public class CFGRules {
       }
     }
 
-    sb.append("Grammar elements:\n");
+    sb.append("Elements:\n");
     for (CFGElement s : elements.keySet()) {
       sb.append(" (" + s.toStringDetailed() + ") " + s);
       if (showProperties && first.get(s) != null) {
@@ -415,7 +432,7 @@ public class CFGRules {
       }
       sb.append("\n");
     }
-    sb.append("Grammar nodes:\n");
+    sb.append("Nodes:\n");
     for (int i : nodesByNumber.keySet()) {
       CFGNode gn = nodesByNumber.get(i);
       sb.append(" " + i + ": " + gn.toStringAsProduction());

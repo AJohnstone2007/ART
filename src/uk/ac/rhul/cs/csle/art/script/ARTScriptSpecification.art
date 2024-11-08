@@ -120,7 +120,7 @@ directiveElement ::=
 | 'start'^^ cfgNonterminal | 'start'^^ trRelation // Set parser start nonterminal or rewriter start relation
 | 'configuration'^^  '#'^ | 'configuration'^^ trRelation ','^ trTerm
 
-| 'clear'^^ 'all' | 'clear'^^ 'parser' | 'clear'^^ 'chooser' | 'clear'^^ 'interpreter'
+| 'clear'^^ 'allRules' | 'clear'^^ 'cfgRules' | 'clear'^^ 'chooseRules' | 'clear'^^ 'trRules'
 
 | 'trace'^^ __int32
 | 'print'^^ displayElements^
@@ -145,7 +145,8 @@ paraterminalElement  ::= cfgNonterminal^^
 displayElements ::= displayElement^ | displayElement^ displayElements^
 displayElement  ::= 
   'latex' | file 
-| 'script' | 'scriptDerivation' | 'allrules'
+| 'script' | 'scriptDerivation' 
+| 'allRules' | 'cfgRules' | 'chooseRules' | 'trRules'
 | 'lexer' | 'parser' | 'interpreter'
 | 'input' | 'twe' | 'lexicalisation' | 'gss' | 'sppf' | 'bsr' | 'derivation' | 'interpretation' 
 | 'statistics' | __string

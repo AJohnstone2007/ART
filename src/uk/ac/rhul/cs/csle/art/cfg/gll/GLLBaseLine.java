@@ -418,10 +418,10 @@ public class GLLBaseLine extends ParserBase {
 
   int nextFreeSPPFNodeNumber = 0;
 
-  class SPPFnode { // Carrier to unify SPPFN and SPPPPN
+  class SPPFNode { // Carrier to unify SPPFN and SPPPPN
   };
 
-  class SPPFN extends SPPFnode {
+  class SPPFN extends SPPFNode {
     public final int number; // to allow a bitset to be used as visited set
     public final CFGNode gn;
     public final int li;
@@ -479,7 +479,7 @@ public class GLLBaseLine extends ParserBase {
     }
   }
 
-  class SPPFPN extends SPPFnode {
+  class SPPFPN extends SPPFNode {
     public final int number; // to allow a bitset to be used as visited set
     public final CFGNode gn;
     public final int pivot;
@@ -553,57 +553,6 @@ public class GLLBaseLine extends ParserBase {
     // Output SPPF
     visitedSPPFNodes.clear();
     sppfPrintRec(sppfRootNode);
-  }
-
-  Relation<SPPFnode, SPPFnode> sppfReachable;
-
-  private boolean isCyclic(SPPFnode sppfn) {
-    return sppfReachable.get(sppfn).contains(sppfn);
-  }
-
-  private void sppfComputeReachability() {
-    sppfReachable = new Relation<>();
-    for (var n : sppf.keySet())
-      for (var p : n.packNS) {
-        sppfReachable.add(n, p);
-        if (p.leftChild != null) sppfReachable.add(p, p.leftChild);
-        sppfReachable.add(p, p.rightChild);
-      }
-    sppfReachable.transitiveClosure();
-  }
-
-  Deque visitedStack = new ArrayDeque();
-
-  private void sppfCycleRec(SPPFN sppfn) {
-    if (visitedSPPFNodes.get(sppfn.number)) {
-      System.out.print("SPPF cycle detected at node " + sppfn);
-      for (var v : visitedStack)
-        System.out.print(" " + v);
-      System.out.println();
-      return;
-    }
-    visitedSPPFNodes.set(sppfn.number);
-    visitedStack.push(sppfn);
-    // System.out.println("sc: " + sppfn);
-    // for (var pn : sppfn.packNS)
-    // System.out.println("sc: " + pn);
-
-    for (var pn : sppfn.packNS) {
-      visitedStack.push(pn);
-      if (pn.leftChild != null) sppfCycleRec(pn.leftChild);
-      sppfCycleRec(pn.rightChild);
-      visitedStack.pop();
-    }
-    visitedSPPFNodes.clear(sppfn.number);
-    visitedStack.pop();
-  }
-
-  @Override
-  public void sppfPrintCycles() {
-    if (sppfRootNode == null) Util.fatal("Current parser does not have a current SPPF that can be cycle checked");
-    System.out.println("Cycle listing for SPPF");
-    visitedSPPFNodes.clear();
-    sppfCycleRec(sppfRootNode);
   }
 
   @Override
@@ -791,5 +740,130 @@ public class GLLBaseLine extends ParserBase {
         sppfAmbiguityCount, sppfEdgeCount);
     // loadPoolAllocated(-1);
     // loadHashCounts(-20, -21, -22, -23, -24, -25, -26);
+  }
+
+  /* SPPF cycle breaking **********************************************************************/
+
+  // Enumerate every derivation and check for cycles - may be veerrry slow
+  Deque visitedStack = new ArrayDeque();
+
+  private void sppfCycleRec(SPPFN sppfn) {
+    if (visitedSPPFNodes.get(sppfn.number)) {
+      System.out.print("SPPF cycle detected at node " + sppfn);
+      for (var v : visitedStack)
+        System.out.print(" " + v);
+      System.out.println();
+      return;
+    }
+    visitedSPPFNodes.set(sppfn.number);
+    visitedStack.push(sppfn);
+    // System.out.println("sc: " + sppfn);
+    // for (var pn : sppfn.packNS)
+    // System.out.println("sc: " + pn);
+
+    for (var pn : sppfn.packNS) {
+      visitedStack.push(pn);
+      if (pn.leftChild != null) sppfCycleRec(pn.leftChild);
+      sppfCycleRec(pn.rightChild);
+      visitedStack.pop();
+    }
+    visitedSPPFNodes.clear(sppfn.number);
+    visitedStack.pop();
+  }
+
+  @Override
+  public void sppfPrintCycles() {
+    if (sppfRootNode == null) Util.fatal("Current parser does not have a current SPPF that can be cycle checked");
+    System.out.println("Cycle listing for SPPF");
+    visitedSPPFNodes.clear();
+    sppfCycleRec(sppfRootNode);
+  }
+
+  // Compute cyclic nodes by closure over immediate reachability
+  Relation<SPPFNode, SPPFNode> sppfReachable;
+
+  private boolean isCyclic(SPPFNode sppfn) {
+    return sppfReachable.get(sppfn).contains(sppfn);
+  }
+
+  private void sppfComputeReachability() {
+    sppfReachable = new Relation<>();
+    for (var n : sppf.keySet())
+      for (var p : n.packNS) {
+        sppfReachable.add(n, p);
+        if (p.leftChild != null) sppfReachable.add(p, p.leftChild);
+        sppfReachable.add(p, p.rightChild);
+      }
+    sppfReachable.transitiveClosure();
+  }
+
+  Set<SPPFN> xS; // Set of cyclic symbol or intermediate nodes
+  Set<SPPFPN> xP; // Set of cyclic packed nodes
+  Set<SPPFNode> d; // Set of deleted cyclic nodes
+  Set<SPPFNode> visitedW; // Control revisiting under packing and cycles for outer loop
+
+  boolean changedOnW;
+
+  void sppfCycleBreakTraverseWRec(SPPFN n) {
+    if (visitedW.contains(n)) return;
+    visitedW.add(n);
+
+    boolean hasNotInXp = false;
+    for (var p : n.packNS)
+      if (!xP.contains(p)) {
+        hasNotInXp = true;
+        break;
+      }
+
+    if (hasNotInXp) for (var p : n.packNS)
+      if (xP.contains(p)) {
+        changedOnW = true;
+        xP.remove(p);
+        d.add(p);
+
+        boolean changedOnV;
+        do {
+          changedOnV = false;
+          for (var nn : xP)
+            if (/* child check */ true) {
+              changedOnV = true;
+              d.remove(xP);
+            }
+          for (var nn : xS)
+            if (/* child check */ true) {
+              changedOnV = true;
+              d.remove(xP);
+            }
+        } while (changedOnV);
+      }
+
+    // Now recurse through all pack nodes
+    for (var pn : n.packNS) {
+      if (pn.leftChild != null) sppfCycleBreakTraverseWRec(pn.leftChild);
+      sppfCycleBreakTraverseWRec(pn.rightChild);
+    }
+
+    return ret;
+  }
+
+  void sppfCycleBreak() {
+    xP = new HashSet<>();
+    xS = new HashSet<>();
+    d = new HashSet<>();
+
+    for (var n : sppfReachable.getDomain())
+      if (isCyclic(n)) {
+        if (n instanceof SPPFN)
+          xS.add((SPPFN) n);
+        else
+          xP.add((SPPFPN) n);
+      }
+
+    do {
+      visitedW.clear();
+    } while (sppfCycleBreakTraverseWRec(sppfRootNode));
+
+    // Sanity check
+    System.out.println("After cycle breaking, |Xs| = " + xS.size() + " |Xp| = " + xP.size());
   }
 }

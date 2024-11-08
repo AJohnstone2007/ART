@@ -137,7 +137,7 @@ public class CFGNode {
 
   private void toStringAsSequenceRec(StringBuilder sb, CFGNode alt, String slotDenotation, CFGNode targetNode) {
     // System.out.println("toStringAsSequenceRec called on " + this.instanceNumber + ":" + this);
-    if (alt.elm.kind != CFGKind.ALT) Util.fatal("toStringAsSequenceRe()c called on node " + alt.num + " which is not not an ALT node");
+    if (alt.elm.kind != CFGKind.ALT) Util.fatal("toStringAsSequenceRec() called on node " + alt.num + " which is not not an ALT node");
     for (CFGNode tmpSeq = alt.seq;; tmpSeq = tmpSeq.seq) { // run down this sequence
       if (tmpSeq == targetNode) sb.append(slotDenotation);
       if (tmpSeq.elm.kind != CFGKind.END && tmpSeq.alt != null) { // If this element has an alt, then recursively process it first
