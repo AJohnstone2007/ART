@@ -138,7 +138,11 @@ public class ParserBase {
   }
 
   public void sppfPrintCycles() {
-    System.out.println("sppfCycle() not implemented for parser class " + this.getClass().getSimpleName());
+    System.out.println("sppfCycles() not implemented for parser class " + this.getClass().getSimpleName());
+  }
+
+  public void sppfBreakCycles() {
+    System.out.println("sppfBreakCycles() not implemented for parser class " + this.getClass().getSimpleName());
   }
 
   protected CFGNode getLHS(CFGNode gn) {

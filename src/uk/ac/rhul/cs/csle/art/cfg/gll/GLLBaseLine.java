@@ -179,7 +179,7 @@ public class GLLBaseLine extends ParserBase {
 
   SPPFN sppfUpdate(CFGNode gn, SPPFN ln, SPPFN rn) {
     SPPFN ret = sppfFind(gn.elm.kind == CFGKind.END ? gn.seq : gn, ln == null ? rn.li : ln.li, rn.ri);
-    ret.packNS.add(new SPPFPN(gn, ln == null ? rn.li : ln.ri, ln, rn));
+    ret.packNS.add(new SPPFPN(dn, gn, ln == null ? rn.li : ln.ri, ln, rn));
     return ret;
   }
 
@@ -479,17 +479,20 @@ public class GLLBaseLine extends ParserBase {
     }
   }
 
+  // Note Nov 2024 added parent to support SPPF cycle detection - not needed for actual cycle detection
   class SPPFPN extends SPPFNode {
     public final int number; // to allow a bitset to be used as visited set
+    public final SPPFN parent;
     public final CFGNode gn;
     public final int pivot;
     public final SPPFN leftChild;
     public final SPPFN rightChild;
     public boolean suppressed = false;
 
-    public SPPFPN(CFGNode gn, int pivot, SPPFN leftChild, SPPFN rightChild) {
+    public SPPFPN(SPPFN parent, CFGNode gn, int pivot, SPPFN leftChild, SPPFN rightChild) {
       super();
       this.number = nextFreeSPPFNodeNumber++;
+      this.parent = parent;
       this.gn = gn;
       this.pivot = pivot;
       this.leftChild = leftChild;
@@ -522,6 +525,10 @@ public class GLLBaseLine extends ParserBase {
     public String toString() {
       StringBuilder sb = new StringBuilder();
       sb.append("[");
+      sb.append(number);
+      sb.append(" ");
+      sb.append(parent);
+      sb.append("->");
       sb.append(gn.toStringAsProduction());
       sb.append(", " + pivot);
       sb.append("]");
@@ -797,9 +804,10 @@ public class GLLBaseLine extends ParserBase {
     sppfReachable.transitiveClosure();
   }
 
-  Set<SPPFN> xS; // Set of cyclic symbol or intermediate nodes
-  Set<SPPFPN> xP; // Set of cyclic packed nodes
-  Set<SPPFNode> d; // Set of deleted cyclic nodes
+  Set<SPPFNode> x; // All cyclic nodes - only used by SPPF diagnostics
+  Set<SPPFN> xS; // Set of cyclic symbol or intermediate nodes; a subset of the X in Elizabeth's note
+  Set<SPPFPN> xP; // Set of cyclic packed nodes; X = xS U xP
+  Set<SPPFNode> cycleBreakDeleted = new HashSet<>(); // Set of deleted cyclic nodes: D in Elizabeth's note
   Set<SPPFNode> visitedW; // Control revisiting under packing and cycles for outer loop
 
   boolean changedOnW;
@@ -808,6 +816,7 @@ public class GLLBaseLine extends ParserBase {
     if (visitedW.contains(n)) return;
     visitedW.add(n);
 
+    // Look to see if this node has any 'keep' packed children
     boolean hasNotInXp = false;
     for (var p : n.packNS)
       if (!xP.contains(p)) {
@@ -815,26 +824,34 @@ public class GLLBaseLine extends ParserBase {
         break;
       }
 
+    // If any of the packed children were 'keep' then mark a non-keep node as D
     if (hasNotInXp) for (var p : n.packNS)
       if (xP.contains(p)) {
         changedOnW = true;
         xP.remove(p);
-        d.add(p);
+        cycleBreakDeleted.add(p);
 
-        boolean changedOnV;
-        do {
+        boolean changedOnV = true;
+        while (changedOnV) {
           changedOnV = false;
-          for (var nn : xP)
-            if (/* child check */ true) {
+
+          var iterSetP = new HashSet<>(xP);
+          for (var pn : iterSetP)
+            if ((pn.leftChild != null && !xP.contains(pn.leftChild)) || !xP.contains(pn.rightChild)) {
               changedOnV = true;
-              d.remove(xP);
+              xP.remove(pn);
             }
-          for (var nn : xS)
-            if (/* child check */ true) {
-              changedOnV = true;
-              d.remove(xP);
-            }
-        } while (changedOnV);
+
+          var iterSetS = new HashSet<>(xS);
+          for (var nn : iterSetS)
+            for (var pn : nn.packNS)
+              if (!xS.contains(pn)) {
+                changedOnV = true;
+                xS.remove(nn);
+              }
+        }
+        // NB if we only want to remove one 'u' for each 'w' then insert a break here; probably pointless
+        // because our deterministic w loop will come back here on the next pass anyway
       }
 
     // Now recurse through all pack nodes
@@ -842,28 +859,36 @@ public class GLLBaseLine extends ParserBase {
       if (pn.leftChild != null) sppfCycleBreakTraverseWRec(pn.leftChild);
       sppfCycleBreakTraverseWRec(pn.rightChild);
     }
-
-    return ret;
   }
 
-  void sppfCycleBreak() {
+  @Override
+  public void sppfBreakCycles() {
+    x = new HashSet<>(); // Only needed to show broken cycles (magenta lines in sppf*.dot) - comment out otherwise
     xP = new HashSet<>();
     xS = new HashSet<>();
-    d = new HashSet<>();
+    cycleBreakDeleted = new HashSet<>();
+    visitedW = new HashSet();
 
+    // Load all cyclic nodes to X (in detail to the xS and xP partitions)
+    sppfComputeReachability();
     for (var n : sppfReachable.getDomain())
       if (isCyclic(n)) {
+        x.add(n); // Only needed to show broken cycles (magenta lines in sppf*.dot) - comment out otherwise
         if (n instanceof SPPFN)
           xS.add((SPPFN) n);
         else
           xP.add((SPPFPN) n);
       }
-
-    do {
+    // closure loop over w traversal
+    changedOnW = true;
+    while (changedOnW) {
+      changedOnW = false;
       visitedW.clear();
-    } while (sppfCycleBreakTraverseWRec(sppfRootNode));
+      sppfCycleBreakTraverseWRec(sppfRootNode);
+    }
 
-    // Sanity check
-    System.out.println("After cycle breaking, |Xs| = " + xS.size() + " |Xp| = " + xP.size());
+    // Sanity check - only required during development - comment out otherwise
+    System.out.println("After cycle breaking, |Xs| = " + xS.size() + " |Xp| = " + xP.size() + "\n Deleted set is " + cycleBreakDeleted);
+    sppfComputeReachability(); // Recompute reachability to see if any cycles are left
   }
 }

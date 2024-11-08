@@ -132,6 +132,8 @@ directiveElement ::=
 | 'try'^^ trTopTuple  
 | 'try'^^ trTopTuple '='^ trTopTuple
 
+| 'breakSPPFcycles'^^ | 'mode'^^ ID
+
 | 'nop'^^
 
 file ::= &STRING_PLAIN_SQ
