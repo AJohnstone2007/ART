@@ -47,16 +47,24 @@ public class Relation<T1, T2> {
     map.get(src).remove(dst);
   }
 
+  public void clear() {
+    map.clear();
+  }
+
   @SuppressWarnings("unchecked")
   public void transitiveClosure() {
     boolean changed = true;
     while (changed) {
       changed = false;
       for (T1 t1 : new HashSet<>(getDomain())) { // We may add edges from t1 (horrible)
-        for (T2 t2 : new HashSet<>(get(t1))) { // Odd: even if guarded by t1 != t2 this throws concurrentModification
+        for (T2 t2 : new HashSet<>(get(t1))) {
           Set<T2> nextEdges = get((T1) t2);
-          if (nextEdges != null) for (T2 next : nextEdges)
+          if (nextEdges != null) for (T2 next : nextEdges) {
             changed |= add(t1, next);
+            // System.out.println("Transitive closure with base " + t1 + " intermediate " + t2 + " and target " + next + "\nAdding edge from " + t1 + " to " +
+            // next
+            // + (changed ? " CHANGE" : " SAME"));
+          }
         }
       }
     }
@@ -85,4 +93,5 @@ public class Relation<T1, T2> {
     sb.append("}");
     return sb.toString();
   }
+
 }
