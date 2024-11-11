@@ -539,7 +539,7 @@ public class GLLBaseLine extends ParserBase {
       final int prime = 31;
       int result = 1;
       result = prime * result + ((gn == null) ? 0 : gn.hashCode());
-      // result = prime * result + ((parent == null) ? 0 : parent.hashCode());
+      result = prime * result + ((parent == null) ? 0 : parent.hashCode());
       result = prime * result + pivot;
       return result;
     }
@@ -602,6 +602,7 @@ public class GLLBaseLine extends ParserBase {
   }
 
   final String rootNodeStyle = "[style=filled fillcolor=aquamarine]";
+
   final String packNodeStyle = "[style=rounded]";
   final String ambiguousStyle = "[color=orange]";
   final String cycleStyle = "[color=red]";
@@ -706,13 +707,12 @@ public class GLLBaseLine extends ParserBase {
   Set<SPPFN> xS; // Set of cyclic symbol or intermediate nodes; a subset of the X in Elizabeth's note
   Set<SPPFPN> xP; // Set of cyclic packed nodes; X = xS U xP
   Set<SPPFNode> cycleBreakDeleted = new HashSet<>(); // Set of deleted cyclic nodes: D in Elizabeth's note
-  Set<SPPFNode> visitedW; // Control revisiting under packing and cycles for outer loop
 
   private void sppfCycleRec(SPPFN sppfn) {
     if (visitedSPPFNodes.get(sppfn.number)) {
       System.out.print("SPPF cycle detected at node " + sppfn);
       for (var v : visitedStack)
-        System.out.print(" " + v);
+        System.out.print(" (" + v + ")");
       System.out.println();
       return;
     }
@@ -768,55 +768,52 @@ public class GLLBaseLine extends ParserBase {
 
   boolean changedOnW;
 
-  void sppfCycleBreakTraverseWRec(SPPFN n) {
-    if (visitedW.contains(n)) return;
-    visitedW.add(n);
+  void sppfCycleWloop() {
+    for (var pp : new HashSet<>(xP)) {
+      // Look to see if this node has any 'keep' packed children
+      SPPFN n = pp.parent;
+      boolean hasNotInXp = false;
+      for (var p : n.packNS)
+        if (!xP.contains(p)) {
+          hasNotInXp = true;
+          break;
+        }
+      System.out.println("Pack node " + pp.number + " hasNotInXp = " + hasNotInXp);
+      // If any of the packed children were 'keep' then mark one non-keep node as D
+      if (hasNotInXp) for (var p : n.packNS) {
+        System.out.println("Scanning for deletion: " + p + " in xP " + xP.contains(p));
+        if (xP.contains(p)) {
+          changedOnW = true;
+          cycleBreakDeleted.add(p);
+          xP.remove(p);
+          System.out.println("Deleted pack node " + p);
 
-    // Look to see if this node has any 'keep' packed children
-    boolean hasNotInXp = false;
-    for (var p : n.packNS)
-      if (!xP.contains(p)) {
-        hasNotInXp = true;
-        break;
-      }
+          boolean changedOnV = true;
+          while (changedOnV) {
+            changedOnV = false;
 
-    // If any of the packed children were 'keep' then mark one non-keep node as D
-    if (hasNotInXp) for (var p : n.packNS)
-      if (xP.contains(p)) {
-        changedOnW = true;
-        xP.remove(p);
-        cycleBreakDeleted.add(p);
+            var iterSetP = new HashSet<>(xP);
+            for (var pn : iterSetP)
+              if ((pn.leftChild != null && !xP.contains(pn.leftChild)) && !xP.contains(pn.rightChild)) {
+                changedOnV = true;
+                xP.remove(pn);
+              }
 
-        boolean changedOnV = true;
-        while (changedOnV) {
-          changedOnV = false;
-
-          var iterSetP = new HashSet<>(xP);
-          for (var pn : iterSetP)
-            if ((pn.leftChild != null && !xP.contains(pn.leftChild)) && !xP.contains(pn.rightChild)) {
-              changedOnV = true;
-              xP.remove(pn);
-            }
-
-          var iterSetS = new HashSet<>(xS);
-          for (var nn : iterSetS) {
-            boolean allNotInX = true;
-            for (var pn : nn.packNS)
-              if (xS.contains(pn)) allNotInX = false;
-            if (allNotInX) {
-              changedOnV = true;
-              xS.remove(nn);
+            var iterSetS = new HashSet<>(xS);
+            for (var nn : iterSetS) {
+              boolean allNotInX = true;
+              for (var pn : nn.packNS)
+                if (xS.contains(pn)) allNotInX = false;
+              if (allNotInX) {
+                changedOnV = true;
+                xS.remove(nn);
+              }
             }
           }
         }
         // NB if we only want to remove one 'u' for each 'w' then insert a break here; probably pointless
         // because our deterministic w loop will come back here on the next pass anyway
       }
-
-    // Now recurse through all pack nodes
-    for (var pn : n.packNS) {
-      if (pn.leftChild != null) sppfCycleBreakTraverseWRec(pn.leftChild);
-      sppfCycleBreakTraverseWRec(pn.rightChild);
     }
   }
 
@@ -826,7 +823,6 @@ public class GLLBaseLine extends ParserBase {
     xP = new HashSet<>();
     xS = new HashSet<>();
     cycleBreakDeleted = new HashSet<>();
-    visitedW = new HashSet();
 
     // Load all cyclic nodes to X (in detail to the xS and xP partitions)
     sppfComputeReachability();
@@ -847,8 +843,7 @@ public class GLLBaseLine extends ParserBase {
     changedOnW = true;
     while (changedOnW) {
       changedOnW = false;
-      visitedW.clear();
-      sppfCycleBreakTraverseWRec(sppfRootNode);
+      sppfCycleWloop();
     }
 
     // Sanity check - only required during development - comment out otherwise

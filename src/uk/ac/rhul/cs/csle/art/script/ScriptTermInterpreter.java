@@ -451,7 +451,7 @@ public class ScriptTermInterpreter {
     scriptParser.parse();
     if (!scriptParser.inLanguage) Util.fatal("Syntax error in script");
     scriptDerivationTerm = scriptParser.derivationAsTerm();
-    // System.out.println("Script term:\n" + iTerms.toString(scriptDerivationTerm, true, -1, null));
+    System.out.println("Script term:\n" + iTerms.toString(scriptDerivationTerm, true, -1, null));
     scriptTraverser.traverse(scriptDerivationTerm);
     if (successfulTests != 0 || failedTests != 0) System.out.print("Successful tests: " + successfulTests + "; failed tests " + failedTests);
   }
