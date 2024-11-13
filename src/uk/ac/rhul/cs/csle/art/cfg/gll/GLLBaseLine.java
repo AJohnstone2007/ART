@@ -106,6 +106,17 @@ public class GLLBaseLine extends ParserBase {
       }
     if (!inLanguage) System.out.print(Util.echo("GLLBL " + "syntax error", positions[sppfWidestIndex()], inputString));
     loadCounts();
+    numberSPPFNodes();
+  }
+
+  private void numberSPPFNodes() {
+    int i = 1;
+    for (var n : sppf.keySet())
+      n.number = i++;
+    for (var n : sppf.keySet())
+      for (var p : n.packNS)
+        p.number = i++;
+
   }
 
   /* Thread handling *********************************************************/
@@ -217,7 +228,7 @@ public class GLLBaseLine extends ParserBase {
 
   private String derivationAsTermRec(SPPFN sppfn, LinkedList<Integer> childrenFromParent, CFGNode gn) {
     // System.out.println("\nEntered derivationAsTermRec() at node " + sppfn + " instance " + gn);
-    if (visitedSPPFNodes.get(sppfn.number)) return "-!-"; // Util.fatal("derivationAsTermRec() found cycle in derivation");
+    if (visitedSPPFNodes.get(sppfn.number)) Util.fatal("derivationAsTermRec() found cycle in derivation");
 
     visitedSPPFNodes.set(sppfn.number);
     LinkedList<Integer> children = (gn.giftKind == GIFTKind.OVER || gn.giftKind == GIFTKind.UNDER) ? childrenFromParent : new LinkedList<>();
@@ -459,8 +470,6 @@ public class GLLBaseLine extends ParserBase {
     }
   }
 
-  int nextFreeSPPFNodeNumber = 0;
-
   // class SPPFNode { // Carrier to unify SPPFN and SPPPPN
   // };
   //
@@ -473,7 +482,6 @@ public class GLLBaseLine extends ParserBase {
 
     public SPPFN(CFGNode gn, int li, int ri) {
       super();
-      this.number = nextFreeSPPFNodeNumber++;
       this.gn = gn;
       this.li = li;
       this.ri = ri;
