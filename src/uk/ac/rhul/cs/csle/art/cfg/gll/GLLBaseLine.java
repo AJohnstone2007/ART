@@ -68,7 +68,7 @@ public class GLLBaseLine extends ParserBase {
         switch (gn.elm.kind) {
         case B, T, TI, C:
           if (input[i] == gn.elm.ei) {
-            System.out.println("Matched " + input[i]);
+            // System.out.println("Matched " + input[i]);
             du(1);
             i++;
             gn = gn.seq;
@@ -114,9 +114,10 @@ public class GLLBaseLine extends ParserBase {
     for (var n : sppf.keySet())
       n.number = i++;
     for (var n : sppf.keySet())
-      for (var p : n.packNS)
+      for (var p : n.packNS) {
+        p.parent = n;
         p.number = i++;
-
+      }
   }
 
   /* Thread handling *********************************************************/
@@ -181,21 +182,21 @@ public class GLLBaseLine extends ParserBase {
   SPPFN sppfRootNode;
 
   SPPFN sppfFind(CFGNode dn, int li, int ri) {
-    System.out.print("sppfFind with dn " + dn.toStringAsProduction() + " with extents " + li + "," + ri);
+    // System.out.print("sppfFind with dn " + dn.toStringAsProduction() + " with extents " + li + "," + ri);
 
     SPPFN tmp = new SPPFN(dn, li, ri);
     if (!sppf.containsKey(tmp)) {
       sppf.put(tmp, tmp);
-      System.out.print(" added " + tmp);
+      // System.out.print(" added " + tmp);
     }
-    System.out.println(" resulting sppf nodes " + sppf.keySet());
+    // System.out.println(" resulting sppf nodes " + sppf.keySet());
     return sppf.get(tmp);
   }
 
   SPPFN sppfUpdate(CFGNode gn, SPPFN ln, SPPFN rn) {
     SPPFN ret = sppfFind(gn.elm.kind == CFGKind.END ? gn.seq : gn, ln == null ? rn.li : ln.li, rn.ri);
-    System.out.println(
-        "Updating SPPF node with gn " + gn.toStringAsProduction() + " and extents " + (ln == null ? rn.li : ln.li) + "," + rn.ri + " retrieves nodes " + ret);
+    // System.out.println(
+    // "Updating SPPF node with gn " + gn.toStringAsProduction() + " and extents " + (ln == null ? rn.li : ln.li) + "," + rn.ri + " retrieves nodes " + ret);
     ret.packNS.add(new SPPFPN(gn, ln == null ? rn.li : ln.ri, ln, rn));
     return ret;
   }
@@ -228,7 +229,10 @@ public class GLLBaseLine extends ParserBase {
 
   private String derivationAsTermRec(SPPFN sppfn, LinkedList<Integer> childrenFromParent, CFGNode gn) {
     // System.out.println("\nEntered derivationAsTermRec() at node " + sppfn + " instance " + gn);
-    if (visitedSPPFNodes.get(sppfn.number)) Util.fatal("derivationAsTermRec() found cycle in derivation");
+    if (visitedSPPFNodes.get(sppfn.number)) {
+      Util.warning("derivationAsTermRec() found cycle in derivation");
+      return "Cycle in derivation";
+    }
 
     visitedSPPFNodes.set(sppfn.number);
     LinkedList<Integer> children = (gn.giftKind == GIFTKind.OVER || gn.giftKind == GIFTKind.UNDER) ? childrenFromParent : new LinkedList<>();

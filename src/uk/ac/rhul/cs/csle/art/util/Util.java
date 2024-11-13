@@ -12,8 +12,12 @@ public class Util {
     }
   }
 
+  public static void warning(String msg) {
+    System.out.println("*** Warning: " + msg);
+  }
+
   public static void fatal(String msg) {
-    System.out.println(msg);
+    System.out.println("*** Fatal: " + msg);
     System.exit(1);
   }
 
