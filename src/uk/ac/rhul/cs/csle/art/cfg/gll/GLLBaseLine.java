@@ -3,7 +3,6 @@ package uk.ac.rhul.cs.csle.art.cfg.gll;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
-import java.util.ArrayDeque;
 import java.util.BitSet;
 import java.util.Deque;
 import java.util.HashMap;
@@ -17,12 +16,10 @@ import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGKind;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.GIFTKind;
 import uk.ac.rhul.cs.csle.art.cfg.lexer.LexemeKind;
-import uk.ac.rhul.cs.csle.art.util.Relation;
 import uk.ac.rhul.cs.csle.art.util.Util;
 
 public class GLLBaseLine extends ParserBase {
   private final BitSet visitedSPPFNodes = new BitSet(), suppressedSPPFNode = new BitSet();
-  private int nextFreeSPPFNodeNumber = 0;
 
   /* Temporary disambiguation before choosers are implemented ****************/
   @Override
@@ -31,13 +28,13 @@ public class GLLBaseLine extends ParserBase {
     chooseLongestMatchRec(sppfRootNode);
   }
 
-  private void chooseLongestMatchRec(SPPFN_GLLBaseLine sn) {
+  private void chooseLongestMatchRec(SPPFN sn) {
     if (visitedSPPFNodes.get(sn.number)) return;
     visitedSPPFNodes.set(sn.number);
 
     int rightMostPivot = -1;
-    SPPFPN_GLLBaseLine candidate = null;
-    for (SPPFPN_GLLBaseLine p : sn.packNS) {
+    SPPFPN candidate = null;
+    for (SPPFPN p : sn.packNS) {
       if (p.pivot > rightMostPivot) {
         rightMostPivot = p.pivot;
         candidate = p;
@@ -46,7 +43,7 @@ public class GLLBaseLine extends ParserBase {
       if (p.rightChild != null) chooseLongestMatchRec(p.rightChild);
     }
 
-    for (SPPFPN_GLLBaseLine p : sn.packNS)
+    for (SPPFPN p : sn.packNS)
       if (p != candidate) p.suppressed = true;
   }
 
@@ -71,6 +68,7 @@ public class GLLBaseLine extends ParserBase {
         switch (gn.elm.kind) {
         case B, T, TI, C:
           if (input[i] == gn.elm.ei) {
+            System.out.println("Matched " + input[i]);
             du(1);
             i++;
             gn = gn.seq;
@@ -115,9 +113,9 @@ public class GLLBaseLine extends ParserBase {
   Deque<Desc> descQ;
   CFGNode gn;
   GSSN sn;
-  SPPFN_GLLBaseLine dn;
+  SPPFN dn;
 
-  void queueDesc(CFGNode gn, int i, GSSN gssN, SPPFN_GLLBaseLine sppfN) {
+  void queueDesc(CFGNode gn, int i, GSSN gssN, SPPFN sppfN) {
     Desc tmp = new Desc(gn, i, gssN, sppfN);
     if (descS.add(tmp)) descQ.addFirst(tmp);
   }
@@ -147,7 +145,7 @@ public class GLLBaseLine extends ParserBase {
     GSSE gssE = new GSSE(sn, dn);
     if (!gssN.edges.contains(gssE)) {
       gssN.edges.add(gssE);
-      for (SPPFN_GLLBaseLine rc : gssN.pops)
+      for (SPPFN rc : gssN.pops)
         queueDesc(gn.seq, rc.ri, sn, sppfUpdate(gn.seq, dn, rc));
     }
     for (CFGNode p = grammar.rules.get(gn.elm).alt; p != null; p = p.alt)
@@ -157,7 +155,7 @@ public class GLLBaseLine extends ParserBase {
   void ret() {
     if (sn.equals(gssRoot)) { // Stack base
       if (grammar.acceptingNodeNumbers.contains(gn.num) && (i == input.length - 1)) {
-        sppfRootNode = sppf.get(new SPPFN_GLLBaseLine(grammar.rules.get(grammar.startNonterminal), 0, input.length - 1, nextFreeSPPFNodeNumber++));
+        sppfRootNode = sppf.get(new SPPFN(grammar.rules.get(grammar.startNonterminal), 0, input.length - 1));
         inLanguage = true;
       }
       return; // End of parse
@@ -168,18 +166,26 @@ public class GLLBaseLine extends ParserBase {
   }
 
   /* Derivation handling *****************************************************/
-  Map<SPPFN_GLLBaseLine, SPPFN_GLLBaseLine> sppf;
-  SPPFN_GLLBaseLine sppfRootNode;
+  Map<SPPFN, SPPFN> sppf;
+  SPPFN sppfRootNode;
 
-  SPPFN_GLLBaseLine sppfFind(CFGNode dn, int li, int ri) {
-    SPPFN_GLLBaseLine tmp = new SPPFN_GLLBaseLine(dn, li, ri, nextFreeSPPFNodeNumber++);
-    if (!sppf.containsKey(tmp)) sppf.put(tmp, tmp);
+  SPPFN sppfFind(CFGNode dn, int li, int ri) {
+    System.out.print("sppfFind with dn " + dn.toStringAsProduction() + " with extents " + li + "," + ri);
+
+    SPPFN tmp = new SPPFN(dn, li, ri);
+    if (!sppf.containsKey(tmp)) {
+      sppf.put(tmp, tmp);
+      System.out.print(" added " + tmp);
+    }
+    System.out.println(" resulting sppf nodes " + sppf.keySet());
     return sppf.get(tmp);
   }
 
-  SPPFN_GLLBaseLine sppfUpdate(CFGNode gn, SPPFN_GLLBaseLine ln, SPPFN_GLLBaseLine rn) {
-    SPPFN_GLLBaseLine ret = sppfFind(gn.elm.kind == CFGKind.END ? gn.seq : gn, ln == null ? rn.li : ln.li, rn.ri);
-    ret.packNS.add(new SPPFPN_GLLBaseLine(ret, gn, ln == null ? rn.li : ln.ri, ln, rn, nextFreeSPPFNodeNumber++));
+  SPPFN sppfUpdate(CFGNode gn, SPPFN ln, SPPFN rn) {
+    SPPFN ret = sppfFind(gn.elm.kind == CFGKind.END ? gn.seq : gn, ln == null ? rn.li : ln.li, rn.ri);
+    System.out.println(
+        "Updating SPPF node with gn " + gn.toStringAsProduction() + " and extents " + (ln == null ? rn.li : ln.li) + "," + rn.ri + " retrieves nodes " + ret);
+    ret.packNS.add(new SPPFPN(gn, ln == null ? rn.li : ln.ri, ln, rn));
     return ret;
   }
 
@@ -189,7 +195,7 @@ public class GLLBaseLine extends ParserBase {
 
   private int sppfWidestIndex() {
     int ret = 0;
-    for (SPPFN_GLLBaseLine s : sppf.keySet())
+    for (SPPFN s : sppf.keySet())
       if (ret < s.ri) ret = s.ri;
     return ret;
   }
@@ -209,7 +215,7 @@ public class GLLBaseLine extends ParserBase {
     return carrier.getFirst();
   }
 
-  private String derivationAsTermRec(SPPFN_GLLBaseLine sppfn, LinkedList<Integer> childrenFromParent, CFGNode gn) {
+  private String derivationAsTermRec(SPPFN sppfn, LinkedList<Integer> childrenFromParent, CFGNode gn) {
     // System.out.println("\nEntered derivationAsTermRec() at node " + sppfn + " instance " + gn);
     if (visitedSPPFNodes.get(sppfn.number)) return "-!-"; // Util.fatal("derivationAsTermRec() found cycle in derivation");
 
@@ -218,11 +224,11 @@ public class GLLBaseLine extends ParserBase {
     String constructor = null;
 
     if (sppfn.packNS.size() != 0) { // Non leaf symbol nodes
-      SPPFPN_GLLBaseLine sppfpn = firstAvailablePackNode(sppfn);
+      SPPFPN sppfpn = firstAvailablePackNode(sppfn);
       CFGNode childgn = sppfpn.gn.alt.seq;
-      LinkedList<SPPFN_GLLBaseLine> childSymbolNodes = new LinkedList<>();
+      LinkedList<SPPFN> childSymbolNodes = new LinkedList<>();
       collectChildNodesRec(sppfpn, childSymbolNodes);
-      for (SPPFN_GLLBaseLine s : childSymbolNodes) {
+      for (SPPFN s : childSymbolNodes) {
         String newConstructor = derivationAsTermRec(s, children, childgn);
         if (newConstructor != null) constructor = newConstructor; // Update on every ^^ child so that the last one wins
         childgn = childgn.seq; // Step to next child grammar node
@@ -241,9 +247,9 @@ public class GLLBaseLine extends ParserBase {
     return (gn.giftKind == GIFTKind.OVER) ? constructor : null;
   }
 
-  private void collectChildNodesRec(SPPFPN_GLLBaseLine sppfpn, LinkedList<SPPFN_GLLBaseLine> childNodes) {
+  private void collectChildNodesRec(SPPFPN sppfpn, LinkedList<SPPFN> childNodes) {
     // System.out.println("CollectChildNodesRec() at pack node " + sppfpn);
-    SPPFN_GLLBaseLine leftChild = sppfpn.leftChild, rightChild = sppfpn.rightChild;
+    SPPFN leftChild = sppfpn.leftChild, rightChild = sppfpn.rightChild;
     if (leftChild != null) {
       if (isSymbol(leftChild)) // found a symbol
         childNodes.add(leftChild);
@@ -257,10 +263,10 @@ public class GLLBaseLine extends ParserBase {
       collectChildNodesRec(firstAvailablePackNode(rightChild), childNodes);
   }
 
-  private SPPFPN_GLLBaseLine firstAvailablePackNode(SPPFN_GLLBaseLine sppfn) {
-    SPPFPN_GLLBaseLine candidate = null;
+  private SPPFPN firstAvailablePackNode(SPPFN sppfn) {
+    SPPFPN candidate = null;
     boolean ambiguous = false;
-    for (SPPFPN_GLLBaseLine p : sppfn.packNS)
+    for (SPPFPN p : sppfn.packNS)
       if (!p.suppressed) if (candidate == null)
         candidate = p;
       else
@@ -270,13 +276,13 @@ public class GLLBaseLine extends ParserBase {
 
     if (ambiguous) {
       System.out.println("Ambiguous SPPF node " + sppfn.toString() + " involving slots: ");
-      for (SPPFPN_GLLBaseLine p : sppfn.packNS)
+      for (SPPFPN p : sppfn.packNS)
         if (!p.suppressed) System.out.println("  " + p);
     }
     return candidate;
   }
 
-  private boolean isSymbol(SPPFN_GLLBaseLine sppfn) {
+  private boolean isSymbol(SPPFN sppfn) {
     return sppfn.packNS.size() == 0 /* terminal or epsilon */ || (sppfn.gn.elm.kind == CFGKind.N && sppfn.gn.seq == null /* LHS */);
   }
 
@@ -292,7 +298,7 @@ public class GLLBaseLine extends ParserBase {
 
     int sppfEpsilonNodeCount = 0, sppfTerminalNodeCount = 0, sppfNonterminalNodeCount = 0, sppfIntermediateNodeCount = 0, sppfPackNodeCount = 0,
         sppfAmbiguityCount = 0, sppfEdgeCount = 0;
-    for (SPPFN_GLLBaseLine s : sppf.keySet()) {
+    for (SPPFN s : sppf.keySet()) {
       switch (s.gn.elm.kind) {
       // Dodgy - how do we test the flavour of an SPPF node?
       case T, TI, C, B:
@@ -304,7 +310,7 @@ public class GLLBaseLine extends ParserBase {
       }
       sppfPackNodeCount += s.packNS.size();
       if (s.packNS.size() > 1) sppfAmbiguityCount++;
-      for (SPPFPN_GLLBaseLine p : s.packNS) {
+      for (SPPFPN p : s.packNS) {
         sppfEdgeCount++; // inedge
         if (p.leftChild != null) sppfEdgeCount++;
         if (p.rightChild != null) sppfEdgeCount++;
@@ -322,9 +328,9 @@ public class GLLBaseLine extends ParserBase {
     public CFGNode gn;
     public int i;
     public GSSN sn;
-    public SPPFN_GLLBaseLine dn;
+    public SPPFN dn;
 
-    public Desc(CFGNode gn, int index, GSSN sn, SPPFN_GLLBaseLine dn) {
+    public Desc(CFGNode gn, int index, GSSN sn, SPPFN dn) {
       super();
       this.gn = gn;
       this.i = index;
@@ -382,7 +388,7 @@ public class GLLBaseLine extends ParserBase {
     public final CFGNode gn;
     final int i;
     public final Set<GSSE> edges = new HashSet<>();
-    public final Set<SPPFN_GLLBaseLine> pops = new HashSet<>();
+    public final Set<SPPFN> pops = new HashSet<>();
 
     public GSSN(CFGNode gn, int i) {
       super();
@@ -421,9 +427,9 @@ public class GLLBaseLine extends ParserBase {
 
   class GSSE {
     public final GSSN dst;
-    public final SPPFN_GLLBaseLine sppfnode;
+    public final SPPFN sppfnode;
 
-    public GSSE(GSSN dst, SPPFN_GLLBaseLine sppfNode) {
+    public GSSE(GSSN dst, SPPFN sppfNode) {
       this.sppfnode = sppfNode;
       this.dst = dst;
     }
@@ -450,6 +456,138 @@ public class GLLBaseLine extends ParserBase {
         if (other.sppfnode != null) return false;
       } else if (!sppfnode.equals(other.sppfnode)) return false;
       return true;
+    }
+  }
+
+  int nextFreeSPPFNodeNumber = 0;
+
+  // class SPPFNode { // Carrier to unify SPPFN and SPPPPN
+  // };
+  //
+  class SPPFN {
+    public int number = 0; // to be set after parsing
+    public final CFGNode gn;
+    public final int li;
+    public final int ri;
+    public final Set<SPPFPN> packNS = new HashSet<>();
+
+    public SPPFN(CFGNode gn, int li, int ri) {
+      super();
+      this.number = nextFreeSPPFNodeNumber++;
+      this.gn = gn;
+      this.li = li;
+      this.ri = ri;
+    }
+
+    @Override
+    public int hashCode() {
+      final int prime = 31;
+      int result = 1;
+      result = prime * result + getEnclosingInstance().hashCode();
+      result = prime * result + ((gn == null) ? 0 : gn.hashCode());
+      result = prime * result + li;
+      result = prime * result + ri;
+      return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (this == obj) return true;
+      if (obj == null) return false;
+      if (getClass() != obj.getClass()) return false;
+      SPPFN other = (SPPFN) obj;
+      if (!getEnclosingInstance().equals(other.getEnclosingInstance())) return false;
+      if (gn == null) {
+        if (other.gn != null) return false;
+      } else if (!gn.equals(other.gn)) return false;
+      if (li != other.li) return false;
+      if (ri != other.ri) return false;
+      return true;
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder();
+      // if (gn == null)
+      // sb.append("NULL");
+      // else
+      sb.append(number);
+      sb.append(": ");
+      if (isSymbol(this))
+        sb.append(gn.toString());
+      else
+        sb.append(gn.toStringAsProduction());
+      sb.append(", ");
+      sb.append(li);
+      sb.append(", ");
+      sb.append(ri);
+
+      return sb.toString();
+    }
+
+    private GLLBaseLine getEnclosingInstance() {
+      return GLLBaseLine.this;
+    }
+  }
+
+  // Note Nov 2024 added parent to support SPPF cycle detection - not needed for actual cycle detection
+  class SPPFPN {
+    public int number = 0; // Numbers allocated after parse
+    public SPPFN parent = null; // Parents allocated after parse
+    public final CFGNode gn;
+    public final int pivot;
+    public final SPPFN leftChild;
+    public final SPPFN rightChild;
+    public boolean suppressed = false;
+
+    public SPPFPN(CFGNode gn, int pivot, SPPFN leftChild, SPPFN rightChild) {
+      super();
+      this.gn = gn;
+      this.pivot = pivot;
+      this.leftChild = leftChild;
+      this.rightChild = rightChild;
+    }
+
+    @Override
+    public int hashCode() {
+      final int prime = 31;
+      int result = 1;
+      result = prime * result + getEnclosingInstance().hashCode();
+      result = prime * result + ((gn == null) ? 0 : gn.hashCode());
+      result = prime * result + number;
+      result = prime * result + pivot;
+      return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (this == obj) return true;
+      if (obj == null) return false;
+      if (getClass() != obj.getClass()) return false;
+      SPPFPN other = (SPPFPN) obj;
+      if (!getEnclosingInstance().equals(other.getEnclosingInstance())) return false;
+      if (gn == null) {
+        if (other.gn != null) return false;
+      } else if (!gn.equals(other.gn)) return false;
+      if (number != other.number) return false;
+      if (pivot != other.pivot) return false;
+      return true;
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder();
+      sb.append(number);
+      sb.append(": ");
+      sb.append(gn.toStringAsProduction());
+      sb.append(", " + pivot);
+      sb.append(" under ");
+      sb.append(parent);
+      return sb.toString();
+    }
+
+    private GLLBaseLine getEnclosingInstance() {
+      return GLLBaseLine.this;
     }
   }
 
@@ -482,7 +620,6 @@ public class GLLBaseLine extends ParserBase {
   }
 
   final String rootNodeStyle = "[style=filled fillcolor=aquamarine]";
-
   final String packNodeStyle = "[style=rounded]";
   final String ambiguousStyle = "[color=orange]";
   final String cycleStyle = "[color=red]";
@@ -507,15 +644,14 @@ public class GLLBaseLine extends ParserBase {
 
   @Override
   public void sppf2Dot() {
-    sppfComputeReachability();
+    // sppfComputeReachability();
 
     if (sppf == null || sppfRootNode == null) Util.fatal("Current parser does not have a current SPPF that can be visualised as a .dot file");
     SPPF2Dot(sppf, sppfRootNode, "sppf_full.dot", true, true, true); // full SPPF
     SPPF2Dot(sppf, sppfRootNode, "sppf_core.dot", false, true, true); // core SPPF - only nodes reachable from (S,0,n)
   }
 
-  public void SPPF2Dot(Map<SPPFN_GLLBaseLine, SPPFN_GLLBaseLine> sppf, SPPFN_GLLBaseLine rootNode, String filename, boolean full, boolean showIndicies,
-      boolean showIntermediates) {
+  public void SPPF2Dot(Map<SPPFN, SPPFN> sppf, SPPFN rootNode, String filename, boolean full, boolean showIndicies, boolean showIntermediates) {
     this.showIndicies = showIndicies;
     this.showIntermediates = showIntermediates;
 
@@ -524,7 +660,7 @@ public class GLLBaseLine extends ParserBase {
       sppfOut.println("digraph \"SPPF\" {\n"
           + "graph[ordering=out ranksep=0.1]\n node[fontname=Helvetica fontsize=9 shape=box height=0 width=0 margin=0.04 color=gray]\nedge[arrowsize=0.3 color=gray]");
       if (full)
-        for (SPPFN_GLLBaseLine n : sppf.keySet())
+        for (SPPFN n : sppf.keySet())
           sppfSubtreeToDot(n);
       else {
         visitedSPPFNodes.clear();
@@ -537,33 +673,37 @@ public class GLLBaseLine extends ParserBase {
     }
   }
 
-  private void coreSPPFToDotRec(SPPFN_GLLBaseLine sppfn) {
+  private void coreSPPFToDotRec(SPPFN sppfn) {
     if (visitedSPPFNodes.get(sppfn.number)) return;
     visitedSPPFNodes.set(sppfn.number);
 
     sppfSubtreeToDot(sppfn);
 
-    for (SPPFPN_GLLBaseLine p : sppfn.packNS) { // Recurse through packed nodes
+    for (SPPFPN p : sppfn.packNS) { // Recurse through packed nodes
       if (p.leftChild != null) coreSPPFToDotRec(p.leftChild);
       if (p.rightChild != null) coreSPPFToDotRec(p.rightChild);
     }
   }
 
-  private void sppfSubtreeToDot(SPPFN_GLLBaseLine sppfn) {
+  private void sppfSubtreeToDot(SPPFN sppfn) {
     boolean isAmbiguous = sppfn.packNS.size() > 1;
-    sppfOut.println("\"" + sppfn + "\"" + symbolNodeStyle);
+    if (isSymbol(sppfn))
+      sppfOut.println("\"" + sppfn + "\"" + symbolNodeStyle);
+    else
+      sppfOut.println("\"" + sppfn + "\"" + intermediateNodeStyle);
+
     if (isAmbiguous) sppfOut.println(ambiguousStyle);
-    if (sppfCyclic.contains(sppfn)) sppfOut.println(cycleStyle);
-    if (!reachable.contains(sppfn)) sppfOut.println(unreachableSymbolNodeStyle);
+    // if (sppfCyclic.contains(sppfn)) sppfOut.println(cycleStyle);
+    // if (!reachable.contains(sppfn)) sppfOut.println(unreachableSymbolNodeStyle);
     if (sppfn == sppfRootNode) sppfOut.println(rootNodeStyle);
 
-    for (SPPFPN_GLLBaseLine p : sppfn.packNS) {
-      boolean isCyclicP = sppfCyclic.contains(p);
+    for (SPPFPN p : sppfn.packNS) {
+      boolean isCyclicP = false; // sppfCyclic.contains(p);
 
       sppfOut.println("\"" + p + "\"" + packNodeStyle + " [label = \"" + p.number + ": " + p.gn.toStringAsProduction() + " , " + p.pivot + "\" ]");
       if (isCyclicP) sppfOut.println(cycleStyle);
-      if (!reachable.contains(p)) sppfOut.println(unreachablePackNodeStyle);
-      if (cycleBreakDeleted.contains(p)) sppfOut.println(deletedPackNodeStyle);
+      // if (!reachable.contains(p)) sppfOut.println(unreachablePackNodeStyle);
+      // if (cycleBreakDeleted.contains(p)) sppfOut.println(deletedPackNodeStyle);
       sppfOut.println("\"" + sppfn + "\"" + "->" + "\"" + p + "\"");
 
       if (isCyclicP)
@@ -582,153 +722,153 @@ public class GLLBaseLine extends ParserBase {
 
   /* SPPF cycle breaking **********************************************************************/
 
-  // Enumerate every derivation and check for cycles - may be veerrry slow
-  Deque visitedStack = new ArrayDeque(); // Only usedby sppfCycleRec to keep a list of visited nodes during descent
-  Set<SPPFNode_GLLBaseLine> x; // All cyclic nodes - only used by SPPF diagnostics
-  Set<SPPFN_GLLBaseLine> xS; // Set of cyclic symbol or intermediate nodes; a subset of the X in Elizabeth's note
-  Set<SPPFPN_GLLBaseLine> xP; // Set of cyclic packed nodes; X = xS U xP
-  Set<SPPFNode_GLLBaseLine> cycleBreakDeleted = new HashSet<>(); // Set of deleted cyclic nodes: D in Elizabeth's note
-
-  private void sppfCycleRec(SPPFN_GLLBaseLine sppfn) {
-    if (visitedSPPFNodes.get(sppfn.number)) {
-      System.out.print("SPPF cycle detected at node " + sppfn);
-      for (var v : visitedStack)
-        System.out.print(" (" + v + ")");
-      System.out.println();
-      return;
-    }
-    visitedSPPFNodes.set(sppfn.number);
-    visitedStack.push(sppfn);
-    // System.out.println("sc: " + sppfn);
-    // for (var pn : sppfn.packNS)
-    // System.out.println("sc: " + pn);
-
-    for (var pn : sppfn.packNS) {
-      if (cycleBreakDeleted.contains(pn)) continue; // Skip packed nodes marked for deletion by cycle removal
-      visitedStack.push(pn);
-      if (pn.leftChild != null) sppfCycleRec(pn.leftChild);
-      sppfCycleRec(pn.rightChild);
-      visitedStack.pop();
-    }
-    visitedSPPFNodes.clear(sppfn.number);
-    visitedStack.pop();
-  }
-
-  @Override
-  public void sppfPrintCycles() {
-    if (sppfRootNode == null) Util.fatal("Current parser does not have a current SPPF that can be cycle checked");
-    System.out.println("Reachable cycle listing for SPPF");
-    visitedSPPFNodes.clear();
-    sppfCycleRec(sppfRootNode);
-  }
-
-  // Compute cyclic nodes by closure over immediate reachability
-  Relation<SPPFNode_GLLBaseLine, SPPFNode_GLLBaseLine> sppfReachable = new Relation<>();
-  Set<SPPFNode_GLLBaseLine> sppfCyclic = new HashSet<>();
-  Set<SPPFNode_GLLBaseLine> reachable;
-
-  private void sppfComputeReachability() {
-    sppfReachable.clear(); // defensive programming - should not be needed
-    for (var n : sppf.keySet())
-      for (var p : n.packNS) {
-        sppfReachable.add(n, p);
-        if (p.leftChild != null) sppfReachable.add(p, p.leftChild);
-        sppfReachable.add(p, p.rightChild);
-      }
-    // System.out.println("After initialising sppfReachable, contents are:\n" + sppfReachable);
-    sppfReachable.transitiveClosure();
-    // System.out.println("After transitive closure of sppfReachable, contents are:\n" + sppfReachable);
-
-    reachable = sppfReachable.get(sppfRootNode);
-    // System.out.println("Reachable set: " + reachable);
-    sppfCyclic.clear();
-    for (var n : sppfReachable.getDomain())
-      if (sppfReachable.get(n).contains(n)) sppfCyclic.add(n);
-    sppfReachable.clear();
-  }
-
-  boolean changedOnW;
-
-  void sppfCycleWloop() {
-    for (var pp : new HashSet<>(xP)) {
-      // Look to see if this node has any 'keep' packed children
-      SPPFN_GLLBaseLine n = pp.parent;
-      boolean hasNotInXp = false;
-      for (var p : n.packNS)
-        if (!xP.contains(p)) {
-          hasNotInXp = true;
-          break;
-        }
-      System.out.println("Pack node " + pp.number + " hasNotInXp = " + hasNotInXp);
-      // If any of the packed children were 'keep' then mark one non-keep node as D
-      if (hasNotInXp) for (var p : n.packNS) {
-        System.out.println("Scanning for deletion: " + p + " in xP " + xP.contains(p));
-        if (xP.contains(p)) {
-          changedOnW = true;
-          cycleBreakDeleted.add(p);
-          xP.remove(p);
-          System.out.println("Deleted pack node " + p);
-
-          boolean changedOnV = true;
-          while (changedOnV) {
-            changedOnV = false;
-
-            var iterSetP = new HashSet<>(xP);
-            for (var pn : iterSetP)
-              if ((pn.leftChild != null && !xP.contains(pn.leftChild)) && !xP.contains(pn.rightChild)) {
-                changedOnV = true;
-                xP.remove(pn);
-              }
-
-            var iterSetS = new HashSet<>(xS);
-            for (var nn : iterSetS) {
-              boolean allNotInX = true;
-              for (var pn : nn.packNS)
-                if (xS.contains(pn)) allNotInX = false;
-              if (allNotInX) {
-                changedOnV = true;
-                xS.remove(nn);
-              }
-            }
-          }
-        }
-        // NB if we only want to remove one 'u' for each 'w' then insert a break here; probably pointless
-        // because our deterministic w loop will come back here on the next pass anyway
-      }
-    }
-  }
-
-  @Override
-  public void sppfBreakCycles() {
-    x = new HashSet<>(); // Only needed to show broken cycles (magenta lines in sppf*.dot) - comment out otherwise
-    xP = new HashSet<>();
-    xS = new HashSet<>();
-    cycleBreakDeleted = new HashSet<>();
-
-    // Load all cyclic nodes to X (in detail to the xS and xP partitions)
-    sppfComputeReachability();
-    for (var n : sppf.keySet())
-      if (sppfCyclic.contains(n)) {
-        x.add(n); // Only needed to show broken cycles (magenta lines in sppf*.dot) - comment out otherwise
-        xS.add(n);
-        for (var p : n.packNS)
-          if (sppfCyclic.contains(p)) {
-            x.add(p);
-            xP.add(p);
-          }
-      }
-
-    System.out.println("Before cycle breaking, |Xs| = " + xS.size() + " |Xp| = " + xP.size());
-    System.out.println("Before cycle breaking,\n  Xs = " + xS + "\n  Xp = " + xP);
-    // closure loop over w traversal
-    changedOnW = true;
-    while (changedOnW) {
-      changedOnW = false;
-      sppfCycleWloop();
-    }
-
-    // Sanity check - only required during development - comment out otherwise
-    System.out.println("After cycle breaking, |Xs| = " + xS.size() + " |Xp| = " + xP.size() + "\n Deleted set is " + cycleBreakDeleted);
-    sppfComputeReachability(); // Recompute reachability to see if any cycles are left
-  }
+  // // Enumerate every derivation and check for cycles - may be veerrry slow
+  // Deque visitedStack = new ArrayDeque(); // Only usedby sppfCycleRec to keep a list of visited nodes during descent
+  // Set<SPPFNode> x; // All cyclic nodes - only used by SPPF diagnostics
+  // Set<SPPFN> xS; // Set of cyclic symbol or intermediate nodes; a subset of the X in Elizabeth's note
+  // Set<SPPFPN> xP; // Set of cyclic packed nodes; X = xS U xP
+  // Set<SPPFNode> cycleBreakDeleted = new HashSet<>(); // Set of deleted cyclic nodes: D in Elizabeth's note
+  //
+  // private void sppfCycleRec(SPPFN sppfn) {
+  // if (visitedSPPFNodes.get(sppfn.number)) {
+  // System.out.print("SPPF cycle detected at node " + sppfn);
+  // for (var v : visitedStack)
+  // System.out.print(" " + v);
+  // System.out.println();
+  // return;
+  // }
+  // visitedSPPFNodes.set(sppfn.number);
+  // visitedStack.push(sppfn);
+  // // System.out.println("sc: " + sppfn);
+  // // for (var pn : sppfn.packNS)
+  // // System.out.println("sc: " + pn);
+  //
+  // for (var pn : sppfn.packNS) {
+  // if (cycleBreakDeleted.contains(pn)) continue; // Skip packed nodes marked for deletion by cycle removal
+  // visitedStack.push(pn);
+  // if (pn.leftChild != null) sppfCycleRec(pn.leftChild);
+  // sppfCycleRec(pn.rightChild);
+  // visitedStack.pop();
+  // }
+  // visitedSPPFNodes.clear(sppfn.number);
+  // visitedStack.pop();
+  // }
+  //
+  // @Override
+  // public void sppfPrintCycles() {
+  // if (sppfRootNode == null) Util.fatal("Current parser does not have a current SPPF that can be cycle checked");
+  // System.out.println("Reachable cycle listing for SPPF");
+  // visitedSPPFNodes.clear();
+  // sppfCycleRec(sppfRootNode);
+  // }
+  //
+  // // Compute cyclic nodes by closure over immediate reachability
+  // Relation<SPPFNode, SPPFNode> sppfReachable = new Relation<>();
+  // Set<SPPFNode> sppfCyclic = new HashSet<>();
+  // Set<SPPFNode> reachable;
+  //
+  // private void sppfComputeReachability() {
+  // sppfReachable.clear(); // defensive programming - should not be needed
+  // for (var n : sppf.keySet())
+  // for (var p : n.packNS) {
+  // sppfReachable.add(n, p);
+  // if (p.leftChild != null) sppfReachable.add(p, p.leftChild);
+  // sppfReachable.add(p, p.rightChild);
+  // }
+  // // System.out.println("After initialising sppfReachable, contents are:\n" + sppfReachable);
+  // sppfReachable.transitiveClosure();
+  // // System.out.println("After transitive closure of sppfReachable, contents are:\n" + sppfReachable);
+  //
+  // reachable = sppfReachable.get(sppfRootNode);
+  // // System.out.println("Reachable set: " + reachable);
+  // sppfCyclic.clear();
+  // for (var n : sppfReachable.getDomain())
+  // if (sppfReachable.get(n).contains(n)) sppfCyclic.add(n);
+  // sppfReachable.clear();
+  // }
+  //
+  // boolean changedOnW;
+  //
+  // void sppfCycleWloop() {
+  // for (var pp : new HashSet<>(xP)) {
+  // // Look to see if this node has any 'keep' packed children
+  // SPPFN n = pp.parent;
+  // boolean hasNotInXp = false;
+  // if (n != null) for (var p : n.packNS)
+  // if (!xP.contains(p)) {
+  // hasNotInXp = true;
+  // break;
+  // }
+  // System.out.println("Pack node " + pp.number + " hasNotInXp = " + hasNotInXp);
+  // // If any of the packed children were 'keep' then mark one non-keep node as D
+  // if (hasNotInXp) for (var p : n.packNS) {
+  // System.out.println("Scanning for deletion: " + p + " in xP " + xP.contains(p));
+  // if (xP.contains(p)) {
+  // changedOnW = true;
+  // cycleBreakDeleted.add(p);
+  // xP.remove(p);
+  // System.out.println("Deleted pack node " + p);
+  //
+  // boolean changedOnV = true;
+  // while (changedOnV) {
+  // changedOnV = false;
+  //
+  // for (var pn : new HashSet<>(xP))
+  // if ((pn.leftChild != null && !xS.contains(pn.leftChild)) && !xS.contains(pn.rightChild)) {
+  // changedOnV = true;
+  // xP.remove(pn);
+  // System.out.println("Removed pack node " + pn);
+  // }
+  //
+  // for (var nn : new HashSet<>(xS)) {
+  // boolean allNotInX = true;
+  // for (var pn : nn.packNS)
+  // if (xP.contains(pn)) allNotInX = false;
+  // if (allNotInX) {
+  // changedOnV = true;
+  // xS.remove(nn);
+  // System.out.println("Removed symbol node " + nn);
+  // }
+  // }
+  // }
+  // }
+  // // NB if we only want to remove one 'u' for each 'w' then insert a break here; probably pointless
+  // // because our deterministic w loop will come back here on the next pass anyway
+  // }
+  // }
+  // }
+  //
+  // @Override
+  // public void sppfBreakCycles() {
+  // x = new HashSet<>(); // Only needed to show broken cycles (magenta lines in sppf*.dot) - comment out otherwise
+  // xP = new HashSet<>();
+  // xS = new HashSet<>();
+  // cycleBreakDeleted = new HashSet<>();
+  //
+  // // Load all cyclic nodes to X (in detail to the xS and xP partitions)
+  // sppfComputeReachability();
+  // for (var n : sppf.keySet())
+  // if (sppfCyclic.contains(n)) {
+  // x.add(n); // Only needed to show broken cycles (magenta lines in sppf*.dot) - comment out otherwise
+  // xS.add(n);
+  // for (var p : n.packNS)
+  // if (sppfCyclic.contains(p)) {
+  // x.add(p);
+  // xP.add(p);
+  // }
+  // }
+  //
+  // System.out.println("Before cycle breaking, |Xs| = " + xS.size() + " |Xp| = " + xP.size());
+  // System.out.println("Before cycle breaking,\n Xs = " + xS + "\n Xp = " + xP);
+  // // closure loop over w traversal
+  // changedOnW = true;
+  // while (changedOnW) {
+  // changedOnW = false;
+  // sppfCycleWloop();
+  // }
+  //
+  // // Sanity check - only required during development - comment out otherwise
+  // System.out.println("After cycle breaking, |Xs| = " + xS.size() + " |Xp| = " + xP.size() + "\n Deleted set is " + cycleBreakDeleted);
+  // sppfComputeReachability(); // Recompute reachability to see if any cycles are left
+  // }
 }
