@@ -49,7 +49,7 @@ public class RDSOBFunction extends ParserBase {
   public void parse() {
     i = 0;
     dnRoot = dn = new DerivationSingletonNode(grammar.endOfStringNode, null);
-    inLanguage = rdsobFunction(grammar.rules.get(grammar.startNonterminal)) && input[i] == 0;
+    inLanguage = rdsobFunction(grammar.elementToNodeMap.get(grammar.startNonterminal)) && input[i] == 0;
     if (!inLanguage) Util.echo("Syntax error at location " + i, Util.lineNumber(i, inputString), inputString);
   }
 

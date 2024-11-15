@@ -146,7 +146,7 @@ public class ParserBase {
   }
 
   protected CFGNode getLHS(CFGNode gn) {
-    return grammar.rules.get(gn.elm);
+    return grammar.elementToNodeMap.get(gn.elm);
   }
 
   protected void trace(int level, String msg) {

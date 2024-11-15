@@ -32,9 +32,9 @@ public class CFGRules {
   public CFGElement startNonterminal;
 
   public final Map<CFGElement, CFGElement> elements = new TreeMap<>();
-  public final Map<Integer, CFGElement> elementsByNumber = new TreeMap<>();
-  public final Map<Integer, CFGNode> nodesByNumber = new TreeMap<>();
-  public final Map<CFGElement, CFGNode> rules = new TreeMap<>(); // Map from nonterminals to list of productions represented by their LHS node
+  // public final Map<Integer, CFGElement> numberToElementMap = new TreeMap<>();
+  public final Map<Integer, CFGNode> numberToNodeMap = new TreeMap<>();
+  public final Map<CFGElement, CFGNode> elementToNodeMap = new TreeMap<>(); // Map from nonterminals to list of productions represented by their LHS node
 
   public int lexSize;
   public final Set<LexemeKind> whitespaces = new HashSet<>(); // This should be a set of elements, with the builtins added to elements
@@ -91,7 +91,7 @@ public class CFGRules {
     for (var w : that.whitespaces) // TODO: This will need beefing up when whitespaces extends to nonterminals
       whitespaces.add(w);
 
-    for (var r : that.rules.keySet()) {
+    for (var r : that.elementToNodeMap.keySet()) {
       lhsAction(r.str);
       // TODO: recursive traversal of rules required because of EBNF
     }
@@ -100,6 +100,11 @@ public class CFGRules {
   private boolean changed;
 
   public void normalise() {
+    // Add singleton grammar nodes for terminals, # and epsilon. These are used by the SPPF.
+    for (CFGElement e : elements.keySet())
+      if (e.kind == CFGKind.T || e.kind == CFGKind.TI || e.kind == CFGKind.EPS)
+        elementToNodeMap.put(e, new CFGNode(this, e.kind, e.str, 0, GIFTKind.NONE, null, null));
+
     // Element and node numbering
     nextFreeEnumerationElement = 0;
     numberElementsAndNodes();
@@ -109,7 +114,7 @@ public class CFGRules {
     Set<CFGElement> tmp = new HashSet<>();
     for (CFGElement e : elements.keySet())
       if (e.kind == CFGKind.N) {
-        if (rules.get(e) == null) tmp.add(e);
+        if (elementToNodeMap.get(e) == null) tmp.add(e);
       }
 
     if (tmp.size() > 0) {
@@ -159,7 +164,7 @@ public class CFGRules {
 
     // Set positional attributes and accepting slots, and seed nullablePrefixSlots and nullableSuffixSlots
     for (CFGElement ge : elements.keySet())
-      if (ge.kind == CFGKind.N) for (CFGNode gn = rules.get(ge).alt; gn != null; gn = gn.alt) {
+      if (ge.kind == CFGKind.N) for (CFGNode gn = elementToNodeMap.get(ge).alt; gn != null; gn = gn.alt) {
         CFGNode gs = gn.seq;
         initialSlots.add(gs);
         nullablePrefixSlots.add(gs);
@@ -186,7 +191,7 @@ public class CFGRules {
     while (changed) {
       changed = false;
       for (CFGElement ge : elements.keySet())
-        if (ge.kind == CFGKind.N) firstAndFollowSetsAlt(rules.get(ge), rules.get(ge).alt);
+        if (ge.kind == CFGKind.N) firstAndFollowSetsAlt(elementToNodeMap.get(ge), elementToNodeMap.get(ge).alt);
     }
   }
 
@@ -198,14 +203,14 @@ public class CFGRules {
     }
     lexSize++;
 
-    nodesByNumber.put(endOfStringNode.num = nextFreeEnumerationElement++, endOfStringNode);
-    for (CFGElement n : rules.keySet())
-      numberElementsAndNodesRec(rules.get(n));
+    numberToNodeMap.put(endOfStringNode.num = nextFreeEnumerationElement++, endOfStringNode);
+    for (CFGElement n : elementToNodeMap.keySet())
+      numberElementsAndNodesRec(elementToNodeMap.get(n));
   }
 
   private void numberElementsAndNodesRec(CFGNode node) {
     if (node != null) {
-      nodesByNumber.put(node.num = nextFreeEnumerationElement++, node);
+      numberToNodeMap.put(node.num = nextFreeEnumerationElement++, node);
       if (node.elm.kind != CFGKind.END) {
         numberElementsAndNodesRec(node.seq);
         numberElementsAndNodesRec(node.alt);
@@ -214,8 +219,8 @@ public class CFGRules {
   }
 
   private void setEndNodeLinks() {
-    for (CFGElement n : rules.keySet()) {
-      CFGNode lhs = rules.get(n);
+    for (CFGElement n : elementToNodeMap.keySet()) {
+      CFGNode lhs = elementToNodeMap.get(n);
       for (CFGNode production = lhs.alt; production != null; production = production.alt)
         setEndNodeLinksRec(lhs, production);
     }
@@ -231,7 +236,7 @@ public class CFGRules {
     // System.out.println("processEndNodes processing " + gn.ni + " " + gn);
     gn.alt = altNode; // We are now at the end of a production or of a bracketed alternate
     gn.seq = parentNode;
-    if (parentNode == rules.get(startNonterminal)) acceptingNodeNumbers.add(gn.num);
+    if (parentNode == elementToNodeMap.get(startNonterminal)) acceptingNodeNumbers.add(gn.num);
     // System.out.println("processEndNodes updated alt and seq to " + gn.alt.ni + " " + gn.seq.ni);
   }
 
@@ -325,9 +330,9 @@ public class CFGRules {
   public void lhsAction(String id) {
     CFGElement element = findElement(CFGKind.N, id);
     if (startNonterminal == null) startNonterminal = element;
-    workingNode = rules.get(element);
-    if (workingNode == null) rules.put(element, updateWorkingNode(CFGKind.N, id));
-    mostRecentLHS = rules.get(element);
+    workingNode = elementToNodeMap.get(element);
+    if (workingNode == null) elementToNodeMap.put(element, updateWorkingNode(CFGKind.N, id));
+    mostRecentLHS = elementToNodeMap.get(element);
   }
 
   public void altAction() {
@@ -357,8 +362,8 @@ public class CFGRules {
     sb.append("digraph \"Reference grammar\"\n" + "{\n" + "graph[ordering=out ranksep=0.1]\n"
         + "node[fontname=Helvetica fontsize=9 shape=box height = 0 width = 0 margin= 0.04 color=gray]\n"
         + "edge[fontname=Helvetica fontsize=9 arrowsize = 0.3 color=gray]\n\n");
-    for (CFGElement n : rules.keySet())
-      toStringDotRec(sb, rules.get(n));
+    for (CFGElement n : elementToNodeMap.keySet())
+      toStringDotRec(sb, elementToNodeMap.get(n));
     sb.append("}\n");
     return sb.toString();
   }
@@ -408,9 +413,9 @@ public class CFGRules {
     if (isEmpty()) return "Grammar has no rules";
 
     sb.append("Rules:\n");
-    for (CFGElement n : rules.keySet()) {
+    for (CFGElement n : elementToNodeMap.keySet()) {
       boolean first = true;
-      for (CFGNode production = rules.get(n).alt; production != null; production = production.alt) {
+      for (CFGNode production = elementToNodeMap.get(n).alt; production != null; production = production.alt) {
         if (first) {
           sb.append(" " + production.toStringAsProduction(" ::=\n ", null) + "\n");
           first = false;
@@ -433,8 +438,8 @@ public class CFGRules {
       sb.append("\n");
     }
     sb.append("Nodes:\n");
-    for (int i : nodesByNumber.keySet()) {
-      CFGNode gn = nodesByNumber.get(i);
+    for (int i : numberToNodeMap.keySet()) {
+      CFGNode gn = numberToNodeMap.get(i);
       sb.append(" " + i + ": " + gn.toStringAsProduction());
       if (showProperties) {
         if (initialSlots.contains(gn)) sb.append(" initial");
@@ -466,7 +471,7 @@ public class CFGRules {
   }
 
   public boolean isEmpty() {
-    return rules.keySet().isEmpty();
+    return elementToNodeMap.keySet().isEmpty();
   }
 
   private void appendElements(StringBuilder sb, Set<CFGElement> elements) {
@@ -498,15 +503,15 @@ public class CFGRules {
     int ret[] = new int[nextFreeEnumerationElement];
     for (CFGElement gs : elements.keySet())
       ret[gs.ei] = gs.kind.ordinal();
-    for (int ni : nodesByNumber.keySet())
-      ret[ni] = nodesByNumber.get(ni).elm.kind.ordinal();
+    for (int ni : numberToNodeMap.keySet())
+      ret[ni] = numberToNodeMap.get(ni).elm.kind.ordinal();
     return ret;
   }
 
   public int[][] makeAltsArray() {
     int ret[][] = new int[nextFreeEnumerationElement][];
-    for (int ni : nodesByNumber.keySet()) {
-      CFGNode gn = nodesByNumber.get(ni);
+    for (int ni : numberToNodeMap.keySet()) {
+      CFGNode gn = numberToNodeMap.get(ni);
       int altCount = 0;
       for (CFGNode alt = gn.alt; alt != null; alt = alt.alt)
         altCount++;
@@ -521,8 +526,8 @@ public class CFGRules {
 
   public int[] makeSeqsArray() {
     int ret[] = new int[nextFreeEnumerationElement];
-    for (int ni : nodesByNumber.keySet()) {
-      CFGNode sn = nodesByNumber.get(ni).seq;
+    for (int ni : numberToNodeMap.keySet()) {
+      CFGNode sn = numberToNodeMap.get(ni).seq;
       ret[ni] = sn == null ? 0 : sn.num;
     }
     return ret;
@@ -530,8 +535,8 @@ public class CFGRules {
 
   public int[] makeCallTargetsArray() {
     int[] ret = new int[nextFreeEnumerationElement];
-    for (int ni : nodesByNumber.keySet()) {
-      CFGNode lhs = rules.get(nodesByNumber.get(ni).elm);
+    for (int ni : numberToNodeMap.keySet()) {
+      CFGNode lhs = elementToNodeMap.get(numberToNodeMap.get(ni).elm);
       ret[ni] = (lhs == null ? 0 : lhs.num);
     }
     return ret;
@@ -539,8 +544,8 @@ public class CFGRules {
 
   public int[] makeElementOfArray() {
     int[] ret = new int[nextFreeEnumerationElement];
-    for (int ni : nodesByNumber.keySet()) {
-      CFGElement el = nodesByNumber.get(ni).elm;
+    for (int ni : numberToNodeMap.keySet()) {
+      CFGElement el = numberToNodeMap.get(ni).elm;
       ret[ni] = (el == null ? 0 : el.ei);
     }
     return ret;

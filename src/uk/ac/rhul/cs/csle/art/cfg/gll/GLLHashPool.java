@@ -133,7 +133,7 @@ public class GLLHashPool extends HashPool {
     int leftExtent = poolGet(n + sppfNode_leftExt);
     int rightExtent = poolGet(n + sppfNode_rightExt);
 
-    return grammar.nodesByNumber.get(gn).toStringAsProduction() + ", " + leftExtent + ", " + rightExtent;
+    return grammar.numberToNodeMap.get(gn).toStringAsProduction() + ", " + leftExtent + ", " + rightExtent;
   }
 
   String toStringSPPFPackNode(int n) {
@@ -141,7 +141,7 @@ public class GLLHashPool extends HashPool {
     int gn = poolGet(n + sppfPackNode_gn);
     int pivot = poolGet(n + sppfPackNode_pivot);
 
-    return grammar.nodesByNumber.get(gn).toStringAsProduction() + ", " + pivot;
+    return grammar.numberToNodeMap.get(gn).toStringAsProduction() + ", " + pivot;
   }
 
   /* Stack handling **********************************************************/
@@ -240,7 +240,7 @@ public class GLLHashPool extends HashPool {
   private void initialise() {
     // 1. Make local references to grammar tables
     endOfStringNodeNi = grammar.endOfStringNode.num;
-    startNonterminalNodeNi = grammar.rules.get(grammar.startNonterminal).num;
+    startNonterminalNodeNi = grammar.elementToNodeMap.get(grammar.startNonterminal).num;
     kindOf = grammar.makeKindsArray();
     altOf = grammar.makeAltsArray();
     seqOf = grammar.makeSeqsArray();

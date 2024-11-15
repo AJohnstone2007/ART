@@ -59,7 +59,7 @@ public class GLLBaseLine extends ParserBase {
     i = 0;
     sn = gssRoot;
     dn = null;
-    for (CFGNode p = grammar.rules.get(grammar.startNonterminal).alt; p != null; p = p.alt)
+    for (CFGNode p = grammar.elementToNodeMap.get(grammar.startNonterminal).alt; p != null; p = p.alt)
       queueDesc(p.seq, i, sn, dn);
     inLanguage = false;
 
@@ -68,7 +68,7 @@ public class GLLBaseLine extends ParserBase {
         switch (gn.elm.kind) {
         case B, T, TI, C:
           if (input[i] == gn.elm.ei) {
-            // System.out.println("Matched " + input[i]);
+            System.out.println("Matched " + input[i]);
             du(1);
             i++;
             gn = gn.seq;
@@ -160,14 +160,14 @@ public class GLLBaseLine extends ParserBase {
       for (SPPFN rc : gssN.pops)
         queueDesc(gn.seq, rc.ri, sn, sppfUpdate(gn.seq, dn, rc));
     }
-    for (CFGNode p = grammar.rules.get(gn.elm).alt; p != null; p = p.alt)
+    for (CFGNode p = grammar.elementToNodeMap.get(gn.elm).alt; p != null; p = p.alt)
       queueDesc(p.seq, i, gssN, null);
   }
 
   void ret() {
     if (sn.equals(gssRoot)) { // Stack base
       if (grammar.acceptingNodeNumbers.contains(gn.num) && (i == input.length - 1)) {
-        sppfRootNode = sppf.get(new SPPFN(grammar.rules.get(grammar.startNonterminal), 0, input.length - 1));
+        sppfRootNode = sppf.get(new SPPFN(grammar.elementToNodeMap.get(grammar.startNonterminal), 0, input.length - 1));
         inLanguage = true;
       }
       return; // End of parse
@@ -182,21 +182,21 @@ public class GLLBaseLine extends ParserBase {
   SPPFN sppfRootNode;
 
   SPPFN sppfFind(CFGNode dn, int li, int ri) {
-    // System.out.print("sppfFind with dn " + dn.toStringAsProduction() + " with extents " + li + "," + ri);
+    System.out.print("sppfFind with dn " + dn.toStringAsProduction() + " with extents " + li + "," + ri);
 
     SPPFN tmp = new SPPFN(dn, li, ri);
     if (!sppf.containsKey(tmp)) {
       sppf.put(tmp, tmp);
-      // System.out.print(" added " + tmp);
+      System.out.print(" added " + tmp);
     }
-    // System.out.println(" resulting sppf nodes " + sppf.keySet());
+    System.out.println(" resulting sppf\n" + sppf.keySet());
     return sppf.get(tmp);
   }
 
   SPPFN sppfUpdate(CFGNode gn, SPPFN ln, SPPFN rn) {
     SPPFN ret = sppfFind(gn.elm.kind == CFGKind.END ? gn.seq : gn, ln == null ? rn.li : ln.li, rn.ri);
-    // System.out.println(
-    // "Updating SPPF node with gn " + gn.toStringAsProduction() + " and extents " + (ln == null ? rn.li : ln.li) + "," + rn.ri + " retrieves nodes " + ret);
+    System.out.println(
+        "Updating SPPF node with gn " + gn.toStringAsProduction() + " and extents " + (ln == null ? rn.li : ln.li) + "," + rn.ri + " retrieves node " + ret);
     ret.packNS.add(new SPPFPN(gn, ln == null ? rn.li : ln.ri, ln, rn));
     return ret;
   }

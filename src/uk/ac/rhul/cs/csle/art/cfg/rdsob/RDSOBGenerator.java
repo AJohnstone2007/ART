@@ -39,10 +39,10 @@ public class RDSOBGenerator {
 
     text.println("};\n");
 
-    for (CFGElement s : grammar.rules.keySet()) {
+    for (CFGElement s : grammar.elementToNodeMap.keySet()) {
       text.println("boolean p_" + s.str + "() {\n int eI = i; DNode eDN = dn;");
       boolean seenEpsilon = false, firstAlt = true;
-      for (CFGNode alt = grammar.rules.get(s).alt; alt != null; alt = alt.alt) {
+      for (CFGNode alt = grammar.elementToNodeMap.get(s).alt; alt != null; alt = alt.alt) {
         int braceCount = 0;
         if (firstAlt)
           firstAlt = false;

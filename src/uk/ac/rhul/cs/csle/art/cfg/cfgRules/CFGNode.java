@@ -119,7 +119,7 @@ public class CFGNode {
     // System.out.println("toStringAsProduction called on " + num + ": " + this);
     StringBuilder sb = new StringBuilder();
 
-    if (CFGRules.isLHS(this))
+    if (CFGRules.isLHS(this) || (seq == null && alt == null))
       sb.append(elm.str);
     else if (seq.elm.kind == CFGKind.EOS)
       sb.append(seq);
