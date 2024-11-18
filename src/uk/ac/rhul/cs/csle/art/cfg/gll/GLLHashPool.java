@@ -133,7 +133,7 @@ public class GLLHashPool extends HashPool {
     int leftExtent = poolGet(n + sppfNode_leftExt);
     int rightExtent = poolGet(n + sppfNode_rightExt);
 
-    return grammar.numberToNodeMap.get(gn).toStringAsProduction() + ", " + leftExtent + ", " + rightExtent;
+    return cfgRules.numberToNodeMap.get(gn).toStringAsProduction() + ", " + leftExtent + ", " + rightExtent;
   }
 
   String toStringSPPFPackNode(int n) {
@@ -141,7 +141,7 @@ public class GLLHashPool extends HashPool {
     int gn = poolGet(n + sppfPackNode_gn);
     int pivot = poolGet(n + sppfPackNode_pivot);
 
-    return grammar.numberToNodeMap.get(gn).toStringAsProduction() + ", " + pivot;
+    return cfgRules.numberToNodeMap.get(gn).toStringAsProduction() + ", " + pivot;
   }
 
   /* Stack handling **********************************************************/
@@ -165,7 +165,7 @@ public class GLLHashPool extends HashPool {
 
   private void ret() {
     if (poolGet(sn + gssNode_gn) == endOfStringNodeNi) {
-      if (grammar.acceptingNodeNumbers.contains(gn)) inLanguage |= (i == input.length - 1); // Make gni to boolean array for acceptance testing
+      if (cfgRules.acceptingNodeNumbers.contains(gn)) inLanguage |= (i == input.length - 1); // Make gni to boolean array for acceptance testing
       return;
     }
     find(popElementBuckets, popElementBucketCount, popElement_SIZE, i, sn, dn);
@@ -239,13 +239,13 @@ public class GLLHashPool extends HashPool {
   /* Parser ******************************************************************/
   private void initialise() {
     // 1. Make local references to grammar tables
-    endOfStringNodeNi = grammar.endOfStringNode.num;
-    startNonterminalNodeNi = grammar.elementToNodeMap.get(grammar.startNonterminal).num;
-    kindOf = grammar.makeKindsArray();
-    altOf = grammar.makeAltsArray();
-    seqOf = grammar.makeSeqsArray();
-    targetOf = grammar.makeCallTargetsArray();
-    elementOf = grammar.makeElementOfArray();
+    endOfStringNodeNi = cfgRules.endOfStringNode.num;
+    startNonterminalNodeNi = cfgRules.elementToNodeMap.get(cfgRules.startNonterminal).num;
+    kindOf = cfgRules.makeKindsArray();
+    altOf = cfgRules.makeAltsArray();
+    seqOf = cfgRules.makeSeqsArray();
+    targetOf = cfgRules.makeCallTargetsArray();
+    elementOf = cfgRules.makeElementOfArray();
     // Defensive programming - make sure we've not messed up the enumeration value
     if (T != CFGKind.T.ordinal()) Util.fatal("Enumeration mismatch for T - check ParserHashPool.java for consistency with Kind enumeration");
     if (EPS != CFGKind.EPS.ordinal()) Util.fatal("Enumeration mismatch for EPS - check ParserHashPool.java for consistency with Kind enumeration");

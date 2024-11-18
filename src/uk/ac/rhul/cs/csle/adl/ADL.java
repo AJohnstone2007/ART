@@ -61,7 +61,7 @@ public class ADL {
     adlParser.inputStringName = "";
     adlParser.inputString = inputString;
     adlGrammar.normalise();
-    adlParser.grammar = adlGrammar;
+    adlParser.cfgRules = adlGrammar;
     int adlDerivationTerm = 0;
     adlParser.inLanguage = false;
 

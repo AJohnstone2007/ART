@@ -9,7 +9,7 @@ import uk.ac.rhul.cs.csle.art.util.Util;
 
 public class ParserBase {
   public int traceLevel = 0;
-  public CFGRules grammar;
+  public CFGRules cfgRules;
   public String inputString = ""; // Original input string
   public String inputStringName = "";
   public int[] input; // Input as array of tokens
@@ -146,7 +146,7 @@ public class ParserBase {
   }
 
   protected CFGNode getLHS(CFGNode gn) {
-    return grammar.elementToNodeMap.get(gn.elm);
+    return cfgRules.elementToNodeMap.get(gn.elm);
   }
 
   protected void trace(int level, String msg) {

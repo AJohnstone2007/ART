@@ -81,10 +81,10 @@ public class RDSOBExplicitStack extends ParserBase {
 
   @Override
   public void parse() {
-    gn = grammar.elementToNodeMap.get(grammar.startNonterminal).alt.seq;
+    gn = cfgRules.elementToNodeMap.get(cfgRules.startNonterminal).alt.seq;
     i = 0;
-    dnRoot = dn = new DerivationSingletonNode(grammar.endOfStringNode, null);
-    sn = new SNode(grammar.endOfStringNode, 0, null, dn);
+    dnRoot = dn = new DerivationSingletonNode(cfgRules.endOfStringNode, null);
+    sn = new SNode(cfgRules.endOfStringNode, 0, null, dn);
     inLanguage = rdsobExplicitStack() && input[i] == 0;
   }
 

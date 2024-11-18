@@ -73,14 +73,14 @@ public class ADLInterpreter {
     }
     adlLexer = new LexerSingletonLongestMatch();
     adlParser = new GLLBaseLine();
-    adlParser.grammar = null; // TODO: !!! fix this ! artScriptInterpreter.getGrammar();
-    adlParser.grammar.normalise();
+    adlParser.cfgRules = null; // TODO: !!! fix this ! artScriptInterpreter.getGrammar();
+    adlParser.cfgRules.normalise();
   }
 
   public Value adlInterpret(String inputString) {
     try {
       adlParser.inLanguage = false;
-      adlLexer.lex(inputString, adlParser.grammar.lexicalKindsArray(), adlParser.grammar.lexicalStringsArray(), adlParser.grammar.whitespacesArray());
+      adlLexer.lex(inputString, adlParser.cfgRules.lexicalKindsArray(), adlParser.cfgRules.lexicalStringsArray(), adlParser.cfgRules.whitespacesArray());
 
       if (adlLexer.tokens != null) {
         adlParser.inputString = inputString;

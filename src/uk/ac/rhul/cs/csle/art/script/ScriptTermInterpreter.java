@@ -80,7 +80,7 @@ public class ScriptTermInterpreter {
     currentCFGRules = new CFGRules("Script grammar", iTerms);
     scriptTraverser.traverse(scriptParserTerm); // Construct the script parser grammar by walking the script parser term from the last bootstrap
     currentCFGRules.normalise();
-    scriptParser.grammar = currentCFGRules; // Now we have a usable script parser
+    scriptParser.cfgRules = currentCFGRules; // Now we have a usable script parser
     // System.out.println("script grammar" + currentGrammar.toString());
 
     currentChooser = new ChooseRules(iTerms);
@@ -413,7 +413,7 @@ public class ScriptTermInterpreter {
     currentParser.traceLevel = Util.traceLevel;
     currentParser.inputStringName = inputStringName;
     currentParser.inputString = inputString;
-    currentParser.grammar = currentCFGRules;
+    currentParser.cfgRules = currentCFGRules;
     currentDerivationTerm = 0;
     currentParser.inLanguage = false;
     currentParser.loadSetupTime();
@@ -442,8 +442,8 @@ public class ScriptTermInterpreter {
     // Lex the script string
     scriptParser.inputString = scriptString;
     scriptParser.inLanguage = false;
-    scriptLexer.lex(scriptParser.inputString, scriptParser.grammar.lexicalKindsArray(), scriptParser.grammar.lexicalStringsArray(),
-        scriptParser.grammar.whitespacesArray());
+    scriptLexer.lex(scriptParser.inputString, scriptParser.cfgRules.lexicalKindsArray(), scriptParser.cfgRules.lexicalStringsArray(),
+        scriptParser.cfgRules.whitespacesArray());
     // scriptLexer.report();
     if (scriptLexer.tokens == null) Util.fatal("Lexical error in script");
     scriptParser.input = scriptLexer.tokens;

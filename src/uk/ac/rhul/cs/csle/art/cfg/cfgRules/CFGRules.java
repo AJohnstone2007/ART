@@ -102,7 +102,7 @@ public class CFGRules {
   public void normalise() {
     // Add singleton grammar nodes for terminals, # and epsilon. These are used by the SPPF.
     for (CFGElement e : elements.keySet())
-      if (e.kind == CFGKind.T || e.kind == CFGKind.TI || e.kind == CFGKind.EPS)
+      if (e.kind == CFGKind.B || e.kind == CFGKind.T || e.kind == CFGKind.TI || e.kind == CFGKind.C || e.kind == CFGKind.EPS)
         elementToNodeMap.put(e, new CFGNode(this, e.kind, e.str, 0, GIFTKind.NONE, null, null));
 
     // Element and node numbering

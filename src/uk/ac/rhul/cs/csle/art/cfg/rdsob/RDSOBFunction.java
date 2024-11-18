@@ -7,7 +7,7 @@ import uk.ac.rhul.cs.csle.art.util.Util;
 public class RDSOBFunction extends ParserBase {
 
   boolean rdsobFunction(CFGNode lhs) {
-    if (dn.next == null) dn.next = new DerivationSingletonNode(grammar.endOfStringNode, null);
+    if (dn.next == null) dn.next = new DerivationSingletonNode(cfgRules.endOfStringNode, null);
     dn = dn.next;
     DerivationSingletonNode dnAtEntry = dn;
 
@@ -48,8 +48,8 @@ public class RDSOBFunction extends ParserBase {
   @Override
   public void parse() {
     i = 0;
-    dnRoot = dn = new DerivationSingletonNode(grammar.endOfStringNode, null);
-    inLanguage = rdsobFunction(grammar.elementToNodeMap.get(grammar.startNonterminal)) && input[i] == 0;
+    dnRoot = dn = new DerivationSingletonNode(cfgRules.endOfStringNode, null);
+    inLanguage = rdsobFunction(cfgRules.elementToNodeMap.get(cfgRules.startNonterminal)) && input[i] == 0;
     if (!inLanguage) Util.echo("Syntax error at location " + i, Util.lineNumber(i, inputString), inputString);
   }
 
