@@ -132,9 +132,12 @@ directiveElement ::=
 | 'try'^^ trTopTuple  
 | 'try'^^ trTopTuple '='^ trTopTuple
 
-| 'breakSPPFcycles'^^ | 'mode'^^ ID
+| 'breakSPPFcycles'^^ | 'breakSPPFcycles'^^ cycleModes
 
 | 'nop'^^
+
+cycleModes ::= cycleMode | cycleMode cycleModes 
+cycleMode  ::= 'preorder' | 'postorder' | 'lone' | 'sibling'
 
 file ::= &STRING_PLAIN_SQ
 
