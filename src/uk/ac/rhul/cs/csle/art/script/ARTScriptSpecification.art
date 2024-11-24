@@ -16,11 +16,11 @@ cfgAltNoAction ::= cfgSeq^^ cfgSlot cfgName cfgSlot   // This matches a single e
 cfgElems ::= cfgActions cfgExtended cfgElems^ | cfgActions cfgExtended  
 
 cfgExtended ::= cfgName cfgAnnotation^^ | cfgName^^ | cfgOptional^^ | cfgKleene^^ | cfgPositive^^ | cfgDoFirst^^  
-cfgAnnotation ::= cfgFoldUnder^^ | cfgFoldOver^^  | cfgTear^^ | cfgTearNamed^^
+cfgAnnotation ::= cfgFoldUnder^^ | cfgFoldOver^^  | cfgFoldTear^^ | cfgFoldTearNamed^^
   cfgFoldUnder ::= '^'^  
   cfgFoldOver ::= '^^'^  
-  cfgTear ::= '^^^'^
-  cfgTearNamed ::= '^^^'^ ':'^ ID 
+  cfgFoldTear ::= '^^^'^
+  cfgFoldTearNamed ::= '^^^'^ ':'^ ID 
 cfgDoFirst  ::= '('^ cfgAlts ')'^  
 cfgOptional ::= '('^ cfgAlts ')'^ '?'^ | cfgAltNoAction '?'^  
 cfgPositive ::= '('^ cfgAlts ')'^ '+'^ | cfgAltNoAction '+'^  
@@ -41,7 +41,7 @@ cfgActions ::= cfgSlot^^ cfgActionSeq^ | cfgSlot^^
   cfgAction  ::= cfgEquation^^ | cfgAssignment^^ | cfgInsert^^  
 cfgEquation ::= cfgAttribute '='^ cfgExpression  
 cfgAssignment ::= cfgAttribute ':='^ cfgExpression
-cfgInsert ::= '^+'^ ID  
+cfgInsert ::= '^+:'^ ID  
 cfgAttribute ::= ID | ID '.'^ ID   
 
 cfgExpression ::= __bool^^ | __int32^^ | __real64^^ | __string^^ | __char^^ | cfgAttribute^^ | ID^^ | ID^^ '('^  cfgExpressionList^ ')'^
@@ -132,12 +132,13 @@ directiveElement ::=
 | 'try'^^ trTopTuple  
 | 'try'^^ trTopTuple '='^ trTopTuple
 
-| 'breakSPPFcycles'^^ | 'breakSPPFcycles'^^ cycleModes
+| 'breakSPPFcycles'^^ | 'breakSPPFcycles'^^ cycleModes^
+| 'breakSPPFcyclesRelation'^^
 
 | 'nop'^^
 
-cycleModes ::= cycleMode | cycleMode cycleModes 
-cycleMode  ::= 'preorder' | 'postorder' | 'lone' | 'sibling'
+cycleModes ::= cycleMode^ | cycleMode^ cycleModes^ 
+cycleMode  ::= 'preorder' | 'postorder' | 'lone' | 'sibling' | 'trace'
 
 file ::= &STRING_PLAIN_SQ
 

@@ -5,6 +5,7 @@ import java.util.Set;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGRules;
 import uk.ac.rhul.cs.csle.art.cfg.lexer.LexemeKind;
+import uk.ac.rhul.cs.csle.art.script.TraversalKind;
 import uk.ac.rhul.cs.csle.art.util.Util;
 
 public class ParserBase {
@@ -141,8 +142,12 @@ public class ParserBase {
     System.out.println("sppfCycles() not implemented for parser class " + this.getClass().getSimpleName());
   }
 
-  public void sppfBreakCycles() {
+  public void sppfBreakCycles(boolean trace, TraversalKind traversalKind, boolean lone, boolean sibling) {
     System.out.println("sppfBreakCycles() not implemented for parser class " + this.getClass().getSimpleName());
+  }
+
+  public void sppfBreakCyclesRelation() {
+    System.out.println("sppfBreakCyclesRelation() not implemented for parser class " + this.getClass().getSimpleName());
   }
 
   protected CFGNode getLHS(CFGNode gn) {

@@ -106,6 +106,7 @@ public class Rewriter {
       int[] bindings = new int[ITerms.variableCount];
 
       int ruleLabel = thetaFromConfiguration(ruleIndex);
+      System.out.println("!!! about to match " + iTerms.toString(term) + " against " + iTerms.toString(lhs));
       if (!iTerms.matchZeroSV(term, lhs, bindings)) {
         Util.trace(3, level, iTerms.plainTextTraverser.toString(iTerms.getSubterm(ruleLabel, 0), variableMap) + " Theta match failed: seek another rule\n");
         continue nextRule;

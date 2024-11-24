@@ -1,5 +1,6 @@
 package uk.ac.rhul.cs.csle.art.cfg.cfgRules;
 
+import uk.ac.rhul.cs.csle.art.term.ITerms;
 import uk.ac.rhul.cs.csle.art.util.Util;
 
 public class CFGNode {
@@ -7,21 +8,22 @@ public class CFGNode {
   public static String caseInsensitiveTerminalStrop = "\"";
   public static String characterTerminalStrop = "`";
   public static String builtinTerminalStrop = "&";
+  private static ITerms iTerms = null;
 
   public int num;
   public final CFGElement elm; // Grammar element
   public CFGNode seq; // sequence link
   public CFGNode alt; // alternate link
   public final GIFTKind giftKind;
-  public int action; // Holds an action term used by attribute evaluators
+  public int actionSeq; // Holds an action term used by attribute evaluators
 
   private static int nextUniqueNumericLabel = 1;
 
-  public CFGNode(CFGRules grammar, CFGKind kind, String str, int action, GIFTKind giftKInd, CFGNode previous, CFGNode parent) {
+  public CFGNode(CFGRules grammar, CFGKind kind, String str, int actionSeq, GIFTKind giftKInd, CFGNode previous, CFGNode parent) {
     super();
     if (str == null) str = "" + nextUniqueNumericLabel++; // EBNF and ALT nodes have null string - uniquify
     this.elm = grammar.findElement(kind, str);
-    this.action = action;
+    this.actionSeq = actionSeq;
     this.giftKind = giftKInd;
     if (previous != null) previous.seq = this;
     if (parent != null) parent.alt = this;
@@ -56,7 +58,7 @@ public class CFGNode {
     case OVER:
       return "^^";
     case TEAR:
-      return "^^-";
+      return "^^^";
     case UNDER:
       return "^";
     default:
@@ -65,8 +67,9 @@ public class CFGNode {
   }
 
   public String toStringDot() {
+    String actionToString = actionSeq == 0 ? "" : ("\n" + iTerms.toString(actionSeq));
     String ret = num + " ";
-    if (action != 0) ret += /* action + */ " ";
+    if (actionSeq != 0) ret += /* action + */ " ";
     switch (elm.kind) {
     case EOS, ALT, DO, KLN, OPT, POS:
       return ret + elm.kind;
