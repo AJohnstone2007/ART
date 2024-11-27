@@ -962,8 +962,6 @@ public class GLLBaseLine extends ParserBase {
       xP = new HashSet<>(c.xP);
       xS = new HashSet<>(c.xS);
       d = new HashSet<>(c.d);
-
-      // System.out.println("Made new configuration " + this);
     }
 
   }
@@ -999,7 +997,7 @@ public class GLLBaseLine extends ParserBase {
         }
 
         if (allChildrenKept(p, c.xS)) { // w loop
-          if (breakCyclesRelationTrace) System.out.println("Packed node has kept child");
+          if (breakCyclesRelationTrace) System.out.println("Packed node has all kept children");
           cp = new Configuration(c);
           cp.xP.remove(p);
           newState(c, cp);
@@ -1010,7 +1008,7 @@ public class GLLBaseLine extends ParserBase {
         if (breakCyclesRelationTrace) System.out.println("Checking symbol node: " + n);
 
         if (allChildrenKept(n, c.xP)) { // w loop
-          if (breakCyclesRelationTrace) System.out.println("Symbol node has kept child");
+          if (breakCyclesRelationTrace) System.out.println("Symbol node has all kept children");
           cp = new Configuration(c);
           cp.xS.remove(n);
           newState(c, cp);
@@ -1018,25 +1016,42 @@ public class GLLBaseLine extends ParserBase {
       }
     }
 
-    System.out.println("Relation");
+    System.out.println("Relation has " + r.getDomain().size() + " nodes with terminals");
     for (var de : r.getDomain()) {
-      System.out.println(de + "->" + r.get(de));
-      for (var cde : r.get(de))
-        if (r.get(cde) == null) System.out.println("Terminal: " + cde);
+      // System.out.println(de + "->" + r.get(de));
+      if (r.get(de).size() == 0) System.out.println(de);
     }
-    System.out.println("Queued");
-    for (var v : queued)
-      System.out.println(v);
+
+    // System.out.println("Queued");
+    // for (var v : queued)
+    // System.out.println(v);
+
+    // Output relation as .dot file
+    try {
+      sppfOut = new PrintStream(new File("sppfCycleBreakRelation.dot"));
+      sppfOut.println("digraph \"SPPF\" {\n" + "rankdir=\"LR\" "
+          + "graph[ordering=out ranksep=0.1]\n node[fontname=Helvetica fontsize=9 shape=box height=0 width=0 margin=0.04 color=gray]\nedge[arrowsize=0.3 color=gray]");
+      for (var de : r.getDomain()) {
+        for (var cde : r.get(de))
+          sppfOut.println("\"" + de + "\"->\"" + cde + "\"");
+        sppfOut.println();
+      }
+      sppfOut.println("}");
+      sppfOut.close();
+    } catch (FileNotFoundException e) {
+      System.out.println("Unable to write SPPF visualisation to sppfCycleBreakRelation.dot");
+    }
+
   }
 
   public void newState(Configuration c, Configuration cp) {
     r.add(c, cp);
+    r.add(cp);
     if (breakCyclesRelationTrace) System.out.println("Added (" + c + ", " + cp + ")");
-    if (cp.xP.size() != 0 && cp.xS.size() != 0) {
-      if (!queued.contains(cp)) {
-        q.add(cp);
-        queued.add(cp);
-      }
+    if (!queued.contains(cp)) {
+      q.add(cp);
+      queued.add(cp);
+      if (breakCyclesRelationTrace) System.out.println("Queued" + cp);
     }
   }
 

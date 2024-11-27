@@ -32,6 +32,10 @@ public class Relation<T1, T2> {
       return tmp;
   }
 
+  public void add(T1 src) {
+    if (map.get(src) == null) map.put(src, new HashSet<>());
+  }
+
   public boolean add(T1 src, T2 dst) {
     if (map.get(src) == null) map.put(src, new HashSet<>());
     return map.get(src).add(dst);
