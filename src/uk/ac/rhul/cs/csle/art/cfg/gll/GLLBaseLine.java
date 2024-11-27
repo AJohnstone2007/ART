@@ -853,7 +853,7 @@ public class GLLBaseLine extends ParserBase {
               for (var nn : new HashSet<>(xS)) {
                 boolean allNotInX = true;
                 for (var pn : nn.packNS)
-                  if (xP.contains(pn)) allNotInX = false;
+                  if (xP.contains(pn)) allNotInX = false; // break here
                 if (allNotInX) {
                   changedOnV = true;
                   xS.remove(nn);
@@ -998,7 +998,7 @@ public class GLLBaseLine extends ParserBase {
           newState(c, cp);
         }
 
-        if (hasKeptChild(p, c.xS)) { // w loop
+        if (allChildrenKept(p, c.xS)) { // w loop
           if (breakCyclesRelationTrace) System.out.println("Packed node has kept child");
           cp = new Configuration(c);
           cp.xP.remove(p);
@@ -1009,7 +1009,7 @@ public class GLLBaseLine extends ParserBase {
       for (var n : c.xS) {
         if (breakCyclesRelationTrace) System.out.println("Checking symbol node: " + n);
 
-        if (hasKeptChild(n, c.xP)) { // w loop
+        if (allChildrenKept(n, c.xP)) { // w loop
           if (breakCyclesRelationTrace) System.out.println("Symbol node has kept child");
           cp = new Configuration(c);
           cp.xS.remove(n);
@@ -1020,7 +1020,7 @@ public class GLLBaseLine extends ParserBase {
 
     System.out.println("Relation");
     for (var de : r.getDomain()) {
-      // System.out.println(de + "->" + r.get(de));
+      System.out.println(de + "->" + r.get(de));
       for (var cde : r.get(de))
         if (r.get(cde) == null) System.out.println("Terminal: " + cde);
     }
@@ -1040,16 +1040,16 @@ public class GLLBaseLine extends ParserBase {
     }
   }
 
-  private boolean hasKeptChild(SPPFN n, Set<SPPFPN> xP) {
+  private boolean allChildrenKept(SPPFN n, Set<SPPFPN> xP) {
     for (var p : n.packNS)
-      if (!xP.contains(p)) return true;
-    return false;
+      if (xP.contains(p)) return false;
+    return true;
   }
 
-  private boolean hasKeptChild(SPPFPN p, Set<SPPFN> xS) {
-    if (p.leftChild != null && !xS.contains(p.leftChild)) return true;
-    if (!xS.contains(p.leftChild)) return true;
-    return false;
+  private boolean allChildrenKept(SPPFPN p, Set<SPPFN> xS) {
+    if (p.leftChild != null && xS.contains(p.leftChild)) return false;
+    if (xS.contains(p.leftChild)) return false;
+    return true;
   }
 
   private boolean hasKeptSibling(SPPFPN p, Set<SPPFPN> xP) {

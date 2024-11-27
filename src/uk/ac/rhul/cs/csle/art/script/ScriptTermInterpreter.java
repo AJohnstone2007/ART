@@ -22,12 +22,16 @@ import uk.ac.rhul.cs.csle.art.cfg.rdsob.RDSOBExplicitStack;
 import uk.ac.rhul.cs.csle.art.cfg.rdsob.RDSOBFunction;
 import uk.ac.rhul.cs.csle.art.cfg.rdsob.RDSOBGenerator;
 import uk.ac.rhul.cs.csle.art.choose.ChooseRules;
+import uk.ac.rhul.cs.csle.art.term.AttributeActionInterpreter;
+import uk.ac.rhul.cs.csle.art.term.AttributeGrammarInterpreter;
 import uk.ac.rhul.cs.csle.art.term.ITerms;
+import uk.ac.rhul.cs.csle.art.term.InterpreterBase;
 import uk.ac.rhul.cs.csle.art.term.RewriteRules;
 import uk.ac.rhul.cs.csle.art.term.Rewriter;
 import uk.ac.rhul.cs.csle.art.term.TermTool;
 import uk.ac.rhul.cs.csle.art.term.TermTraverser;
 import uk.ac.rhul.cs.csle.art.term.TermTraverserText;
+import uk.ac.rhul.cs.csle.art.term.eSOSInterpreter;
 import uk.ac.rhul.cs.csle.art.util.Util;
 
 public class ScriptTermInterpreter {
@@ -53,9 +57,9 @@ public class ScriptTermInterpreter {
   private int scriptDerivationTerm;
   private final TermTraverser scriptTraverser;
 
-  private ParserBase currentParser = new GLLBaseLine(); // default current parser is GLL base line - change to MGLL when available
   private final LexerSingletonLongestMatch currentLexer = new LexerSingletonLongestMatch(); // default current lexer is longest match - change to TWE set lexer
-                                                                                            // when available
+  private ParserBase currentParser = new GLLBaseLine(); // default current parser is GLL base line - change to MGLL when available
+  private InterpreterBase currentInterpreter = new eSOSInterpreter(); // when available
   public CFGRules currentCFGRules; // scriptTraverser builds CFG rules into this grammar
   private int currentDerivationTerm;
   private int currentRewriteTerm;
@@ -213,6 +217,22 @@ public class ScriptTermInterpreter {
         }
       break;
 
+    case "interpreter":
+      for (int i = 0; i < iTerms.getTermArity(iTerms.getSubterm(term, 0)); i++)
+        switch (iTerms.getTermSymbolString(iTerms.getSubterm(term, 0, i)).toLowerCase()) {
+        case "eSOS":
+          currentInterpreter = new eSOSInterpreter();
+          break;
+        case "attributeAction":
+          currentInterpreter = new AttributeActionInterpreter();
+          break;
+        case "attributeGrammar":
+          currentInterpreter = new AttributeGrammarInterpreter();
+          break;
+        default:
+          Util.fatal("Unexpected !interpreter argument " + iTerms.toString(iTerms.getSubterm(term, 0, i)));
+        }
+      break;
     case "print":
       for (int i = 0; i < iTerms.getTermArity(iTerms.getSubterm(term, 0)); i++)
         printDisplayElement(term, i);
@@ -232,9 +252,10 @@ public class ScriptTermInterpreter {
         } catch (IOException e) {
           Util.fatal("Unable to open try file; skipping " + iTerms.toString(term));
         }
-      else if (iTerms.getTermSymbolString(iTerms.getSubterm(term, 0, 0, 0)).equals("__string"))
+      else if (iTerms.getTermSymbolString(iTerms.getSubterm(term, 0, 0, 0)).equals("__string")) {
         tryParse("", iTerms.getTermSymbolString(iTerms.getSubterm(term, 0, 0, 0, 0)));
-      else
+        currentDerivationTerm = iTerms.findTerm("trTopTuple", currentDerivationTerm); // augment to tuple
+      } else
         currentDerivationTerm = iTerms.getSubterm(term, 0, 0); // Go straight to the rewrite stage
 
       currentRewriteTerm = currentRewriter.rewrite(currentDerivationTerm, currentRewriteRules);

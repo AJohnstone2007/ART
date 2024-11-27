@@ -82,7 +82,6 @@ public class RewriterESOS extends Rewriter {
       int[] bindings = new int[ITerms.variableCount];
 
       int ruleLabel = thetaFromConfiguration(ruleIndex);
-      System.out.println("!!! about to match" + pp.iTerms.toString(term) + " against " + pp.iTerms.toString(lhs));
       if (!pp.iTerms.matchZeroSV(term, lhs, bindings)) {
         trace(3, level, pp.render(pp.iTerms.getSubterm(ruleLabel, 0)) + " Theta match failed: seek another rule");
         continue nextRule;
