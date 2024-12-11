@@ -3,5 +3,5 @@ package uk.ac.rhul.cs.csle.art.term;
 public interface ARTPluginInterface {
   String name();
 
-  Value plugin(Value... args) throws ValueException;
+  Object plugin(Object... args) throws ValueException;
 }

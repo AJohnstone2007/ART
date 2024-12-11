@@ -13,19 +13,18 @@ import uk.ac.rhul.cs.csle.art.cfg.ParserBase;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGRules;
 import uk.ac.rhul.cs.csle.art.cfg.gll.GLLBaseLine;
 import uk.ac.rhul.cs.csle.art.cfg.lexer.LexerSingletonLongestMatch;
+import uk.ac.rhul.cs.csle.art.old.v4.term.Value;
+import uk.ac.rhul.cs.csle.art.old.v4.term.__char;
+import uk.ac.rhul.cs.csle.art.old.v4.term.__int32;
+import uk.ac.rhul.cs.csle.art.old.v4.term.__list;
+import uk.ac.rhul.cs.csle.art.old.v4.term.__mapChain;
+import uk.ac.rhul.cs.csle.art.old.v4.term.__proc;
+import uk.ac.rhul.cs.csle.art.old.v4.term.__quote;
+import uk.ac.rhul.cs.csle.art.old.v4.term.__real64;
+import uk.ac.rhul.cs.csle.art.old.v4.term.__string;
 import uk.ac.rhul.cs.csle.art.script.ScriptTermInterpreter;
 import uk.ac.rhul.cs.csle.art.term.ITerms;
-import uk.ac.rhul.cs.csle.art.term.ITermsLowLevelAPI;
-import uk.ac.rhul.cs.csle.art.term.Value;
-import uk.ac.rhul.cs.csle.art.term.__char;
 import uk.ac.rhul.cs.csle.art.term.__class;
-import uk.ac.rhul.cs.csle.art.term.__int32;
-import uk.ac.rhul.cs.csle.art.term.__list;
-import uk.ac.rhul.cs.csle.art.term.__mapChain;
-import uk.ac.rhul.cs.csle.art.term.__proc;
-import uk.ac.rhul.cs.csle.art.term.__quote;
-import uk.ac.rhul.cs.csle.art.term.__real64;
-import uk.ac.rhul.cs.csle.art.term.__string;
 import uk.ac.rhul.cs.csle.art.util.Util;
 
 public class ADL {
@@ -39,7 +38,7 @@ public class ADL {
 
   public ADL(String filename) {
     System.out.println("ADL V1.00");
-    iTerms = new ITermsLowLevelAPI();
+    iTerms = new ITerms();
     InputStream inputStream = getClass().getClassLoader().getResourceAsStream("uk/ac/rhul/cs/csle/art/adl/adlSpecification.art");
     String ADLSpecification = "** null **";
     try {
@@ -88,8 +87,8 @@ public class ADL {
   public Value interpret(int term, __mapChain env) {
 //    System.out.println("ADL interpret " + iTerms.toString(term));
     Value ret; // tenporary used in some switch cases
-    int children[] = iTerms.getTermChildren(term);
-    switch (iTerms.getTermSymbolString(term)) {
+    int children[] = iTerms.termChildren(term);
+    switch (iTerms.termSymbolString(term)) {
     case "apply":    ret = iTerms.valueEmpty;
                      for (int c : children) {
                        if (ret instanceof __proc) { // ret is result of previous child
@@ -121,7 +120,7 @@ public class ADL {
                      }
                      return interpret(children[2], env);
     case "slice":    throw new ADLException("Slice not yet implemented");
-    case "blist":    int gc = iTerms.getSubterm(term, 0,0); if (iTerms.hasSymbol(gc, "list")) children = iTerms.getTermChildren(gc);
+    case "blist":    int gc = iTerms.subterm(term, 0,0); if (iTerms.hasSymbol(gc, "list")) children = iTerms.termChildren(gc);
     case "mtlist":   // blist flattens list as top argument and flows through to list; mtlist just flows through
     case "list":     ret = new __list(); for (int c : children) ret.__put(interpret(c, env)); return ret;
     case "adl":      return iTerms.valueEmpty; // Special case - empty program
@@ -163,7 +162,7 @@ public class ADL {
     case "lambda":   LinkedHashMap<Value, Value> parameters = new LinkedHashMap<>();
                      if (children.length == 1) return new __proc(parameters, children[0]);
                      else {
-                       for (int i: iTerms.getTermChildren(children[0])) parameters.put(new __quote(i), iTerms.valueEmpty);
+                       for (int i: iTerms.termChildren(children[0])) parameters.put(new __quote(i), iTerms.valueEmpty);
                        return new __proc(parameters, children[1]);
                      }
     case "class":    LinkedList<Value> superClasses = new LinkedList<>();
@@ -171,13 +170,13 @@ public class ADL {
                        superClasses.add(objectClass);
                        return new __class(superClasses, children[0]);
                      } else {
-                       for (int i: iTerms.getTermChildren(children[0])) {
+                       for (int i: iTerms.termChildren(children[0])) {
                          superClasses.add(new __class(null,0));
                          return new __class(superClasses, children[1]);
                        }
                      }
    }
-    throw new ADLException("in ADL term, unknown constructor '" + iTerms.getTermSymbolString(term) + "'");
+    throw new ADLException("in ADL term, unknown constructor '" + iTerms.termSymbolString(term) + "'");
   }
 
   private Value systemCall(Value opcode, Value argument) {
@@ -205,8 +204,8 @@ public class ADL {
 
   private Value updateEnvironment(__mapChain env, int lhsTerm, int rhsTerm, __mapChain env2, boolean lock) {
     Value ret = iTerms.valueEmpty;
-    if (iTerms.getTermArity(lhsTerm) == 1)
-      env.__put(new __quote(iTerms.getSubterm(lhsTerm, 0)), ret = interpret(rhsTerm, env), lock);
+    if (iTerms.termArity(lhsTerm) == 1)
+      env.__put(new __quote(iTerms.subterm(lhsTerm, 0)), ret = interpret(rhsTerm, env), lock);
     else throw new ADLException("lhsList with arity > 1 not yet implemented");
     return ret;
   }

@@ -11,14 +11,14 @@ import javafx.stage.Screen;
 import javafx.stage.Stage;
 import uk.ac.rhul.cs.csle.art.ART;
 import uk.ac.rhul.cs.csle.art.script.ScriptTermInterpreter;
-import uk.ac.rhul.cs.csle.art.term.ITermsLowLevelAPI;
+import uk.ac.rhul.cs.csle.art.term.ITerms;
 
 public class FXStart extends Application {
 
   @Override
   public void start(Stage primaryStage) {
     if (!ART.useIDE) {
-      new ScriptTermInterpreter(new ITermsLowLevelAPI()).interpretARTScript(ART.scriptString(ART.clargs));
+      new ScriptTermInterpreter(new ITerms()).interpretARTScript(ART.scriptString(ART.clargs));
       Platform.exit();
       System.exit(0);
     }

@@ -63,15 +63,20 @@ trTuple ::= #^
 terms ::= trTerm termsTail^
 termsTail ::= ','^ trTerm | ','^ trTerm termsTail^
 
-trTerm ::= __bool^^ | __int32^^ | __real64^^ | __string^^ | __char^^ | list^^ | __map^^ | ID^^ | IDSTAR^^ | ID^^ '('^ ')'^ | ID^^ '('^ trTerm ')'^ | ID^^ '('^ terms^ ')'^ | trTuple^^ '<'^ terms^ '>'^
+trTerm ::= 
+  __bool^^ | __char^^ | __int32^^ | __real64^^ | __string^^  // lexical from builtins - see below  
+| __keyval^^ | __list^^ | __set^^ 
+| ID^^ | IDSTAR^^ | ID^^ '('^ ')'^ | ID^^ '('^ trTerm ')'^ | ID^^ '('^ terms^ ')'^ | trTuple^^ '<'^ terms^ '>'^
 
-list ::= '['^ listElements^^ ']'^
+__keyval ::= trTerm '->'^ trTerm
 
-listElements ::= emptyList^^ |  __list^^ trTerm emptyList | __list^^ trTerm ','^ listElements
-emptyList ::=  __list^^ __empty
-__list ::= #^
-__empty ::= #^
+__list ::= '['^ listParent elements ']'^
+listParent ::= #^ | __list '|'^
 
+__set  ::= '{'^ setParent elements '}'^ 
+setParent ::= #^ | __set '|'^
+
+elements ::= #^ | terms^
 
 trRelation ::= '->' | '=>'  | '/>' | '\>' | '~>'  
 
@@ -164,8 +169,6 @@ __char ::= &CHAR_BQ
 __int32 ::= &SIGNED_INTEGER
 __real64 ::= &SIGNED_REAL 
 __string ::= &STRING_DQ
-__map ::= '{'^ elements '}'^ | '{'^ elements '}'^  ':'^ trTerm
-elements ::= #^ | trTopTuple^
 
 ID ::= &ID^^
 IDSTAR ::= ID '*'^

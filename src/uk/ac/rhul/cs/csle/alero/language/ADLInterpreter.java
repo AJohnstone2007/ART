@@ -63,7 +63,6 @@ public class ADLInterpreter {
 
   public ADLInterpreter(ITerms iTerms) {
     this.iTerms = iTerms;
-    // TODO: We need an encapsulated bootstrap grammarbuilder here
     ScriptTermInterpreter artScriptInterpreter = new ScriptTermInterpreter(iTerms);
     try {
       artScriptInterpreter
@@ -73,7 +72,7 @@ public class ADLInterpreter {
     }
     adlLexer = new LexerSingletonLongestMatch();
     adlParser = new GLLBaseLine();
-    adlParser.cfgRules = null; // TODO: !!! fix this ! artScriptInterpreter.getGrammar();
+    adlParser.cfgRules = artScriptInterpreter.currentCFGRules;
     adlParser.cfgRules.normalise();
   }
 
@@ -106,8 +105,8 @@ public class ADLInterpreter {
 
   private Value adlInterpretRec(int term, __mapChain env) {
     System.out.println("adlInterpretRec at " + iTerms.toString(term));
-    String termSymbolString = iTerms.getTermSymbolString(term);
-    int children[] = iTerms.getTermChildren(term);
+    String termSymbolString = iTerms.termSymbolString(term);
+    int children[] = iTerms.termChildren(term);
     Value ret; // temporary which is used in some switch cases
   //@formatter:off
     switch (termSymbolString) { // constructors that do their own subtree handling
@@ -120,8 +119,8 @@ public class ADLInterpreter {
     case "skip": return iTerms.valueDone;
     case "adl": return iTerms.valueEmpty; // Special case - only appears in derivation if the interpeted string is empty or has only whitespace
     case "list": ret = new __list(); for (int c : children) ret.__put(adlInterpretRec(c, env)); return ret;
-    case "fix": return env.__put(new __quote(iTerms.getSubterm(children[0], 0)), ret = adlInterpretRec(children[1], env), true);
-    case "assign": return env.__put(new __quote(iTerms.getSubterm(children[0], 0)), ret = adlInterpretRec(children[1], env), false);
+    case "fix": return env.__put(new __quote(iTerms.subterm(children[0], 0)), ret = adlInterpretRec(children[1], env), true);
+    case "assign": return env.__put(new __quote(iTerms.subterm(children[0], 0)), ret = adlInterpretRec(children[1], env), false);
     case "derefValue": return env.__get(new __quote(children[0]));
     case "derefBinding": return new __quote(children[0]);
     case "lambda": return createProcedure(env, children[0], children[1]);
@@ -160,19 +159,19 @@ public class ADLInterpreter {
     case "neg": return left.__neg();
     case "not": if (left instanceof __mesh) { Alero.addMesh((AleroMesh) left.javaValue()); return left; } else return left.__not();
     }
-    throw new AleroException("in ADL derivation term, unimplemented constructor '" + iTerms.getTermSymbolString(term) + "'");
+    throw new AleroException("in ADL derivation term, unimplemented constructor '" + iTerms.termSymbolString(term) + "'");
   //@formatter:on
   }
 
   private Value createProcedure(__mapChain env, int parameterTerm, int bodyTerm) {
     System.out.println("Create procedure");
     LinkedHashMap<Value, Value> parameters = new LinkedHashMap<>();
-    for (int i : iTerms.getTermChildren(parameterTerm)) {// work our way through the bindings in the map under children[0]
+    for (int i : iTerms.termChildren(parameterTerm)) {// work our way through the bindings in the map under children[0]
       System.out.println("Processing parameter " + iTerms.toString(i));
-      Value key = adlInterpretRec(iTerms.getSubterm(i, 0), env);
+      Value key = adlInterpretRec(iTerms.subterm(i, 0), env);
       System.out.println("key is  " + key);
 
-      Value boundValue = iTerms.getTermArity(i) == 1 ? iTerms.valueEmpty : adlInterpretRec(iTerms.getSubterm(i, 0, 1), env);
+      Value boundValue = iTerms.termArity(i) == 1 ? iTerms.valueEmpty : adlInterpretRec(iTerms.subterm(i, 0, 1), env);
       System.out.println("boundValue is  " + boundValue);
 
       parameters.put(key, boundValue);
@@ -222,10 +221,10 @@ public class ADLInterpreter {
       return iTerms.valueDone;
     // case 1:
     // return print(System.out, argument);
-    // case 2:
-    // return print(System.err, argument);
-    // case 3:
-    // return new __string(keyboard.nextLine());
+    case 2:
+      return print(System.err, argument);
+    case 3:
+      return new __string(keyboard.nextLine());
     default:
       throw new AleroException("Illegal system opcode " + oc);
     }

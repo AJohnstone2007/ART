@@ -153,11 +153,11 @@ public class ChooseRules {
   }
 
   private void updateChooser(ARTV3Module ARTV3Module, ARTBitSet[] bits, int lhsTerm, int rhsTerm) {
-    for (int l = 0; l < iTerms.getTermArity(lhsTerm); l++) {
+    for (int l = 0; l < iTerms.termArity(lhsTerm); l++) {
       // System.out.println("Updating chooser with: " + iTerms.toString(lhsTerm) + " relation " + iTerms.toString(rhsTerm));
-      int lTerm = iTerms.getSubterm(lhsTerm, l);
-      for (int r = 0; r < iTerms.getTermArity(rhsTerm); r++) {
-        int rTerm = iTerms.getSubterm(rhsTerm, r);
+      int lTerm = iTerms.subterm(lhsTerm, l);
+      for (int r = 0; r < iTerms.termArity(rhsTerm); r++) {
+        int rTerm = iTerms.subterm(rhsTerm, r);
         setChooserBit(ARTV3Module, bits, lTerm, rTerm);
       }
     }
@@ -172,7 +172,7 @@ public class ChooseRules {
   }
 
   private int convertTermToEnumerationElement(ARTV3Module module, int term) {
-    String child = ITerms.unescapeMeta(iTerms.getTermSymbolString(iTerms.getSubterm(term, 0)));
+    String child = ITerms.unescapeMeta(iTerms.termSymbolString(iTerms.subterm(term, 0)));
     // System.out.println("Converting: " + child);
 
     ARTGrammarElement element = null;

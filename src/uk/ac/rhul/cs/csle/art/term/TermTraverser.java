@@ -59,7 +59,7 @@ public class TermTraverser {
  //@formatter:on
 
   public void perform(Map<Integer, Consumer<Integer>> map, int termIndex) { // Perform an action: use default (keyed on -1) if there is no action in the table
-    Consumer<Integer> action = map.get(iTerms.getTermSymbolStringIndex(termIndex));
+    Consumer<Integer> action = map.get(iTerms.termSymbolStringIndex(termIndex));
     // if (action == null) {
     // System.out.println("no action for " + iTerms.getTermSymbolString(termIndex));
     // } else {
@@ -72,10 +72,10 @@ public class TermTraverser {
   public void traverse(int termIndex) {
     // System.out.println("traverse() at term " + iTerms.toString(termIndex));
     perform(opsPreorder, termIndex);
-    int[] children = iTerms.getTermChildren(termIndex);
+    int[] children = iTerms.termChildren(termIndex);
     int length = children.length;
     int lengthLessOne = length - 1;
-    if (!breakSet.contains(iTerms.getTermSymbolStringIndex(termIndex))) for (int i = 0; i < length; i++) {
+    if (!breakSet.contains(iTerms.termSymbolStringIndex(termIndex))) for (int i = 0; i < length; i++) {
       traverse(children[i]);
       if (i < lengthLessOne) perform(opsInorder, termIndex);
     }

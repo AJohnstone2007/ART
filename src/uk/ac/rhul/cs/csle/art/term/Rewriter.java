@@ -83,13 +83,13 @@ public class Rewriter {
     List<Integer> ruleList = null;
 
     if (rulesForThisRelation != null) { // There may be no rules at all in this relation!
-      ruleList = rulesForThisRelation.get(iTerms.getTermSymbolStringIndex(rootTheta));
+      ruleList = rulesForThisRelation.get(iTerms.termSymbolStringIndex(rootTheta));
       if (ruleList == null) ruleList = rulesForThisRelation.get(iTerms.findString("")); // Default rules - 1 Oct 24 What are these?
     }
 
     if (ruleList == null) {
       Util.trace(3, level, "No rules in relation " + iTerms.plainTextTraverser.toString(relationTerm, variableMap) + " for constructor "
-          + iTerms.getTermSymbolString(rootTheta) + "\n");
+          + iTerms.termSymbolString(rootTheta) + "\n");
       return term;
     }
 
@@ -99,51 +99,51 @@ public class Rewriter {
       // for (int i : variableMap.keySet())
       // System.out.println(i + ":" + iTerms.getString(variableMap.get(i)));
       Util.trace(3, level, iTerms.plainTextTraverser.toString(ruleIndex, false, -1, variableMap)); // Announce the next rule we are going to try
-      int lhs = iTerms.getSubterm(ruleIndex, 1, 1, 0);
-      int premises = iTerms.getSubterm(ruleIndex, 1, 0);
-      int premiseCount = iTerms.getTermArity(premises);
-      int rhs = iTerms.getSubterm(ruleIndex, 1, 1, 2);
+      int lhs = iTerms.subterm(ruleIndex, 1, 1, 0);
+      int premises = iTerms.subterm(ruleIndex, 1, 0);
+      int premiseCount = iTerms.termArity(premises);
+      int rhs = iTerms.subterm(ruleIndex, 1, 1, 2);
       int[] bindings = new int[ITerms.variableCount];
 
       int ruleLabel = thetaFromConfiguration(ruleIndex);
       if (!iTerms.matchZeroSV(term, lhs, bindings)) {
-        Util.trace(3, level, iTerms.plainTextTraverser.toString(iTerms.getSubterm(ruleLabel, 0), variableMap) + " Theta match failed: seek another rule\n");
+        Util.trace(3, level, iTerms.plainTextTraverser.toString(iTerms.subterm(ruleLabel, 0), variableMap) + " Theta match failed: seek another rule\n");
         continue nextRule;
       }
-      Util.trace(5, level, iTerms.plainTextTraverser.toString(iTerms.getSubterm(ruleLabel, 0), variableMap) + "bindings after Theta match "
+      Util.trace(5, level, iTerms.plainTextTraverser.toString(iTerms.subterm(ruleLabel, 0), variableMap) + "bindings after Theta match "
           + bindingsToString(bindings, variableMap) + "\n");
 
       // Now work through the premises
       for (int premiseNumber = 0; premiseNumber < premiseCount; premiseNumber++) {
-        int premise = iTerms.getSubterm(premises, premiseNumber);
-        Util.trace(4, level, iTerms.plainTextTraverser.toString(iTerms.getSubterm(ruleLabel, 0), variableMap) + "premise " + (premiseNumber + 1) + " "
+        int premise = iTerms.subterm(premises, premiseNumber);
+        Util.trace(4, level, iTerms.plainTextTraverser.toString(iTerms.subterm(ruleLabel, 0), variableMap) + "premise " + (premiseNumber + 1) + " "
             + iTerms.plainTextTraverser.toString(premise, variableMap) + "\n");
         if (iTerms.hasSymbol(premise, "trMatch")) {// |> match expressions
-          if (!iTerms.matchZeroSV(iTerms.substitute(bindings, iTerms.getSubterm(premise, 0), 0), iTerms.getSubterm(premise, 1), bindings)) {
-            Util.trace(4, level, iTerms.plainTextTraverser.toString(iTerms.getSubterm(ruleLabel, 0), variableMap) + "premise " + (premiseNumber + 1)
+          if (!iTerms.matchZeroSV(iTerms.substitute(bindings, iTerms.subterm(premise, 0), 0), iTerms.subterm(premise, 1), bindings)) {
+            Util.trace(4, level, iTerms.plainTextTraverser.toString(iTerms.subterm(ruleLabel, 0), variableMap) + "premise " + (premiseNumber + 1)
                 + " failed: seek another rule\n");
             continue nextRule;
           }
         } else { // transition
           if (iTerms.hasSymbol(premise, "trTransition")) {
             int rewriteTerm = iTerms.substitute(bindings, thetaLHSFromConfiguration(premise), 0);
-            int rewriteRelation = iTerms.getSubterm(premise, 1);
+            int rewriteRelation = iTerms.subterm(premise, 1);
             int rewrittenTerm = rewriteAttempt(rewriteTerm, rewriteRelation, level + 1);
             if (rewrittenTerm < 0) {
-              Util.trace(4, level, iTerms.plainTextTraverser.toString(iTerms.getSubterm(ruleLabel, 0), variableMap) + "premise" + (premiseNumber + 1)
+              Util.trace(4, level, iTerms.plainTextTraverser.toString(iTerms.subterm(ruleLabel, 0), variableMap) + "premise" + (premiseNumber + 1)
                   + " failed: seek another rule\n");
               continue nextRule;
             }
-            if (!iTerms.matchZeroSV(rewrittenTerm, iTerms.getSubterm(premise, 2), bindings)) continue nextRule;
+            if (!iTerms.matchZeroSV(rewrittenTerm, iTerms.subterm(premise, 2), bindings)) continue nextRule;
           } else
             Util.fatal("ESOS - unknown premise kind " + iTerms.plainTextTraverser.toString(premise, variableMap));
         }
-        Util.trace(5, level, iTerms.plainTextTraverser.toString(iTerms.getSubterm(ruleLabel, 0), variableMap) + "bindings after premise " + (premiseNumber + 1)
+        Util.trace(5, level, iTerms.plainTextTraverser.toString(iTerms.subterm(ruleLabel, 0), variableMap) + "bindings after premise " + (premiseNumber + 1)
             + " " + bindingsToString(bindings, variableMap) + "\n");
       }
 
       term = iTerms.substitute(bindings, rhs, 0);
-      Util.trace(level == 1 ? 2 : 3, level, iTerms.plainTextTraverser.toString(iTerms.getSubterm(ruleLabel, 0), variableMap) + "rewrites to "
+      Util.trace(level == 1 ? 2 : 3, level, iTerms.plainTextTraverser.toString(iTerms.subterm(ruleLabel, 0), variableMap) + "rewrites to "
           + iTerms.plainTextTraverser.toString(term, variableMap) + "\n");
       return term;
     }
@@ -152,11 +152,11 @@ public class Rewriter {
   }
 
   private int thetaFromConfiguration(int term) {
-    return (iTerms.hasSymbol(term, "trTopTuple") || iTerms.hasSymbol(term, "trTuple")) ? iTerms.getSubterm(term, 0) : term;
+    return (iTerms.hasSymbol(term, "trTopTuple") || iTerms.hasSymbol(term, "trTuple")) ? iTerms.subterm(term, 0) : term;
   }
 
   private int thetaLHSFromConfiguration(int term) {
-    return iTerms.getSubterm(thetaFromConfiguration(term), 0);
+    return iTerms.subterm(thetaFromConfiguration(term), 0);
   }
 
   private int stepper(int inputTerm) {
@@ -226,7 +226,7 @@ public class Rewriter {
             termRewriteConstructorDefinitions.put(ruleRoot, termRewriteConstructorDefinitions.get(ruleRoot) + 1);
 
           // System.out.println("Checking for invalid function calls on " + iTerms.toString(ruleIndex));
-          reportInvalidFunctionCallsRec(ruleIndex, iTerms.getSubterm(ruleIndex, 1, 1, 0));
+          reportInvalidFunctionCallsRec(ruleIndex, iTerms.subterm(ruleIndex, 1, 1, 0));
 
           Map<Integer, Integer> variableStringIndexToVariableNumberMap = new HashMap<>();
           Map<Integer, Integer> variableNumberMapToVariableStringIndex = new HashMap<>();
@@ -294,8 +294,8 @@ public class Rewriter {
 
   private int normaliseRuleRec(Integer ruleIndex, Map<Integer, Integer> variableNameMap) {
     // System.out.println("normaliseRuleRec at " + iTerms.toString(ruleIndex));
-    int arity = iTerms.getTermArity(ruleIndex);
-    int ruleStringIndex = iTerms.getTermSymbolStringIndex(ruleIndex);
+    int arity = iTerms.termArity(ruleIndex);
+    int ruleStringIndex = iTerms.termSymbolStringIndex(ruleIndex);
     // Special case processing for unlabelled rules - generate a label ofthe form Rx
     if (arity == 0 && iTerms.hasSymbol(ruleIndex, "trLabel")) {
       // System.out.println("Generating new label R" + unlabeledRuleNumber);
@@ -312,7 +312,7 @@ public class Rewriter {
     }
 
     for (int i = 0; i < arity; i++)
-      newChildren[i] = normaliseRuleRec(iTerms.getSubterm(ruleIndex, i), variableNameMap);
+      newChildren[i] = normaliseRuleRec(iTerms.subterm(ruleIndex, i), variableNameMap);
 
     return iTerms.findTerm(ruleStringIndex, newChildren);
   }
@@ -323,12 +323,12 @@ public class Rewriter {
       Map<Integer, Integer> constructorCount, Set<Integer> functionsInUse, Set<Integer> numericVariablesInUse, Integer termIndex) {
     // System.out.println("collectVariablesAndConstructorsRec() at " +iTerms.plainTextTraverser.toString(termIndex, null));
 
-    int termSymbolStringIndex = iTerms.getTermSymbolStringIndex(termIndex);
+    int termSymbolStringIndex = iTerms.termSymbolStringIndex(termIndex);
     if (iTerms.hasSymbol(termIndex, "trLabel")) return; // Do not go down into labels
-    String termSymbolString = iTerms.getTermSymbolString(termIndex);
+    String termSymbolString = iTerms.termSymbolString(termIndex);
 
     if (termSymbolString.length() > 1 && termSymbolString.charAt(0) == '_' && termSymbolString.charAt(1) != '_') { // Variable
-      if (iTerms.getTermArity(termIndex) > 0)
+      if (iTerms.termArity(termIndex) > 0)
         System.out.println("*** Error: non-leaf variable " + termSymbolString + " in " + iTerms.plainTextTraverser.toString(parentRewriteTermIndex));
       boolean isNumeric = true;
       for (int i = 1; i < termSymbolString.length(); i++)
@@ -350,14 +350,14 @@ public class Rewriter {
       constructorCount.put(termSymbolStringIndex, constructorCount.get(termSymbolStringIndex) + 1);
     }
 
-    for (int i = 0; i < iTerms.getTermArity(termIndex); i++)
+    for (int i = 0; i < iTerms.termArity(termIndex); i++)
       collectVariablesAndConstructorsRec(parentRewriteTermIndex, variableStringIndexToVariableNumberMap, constructorCount, functionsInUse,
-          numericVariablesInUse, iTerms.getSubterm(termIndex, i));
+          numericVariablesInUse, iTerms.subterm(termIndex, i));
   }
 
   private void reportInvalidFunctionCallsRec(int parentRewriteTermIndex, int termIndex) {
-    String termSymbolString = iTerms.getTermSymbolString(termIndex);
-    int termStringIndex = iTerms.getTermSymbolStringIndex(termIndex);
+    String termSymbolString = iTerms.termSymbolString(termIndex);
+    int termStringIndex = iTerms.termSymbolStringIndex(termIndex);
     if (termSymbolString.length() > 0 && termSymbolString.charAt(0) != '_') {
       if (termRewriteConstructorUsages.get(termStringIndex) == null)
         termRewriteConstructorUsages.put(termStringIndex, 1);
@@ -365,8 +365,8 @@ public class Rewriter {
         termRewriteConstructorUsages.put(termStringIndex, termRewriteConstructorUsages.get(termStringIndex) + 1);
     }
 
-    for (int i = 0; i < iTerms.getTermArity(termIndex); i++)
-      reportInvalidFunctionCallsRec(parentRewriteTermIndex, iTerms.getSubterm(termIndex, i));
+    for (int i = 0; i < iTerms.termArity(termIndex); i++)
+      reportInvalidFunctionCallsRec(parentRewriteTermIndex, iTerms.subterm(termIndex, i));
   }
   /* End of variable and function mapping ****************************************************************************/
 

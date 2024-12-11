@@ -19,8 +19,8 @@ public class RewriteRules {
 
   public void buildTRRule(int term) {
     // System.out.println("Processing trRule: " + iTerms.toString(term));
-    int relation = iTerms.getSubterm(term, 1, 1, 1);
-    int constructorIndex = iTerms.getTermSymbolStringIndex((iTerms.getSubterm(term, 1, 1, 0, 0)));
+    int relation = iTerms.subterm(term, 1, 1, 1);
+    int constructorIndex = iTerms.termSymbolStringIndex((iTerms.subterm(term, 1, 1, 0, 0)));
     // System.out.println("Building TR rule " + iTerms.toString(term) + "\nwith relation " + iTerms.toString(relation) + "\nand constructor "
     // + iTerms.getString(constructorIndex));
     if (trRules.get(relation) == null) trRules.put(relation, new HashMap<>());

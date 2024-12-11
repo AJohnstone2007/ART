@@ -56,7 +56,7 @@ public class Alero extends Application {
      * Argument processing
      */
     var unamedArgs = getParameters().getUnnamed();
-    DateTimeFormatter format = DateTimeFormatter.ofPattern("MMM d yyyy  hh:mm a");
+    DateTimeFormatter format = DateTimeFormatter.ofPattern("MMM d yyyy hh:mm a");
 
     String fileContents = "/* Alero new file: " + LocalDateTime.now().format(format) + " */";
     String filename = unamedArgs.size() == 0 ? null : unamedArgs.get(0);
@@ -314,14 +314,14 @@ public class Alero extends Application {
     switch (s) {
     case "_Run":
       consoleln("Run");
-      // try {
-      // gw.meshGroup.getChildren().clear();
-      consoleln("Returned value " + adlInterpreter.adlInterpret(tw.codeArea.getText()).javaValue());
-      consoleln("Top level symbols " + adlInterpreter.topLevelSymbols);
-      // } catch (RuntimeException e) {
-      // consoleln("Abend ");
-      // consoleln(e.getMessage());
-      // }
+      try {
+        gw.meshGroup.getChildren().clear();
+        consoleln("Returned value " + adlInterpreter.adlInterpret(tw.codeArea.getText()).javaValue());
+        consoleln("Top level symbols " + adlInterpreter.topLevelSymbols);
+      } catch (RuntimeException e) {
+        consoleln("Abend ");
+        consoleln(e.getMessage());
+      }
       break;
     case "E_xit":
       exit();

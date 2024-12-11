@@ -233,7 +233,7 @@ public class ITermPool {
     if (symbolNameString.charAt(0) == '_') {
       if (symbolNameString.length() > 1 && symbolNameString.charAt(1) == '_') {// two underscores so must be intrinsic function or type
         if (!isIntrinsicFunction(symbolNameStringIndex) && !(isIntrinsicType(symbolNameStringIndex)))
-          throw new ARTExceptionTermParser("unknown evaluatable function or type" + symbolNameString, cp, input);
+          throw new ARTExceptionTermParser("V3 unknown evaluatable function or type" + symbolNameString, cp, input);
       } else {
         if (!isVariable(symbolNameStringIndex) && !isSequenceVariable(symbolNameStringIndex))
           throw new ARTExceptionTermParser("unknown variable" + symbolNameString, cp, input);

@@ -333,7 +333,7 @@ public abstract class ITerms {
   }
 
   public void syntaxError(String s) {
-    System.out.println(echo(s, cp, input));
+    System.out.println("V4" + echo(s, cp, input));
     // !!!
     // System.out.println("** " + s);
     // System.out.println(input);

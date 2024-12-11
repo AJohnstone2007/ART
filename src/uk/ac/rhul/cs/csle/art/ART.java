@@ -14,7 +14,7 @@ import uk.ac.rhul.cs.csle.art.fx.FXStart;
 import uk.ac.rhul.cs.csle.art.old.v3.ARTV3;
 import uk.ac.rhul.cs.csle.art.old.v4.core.ARTV4;
 import uk.ac.rhul.cs.csle.art.script.ScriptTermInterpreter;
-import uk.ac.rhul.cs.csle.art.term.ITermsLowLevelAPI;
+import uk.ac.rhul.cs.csle.art.term.ITerms;
 import uk.ac.rhul.cs.csle.art.test.AJDebug;
 import uk.ac.rhul.cs.csle.art.util.Util;
 import uk.ac.rhul.cs.csle.art.util.Version;
@@ -34,7 +34,7 @@ public class ART {
     case "v4":      new ARTV4(Arrays.copyOfRange(args, 1, args.length)); return; // Undocumented internal mode
     case "ide":     useIDE = true; Application.launch(FXStart.class, Arrays.copyOfRange(args, 1, args.length)); return;
     case "fx":      Application.launch(FXStart.class, Arrays.copyOfRange(args, 1, args.length)); return;
-    default:        new ScriptTermInterpreter(new ITermsLowLevelAPI()).interpretARTScript(scriptString(args)); return; // Run batch mode without fx in this context
+    default:        new ScriptTermInterpreter(new ITerms()).interpretARTScript(scriptString(args)); return; // Run batch mode without fx in this context
     }
     // No args
     System.out.println("ART " + Version.version() + "\nUsage:");

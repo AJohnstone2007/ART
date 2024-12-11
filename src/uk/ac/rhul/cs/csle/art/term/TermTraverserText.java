@@ -44,11 +44,11 @@ public class TermTraverserText extends TermTraverser {
   }
 
   public int childSymbolIndex(int root, int childNumber) {
-    return iTerms.getTermChildren(root)[childNumber];
+    return iTerms.termChildren(root)[childNumber];
   }
 
   public String childSymbolString(int root, int childNumber) {
-    return iTerms.getTermSymbolString(childSymbolIndex(root, childNumber));
+    return iTerms.termSymbolString(childSymbolIndex(root, childNumber));
   }
 
   // public String childStrippedSymbolString(int root, int childNumber) {
@@ -101,10 +101,10 @@ public class TermTraverserText extends TermTraverser {
     if (depthLimit >= 0 && depth >= depthLimit)
       sb.append("..");
     else {
-      int[] children = iTerms.getTermChildren(termIndex);
+      int[] children = iTerms.termChildren(termIndex);
       int length = children.length;
       int lengthLessOne = length - 1;
-      if (!breakSet.contains(iTerms.getTermSymbolStringIndex(termIndex))) for (int i = 0; i < length; i++) {
+      if (!breakSet.contains(iTerms.termSymbolStringIndex(termIndex))) for (int i = 0; i < length; i++) {
         traverse(children[i], depth + 1);
         if (i < lengthLessOne) perform(opsInorder, termIndex);
       }
