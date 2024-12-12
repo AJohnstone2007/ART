@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Set;
 
 public class ITerms {
+  /* Term class - to be replaced by HashPool style implementation *******************************************/
   // @formatter:off
   class ITerm { // Replace at some point with a HashPool implementation
     private final int symbolIndex;
@@ -110,6 +111,7 @@ public class ITerms {
     if (plugin.name() != null) System.out.println("Attached to plugin: " + plugin.name());
   }
 
+  /* Raw term rendering *************************************************************************************/
   public String toString(int term) {
     if (term == 0) return "null term";
     return rawTextTraverser.toString(term);
@@ -120,6 +122,7 @@ public class ITerms {
     return rawTextTraverser.toString(term, indent, depthLimit, localAliases);
   }
 
+  /* Symbol categories **************************************************************************************/
   public boolean isVariableSymbol(int symbolIndex) {
     return symbolIndex >= firstVariableIndex && symbolIndex < firstSequenceVariableIndex;
   }
@@ -577,40 +580,42 @@ public class ITerms {
   /* Value system evaluation ********************************************************************************/
   // Evaluate an operation over constants: silently return term if we don't recognise an operation
   public int evaluateTerm(int term, int[] children) {
-    if (!termSymbolString(term).startsWith("__")) return term; // Nothing to do
+    if (children.length == 0 || !termSymbolString(term).startsWith("__")) return term; // Nothing to do
 
     int termSymbolStringIndex = termSymbolStringIndex(term);
-    int arity = termArity(term);
+    int firstChildSymbolStringIndex = termSymbolStringIndex(children[0]);
 
-    // System.out.println("Evaluating term " + toString(term) + " with l = " + l.toCanonicalString() + " and r = " + r.toCanonicalString() + " and rr = "
-    // + rr.toCanonicalString());
-    switch (arity) {
+    switch (children.length) {
     case 1:
       switch (termSymbolStringIndex) {
       case __notStringIndex:
-        switch (homogenousChildrenType(term)) {
+        switch (firstChildSymbolStringIndex) {
         case __boolStringIndex:
-          return javaBooleanToTerm(!termToJavaBoolean(termChildren(term)[0]));
+          return javaBooleanToTerm(!termToJavaBoolean(children[0]));
         case __int32StringIndex:
-          return javaIntegerToTerm(~termToJavaInteger(termChildren(term)[0]));
+          return javaIntegerToTerm(~termToJavaInteger(children[0]));
         case __intAPStringIndex:
-          return javaBigIntegerToTerm(termToJavaBigInteger(termChildren(term)[0]).not());
+          return javaBigIntegerToTerm(termToJavaBigInteger(children[0]).not());
         }
       case __negStringIndex:
-        switch (homogenousChildrenType(term)) {
+        switch (firstChildSymbolStringIndex) {
         case __int32StringIndex:
-          return javaIntegerToTerm(-termToJavaInteger(termChildren(term)[0]));
+          return javaIntegerToTerm(-termToJavaInteger(children[0]));
         case __intAPStringIndex:
-          return javaBigIntegerToTerm(termToJavaBigInteger(termChildren(term)[0]).negate());
+          return javaBigIntegerToTerm(termToJavaBigInteger(children[0]).negate());
         case __real64StringIndex:
-          return javaDoubleToTerm(-termToJavaDouble(termChildren(term)[0]));
+          return javaDoubleToTerm(-termToJavaDouble(children[0]));
         case __realAPStringIndex:
-          return javaBigDecimalToTerm(termToJavaBigDecimal(termChildren(term)[0]).negate());
+          return javaBigDecimalToTerm(termToJavaBigDecimal(children[0]).negate());
         }
       case __sizeStringIndex:
       }
     case 2:
       switch (termSymbolStringIndex) {
+      case __eqStringIndex:
+        return javaBooleanToTerm(children[0] == children[1]);
+      case __neStringIndex:
+        return javaBooleanToTerm(children[0] != children[1]);
       // case __compareStringIndex:
       // if (mixCheck(l, r, term)) return bottomTermIndex;
       // return findTerm(l.__compare(r).toString());
@@ -720,14 +725,6 @@ public class ITerms {
       // }
     }
     return term; // Nothing to do
-  }
-
-  private int homogenousChildrenType(int term) {
-    int[] children = termChildren(term);
-    int ret = termSymbolStringIndex(children[0]);
-    for (int c : children)
-      if (termSymbolStringIndex(c) != ret) throw new ValueException("Term " + toString(term) + " has mixed type children");
-    return ret;
   }
 
   public boolean hasSymbol(Integer term, String string) {
