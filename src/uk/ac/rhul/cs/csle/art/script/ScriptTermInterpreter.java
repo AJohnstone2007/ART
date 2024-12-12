@@ -26,8 +26,8 @@ import uk.ac.rhul.cs.csle.art.term.AttributeActionInterpreter;
 import uk.ac.rhul.cs.csle.art.term.AttributeGrammarInterpreter;
 import uk.ac.rhul.cs.csle.art.term.ITerms;
 import uk.ac.rhul.cs.csle.art.term.InterpreterBase;
-import uk.ac.rhul.cs.csle.art.term.RewriteRules;
 import uk.ac.rhul.cs.csle.art.term.Rewriter;
+import uk.ac.rhul.cs.csle.art.term.TRRules;
 import uk.ac.rhul.cs.csle.art.term.TermTraverser;
 import uk.ac.rhul.cs.csle.art.term.TermTraverserText;
 import uk.ac.rhul.cs.csle.art.term.eSOSInterpreter;
@@ -59,7 +59,7 @@ public class ScriptTermInterpreter {
 
   private ChooseRules currentChooser;
 
-  private RewriteRules currentRewriteRules;
+  private TRRules currentTRRules;
   private final Rewriter currentRewriter;
 
   String consoleInputLine = "";
@@ -86,7 +86,7 @@ public class ScriptTermInterpreter {
     currentChooser.normalise(currentCFGRules);
 
     // Initialise rewriter
-    currentRewriteRules = new RewriteRules(iTerms);
+    currentTRRules = new TRRules(iTerms);
     currentRewriter = new Rewriter(iTerms);
   }
 
@@ -121,7 +121,7 @@ public class ScriptTermInterpreter {
     // ret.addAction("cfgSlot", (Integer t) -> currentGrammar.workingAction = t, null, null);
     ret.addAction("chooseRule", (Integer t) -> currentChooser.buildChooseRule(t), null, null);
 
-    ret.addAction("trRule", (Integer t) -> currentRewriteRules.buildTRRule(t), null, null);
+    ret.addAction("trRule", (Integer t) -> currentTRRules.buildTRRule(t), null, null);
     return ret;
   }
 
@@ -161,7 +161,7 @@ public class ScriptTermInterpreter {
       case "all":
         currentCFGRules = new CFGRules("", iTerms);
         currentChooser = new ChooseRules(iTerms);
-        currentRewriteRules = new RewriteRules(iTerms);
+        currentTRRules = new TRRules(iTerms);
         break;
       case "cfgRules":
         currentCFGRules = new CFGRules("", iTerms);
@@ -170,7 +170,7 @@ public class ScriptTermInterpreter {
         currentChooser = new ChooseRules(iTerms);
         break;
       case "rewriteRules":
-        currentRewriteRules = new RewriteRules(iTerms);
+        currentTRRules = new TRRules(iTerms);
         break;
       }
       break;
@@ -246,7 +246,7 @@ public class ScriptTermInterpreter {
       } else
         currentDerivationTerm = iTerms.subterm(term, 0, 0); // Go straight to the rewrite stage
 
-      currentRewriteTerm = currentRewriter.rewrite(currentDerivationTerm, currentRewriteRules);
+      currentRewriteTerm = currentRewriter.rewrite(currentDerivationTerm, currentTRRules);
 
       if (iTerms.termArity(iTerms.subterm(term, 0)) == 2) // There was a test term
         if (currentRewriteTerm == iTerms.subterm(term, 0, 1)) {
@@ -451,6 +451,7 @@ public class ScriptTermInterpreter {
       return;
     }
     currentChooser.normalise(currentCFGRules);
+
     currentParser.traceLevel = Util.traceLevel;
     currentParser.inputStringName = inputStringName;
     currentParser.inputString = inputString;

@@ -112,14 +112,24 @@ public class ITerms {
   }
 
   /* Raw term rendering *************************************************************************************/
-  public String toString(int term) {
+  public String toRawString(int term) {
     if (term == 0) return "null term";
     return rawTextTraverser.toString(term);
   }
 
+  public String toString(int term) {
+    if (term == 0) return "null term";
+    return plainTextTraverser.toString(term);
+  }
+
+  public String toString(Integer term, Map<Integer, Integer> localAliases) {
+    if (term == 0) return "null term";
+    return plainTextTraverser.toString(term, false, -1, localAliases);
+  }
+
   public String toString(Integer term, Boolean indent, Integer depthLimit, Map<Integer, Integer> localAliases) {
     if (term == 0) return "null term";
-    return rawTextTraverser.toString(term, indent, depthLimit, localAliases);
+    return plainTextTraverser.toString(term, indent, depthLimit, localAliases);
   }
 
   /* Symbol categories **************************************************************************************/

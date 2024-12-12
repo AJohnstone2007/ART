@@ -126,6 +126,7 @@ public class TermTraverserText extends TermTraverser {
     this.depthLimit = depthLimit;
     sb.setLength(0); // clear string builder
     traverse(term, 0);
+    this.indent = false;
     this.depthLimit = -1;
     this.localAliases = null;
     return sb.toString();
