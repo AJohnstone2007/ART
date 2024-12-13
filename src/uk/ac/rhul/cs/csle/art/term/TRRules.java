@@ -12,7 +12,7 @@ import uk.ac.rhul.cs.csle.art.util.Util;
 
 public class TRRules {
   private final ITerms iTerms;
-  public final Map<Integer, Map<Integer, List<Integer>>> trScriptRules = new LinkedHashMap<>(); // Original rules loaded by user
+  private final Map<Integer, Map<Integer, List<Integer>>> trScriptRules = new LinkedHashMap<>(); // Original rules loaded by user
   public Map<Integer, Map<Integer, List<Integer>>> trRules = new LinkedHashMap<>(); // Rewritten rules produced by normalise()
   public int defaultStartRelation = 0;
 
@@ -27,6 +27,8 @@ public class TRRules {
   private Map<Integer, Map<Integer, Integer>> variableNamesByRule; // Map from term to the variable aliases used in that term
   Map<Integer, Map<Integer, Integer>> reverseVariableNamesByRule; // Map from term to the variable aliases used in that term
   Map<Integer, Integer> variableMap;
+
+  private boolean normalised = false;
 
   public TRRules(ITerms iTerms) {
     this.iTerms = iTerms;
@@ -44,6 +46,7 @@ public class TRRules {
     map.get(constructorIndex).add(term);
     if (defaultStartRelation == 0) defaultStartRelation = relation;
     Util.trace(6, 0, "*** Added rewrite rule " + iTerms.toString(term) + "\n");
+    normalised = false;
   }
 
   public String rulesToString(Map<Integer, Map<Integer, List<Integer>>> trRules) {
@@ -80,9 +83,12 @@ public class TRRules {
   }
 
   public void normalise() {
-    // Kludge: renamectrScriptRules to trRules to keep things working for commit
-    trRules = trScriptRules;
-
+    System.out.println("normalising");
+    if (normalised) {
+      System.out.println("nothing to do ");
+      return;
+    }
+    trRules = new HashMap<>(trScriptRules);
     rewriteTerminals = new HashMap<>();
     startRelation = 0;
     termToEnumElementMap = new HashMap<>();
@@ -92,7 +98,6 @@ public class TRRules {
     functionsInUse = new HashSet<>(); // The set of functions in use
     variableNamesByRule = new HashMap<>(); // Map from term to the variable aliases used in that term
     reverseVariableNamesByRule = new HashMap<>(); // Map from term to the variable aliases used in that term
-    Map<Integer, Integer> variableMap;
     Map<Integer, Integer> constructorCount = new HashMap<>(); // The number of defined rules for each constructor Map<Integer, Integer>
 
     // Stage one - collect information
@@ -175,7 +180,7 @@ public class TRRules {
 
         System.err.println("*** Warning: constructor " + label + " has no rule definitions");
       }
-    // Stage two - generate rewriten rules to use only only numeric variables to normalise the configurations
+    // Stage two - generate rewritten rules to use only only numeric variables to normalise the configurations
     for (int normaliseRelationIndex : trRules.keySet()) { // Step through the relations
       for (Integer thetaRoot : trRules.get(normaliseRelationIndex).keySet()) { // Collect the map of rules for this relation
         List<Integer> newRuleList = new LinkedList<>();
@@ -191,6 +196,7 @@ public class TRRules {
         trRules.get(normaliseRelationIndex).put(thetaRoot, newRuleList);
       }
     }
+    normalised = true;
   }
 
   /* Variable and function mapping ****************************************************************************/

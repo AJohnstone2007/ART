@@ -599,6 +599,7 @@ public class ITerms {
     case 1:
       switch (termSymbolStringIndex) {
       case __notStringIndex:
+
         switch (firstChildSymbolStringIndex) {
         case __boolStringIndex:
           return javaBooleanToTerm(!termToJavaBoolean(children[0]));
@@ -607,6 +608,7 @@ public class ITerms {
         case __intAPStringIndex:
           return javaBigIntegerToTerm(termToJavaBigInteger(children[0]).not());
         }
+
       case __negStringIndex:
         switch (firstChildSymbolStringIndex) {
         case __int32StringIndex:
@@ -618,116 +620,238 @@ public class ITerms {
         case __realAPStringIndex:
           return javaBigDecimalToTerm(termToJavaBigDecimal(children[0]).negate());
         }
+
       case __sizeStringIndex:
+        switch (firstChildSymbolStringIndex) {
+        case __stringStringIndex:
+          return javaIntegerToTerm(termToJavaString(children[0]).length());
+        case __listStringIndex:
+          return javaIntegerToTerm(termToJavaLinkedList(children[0]).size());
+        case __setStringIndex:
+          return javaIntegerToTerm(termToJavaHashMap(children[0]).size());
+        }
       }
+
     case 2:
       switch (termSymbolStringIndex) {
       case __eqStringIndex:
         return javaBooleanToTerm(children[0] == children[1]);
+
       case __neStringIndex:
         return javaBooleanToTerm(children[0] != children[1]);
-      // case __compareStringIndex:
-      // if (mixCheck(l, r, term)) return bottomTermIndex;
-      // return findTerm(l.__compare(r).toString());
-      // case __eqStringIndex:
-      // if (mixCheck(l, r, term)) return bottomTermIndex;
-      // return findTerm(l.__eq(r).toString());
-      // case __neStringIndex:
-      // if (mixCheck(l, r, term)) return bottomTermIndex;
-      // return findTerm(l.__ne(r).toString());
-      // case __gtStringIndex:
-      // if (mixCheck(l, r, term)) return bottomTermIndex;
-      // return findTerm(l.__gt(r).toString());
-      // case __ltStringIndex:
-      // if (mixCheck(l, r, term)) return bottomTermIndex;
-      // return findTerm(l.__lt(r).toString());
-      // case __geStringIndex:
-      // if (mixCheck(l, r, term)) return bottomTermIndex;
-      // return findTerm(l.__ge(r).toString());
-      // case __leStringIndex:
-      // if (mixCheck(l, r, term)) return bottomTermIndex;
-      // return findTerm(l.__le(r).toString());
-      // case __andStringIndex:
-      // if (mixCheck(l, r, term)) return bottomTermIndex;
-      // return findTerm(l.__and(r).toString());
-      // case __orStringIndex:
-      // if (mixCheck(l, r, term)) return bottomTermIndex;
-      // return findTerm(l.__or(r).toString());
-      // case __xorStringIndex:
-      // if (mixCheck(l, r, term)) return bottomTermIndex;
-      // return findTerm(l.__xor(r).toString());
-      // case __lshStringIndex:
-      // if (mixCheck(l, r, term)) return bottomTermIndex;
-      // return findTerm(l.__lsh(r).toString());
-      // case __rshStringIndex:
-      // if (mixCheck(l, r, term)) return bottomTermIndex;
-      // return findTerm(l.__rsh(r).toString());
-      // case __ashStringIndex:
-      // if (mixCheck(l, r, term)) return bottomTermIndex;
-      // return findTerm(l.__ash(r).toString());
-      // case __addStringIndex:
-      // if (mixCheck(l, r, term)) return bottomTermIndex;
-      // return findTerm(l.__add(r).toString());
-      // case __subStringIndex:
-      // if (mixCheck(l, r, term)) return bottomTermIndex;
-      // return findTerm(l.__sub(r).toString());
-      // case __mulStringIndex:
-      // if (mixCheck(l, r, term)) return bottomTermIndex;
-      // return findTerm(l.__mul(r).toString());
-      // case __divStringIndex:
-      // if (mixCheck(l, r, term)) return bottomTermIndex;
-      // return findTerm(l.__div(r).toString());
-      // case __modStringIndex:
-      // if (mixCheck(l, r, term)) return bottomTermIndex;
-      // return findTerm(l.__mod(r).toString());
-      // case __expStringIndex:
-      // if (mixCheck(l, r, term)) return bottomTermIndex;
-      // return findTerm(l.__exp(r).toString());
-      // case __catStringIndex:
-      // return findTerm(l.__cat(r).toString());
-      // case __putStringIndex:
-      // return findTerm(l.__put(r).toString());
-      // case __getStringIndex:
-      // return findTerm(l.__get(r).toString());
-      // case __containsStringIndex:
-      // return findTerm(l.__contains(r).toString());
-      // case __removeStringIndex:
-      // return findTerm(l.__remove(r).toString());
-      // case __unionStringIndex:
-      // if (mixCheck(l, r, term)) return bottomTermIndex;
-      // return findTerm(l.__union(r).toString());
-      // case __intersectionStringIndex:
-      // if (mixCheck(l, r, term)) return bottomTermIndex;
-      // return findTerm(l.__intersection(r).toString());
-      // case __differenceStringIndex:
-      // if (mixCheck(l, r, term)) return bottomTermIndex;
-      // return findTerm(l.__difference(r).toString());
-      // // Now the cast despatcher
-      // case __castStringIndex: {
-      // int targetType = getTermSymbolStringIndex(children[1]);
-      // if (targetType == __quoteStringIndex) targetType = getTermSymbolStringIndex(this.getTermChildren(children[1])[0]);
-      // switch (targetType) {
-      // case __boolStringIndex:
-      // return findTerm(l.__cast__bool().toString());
-      // case __charStringIndex:
-      // return findTerm(l.__cast__char().toString());
-      // case __intAPStringIndex:
-      // return findTerm(l.__cast__intAP().toString());
-      // case __int32StringIndex:
-      // return findTerm(l.__cast__int32().toString());
-      // case __realAPStringIndex:
-      // return findTerm(l.__cast__realAP().toString());
-      // case __real64StringIndex:
-      // return findTerm(l.__cast__real64().toString());
-      // case __stringStringIndex:
-      // return findTerm(l.__cast__string().toString());
-      // case __setStringIndex:
-      // return findTerm(l.__cast__set().toString());
-      // default:
-      // throw new RewriteException("illegal __cast target type " + tt.toString(children[1]));
-      // }
-      // }
+
+      case __gtStringIndex:
+        switch (firstChildSymbolStringIndex) {
+        case __charStringIndex:
+          return javaBooleanToTerm(termToJavaCharacter(children[0]) > termToJavaCharacter(children[1]));
+        case __int32StringIndex:
+          return javaBooleanToTerm(termToJavaInteger(children[0]) > termToJavaInteger(children[1]));
+        case __intAPStringIndex:
+          return javaBooleanToTerm(termToJavaBigInteger(children[0]).compareTo(termToJavaBigInteger(children[1])) > 0);
+        case __real64StringIndex:
+          return javaBooleanToTerm(termToJavaDouble(children[0]) > termToJavaDouble(children[1]));
+        case __realAPStringIndex:
+          return javaBooleanToTerm(termToJavaBigDecimal(children[0]).compareTo(termToJavaBigDecimal(children[1])) > 0);
+        case __stringStringIndex:
+          return javaBooleanToTerm(termToJavaString(children[0]).compareTo(termToJavaString(children[1])) > 0);
+        }
+
+      case __ltStringIndex:
+        switch (firstChildSymbolStringIndex) {
+        case __charStringIndex:
+          return javaBooleanToTerm(termToJavaCharacter(children[0]) < termToJavaCharacter(children[1]));
+        case __int32StringIndex:
+          return javaBooleanToTerm(termToJavaInteger(children[0]) < termToJavaInteger(children[1]));
+        case __intAPStringIndex:
+          return javaBooleanToTerm(termToJavaBigInteger(children[0]).compareTo(termToJavaBigInteger(children[1])) < 0);
+        case __real64StringIndex:
+          return javaBooleanToTerm(termToJavaDouble(children[0]) < termToJavaDouble(children[1]));
+        case __realAPStringIndex:
+          return javaBooleanToTerm(termToJavaBigDecimal(children[0]).compareTo(termToJavaBigDecimal(children[1])) < 0);
+        case __stringStringIndex:
+          return javaBooleanToTerm(termToJavaString(children[0]).compareTo(termToJavaString(children[1])) < 0);
+        }
+
+      case __geStringIndex:
+        switch (firstChildSymbolStringIndex) {
+        case __charStringIndex:
+          return javaBooleanToTerm(termToJavaCharacter(children[0]) >= termToJavaCharacter(children[1]));
+        case __int32StringIndex:
+          return javaBooleanToTerm(termToJavaInteger(children[0]) >= termToJavaInteger(children[1]));
+        case __intAPStringIndex:
+          return javaBooleanToTerm(termToJavaBigInteger(children[0]).compareTo(termToJavaBigInteger(children[1])) >= 0);
+        case __real64StringIndex:
+          return javaBooleanToTerm(termToJavaDouble(children[0]) >= termToJavaDouble(children[1]));
+        case __realAPStringIndex:
+          return javaBooleanToTerm(termToJavaBigDecimal(children[0]).compareTo(termToJavaBigDecimal(children[1])) >= 0);
+        case __stringStringIndex:
+          return javaBooleanToTerm(termToJavaString(children[0]).compareTo(termToJavaString(children[1])) >= 0);
+        }
+
+      case __leStringIndex:
+        switch (firstChildSymbolStringIndex) {
+        case __charStringIndex:
+          return javaBooleanToTerm(termToJavaCharacter(children[0]) <= termToJavaCharacter(children[1]));
+        case __int32StringIndex:
+          return javaBooleanToTerm(termToJavaInteger(children[0]) <= termToJavaInteger(children[1]));
+        case __intAPStringIndex:
+          return javaBooleanToTerm(termToJavaBigInteger(children[0]).compareTo(termToJavaBigInteger(children[1])) <= 0);
+        case __real64StringIndex:
+          return javaBooleanToTerm(termToJavaDouble(children[0]) <= termToJavaDouble(children[1]));
+        case __realAPStringIndex:
+          return javaBooleanToTerm(termToJavaBigDecimal(children[0]).compareTo(termToJavaBigDecimal(children[1])) <= 0);
+        case __stringStringIndex:
+          return javaBooleanToTerm(termToJavaString(children[0]).compareTo(termToJavaString(children[1])) <= 0);
+        }
+
+      case __compareStringIndex:
+        switch (firstChildSymbolStringIndex) {
+        case __charStringIndex:
+          return javaIntegerToTerm(Integer.signum(termToJavaCharacter(children[0]).compareTo(termToJavaCharacter(children[1]))));
+        case __int32StringIndex:
+          return javaIntegerToTerm(Integer.signum(termToJavaInteger(children[0]).compareTo(termToJavaInteger(children[1]))));
+        case __intAPStringIndex:
+          return javaIntegerToTerm(Integer.signum(termToJavaBigInteger(children[0]).compareTo(termToJavaBigInteger(children[1]))));
+        case __real64StringIndex:
+          return javaIntegerToTerm(Integer.signum(termToJavaDouble(children[0]).compareTo(termToJavaDouble(children[1]))));
+        case __realAPStringIndex:
+          return javaIntegerToTerm(Integer.signum(termToJavaBigDecimal(children[0]).compareTo(termToJavaBigDecimal(children[1]))));
+        case __stringStringIndex:
+          return javaIntegerToTerm(Integer.signum(termToJavaString(children[0]).compareTo(termToJavaString(children[1]))));
+        }
+
+      case __andStringIndex:
+        switch (firstChildSymbolStringIndex) {
+        case __boolStringIndex:
+          return javaBooleanToTerm(termToJavaBoolean(children[0]) & termToJavaBoolean(children[1]));
+        case __int32StringIndex:
+          return javaIntegerToTerm(termToJavaInteger(children[0]) & termToJavaInteger(children[1]));
+        case __intAPStringIndex:
+          return javaBigIntegerToTerm(termToJavaBigInteger(children[0]).and(termToJavaBigInteger(children[1])));
+        }
+
+      case __orStringIndex:
+        switch (firstChildSymbolStringIndex) {
+        case __boolStringIndex:
+          return javaBooleanToTerm(termToJavaBoolean(children[0]) | termToJavaBoolean(children[1]));
+        case __int32StringIndex:
+          return javaIntegerToTerm(termToJavaInteger(children[0]) | termToJavaInteger(children[1]));
+        case __intAPStringIndex:
+          return javaBigIntegerToTerm(termToJavaBigInteger(children[0]).or(termToJavaBigInteger(children[1])));
+        }
+
+      case __xorStringIndex:
+        switch (firstChildSymbolStringIndex) {
+        case __boolStringIndex:
+          return javaBooleanToTerm(termToJavaBoolean(children[0]) ^ termToJavaBoolean(children[1]));
+        case __int32StringIndex:
+          return javaIntegerToTerm(termToJavaInteger(children[0]) ^ termToJavaInteger(children[1]));
+        case __intAPStringIndex:
+          return javaBigIntegerToTerm(termToJavaBigInteger(children[0]).xor(termToJavaBigInteger(children[1])));
+        }
+
+      case __lshStringIndex:
+        switch (firstChildSymbolStringIndex) {
+        case __int32StringIndex:
+          return javaIntegerToTerm(termToJavaInteger(children[0]) << termToJavaInteger(children[1]));
+        case __intAPStringIndex:
+          return javaBigIntegerToTerm(termToJavaBigInteger(children[0]).shiftLeft(termToJavaBigInteger(children[1]).intValueExact()));
+        }
+
+      case __rshStringIndex:
+        switch (firstChildSymbolStringIndex) {
+        case __int32StringIndex:
+          return javaIntegerToTerm(termToJavaInteger(children[0]) >> termToJavaInteger(children[1]));
+        }
+
+      case __ashStringIndex:
+        switch (firstChildSymbolStringIndex) {
+        case __int32StringIndex:
+          return javaIntegerToTerm(termToJavaInteger(children[0]) >>> termToJavaInteger(children[1]));
+        case __intAPStringIndex:
+          return javaBigIntegerToTerm(termToJavaBigInteger(children[0]).shiftRight(termToJavaBigInteger(children[1]).intValueExact()));
+        }
+
+      case __addStringIndex:
+        switch (firstChildSymbolStringIndex) {
+        case __int32StringIndex:
+          return javaIntegerToTerm(termToJavaInteger(children[0]) + termToJavaInteger(children[1]));
+        case __intAPStringIndex:
+          return javaBigIntegerToTerm(termToJavaBigInteger(children[0]).add(termToJavaBigInteger(children[1])));
+        case __real64StringIndex:
+          return javaDoubleToTerm(termToJavaDouble(children[0]) + termToJavaDouble(children[1]));
+        case __realAPStringIndex:
+          return javaBigDecimalToTerm(termToJavaBigDecimal(children[0]).add(termToJavaBigDecimal(children[1])));
+        }
+
+      case __subStringIndex:
+        switch (firstChildSymbolStringIndex) {
+        case __int32StringIndex:
+          return javaIntegerToTerm(termToJavaInteger(children[0]) - termToJavaInteger(children[1]));
+        case __intAPStringIndex:
+          return javaBigIntegerToTerm(termToJavaBigInteger(children[0]).subtract(termToJavaBigInteger(children[1])));
+        case __real64StringIndex:
+          return javaDoubleToTerm(termToJavaDouble(children[0]) - termToJavaDouble(children[1]));
+        case __realAPStringIndex:
+          return javaBigDecimalToTerm(termToJavaBigDecimal(children[0]).subtract(termToJavaBigDecimal(children[1])));
+        }
+
+      case __mulStringIndex:
+        switch (firstChildSymbolStringIndex) {
+        case __int32StringIndex:
+          return javaIntegerToTerm(termToJavaInteger(children[0]) * termToJavaInteger(children[1]));
+        case __intAPStringIndex:
+          return javaBigIntegerToTerm(termToJavaBigInteger(children[0]).multiply(termToJavaBigInteger(children[1])));
+        case __real64StringIndex:
+          return javaDoubleToTerm(termToJavaDouble(children[0]) * termToJavaDouble(children[1]));
+        case __realAPStringIndex:
+          return javaBigDecimalToTerm(termToJavaBigDecimal(children[0]).multiply(termToJavaBigDecimal(children[1])));
+        }
+
+      case __divStringIndex:
+        switch (firstChildSymbolStringIndex) {
+        case __int32StringIndex:
+          return javaIntegerToTerm(termToJavaInteger(children[0]) / termToJavaInteger(children[1]));
+        case __intAPStringIndex:
+          return javaBigIntegerToTerm(termToJavaBigInteger(children[0]).divide(termToJavaBigInteger(children[1])));
+        case __real64StringIndex:
+          return javaDoubleToTerm(termToJavaDouble(children[0]) / termToJavaDouble(children[1]));
+        case __realAPStringIndex:
+          return javaBigDecimalToTerm(termToJavaBigDecimal(children[0]).divide(termToJavaBigDecimal(children[1])));
+        }
+
+      case __modStringIndex:
+        switch (firstChildSymbolStringIndex) {
+        case __int32StringIndex:
+          return javaIntegerToTerm(termToJavaInteger(children[0]) % termToJavaInteger(children[1]));
+        case __intAPStringIndex:
+          return javaBigIntegerToTerm(termToJavaBigInteger(children[0]).remainder(termToJavaBigInteger(children[1])));
+        case __real64StringIndex:
+          return javaDoubleToTerm(termToJavaDouble(children[0]) % termToJavaDouble(children[1]));
+        case __realAPStringIndex:
+          return javaBigDecimalToTerm(termToJavaBigDecimal(children[0]).remainder(termToJavaBigDecimal(children[1])));
+        }
+
+      case __expStringIndex:
+        switch (firstChildSymbolStringIndex) {
+        case __int32StringIndex:
+          int left = termToJavaInteger(children[0]), right = termToJavaInteger(children[1]);
+          for (int i = 1; i < right; i++)
+            left *= left;
+          return javaIntegerToTerm(left);
+        case __intAPStringIndex:
+          return javaBigIntegerToTerm(termToJavaBigInteger(children[0]).pow(termToJavaBigInteger(children[1]).intValueExact()));
+        case __real64StringIndex:
+          return javaDoubleToTerm(Math.pow(termToJavaDouble(children[0]), termToJavaDouble(children[1])));
+        case __realAPStringIndex:
+          return javaBigDecimalToTerm(termToJavaBigDecimal(children[0]).pow(termToJavaBigDecimal(children[1]).intValueExact())); // Note integer powers only:
+                                                                                                                                 // see Stack Overflow for
+                                                                                                                                 // possible extension to
+                                                                                                                                 // BigDecimal
+        }
+
       }
+
     case 3:
       // switch (termSymbolStringIndex) {
       // case __putStringIndex:
@@ -735,6 +859,7 @@ public class ITerms {
       // }
     }
     return term; // Nothing to do
+
   }
 
   public boolean hasSymbol(Integer term, String string) {
@@ -753,7 +878,7 @@ public class ITerms {
 
   /* Conversions between Java values and terms ************************************************************************************/
   public Boolean termToJavaBoolean(int term) {
-    mustHaveSymbol(term, "__boolean", 1);
+    mustHaveSymbol(term, "__bool", 1);
     switch (termSymbolString(termChildren(term)[0])) {
     case "true":
       return true;
@@ -773,7 +898,7 @@ public class ITerms {
   }
 
   public int javaCharacterToTerm(Character value) {
-    throw new ValueException("javaCharacterToTerm not yet implemented");
+    return findTerm(__charStringIndex, findTerm(value.toString()));
   }
 
   public Integer termToJavaInteger(int term) {
@@ -782,7 +907,7 @@ public class ITerms {
   }
 
   public int javaIntegerToTerm(Integer value) {
-    throw new ValueException("javaIntegerToTerm not yet implemented");
+    return findTerm(__int32StringIndex, findTerm(value.toString()));
   }
 
   public BigInteger termToJavaBigInteger(int term) {
@@ -791,7 +916,7 @@ public class ITerms {
   }
 
   public int javaBigIntegerToTerm(BigInteger value) {
-    throw new ValueException("javaBigIntegerToTerm not yet implemented");
+    return findTerm(__intAPStringIndex, findTerm(value.toString()));
   }
 
   public Double termToJavaDouble(int term) {
@@ -800,7 +925,7 @@ public class ITerms {
   }
 
   public int javaDoubleToTerm(Double value) {
-    throw new ValueException("javaDoubleToTerm not yet implemented");
+    return findTerm(__real64StringIndex, findTerm(value.toString()));
   }
 
   public BigDecimal termToJavaBigDecimal(int term) {
@@ -809,7 +934,7 @@ public class ITerms {
   }
 
   public int javaBigDecimalToTerm(BigDecimal value) {
-    throw new ValueException("javaBigDecimalToTerm not yet implemented");
+    return findTerm(__realAPStringIndex, findTerm(value.toString()));
   }
 
   public String termToJavaString(int term) {
@@ -818,7 +943,7 @@ public class ITerms {
   }
 
   public int javaStringToTerm(String value) {
-    throw new ValueException("javaStringToTerm not yet implemented");
+    return findTerm(__stringStringIndex, findTerm(value.toString()));
   }
 
   public LinkedList termToJavaLinkedList(int term) {
