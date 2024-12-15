@@ -10,13 +10,25 @@ import java.util.Map;
 import java.util.Set;
 
 public class ITerms {
+  private class ValueException extends RuntimeException {
+    private static final long serialVersionUID = -8086174221866434606L;
+
+    public ValueException(String message) {
+      super(message);
+    }
+  }
+
   /* Term class - to be replaced by HashPool style implementation *******************************************/
   // @formatter:off
-  class ITerm { // Replace at some point with a HashPool implementation
+  private class ITerm { // Replace at some point with a HashPool implementation
     private final int symbolIndex;
     private final int[] children;
 
-    public ITerm(int symbolIndex, int[] children) { this.symbolIndex = symbolIndex; this.children = children; }
+    public ITerm(int symbolIndex, int[] children) {
+      this.symbolIndex = symbolIndex;
+      if (children == null) children= new int[0];
+      this.children = children;
+    }
 
     @Override
     public int hashCode() {
@@ -70,6 +82,7 @@ public class ITerms {
   public final int termBottom;
   public final int termDone;
   public final int termEmpty;
+  public final int termStringEmpty;
 
   public ITerms() {
     // 1. Load text traverser default action which appends the escaped version of the constructor
@@ -97,6 +110,7 @@ public class ITerms {
     termBottom = findTerm("__bottom");
     termDone = findTerm("__done");
     termEmpty = findTerm("__empty");
+    termStringEmpty = findTerm("__string");
 
     // 5. Connect to a plugin - either the default built in to art.jar or one in the use class path ifone can be found
     plugin = new ARTPlugin();
@@ -196,7 +210,7 @@ public class ITerms {
     return sb.toString();
   }
 
-  /* Parse a term written in a human-comfortable string form with abbreviations for some constants **********/
+  /* Parse a term written in a human-comfortable string form with some abbreviations for some constants **********/
 
   /*
    * parseTerm ::= name ( `( WS parseSubterms `) WS )?
@@ -592,7 +606,18 @@ public class ITerms {
   public int evaluateTerm(int term, int[] children) {
     if (children.length == 0 || !termSymbolString(term).startsWith("__")) return term; // Nothing to do
 
+    // System.out.println("Evaluating " + toString(term));
+
     int termSymbolStringIndex = termSymbolStringIndex(term);
+
+    if (termSymbolStringIndex == __pluginStringIndex) {
+      Object values[] = new Object[children.length];
+      for (int i = 0; i < children.length; i++)
+        values[i] = termToJavaObject(children[i]);
+
+      return javaObjectToTerm(plugin.plugin(values));
+    }
+
     int firstChildSymbolStringIndex = termSymbolStringIndex(children[0]);
 
     switch (children.length) {
@@ -629,6 +654,12 @@ public class ITerms {
           return javaIntegerToTerm(termToJavaLinkedList(children[0]).size());
         case __setStringIndex:
           return javaIntegerToTerm(termToJavaHashMap(children[0]).size());
+        }
+
+      case __getStringIndex:
+        switch (firstChildSymbolStringIndex) {
+        case __listStringIndex:
+          return 0;
         }
       }
 
@@ -750,26 +781,26 @@ public class ITerms {
           return javaBigIntegerToTerm(termToJavaBigInteger(children[0]).xor(termToJavaBigInteger(children[1])));
         }
 
-      case __lshStringIndex:
+      case __shiftStringIndex:
         switch (firstChildSymbolStringIndex) {
         case __int32StringIndex:
-          return javaIntegerToTerm(termToJavaInteger(children[0]) << termToJavaInteger(children[1]));
-        case __intAPStringIndex:
-          return javaBigIntegerToTerm(termToJavaBigInteger(children[0]).shiftLeft(termToJavaBigInteger(children[1]).intValueExact()));
+          int right = termToJavaInteger(children[1]);
+          return javaIntegerToTerm(right > 0 ? termToJavaInteger(children[0]) >>> right : termToJavaInteger(children[0]) << -right);
         }
 
-      case __rshStringIndex:
+      case __shiftsignedStringIndex:
         switch (firstChildSymbolStringIndex) {
         case __int32StringIndex:
-          return javaIntegerToTerm(termToJavaInteger(children[0]) >> termToJavaInteger(children[1]));
-        }
-
-      case __ashStringIndex:
-        switch (firstChildSymbolStringIndex) {
-        case __int32StringIndex:
-          return javaIntegerToTerm(termToJavaInteger(children[0]) >>> termToJavaInteger(children[1]));
+          int right = termToJavaInteger(children[1]);
+          return javaIntegerToTerm(right > 0 ? termToJavaInteger(children[0]) >> right : termToJavaInteger(children[0]) << -right);
         case __intAPStringIndex:
           return javaBigIntegerToTerm(termToJavaBigInteger(children[0]).shiftRight(termToJavaBigInteger(children[1]).intValueExact()));
+        }
+
+      case __rotateStringIndex:
+        switch (firstChildSymbolStringIndex) {
+        case __int32StringIndex:
+          return javaIntegerToTerm(Integer.rotateRight(termToJavaInteger(children[0]), termToJavaInteger(children[1])));
         }
 
       case __addStringIndex:
@@ -845,18 +876,35 @@ public class ITerms {
           return javaDoubleToTerm(Math.pow(termToJavaDouble(children[0]), termToJavaDouble(children[1])));
         case __realAPStringIndex:
           return javaBigDecimalToTerm(termToJavaBigDecimal(children[0]).pow(termToJavaBigDecimal(children[1]).intValueExact())); // Note integer powers only:
-                                                                                                                                 // see Stack Overflow for
-                                                                                                                                 // possible extension to
-                                                                                                                                 // BigDecimal
         }
 
+      case __catStringIndex:
+        switch (firstChildSymbolStringIndex) {
+        case __stringStringIndex:
+          return javaStringToTerm(termToJavaString(children[0]) + termToJavaString(children[1]));
+        case __listStringIndex:
+          var ret = new LinkedList<Object>(termToJavaLinkedList(children[0]));
+          ret.addAll(termToJavaLinkedList(children[1]));
+          return javaListToTerm(ret);
+        }
+
+      case __getStringIndex:
+        switch (firstChildSymbolStringIndex) {
+        case __stringStringIndex:
+          return javaCharacterToTerm(termToJavaString(children[0]).charAt(termToJavaInteger(children[1])));
+        case __listStringIndex:
+          return 0;
+        }
       }
 
     case 3:
-      // switch (termSymbolStringIndex) {
-      // case __putStringIndex:
-      // return findTerm(l.__put(r, rr).toString());
-      // }
+    case __getStringIndex:
+      switch (firstChildSymbolStringIndex) {
+      case __stringStringIndex:
+        return javaStringToTerm(termToJavaString(children[0]).substring(termToJavaInteger(children[1]), termToJavaInteger(children[2])));
+      case __listStringIndex:
+        return 0;
+      }
     }
     return term; // Nothing to do
 
@@ -864,7 +912,7 @@ public class ITerms {
 
   public boolean hasSymbol(Integer term, String string) {
     // System.out.println("Checking term " + toString(term) + " against symbol " + string);
-    return this.termSymbolStringIndex(term) == this.findString(string);
+    return termSymbolStringIndex(term) == this.findString(string);
   }
 
   public void mustHaveSymbol(int term, String symbol) {
@@ -937,12 +985,15 @@ public class ITerms {
     return findTerm(__realAPStringIndex, findTerm(value.toString()));
   }
 
+  // Strings - watch outfor special case of __string with no children denoting the empty string
   public String termToJavaString(int term) {
     mustHaveSymbol(term, "__string", 1);
+    if (termArity(term) == 0) return "";
     return termSymbolString(termChildren(term)[0]);
   }
 
   public int javaStringToTerm(String value) {
+    if (value.length() == 0) return termStringEmpty;
     return findTerm(__stringStringIndex, findTerm(value.toString()));
   }
 
@@ -964,13 +1015,54 @@ public class ITerms {
     throw new ValueException("javaMapToTerm not yet implemented");
   }
 
+  public Object termToJavaObject(int term) {
+    switch (termSymbolStringIndex(term)) {
+    case __boolStringIndex:
+      return termToJavaBoolean(term);
+    case __charStringIndex:
+      return termToJavaCharacter(term);
+    case __intAPStringIndex:
+      return termToJavaBigInteger(term);
+    case __int32StringIndex:
+      return termToJavaInteger(term);
+    case __realAPStringIndex:
+      return termToJavaBigDecimal(term);
+    case __real64StringIndex:
+      return termToJavaDouble(term);
+    case __stringStringIndex:
+      return termToJavaString(term);
+    case __listStringIndex:
+      return termToJavaLinkedList(term);
+    case __setStringIndex:
+      return termToJavaHashMap(term);
+    default:
+      throw new ValueException("Term has no Java equivalent: " + toString(term));
+    }
+  }
+
+  // Note that in later versions of Java this can be replaced by pattern matching on class
+  // This version is acceptable to Java 17 (Sep 21) which is the student default for AY 2024-45
+  public int javaObjectToTerm(Object value) {
+    if (value == null) return termDone;
+    if (value instanceof Boolean) return javaBooleanToTerm((Boolean) value);
+    if (value instanceof Character) return javaCharacterToTerm((Character) value);
+    if (value instanceof Integer) return javaIntegerToTerm((Integer) value);
+    if (value instanceof BigInteger) return javaBigIntegerToTerm((BigInteger) value);
+    if (value instanceof Double) return javaDoubleToTerm((Double) value);
+    if (value instanceof BigDecimal) return javaBigDecimalToTerm((BigDecimal) value);
+    if (value instanceof String) return javaStringToTerm((String) value);
+    if (value instanceof List) return javaListToTerm((List) value);
+    if (value instanceof Map) return javaMapToTerm((Map) value);
+    return termBottom; // Illegal object class with no term equivalent
+  }
+
   /* String index constant management **********************************************************************/
   // Whenever types or operations are added to or removed form the value system, run this mainline and replace the constants and loadStrings()
   public static void main(String[] args) {
     String[] s = { "__map", "__bottom", "__done", "__empty", "__quote", "__blob", "__keyval", "__adtProd", "__adtSum", "__proc", "__bool", "__char", "__intAP",
         "__int32", "__realAP", "__real64", "__string", "__list", "__set", "__eq", "__ne", "__gt", "__lt", "__ge", "__le", "__compare", "__not", "__and", "__or",
-        "__xor", "__lsh", "__rsh", "__ash", "__neg", "__add", "__sub", "__mul", "__div", "__mod", "__exp", "__size", "__cat", "__slice", "__get", "__put",
-        "__contains", "__remove", "__extract", "__union", "__intersection", "__difference", "__cast", "__termArity", "__termRoot", "__plugin" };
+        "__xor", "__shift", "__shiftsigned", "__rotate", "__neg", "__add", "__sub", "__mul", "__div", "__mod", "__exp", "__size", "__cat", "__slice", "__get",
+        "__put", "__contains", "__remove", "__extract", "__union", "__intersection", "__difference", "__cast", "__termArity", "__termRoot", "__plugin" };
     int symbolValue = variableCount + sequenceVariableCount + 1 + 2;
     System.out.print("public final int " + s[0] + "StringIndex = " + (symbolValue++));
     for (int i = 1; i < s.length; i++)
@@ -993,7 +1085,7 @@ public class ITerms {
       __charStringIndex = 44, __intAPStringIndex = 45, __int32StringIndex = 46, __realAPStringIndex = 47, __real64StringIndex = 48, __stringStringIndex = 49,
       __listStringIndex = 50, __setStringIndex = 51, __eqStringIndex = 52, __neStringIndex = 53, __gtStringIndex = 54, __ltStringIndex = 55,
       __geStringIndex = 56, __leStringIndex = 57, __compareStringIndex = 58, __notStringIndex = 59, __andStringIndex = 60, __orStringIndex = 61,
-      __xorStringIndex = 62, __lshStringIndex = 63, __rshStringIndex = 64, __ashStringIndex = 65, __negStringIndex = 66, __addStringIndex = 67,
+      __xorStringIndex = 62, __shiftStringIndex = 63, __shiftsignedStringIndex = 64, __rotateStringIndex = 65, __negStringIndex = 66, __addStringIndex = 67,
       __subStringIndex = 68, __mulStringIndex = 69, __divStringIndex = 70, __modStringIndex = 71, __expStringIndex = 72, __sizeStringIndex = 73,
       __catStringIndex = 74, __sliceStringIndex = 75, __getStringIndex = 76, __putStringIndex = 77, __containsStringIndex = 78, __removeStringIndex = 79,
       __extractStringIndex = 80, __unionStringIndex = 81, __intersectionStringIndex = 82, __differenceStringIndex = 83, __castStringIndex = 84,
@@ -1030,9 +1122,9 @@ public class ITerms {
     loadString("__and", 60);
     loadString("__or", 61);
     loadString("__xor", 62);
-    loadString("__lsh", 63);
-    loadString("__rsh", 64);
-    loadString("__ash", 65);
+    loadString("__shift", 63);
+    loadString("__shiftsigned", 64);
+    loadString("__rotate", 65);
     loadString("__neg", 66);
     loadString("__add", 67);
     loadString("__sub", 68);

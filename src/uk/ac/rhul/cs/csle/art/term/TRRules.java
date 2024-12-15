@@ -83,9 +83,9 @@ public class TRRules {
   }
 
   public void normalise() {
-    System.out.println("normalising");
+    // System.out.println("normalising");
     if (normalised) {
-      System.out.println("nothing to do ");
+      // System.out.println("nothing to do ");
       return;
     }
     trRules = new HashMap<>(trScriptRules);

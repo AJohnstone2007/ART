@@ -17,7 +17,6 @@ import javafx.collections.ObservableIntegerArray;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.ObservableFaceArray;
 import javafx.scene.shape.TriangleMesh;
-import uk.ac.rhul.cs.csle.art.term.ValueException;
 
 public class AleroMesh extends TriangleMesh {
 
@@ -71,11 +70,11 @@ public class AleroMesh extends TriangleMesh {
       }
   }
 
-  public AleroMesh(String filename) throws ValueException {
+  public AleroMesh(String filename) throws Exception {
     this(new File(filename));
   }
 
-  public AleroMesh(File file) throws ValueException {
+  public AleroMesh(File file) throws Exception {
     // First work out if this is an ASCII or a binary STL file
     String intro = "";
     try (FileInputStream fileInputStream = new FileInputStream(file)) {
@@ -83,9 +82,9 @@ public class AleroMesh extends TriangleMesh {
       for (int i = 0; i < 5 && ((singleCharInt = fileInputStream.read()) != -1); i++)
         intro += (char) singleCharInt;
     } catch (FileNotFoundException e) {
-      throw new ValueException(e.getMessage() + " Unable to locate STL file " + file.getPath());
+      throw new Exception(e.getMessage() + " Unable to locate STL file " + file.getPath());
     } catch (IOException e) {
-      throw new ValueException("I/O exeption whilst reading STL file " + file.getPath());
+      throw new Exception("I/O exeption whilst reading STL file " + file.getPath());
     }
 
     isASCII = intro.equals("solid");
@@ -100,7 +99,7 @@ public class AleroMesh extends TriangleMesh {
         scanner.next("endsolid");// Skip the outro string
         scanner.close();
       } catch (IOException e) {
-        throw new ValueException("Format error in ASCII STL file " + e.getMessage());
+        throw new Exception("Format error in ASCII STL file " + e.getMessage());
       }
     else
       try {
@@ -111,9 +110,9 @@ public class AleroMesh extends TriangleMesh {
         for (int i = 0; i < facetCount; i++)
           readFacetBinary();
       } catch (FileNotFoundException e) {
-        throw new ValueException("Unable to open binary STL file ");
+        throw new Exception("Unable to open binary STL file ");
       } catch (IOException e) {
-        throw new ValueException("I/O error in binary STL file");
+        throw new Exception("I/O error in binary STL file");
       }
 
     getPoints().resize(3 * pointMap.keySet().size());
@@ -565,7 +564,7 @@ public class AleroMesh extends TriangleMesh {
   int ringVertexCount, extrusionVertexCount;
 
   // Generate mesh from basePath extruded through extrurionPath with scaleFactors applied: no other transform allowed
-  public AleroMesh(float[] basePath, float[] extrusionPath) throws ValueException {
+  public AleroMesh(float[] basePath, float[] extrusionPath) throws Exception {
     isLOM = true;
     ringVertexCount = basePath.length / 3;
     extrusionVertexCount = extrusionPath.length / 3;
@@ -575,10 +574,10 @@ public class AleroMesh extends TriangleMesh {
         + 2 * (ringVertexCount - 2); // base and top facets
 
     // 1: parameter consistency checking
-    if (basePath.length < 3) throw new ValueException("LayeredOrderedMesh: basePath array size must be at least three");
-    if (basePath.length % 3 != 0) throw new ValueException("LayeredOrderedMesh: basePath array size " + basePath.length + " is not a multiple of three");
+    if (basePath.length < 3) throw new Exception("LayeredOrderedMesh: basePath array size must be at least three");
+    if (basePath.length % 3 != 0) throw new Exception("LayeredOrderedMesh: basePath array size " + basePath.length + " is not a multiple of three");
     if (extrusionPath.length % 3 != 0)
-      throw new ValueException("LayeredOrderedMesh: extrusionPath array size " + extrusionPath.length + " is not a multiple of three");
+      throw new Exception("LayeredOrderedMesh: extrusionPath array size " + extrusionPath.length + " is not a multiple of three");
 
     getTexCoords().addAll(0, 1, // 0
         1, 1, // 1
