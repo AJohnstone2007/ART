@@ -883,7 +883,7 @@ public class ITerms {
         case __stringStringIndex:
           return javaStringToTerm(termToJavaString(children[0]) + termToJavaString(children[1]));
         case __listStringIndex:
-          var ret = new LinkedList<Object>(termToJavaLinkedList(children[0]));
+          var ret = termToJavaLinkedList(children[0]);
           ret.addAll(termToJavaLinkedList(children[1]));
           return javaListToTerm(ret);
         }
@@ -997,7 +997,7 @@ public class ITerms {
     return findTerm(__stringStringIndex, findTerm(value.toString()));
   }
 
-  public LinkedList termToJavaLinkedList(int term) {
+  public LinkedList<Object> termToJavaLinkedList(int term) {
     mustHaveSymbol(term, "__list", 2);
     throw new ValueException("termToJavaLinkedList not yet implemented");
   }
@@ -1006,7 +1006,7 @@ public class ITerms {
     throw new ValueException("javaListToTerm not yet implemented");
   }
 
-  public LinkedList termToJavaHashMap(int term) {
+  public HashMap<Object, Object> termToJavaHashMap(int term) {
     mustHaveSymbol(term, "__set", 2);
     throw new ValueException("termToJavaHashMap not yet implemented");
   }

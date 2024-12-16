@@ -3,7 +3,6 @@ import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.stage.Stage;
 import uk.ac.rhul.cs.csle.art.term.ARTPluginInterface;
-import uk.ac.rhul.cs.csle.art.term.ValueException;
 
 // Rename this class to ARTPlugin if you want to develop plugins within the Eclipse workspace; but change it back again before distribution
 public class ARTPlugin implements ARTPluginInterface {
@@ -14,7 +13,7 @@ public class ARTPlugin implements ARTPluginInterface {
   }
 
   @Override
-  public Object plugin(Object... args) throws ValueException {
+  public Object plugin(Object... args) {
     Group root = new Group();
     root.getChildren().add(new Label(args[0].toString()));
 
