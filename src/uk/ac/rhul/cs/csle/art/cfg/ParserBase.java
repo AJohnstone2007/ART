@@ -348,8 +348,14 @@ public class ParserBase {
     case SIGNED_INTEGER:
       match_SIGNED_INTEGER();
       break;
+    case AP_INTEGER:
+      match_AP_INTEGER();
+      break;
     case REAL:
       match_REAL();
+      break;
+    case AP_REAL:
+      match_AP_REAL();
       break;
     case SIGNED_REAL:
       match_SIGNED_REAL();
@@ -391,6 +397,16 @@ public class ParserBase {
       Util.fatal("Unknown builtin " + b);
       break;
     }
+  }
+
+  private void match_AP_REAL() {
+    // TODO Auto-generated method stub
+
+  }
+
+  private void match_AP_INTEGER() {
+    // TODO Auto-generated method stub
+
   }
 
   protected void lexicalError(String msg) {

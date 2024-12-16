@@ -44,7 +44,7 @@ cfgAssignment ::= cfgAttribute ':='^ cfgExpression
 cfgInsert ::= '^+:'^ ID  
 cfgAttribute ::= ID | ID '.'^ ID   
 
-cfgExpression ::= __bool^^ | __int32^^ | __real64^^ | __string^^ | __char^^ | cfgAttribute^^ | ID^^ | ID^^ '('^  cfgExpressionList^ ')'^
+cfgExpression ::= __bool^^ | __intAP^^ | __int32^^ | __realAP^^ | __real64^^ | __string^^ | __char^^ | cfgAttribute^^ | ID^^ | ID^^ '('^  cfgExpressionList^ ')'^
 cfgExpressionList ::= cfgExpression | cfgExpression ','^ cfgExpressionList^
 
 cfgSeq ::= #^   // Dirty trick: both cfgAlt and cfgAltNoAction promote cfgSeq to achieve gather operation
@@ -64,7 +64,7 @@ terms ::= trTerm termsTail^
 termsTail ::= ','^ trTerm | ','^ trTerm termsTail^
 
 trTerm ::= 
-  __bool^^ | __char^^ | __int32^^ | __real64^^ | __string^^  // lexical from builtins - see below  
+  __bool^^ | __char^^ | __intAP^^ | __int32^^ | __realAP^^ | __real64^^ | __string^^  // lexical from builtins - see below  
 | __keyval^^ | __list^^ | __set^^ 
 | ID^^ | IDSTAR^^ | ID^^ '('^ ')'^ | ID^^ '('^ trTerm ')'^ | ID^^ '('^ terms^ ')'^ | trTuple^^ '<'^ terms^ '>'^
 
@@ -166,7 +166,9 @@ displayElement  ::=
 (* Lexical elements **********************************************************)
 __bool ::= 'true' | 'false'
 __char ::= &CHAR_BQ
+__intAP ::= &AP_INTEGER
 __int32 ::= &SIGNED_INTEGER
+__realAP ::= &AP_REAL
 __real64 ::= &SIGNED_REAL 
 __string ::= &STRING_DQ
 
