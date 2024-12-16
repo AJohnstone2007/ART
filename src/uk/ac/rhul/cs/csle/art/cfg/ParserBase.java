@@ -45,19 +45,26 @@ public class ParserBase {
         right++;
       return inputString.substring(inputIndex, right);
     }
+    case SIGNED_INTEGER: {
+      int right = inputIndex;
+      if (inputString.charAt(right) == '-') right++;
+      while (right < inputString.length() && (Character.isDigit(inputString.charAt(right)) || inputString.charAt(right) == '_'))
+        right++;
+      return inputString.substring(inputIndex, right);
+    }
+    case AP_INTEGER: {
+      int right = inputIndex + 1; // skip £
+      if (inputString.charAt(right) == '-') right++;
+      while (right < inputString.length() && (Character.isDigit(inputString.charAt(right)) || inputString.charAt(right) == '_'))
+        right++;
+      return inputString.substring(inputIndex + 1, right);
+    }
     case REAL: {
       int right = inputIndex;
       while (right < inputString.length() && Character.isDigit(inputString.charAt(right)))
         right++;
       right++; // skip decimal point
       while (right < inputString.length() && Character.isDigit(inputString.charAt(right)))
-        right++;
-      return inputString.substring(inputIndex, right);
-    }
-    case SIGNED_INTEGER: {
-      int right = inputIndex;
-      if (inputString.charAt(right) == '-') right++;
-      while (right < inputString.length() && (Character.isDigit(inputString.charAt(right)) || inputString.charAt(right) == '_'))
         right++;
       return inputString.substring(inputIndex, right);
     }
@@ -70,6 +77,16 @@ public class ParserBase {
       while (right < inputString.length() && Character.isDigit(inputString.charAt(right)))
         right++;
       return inputString.substring(inputIndex, right);
+    }
+    case AP_REAL: {
+      int right = inputIndex + 1;
+      if (inputString.charAt(right) == '-') right++;
+      while (right < inputString.length() && Character.isDigit(inputString.charAt(right)))
+        right++;
+      right++; // skip decimal point
+      while (right < inputString.length() && Character.isDigit(inputString.charAt(right)))
+        right++;
+      return inputString.substring(inputIndex + 1, right);
     }
     case SIMPLE_WHITESPACE:
       break;
@@ -102,7 +119,7 @@ public class ParserBase {
       return inputString.substring(inputIndex + 1, right);
     }
     }
-    return "???";
+    return "unprocessed lexeme";
   }
 
   protected boolean match(CFGNode gn) {
@@ -397,16 +414,6 @@ public class ParserBase {
       Util.fatal("Unknown builtin " + b);
       break;
     }
-  }
-
-  private void match_AP_REAL() {
-    // TODO Auto-generated method stub
-
-  }
-
-  private void match_AP_INTEGER() {
-    // TODO Auto-generated method stub
-
   }
 
   protected void lexicalError(String msg) {
@@ -759,9 +766,15 @@ public class ParserBase {
   }
 
   protected void match_SIGNED_INTEGER() {
-    if (peekCh() == '-') // Integers must contain at least one leading digit
+    if (peekCh() == '-' && isDigit(peekOneCh())) // Integers must contain at least one leading digit
       getCh();
     match_INTEGER();
+  }
+
+  protected void match_AP_INTEGER() {
+    if (peekCh() != '\u00A3') return; // check for £
+    getCh();
+    match_SIGNED_INTEGER();
   }
 
   protected void match_REAL() {
@@ -791,9 +804,15 @@ public class ParserBase {
   }
 
   protected void match_SIGNED_REAL() {
-    if (peekCh() == '-') // Integers must contain at least one leading digit
+    if (peekCh() == '-' && isDigit(peekOneCh())) // Integers must contain at least one leading digit
       getCh();
     match_REAL();
+  }
+
+  protected void match_AP_REAL() {
+    if (peekCh() != '\u00A3') return; // check for £
+    getCh();
+    match_SIGNED_REAL();
   }
 
   private void artSkipEscapeSequence() {
