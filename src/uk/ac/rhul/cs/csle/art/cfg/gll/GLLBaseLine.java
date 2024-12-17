@@ -900,6 +900,11 @@ public class GLLBaseLine extends ParserBase {
       for (var pn : nn.packNS)
         if (xP.contains(pn)) predicate1 = false;
 
+      if (predicate1) {
+        xS.remove(nn);
+        cycleBreakDeleted.add(nn);
+      }
+
     }
   }
 
