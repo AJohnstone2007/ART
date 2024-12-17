@@ -155,8 +155,8 @@ public class ParserBase {
     System.out.println("sppfPrint() not implemented for parser class " + this.getClass().getSimpleName());
   }
 
-  public void sppfPrintCycles() {
-    System.out.println("sppfCycles() not implemented for parser class " + this.getClass().getSimpleName());
+  public void sppfPrintCyclicNodes() {
+    System.out.println("sppfCyclicNodes() not implemented for parser class " + this.getClass().getSimpleName());
   }
 
   public void sppfBreakCycles(boolean trace, TraversalKind traversalKind, boolean lone, boolean sibling) {

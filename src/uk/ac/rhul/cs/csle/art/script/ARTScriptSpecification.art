@@ -161,7 +161,7 @@ displayElement  ::=
 | 'lexer' | 'parser' | 'interpreter'
 | 'input' | 'twe' | 'lexicalisation' | 'gss' | 'sppf' | 'bsr' | 'derivation' | 'interpretation' 
 | 'statistics' | __string
-| 'cycles'
+| 'cyclicNodes'
 
 (* Lexical elements **********************************************************)
 __bool ::= 'true' | 'false'
