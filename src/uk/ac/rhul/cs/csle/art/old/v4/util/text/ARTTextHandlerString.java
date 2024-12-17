@@ -21,6 +21,7 @@ public class ARTTextHandlerString extends ARTTextHandler {
       stringWriter.append("Fatal: " + msg);
       errorReport();
       System.exit(1);
+      break; // Quieten dataflow analysis
     case ERROR:
     case ERROR_ECHO:
       errorCount++;

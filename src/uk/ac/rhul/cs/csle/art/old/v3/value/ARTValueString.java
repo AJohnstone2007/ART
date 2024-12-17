@@ -2,7 +2,7 @@ package uk.ac.rhul.cs.csle.art.old.v3.value;
 
 import java.util.Iterator;
 
-public class ARTValueString extends ARTValueCollection implements Comparable {
+public class ARTValueString extends ARTValueCollection {
   protected String payload;
 
   @Override
@@ -94,7 +94,6 @@ public class ARTValueString extends ARTValueCollection implements Comparable {
     return this;
   }
 
-  @Override
   public int compareTo(Object that) {
     if (!(that instanceof ARTValueString)) return -1;
     return payload.compareTo(((ARTValueString) that).payload);

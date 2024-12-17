@@ -34,26 +34,22 @@ public class ARTTextHandlerFile extends ARTTextHandler {
       printWriter.print("Fatal: " + msg);
       errorReport();
       System.exit(1);
-    case ERROR:
-    case ERROR_ECHO:
+      break; // Quiten dataflow analysis
+    case ERROR, ERROR_ECHO:
       errorCount++;
       printWriter.print("Error: " + msg);
       break;
-    case WARNING:
-    case WARNING_ECHO:
+    case WARNING, WARNING_ECHO:
       warningCount++;
       printWriter.print("Warning: " + msg);
       break;
-    case INFO:
-    case INFO_ECHO:
+    case INFO, INFO_ECHO:
       printWriter.print(msg);
       break;
-    case TRACE:
-    case TRACE_ECHO:
+    case TRACE, TRACE_ECHO:
       printWriter.print(msg);
       break;
-    case OUTPUT:
-    case OUTPUT_ECHO:
+    case OUTPUT, OUTPUT_ECHO:
       printWriter.print(msg);
       break;
     }

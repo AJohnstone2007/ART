@@ -9,13 +9,12 @@ import uk.ac.rhul.cs.csle.art.old.v3.manager.grammar.element.ARTGrammarElement;
 import uk.ac.rhul.cs.csle.art.old.v3.manager.module.ARTV3Module;
 import uk.ac.rhul.cs.csle.art.old.v4.util.bitset.ARTBitSet;
 import uk.ac.rhul.cs.csle.art.term.ITerms;
-import uk.ac.rhul.cs.csle.art.util.Relation;
 
 public class ChooseRules {
   private final ITerms iTerms;
-  private final Relation higher = new Relation();
-  private final Relation longer = new Relation();
-  private final Relation shorter = new Relation();
+  // private final Relation higher = new Relation();
+  // private final Relation longer = new Relation();
+  // private final Relation shorter = new Relation();
   private final Set<Integer> chooseTerms = new LinkedHashSet<>();
 
   public ChooseRules(ITerms iTerms) {

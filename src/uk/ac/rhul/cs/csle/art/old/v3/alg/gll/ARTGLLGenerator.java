@@ -1675,8 +1675,7 @@ public class ARTGLLGenerator {
         gt.text.printf(" = new ARTGLLRDTHandle(%s);\n",
             isLeftChild ? "artSPPFPackedNodeLeftChild(artPackedNode)" : "artSPPFPackedNodeRightChild(artPackedNode)");
       } else
-        writeRDEvaluatorCallTopLevel(nE,
-            isLeftChild ? (String) "artSPPFPackedNodeLeftChild(artPackedNode)" : (String) "artSPPFPackedNodeRightChild(artPackedNode)",
+        writeRDEvaluatorCallTopLevel(nE, isLeftChild ? "artSPPFPackedNodeLeftChild(artPackedNode)" : "artSPPFPackedNodeRightChild(artPackedNode)",
             node.instanceNumberWithinProduction);
       // cust.indent();
       // cust.text.printf("artText.println(\"Leaving %s, %s\");\n", nE.toEnumerationString(), isLeftChild ? "Left" : "Right");

@@ -11,7 +11,7 @@ public class ARTPlugin implements ARTPluginInterface {
   public Object plugin(Object... args) {
     System.out.println(name() + " called with " + args.length + " argument" + (args.length == 1 ? "" : "s"));
     for (Object a : args) {
-      System.out.println(a.getClass() + " " + a);
+      System.out.println(a == null ? "null" : a.getClass() + " " + a);
     }
     return args.length == 0 ? null : args[0];
   }
