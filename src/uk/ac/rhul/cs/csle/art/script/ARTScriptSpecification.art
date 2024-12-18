@@ -65,18 +65,19 @@ termsTail ::= ','^ trTerm | ','^ trTerm termsTail^
 
 trTerm ::= 
   __bool^^ | __char^^ | __intAP^^ | __int32^^ | __realAP^^ | __real64^^ | __string^^  // lexical from builtins - see below  
-| __keyval^^ | __list^^ | __set^^ 
+| __list^^ | __set^^ | __map^^ 
 | ID^^ | IDSTAR^^ | ID^^ '('^ ')'^ | ID^^ '('^ trTerm ')'^ | ID^^ '('^ terms^ ')'^ | trTuple^^ '<'^ terms^ '>'^
 
-__keyval ::= trTerm '->'^ trTerm
+// Note: this version of list
 
-__list ::= '['^ listParent elements ']'^
-listParent ::= #^ | __list '|'^
+__list ::= '['^ ']'^ | '['^ l ']'^
+l ::= trTerm | trTerm ','^ l
 
-__set  ::= '{'^ setParent elements '}'^ 
-setParent ::= #^ | __set '|'^
+__set  ::= '{'^ '}'^ | '{'^ s '}'^ 
+s ::= trTerm | trTerm ','^ s
 
-elements ::= #^ | terms^
+__map  ::= '{'^ '->' '}'^  |'{'^ m '}'^  // Note ugly empty map syntax
+m ::= trTerm '->'^ trTerm | trTerm '->'^ trTerm ','^ m
 
 trRelation ::= '->' | '=>'  | '/>' | '\>' | '~>'  
 

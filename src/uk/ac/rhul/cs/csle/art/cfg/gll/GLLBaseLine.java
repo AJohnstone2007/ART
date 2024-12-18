@@ -724,11 +724,11 @@ public class GLLBaseLine extends ParserBase {
 
       if (p.leftChild != null) {
         sppfOut.println("\"" + p + "\"" + "->" + "\"" + p.leftChild + "\"");
-        if (isCyclicP) sppfOut.println(cycleStyle);
+        if (isCyclicP && sppfCyclic.contains(p.leftChild)) sppfOut.println(cycleStyle);
       }
 
       sppfOut.println("\"" + p + "\"" + "->" + "\"" + p.rightChild + "\"");
-      if (isCyclicP) sppfOut.println(cycleStyle);
+      if (isCyclicP && sppfCyclic.contains(p.rightChild)) sppfOut.println(cycleStyle);
     }
   }
 
@@ -791,7 +791,7 @@ public class GLLBaseLine extends ParserBase {
     sppfReachable.clear();
     for (var n : sppf.keySet())
       for (var p : n.packNS) {
-        if (cycleBreakDeleted.contains(p) || cycleBreakDeletedPrime.contains(p)) continue;
+        if (cycleBreakDeleted.contains(p) /* || cycleBreakDeletedPrime.contains(p) */) continue;
         sppfReachable.add(n, p);
         if (p.leftChild != null) sppfReachable.add(p, p.leftChild);
         sppfReachable.add(p, p.rightChild);
@@ -887,6 +887,16 @@ public class GLLBaseLine extends ParserBase {
 
   // This is an implementation of 'CycleBreak1'
   void sppfCycleBreakAlgorithm2() {
+    for (var nn : new HashSet<>(xS)) { // Process all symbol nodes in X
+      if (cycleBreakTrace) System.out.println("Checking symbol node " + nn + " with child predicate " + childPredicateSymbol(nn));
+      if (childPredicateSymbol(nn)) {
+        xS.remove(nn);
+        if (cycleBreakTrace) System.out.println("Removed from xS: " + nn);
+        cycleBreakDeleted.add(nn);
+        changed = true;
+        return;
+      }
+    }
     for (var pp : new HashSet<>(xP)) { // Process all packed nodes in X
       if (cycleBreakTrace) System.out
           .println("Checking packed node " + pp + " with child predicate " + childPredicatePacked(pp) + " and sibling predicate " + siblingPredicatePacked(pp));
@@ -894,22 +904,15 @@ public class GLLBaseLine extends ParserBase {
       if (childPredicatePacked(pp)) {
         xP.remove(pp);
         cycleBreakDeleted.add(pp);
+        if (cycleBreakTrace) System.out.println("Removed from xP and added to D: " + pp);
         changed = true;
-      }
-
-      if (siblingPredicatePacked(pp)) {
+        return;
+      } else if (siblingPredicatePacked(pp)) { // Note else is not required when 'single' returns are being used
         xP.remove(pp);
         cycleBreakDeletedPrime.add(pp);
+        if (cycleBreakTrace) System.out.println("Removed from xP and added to D': " + pp);
         changed = true;
-      }
-    }
-
-    for (var nn : new HashSet<>(xS)) { // Process all symbol nodes in X
-      if (cycleBreakTrace) System.out.println("Checking symbol node " + nn + " with child predicate " + childPredicateSymbol(nn));
-      if (childPredicateSymbol(nn)) {
-        xS.remove(nn);
-        cycleBreakDeleted.add(nn);
-        changed = true;
+        return;
       }
     }
   }
@@ -925,7 +928,7 @@ public class GLLBaseLine extends ParserBase {
   public boolean siblingPredicatePacked(SPPFPN sppfPN) {
     SPPFN parent = sppfPN.parent;
     for (var p : parent.packNS)
-      if (!xP.contains(p)) return true;
+      if (p != sppfPN && !xP.contains(p)) return true;
     return false;
   }
 
