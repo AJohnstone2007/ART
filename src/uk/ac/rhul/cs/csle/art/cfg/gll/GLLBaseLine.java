@@ -888,11 +888,11 @@ public class GLLBaseLine extends ParserBase {
   // This is an implementation of 'CycleBreak1'
   void sppfCycleBreakAlgorithm2() {
     for (var nn : new HashSet<>(xS)) { // Process all symbol nodes in X
+
       if (cycleBreakTrace) System.out.println("Checking symbol node " + nn + " with child predicate " + childPredicateSymbol(nn));
       if (childPredicateSymbol(nn)) {
         xS.remove(nn);
-        if (cycleBreakTrace) System.out.println("Removed from xS and added to D: " + nn);
-        cycleBreakDeleted.add(nn);
+        if (cycleBreakTrace) System.out.println("Removed from xS: " + nn);
         changed = true;
         return;
       }
@@ -918,7 +918,7 @@ public class GLLBaseLine extends ParserBase {
     }
   }
 
-  // children(v) ∩ Xi != ∅ (symbol node child predicate)
+  // children(v) ∩ Xi = ∅ (symbol node child predicate)
   public boolean childPredicateSymbol(SPPFN sppfN) {
     for (var pn : sppfN.packNS)
       if (xP.contains(pn)) return false;
@@ -933,7 +933,7 @@ public class GLLBaseLine extends ParserBase {
     return false;
   }
 
-  // children(v) ∩ Xi != ∅ (packed node child predicate)
+  // children(v) ∩ Xi = ∅ (packed node child predicate)
   public boolean childPredicatePacked(SPPFPN sppfPN) {
     if (sppfPN.leftChild != null && xS.contains(sppfPN.leftChild)) return false;
     if (xS.contains(sppfPN.rightChild)) return false;
