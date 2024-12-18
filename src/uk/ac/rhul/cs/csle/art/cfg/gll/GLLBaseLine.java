@@ -891,7 +891,7 @@ public class GLLBaseLine extends ParserBase {
       if (cycleBreakTrace) System.out.println("Checking symbol node " + nn + " with child predicate " + childPredicateSymbol(nn));
       if (childPredicateSymbol(nn)) {
         xS.remove(nn);
-        if (cycleBreakTrace) System.out.println("Removed from xS: " + nn);
+        if (cycleBreakTrace) System.out.println("Removed from xS and added to D: " + nn);
         cycleBreakDeleted.add(nn);
         changed = true;
         return;
@@ -901,7 +901,8 @@ public class GLLBaseLine extends ParserBase {
       if (cycleBreakTrace) System.out
           .println("Checking packed node " + pp + " with child predicate " + childPredicatePacked(pp) + " and sibling predicate " + siblingPredicatePacked(pp));
       if (childPredicatePacked(pp) && siblingPredicatePacked(pp)) System.out.println("Both predicates triggered for packed node " + pp);
-      if (childPredicatePacked(pp)) {
+
+      if (!childPredicatePacked(pp)) {
         xP.remove(pp);
         cycleBreakDeleted.add(pp);
         if (cycleBreakTrace) System.out.println("Removed from xP and added to D: " + pp);
@@ -917,7 +918,7 @@ public class GLLBaseLine extends ParserBase {
     }
   }
 
-  // children(v) ∩ Xi = ∅ (symbol node child predicate)
+  // children(v) ∩ Xi != ∅ (symbol node child predicate)
   public boolean childPredicateSymbol(SPPFN sppfN) {
     for (var pn : sppfN.packNS)
       if (xP.contains(pn)) return false;
@@ -932,7 +933,7 @@ public class GLLBaseLine extends ParserBase {
     return false;
   }
 
-  // children(v) ∩ Xi = ∅ (packed node child predicate)
+  // children(v) ∩ Xi != ∅ (packed node child predicate)
   public boolean childPredicatePacked(SPPFPN sppfPN) {
     if (sppfPN.leftChild != null && xS.contains(sppfPN.leftChild)) return false;
     if (xS.contains(sppfPN.rightChild)) return false;
