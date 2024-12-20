@@ -70,14 +70,14 @@ trTerm ::=
 
 // Note: this version of list
 
-__list ::= '['^ ']'^ | '['^ l ']'^
-l ::= trTerm | trTerm ','^ l
+__list ::= '['^ ']'^ | '['^ __l ']'^
+__l ::= trTerm | trTerm ','^ __l
 
-__set  ::= '{'^ '}'^ | '{'^ s '}'^ 
-s ::= trTerm | trTerm ','^ s
+__set  ::= '{'^ '}'^ | '{'^ __s '}'^ 
+__s ::= trTerm | trTerm ','^ __s
 
-__map  ::= '{'^ '->' '}'^  |'{'^ m '}'^  // Note ugly empty map syntax
-m ::= trTerm '->'^ trTerm | trTerm '->'^ trTerm ','^ m
+__map  ::= '{'^ '->' '}'^  |'{'^ __m '}'^  // Note ugly empty map syntax
+__m ::= trTerm '->'^ trTerm | trTerm '->'^ trTerm ','^ __m
 
 trRelation ::= '->' | '=>'  | '/>' | '\>' | '~>'  
 

@@ -4,6 +4,9 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -318,13 +321,13 @@ public class ITerms {
     int symbolNameStringIndex = parseSymbolName();
     // Semantic checks on symbol name
     String symbolNameString = getString(symbolNameStringIndex);
-    if (symbolNameString.length() > 0 && symbolNameString.charAt(0) == '_') {
-      if (symbolNameString.length() > 1 && symbolNameString.charAt(1) == '_') {// two underscores so must be intrinsic function or type
-        if (!isSpecialSymbol(symbolNameStringIndex)) parseSyntaxError("unknown evaluatable function: " + symbolNameString);
-      } else {
-        if (!isVariableSymbol(symbolNameStringIndex) && !isSequenceVariableSymbol(symbolNameStringIndex)) parseSyntaxError("unknown variable");
-      }
-    }
+    // if (symbolNameString.length() > 0 && symbolNameString.charAt(0) == '_') {
+    // if (symbolNameString.length() > 1 && symbolNameString.charAt(1) == '_') {// two underscores so must be intrinsic function or type
+    // if (!isSpecialSymbol(symbolNameStringIndex)) parseSyntaxError("unknown evaluatable function: " + symbolNameString);
+    // } else {
+    // if (!isVariableSymbol(symbolNameStringIndex) && !isSequenceVariableSymbol(symbolNameStringIndex)) parseSyntaxError("unknown variable");
+    // }
+    // }
 
     List<Integer> subterms;
     if (parseCurrentCharacter == '(') {
@@ -612,9 +615,12 @@ public class ITerms {
 
     // Skip types
     switch (termSymbolStringIndex) {
+    case __lStringIndex, __sStringIndex, __mStringIndex:
+      throw new ValueException("term may only appear in collection context");
+
     case __bottomStringIndex, __doneStringIndex, __emptyStringIndex, __quoteStringIndex, __blobStringIndex, __keyvalStringIndex, __adtProdStringIndex, __adtSumStringIndex, __procStringIndex,
 
-        __boolStringIndex, __charStringIndex, __intAPStringIndex, __int32StringIndex, __realAPStringIndex, __real64StringIndex, __stringStringIndex, __listStringIndex, __setStringIndex:
+        __boolStringIndex, __charStringIndex, __intAPStringIndex, __int32StringIndex, __realAPStringIndex, __real64StringIndex, __stringStringIndex, __listStringIndex, __setStringIndex, __mapStringIndex:
       return term;
     }
 
@@ -665,7 +671,9 @@ public class ITerms {
         case __listStringIndex:
           return javaIntegerToTerm(termToJavaLinkedList(children[0]).size());
         case __setStringIndex:
-          return javaIntegerToTerm(termToJavaHashMap(children[0]).size());
+          return javaIntegerToTerm(termToJavaLinkedHashSet(children[0]).size());
+        case __mapStringIndex:
+          return javaIntegerToTerm(termToJavaLinkedHashMap(children[0]).size());
         default:
           throw new ValueException("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
         }
@@ -1060,17 +1068,72 @@ public class ITerms {
   }
 
   public LinkedList<Object> termToJavaLinkedList(int term) {
-    mustHaveSymbol(term, "__list", 2);
-    throw new ValueException("termToJavaLinkedList not yet implemented");
+    mustHaveSymbol(term, "__list");
+    LinkedList<Object> ret = new LinkedList<>();
+    if (termArity(term) == 0) return ret; // Empty list
+    term = termChildren(term)[0];
+    while (termArity(term) == 2) {
+      int[] children = termChildren(term);
+      ret.add(termToJavaObject(children[0]));
+      term = children[1];
+    }
+    ret.add(termToJavaObject(termChildren(term)[0])); // Add in the last element
+
+    // System.out.println("Built Java list " + ret);
+    return ret;
+  }
+
+  private int javaCollectionToTermRec(int constructor, Iterator<?> iterator) {
+    if (!iterator.hasNext()) return 0;
+
+    int element = javaObjectToTerm(iterator.next());
+    int restOf = javaCollectionToTermRec(constructor, iterator);
+
+    return restOf == 0 ? findTerm(constructor, element) : findTerm(constructor, element, restOf);
   }
 
   public int javaListToTerm(List<?> value) {
-    throw new ValueException("javaListToTerm not yet implemented");
+    int ret = findTerm("__list", javaCollectionToTermRec(findString("__l"), value.iterator()));
+    System.out.println("Constructed term from List: " + toString(ret));
+    return ret;
   }
 
-  public HashMap<Object, Object> termToJavaHashMap(int term) {
-    mustHaveSymbol(term, "__set", 2);
-    throw new ValueException("termToJavaHashMap not yet implemented");
+  public LinkedHashSet<Object> termToJavaLinkedHashSet(int term) { // Use LinkedHashSet to mimic linked list 'pure' rules
+    mustHaveSymbol(term, "__set");
+    LinkedHashSet<Object> ret = new LinkedHashSet<>();
+    if (termArity(term) == 0) return ret; // Empty list
+    term = termChildren(term)[0];
+    while (termArity(term) == 2) {
+      int[] children = termChildren(term);
+      ret.add(termToJavaObject(children[0]));
+      term = children[1];
+    }
+    ret.add(termToJavaObject(termChildren(term)[0])); // Add in the last element
+
+    // System.out.println("Built Java set " + ret);
+    return ret;
+  }
+
+  public int javaSetToTerm(Set<?> value) {
+    int ret = findTerm("__set", javaCollectionToTermRec(findString("__s"), value.iterator()));
+    System.out.println("Constructed term from Set: " + toString(ret));
+    return ret;
+  }
+
+  public LinkedHashMap<Object, Object> termToJavaLinkedHashMap(int term) { // Use LinkedHashMap to mimic linked list 'pure' rules
+    mustHaveSymbol(term, "__map");
+    LinkedHashMap<Object, Object> ret = new LinkedHashMap<>();
+    if (termArity(term) == 0) return ret; // Empty list
+    term = termChildren(term)[0];
+    while (termArity(term) == 3) {
+      int[] children = termChildren(term);
+      ret.put(termToJavaObject(children[0]), termToJavaObject(children[1]));
+      term = children[2];
+    }
+    ret.put(termToJavaObject(termChildren(term)[0]), termToJavaObject(termChildren(term)[1])); // Add in the last element
+
+    // System.out.println("Built Java map " + ret);
+    return ret;
   }
 
   public int javaMapToTerm(Map<?, ?> value) {
@@ -1096,7 +1159,9 @@ public class ITerms {
     case __listStringIndex:
       return termToJavaLinkedList(term);
     case __setStringIndex:
-      return termToJavaHashMap(term);
+      return termToJavaLinkedHashSet(term);
+    case __mapStringIndex:
+      return termToJavaLinkedHashMap(term);
 
     case __doneStringIndex: // special case - we use __done as term equivalent of null
       return null;
@@ -1118,6 +1183,7 @@ public class ITerms {
     if (value instanceof BigDecimal) return javaBigDecimalToTerm((BigDecimal) value);
     if (value instanceof String) return javaStringToTerm((String) value);
     if (value instanceof List<?>) return javaListToTerm((List<?>) value);
+    if (value instanceof Set<?>) return javaListToTerm((List<?>) value);
     if (value instanceof Map<?, ?>) return javaMapToTerm((Map<?, ?>) value);
     return termBottom; // Illegal object class with no term equivalent
   }
@@ -1125,10 +1191,11 @@ public class ITerms {
   /* String index constant management **********************************************************************/
   // Whenever types or operations are added to or removed form the value system, run this mainline and replace the constants and loadStrings()
   public static void main(String[] args) {
-    String[] s = { "__map", "__bottom", "__done", "__empty", "__quote", "__blob", "__keyval", "__adtProd", "__adtSum", "__proc", "__bool", "__char", "__intAP",
-        "__int32", "__realAP", "__real64", "__string", "__list", "__set", "__eq", "__ne", "__gt", "__lt", "__ge", "__le", "__compare", "__not", "__and", "__or",
-        "__xor", "__shift", "__shiftsigned", "__rotate", "__neg", "__add", "__sub", "__mul", "__div", "__mod", "__exp", "__size", "__cat", "__slice", "__get",
-        "__put", "__contains", "__remove", "__extract", "__union", "__intersection", "__difference", "__cast", "__termArity", "__termRoot", "__plugin" };
+    String[] s = { "__bottom", "__done", "__empty", "__quote", "__blob", "__keyval", "__adtProd", "__adtSum", "__proc", "__bool", "__char", "__intAP",
+        "__int32", "__realAP", "__real64", "__string", "__list", "__l", "__set", "__s", "__map", "__m", "__eq", "__ne", "__gt", "__lt", "__ge", "__le",
+        "__compare", "__not", "__and", "__or", "__xor", "__shift", "__shiftsigned", "__rotate", "__neg", "__add", "__sub", "__mul", "__div", "__mod", "__exp",
+        "__size", "__cat", "__slice", "__get", "__put", "__contains", "__remove", "__extract", "__union", "__intersection", "__difference", "__cast",
+        "__termArity", "__termRoot", "__plugin" };
     int symbolValue = variableCount + sequenceVariableCount + 1 + 2;
     System.out.print("public final int " + s[0] + "StringIndex = " + (symbolValue++));
     for (int i = 1; i < s.length; i++)
@@ -1146,72 +1213,75 @@ public class ITerms {
     if (findString(string) != index) System.out.println("String index mismatch for " + string);
   }
 
-  public final int __mapStringIndex = 33, __bottomStringIndex = 34, __doneStringIndex = 35, __emptyStringIndex = 36, __quoteStringIndex = 37,
-      __blobStringIndex = 38, __keyvalStringIndex = 39, __adtProdStringIndex = 40, __adtSumStringIndex = 41, __procStringIndex = 42, __boolStringIndex = 43,
-      __charStringIndex = 44, __intAPStringIndex = 45, __int32StringIndex = 46, __realAPStringIndex = 47, __real64StringIndex = 48, __stringStringIndex = 49,
-      __listStringIndex = 50, __setStringIndex = 51, __eqStringIndex = 52, __neStringIndex = 53, __gtStringIndex = 54, __ltStringIndex = 55,
-      __geStringIndex = 56, __leStringIndex = 57, __compareStringIndex = 58, __notStringIndex = 59, __andStringIndex = 60, __orStringIndex = 61,
-      __xorStringIndex = 62, __shiftStringIndex = 63, __shiftsignedStringIndex = 64, __rotateStringIndex = 65, __negStringIndex = 66, __addStringIndex = 67,
-      __subStringIndex = 68, __mulStringIndex = 69, __divStringIndex = 70, __modStringIndex = 71, __expStringIndex = 72, __sizeStringIndex = 73,
-      __catStringIndex = 74, __sliceStringIndex = 75, __getStringIndex = 76, __putStringIndex = 77, __containsStringIndex = 78, __removeStringIndex = 79,
-      __extractStringIndex = 80, __unionStringIndex = 81, __intersectionStringIndex = 82, __differenceStringIndex = 83, __castStringIndex = 84,
-      __termArityStringIndex = 85, __termRootStringIndex = 86, __pluginStringIndex = 87;
+  public final int __bottomStringIndex = 33, __doneStringIndex = 34, __emptyStringIndex = 35, __quoteStringIndex = 36, __blobStringIndex = 37,
+      __keyvalStringIndex = 38, __adtProdStringIndex = 39, __adtSumStringIndex = 40, __procStringIndex = 41, __boolStringIndex = 42, __charStringIndex = 43,
+      __intAPStringIndex = 44, __int32StringIndex = 45, __realAPStringIndex = 46, __real64StringIndex = 47, __stringStringIndex = 48, __listStringIndex = 49,
+      __lStringIndex = 50, __setStringIndex = 51, __sStringIndex = 52, __mapStringIndex = 53, __mStringIndex = 54, __eqStringIndex = 55, __neStringIndex = 56,
+      __gtStringIndex = 57, __ltStringIndex = 58, __geStringIndex = 59, __leStringIndex = 60, __compareStringIndex = 61, __notStringIndex = 62,
+      __andStringIndex = 63, __orStringIndex = 64, __xorStringIndex = 65, __shiftStringIndex = 66, __shiftsignedStringIndex = 67, __rotateStringIndex = 68,
+      __negStringIndex = 69, __addStringIndex = 70, __subStringIndex = 71, __mulStringIndex = 72, __divStringIndex = 73, __modStringIndex = 74,
+      __expStringIndex = 75, __sizeStringIndex = 76, __catStringIndex = 77, __sliceStringIndex = 78, __getStringIndex = 79, __putStringIndex = 80,
+      __containsStringIndex = 81, __removeStringIndex = 82, __extractStringIndex = 83, __unionStringIndex = 84, __intersectionStringIndex = 85,
+      __differenceStringIndex = 86, __castStringIndex = 87, __termArityStringIndex = 88, __termRootStringIndex = 89, __pluginStringIndex = 90;
 
   void loadStrings() {
-    loadString("__map", 33);
-    loadString("__bottom", 34);
-    loadString("__done", 35);
-    loadString("__empty", 36);
-    loadString("__quote", 37);
-    loadString("__blob", 38);
-    loadString("__keyval", 39);
-    loadString("__adtProd", 40);
-    loadString("__adtSum", 41);
-    loadString("__proc", 42);
-    loadString("__bool", 43);
-    loadString("__char", 44);
-    loadString("__intAP", 45);
-    loadString("__int32", 46);
-    loadString("__realAP", 47);
-    loadString("__real64", 48);
-    loadString("__string", 49);
-    loadString("__list", 50);
+    loadString("__bottom", 33);
+    loadString("__done", 34);
+    loadString("__empty", 35);
+    loadString("__quote", 36);
+    loadString("__blob", 37);
+    loadString("__keyval", 38);
+    loadString("__adtProd", 39);
+    loadString("__adtSum", 40);
+    loadString("__proc", 41);
+    loadString("__bool", 42);
+    loadString("__char", 43);
+    loadString("__intAP", 44);
+    loadString("__int32", 45);
+    loadString("__realAP", 46);
+    loadString("__real64", 47);
+    loadString("__string", 48);
+    loadString("__list", 49);
+    loadString("__l", 50);
     loadString("__set", 51);
-    loadString("__eq", 52);
-    loadString("__ne", 53);
-    loadString("__gt", 54);
-    loadString("__lt", 55);
-    loadString("__ge", 56);
-    loadString("__le", 57);
-    loadString("__compare", 58);
-    loadString("__not", 59);
-    loadString("__and", 60);
-    loadString("__or", 61);
-    loadString("__xor", 62);
-    loadString("__shift", 63);
-    loadString("__shiftsigned", 64);
-    loadString("__rotate", 65);
-    loadString("__neg", 66);
-    loadString("__add", 67);
-    loadString("__sub", 68);
-    loadString("__mul", 69);
-    loadString("__div", 70);
-    loadString("__mod", 71);
-    loadString("__exp", 72);
-    loadString("__size", 73);
-    loadString("__cat", 74);
-    loadString("__slice", 75);
-    loadString("__get", 76);
-    loadString("__put", 77);
-    loadString("__contains", 78);
-    loadString("__remove", 79);
-    loadString("__extract", 80);
-    loadString("__union", 81);
-    loadString("__intersection", 82);
-    loadString("__difference", 83);
-    loadString("__cast", 84);
-    loadString("__termArity", 85);
-    loadString("__termRoot", 86);
-    loadString("__plugin", 87);
+    loadString("__s", 52);
+    loadString("__map", 53);
+    loadString("__m", 54);
+    loadString("__eq", 55);
+    loadString("__ne", 56);
+    loadString("__gt", 57);
+    loadString("__lt", 58);
+    loadString("__ge", 59);
+    loadString("__le", 60);
+    loadString("__compare", 61);
+    loadString("__not", 62);
+    loadString("__and", 63);
+    loadString("__or", 64);
+    loadString("__xor", 65);
+    loadString("__shift", 66);
+    loadString("__shiftsigned", 67);
+    loadString("__rotate", 68);
+    loadString("__neg", 69);
+    loadString("__add", 70);
+    loadString("__sub", 71);
+    loadString("__mul", 72);
+    loadString("__div", 73);
+    loadString("__mod", 74);
+    loadString("__exp", 75);
+    loadString("__size", 76);
+    loadString("__cat", 77);
+    loadString("__slice", 78);
+    loadString("__get", 79);
+    loadString("__put", 80);
+    loadString("__contains", 81);
+    loadString("__remove", 82);
+    loadString("__extract", 83);
+    loadString("__union", 84);
+    loadString("__intersection", 85);
+    loadString("__difference", 86);
+    loadString("__cast", 87);
+    loadString("__termArity", 88);
+    loadString("__termRoot", 89);
+    loadString("__plugin", 90);
   }
 }
