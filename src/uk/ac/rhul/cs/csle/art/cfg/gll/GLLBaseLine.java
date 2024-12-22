@@ -882,34 +882,56 @@ public class GLLBaseLine extends ParserBase {
   // }
   // }
 
-  // @formatter:off
-  void trace(String msg) { if (cycleBreakTrace) System.out.println(msg); }
+  // @formatter:on
+  void trace(String msg) {
+    if (cycleBreakTrace) System.out.println(msg);
+  }
+
   private int cycleBreakPass;
 
   boolean sppfCycleBreak1A() {
     trace("SPPF cycle break pass " + cycleBreakPass++);
     for (var v : new HashSet<>(yS)) {
       trace("Checking symbol node " + v + " with child predicate " + noChildInX(v));
-      if (noChildInX(v)) { cbUpdate(v); return true; }
+      if (noChildInX(v)) {
+        cbUpdate(v);
+        return true;
+      }
     }
 
     for (var v : new HashSet<>(yP)) {
       trace("Checking packed node " + v + " with child predicate " + noChildInX(v) + " and sibling predicate " + someSiblingNotInX(v));
       if (noChildInX(v) && someSiblingNotInX(v)) trace("Both predicates triggered for packed node " + v);
 
-      if (!noChildInX(v)) { cbUpdate(v, cbD); return true; }
+      if (!noChildInX(v)) {
+        cbUpdate(v, cbD);
+        return true;
+      }
 
-      if (someSiblingNotInX(v)) { cbUpdate(v, cbDPrime); return true; }
+      if (someSiblingNotInX(v)) {
+        cbUpdate(v, cbDPrime);
+        return true;
+      }
     }
     return false;
   }
 
   boolean cycleBreak1() {
-    for (var v : yS)
-      if (noChildInX(v)) { cbUpdate(v); return true; }
+    for (var v : yS) {
+      if (noChildInX(v)) {
+        cbUpdate(v);
+        return true;
+      }
+    }
+
     for (var v : yP) {
-      if (!noChildInX(v)) { cbUpdate(v, cbD); return true; }
-      if (someSiblingNotInX(v)) { cbUpdate(v, cbDPrime); return true; }
+      if (!noChildInX(v) && someSiblingNotInX(v)) {
+        cbUpdate(v, cbD);
+        return true;
+      } else if (someSiblingNotInX(v)) {
+        cbUpdate(v, cbDPrime);
+        return true;
+      }
     }
     return false;
   }
@@ -920,7 +942,7 @@ public class GLLBaseLine extends ParserBase {
     if (cycleBreakTrace) System.out.println("Removed from xP: " + v);
   }
 
-  public void cbUpdate(SPPFNode v) {
+  public void cbUpdate(SPPFN v) {
     yS.remove(v);
     if (cycleBreakTrace) System.out.println("Removed from xS: " + v);
   }
@@ -985,8 +1007,7 @@ public class GLLBaseLine extends ParserBase {
     if (cycleBreakTrace)
 
     {
-      System.out.println(
-          "After cycle breaking, |Xs|=" + yS.size() + " |Xp|=" + yP.size() + " |D|=" + cbD.size() + " |D'|=" + cbDPrime.size());
+      System.out.println("After cycle breaking, |Xs|=" + yS.size() + " |Xp|=" + yP.size() + " |D|=" + cbD.size() + " |D'|=" + cbDPrime.size());
 
       System.out.println("D is ");
       for (var d : cbD)
@@ -1087,24 +1108,6 @@ public class GLLBaseLine extends ParserBase {
       c = q.removeFirst(); // deqeue c
       if (breakCyclesRelationTrace) System.out.println("** Processing: " + c);
 
-      for (var p : c.xP) { // Process packed nodes
-        if (breakCyclesRelationTrace) System.out.println("Checking packed node: " + p);
-        if (hasKeptSibling(p, c.xP)) { // u loop
-          if (breakCyclesRelationTrace) System.out.println("Packed node has kept sibling");
-          cp = new Configuration(c);
-          cp.xP.remove(p);
-          cp.d.add(p);
-          newState(c, cp);
-        }
-
-        if (allChildrenKept(p, c.xS)) { // w loop
-          if (breakCyclesRelationTrace) System.out.println("Packed node has all kept children");
-          cp = new Configuration(c);
-          cp.xP.remove(p);
-          newState(c, cp);
-        }
-      }
-
       for (var n : c.xS) {
         if (breakCyclesRelationTrace) System.out.println("Checking symbol node: " + n);
 
@@ -1112,6 +1115,17 @@ public class GLLBaseLine extends ParserBase {
           if (breakCyclesRelationTrace) System.out.println("Symbol node has all kept children");
           cp = new Configuration(c);
           cp.xS.remove(n);
+          newState(c, cp);
+        }
+      }
+
+      for (var p : c.xP) { // Process packed nodes
+        if (breakCyclesRelationTrace) System.out.println("Checking packed node: " + p);
+        if (hasKeptSibling(p, c.xP)) { // u loop
+          if (breakCyclesRelationTrace) System.out.println("Packed node has kept sibling");
+          cp = new Configuration(c);
+          cp.xP.remove(p);
+          cp.d.add(p);
           newState(c, cp);
         }
       }
