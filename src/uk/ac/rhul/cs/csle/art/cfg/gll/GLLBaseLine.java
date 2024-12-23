@@ -523,10 +523,10 @@ public class GLLBaseLine extends ParserBase {
     @Override
     public String toString() {
       StringBuilder sb = new StringBuilder();
-      // if (gn == null)
-      // sb.append("NULL");
-      // else
-      sb.append(number);
+      if (gn == null)
+        sb.append("NULL");
+      else
+        sb.append(number);
       sb.append(": ");
       if (isSymbol(this))
         sb.append(gn.toString());
@@ -695,9 +695,11 @@ public class GLLBaseLine extends ParserBase {
   private void sppfSubtreeToDot(SPPFN sppfn) {
     boolean isAmbiguous = sppfn.packNS.size() > 1;
     if (isSymbol(sppfn))
-      sppfOut.println("\"" + sppfn + "\"" + symbolNodeStyle);
+      sppfOut.println(
+          "\"" + sppfn.number + "\"" + symbolNodeStyle + " [label=\"" + sppfn.number + " " + sppfn.gn.toString() + " " + sppfn.li + ", " + sppfn.ri + "\"]");
     else
-      sppfOut.println("\"" + sppfn + "\"" + intermediateNodeStyle);
+      sppfOut.println("\"" + sppfn.number + "\"" + intermediateNodeStyle + " [label=\"" + sppfn.number + " " + sppfn.gn.toStringAsProduction() + " " + sppfn.li
+          + ", " + sppfn.ri + "\"]");
 
     if (isAmbiguous) sppfOut.println(ambiguousStyle);
     if (sppfCyclic.contains(sppfn)) sppfOut.println(cycleStyle);
@@ -707,7 +709,7 @@ public class GLLBaseLine extends ParserBase {
     for (SPPFPN p : sppfn.packNS) {
       boolean isCyclicP = sppfCyclic.contains(p);
 
-      sppfOut.println("\"" + p + "\"" + packNodeStyle + " [label = \"" + p.number + ": " + p.gn.toStringAsProduction() + " , " + p.pivot + "\" ]");
+      sppfOut.println("\"" + p.number + "\"" + packNodeStyle + " [label=\"" + p.number + ": " + p.gn.toStringAsProduction() + " , " + p.pivot + "\"]");
       if (isCyclicP) sppfOut.println(cycleStyle);
       if (!sppfRootReachable.contains(p)) sppfOut.println(unreachablePackNodeStyle);
 
@@ -716,18 +718,18 @@ public class GLLBaseLine extends ParserBase {
       else if (cbD.contains(p))
         sppfOut.println(deletedPackNodeStyle);
       else if (cbDPrime.contains(p)) sppfOut.println(deletedPrimePackNodeStyle);
-      sppfOut.println("\"" + sppfn + "\"" + "->" + "\"" + p + "\"");
+      sppfOut.println("\"" + sppfn.number + "\"" + "->" + "\"" + p.number + "\"");
 
       if (isCyclicP)
         sppfOut.println(cycleStyle);
       else if (isAmbiguous) sppfOut.println(ambiguousStyle);
 
       if (p.leftChild != null) {
-        sppfOut.println("\"" + p + "\"" + "->" + "\"" + p.leftChild + "\"");
+        sppfOut.println("\"" + p.number + "\"" + "->" + "\"" + p.leftChild.number + "\"");
         if (isCyclicP && sppfCyclic.contains(p.leftChild)) sppfOut.println(cycleStyle);
       }
 
-      sppfOut.println("\"" + p + "\"" + "->" + "\"" + p.rightChild + "\"");
+      sppfOut.println("\"" + p.number + "\"" + "->" + "\"" + p.rightChild.number + "\"");
       if (isCyclicP && sppfCyclic.contains(p.rightChild)) sppfOut.println(cycleStyle);
     }
   }
@@ -830,59 +832,6 @@ public class GLLBaseLine extends ParserBase {
       }
   }
 
-  // void sppfCycleBreakAlgorithm1() {
-  // for (var pp : new HashSet<>(xP)) {
-  // // Look to see if this node has any 'keep' packed children
-  // SPPFN n = pp.parent;
-  // boolean hasNotInXp = false;
-  // if (n != null) for (var p : n.packNS)
-  // if (!xP.contains(p)) {
-  // hasNotInXp = true;
-  // break;
-  // }
-  // // If any of the packed children were 'keep' then mark one non-keep node as D
-  // if (hasNotInXp) {
-  // if (cycleBreakTrace) System.out.println("Node " + n + " has 'keep' children which are not in Xp");
-  // for (var p : n.packNS) {
-  // // System.out.println("Scanning for deletion: " + p + " in xP " + xP.contains(p));
-  // if (xP.contains(p)) {
-  // changed = true;
-  // cycleBreakDeleted.add(p);
-  // xP.remove(p);
-  // if (cycleBreakTrace) System.out.println("Deleted pack node " + p);
-  //
-  // if (cycleBreakTrace) System.out.println("Start of v loop");
-  // boolean changedOnV = true;
-  // while (changedOnV) {
-  // changedOnV = false;
-  //
-  // for (var pn : new HashSet<>(xP))
-  // if (!xS.contains(pn.rightChild) && (pn.leftChild != null && !xS.contains(pn.leftChild))) {
-  // changedOnV = true;
-  // xP.remove(pn);
-  // if (cycleBreakTrace) System.out.println("Removed from Xp: " + pn);
-  // }
-  //
-  // for (var nn : new HashSet<>(xS)) {
-  // boolean allNotInX = true;
-  // for (var pn : nn.packNS)
-  // if (xP.contains(pn)) allNotInX = false; // break here
-  // if (allNotInX) {
-  // changedOnV = true;
-  // xS.remove(nn);
-  // if (cycleBreakTrace) System.out.println("Removed from Xs: " + nn);
-  // }
-  // }
-  // }
-  // }
-  // // NB if we only want to remove one 'u' for each 'w' then insert a break here; probably pointless
-  // // because our deterministic w loop will come back here on the next pass anyway
-  // }
-  // }
-  // }
-  // }
-
-  // @formatter:on
   void trace(String msg) {
     if (cycleBreakTrace) System.out.println(msg);
   }
@@ -890,25 +839,25 @@ public class GLLBaseLine extends ParserBase {
   private int cycleBreakPass;
 
   boolean sppfCycleBreak1A() {
-    trace("SPPF cycle break pass " + cycleBreakPass++);
+    trace("SPPF cycle break pass " + cycleBreakPass++ + " with xS:" + yS + " xP:" + yP + " D:" + cbD + " D':" + cbDPrime);
     for (var v : new HashSet<>(yS)) {
-      trace("Checking symbol node " + v + " with child predicate " + noChildInX(v));
-      if (noChildInX(v)) {
+      trace("Checking symbol node " + v + " with child predicate " + noChildInX(v, yP));
+      if (noChildInX(v, yP)) {
         cbUpdate(v);
         return true;
       }
     }
 
     for (var v : new HashSet<>(yP)) {
-      trace("Checking packed node " + v + " with child predicate " + noChildInX(v) + " and sibling predicate " + someSiblingNotInX(v));
-      if (noChildInX(v) && someSiblingNotInX(v)) trace("Both predicates triggered for packed node " + v);
+      trace("Checking packed node " + v + " with child predicate " + noChildInX(v, yS) + " and sibling predicate " + someSiblingNotInX(v, yP));
+      if (noChildInX(v, yS) && someSiblingNotInX(v, yP)) trace("Both predicates triggered for packed node " + v);
 
-      if (!noChildInX(v)) {
+      if (!noChildInX(v, yS) && someSiblingNotInX(v, yP)) {
         cbUpdate(v, cbD);
         return true;
       }
 
-      if (someSiblingNotInX(v)) {
+      if (someSiblingNotInX(v, yP)) {
         cbUpdate(v, cbDPrime);
         return true;
       }
@@ -916,25 +865,25 @@ public class GLLBaseLine extends ParserBase {
     return false;
   }
 
-  boolean cycleBreak1() {
-    for (var v : yS) {
-      if (noChildInX(v)) {
-        cbUpdate(v);
-        return true;
-      }
-    }
-
-    for (var v : yP) {
-      if (!noChildInX(v) && someSiblingNotInX(v)) {
-        cbUpdate(v, cbD);
-        return true;
-      } else if (someSiblingNotInX(v)) {
-        cbUpdate(v, cbDPrime);
-        return true;
-      }
-    }
-    return false;
-  }
+  // boolean cycleBreak1() {
+  // for (var v : yS) {
+  // if (noChildInX(v, yP)) {
+  // cbUpdate(v);
+  // return true;
+  // }
+  // }
+  //
+  // for (var v : yP) {
+  // if (!noChildInX(v, yS) && someSiblingNotInX(v, yP)) {
+  // cbUpdate(v, cbD);
+  // return true;
+  // } else if (someSiblingNotInX(v, yP)) {
+  // cbUpdate(v, cbDPrime);
+  // return true;
+  // }
+  // }
+  // return false;
+  // }
 
   public void cbUpdate(SPPFPN v, Set<SPPFPN> Dset) {
     Dset.add(v);
@@ -948,21 +897,21 @@ public class GLLBaseLine extends ParserBase {
   }
 
   // children(v) ∩ Xi = ∅ (symbol node child predicate)
-  public boolean noChildInX(SPPFN sppfN) {
+  public boolean noChildInX(SPPFN sppfN, Set<SPPFPN> yP) {
     for (var pn : sppfN.packNS)
       if (yP.contains(pn)) return false;
     return true;
   }
 
   // sibling(v) ̸⊆ Xi (packed node sibling predicate)
-  public boolean someSiblingNotInX(SPPFPN sppfPN) {
+  public boolean someSiblingNotInX(SPPFPN sppfPN, Set<SPPFPN> yP) {
     for (var p : sppfPN.parent.packNS)
       if (p != sppfPN && !yP.contains(p)) return true;
     return false;
   }
 
   // children(v) ∩ Xi = ∅ (packed node child predicate)
-  public boolean noChildInX(SPPFPN sppfPN) {
+  public boolean noChildInX(SPPFPN sppfPN, Set<SPPFN> yS) {
     if (sppfPN.leftChild != null && yS.contains(sppfPN.leftChild)) return false;
     if (yS.contains(sppfPN.rightChild)) return false;
     return true;
@@ -1001,13 +950,21 @@ public class GLLBaseLine extends ParserBase {
     }
 
     cycleBreakPass = 1;
-    while (cycleBreak1())
+    while (sppfCycleBreak1A())
       ;
 
     if (cycleBreakTrace)
 
     {
       System.out.println("After cycle breaking, |Xs|=" + yS.size() + " |Xp|=" + yP.size() + " |D|=" + cbD.size() + " |D'|=" + cbDPrime.size());
+
+      System.out.println("Xs is ");
+      for (var d : yS)
+        System.out.println("  " + d);
+
+      System.out.println("Xp is ");
+      for (var d : yP)
+        System.out.println("  " + d);
 
       System.out.println("D is ");
       for (var d : cbD)
@@ -1022,27 +979,24 @@ public class GLLBaseLine extends ParserBase {
   }
 
   class Configuration {
-    Set<SPPFPN> xP;
-    Set<SPPFN> xS;
-    Set<SPPFPN> d;
+    final Set<SPPFPN> xP;
+    final Set<SPPFN> xS;
+    final Set<SPPFPN> d;
+    final Set<SPPFPN> dPrime;
 
-    @Override
-    public String toString() {
-      StringBuilder sb = new StringBuilder();
-      sb.append("{");
-      for (var v : xP)
-        sb.append(v.number + " ");
+    public Configuration(Set<SPPFPN> xP, Set<SPPFN> xS, Set<SPPFPN> d, Set<SPPFPN> dPrime) {
+      super();
+      this.xP = xP;
+      this.xS = xS;
+      this.d = d;
+      this.dPrime = dPrime;
+    }
 
-      sb.append("}{");
-      for (var v : xS)
-        sb.append(v.number + " ");
-
-      sb.append("}{");
-      for (var v : d)
-        sb.append(v.number + " ");
-
-      sb.append("}");
-      return sb.toString();
+    public Configuration(Configuration c) {
+      xP = new HashSet<>(c.xP);
+      xS = new HashSet<>(c.xS);
+      d = new HashSet<>(c.d);
+      dPrime = new HashSet<>(c.dPrime);
     }
 
     @Override
@@ -1050,6 +1004,7 @@ public class GLLBaseLine extends ParserBase {
       final int prime = 31;
       int result = 1;
       result = prime * result + ((d == null) ? 0 : d.hashCode());
+      result = prime * result + ((dPrime == null) ? 0 : dPrime.hashCode());
       result = prime * result + ((xP == null) ? 0 : xP.hashCode());
       result = prime * result + ((xS == null) ? 0 : xS.hashCode());
       return result;
@@ -1064,6 +1019,9 @@ public class GLLBaseLine extends ParserBase {
       if (d == null) {
         if (other.d != null) return false;
       } else if (!d.equals(other.d)) return false;
+      if (dPrime == null) {
+        if (other.dPrime != null) return false;
+      } else if (!dPrime.equals(other.dPrime)) return false;
       if (xP == null) {
         if (other.xP != null) return false;
       } else if (!xP.equals(other.xP)) return false;
@@ -1073,19 +1031,23 @@ public class GLLBaseLine extends ParserBase {
       return true;
     }
 
-    public Configuration(Set<SPPFPN> xP, Set<SPPFN> xS, Set<SPPFPN> d) {
-      super();
-      this.xP = xP;
-      this.xS = xS;
-      this.d = d;
+    @Override
+    public String toString() {
+      StringBuilder builder = new StringBuilder();
+      builder.append("< xP:");
+      builder.append(xP);
+      // builder.append("\n");
+      builder.append(" xS:");
+      builder.append(xS);
+      // builder.append("\n");
+      builder.append(" d:");
+      builder.append(d);
+      // builder.append("\n");
+      builder.append(" dP':");
+      builder.append(dPrime);
+      builder.append(">");
+      return builder.toString();
     }
-
-    public Configuration(Configuration c) {
-      xP = new HashSet<>(c.xP);
-      xS = new HashSet<>(c.xS);
-      d = new HashSet<>(c.d);
-    }
-
   }
 
   Deque<Configuration> q = new LinkedList<>();
@@ -1100,7 +1062,7 @@ public class GLLBaseLine extends ParserBase {
     sppfComputeReachability(); // computes sppfCyclic (set of cyclic SPPF nodes)
     loadXPartitions(); // Load X from computed cyclic nodes as partitions xP and xS
 
-    Configuration c_0 = new Configuration(yP, yS, new HashSet<SPPFPN>());
+    Configuration c_0 = new Configuration(yP, yS, new HashSet<SPPFPN>(), new HashSet<SPPFPN>());
     q.add(c_0); // enqueue start element
     System.out.println("C_0: " + c_0);
 
@@ -1108,25 +1070,19 @@ public class GLLBaseLine extends ParserBase {
       c = q.removeFirst(); // deqeue c
       if (breakCyclesRelationTrace) System.out.println("** Processing: " + c);
 
-      for (var n : c.xS) {
-        if (breakCyclesRelationTrace) System.out.println("Checking symbol node: " + n);
-
-        if (allChildrenKept(n, c.xP)) { // w loop
-          if (breakCyclesRelationTrace) System.out.println("Symbol node has all kept children");
-          cp = new Configuration(c);
-          cp.xS.remove(n);
-          newState(c, cp);
+      for (var v : c.xS) {
+        if (breakCyclesRelationTrace) System.out.println("Checking symbol node: " + v);
+        if (noChildInX(v, c.xP)) {
+          zcbUpdate(c, v, false, false);
         }
       }
 
-      for (var p : c.xP) { // Process packed nodes
-        if (breakCyclesRelationTrace) System.out.println("Checking packed node: " + p);
-        if (hasKeptSibling(p, c.xP)) { // u loop
-          if (breakCyclesRelationTrace) System.out.println("Packed node has kept sibling");
-          cp = new Configuration(c);
-          cp.xP.remove(p);
-          cp.d.add(p);
-          newState(c, cp);
+      for (var v : c.xP) {
+        if (breakCyclesRelationTrace) System.out.println("Checking packed node: " + v);
+        if (!noChildInX(v, c.xS) && someSiblingNotInX(v, c.xP)) {
+          zcbUpdate(c, v, true, false);
+        } else if (someSiblingNotInX(v, c.xP)) {
+          zcbUpdate(c, v, false, true);
         }
       }
     }
@@ -1136,6 +1092,7 @@ public class GLLBaseLine extends ParserBase {
       // System.out.println(de + "->" + r.get(de));
       if (breakRelation.get(de).size() == 0) System.out.println(de);
     }
+    System.out.println("Relation is:\n" + breakRelation);
 
     // System.out.println("Queued");
     // for (var v : queued)
@@ -1159,7 +1116,22 @@ public class GLLBaseLine extends ParserBase {
 
   }
 
+  private void zcbUpdate(Configuration c, SPPFNode v, Boolean D, Boolean DPrime) {
+    var cp = new Configuration(c);
+    if (v instanceof SPPFPN)
+      cp.xP.remove(v);
+    else
+      cp.xS.remove(v);
+    if (D) cp.d.add((SPPFPN) v);
+    if (DPrime) cp.dPrime.add((SPPFPN) v);
+    newState(c, cp);
+
+  }
+
   public void newState(Configuration c, Configuration cp) {
+    if (c.equals(cp)) {
+      System.out.println("\n!Bang!");
+    }
     breakRelation.add(c, cp);
     breakRelation.add(cp);
     if (breakCyclesRelationTrace) System.out.println("Added (" + c + ", " + cp + ")");
@@ -1170,21 +1142,4 @@ public class GLLBaseLine extends ParserBase {
     }
   }
 
-  private boolean allChildrenKept(SPPFN n, Set<SPPFPN> xP) {
-    for (var p : n.packNS)
-      if (xP.contains(p)) return false;
-    return true;
-  }
-
-  private boolean allChildrenKept(SPPFPN p, Set<SPPFN> xS) {
-    if (p.leftChild != null && xS.contains(p.leftChild)) return false;
-    if (xS.contains(p.leftChild)) return false;
-    return true;
-  }
-
-  private boolean hasKeptSibling(SPPFPN p, Set<SPPFPN> xP) {
-    for (var ps : p.parent.packNS)
-      if (!xP.contains(ps)) return true;
-    return false;
-  }
 }

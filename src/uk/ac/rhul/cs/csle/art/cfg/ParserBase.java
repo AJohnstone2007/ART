@@ -112,6 +112,8 @@ public class ParserBase {
       break;
     case STRING_DOLLAR:
       break;
+    case STRING_SHRIEK_SHRIEK:
+      break;
     case STRING_SQ: {
       int right = inputIndex + 1;
       while (inputString.charAt(right) != '\'')
@@ -397,6 +399,9 @@ public class ParserBase {
       break;
     case STRING_DOLLAR:
       match_STRING_DOLLAR();
+      break;
+    case STRING_SHRIEK_SHRIEK:
+      match_STRING_SHRIEK_SHREIK();
       break;
     case SIMPLE_WHITESPACE:
       match_SIMPLE_WHITESPACE();
@@ -898,6 +903,19 @@ public class ParserBase {
       if (getCh() == '\\') artSkipEscapeSequence();
     } while (peekCh() != '$');
     getCh(); // Skip delimiter
+  }
+
+  private void match_STRING_SHRIEK_SHREIK() {
+    if (!(peekCh() == '!' && peekOneCh() == '!')) return;
+    do {
+      if (peekCh() == '\0') {
+        lexicalError("Unterminated !! ... !! string");
+        return;
+      }
+      if (getCh() == '\\') artSkipEscapeSequence();
+    } while (!(peekCh() == '!' && peekOneCh() == '1'));
+    getCh();
+    getCh();// Skip delimiter
   }
 
   protected void match_STRING_BRACKET_NEST() {

@@ -22,8 +22,7 @@ import uk.ac.rhul.cs.csle.art.cfg.rdsob.RDSOBExplicitStack;
 import uk.ac.rhul.cs.csle.art.cfg.rdsob.RDSOBFunction;
 import uk.ac.rhul.cs.csle.art.cfg.rdsob.RDSOBGenerator;
 import uk.ac.rhul.cs.csle.art.choose.ChooseRules;
-import uk.ac.rhul.cs.csle.art.term.AttributeActionInterpreter;
-import uk.ac.rhul.cs.csle.art.term.AttributeGrammarInterpreter;
+import uk.ac.rhul.cs.csle.art.term.AttributeInterpreter;
 import uk.ac.rhul.cs.csle.art.term.ITerms;
 import uk.ac.rhul.cs.csle.art.term.InterpreterBase;
 import uk.ac.rhul.cs.csle.art.term.Rewriter;
@@ -213,11 +212,8 @@ public class ScriptTermInterpreter {
         case "eSOS":
           currentInterpreter = new eSOSInterpreter();
           break;
-        case "attributeAction":
-          currentInterpreter = new AttributeActionInterpreter();
-          break;
-        case "attributeGrammar":
-          currentInterpreter = new AttributeGrammarInterpreter();
+        case "attribute":
+          currentInterpreter = new AttributeInterpreter(currentCFGRules);
           break;
         default:
           Util.fatal("Unexpected !interpreter argument " + iTerms.toString(iTerms.subterm(term, 0, i)));
