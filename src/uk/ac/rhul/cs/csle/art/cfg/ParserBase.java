@@ -106,14 +106,38 @@ public class ParserBase {
         right++;
       return inputString.substring(inputIndex + 1, right);
     }
-    case STRING_BRACE_NEST:
-      break;
-    case STRING_BRACKET_NEST:
-      break;
-    case STRING_DOLLAR:
-      break;
-    case STRING_SHRIEK_SHRIEK:
-      break;
+    case STRING_BRACE_NEST: {
+      int level = 1, right = inputIndex + 1;
+      while (level != 0) {
+        if (inputString.charAt(right) == '{')
+          level++;
+        else if (inputString.charAt(right) == '}') level--;
+        right++;
+      }
+      return inputString.substring(inputIndex + 1, right);
+    }
+    case STRING_BRACKET_NEST: {
+      int level = 1, right = inputIndex + 1;
+      while (level != 0) {
+        if (inputString.charAt(right) == '<')
+          level++;
+        else if (inputString.charAt(right) == '>') level--;
+        right++;
+      }
+      return inputString.substring(inputIndex + 1, right);
+    }
+    case STRING_DOLLAR: {
+      int right = inputIndex + 1;
+      while (inputString.charAt(right) != '$')
+        right++;
+      return inputString.substring(inputIndex + 1, right);
+    }
+    case STRING_SHRIEK_SHRIEK: {
+      int right = inputIndex + 2;
+      while (!(inputString.charAt(right) == '!' && inputString.charAt(right + 1) == '!'))
+        right++;
+      return inputString.substring(inputIndex + 2, right);
+    }
     case STRING_SQ: {
       int right = inputIndex + 1;
       while (inputString.charAt(right) != '\'')
@@ -913,7 +937,7 @@ public class ParserBase {
         return;
       }
       if (getCh() == '\\') artSkipEscapeSequence();
-    } while (!(peekCh() == '!' && peekOneCh() == '1'));
+    } while (!(peekCh() == '!' && peekOneCh() == '!'));
     getCh();
     getCh();// Skip delimiter
   }

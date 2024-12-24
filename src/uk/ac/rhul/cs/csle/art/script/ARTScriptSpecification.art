@@ -38,9 +38,10 @@ cfgPrim ::= cfgNonterminal^^ | cfgCaseSensitiveTerminal^^| cfgCaseInsensitiveTer
 
 cfgActions ::= cfgSlot^^ cfgActionSeq^ | cfgSlot^^   
   cfgActionSeq ::= cfgAction cfgActionSeq^ | cfgAction  
-  cfgAction  ::= cfgEquation^^ | cfgAssignment^^ | cfgInsert^^  
+  cfgAction  ::= cfgEquation^^ | cfgAssignment^^ | cfgNative^^ | cfgInsert^^  
 cfgEquation ::= cfgAttribute '='^ cfgExpression  
 cfgAssignment ::= cfgAttribute ':='^ cfgExpression
+cfgNative ::= STRING_SHRIEK_SHRIEK
 cfgInsert ::= '^+:'^ ID  
 cfgAttribute ::= ID | ID '.'^ ID   
 
@@ -178,6 +179,6 @@ IDSTAR ::= ID '*'^
 ID_ATTRIBUTE ::= &ID '.'^ &ID
 STRING_DQ ::= &STRING_DQ^^ 
 STRING_DOLLAR ::= &STRING_DOLLAR^^
-STRING_SHREIK_SHREIK ::= &STRING_SHRIEK_SHRIEK^^
+STRING_SHRIEK_SHRIEK ::= &STRING_SHRIEK_SHRIEK^^
 STRING_PLAIN_SQ ::= &STRING_PLAIN_SQ^^
 CHAR_BQ ::= &CHAR_BQ^^
