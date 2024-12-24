@@ -850,6 +850,7 @@ public class GLLBaseLine extends ParserBase {
 
     for (var v : new HashSet<>(yP)) {
       trace("Checking packed node " + v + " with child predicate " + noChildInX(v, yS) + " and sibling predicate " + someSiblingNotInX(v, yP));
+
       if (noChildInX(v, yS) && someSiblingNotInX(v, yP)) trace("Both predicates triggered for packed node " + v);
 
       if (!noChildInX(v, yS) && someSiblingNotInX(v, yP)) {
@@ -861,6 +862,7 @@ public class GLLBaseLine extends ParserBase {
         cbUpdate(v, cbDPrime);
         return true;
       }
+      yP.remove(v);
     }
     return false;
   }
