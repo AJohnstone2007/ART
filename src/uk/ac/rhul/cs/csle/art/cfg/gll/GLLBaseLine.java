@@ -843,7 +843,8 @@ public class GLLBaseLine extends ParserBase {
     for (var v : new HashSet<>(yS)) {
       trace("Checking symbol node " + v + " with child predicate " + noChildInX(v, yP));
       if (noChildInX(v, yP)) {
-        cbUpdate(v);
+        yS.remove(v);
+        if (cycleBreakTrace) System.out.println("Removed from xS: " + v);
         return true;
       }
     }
@@ -851,18 +852,21 @@ public class GLLBaseLine extends ParserBase {
     for (var v : new HashSet<>(yP)) {
       trace("Checking packed node " + v + " with child predicate " + noChildInX(v, yS) + " and sibling predicate " + someSiblingNotInX(v, yP));
 
-      if (noChildInX(v, yS) && someSiblingNotInX(v, yP)) trace("Both predicates triggered for packed node " + v);
-
       if (!noChildInX(v, yS) && someSiblingNotInX(v, yP)) {
-        cbUpdate(v, cbD);
+        cbD.add(v);
+        yP.remove(v);
+        if (cycleBreakTrace) System.out.println("Removed from xP: " + v);
         return true;
-      }
-
-      if (someSiblingNotInX(v, yP)) {
-        cbUpdate(v, cbDPrime);
+      } else if (someSiblingNotInX(v, yP)) {
+        cbDPrime.add(v);
+        yP.remove(v);
+        if (cycleBreakTrace) System.out.println("Removed from xP: " + v);
         return true;
+      } else {
+        yP.remove(v);
+        if (cycleBreakTrace) System.out.println("Removed from xP: " + v);
+        // return true;
       }
-      yP.remove(v);
     }
     return false;
   }
