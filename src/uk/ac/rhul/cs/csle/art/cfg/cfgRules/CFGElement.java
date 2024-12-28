@@ -1,10 +1,15 @@
 package uk.ac.rhul.cs.csle.art.cfg.cfgRules;
 
+import java.util.HashSet;
+import java.util.Set;
+
 public class CFGElement implements Comparable<Object> {
 
   public int ei;
   public final CFGKind kind;
   public final String str;
+
+  public final Set<String> attributes = new HashSet<>();
 
   public CFGElement(CFGKind kind, String s) {
     super();
@@ -18,9 +23,10 @@ public class CFGElement implements Comparable<Object> {
 
   @Override
   public String toString() {
+    String ret;
     switch (kind) {
     case EOS:
-      return "$";
+      ret = "$";
     case T:
       return "'" + str + "'";
     case C:

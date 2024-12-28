@@ -1,6 +1,6 @@
 package uk.ac.rhul.cs.csle.art.cfg.cfgRules;
 
-import uk.ac.rhul.cs.csle.art.term.ITerms;
+import uk.ac.rhul.cs.csle.art.script.ScriptTermInterpreter;
 import uk.ac.rhul.cs.csle.art.util.Util;
 
 public class CFGNode {
@@ -8,22 +8,21 @@ public class CFGNode {
   public static String caseInsensitiveTerminalStrop = "\"";
   public static String characterTerminalStrop = "`";
   public static String builtinTerminalStrop = "&";
-  private static ITerms iTerms = null;
 
   public int num;
   public final CFGElement elm; // Grammar element
   public CFGNode seq; // sequence link
   public CFGNode alt; // alternate link
   public final GIFTKind giftKind;
-  public int actionSeq; // Holds an action term used by attribute evaluators
+  public int slotTerm; // Holds the slot term as parent to slot decorations
 
   private static int nextUniqueNumericLabel = 1;
 
-  public CFGNode(CFGRules grammar, CFGKind kind, String str, int actionSeq, GIFTKind giftKInd, CFGNode previous, CFGNode parent) {
+  public CFGNode(CFGRules grammar, CFGKind kind, String str, int slotTerm, GIFTKind giftKInd, CFGNode previous, CFGNode parent) {
     super();
     if (str == null) str = "" + nextUniqueNumericLabel++; // EBNF and ALT nodes have null string - uniquify
     this.elm = grammar.findElement(kind, str);
-    this.actionSeq = actionSeq;
+    this.slotTerm = slotTerm;
     this.giftKind = giftKInd;
     if (previous != null) previous.seq = this;
     if (parent != null) parent.alt = this;
@@ -67,19 +66,23 @@ public class CFGNode {
   }
 
   public String toStringDot() {
-    String actionToString = actionSeq == 0 ? "" : ("\n" + iTerms.toString(actionSeq));
     String ret = num + " ";
-    if (actionSeq != 0) ret += /* action + */ " ";
     switch (elm.kind) {
     case EOS, ALT, DO, KLN, OPT, POS:
-      return ret + elm.kind;
+      ret += elm.kind;
+      break;
     case T, C, B, N, EPS:
-      return ret + elm.kind + "\n" + elm.str + giftToString(giftKind);
+      ret += elm.kind + "\n" + elm.str + giftToString(giftKind);
+      break;
     case END:
-      return ret + "END " + "\n(" + seq.num + "," + alt.num + ")";
+      ret += "END " + "\n(" + seq.num + "," + alt.num + ")";
+      break;
     default:
-      return "???";
+      ret = "???";
+      break;
     }
+    if (slotTerm != 0) ret += ScriptTermInterpreter.iTerms.toString(slotTerm);
+    return ret;
   }
 
   @Override

@@ -4,12 +4,15 @@ package uk.ac.rhul.cs.csle.art.cfg.cfgRules;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import uk.ac.rhul.cs.csle.art.ART;
 import uk.ac.rhul.cs.csle.art.cfg.lexer.LexemeKind;
@@ -193,6 +196,95 @@ public class CFGRules {
       for (CFGElement ge : elements.keySet())
         if (ge.kind == CFGKind.N) firstAndFollowSetsAlt(elementToNodeMap.get(ge), elementToNodeMap.get(ge).alt);
     }
+
+    // Collect attributes
+    // System.out.println("*** Collecting attributes");
+    for (CFGElement e : elements.keySet()) {
+      // System.out.println("*** Collecting attributes for element " + e.toStringDetailed());
+      if (e.kind == CFGKind.N) {
+        for (CFGNode gn = elementToNodeMap.get(e).alt; gn != null; gn = gn.alt) {
+          Map<String, Integer> validNonterminals = new HashMap<>();
+          String lhs = e.str;
+          for (CFGNode gs = gn.seq; gs.elm.kind != CFGKind.END; gs = gs.seq) {
+            // System.out.println("Collecting RHS nonterminals at " + gs + " " + iTerms.toRawString(gs.slotTerm));
+            if (gs.elm.kind == CFGKind.N) {
+              if (validNonterminals.get(gs.elm.str) == null)
+                validNonterminals.put(gs.elm.str, 1);
+              else
+                validNonterminals.put(gs.elm.str, validNonterminals.get(gs.elm.str) + 1);
+            }
+          }
+          // System.out.println("LHS: " + lhs + " with valid nonterminals=instances: " + validNonterminals);
+
+          for (CFGNode gs = gn.seq; gs.elm.kind != CFGKind.END; gs = gs.seq) {
+            for (int i = 0; i < iTerms.termArity(gs.slotTerm); i++) {
+              int annotationRoot = iTerms.subterm(gs.slotTerm, i);
+              // System.out.println("Processing slot annotation " + iTerms.toString(annotationRoot));
+              switch (iTerms.termSymbolString(annotationRoot)) {
+              case "cfgEquation", "cfgAssignment":
+                processTermAttributesRec(annotationRoot, lhs, validNonterminals);
+                break;
+              case "cfgNative":
+                processNativeAttributes(iTerms.toString(annotationRoot), lhs, validNonterminals, true);
+                break;
+              case "cfgInsert":
+                break;
+              }
+            }
+            // System.out.println("Collecting attributes at " + gs + " " + iTerms.toRawString(gs.slotTerm));
+          }
+        }
+      }
+    }
+  }
+
+  private void processNativeAttributes(String action, String lhs, Map<String, Integer> validNonterminals, boolean warning) {
+    String attributeRegex = "\\w+\\.\\w+";
+    Pattern pattern = Pattern.compile(attributeRegex);
+    Matcher matcher = pattern.matcher(action);
+    while (matcher.find()) {
+      String[] parts = matcher.group().split("\\.");
+      validateAttribute(parts[0], parts[1], lhs, validNonterminals, warning);
+    }
+  }
+
+  private void processTermAttributesRec(int annotationRoot, String lhs, Map<String, Integer> validNonterminals) {
+    if (iTerms.termSymbolString(annotationRoot).equals("cfgAttribute")) {
+      String nonterminalID = iTerms.termSymbolString(iTerms.subterm(annotationRoot, 0));
+      String attributeID = iTerms.termSymbolString(iTerms.subterm(annotationRoot, 1));
+      validateAttribute(nonterminalID, attributeID, lhs, validNonterminals, false);
+    } else
+      for (int i = 0; i < iTerms.termArity(annotationRoot); i++)
+        processTermAttributesRec(iTerms.subterm(annotationRoot, i), lhs, validNonterminals);
+  }
+
+  private void validateAttribute(String nonterminalID, String attributeID, String lhs, Map<String, Integer> validNonterminals, boolean isNative) {
+    // System.out.println("Validating attribute " + nonterminalID + "," + attributeID);
+
+    Character subscriptCharacter = nonterminalID.charAt(nonterminalID.length() - 1);
+    int subscript = Character.isDigit(subscriptCharacter) ? (subscriptCharacter - '0') : -1;
+
+    if (subscript == -1 && nonterminalID.equals(lhs)) { // Case 1: unsubscripted LHS
+      addAttribute(nonterminalID, attributeID);
+      return;
+    }
+    String nonterminalIDbare = nonterminalID.substring(0, nonterminalID.length() - 1); // strip subscript digit
+    if (subscript == 0 && nonterminalIDbare.equals(lhs)) { // Case 2: subscripted LHS0
+      addAttribute(nonterminalIDbare, attributeID);
+      return;
+    }
+    if (validNonterminals.containsKey(nonterminalIDbare) && subscript <= validNonterminals.get(nonterminalIDbare)) { // Case 3: subscripted RHS instance
+      addAttribute(nonterminalIDbare, attributeID);
+      return;
+    }
+    if (isNative)
+      Util.warning("ignoring native action attribute-like element " + nonterminalID + "." + attributeID + " in production for nonterminal " + lhs);
+    else
+      Util.fatal("invalid attribute " + nonterminalID + "." + attributeID + " in production for nonterminal " + lhs);
+  }
+
+  private void addAttribute(String nonterminalID, String attributeID) {
+    findElement(CFGKind.N, nonterminalID).attributes.add(attributeID);
   }
 
   private void numberElementsAndNodes() {
@@ -314,7 +406,7 @@ public class CFGRules {
   // Atttribute-action functions from ReferenceGrammarParser.art below this line
   public CFGNode workingNode;
   public GIFTKind workingFold = GIFTKind.NONE;
-  public int workingAction = 0;
+  // public int workingAction = 0;
 
   CFGNode mostRecentLHS;
 
@@ -331,7 +423,7 @@ public class CFGRules {
     CFGElement element = findElement(CFGKind.N, id);
     if (startNonterminal == null) startNonterminal = element;
     workingNode = elementToNodeMap.get(element);
-    if (workingNode == null) elementToNodeMap.put(element, updateWorkingNode(CFGKind.N, id));
+    if (workingNode == null) elementToNodeMap.put(element, updateWorkingNode(CFGKind.N, id, 0));
     mostRecentLHS = elementToNodeMap.get(element);
   }
 
@@ -339,19 +431,17 @@ public class CFGRules {
     stack.push(workingNode);
     while (workingNode.alt != null) // Maintain specification order by adding new alternate at the end
       workingNode = workingNode.alt;
-    workingNode = new CFGNode(this, CFGKind.ALT, null, workingAction, workingFold, null, workingNode);
-    workingAction = 0;
+    workingNode = new CFGNode(this, CFGKind.ALT, null, 0, workingFold, null, workingNode);
     workingFold = GIFTKind.NONE;
   }
 
   public void endAction(String actions) {
-    updateWorkingNode(CFGKind.END, "");
+    updateWorkingNode(CFGKind.END, "", 0);
     workingNode = stack.pop();
   }
 
-  public CFGNode updateWorkingNode(CFGKind kind, String str) {
-    workingNode = new CFGNode(this, kind, str, workingAction, workingFold, workingNode, null);
-    workingAction = 0;
+  public CFGNode updateWorkingNode(CFGKind kind, String str, Integer slotTerm) {
+    workingNode = new CFGNode(this, kind, str, slotTerm, workingFold, workingNode, null);
     workingFold = GIFTKind.NONE;
     return workingNode;
   }
@@ -428,6 +518,7 @@ public class CFGRules {
     sb.append("Elements:\n");
     for (CFGElement s : elements.keySet()) {
       sb.append(" (" + s.toStringDetailed() + ") " + s);
+      if (!s.attributes.isEmpty()) sb.append(" attributes: " + s.attributes);
       if (showProperties && first.get(s) != null) {
         sb.append(" first = {");
         appendElements(sb, first.get(s));
