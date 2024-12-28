@@ -836,6 +836,12 @@ public class GLLBaseLine extends ParserBase {
     if (cycleBreakTrace) System.out.println(msg);
   }
 
+  // child predicate true - remove from X
+  // sibling predicate true - remove from X
+  //
+  // child predicate true and sibling predicate true - add to D'
+  // child predicate false and sibling predicate true - add to D
+
   private int cycleBreakPass;
 
   boolean sppfCycleBreak1A() {
@@ -852,20 +858,12 @@ public class GLLBaseLine extends ParserBase {
     for (var v : new HashSet<>(yP)) {
       trace("Checking packed node " + v + " with child predicate " + noChildInX(v, yS) + " and sibling predicate " + someSiblingNotInX(v, yP));
 
-      if (!noChildInX(v, yS) && someSiblingNotInX(v, yP)) {
-        cbD.add(v);
+      if (noChildInX(v, yS) || someSiblingNotInX(v, yP)) {
         yP.remove(v);
         if (cycleBreakTrace) System.out.println("Removed from xP: " + v);
+        if (noChildInX(v, yS) && someSiblingNotInX(v, yP)) cbDPrime.add(v);
+        if (!noChildInX(v, yS) && someSiblingNotInX(v, yP)) cbD.add(v);
         return true;
-      } else if (someSiblingNotInX(v, yP)) {
-        cbDPrime.add(v);
-        yP.remove(v);
-        if (cycleBreakTrace) System.out.println("Removed from xP: " + v);
-        return true;
-      } else {
-        yP.remove(v);
-        if (cycleBreakTrace) System.out.println("Removed from xP: " + v);
-        // return true;
       }
     }
     return false;
