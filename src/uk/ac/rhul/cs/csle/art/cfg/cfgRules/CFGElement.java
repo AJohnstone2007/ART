@@ -26,7 +26,7 @@ public class CFGElement implements Comparable<Object> {
     String ret;
     switch (kind) {
     case EOS:
-      ret = "$";
+      return "$";
     case T:
       return "'" + str + "'";
     case C:
