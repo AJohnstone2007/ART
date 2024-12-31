@@ -5,8 +5,14 @@ rules ::= rule rules^ | rule
 rule  ::= cfgRule^^ | trRule^^ | chooseRule^^ | '!'^ directive^^   
 
 (* Context Free Grammar rules ************************************************)
-cfgRule  ::= cfgLHS '::='^ cfgAlts
+cfgRule  ::= cfgLHS cfgAttributeDeclarations '::='^ cfgAlts
   cfgLHS ::= ID  
+  cfgAttributeDeclarations ::= # | '<'^ cfgAttributeDeclaration^^ '>'^ // something bad happening here - remove # andgrammar does not parse - ambiguity?
+  cfgAttributeDeclaration  ::= ID ':' cfgAttributeTypeNest | ID ':' cfgAttributeTypeNest cfgAttributeDeclaration
+  (* This is to support Java style generics in attribute declarations *)
+  cfgAttributeTypeNest ::= &ID | &ID '<' cfgAttributeTypeList '>' 
+  cfgAttributeTypeList ::= cfgAttributeTypeNest | cfgAttributeTypeNest ',' cfgAttributeTypeList 
+
 cfgAlts ::= cfgAlt '|'^ cfgAlts^ | cfgAlt  
 cfgAlt  ::= cfgSeq^^ cfgActions cfgEpsilonCarrier | cfgSeq^^ cfgActions cfgEpsilon | cfgSeq^^ cfgElems^ cfgActions (* final actions in sequence *)  
   cfgEpsilonCarrier ::= cfgEpsilon cfgAnnotation^^  
@@ -123,6 +129,7 @@ directiveElement ::=
 | 'lexer'^^ '#'^ | 'lexer'^^ ID
 | 'parser'^^ '#'^ | 'parser'^^ ID
 | 'interpreter'^^ '#'^ | 'interpreter'^^ ID
+| 'generate'^^ ID 
 
 | 'start'^^ cfgNonterminal | 'start'^^ trRelation // Set parser start nonterminal or rewriter start relation
 | 'configuration'^^  '#'^ | 'configuration'^^ trRelation ','^ trTerm
@@ -163,7 +170,7 @@ displayElement  ::=
 | 'lexer' | 'parser' | 'interpreter'
 | 'input' | 'twe' | 'lexicalisation' | 'gss' | 'sppf' | 'bsr' | 'derivation' | 'interpretation' 
 | 'statistics' | __string
-| 'cyclicNodes'
+| 'cyclicNodes' | 'ambiguousNodes' | 'outcome'
 
 (* Lexical elements **********************************************************)
 __bool ::= 'true' | 'false'

@@ -120,7 +120,7 @@ public class ITerms {
     // Try and find a plugin for __user() calls
     Class<?> pluginClass;
     try {
-      pluginClass = getClass().getClassLoader().loadClass("ValueUserPlugin");
+      pluginClass = getClass().getClassLoader().loadClass("ARTPlugin");
       plugin = (ARTPluginInterface) pluginClass.getDeclaredConstructor().newInstance();
     } catch (Exception e) {
       // Silently absorb exception - when the default is used

@@ -302,6 +302,34 @@ public class GLLBaseLine extends ParserBase {
     return candidate;
   }
 
+  private boolean ambiguousSPPF;
+
+  public boolean ambiguityCheck() {
+    ambiguousSPPF = false;
+    ambiguityCheckRec(this.sppfRootNode);
+    return ambiguousSPPF;
+  }
+
+  public void ambiguityCheckRec(SPPFN sppfn) {
+    // if (sppfn.gn.elm.kind != CFGKind.N) return;
+    int activePackedNodes = 0;
+    for (SPPFPN p : sppfn.packNS)
+      if (!p.suppressed) {
+        activePackedNodes++;
+        if (p.leftChild != null) ambiguityCheckRec(p.leftChild);
+        ambiguityCheckRec(p.rightChild);
+      }
+
+    // if (activePackedNodes == 0) System.out.println("No unsuppressed pack nodes found at SPPF node " + sppfn);
+
+    if (activePackedNodes > 1) {
+      ambiguousSPPF = true;
+      System.out.println("Ambiguous SPPF node " + sppfn.toString() + " involving slots: ");
+      for (SPPFPN p : sppfn.packNS)
+        if (!p.suppressed) System.out.println("  " + p);
+    }
+  }
+
   private boolean isSymbol(SPPFN sppfn) {
     return sppfn.packNS.size() == 0 /* terminal or epsilon */ || (sppfn.gn.elm.kind == CFGKind.N && sppfn.gn.seq == null /* LHS */);
   }
