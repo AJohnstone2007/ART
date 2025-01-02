@@ -1,7 +1,7 @@
 package uk.ac.rhul.cs.csle.art.cfg.cfgRules;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 
 public class CFGElement implements Comparable<Object> {
 
@@ -9,7 +9,8 @@ public class CFGElement implements Comparable<Object> {
   public final CFGKind kind;
   public final String str;
 
-  public final Set<String> attributes = new HashSet<>();
+  public final Map<String, String> attributes = new HashMap<>();
+  public final Map<String, Integer> rhsNonterminals = new HashMap<>();
 
   public CFGElement(CFGKind kind, String s) {
     super();

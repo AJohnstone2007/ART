@@ -4,7 +4,6 @@ package uk.ac.rhul.cs.csle.art.cfg.cfgRules;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
@@ -203,15 +202,14 @@ public class CFGRules {
       // System.out.println("*** Collecting attributes for element " + e.toStringDetailed());
       if (e.kind == CFGKind.N) {
         for (CFGNode gn = elementToNodeMap.get(e).alt; gn != null; gn = gn.alt) {
-          Map<String, Integer> validNonterminals = new HashMap<>();
           String lhs = e.str;
           for (CFGNode gs = gn.seq; gs.elm.kind != CFGKind.END; gs = gs.seq) {
             // System.out.println("Collecting RHS nonterminals at " + gs + " " + iTerms.toRawString(gs.slotTerm));
             if (gs.elm.kind == CFGKind.N) {
-              if (validNonterminals.get(gs.elm.str) == null)
-                validNonterminals.put(gs.elm.str, 1);
+              if (e.rhsNonterminals.get(gs.elm.str) == null)
+                e.rhsNonterminals.put(gs.elm.str, 1);
               else
-                validNonterminals.put(gs.elm.str, validNonterminals.get(gs.elm.str) + 1);
+                e.rhsNonterminals.put(gs.elm.str, e.rhsNonterminals.get(gs.elm.str) + 1);
             }
           }
           // System.out.println("LHS: " + lhs + " with valid nonterminals=instances: " + validNonterminals);
@@ -222,10 +220,10 @@ public class CFGRules {
               // System.out.println("Processing slot annotation " + iTerms.toString(annotationRoot));
               switch (iTerms.termSymbolString(annotationRoot)) {
               case "cfgEquation", "cfgAssignment":
-                processTermAttributesRec(annotationRoot, lhs, validNonterminals);
+                processTermAttributesRec(annotationRoot, lhs, e.rhsNonterminals);
                 break;
               case "cfgNative":
-                processNativeAttributes(iTerms.toString(annotationRoot), lhs, validNonterminals, true);
+                processNativeAttributes(iTerms.toString(annotationRoot), lhs, e.rhsNonterminals, true);
                 break;
               case "cfgInsert":
                 break;
@@ -238,43 +236,44 @@ public class CFGRules {
     }
   }
 
-  private void processNativeAttributes(String action, String lhs, Map<String, Integer> validNonterminals, boolean warning) {
+  private void processNativeAttributes(String action, String lhs, Map<String, Integer> rhsNonterminals, boolean warning) {
     String attributeRegex = "\\w+\\.\\w+";
     Pattern pattern = Pattern.compile(attributeRegex);
     Matcher matcher = pattern.matcher(action);
     while (matcher.find()) {
       String[] parts = matcher.group().split("\\.");
-      validateAttribute(parts[0], parts[1], lhs, validNonterminals, warning);
+      validateAttribute(parts[0], parts[1], "int", lhs, rhsNonterminals, warning);
     }
   }
 
-  private void processTermAttributesRec(int annotationRoot, String lhs, Map<String, Integer> validNonterminals) {
+  private void processTermAttributesRec(int annotationRoot, String lhs, Map<String, Integer> rhsNonterminals) {
     if (iTerms.termSymbolString(annotationRoot).equals("cfgAttribute")) {
       String nonterminalID = iTerms.termSymbolString(iTerms.subterm(annotationRoot, 0));
       String attributeID = iTerms.termSymbolString(iTerms.subterm(annotationRoot, 1));
-      validateAttribute(nonterminalID, attributeID, lhs, validNonterminals, false);
+      validateAttribute(nonterminalID, attributeID, "int", lhs, rhsNonterminals, false);
     } else
       for (int i = 0; i < iTerms.termArity(annotationRoot); i++)
-        processTermAttributesRec(iTerms.subterm(annotationRoot, i), lhs, validNonterminals);
+        processTermAttributesRec(iTerms.subterm(annotationRoot, i), lhs, rhsNonterminals);
   }
 
-  private void validateAttribute(String nonterminalID, String attributeID, String lhs, Map<String, Integer> validNonterminals, boolean isNative) {
+  private void validateAttribute(String nonterminalID, String attributeID, String typeID, String lhs, Map<String, Integer> rhsNonterminals,
+      boolean isNative) {
     // System.out.println("Validating attribute " + nonterminalID + "," + attributeID);
 
     Character subscriptCharacter = nonterminalID.charAt(nonterminalID.length() - 1);
     int subscript = Character.isDigit(subscriptCharacter) ? (subscriptCharacter - '0') : -1;
 
     if (subscript == -1 && nonterminalID.equals(lhs)) { // Case 1: unsubscripted LHS
-      addAttribute(nonterminalID, attributeID);
+      addAttribute(nonterminalID, attributeID, typeID);
       return;
     }
     String nonterminalIDbare = nonterminalID.substring(0, nonterminalID.length() - 1); // strip subscript digit
     if (subscript == 0 && nonterminalIDbare.equals(lhs)) { // Case 2: subscripted LHS0
-      addAttribute(nonterminalIDbare, attributeID);
+      addAttribute(nonterminalIDbare, attributeID, typeID);
       return;
     }
-    if (validNonterminals.containsKey(nonterminalIDbare) && subscript <= validNonterminals.get(nonterminalIDbare)) { // Case 3: subscripted RHS instance
-      addAttribute(nonterminalIDbare, attributeID);
+    if (rhsNonterminals.containsKey(nonterminalIDbare) && subscript <= rhsNonterminals.get(nonterminalIDbare)) { // Case 3: subscripted RHS instance
+      addAttribute(nonterminalIDbare, attributeID, typeID);
       return;
     }
     if (isNative)
@@ -283,8 +282,8 @@ public class CFGRules {
       Util.fatal("invalid attribute " + nonterminalID + "." + attributeID + " in production for nonterminal " + lhs);
   }
 
-  private void addAttribute(String nonterminalID, String attributeID) {
-    findElement(CFGKind.N, nonterminalID).attributes.add(attributeID);
+  private void addAttribute(String nonterminalID, String attributeID, String typeID) {
+    findElement(CFGKind.N, nonterminalID).attributes.put(attributeID, typeID);
   }
 
   private void numberElementsAndNodes() {

@@ -19,6 +19,7 @@ import uk.ac.rhul.cs.csle.art.cfg.cfgRules.GIFTKind;
 import uk.ac.rhul.cs.csle.art.cfg.lexer.LexemeKind;
 import uk.ac.rhul.cs.csle.art.script.TraversalKind;
 import uk.ac.rhul.cs.csle.art.util.Relation;
+import uk.ac.rhul.cs.csle.art.util.RelationOverNaturals;
 import uk.ac.rhul.cs.csle.art.util.Util;
 
 public class GLLBaseLine extends ParserBase {
@@ -730,16 +731,16 @@ public class GLLBaseLine extends ParserBase {
           + ", " + sppfn.ri + "\"]");
 
     if (isAmbiguous) sppfOut.println(ambiguousStyle);
-    if (sppfCyclic.contains(sppfn)) sppfOut.println(cycleStyle);
-    if (!sppfRootReachable.contains(sppfn)) sppfOut.println(unreachableSymbolNodeStyle);
+    if (sppfCyclic.get(sppfn.number)) sppfOut.println(cycleStyle);
+    if (!sppfRootReachable.get(sppfn.number)) sppfOut.println(unreachableSymbolNodeStyle);
     if (sppfn == sppfRootNode) sppfOut.println(rootNodeStyle);
 
     for (SPPFPN p : sppfn.packNS) {
-      boolean isCyclicP = sppfCyclic.contains(p);
+      boolean isCyclicP = sppfCyclic.get(p.number);
 
       sppfOut.println("\"" + p.number + "\"" + packNodeStyle + " [label=\"" + p.number + ": " + p.gn.toStringAsProduction() + " , " + p.pivot + "\"]");
       if (isCyclicP) sppfOut.println(cycleStyle);
-      if (!sppfRootReachable.contains(p)) sppfOut.println(unreachablePackNodeStyle);
+      if (!sppfRootReachable.get(p.number)) sppfOut.println(unreachablePackNodeStyle);
 
       if (cbD.contains(p) && cbDPrime.contains(p))
         sppfOut.println(deletedAndDeletedPrimePackNodeStyle);
@@ -754,11 +755,11 @@ public class GLLBaseLine extends ParserBase {
 
       if (p.leftChild != null) {
         sppfOut.println("\"" + p.number + "\"" + "->" + "\"" + p.leftChild.number + "\"");
-        if (isCyclicP && sppfCyclic.contains(p.leftChild)) sppfOut.println(cycleStyle);
+        if (isCyclicP && sppfCyclic.get(p.leftChild.number)) sppfOut.println(cycleStyle);
       }
 
       sppfOut.println("\"" + p.number + "\"" + "->" + "\"" + p.rightChild.number + "\"");
-      if (isCyclicP && sppfCyclic.contains(p.rightChild)) sppfOut.println(cycleStyle);
+      if (isCyclicP && sppfCyclic.get(p.rightChild.number)) sppfOut.println(cycleStyle);
     }
   }
 
@@ -770,9 +771,10 @@ public class GLLBaseLine extends ParserBase {
   private Set<SPPFPN> yP; // Set of cYclic packed nodes; Y = yS UP
   private Set<SPPFPN> cbD = new HashSet<>(); // Set of deleted cyclic nodes: D in Elizabeth's note
   private final Set<SPPFPN> cbDPrime = new HashSet<>(); // Set of deleted cyclic nodes: D' in Elizabeth's note
-  private final Relation<SPPFNode, SPPFNode> sppfReachable = new Relation<>();
-  private final Set<SPPFNode> sppfCyclic = new HashSet<>();
-  private Set<SPPFNode> sppfRootReachable;
+  // private final Relation<SPPFNode, SPPFNode> sppfReachable = new Relation<>();
+  private final RelationOverNaturals sppfReachable = new RelationOverNaturals(2000, 2000);
+  private final BitSet sppfCyclic = new BitSet();
+  private BitSet sppfRootReachable;
   private boolean cycleBreakTrace;
   private TraversalKind cycleBreakTraversalKind;
   private boolean cycleBreakLone;
@@ -817,32 +819,86 @@ public class GLLBaseLine extends ParserBase {
   // }
   // }
   //
-  private void sppfComputeReachability() {
+  private void sppfComputeReachabilitySlow() {
     sppfReachable.clear();
     for (var n : sppf.keySet())
       for (var p : n.packNS) {
         if (cbD.contains(p) /* || cycleBreakDeletedPrime.contains(p) */) continue;
-        sppfReachable.add(n, p);
-        if (p.leftChild != null) sppfReachable.add(p, p.leftChild);
-        sppfReachable.add(p, p.rightChild);
+        sppfReachable.add(n.number, p.number);
+        if (p.leftChild != null) sppfReachable.add(p.number, p.leftChild.number);
+        sppfReachable.add(p.number, p.rightChild.number);
       }
-    // System.out.println("After initialising sppfReachable, contents are:\n" + sppfReachable);
+    // System.out.println("After initialising sppfReachable, cardinality is " + sppfReachable.getDomain().size());
     sppfReachable.transitiveClosure();
     // System.out.println("After transitive closure of sppfReachable, contents are:\n" + sppfReachable);
 
-    sppfRootReachable = sppfReachable.get(sppfRootNode);
+    sppfRootReachable = sppfReachable.get(sppfRootNode.number);
     // System.out.println("Root reachable set: " + sppfRootReachable);
     sppfCyclic.clear();
-    for (var n : sppfReachable.getDomain())
-      if (sppfReachable.get(n).contains(n)) sppfCyclic.add(n);
+    for (int n = 0; n < sppfReachable.domainSize(); n++)
+      if (sppfReachable.get(n, n)) sppfCyclic.set(n);
+  }
+
+  // private void sppfComputeReachability1() {
+  // // Count SPPF nodes
+  // // Allocate SPPF node count bitsets of size SPPF node count
+  // // Load adjacencies
+  // // Run Warshall's what-did-you-expect algorithm
+  //
+  // sppfReachable.clear();
+  // for (var n : sppf.keySet())
+  // for (var p : n.packNS) {
+  // if (cbD.contains(p)) continue;
+  //
+  // // Mod these to update bitsets
+  // sppfReachable.add(n, p);
+  // if (p.leftChild != null) sppfReachable.add(p, p.leftChild);
+  // sppfReachable.add(p, p.rightChild);
+  // }
+  // System.out.println("After initialising sppfReachable, cardinality is " + sppfReachable.getDomain().size());
+  // sppfReachable.transitiveClosure();
+  // System.out.println("After transitive closure of sppfReachable, contents are:\n" + sppfReachable);
+  //
+  // sppfRootReachable = sppfReachable.get(sppfRootNode);
+  // // System.out.println("Root reachable set: " + sppfRootReachable);
+  // sppfCyclic.clear();
+  // for (var n : sppfReachable.getDomain())
+  // if (sppfReachable.get(n).contains(n)) sppfCyclic.add(n);
+  // }
+
+  private void sppfComputeReachability() {
+    // Count SPPF nodes
+    // Allocate SPPF node count bitsets of size SPPF node count
+    // Load adjacencies
+    // Run Warshall's what-did-you-expect algorithm
+
+    sppfReachable.clear();
+    for (var n : sppf.keySet())
+      for (var p : n.packNS) {
+        if (cbD.contains(p)) continue;
+
+        // Mod these to update bitsets
+        sppfReachable.add(n.number, p.number);
+        if (p.leftChild != null) sppfReachable.add(p.number, p.leftChild.number);
+        sppfReachable.add(p.number, p.rightChild.number);
+      }
+    // System.out.println("After initialising sppfReachable, cardinality is " + sppfReachable.getDomain().size());
+    sppfReachable.transitiveClosure();
+    // System.out.println("After transitive closure of sppfReachable, contents are:\n" + sppfReachable);
+
+    sppfRootReachable = sppfReachable.get(sppfRootNode.number);
+    // System.out.println("Root reachable set: " + sppfRootReachable);
+    sppfCyclic.clear();
+    for (int n = 0; n < sppfReachable.domainSize(); n++)
+      if (sppfReachable.get(n, n)) sppfCyclic.set(n);
   }
 
   @Override
   public void sppfPrintCyclicNodes() {
     sppfComputeReachability();
     System.out.println(sppfCyclic.isEmpty() ? "There are no cyclic nodes" : "Cyclic nodes are");
-    for (var d : sppfCyclic)
-      System.out.println("  " + d);
+    for (int i = 0; i < sppfCyclic.length(); i++)
+      if (sppfCyclic.get(i)) System.out.println("  " + i);
   }
 
   public void loadXPartitions() {
@@ -850,10 +906,10 @@ public class GLLBaseLine extends ParserBase {
     yP = new HashSet<>();
     yS = new HashSet<>();
     for (var n : sppf.keySet())
-      if (sppfCyclic.contains(n)) {
+      if (sppfCyclic.get(n.number)) {
         yS.add(n);
         for (var p : n.packNS)
-          if (sppfCyclic.contains(p)) {
+          if (sppfCyclic.get(p.number)) {
             // xNodesBeforeBreaking.add(p);
             yP.add(p);
           }
