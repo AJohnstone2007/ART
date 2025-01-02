@@ -33,7 +33,7 @@ public class RelationOverNaturals {
 
   public void clear() {
     for (var b : relation)
-      b.clear();
+      if (b != null) b.clear();
   }
 
   public void transitiveClosure() {
@@ -42,7 +42,7 @@ public class RelationOverNaturals {
     while (changed) {
       changed = false;
       for (BitSet i : relation)
-        for (int j = 0; j < i.length(); j++) {
+        if (i != null) for (int j = 0; j < i.length(); j++) {
           BitSet kk = relation[j];
           if (kk != null) for (int k = 0; k < kk.length(); k++)
             if (kk.get(k) && !i.get(k)) {
@@ -58,6 +58,7 @@ public class RelationOverNaturals {
   }
 
   public boolean get(int src, int dst) {
+    if (relation[src] == null) return false;
     return relation[src].get(dst);
   }
 
