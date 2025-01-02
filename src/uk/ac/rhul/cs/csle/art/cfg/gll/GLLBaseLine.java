@@ -1187,4 +1187,23 @@ public class GLLBaseLine extends ParserBase {
     }
   }
 
+  @Override
+  public void sppfPrintSentences() {
+    visitedSPPFNodes.clear();
+    System.out.println("(Q&D version: simply list paraterminal instances in SPPF)");
+    sppfPrintSentencesRec(sppfRootNode);
+  }
+
+  private void sppfPrintSentencesRec(SPPFN node) {
+    // System.out.println("Print sentences at " + node);
+    if (visitedSPPFNodes.get(node.number)) return;
+    visitedSPPFNodes.set(node.number);
+
+    if (isSymbol(node) && cfgRules.paraterminalElements.contains(node.gn.elm)) System.out.println(node);
+    for (var p : node.packNS) {
+      if (p.leftChild != null) sppfPrintSentencesRec(p.leftChild);
+      sppfPrintSentencesRec(p.rightChild);
+    }
+  }
+
 }

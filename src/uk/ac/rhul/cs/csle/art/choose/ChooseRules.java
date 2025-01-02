@@ -63,7 +63,7 @@ public class ChooseRules {
         anyStr = extendStringList(anyStr, "srCaseInsensitiveTerminal(" + ITerms.escapeMeta(e1.str) + ")");
         break;
       case N:
-        if (grammar.paraterminals.contains(e1))
+        if (grammar.paraterminalNames.contains(e1))
           anyParaStr = extendStringList(anyParaStr, "srNonterminal(" + ITerms.escapeMeta(e1.str) + ")");
         else
           anyNonStr = extendStringList(anyNonStr, "srNonterminal(" + ITerms.escapeMeta(e1.str) + ")");

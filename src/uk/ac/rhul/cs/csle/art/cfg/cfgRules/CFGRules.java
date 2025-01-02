@@ -44,7 +44,8 @@ public class CFGRules {
   public String[] lexicalStringsArray;
   public LexemeKind[] whitespacesArray;
 
-  public Set<CFGElement> paraterminals = new HashSet<>();
+  public Set<String> paraterminalNames = new HashSet<>();
+  public Set<CFGElement> paraterminalElements = new HashSet<>();
 
   // Grammar analysis data
   public final Relation<CFGElement, CFGElement> reach1 = new Relation<>(); // { (X,Y) | X ::= \alpha Y \beta }
@@ -112,11 +113,13 @@ public class CFGRules {
     numberElementsAndNodes();
     setEndNodeLinks();
 
-    // Report nonterminals with no rules
+    // Report nonterminals with no rules, and create paraterminal element set
     Set<CFGElement> tmp = new HashSet<>();
     for (CFGElement e : elements.keySet())
       if (e.kind == CFGKind.N) {
         if (elementToNodeMap.get(e) == null) tmp.add(e);
+
+        if (paraterminalNames.contains(e.str)) paraterminalElements.add(e);
       }
 
     if (tmp.size() > 0) {
@@ -256,8 +259,7 @@ public class CFGRules {
         processTermAttributesRec(iTerms.subterm(annotationRoot, i), lhs, rhsNonterminals);
   }
 
-  private void validateAttribute(String nonterminalID, String attributeID, String typeID, String lhs, Map<String, Integer> rhsNonterminals,
-      boolean isNative) {
+  private void validateAttribute(String nonterminalID, String attributeID, String typeID, String lhs, Map<String, Integer> rhsNonterminals, boolean isNative) {
     // System.out.println("Validating attribute " + nonterminalID + "," + attributeID);
 
     Character subscriptCharacter = nonterminalID.charAt(nonterminalID.length() - 1);
@@ -517,6 +519,7 @@ public class CFGRules {
     sb.append("Elements:\n");
     for (CFGElement s : elements.keySet()) {
       sb.append(" (" + s.toStringDetailed() + ") " + s);
+      if (paraterminalElements.contains(s)) sb.append(" paraterminal");
       if (!s.attributes.isEmpty()) sb.append(" attributes: " + s.attributes);
       if (showProperties && first.get(s) != null) {
         sb.append(" first = {");
@@ -554,6 +557,8 @@ public class CFGRules {
     sb.append("Accepting node number" + (acceptingSlots.size() == 1 ? "" : "s") + ":");
     for (var gn : acceptingNodeNumbers)
       sb.append(" " + gn);
+
+    sb.append("\nParaterminals: " + paraterminalNames);
 
     sb.append("\nWhitespaces: " + whitespaces);
 

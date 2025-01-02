@@ -193,6 +193,10 @@ public class ParserBase {
     System.out.println("sppfBreakCyclesRelation() not implemented for parser class " + this.getClass().getSimpleName());
   }
 
+  public void sppfPrintSentences() {
+    System.out.println("sppfPrintSentences() not implemented for parser class " + this.getClass().getSimpleName());
+  }
+
   protected CFGNode getLHS(CFGNode gn) {
     return cfgRules.elementToNodeMap.get(gn.elm);
   }
@@ -1057,5 +1061,4 @@ public class ParserBase {
     while (peekCh() != '\n' && peekCh() != '\0') // Quietly accept an input file with no \n at the end.
       getCh();
   }
-
 }

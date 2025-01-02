@@ -168,7 +168,7 @@ displayElement  ::=
 | 'script' | 'scriptDerivation' 
 | 'allRules' | 'cfgRules' | 'chooseRules' | 'trRules'
 | 'lexer' | 'parser' | 'interpreter'
-| 'input' | 'twe' | 'lexicalisation' | 'gss' | 'sppf' | 'bsr' | 'derivation' | 'interpretation' 
+| 'input' | 'twe' | 'lexicalisations' | 'sentences' |'gss' | 'sppf' | 'bsr' | 'derivation' | 'interpretation' 
 | 'statistics' | __string
 | 'cyclicNodes' | 'ambiguousNodes' | 'outcome'
 
