@@ -36,24 +36,38 @@ public class RelationOverNaturals {
       if (b != null) b.clear();
   }
 
+  // if a->b and b->c then set a->c
   public void transitiveClosure() {
     @SuppressWarnings("unchecked")
     boolean changed = true;
     while (changed) {
       changed = false;
-      for (BitSet i : relation)
-        if (i != null) for (int j = 0; j < i.length(); j++) {
-          BitSet kk = relation[j];
-          if (kk != null) for (int k = 0; k < kk.length(); k++)
-            if (kk.get(k) && !i.get(k)) {
-              changed = true;
-              i.set(k);
+      for (int a = 0; a < relation.length; a++)
+        if (relation[a] != null) for (int b = 0; b < relation[a].length(); b++) {
+          if (relation[a].get(b)) {
+            if (relation[b] != null) {
+              int oldCardinalityA = relation[a].cardinality();
+              relation[a].or(relation[b]);
+              changed |= relation[a].cardinality() != oldCardinalityA;
             }
+          }
         }
     }
   }
 
-  public BitSet get(int number) {
+  @Override
+  public String toString() {
+    StringBuilder builder = new StringBuilder();
+    for (int i = 0; i < relation.length; i++)
+      if (relation[i] != null) {
+        builder.append(i + "->");
+        builder.append(relation[i]);
+        builder.append("\n");
+      }
+    return builder.toString();
+  }
+
+  public BitSet getCodomain(int number) {
     return relation[number];
   }
 
