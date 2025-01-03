@@ -44,33 +44,23 @@ public class AttributeActionGenerator {
 
     for (var e : cfgRules.elements.keySet())
       if (e.kind == CFGKind.N) {
-        printAllActionsDespatchRec(text, cfgRules.elementToNodeMap.get(e));
+        printAllActionsDespatchRec(text, cfgRules.elementToNodeMap.get(e), e);
       }
 
     text.println("    }\n  }\n}");
     text.close();
   }
 
-  private void printAllActionsDespatchRec(PrintWriter text, CFGNode cfgNode) {
-    if (cfgNode == null || cfgNode.elm.kind == CFGKind.END) return;
-    if (cfgNode.slotTerm != 0 && iTerms.termArity(cfgNode.slotTerm) != 0) text.println("      case " + cfgNode.num + ": action" + cfgNode.num + "(); break;");
-
-    printAllActionsDespatchRec(text, cfgNode.seq);
-    printAllActionsDespatchRec(text, cfgNode.alt);
-  }
-
   private void printAllActionsRec(PrintWriter text, CFGElement lhs, CFGNode cfgNode) {
     if (cfgNode == null || cfgNode.elm.kind == CFGKind.END) return;
     if (cfgNode.slotTerm != 0 && iTerms.termArity(cfgNode.slotTerm) != 0) {
       text.print("  public static void action" + cfgNode.num + "(");
-      boolean first = true;
+
+      text.print("A_" + lhs + " " + lhs);
+
       for (var n : lhs.rhsNonterminals.keySet())
-        for (int index = 1; index < lhs.rhsNonterminals.get(n); index++) {
-          if (first) {
-            first = false;
-          } else
-            text.print(", ");
-          text.print("A_" + n + " " + n + index);
+        for (int index = 0; index < lhs.rhsNonterminals.get(n); index++) {
+          text.print(", A_" + n + " " + n + (index + 1));
         }
       text.print("){");
       printSlotTermRec(text, cfgNode.slotTerm);
@@ -81,7 +71,7 @@ public class AttributeActionGenerator {
   }
 
   private void printSlotTermRec(PrintWriter text, int slotTerm) {
-    System.out.println(iTerms.termSymbolString(slotTerm));
+    // System.out.println(iTerms.termSymbolString(slotTerm));
 
     if (iTerms.hasSymbol(slotTerm, "cfgNative")) {
       text.print(iTerms.toString(iTerms.subterm(slotTerm, 0)));
@@ -96,5 +86,22 @@ public class AttributeActionGenerator {
     // printSlotTerm(text, cfgNode.slotTerm);
     printTermActionsRec(text, cfgNode.seq);
     printTermActionsRec(text, cfgNode.alt);
+  }
+
+  private void printAllActionsDespatchRec(PrintWriter text, CFGNode cfgNode, CFGElement lhs) {
+    if (cfgNode == null || cfgNode.elm.kind == CFGKind.END) return;
+    if (cfgNode.slotTerm != 0 && iTerms.termArity(cfgNode.slotTerm) != 0) {
+      text.print("      case " + cfgNode.num + ": action" + cfgNode.num + "(");
+      text.print("(A_" + lhs + ") aBlocks[0]");
+
+      int blockCount = 1;
+      for (var n : lhs.rhsNonterminals.keySet())
+        for (int index = 0; index < lhs.rhsNonterminals.get(n); index++) {
+          text.print(", (A_" + n + ") aBlocks[" + (blockCount++) + "]");
+        }
+      text.println("); break;");
+    }
+    printAllActionsDespatchRec(text, cfgNode.seq, lhs);
+    printAllActionsDespatchRec(text, cfgNode.alt, lhs);
   }
 }

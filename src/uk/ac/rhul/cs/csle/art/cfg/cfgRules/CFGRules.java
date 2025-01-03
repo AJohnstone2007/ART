@@ -4,6 +4,7 @@ package uk.ac.rhul.cs.csle.art.cfg.cfgRules;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
@@ -203,20 +204,29 @@ public class CFGRules {
     // System.out.println("*** Collecting attributes");
     for (CFGElement e : elements.keySet()) {
       // System.out.println("*** Collecting attributes for element " + e.toStringDetailed());
+      Map<String, Integer> rhsNonterminalsInProduction = new HashMap<>();
       if (e.kind == CFGKind.N) {
+        String lhs = e.str;
         for (CFGNode gn = elementToNodeMap.get(e).alt; gn != null; gn = gn.alt) {
-          String lhs = e.str;
+          rhsNonterminalsInProduction.clear();
           for (CFGNode gs = gn.seq; gs.elm.kind != CFGKind.END; gs = gs.seq) {
             // System.out.println("Collecting RHS nonterminals at " + gs + " " + iTerms.toRawString(gs.slotTerm));
             if (gs.elm.kind == CFGKind.N) {
-              if (e.rhsNonterminals.get(gs.elm.str) == null)
-                e.rhsNonterminals.put(gs.elm.str, 1);
+              if (rhsNonterminalsInProduction.get(gs.elm.str) == null)
+                rhsNonterminalsInProduction.put(gs.elm.str, 1);
               else
-                e.rhsNonterminals.put(gs.elm.str, e.rhsNonterminals.get(gs.elm.str) + 1);
+                rhsNonterminalsInProduction.put(gs.elm.str, rhsNonterminalsInProduction.get(gs.elm.str) + 1);
             }
           }
-          // System.out.println("LHS: " + lhs + " with valid nonterminals=instances: " + validNonterminals);
+          for (var a : rhsNonterminalsInProduction.keySet()) {
+            if (e.rhsNonterminals.get(a) == null) e.rhsNonterminals.put(a, 0);
+            if (rhsNonterminalsInProduction.get(a) > e.rhsNonterminals.get(a)) e.rhsNonterminals.put(a, rhsNonterminalsInProduction.get(a));
+          }
+        }
 
+        System.out.println("LHS: " + lhs + " with valid nonterminals=instances: " + rhsNonterminalsInProduction);
+
+        for (CFGNode gn = elementToNodeMap.get(e).alt; gn != null; gn = gn.alt) {
           for (CFGNode gs = gn.seq; gs.elm.kind != CFGKind.END; gs = gs.seq) {
             for (int i = 0; i < iTerms.termArity(gs.slotTerm); i++) {
               int annotationRoot = iTerms.subterm(gs.slotTerm, i);
@@ -225,6 +235,7 @@ public class CFGRules {
               case "cfgEquation", "cfgAssignment":
                 processTermAttributesRec(annotationRoot, lhs, e.rhsNonterminals);
                 break;
+
               case "cfgNative":
                 processNativeAttributes(iTerms.toString(annotationRoot), lhs, e.rhsNonterminals, true);
                 break;
@@ -262,21 +273,24 @@ public class CFGRules {
   private void validateAttribute(String nonterminalID, String attributeID, String typeID, String lhs, Map<String, Integer> rhsNonterminals, boolean isNative) {
     // System.out.println("Validating attribute " + nonterminalID + "," + attributeID);
 
-    Character subscriptCharacter = nonterminalID.charAt(nonterminalID.length() - 1);
-    int subscript = Character.isDigit(subscriptCharacter) ? (subscriptCharacter - '0') : -1;
-
-    if (subscript == -1 && nonterminalID.equals(lhs)) { // Case 1: unsubscripted LHS
+    if (nonterminalID.equals(lhs)) { // Case 1: attribute ID is LHS, even though it might end in a digit
       addAttribute(nonterminalID, attributeID, typeID);
       return;
     }
-    String nonterminalIDbare = nonterminalID.substring(0, nonterminalID.length() - 1); // strip subscript digit
-    if (subscript == 0 && nonterminalIDbare.equals(lhs)) { // Case 2: subscripted LHS0
-      addAttribute(nonterminalIDbare, attributeID, typeID);
-      return;
-    }
-    if (rhsNonterminals.containsKey(nonterminalIDbare) && subscript <= rhsNonterminals.get(nonterminalIDbare)) { // Case 3: subscripted RHS instance
-      addAttribute(nonterminalIDbare, attributeID, typeID);
-      return;
+
+    Character subscriptCharacter = nonterminalID.charAt(nonterminalID.length() - 1);
+    int subscript = Character.isDigit(subscriptCharacter) ? (subscriptCharacter - '0') : -1;
+
+    if (subscript > -1) { // Only consider attribute names with a trailing digit
+      String nonterminalIDbare = nonterminalID.substring(0, nonterminalID.length() - 1); // strip subscript digit
+      if (subscript == 0 && nonterminalIDbare.equals(lhs)) { // Case 2: subscripted LHS0
+        addAttribute(nonterminalIDbare, attributeID, typeID);
+        return;
+      }
+      if (rhsNonterminals.containsKey(nonterminalIDbare) && subscript <= rhsNonterminals.get(nonterminalIDbare)) { // Case 3: subscripted RHS instance
+        addAttribute(nonterminalIDbare, attributeID, typeID);
+        return;
+      }
     }
     if (isNative)
       Util.warning("ignoring native action attribute-like element " + nonterminalID + "." + attributeID + " in production for nonterminal " + lhs);
