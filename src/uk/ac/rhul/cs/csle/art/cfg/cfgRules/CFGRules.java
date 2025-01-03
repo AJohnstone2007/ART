@@ -224,7 +224,7 @@ public class CFGRules {
           }
         }
 
-        System.out.println("LHS: " + lhs + " with valid nonterminals=instances: " + rhsNonterminalsInProduction);
+        // System.out.println("LHS: " + lhs + " with valid nonterminals=instances: " + rhsNonterminalsInProduction);
 
         for (CFGNode gn = elementToNodeMap.get(e).alt; gn != null; gn = gn.alt) {
           for (CFGNode gs = gn.seq; gs.elm.kind != CFGKind.END; gs = gs.seq) {
@@ -256,7 +256,7 @@ public class CFGRules {
     Matcher matcher = pattern.matcher(action);
     while (matcher.find()) {
       String[] parts = matcher.group().split("\\.");
-      validateAttribute(parts[0], parts[1], "int", lhs, rhsNonterminals, warning);
+      validateAttribute(parts[0], parts[1], lhs, rhsNonterminals, warning);
     }
   }
 
@@ -264,17 +264,17 @@ public class CFGRules {
     if (iTerms.termSymbolString(annotationRoot).equals("cfgAttribute")) {
       String nonterminalID = iTerms.termSymbolString(iTerms.subterm(annotationRoot, 0));
       String attributeID = iTerms.termSymbolString(iTerms.subterm(annotationRoot, 1));
-      validateAttribute(nonterminalID, attributeID, "int", lhs, rhsNonterminals, false);
+      validateAttribute(nonterminalID, attributeID, lhs, rhsNonterminals, false); // int is default attribute type - overriden by <> declaration on rhs
     } else
       for (int i = 0; i < iTerms.termArity(annotationRoot); i++)
         processTermAttributesRec(iTerms.subterm(annotationRoot, i), lhs, rhsNonterminals);
   }
 
-  private void validateAttribute(String nonterminalID, String attributeID, String typeID, String lhs, Map<String, Integer> rhsNonterminals, boolean isNative) {
+  private void validateAttribute(String nonterminalID, String attributeID, String lhs, Map<String, Integer> rhsNonterminals, boolean isNative) {
     // System.out.println("Validating attribute " + nonterminalID + "," + attributeID);
 
     if (nonterminalID.equals(lhs)) { // Case 1: attribute ID is LHS, even though it might end in a digit
-      addAttribute(nonterminalID, attributeID, typeID);
+      addAttribute(nonterminalID, attributeID);
       return;
     }
 
@@ -284,22 +284,27 @@ public class CFGRules {
     if (subscript > -1) { // Only consider attribute names with a trailing digit
       String nonterminalIDbare = nonterminalID.substring(0, nonterminalID.length() - 1); // strip subscript digit
       if (subscript == 0 && nonterminalIDbare.equals(lhs)) { // Case 2: subscripted LHS0
-        addAttribute(nonterminalIDbare, attributeID, typeID);
+        addAttribute(nonterminalIDbare, attributeID);
         return;
       }
       if (rhsNonterminals.containsKey(nonterminalIDbare) && subscript <= rhsNonterminals.get(nonterminalIDbare)) { // Case 3: subscripted RHS instance
-        addAttribute(nonterminalIDbare, attributeID, typeID);
+        addAttribute(nonterminalIDbare, attributeID);
         return;
       }
     }
+
+    // Exception cases for Java to reduce spurious messages
+    Set<String> javaAllowedClasses = Set.of("System", "Math", "Integer", "Double");
+    if (javaAllowedClasses.contains(nonterminalID)) return; // Silent return
+
     if (isNative)
       Util.warning("ignoring native action attribute-like element " + nonterminalID + "." + attributeID + " in production for nonterminal " + lhs);
     else
       Util.fatal("invalid attribute " + nonterminalID + "." + attributeID + " in production for nonterminal " + lhs);
   }
 
-  private void addAttribute(String nonterminalID, String attributeID, String typeID) {
-    findElement(CFGKind.N, nonterminalID).attributes.put(attributeID, typeID);
+  private void addAttribute(String nonterminalID, String attributeID) {
+    if (findElement(CFGKind.N, nonterminalID).attributes.get(attributeID) == null) findElement(CFGKind.N, nonterminalID).attributes.put(attributeID, "int");
   }
 
   private void numberElementsAndNodes() {
@@ -459,6 +464,10 @@ public class CFGRules {
     workingNode = new CFGNode(this, kind, str, slotTerm, workingFold, workingNode, null);
     workingFold = GIFTKind.NONE;
     return workingNode;
+  }
+
+  public void attributeAction(String name, String type) {
+    mostRecentLHS.elm.attributes.put(name, type);
   }
 
   /* Visualisation rendering */

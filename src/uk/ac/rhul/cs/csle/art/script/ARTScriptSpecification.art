@@ -7,11 +7,8 @@ rule  ::= cfgRule^^ | trRule^^ | chooseRule^^ | '!'^ directive^^
 (* Context Free Grammar rules ************************************************)
 cfgRule  ::= cfgLHS cfgAttributeDeclarations '::='^ cfgAlts
   cfgLHS ::= ID  
-  cfgAttributeDeclarations ::= # | '<'^ cfgAttributeDeclaration^^ '>'^ // something bad happening here - remove # andgrammar does not parse - ambiguity?
-  cfgAttributeDeclaration  ::= ID ':' cfgAttributeTypeNest | ID ':' cfgAttributeTypeNest cfgAttributeDeclaration
-  (* This is to support Java style generics in attribute declarations *)
-  cfgAttributeTypeNest ::= &ID | &ID '<' cfgAttributeTypeList '>' 
-  cfgAttributeTypeList ::= cfgAttributeTypeNest | cfgAttributeTypeNest ',' cfgAttributeTypeList 
+  cfgAttributeDeclarations ::= #^ | '<'^ cfgAttributeDeclaration^^ '>'^ // something bad happening here - remove # and grammar does not parse - ambiguity?
+  cfgAttributeDeclaration  ::= ID ':'^ ID | ID ':'^ ID cfgAttributeDeclaration
 
 cfgAlts ::= cfgAlt '|'^ cfgAlts^ | cfgAlt  
 cfgAlt  ::= cfgSeq^^ cfgActions cfgEpsilonCarrier | cfgSeq^^ cfgActions cfgEpsilon | cfgSeq^^ cfgElems^ cfgActions (* final actions in sequence *)  
@@ -129,7 +126,7 @@ directiveElement ::=
 | 'lexer'^^ '#'^ | 'lexer'^^ ID
 | 'parser'^^ '#'^ | 'parser'^^ ID
 | 'interpreter'^^ '#'^ | 'interpreter'^^ ID
-| 'generate'^^ ID 
+| 'generate'^^ ID | 'generate'^^ ID STRING_SHRIEK_SHRIEK STRING_SHRIEK_SHRIEK
 
 | 'start'^^ cfgNonterminal | 'start'^^ trRelation // Set parser start nonterminal or rewriter start relation
 | 'configuration'^^  '#'^ | 'configuration'^^ trRelation ','^ trTerm

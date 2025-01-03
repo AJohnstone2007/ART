@@ -1,4 +1,4 @@
-package uk.ac.rhul.cs.csle.art.cfg;
+package uk.ac.rhul.cs.csle.art.interpret;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -12,22 +12,23 @@ import uk.ac.rhul.cs.csle.art.script.ScriptTermInterpreter;
 import uk.ac.rhul.cs.csle.art.term.ITerms;
 import uk.ac.rhul.cs.csle.art.util.Util;
 
-public class AttributeActionGenerator {
+public class ActionsGenerator {
 
   private final ITerms iTerms;
 
-  public AttributeActionGenerator(CFGRules cfgRules) {
+  public ActionsGenerator(CFGRules cfgRules, String filePrelude, String classPrelude) {
     iTerms = ScriptTermInterpreter.iTerms;
-    System.out.println("Generating Attribute Action system");
+    System.out.println("Generating ARTActions.java");
     PrintWriter text = null;
     try {
-      text = new PrintWriter(new File("ARTAttributeAction.java"));
+      text = new PrintWriter(new File("ARTActions.java"));
     } catch (FileNotFoundException e) {
-      Util.fatal("Unable to open output file ARTAttributeAction.java");
+      Util.fatal("Unable to open output file ARTActions.java");
     }
-
-    text.println("public class ARTAttributeAction {");
-
+    text.println("import uk.ac.rhul.cs.csle.art.interpret.Actions;");
+    if (filePrelude != null) text.println(filePrelude);
+    text.println("public class ARTActions extends Actions {");
+    if (classPrelude != null) text.println(classPrelude);
     for (var e : cfgRules.elements.keySet())
       if (e.kind == CFGKind.N) {
         text.print("  public static class A_" + e.str + " {");
@@ -47,7 +48,7 @@ public class AttributeActionGenerator {
         printAllActionsDespatchRec(text, cfgRules.elementToNodeMap.get(e), e);
       }
 
-    text.println("    }\n  }\n}");
+    text.println("      default: break;\n    }\n  }\n}");
     text.close();
   }
 

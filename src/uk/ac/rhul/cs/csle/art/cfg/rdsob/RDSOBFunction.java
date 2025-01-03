@@ -1,10 +1,10 @@
 package uk.ac.rhul.cs.csle.art.cfg.rdsob;
 
-import uk.ac.rhul.cs.csle.art.cfg.ParserBase;
+import uk.ac.rhul.cs.csle.art.cfg.Parser;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
 import uk.ac.rhul.cs.csle.art.util.Util;
 
-public class RDSOBFunction extends ParserBase {
+public class RDSOBFunction extends Parser {
 
   boolean rdsobFunction(CFGNode lhs) {
     if (dn.next == null) dn.next = new DerivationSingletonNode(cfgRules.endOfStringNode, null);

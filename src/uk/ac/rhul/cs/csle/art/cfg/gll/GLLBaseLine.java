@@ -12,7 +12,7 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 
-import uk.ac.rhul.cs.csle.art.cfg.ParserBase;
+import uk.ac.rhul.cs.csle.art.cfg.Parser;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGKind;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.GIFTKind;
@@ -22,7 +22,7 @@ import uk.ac.rhul.cs.csle.art.util.Relation;
 import uk.ac.rhul.cs.csle.art.util.RelationOverNaturals;
 import uk.ac.rhul.cs.csle.art.util.Util;
 
-public class GLLBaseLine extends ParserBase {
+public class GLLBaseLine extends Parser {
   private final BitSet visitedSPPFNodes = new BitSet(), suppressedSPPFNode = new BitSet();
 
   /* Temporary disambiguation before choosers are implemented ****************/
