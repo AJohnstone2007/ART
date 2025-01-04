@@ -197,6 +197,10 @@ public class Parser {
     System.out.println("sppfPrintSentences() not implemented for parser class " + this.getClass().getSimpleName());
   }
 
+  public void interpretAttributeAction() {
+    System.out.println("interpretAttributeAction() not implemented for parser class " + this.getClass().getSimpleName());
+  }
+
   protected CFGNode getLHS(CFGNode gn) {
     return cfgRules.elementToNodeMap.get(gn.elm);
   }
@@ -1061,4 +1065,5 @@ public class Parser {
     while (peekCh() != '\n' && peekCh() != '\0') // Quietly accept an input file with no \n at the end.
       getCh();
   }
+
 }

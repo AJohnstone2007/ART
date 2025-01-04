@@ -23,7 +23,7 @@ import uk.ac.rhul.cs.csle.art.cfg.rdsob.RDSOBFunction;
 import uk.ac.rhul.cs.csle.art.cfg.rdsob.RDSOBGenerator;
 import uk.ac.rhul.cs.csle.art.choose.ChooseRules;
 import uk.ac.rhul.cs.csle.art.interpret.ActionsGenerator;
-import uk.ac.rhul.cs.csle.art.interpret.AttributeInterpreter;
+import uk.ac.rhul.cs.csle.art.interpret.AttributeActionInterpreter;
 import uk.ac.rhul.cs.csle.art.interpret.Interpreter;
 import uk.ac.rhul.cs.csle.art.interpret.eSOSInterpreter;
 import uk.ac.rhul.cs.csle.art.term.ITerms;
@@ -221,17 +221,16 @@ public class ScriptTermInterpreter {
       break;
 
     case "interpreter":
-      for (int i = 0; i < iTerms.termArity(iTerms.subterm(term, 0)); i++)
-        switch (iTerms.termSymbolString(iTerms.subterm(term, 0, i)).toLowerCase()) {
-        case "eSOS":
-          currentInterpreter = new eSOSInterpreter();
-          break;
-        case "attribute":
-          currentInterpreter = new AttributeInterpreter(currentCFGRules);
-          break;
-        default:
-          Util.fatal("Unexpected !interpreter argument " + iTerms.toString(iTerms.subterm(term, 0, i)));
-        }
+      switch (iTerms.termSymbolString(iTerms.subterm(term, 0, 0)).toLowerCase()) {
+      case "esos":
+        currentInterpreter = new eSOSInterpreter();
+        break;
+      case "attributeaction":
+        currentInterpreter = new AttributeActionInterpreter();
+        break;
+      default:
+        Util.fatal("Unexpected !interpreter argument " + iTerms.toString(iTerms.subterm(term, 0, 0)));
+      }
       break;
 
     case "generate":
@@ -286,6 +285,7 @@ public class ScriptTermInterpreter {
           System.out.println("*** Failed test: expected " + iTerms.plainTextTraverser.toString(iTerms.subterm(term, 0, 1)));
           failedTests++;
         }
+
       break;
 
     case "prompt":
@@ -520,6 +520,7 @@ public class ScriptTermInterpreter {
       currentParser.loadParseChooseTime();
       currentDerivationTerm = currentParser.derivationAsTerm();
       currentParser.loadTermGenerateTime();
+      currentInterpreter.interpret(currentParser);
     } else {
       currentDerivationTerm = 0;
       System.out.println("Try failed: syntax error");

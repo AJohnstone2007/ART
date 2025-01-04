@@ -1206,4 +1206,35 @@ public class GLLBaseLine extends Parser {
     }
   }
 
+  @Override
+  public void interpretAttributeAction() {
+    if (sppfRootNode == null) return;
+    visitedSPPFNodes.clear();
+    interpretAttributeActionRec(sppfRootNode);
+  }
+
+  private void interpretAttributeActionRec(SPPFN node) {
+    if (visitedSPPFNodes.get(node.number)) Util.fatal("Cycle detected during Attribute-Action intepretation");
+    visitedSPPFNodes.set(node.number);
+
+    System.out.println("Interpreting node " + node);
+
+    // Traverse subtrees
+    if (!node.packNS.isEmpty()) {
+      SPPFPN pn = null;
+      for (var p : node.packNS)
+        if (!p.suppressed) {
+          pn = p;
+          break;
+        }
+
+      if (pn == null) Util.fatal("All pcked nodes suppressed at " + node);
+
+      if (pn.leftChild != null) interpretAttributeActionRec(pn.leftChild);
+      interpretAttributeActionRec(pn.rightChild);
+    }
+
+    System.out.println("Calling action(" + node.number + ")");
+
+  }
 }
