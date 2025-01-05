@@ -2,10 +2,10 @@ import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.stage.Stage;
-import uk.ac.rhul.cs.csle.art.term.ARTPluginInterface;
+import uk.ac.rhul.cs.csle.art.term.AbstractPlugin;
 
 // Rename this class to ARTPlugin if you want to develop plugins within the Eclipse workspace; but change it back again before distribution
-public class ARTPlugin implements ARTPluginInterface {
+public class ARTValuePluginDisabled extends AbstractPlugin {
 
   @Override
   public String name() {

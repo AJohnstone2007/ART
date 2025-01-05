@@ -1,5 +1,8 @@
 package uk.ac.rhul.cs.csle.art.util;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+
 public class Util {
 
   public static int traceLevel = 3;
@@ -93,4 +96,11 @@ public class Util {
       if (buffer.charAt(tmp) == '\n') lineCount++;
     return lineCount;
   }
+
+  static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+  public static String timestamp() {
+    return dateFormat.format(Calendar.getInstance().getTime());
+  }
+
 }

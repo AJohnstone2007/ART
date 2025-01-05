@@ -2,9 +2,9 @@ package uk.ac.rhul.cs.csle.art.cfg.lexer;
 
 import java.util.ArrayList;
 
-import uk.ac.rhul.cs.csle.art.cfg.Parser;
+import uk.ac.rhul.cs.csle.art.cfg.AbstractParser;
 
-public class LexerSingletonLongestMatch extends Parser {
+public class LexerSingletonLongestMatch extends AbstractParser {
   private ArrayList<Integer> tokenList;
   private ArrayList<Integer> positionList;
   public int[] tokens;

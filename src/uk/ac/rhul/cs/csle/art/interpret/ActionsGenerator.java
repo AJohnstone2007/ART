@@ -17,18 +17,21 @@ public class ActionsGenerator {
   private final ITerms iTerms;
 
   public ActionsGenerator(CFGRules cfgRules, String filePrelude, String classPrelude) {
+    String filename = "ARTGeneratedActions";
     iTerms = ScriptTermInterpreter.iTerms;
-    System.out.println("Generating ARTActions.java");
+    String timeStamp = Util.timestamp();
+    System.out.println("Writing new " + filename + ": " + timeStamp);
     PrintWriter text = null;
     try {
-      text = new PrintWriter(new File("ARTActions.java"));
+      text = new PrintWriter(new File(filename + ".java"));
     } catch (FileNotFoundException e) {
-      Util.fatal("Unable to open output file ARTActions.java");
+      Util.fatal("Unable to open output file " + filename);
     }
-    text.println("import uk.ac.rhul.cs.csle.art.interpret.Actions;");
+    text.println("import uk.ac.rhul.cs.csle.art.interpret.AbstractActions;");
     if (filePrelude != null) text.println(filePrelude);
-    text.println("public class ARTActions extends Actions {");
+    text.println("public class " + filename + " extends AbstractActions {");
     if (classPrelude != null) text.println(classPrelude);
+    text.println("  public String name() { return \"" + timeStamp + "\"; }");
     for (var e : cfgRules.elements.keySet())
       if (e.kind == CFGKind.N) {
         text.print("  public static class A_" + e.str + " {");

@@ -8,7 +8,7 @@ import uk.ac.rhul.cs.csle.art.cfg.lexer.LexemeKind;
 import uk.ac.rhul.cs.csle.art.script.TraversalKind;
 import uk.ac.rhul.cs.csle.art.util.Util;
 
-public class Parser {
+public abstract class AbstractParser {
   public int traceLevel = 0;
   public CFGRules cfgRules;
   public String inputString = ""; // Original input string

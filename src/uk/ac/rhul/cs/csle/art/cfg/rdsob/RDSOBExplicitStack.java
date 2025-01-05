@@ -1,11 +1,11 @@
 package uk.ac.rhul.cs.csle.art.cfg.rdsob;
 
-import uk.ac.rhul.cs.csle.art.cfg.Parser;
+import uk.ac.rhul.cs.csle.art.cfg.AbstractParser;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGKind;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
 import uk.ac.rhul.cs.csle.art.util.Util;
 
-public class RDSOBExplicitStack extends Parser {
+public class RDSOBExplicitStack extends AbstractParser {
   class SNode {
     CFGNode returnNode;
     int i_entry;

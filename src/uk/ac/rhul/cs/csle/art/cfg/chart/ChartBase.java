@@ -4,10 +4,10 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import uk.ac.rhul.cs.csle.art.cfg.Parser;
+import uk.ac.rhul.cs.csle.art.cfg.AbstractParser;
 import uk.ac.rhul.cs.csle.art.term.ITerms;
 
-public class ChartBase extends Parser {
+public class ChartBase extends AbstractParser {
   private final ITerms iTerms;
   protected ArrayList<ArrayList<Set<Integer>>> chart;
 

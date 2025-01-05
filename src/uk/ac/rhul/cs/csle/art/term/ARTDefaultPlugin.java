@@ -1,10 +1,10 @@
 package uk.ac.rhul.cs.csle.art.term;
 
-public class ARTPlugin implements ARTPluginInterface {
+public class ARTDefaultPlugin extends AbstractPlugin {
 
   @Override
   public String name() {
-    return "Default ARTPlugin";
+    return "report __user call arguments";
   }
 
   @Override

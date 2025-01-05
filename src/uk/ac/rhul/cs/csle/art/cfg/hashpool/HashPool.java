@@ -2,7 +2,7 @@ package uk.ac.rhul.cs.csle.art.cfg.hashpool;
 
 import java.util.Map;
 
-import uk.ac.rhul.cs.csle.art.cfg.Parser;
+import uk.ac.rhul.cs.csle.art.cfg.AbstractParser;
 
 /**
  * An expandable pool of integers which supports sequential allocation of small blocks. There is no facility to free memory once it has been allocated.
@@ -13,7 +13,7 @@ import uk.ac.rhul.cs.csle.art.cfg.Parser;
  */
 
 // public class HashPool { // Uncomment this line for standalone HashPool
-public class HashPool extends Parser { // Uncomment this line for HashPool that also inherits all of ReferenceParser
+public class HashPool extends AbstractParser { // Uncomment this line for HashPool that also inherits all of ReferenceParser
 
   private int[][] pool;
   private final int poolBlockInitialCount = 1024;

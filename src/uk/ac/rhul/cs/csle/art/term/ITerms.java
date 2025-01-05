@@ -63,7 +63,7 @@ public class ITerms {
 
   public static int variableCount = 20;
   public static int sequenceVariableCount = 10;
-  public ARTPluginInterface plugin = new ARTPlugin();
+  public AbstractPlugin plugin;
   private final TermTraverserText rawTextTraverser = new TermTraverserText(this); // This is intended for debugging - show the raw term
   public TermTraverserText plainTextTraverser; // Plain text pretty printer - loaded by user
   public TermTraverserText latexTraverser; // LaTeX pretty printer - loaded by user
@@ -115,17 +115,17 @@ public class ITerms {
     termEmpty = findTerm("__empty");
     termStringEmpty = findTerm("__string");
 
-    // 5. Connect to a plugin - either the default built in to art.jar or one in the use class path ifone can be found
-    plugin = new ARTPlugin();
+    // 5. Connect to a plugin - either the default built in to art.jar or one in the use class path if one can be found
+    plugin = new ARTDefaultPlugin();
     // Try and find a plugin for __user() calls
     Class<?> pluginClass;
     try {
-      pluginClass = getClass().getClassLoader().loadClass("ARTPlugin");
-      plugin = (ARTPluginInterface) pluginClass.getDeclaredConstructor().newInstance();
+      pluginClass = getClass().getClassLoader().loadClass("ARTValuePlugin");
+      plugin = (AbstractPlugin) pluginClass.getDeclaredConstructor().newInstance();
     } catch (Exception e) {
       // Silently absorb exception - when the default is used
     }
-    if (plugin.name() != null) System.out.println("Attached to plugin: " + plugin.name());
+    System.out.println("Attached to " + plugin.getClass().getSimpleName() + ": " + plugin.name());
   }
 
   /* Raw term rendering *************************************************************************************/

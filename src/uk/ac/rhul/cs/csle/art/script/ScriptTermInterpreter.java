@@ -8,7 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Scanner;
 
-import uk.ac.rhul.cs.csle.art.cfg.Parser;
+import uk.ac.rhul.cs.csle.art.cfg.AbstractParser;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGKind;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGRules;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.GIFTKind;
@@ -24,7 +24,7 @@ import uk.ac.rhul.cs.csle.art.cfg.rdsob.RDSOBGenerator;
 import uk.ac.rhul.cs.csle.art.choose.ChooseRules;
 import uk.ac.rhul.cs.csle.art.interpret.ActionsGenerator;
 import uk.ac.rhul.cs.csle.art.interpret.AttributeActionInterpreter;
-import uk.ac.rhul.cs.csle.art.interpret.Interpreter;
+import uk.ac.rhul.cs.csle.art.interpret.AbstractInterpreter;
 import uk.ac.rhul.cs.csle.art.interpret.eSOSInterpreter;
 import uk.ac.rhul.cs.csle.art.term.ITerms;
 import uk.ac.rhul.cs.csle.art.term.Rewriter;
@@ -58,8 +58,8 @@ public class ScriptTermInterpreter {
   private final TermTraverser scriptTraverser;
 
   private final LexerSingletonLongestMatch currentLexer = new LexerSingletonLongestMatch(); // default current lexer is longest match - change to TWE set lexer
-  private Parser currentParser = new GLLBaseLine(); // default current parser is GLL base line - change to MGLL when available
-  private Interpreter currentInterpreter = new eSOSInterpreter(); // when available
+  private AbstractParser currentParser = new GLLBaseLine(); // default current parser is GLL base line - change to MGLL when available
+  private AbstractInterpreter currentInterpreter = new eSOSInterpreter(); // when available
   public CFGRules currentCFGRules; // scriptTraverser builds CFG rules into this grammar
   private int currentDerivationTerm;
   private int currentRewriteTerm;
@@ -216,7 +216,8 @@ public class ScriptTermInterpreter {
           currentParser = new RDSOBExplicitStack();
           break;
         default:
-          Util.fatal("Unexpected !parser argument " + iTerms.toString(iTerms.subterm(term, 0, i)));
+          Util.fatal("Unexpected !parser argument " + iTerms.toString(iTerms.subterm(term, 0, i))
+              + "\nmust be one of (case insensitive)\nalgx\ncyk\ngllhashpool\ngllbaseline\nrdsobfunction\nrdsobexplicitstack");
         }
       break;
 
@@ -229,7 +230,8 @@ public class ScriptTermInterpreter {
         currentInterpreter = new AttributeActionInterpreter();
         break;
       default:
-        Util.fatal("Unexpected !interpreter argument " + iTerms.toString(iTerms.subterm(term, 0, 0)));
+        Util.fatal(
+            "Unexpected !interpreter argument " + iTerms.toString(iTerms.subterm(term, 0, 0)) + "\nmust be one of (case insensitive)\nesos\nattributeaction");
       }
       break;
 
@@ -245,7 +247,7 @@ public class ScriptTermInterpreter {
           new ActionsGenerator(currentCFGRules, iTerms.termSymbolString(iTerms.subterm(term, 0, 1)), iTerms.termSymbolString(iTerms.subterm(term, 0, 2)));
         break;
       default:
-        Util.fatal("Unexpected !generate argument " + iTerms.toString(iTerms.subterm(term, 0, 0)));
+        Util.fatal("Unexpected !generate argument " + iTerms.toString(iTerms.subterm(term, 0, 0)) + "\nmust be one of (case insensitive)\nerdsob\nactions");
       }
       break;
 
