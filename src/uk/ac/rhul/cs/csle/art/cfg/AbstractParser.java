@@ -197,8 +197,9 @@ public abstract class AbstractParser {
     System.out.println("sppfPrintSentences() not implemented for parser class " + this.getClass().getSimpleName());
   }
 
-  public void interpretAttributeAction() {
+  public int[] constructOracle() {
     System.out.println("interpretAttributeAction() not implemented for parser class " + this.getClass().getSimpleName());
+    return null;
   }
 
   protected CFGNode getLHS(CFGNode gn) {

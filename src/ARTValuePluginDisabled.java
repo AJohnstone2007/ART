@@ -8,7 +8,7 @@ import uk.ac.rhul.cs.csle.art.term.AbstractPlugin;
 public class ARTValuePluginDisabled extends AbstractPlugin {
 
   @Override
-  public String name() {
+  public String description() {
     return "Adrian's example JavaFX plugin";
   }
 

@@ -118,14 +118,12 @@ public class ITerms {
     // 5. Connect to a plugin - either the default built in to art.jar or one in the use class path if one can be found
     plugin = new ARTDefaultPlugin();
     // Try and find a plugin for __user() calls
-    Class<?> pluginClass;
     try {
-      pluginClass = getClass().getClassLoader().loadClass("ARTValuePlugin");
-      plugin = (AbstractPlugin) pluginClass.getDeclaredConstructor().newInstance();
+      plugin = (AbstractPlugin) getClass().getClassLoader().loadClass("ARTValuePlugin").getDeclaredConstructor().newInstance();
     } catch (Exception e) {
       // Silently absorb exception - when the default is used
     }
-    System.out.println("Attached to " + plugin.getClass().getSimpleName() + ": " + plugin.name());
+    System.out.println("Attached to " + plugin.getClass().getSimpleName() + ": " + plugin.description());
   }
 
   /* Raw term rendering *************************************************************************************/

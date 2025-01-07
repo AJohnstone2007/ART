@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Deque;
 import java.util.HashMap;
@@ -1206,35 +1207,37 @@ public class GLLBaseLine extends AbstractParser {
     }
   }
 
+  ArrayList<Integer> oracle;
+
   @Override
-  public void interpretAttributeAction() {
-    if (sppfRootNode == null) return;
+  public int[] constructOracle() {
+    if (sppfRootNode == null) return null;
+    oracle = new ArrayList<>();
     visitedSPPFNodes.clear();
-    interpretAttributeActionRec(sppfRootNode);
+    constructOracleRec(sppfRootNode);
+    int[] ret = new int[oracle.size()];
+    for (int i = 0; i < oracle.size(); i++)
+      ret[i] = oracle.get(i);
+    return ret;
   }
 
-  private void interpretAttributeActionRec(SPPFN node) {
-    if (visitedSPPFNodes.get(node.number)) Util.fatal("Cycle detected during Attribute-Action intepretation");
+  private void constructOracleRec(SPPFN node) {
+    if (visitedSPPFNodes.get(node.number)) Util.fatal("Cycle detected during oracle construction");
     visitedSPPFNodes.set(node.number);
 
-    System.out.println("Interpreting node " + node);
+    if (node.packNS.isEmpty()) return; // terminal node
 
-    // Traverse subtrees
-    if (!node.packNS.isEmpty()) {
-      SPPFPN pn = null;
-      for (var p : node.packNS)
-        if (!p.suppressed) {
-          pn = p;
-          break;
+    for (var p : node.packNS)
+      if (!p.suppressed && !cbD.contains(p)) {
+        if (isSymbol(node)) {
+          System.out.println("*** Start of sequence at grammar node " + p.gn.num + p.gn.toStringAsProduction() + " with start node " + p.gn.alt.num);
+          oracle.add(p.gn.alt.num);
         }
+        if (p.leftChild != null) constructOracleRec(p.leftChild);
+        constructOracleRec(p.rightChild);
+        return;
+      }
 
-      if (pn == null) Util.fatal("All pcked nodes suppressed at " + node);
-
-      if (pn.leftChild != null) interpretAttributeActionRec(pn.leftChild);
-      interpretAttributeActionRec(pn.rightChild);
-    }
-
-    System.out.println("Calling action(" + node.number + ")");
-
+    Util.fatal("During oracle construction, all packed nodes suppressed at " + node); // Not a terminal, and all packed nodes exhausted
   }
 }

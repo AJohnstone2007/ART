@@ -1,9 +1,13 @@
 package uk.ac.rhul.cs.csle.art.interpret;
 
 import uk.ac.rhul.cs.csle.art.cfg.AbstractParser;
+import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
 
 public class AttributeActionInterpreter extends AbstractInterpreter {
-  public AbstractActions artActions = new ARTDefaultActions();
+  private AbstractActions artActions = new ARTDefaultActions();
+  private int[] oracle;
+  private int oracleIndex;
+  private AbstractParser parser;
 
   public AttributeActionInterpreter() {
     System.out.println("Interpreter set to Attribute-Action");
@@ -19,6 +23,29 @@ public class AttributeActionInterpreter extends AbstractInterpreter {
 
   @Override
   public void interpret(AbstractParser parser) {
-    // parser.interpretAttributeAction();
+    this.parser = parser;
+    oracle = parser.constructOracle();
+    oracleIndex = 0;
+    System.out.println("Parser supplies oracle: ");
+    for (var i : oracle)
+      System.out.println(i);
+
+    interpretRec();
+  }
+
+  private void interpretRec() {
+    CFGNode node = parser.cfgRules.numberToNodeMap.get(oracle[oracleIndex++]).seq;
+    while (true) {
+      System.out.println("Calling action " + node.num);
+      artActions.action(node.num, null);
+      switch (node.elm.kind) {
+      case N:
+        interpretRec();
+        break;
+      case END:
+        return;
+      }
+      node = node.seq;
+    }
   }
 }
