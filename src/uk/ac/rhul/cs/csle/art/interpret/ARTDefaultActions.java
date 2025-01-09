@@ -11,4 +11,9 @@ public class ARTDefaultActions extends AbstractActions {
     return "empty actions";
   }
 
+  @Override
+  public Object[] createAtributeBlocks(int ei) {
+    return null;
+  }
+
 }

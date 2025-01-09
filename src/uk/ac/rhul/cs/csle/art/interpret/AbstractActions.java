@@ -6,4 +6,6 @@ public abstract class AbstractActions {
 
   public abstract void action(int nodeNumber, Object[] aBlocks);
 
+  public abstract Object[] createAtributeBlocks(int ei);
+
 }

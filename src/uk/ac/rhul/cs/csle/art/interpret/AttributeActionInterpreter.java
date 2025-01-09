@@ -29,30 +29,20 @@ public class AttributeActionInterpreter extends AbstractInterpreter {
     // for (var i : parser.oracle)
     // System.out.println(i);
     //
-    CFGNode startNode = parser.cfgRules.numberToNodeMap.get(parser.oracle[0]);
 
-    System.out.println("oracle[0] is " + startNode.num + " " + startNode.toStringAsProduction());
-    interpretRec();
+    interpretRec(artActions.createAtributeBlocks(parser.cfgRules.startNonterminal.ei));
   }
 
-  /*
-   * Rules for creation of attribute blocks
-   *
-   * LHS block is aBlocks[0] and must be created by the caller
-   *
-   * RHS blocks are aBlocks[1], aBlocks[2],... and are created on entry, with elements being called off at each nonterminal
-   *
-   * Difficulty: nonterminals are not all in the same order, so we need to maintain separate counters for each instance label - meaningless: all productions are
-   * equivalent
-   */
-  private void interpretRec() {
+  private void interpretRec(Object[] attributeBlocks) {
     CFGNode node = parser.cfgRules.numberToNodeMap.get(parser.oracle[oracleIndex++]).seq;
     while (true) {
-      // System.out.println("Calling action " + node.num);
-      artActions.action(node.num, null);
+      System.out.println("Calling action " + node.num);
+      artActions.action(node.num, attributeBlocks);
       switch (node.elm.kind) {
       case N:
-        interpretRec();
+        CFGNode lhs = parser.cfgRules.elementToNodeMap.get(node.elm);
+        System.out.println("Creating attribute block for node " + node.num + " with element " + node.elm + " which has lhs node " + lhs.num);
+        interpretRec(artActions.createAtributeBlocks(lhs.elm.ei));
         break;
       case END:
         return;

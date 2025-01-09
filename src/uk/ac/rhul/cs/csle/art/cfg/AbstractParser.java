@@ -14,7 +14,7 @@ public abstract class AbstractParser {
   public String inputString = ""; // Original input string
   public String inputStringName = "";
   public int[] input; // Input as array of tokens
-  public int[] positions; // Mapping from start of token's lexeme to index intothe string
+  public int[] positions; // Mapping from start of token's lexeme to index into the string
   protected int i; // Current input index
   public int[] oracle;
 
@@ -202,7 +202,7 @@ public abstract class AbstractParser {
     System.out.println("interpretAttributeAction() not implemented for parser class " + this.getClass().getSimpleName());
   }
 
-  protected CFGNode getLHS(CFGNode gn) {
+  public CFGNode getLHS(CFGNode gn) {
     return cfgRules.elementToNodeMap.get(gn.elm);
   }
 

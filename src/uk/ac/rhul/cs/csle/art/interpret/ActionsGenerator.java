@@ -28,6 +28,7 @@ public class ActionsGenerator {
       Util.fatal("Unable to open output file " + filename);
     }
     text.println("import uk.ac.rhul.cs.csle.art.interpret.AbstractActions;");
+    text.println("import uk.ac.rhul.cs.csle.art.util.Util;");
     if (filePrelude != null) text.println(filePrelude);
     text.println("public class " + filename + " extends AbstractActions {");
     if (classPrelude != null) text.println(classPrelude);
@@ -45,13 +46,26 @@ public class ActionsGenerator {
       }
 
     text.println("  public void action(int nodeNumber, Object[] aBlocks) {\n    switch(nodeNumber) {");
-
     for (var e : cfgRules.elements.keySet())
       if (e.kind == CFGKind.N) {
         printAllActionsDespatchRec(text, cfgRules.elementToNodeMap.get(e), e);
       }
+    text.println("      default: break;\n    }\n  }");
 
-    text.println("      default: break;\n    }\n  }\n}");
+    text.println("  public Object[] createAtributeBlocks(int ei) {\n    switch (ei) {");
+    for (var e : cfgRules.elements.keySet()) {
+      if (e.kind == CFGKind.N) {
+        text.print("      case " + e.ei + ": return new Object[] { new A_" + e.str + "()");
+        for (var n : e.rhsNonterminals.keySet())
+          for (int index = 0; index < e.rhsNonterminals.get(n); index++)
+            text.print(", new A_" + n + "()");
+        text.println(" };");
+        // new A_S(), new A_S() };);
+      }
+    }
+    text.println(
+        "    }\n    Util.fatal(\"internal error - attempt to create attribute block for unknown nonterminal element \" + ei);\n    return null;\n  }\n}");
+
     text.close();
   }
 
