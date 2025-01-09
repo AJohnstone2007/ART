@@ -1207,18 +1207,17 @@ public class GLLBaseLine extends AbstractParser {
     }
   }
 
-  ArrayList<Integer> oracle;
+  private ArrayList<Integer> oracleList;
 
   @Override
-  public int[] constructOracle() {
-    if (sppfRootNode == null) return null;
-    oracle = new ArrayList<>();
+  public void constructOracle() {
+    if (sppfRootNode == null) return;
+    oracleList = new ArrayList<>();
     visitedSPPFNodes.clear();
     constructOracleRec(sppfRootNode);
-    int[] ret = new int[oracle.size()];
-    for (int i = 0; i < oracle.size(); i++)
-      ret[i] = oracle.get(i);
-    return ret;
+    oracle = new int[oracleList.size()];
+    for (int i = 0; i < oracleList.size(); i++)
+      oracle[i] = oracleList.get(i);
   }
 
   private void constructOracleRec(SPPFN node) {
@@ -1230,8 +1229,8 @@ public class GLLBaseLine extends AbstractParser {
     for (var p : node.packNS)
       if (!p.suppressed && !cbD.contains(p)) {
         if (isSymbol(node)) {
-          System.out.println("*** Start of sequence at grammar node " + p.gn.num + p.gn.toStringAsProduction() + " with start node " + p.gn.alt.num);
-          oracle.add(p.gn.alt.num);
+          // System.out.println("*** Start of sequence at grammar node " + p.gn.num + p.gn.toStringAsProduction() + " with start node " + p.gn.alt.num);
+          oracleList.add(p.gn.alt.num);
         }
         if (p.leftChild != null) constructOracleRec(p.leftChild);
         constructOracleRec(p.rightChild);

@@ -16,6 +16,7 @@ public abstract class AbstractParser {
   public int[] input; // Input as array of tokens
   public int[] positions; // Mapping from start of token's lexeme to index intothe string
   protected int i; // Current input index
+  public int[] oracle;
 
   public boolean inLanguage;
 
@@ -197,9 +198,8 @@ public abstract class AbstractParser {
     System.out.println("sppfPrintSentences() not implemented for parser class " + this.getClass().getSimpleName());
   }
 
-  public int[] constructOracle() {
+  public void constructOracle() {
     System.out.println("interpretAttributeAction() not implemented for parser class " + this.getClass().getSimpleName());
-    return null;
   }
 
   protected CFGNode getLHS(CFGNode gn) {

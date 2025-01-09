@@ -5,7 +5,6 @@ import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
 
 public class AttributeActionInterpreter extends AbstractInterpreter {
   private AbstractActions artActions = new ARTDefaultActions();
-  private int[] oracle;
   private int oracleIndex;
   private AbstractParser parser;
 
@@ -24,19 +23,32 @@ public class AttributeActionInterpreter extends AbstractInterpreter {
   @Override
   public void interpret(AbstractParser parser) {
     this.parser = parser;
-    oracle = parser.constructOracle();
+    parser.constructOracle();
     oracleIndex = 0;
-    System.out.println("Parser supplies oracle: ");
-    for (var i : oracle)
-      System.out.println(i);
+    // System.out.println("Parser supplies oracle: ");
+    // for (var i : parser.oracle)
+    // System.out.println(i);
+    //
+    CFGNode startNode = parser.cfgRules.numberToNodeMap.get(parser.oracle[0]);
 
+    System.out.println("oracle[0] is " + startNode.num + " " + startNode.toStringAsProduction());
     interpretRec();
   }
 
+  /*
+   * Rules for creation of attribute blocks
+   *
+   * LHS block is aBlocks[0] and must be created by the caller
+   *
+   * RHS blocks are aBlocks[1], aBlocks[2],... and are created on entry, with elements being called off at each nonterminal
+   *
+   * Difficulty: nonterminals are not all in the same order, so we need to maintain separate counters for each instance label - meaningless: all productions are
+   * equivalent
+   */
   private void interpretRec() {
-    CFGNode node = parser.cfgRules.numberToNodeMap.get(oracle[oracleIndex++]).seq;
+    CFGNode node = parser.cfgRules.numberToNodeMap.get(parser.oracle[oracleIndex++]).seq;
     while (true) {
-      System.out.println("Calling action " + node.num);
+      // System.out.println("Calling action " + node.num);
       artActions.action(node.num, null);
       switch (node.elm.kind) {
       case N:

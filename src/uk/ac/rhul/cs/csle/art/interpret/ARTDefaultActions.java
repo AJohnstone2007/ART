@@ -8,7 +8,7 @@ public class ARTDefaultActions extends AbstractActions {
 
   @Override
   public String name() {
-    return "empty action handler";
+    return "empty actions";
   }
 
 }
