@@ -12,7 +12,7 @@ public class ARTDefaultActions extends AbstractActions {
   }
 
   @Override
-  public Object[] createAtributeBlocks(int ei) {
+  public Object[] createAtributeBlocks(Object parent, int ei) {
     return null;
   }
 

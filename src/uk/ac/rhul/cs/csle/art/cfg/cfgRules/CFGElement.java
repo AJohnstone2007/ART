@@ -10,7 +10,7 @@ public class CFGElement implements Comparable<Object> {
   public final String str;
 
   public final Map<String, String> attributes = new HashMap<>();
-  public final Map<String, Integer> rhsNonterminals = new HashMap<>();
+  public final Map<String, Integer> rhsNonterminalsAcrossAllProductions = new HashMap<>();
 
   public CFGElement(CFGKind kind, String s) {
     super();

@@ -4,7 +4,7 @@ public class ARTDefaultPlugin extends AbstractPlugin {
 
   @Override
   public String description() {
-    return "report __user call arguments";
+    return "";
   }
 
   @Override

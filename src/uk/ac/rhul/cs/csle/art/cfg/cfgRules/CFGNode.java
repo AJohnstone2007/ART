@@ -14,16 +14,18 @@ public class CFGNode {
   public CFGNode seq; // sequence link
   public CFGNode alt; // alternate link
   public final GIFTKind giftKind;
+  public boolean delayed;
   public int slotTerm; // Holds the slot term as parent to slot decorations
+  public int instanceNumber = -1;
 
   private static int nextUniqueNumericLabel = 1;
 
-  public CFGNode(CFGRules grammar, CFGKind kind, String str, int slotTerm, GIFTKind giftKInd, CFGNode previous, CFGNode parent) {
+  public CFGNode(CFGRules grammar, CFGKind kind, String str, int slotTerm, GIFTKind giftKind, CFGNode previous, CFGNode parent) {
     super();
     if (str == null) str = "" + nextUniqueNumericLabel++; // EBNF and ALT nodes have null string - uniquify
     this.elm = grammar.findElement(kind, str);
     this.slotTerm = slotTerm;
-    this.giftKind = giftKInd;
+    this.giftKind = giftKind;
     if (previous != null) previous.seq = this;
     if (parent != null) parent.alt = this;
   }
@@ -50,8 +52,8 @@ public class CFGNode {
     return true;
   }
 
-  private String giftToString(GIFTKind kind) {
-    switch (kind) {
+  private String giftToString() {
+    switch (giftKind) {
     case NONE:
       return "";
     case OVER:
@@ -65,6 +67,10 @@ public class CFGNode {
     }
   }
 
+  private String delayedToString() {
+    return delayed ? "!<" : "";
+  }
+
   public String toStringDot() {
     String ret = num + " ";
     switch (elm.kind) {
@@ -72,7 +78,7 @@ public class CFGNode {
       ret += elm.kind;
       break;
     case T, C, B, N, EPS:
-      ret += elm.kind + "\n" + elm.str + giftToString(giftKind);
+      ret += elm.kind + "\n" + elm.str + giftToString();
       break;
     case END:
       ret += "END " + "\n(" + seq.num + "," + alt.num + ")";
@@ -91,15 +97,15 @@ public class CFGNode {
     case EOS:
       return "EOS node";
     case T:
-      return caseSensitiveTerminalStrop + elm.str + caseSensitiveTerminalStrop + giftToString(giftKind);
+      return caseSensitiveTerminalStrop + elm.str + caseSensitiveTerminalStrop + giftToString();
     case C:
-      return characterTerminalStrop + elm.str + giftToString(giftKind);
+      return characterTerminalStrop + elm.str + giftToString();
     case B:
-      return builtinTerminalStrop + elm.str + giftToString(giftKind);
+      return builtinTerminalStrop + elm.str + giftToString();
     case EPS:
-      return "#" + giftToString(giftKind);
+      return "#" + giftToString();
     case N:
-      return elm.str + giftToString(giftKind);
+      return elm.str + giftToString() + delayedToString();
     case ALT:
       return "|";
     case END:

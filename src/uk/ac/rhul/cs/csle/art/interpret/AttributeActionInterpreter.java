@@ -1,6 +1,7 @@
 package uk.ac.rhul.cs.csle.art.interpret;
 
 import uk.ac.rhul.cs.csle.art.cfg.AbstractParser;
+import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGKind;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
 
 public class AttributeActionInterpreter extends AbstractInterpreter {
@@ -25,29 +26,36 @@ public class AttributeActionInterpreter extends AbstractInterpreter {
     this.parser = parser;
     parser.constructOracle();
     oracleIndex = 0;
-    // System.out.println("Parser supplies oracle: ");
-    // for (var i : parser.oracle)
-    // System.out.println(i);
-    //
-
-    interpretRec(artActions.createAtributeBlocks(parser.cfgRules.startNonterminal.ei));
+    interpretRec(artActions.createAtributeBlocks(null, parser.cfgRules.startNonterminal.ei), 0);
   }
 
-  private void interpretRec(Object[] attributeBlocks) {
-    CFGNode node = parser.cfgRules.numberToNodeMap.get(parser.oracle[oracleIndex++]).seq;
-    while (true) {
-      System.out.println("Calling action " + node.num);
-      artActions.action(node.num, attributeBlocks);
+  void indent(int level) {
+    for (int i = 0; i < level; i++)
+      System.out.print("  ");
+  }
+
+  private void interpretRec(Object[] attributeBlocks, int level) {
+    CFGNode node = parser.cfgRules.numberToNodeMap.get(parser.oracle[oracleIndex++]);
+    indent(level);
+    System.out.println("Entered interpreter with oracle index at " + (oracleIndex - 1) + " and atribute blocks ");
+    System.out.println("Parent: " + attributeBlocks[0]);
+    for (int i = 1; i < attributeBlocks.length; i++)
+      System.out.println(attributeBlocks[i]);
+    int nonterminalCount = 1; // this might not be good enough - we need to look up the particular instance
+    while (node.elm.kind != CFGKind.END) {
       switch (node.elm.kind) {
       case N:
-        CFGNode lhs = parser.cfgRules.elementToNodeMap.get(node.elm);
-        System.out.println("Creating attribute block for node " + node.num + " with element " + node.elm + " which has lhs node " + lhs.num);
-        interpretRec(artActions.createAtributeBlocks(lhs.elm.ei));
+        indent(level);
+        System.out.println("About to interpret nonterminal " + node.elm);
+        interpretRec(attributeBlocks == null ? null
+            : artActions.createAtributeBlocks(attributeBlocks[nonterminalCount++], parser.cfgRules.elementToNodeMap.get(node.elm).elm.ei), level + 1);
         break;
-      case END:
-        return;
       }
+      artActions.action(node.num, attributeBlocks);
       node = node.seq;
     }
+    indent(level);
+    System.out.println("Leaving interpreter with oracle index at " + (oracleIndex - 1));
+
   }
 }

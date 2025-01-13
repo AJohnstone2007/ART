@@ -12,18 +12,19 @@ cfgRule  ::= cfgLHS cfgAttributeDeclarations '::='^ cfgAlts
 
 cfgAlts ::= cfgAlt '|'^ cfgAlts^ | cfgAlt  
 cfgAlt  ::= cfgSeq^^ cfgActions cfgEpsilonCarrier | cfgSeq^^ cfgActions cfgEpsilon | cfgSeq^^ cfgElems^ cfgActions (* final actions in sequence *)  
-  cfgEpsilonCarrier ::= cfgEpsilon cfgAnnotation^^  
+  cfgEpsilonCarrier ::= cfgEpsilon cfgAnnotation^^ 
 cfgEpsilon ::= '#'^
 
 cfgAltNoAction ::= cfgSeq^^ cfgSlot cfgName cfgSlot   // This matches a single element with no actions allowed for use in abbreviated Kleene operations
 cfgElems ::= cfgActions cfgExtended cfgElems^ | cfgActions cfgExtended  
 
 cfgExtended ::= cfgName cfgAnnotation^^ | cfgName^^ | cfgOptional^^ | cfgKleene^^ | cfgPositive^^ | cfgDoFirst^^  
-cfgAnnotation ::= cfgFoldUnder^^ | cfgFoldOver^^  | cfgFoldTear^^ | cfgFoldTearNamed^^
+cfgAnnotation ::= cfgFoldUnder^^ | cfgFoldOver^^  | cfgFoldTear^^ | cfgFoldTearNamed^^ | cfgDelay^^
   cfgFoldUnder ::= '^'^  
   cfgFoldOver ::= '^^'^  
   cfgFoldTear ::= '^^^'^
   cfgFoldTearNamed ::= '^^^'^ ':'^ ID 
+  cfgDelay ::= '!<'
 cfgDoFirst  ::= '('^ cfgAlts ')'^  
 cfgOptional ::= '('^ cfgAlts ')'^ '?'^ | cfgAltNoAction '?'^  
 cfgPositive ::= '('^ cfgAlts ')'^ '+'^ | cfgAltNoAction '+'^  

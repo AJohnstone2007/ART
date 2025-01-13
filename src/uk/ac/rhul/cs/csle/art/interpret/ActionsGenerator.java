@@ -52,15 +52,14 @@ public class ActionsGenerator {
       }
     text.println("      default: break;\n    }\n  }");
 
-    text.println("  public Object[] createAtributeBlocks(int ei) {\n    switch (ei) {");
+    text.println("  public Object[] createAtributeBlocks(Object parent, int ei) {\n    switch (ei) {");
     for (var e : cfgRules.elements.keySet()) {
       if (e.kind == CFGKind.N) {
-        text.print("      case " + e.ei + ": return new Object[] { new A_" + e.str + "()");
-        for (var n : e.rhsNonterminals.keySet())
-          for (int index = 0; index < e.rhsNonterminals.get(n); index++)
+        text.print("      case " + e.ei + ": return new Object[] { parent");
+        for (var n : e.rhsNonterminalsAcrossAllProductions.keySet())
+          for (int index = 0; index < e.rhsNonterminalsAcrossAllProductions.get(n); index++)
             text.print(", new A_" + n + "()");
         text.println(" };");
-        // new A_S(), new A_S() };);
       }
     }
     text.println(
@@ -76,8 +75,8 @@ public class ActionsGenerator {
 
       text.print("A_" + lhs + " " + lhs);
 
-      for (var n : lhs.rhsNonterminals.keySet())
-        for (int index = 0; index < lhs.rhsNonterminals.get(n); index++) {
+      for (var n : lhs.rhsNonterminalsAcrossAllProductions.keySet())
+        for (int index = 0; index < lhs.rhsNonterminalsAcrossAllProductions.get(n); index++) {
           text.print(", A_" + n + " " + n + (index + 1));
         }
       text.print("){");
@@ -113,8 +112,8 @@ public class ActionsGenerator {
       text.print("(A_" + lhs + ") aBlocks[0]");
 
       int blockCount = 1;
-      for (var n : lhs.rhsNonterminals.keySet())
-        for (int index = 0; index < lhs.rhsNonterminals.get(n); index++) {
+      for (var n : lhs.rhsNonterminalsAcrossAllProductions.keySet())
+        for (int index = 0; index < lhs.rhsNonterminalsAcrossAllProductions.get(n); index++) {
           text.print(", (A_" + n + ") aBlocks[" + (blockCount++) + "]");
         }
       text.println("); break;");
