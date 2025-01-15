@@ -28,60 +28,61 @@ public class ActionsGenerator {
       Util.fatal("Unable to open output file " + filename);
     }
     text.println("import uk.ac.rhul.cs.csle.art.interpret.AbstractActions;");
+    text.println("import uk.ac.rhul.cs.csle.art.interpret.AbstractActionsNonterminal;");
+
     text.println("import uk.ac.rhul.cs.csle.art.util.Util;");
     if (filePrelude != null) text.println(filePrelude);
     text.println("public class " + filename + " extends AbstractActions {");
     if (classPrelude != null) text.println(classPrelude);
     text.println("  public String name() { return \"" + timeStamp + "\"; }");
+
     for (var e : cfgRules.elements.keySet())
       if (e.kind == CFGKind.N) {
-        text.print("  public static class A_" + e.str + " {");
+        text.print("\n public class ART_C_" + e.str + " extends AbstractActionsNonterminal {\n ");
         for (var a : e.attributes.keySet())
           text.print(" " + e.attributes.get(a) + " " + a + ";");
-        text.println(" }");
 
+        text.print("\n    ART_C_" + e.str + " " + e.str + ";");
+        for (var r : e.rhsNonterminalsAcrossAllProductions.keySet())
+          for (int n = 0; n < e.rhsNonterminalsAcrossAllProductions.get(r); n++)
+            text.print(" ART_C_" + r + " " + r + (n + 1) + ";");
+
+        text.print("public void activate(ART_C_" + e.str + " parent) {");
+        text.print("  " + e.str + " = parent;");
+        for (var r : e.rhsNonterminalsAcrossAllProductions.keySet())
+          for (int n = 0; n < e.rhsNonterminalsAcrossAllProductions.get(r); n++)
+            text.print(r + (n + 1) + " = new ART_C_" + r + "();");
+        text.print("}");
+        text.println("\n    public void action(int nodeNumber) { switch(nodeNumber){");
         printAllActionsRec(text, e, cfgRules.elementToNodeMap.get(e));
-
         printTermActionsRec(text, cfgRules.elementToNodeMap.get(e));
+        text.println("    }}");
+
+        text.println("\n    public AbstractActionsNonterminal call(int nodeNumber) { switch(nodeNumber){");
+        printAllCallsRec(text, cfgRules.elementToNodeMap.get(e).alt);
+        text.println("      default: Util.fatal(\"Unknown call node \" + nodeNumber); return null;\n    }}\n  }");
+
       }
 
-    text.println("  public void action(int nodeNumber, Object[] aBlocks) {\n    switch(nodeNumber) {");
-    for (var e : cfgRules.elements.keySet())
-      if (e.kind == CFGKind.N) {
-        printAllActionsDespatchRec(text, cfgRules.elementToNodeMap.get(e), e);
-      }
-    text.println("      default: break;\n    }\n  }");
-
-    text.println("  public Object[] createAtributeBlocks(Object parent, int ei) {\n    switch (ei) {");
-    for (var e : cfgRules.elements.keySet()) {
-      if (e.kind == CFGKind.N) {
-        text.print("      case " + e.ei + ": return new Object[] { parent");
-        for (var n : e.rhsNonterminalsAcrossAllProductions.keySet())
-          for (int index = 0; index < e.rhsNonterminalsAcrossAllProductions.get(n); index++)
-            text.print(", new A_" + n + "()");
-        text.println(" };");
-      }
-    }
-    text.println(
-        "    }\n    Util.fatal(\"internal error - attempt to create attribute block for unknown nonterminal element \" + ei);\n    return null;\n  }\n}");
-
+    text.println("public AbstractActionsNonterminal init() { var ret = new ART_C_" + cfgRules.startNonterminal.str + "(); ret.activate(null); return ret; }");
+    text.println("}");
     text.close();
+  }
+
+  private void printAllCallsRec(PrintWriter text, CFGNode cfgNode) {
+    if (cfgNode == null || cfgNode.elm.kind == CFGKind.END) return;
+    if (cfgNode.elm.kind == CFGKind.N) text.println("      case " + cfgNode.num + ": " + cfgNode.elm.str + cfgNode.instanceNumber + ".activate("
+        + cfgNode.elm.str + cfgNode.instanceNumber + "); return " + cfgNode.elm.str + cfgNode.instanceNumber + ";");
+    printAllCallsRec(text, cfgNode.seq);
+    printAllCallsRec(text, cfgNode.alt);
   }
 
   private void printAllActionsRec(PrintWriter text, CFGElement lhs, CFGNode cfgNode) {
     if (cfgNode == null || cfgNode.elm.kind == CFGKind.END) return;
     if (cfgNode.slotTerm != 0 && iTerms.termArity(cfgNode.slotTerm) != 0) {
-      text.print("  public static void action" + cfgNode.num + "(");
-
-      text.print("A_" + lhs + " " + lhs);
-
-      for (var n : lhs.rhsNonterminalsAcrossAllProductions.keySet())
-        for (int index = 0; index < lhs.rhsNonterminalsAcrossAllProductions.get(n); index++) {
-          text.print(", A_" + n + " " + n + (index + 1));
-        }
-      text.print("){");
+      text.print("      case " + cfgNode.num + ":");
       printSlotTermRec(text, cfgNode.slotTerm);
-      text.println("}");
+      text.println("break;");
     }
     printAllActionsRec(text, lhs, cfgNode.seq);
     printAllActionsRec(text, lhs, cfgNode.alt);
@@ -103,22 +104,5 @@ public class ActionsGenerator {
     // printSlotTerm(text, cfgNode.slotTerm);
     printTermActionsRec(text, cfgNode.seq);
     printTermActionsRec(text, cfgNode.alt);
-  }
-
-  private void printAllActionsDespatchRec(PrintWriter text, CFGNode cfgNode, CFGElement lhs) {
-    if (cfgNode == null || cfgNode.elm.kind == CFGKind.END) return;
-    if (cfgNode.slotTerm != 0 && iTerms.termArity(cfgNode.slotTerm) != 0) {
-      text.print("      case " + cfgNode.num + ": action" + cfgNode.num + "(");
-      text.print("(A_" + lhs + ") aBlocks[0]");
-
-      int blockCount = 1;
-      for (var n : lhs.rhsNonterminalsAcrossAllProductions.keySet())
-        for (int index = 0; index < lhs.rhsNonterminalsAcrossAllProductions.get(n); index++) {
-          text.print(", (A_" + n + ") aBlocks[" + (blockCount++) + "]");
-        }
-      text.println("); break;");
-    }
-    printAllActionsDespatchRec(text, cfgNode.seq, lhs);
-    printAllActionsDespatchRec(text, cfgNode.alt, lhs);
   }
 }

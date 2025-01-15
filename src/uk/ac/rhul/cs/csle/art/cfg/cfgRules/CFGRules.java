@@ -201,21 +201,22 @@ public class CFGRules {
     }
 
     // Collect attributes
-    System.out.println("*** Collecting attributes");
+    // System.out.println("*** Collecting attributes");
     for (CFGElement e : elements.keySet()) {
-      System.out.println("*** Collecting attributes for element " + e.toStringDetailed());
+      // System.out.println("*** Collecting attributes for element " + e.toStringDetailed());
       Map<String, Integer> rhsNonterminalsInProduction = new HashMap<>();
       if (e.kind == CFGKind.N) { // Only look at nonterminals
         String lhs = e.str;
-        for (CFGNode gn = elementToNodeMap.get(e).alt; gn != null; gn = gn.alt) { // step over the productions
+        for (CFGNode gn = elementToNodeMap.get(e).alt; gn != null; gn = gn.alt) { // iterate over the productions
           rhsNonterminalsInProduction.clear();
           for (CFGNode gs = gn.seq; gs.elm.kind != CFGKind.END; gs = gs.seq) {
-            System.out.println("Collecting RHS nonterminals at " + gs + " " + iTerms.toRawString(gs.slotTerm));
+            // System.out.println("Collecting RHS nonterminals at " + gs + " " + iTerms.toRawString(gs.slotTerm));
             if (gs.elm.kind == CFGKind.N) {
               if (rhsNonterminalsInProduction.get(gs.elm.str) == null)
                 rhsNonterminalsInProduction.put(gs.elm.str, 1);
               else
                 rhsNonterminalsInProduction.put(gs.elm.str, rhsNonterminalsInProduction.get(gs.elm.str) + 1);
+              gs.instanceNumber = rhsNonterminalsInProduction.get(gs.elm.str);
             }
           }
           // Now extend rhsNonterminalsAcrossAllProductions by the instances we have found for this production
@@ -249,15 +250,6 @@ public class CFGRules {
             // System.out.println("Collecting attributes at " + gs + " " + iTerms.toRawString(gs.slotTerm));
           }
         }
-
-        // Now construct instance numbers to each RHS nonterminal node. These will turn into offsets in the attributeBlocks created by the interpeter
-        Map<InstancePair, Integer> instanceNumbers = new HashMap<>();
-        for (CFGNode ga = elementToNodeMap.get(e).alt; ga != null; ga = ga.alt)
-          for (CFGNode gs = ga.seq; gs.elm.kind != CFGKind.END; gs = gs.seq)
-            if (gs.elm.kind == CFGKind.N) {
-
-            }
-
       }
     }
   }

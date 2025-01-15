@@ -246,6 +246,7 @@ public class ScriptTermInterpreter {
         new RDSOBGenerator(currentCFGRules, "RDSOB");
         break;
       case "actions":
+        currentCFGRules.normalise();
         if (iTerms.termArity(iTerms.subterm(term, 0)) == 1)
           new ActionsGenerator(currentCFGRules, null, null);
         else if (iTerms.termArity(iTerms.subterm(term, 0)) == 3)
@@ -527,7 +528,11 @@ public class ScriptTermInterpreter {
       currentParser.loadParseChooseTime();
       currentDerivationTerm = currentParser.derivationAsTerm();
       currentParser.loadTermGenerateTime();
-      currentInterpreter.interpret(currentParser);
+      try {
+        currentInterpreter.interpret(currentParser);
+      } catch (Exception | Error e) {
+        Util.error("interpreter exited abnormally with exception:\n" + e);
+      }
     } else {
       currentDerivationTerm = 0;
       System.out.println("Try failed: syntax error");

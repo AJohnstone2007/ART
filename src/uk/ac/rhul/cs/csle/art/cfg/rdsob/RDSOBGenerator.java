@@ -24,7 +24,7 @@ public class RDSOBGenerator {
     grammar.show("grammar.dot");
     text.print(
         "import java.io.IOException;\nimport java.nio.file.Files;\nimport java.nio.file.Paths;\nimport uk.ac.rhul.cs.csle.art.v5.DNode;\nimport uk.ac.rhul.cs.csle.art.v5.grammar.Kind;\n"
-            + "import uk.ac.rhul.cs.csle.art.v5.lexer.LexerLM;\n\n" + "class OSBRDG extends uk.ac.rhul.cs.csle.art.v5.osbrd.OSBRDParser {\n"
+            + "import uk.ac.rhul.cs.csle.art.v5.lexer.LexerLM;\n\n" + "class RDSOB extends uk.ac.rhul.cs.csle.art.v5.rdsob.RDSOBParser {\n"
             + "String[] lexemes = {");
 
     boolean firstLexeme = true;
@@ -84,6 +84,6 @@ public class RDSOBGenerator {
         + " System.out.println((parser.accepted ? \"Accept\" : \"Reject\")\n    + \" with derivation: \" + parser.dn);\n }\n}");
 
     text.close();
-    System.out.println("OSBRD generated parser for grammar '" + grammar.name + "' written to " + className + ".java");
+    System.out.println("SOBRD generated parser for grammar '" + grammar.name + "' written to " + className + ".java");
   }
 }

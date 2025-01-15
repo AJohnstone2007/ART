@@ -23,39 +23,36 @@ public class AttributeActionInterpreter extends AbstractInterpreter {
 
   @Override
   public void interpret(AbstractParser parser) {
+    System.out.println("Starting interpretation");
     this.parser = parser;
     parser.constructOracle();
     oracleIndex = 0;
-    interpretRec(artActions.createAtributeBlocks(null, parser.cfgRules.startNonterminal.ei), 0);
+    interpretRec(0, artActions.init());
   }
 
   void indent(int level) {
     for (int i = 0; i < level; i++)
-      System.out.print("  ");
+      System.out.print(" ");
   }
 
-  private void interpretRec(Object[] attributeBlocks, int level) {
+  private void interpretRec(int level, AbstractActionsNonterminal attributes) {
     CFGNode node = parser.cfgRules.numberToNodeMap.get(parser.oracle[oracleIndex++]);
-    indent(level);
-    System.out.println("Entered interpreter with oracle index at " + (oracleIndex - 1) + " and atribute blocks ");
-    System.out.println("Parent: " + attributeBlocks[0]);
-    for (int i = 1; i < attributeBlocks.length; i++)
-      System.out.println(attributeBlocks[i]);
-    int nonterminalCount = 1; // this might not be good enough - we need to look up the particular instance
+    // indent(level);
+    // System.out.println("Entered interpreter with oracle index at " + (oracleIndex - 1));
     while (node.elm.kind != CFGKind.END) {
       switch (node.elm.kind) {
       case N:
-        indent(level);
-        System.out.println("About to interpret nonterminal " + node.elm);
-        interpretRec(attributeBlocks == null ? null
-            : artActions.createAtributeBlocks(attributeBlocks[nonterminalCount++], parser.cfgRules.elementToNodeMap.get(node.elm).elm.ei), level + 1);
+        // indent(level);
+        // System.out.println("About to interpret nonterminal " + node.elm);
+
+        interpretRec(level + 1, attributes.call(node.num));
         break;
       }
-      artActions.action(node.num, attributeBlocks);
+      attributes.action(node.num);
       node = node.seq;
     }
-    indent(level);
-    System.out.println("Leaving interpreter with oracle index at " + (oracleIndex - 1));
+    // indent(level);
+    // System.out.println("Leaving interpreter with oracle index at " + (oracleIndex - 1));
 
   }
 }
