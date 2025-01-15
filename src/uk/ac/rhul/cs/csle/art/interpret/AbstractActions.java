@@ -6,6 +6,6 @@ public abstract class AbstractActions {
   public abstract String name();
 
   protected static String lexeme() {
-    return "666";
+    return "10";
   }
 }
