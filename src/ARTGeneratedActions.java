@@ -2,10 +2,8 @@ import uk.ac.rhul.cs.csle.art.interpret.AbstractInterpreter;
 import uk.ac.rhul.cs.csle.art.interpret.AbstractActions;
 import uk.ac.rhul.cs.csle.art.interpret.AbstractActionsNonterminal;
 import uk.ac.rhul.cs.csle.art.util.Util;
-import java.util.HashMap;
 public class ARTGeneratedActions extends AbstractActions {
-  HashMap<String, Integer> symbols = new HashMap<>(); 
-  public String name() { return "2025-01-15 21:28:56"; }
+  public String name() { return "2025-01-16 18:07:48"; }
 
  public class ART_C_INTEGER extends AbstractActionsNonterminal {
   int v;
@@ -19,11 +17,11 @@ public class ARTGeneratedActions extends AbstractActions {
     }}
   }
 
- public class ART_C_STRING_DQ extends AbstractActionsNonterminal {
+ public class ART_C_STRING_SQ extends AbstractActionsNonterminal {
   String v;
-    ART_C_STRING_DQ STRING_DQ;public void activate(ART_C_STRING_DQ parent) {  STRING_DQ = parent;}
+    ART_C_STRING_SQ STRING_SQ;public void activate(ART_C_STRING_SQ parent) {  STRING_SQ = parent;}
     public void action(int nodeNumber) { switch(nodeNumber){
-      case 87: STRING_DQ.v = lexeme(); break;
+      case 87: STRING_SQ.v = lexemeCore().translateEscapes(); break;
     }}
 
     public AbstractActionsNonterminal call(int nodeNumber) { switch(nodeNumber){
@@ -153,17 +151,17 @@ public class ARTGeneratedActions extends AbstractActions {
 
  public class ART_C_printElements extends AbstractActionsNonterminal {
  
-    ART_C_printElements printElements; ART_C_printElements printElements1; ART_C_STRING_DQ STRING_DQ1; ART_C_e0 e01;public void activate(ART_C_printElements parent) {  printElements = parent;printElements1 = new ART_C_printElements();STRING_DQ1 = new ART_C_STRING_DQ();e01 = new ART_C_e0();}
+    ART_C_printElements printElements; ART_C_printElements printElements1; ART_C_e0 e01; ART_C_STRING_SQ STRING_SQ1;public void activate(ART_C_printElements parent) {  printElements = parent;printElements1 = new ART_C_printElements();e01 = new ART_C_e0();STRING_SQ1 = new ART_C_STRING_SQ();}
     public void action(int nodeNumber) { switch(nodeNumber){
-      case 188: System.out.print(STRING_DQ1.v); break;
-      case 191: System.out.print(STRING_DQ1.v); break;
+      case 188: System.out.print(STRING_SQ1.v); break;
+      case 191: System.out.print(STRING_SQ1.v); break;
       case 196: System.out.print(e01.v); break;
       case 199: System.out.print(e01.v); break;
     }}
 
     public AbstractActionsNonterminal call(int nodeNumber) { switch(nodeNumber){
-      case 188: STRING_DQ1.activate(STRING_DQ1); return STRING_DQ1;
-      case 191: STRING_DQ1.activate(STRING_DQ1); return STRING_DQ1;
+      case 188: STRING_SQ1.activate(STRING_SQ1); return STRING_SQ1;
+      case 191: STRING_SQ1.activate(STRING_SQ1); return STRING_SQ1;
       case 193: printElements1.activate(printElements1); return printElements1;
       case 196: e01.activate(e01); return e01;
       case 199: e01.activate(e01); return e01;

@@ -529,7 +529,7 @@ public abstract class AbstractParser {
   }
 
   protected void match_CHARACTER(String string) {
-    // System.out.print("At index " + inputIndex + " testing for character " + string + " against " + artPeekCh() + "...");
+    // System.out.print("At index " + inputIndex + " testing for character " + string + " against " + peekCh() + "...");
     if (string.charAt(0) != peekCh()) {
       inputIndex = leftIndex;
       // System.out.println(" reject");
@@ -541,7 +541,7 @@ public abstract class AbstractParser {
   }
 
   protected void match_SINGLETON_CASE_SENSITIVE(String string) {
-    // System.out.print("At index " + inputIndex + " testing for singleton case sensitive " + string + " against " + artPeekCh() + "...");
+    // System.out.print("At index " + inputIndex + " testing for singleton case sensitive " + string + " against " + peekCh() + "...");
     for (int i = 0; i < string.length(); i++)
       if (string.charAt(i) != peekCh()) {
         inputIndex = leftIndex;
@@ -554,7 +554,7 @@ public abstract class AbstractParser {
   }
 
   protected void match_SINGLETON_CASE_INSENSITIVE(String string) {
-    // System.out.print("At index " + inputIndex + " testing for singleton case insensitive " + string + " against " + artPeekCh() + "...");
+    // System.out.print("At index " + inputIndex + " testing for singleton case insensitive " + string + " against " + peekCh() + "...");
     for (int i = 0; i < string.length(); i++)
       if (string.charAt(i) != peekChToLower()) {
         inputIndex = leftIndex;
@@ -826,7 +826,7 @@ public abstract class AbstractParser {
     while (isDigit(peekCh()))
       getCh();
 
-    // System.out.println("Testing for real at " + artCharacterStringInputIndex + ": current characters are " + artPeekCh() + " and " + artPeekOneCh());
+    // System.out.println("Testing for real at " + artCharacterStringInputIndex + ": current characters are " + peekCh() + " and " + peekOneCh());
     if (!(peekCh() == '.' && isDigit(peekOneCh()))) {
       inputIndex = leftIndex;
       return;

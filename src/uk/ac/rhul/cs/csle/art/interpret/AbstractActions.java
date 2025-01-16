@@ -10,4 +10,8 @@ public abstract class AbstractActions {
   protected String lexeme() {
     return interpreter.lexeme();
   }
+
+  protected String lexemeCore() {
+    return interpreter.lexemeCore();
+  }
 }

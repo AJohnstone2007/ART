@@ -13,4 +13,8 @@ public abstract class AbstractInterpreter {
     return "";
   }
 
+  protected String lexemeCore() {
+    String lexeme = lexeme();
+    return lexeme.substring(1, lexeme.length() - 1);
+  }
 }

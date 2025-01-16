@@ -500,6 +500,7 @@ public class ScriptTermInterpreter {
 
   private void tryParse(String inputStringName, String inputString) {
     // System.out.println("tryParse on " + inputString);
+
     currentParser.resetStatistics();
     currentParser.loadStartMemory();
     currentCFGRules.normalise();
