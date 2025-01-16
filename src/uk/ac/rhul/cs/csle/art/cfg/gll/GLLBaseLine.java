@@ -72,7 +72,7 @@ public class GLLBaseLine extends AbstractParser {
       while (true) {
         switch (gn.elm.kind) {
         case B, T, TI, C:
-          if (input[i] == gn.elm.ei) {
+          if (tokens[i] == gn.elm.ei) {
             // System.out.println("Matched " + input[i]);
             du(1);
             i++;
@@ -109,7 +109,7 @@ public class GLLBaseLine extends AbstractParser {
           break;
         }
       }
-    if (!inLanguage) System.out.print(Util.echo("GLLBL " + "syntax error", positions[sppfWidestIndex()], inputString));
+    if (!inLanguage) System.out.print(Util.echo("GLLBL " + "syntax error", leftIndices[sppfWidestIndex()], inputString));
     loadCounts();
     numberSPPFNodes();
   }
@@ -175,8 +175,8 @@ public class GLLBaseLine extends AbstractParser {
 
   void ret() {
     if (sn.equals(gssRoot)) { // Stack base
-      if (cfgRules.acceptingNodeNumbers.contains(gn.num) && (i == input.length - 1)) {
-        sppfRootNode = sppf.get(new SPPFN(cfgRules.elementToNodeMap.get(cfgRules.startNonterminal), 0, input.length - 1));
+      if (cfgRules.acceptingNodeNumbers.contains(gn.num) && (i == tokens.length - 1)) {
+        sppfRootNode = sppf.get(new SPPFN(cfgRules.elementToNodeMap.get(cfgRules.startNonterminal), 0, tokens.length - 1));
         inLanguage = true;
       }
       return; // End of parse
@@ -262,7 +262,7 @@ public class GLLBaseLine extends AbstractParser {
     }
 
     if (constructor == null) // If there were no OVERs, then set the constructor to be our symbol
-      constructor = (gn.elm.kind == CFGKind.B) ? lexemeOfBuiltin(LexemeKind.valueOf(gn.elm.str), positions[sppfn.li]) : gn.elm.str;
+      constructor = (gn.elm.kind == CFGKind.B) ? lexemeOfBuiltin(LexemeKind.valueOf(gn.elm.str), leftIndices[sppfn.li]) : gn.elm.str;
 
     if (children != childrenFromParent) {
       childrenFromParent.add(cfgRules.iTerms.findTerm(constructor, children));
@@ -341,7 +341,7 @@ public class GLLBaseLine extends AbstractParser {
   }
 
   private void loadCounts() {
-    loadTWECounts(input.length, input.length - 1, 1);
+    loadTWECounts(tokens.length, tokens.length - 1, 1);
 
     int gssEdgeCount = 0, popCount = 0;
     for (GSSN g : gss.keySet()) {

@@ -27,6 +27,7 @@ public class ActionsGenerator {
     } catch (FileNotFoundException e) {
       Util.fatal("Unable to open output file " + filename);
     }
+    text.println("import uk.ac.rhul.cs.csle.art.interpret.AbstractInterpreter;");
     text.println("import uk.ac.rhul.cs.csle.art.interpret.AbstractActions;");
     text.println("import uk.ac.rhul.cs.csle.art.interpret.AbstractActionsNonterminal;");
 
@@ -64,7 +65,8 @@ public class ActionsGenerator {
 
       }
 
-    text.println("public AbstractActionsNonterminal init() { var ret = new ART_C_" + cfgRules.startNonterminal.str + "(); ret.activate(null); return ret; }");
+    text.println("public AbstractActionsNonterminal init(AbstractInterpreter interpreter) { this.interpreter = interpreter; var ret = new ART_C_"
+        + cfgRules.startNonterminal.str + "(); ret.activate(null); return ret; }");
     text.println("}");
     text.close();
   }

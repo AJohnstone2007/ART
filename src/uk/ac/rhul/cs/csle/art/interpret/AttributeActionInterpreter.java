@@ -6,7 +6,7 @@ import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
 
 public class AttributeActionInterpreter extends AbstractInterpreter {
   private AbstractActions artActions = new ARTDefaultActions();
-  private int oracleIndex;
+  private int oracleIndex, tokenIndex;
   private AbstractParser parser;
 
   public AttributeActionInterpreter() {
@@ -26,8 +26,8 @@ public class AttributeActionInterpreter extends AbstractInterpreter {
     System.out.println("Starting interpretation");
     this.parser = parser;
     parser.constructOracle();
-    oracleIndex = 0;
-    interpretRec(0, artActions.init());
+    tokenIndex = oracleIndex = 0;
+    interpretRec(0, artActions.init(this));
   }
 
   void indent(int level) {
@@ -44,9 +44,10 @@ public class AttributeActionInterpreter extends AbstractInterpreter {
       case N:
         // indent(level);
         // System.out.println("About to interpret nonterminal " + node.elm);
-
         interpretRec(level + 1, attributes.call(node.num));
         break;
+      case T, TI, C, B:
+        tokenIndex++;
       }
       attributes.action(node.num);
       node = node.seq;
@@ -54,5 +55,10 @@ public class AttributeActionInterpreter extends AbstractInterpreter {
     // indent(level);
     // System.out.println("Leaving interpreter with oracle index at " + (oracleIndex - 1));
 
+  }
+
+  @Override
+  public String lexeme() {
+    return parser.lexeme(tokenIndex - 1);
   }
 }

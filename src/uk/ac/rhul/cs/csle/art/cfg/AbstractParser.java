@@ -13,12 +13,16 @@ public abstract class AbstractParser {
   public CFGRules cfgRules;
   public String inputString = ""; // Original input string
   public String inputStringName = "";
-  public int[] input; // Input as array of tokens
-  public int[] positions; // Mapping from start of token's lexeme to index into the string
+  public int[] tokens; // Input as array of tokens
   protected int i; // Current input index
   public int[] oracle;
-
+  public int[] leftIndices;
+  public int[] rightIndices;
   public boolean inLanguage;
+
+  public String lexeme(int l) {
+    return inputString.substring(leftIndices[l], rightIndices[l]);
+  }
 
   protected String lexemeOfBuiltin(LexemeKind kind, int inputIndex) {
     switch (kind) {
@@ -150,7 +154,7 @@ public abstract class AbstractParser {
   }
 
   protected boolean match(CFGNode gn) {
-    return input[i] == gn.elm.ei;
+    return tokens[i] == gn.elm.ei;
   }
 
   public void parse() {

@@ -49,7 +49,7 @@ public class RDSOBFunction extends AbstractParser {
   public void parse() {
     i = 0;
     dnRoot = dn = new DerivationSingletonNode(cfgRules.endOfStringNode, null);
-    inLanguage = rdsobFunction(cfgRules.elementToNodeMap.get(cfgRules.startNonterminal)) && input[i] == 0;
+    inLanguage = rdsobFunction(cfgRules.elementToNodeMap.get(cfgRules.startNonterminal)) && tokens[i] == 0;
     if (!inLanguage) Util.echo("Syntax error at location " + i, Util.lineNumber(i, inputString), inputString);
   }
 

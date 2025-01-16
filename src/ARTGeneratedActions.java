@@ -1,10 +1,11 @@
+import uk.ac.rhul.cs.csle.art.interpret.AbstractInterpreter;
 import uk.ac.rhul.cs.csle.art.interpret.AbstractActions;
 import uk.ac.rhul.cs.csle.art.interpret.AbstractActionsNonterminal;
 import uk.ac.rhul.cs.csle.art.util.Util;
 import java.util.HashMap;
 public class ARTGeneratedActions extends AbstractActions {
   HashMap<String, Integer> symbols = new HashMap<>(); 
-  public String name() { return "2025-01-15 20:35:31"; }
+  public String name() { return "2025-01-15 21:28:56"; }
 
  public class ART_C_INTEGER extends AbstractActionsNonterminal {
   int v;
@@ -182,5 +183,5 @@ public class ARTGeneratedActions extends AbstractActions {
       default: Util.fatal("Unknown call node " + nodeNumber); return null;
     }}
   }
-public AbstractActionsNonterminal init() { var ret = new ART_C_statement(); ret.activate(null); return ret; }
+public AbstractActionsNonterminal init(AbstractInterpreter interpreter) { this.interpreter = interpreter; var ret = new ART_C_statement(); ret.activate(null); return ret; }
 }

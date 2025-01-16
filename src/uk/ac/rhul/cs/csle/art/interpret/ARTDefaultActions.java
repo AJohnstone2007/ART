@@ -7,7 +7,7 @@ public class ARTDefaultActions extends AbstractActions {
   }
 
   @Override
-  public AbstractActionsNonterminal init() {
+  public AbstractActionsNonterminal init(AbstractInterpreter interpreter) {
     return null;
   }
 }

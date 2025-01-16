@@ -85,7 +85,7 @@ public class RDSOBExplicitStack extends AbstractParser {
     i = 0;
     dnRoot = dn = new DerivationSingletonNode(cfgRules.endOfStringNode, null);
     sn = new SNode(cfgRules.endOfStringNode, 0, null, dn);
-    inLanguage = rdsobExplicitStack() && input[i] == 0;
+    inLanguage = rdsobExplicitStack() && tokens[i] == 0;
   }
 
   protected DerivationSingletonNode dnRoot, dn;

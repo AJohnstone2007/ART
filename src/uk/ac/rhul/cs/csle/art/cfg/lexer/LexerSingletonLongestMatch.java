@@ -6,9 +6,11 @@ import uk.ac.rhul.cs.csle.art.cfg.AbstractParser;
 
 public class LexerSingletonLongestMatch extends AbstractParser {
   private ArrayList<Integer> tokenList;
-  private ArrayList<Integer> positionList;
+  private ArrayList<Integer> leftIndexList;
+  private ArrayList<Integer> rightIndexList;
   public int[] tokens;
-  public int[] positions;
+  public int[] leftIndices;
+  public int[] rightIndices;
 
   @Override
   public void lex(String inputString, LexemeKind[] kinds, String[] strings, LexemeKind[] whitespaces) {
@@ -22,8 +24,9 @@ public class LexerSingletonLongestMatch extends AbstractParser {
     inputLength = inputString.length();
 
     tokenList = new ArrayList<>();
-    positionList = new ArrayList<>();
-    tokens = positions = null;
+    leftIndexList = new ArrayList<>();
+    rightIndexList = new ArrayList<>();
+    tokens = leftIndices = null;
 
     longestMatchRightIndex = 0;
     longestMatchToken = 0;
@@ -55,16 +58,20 @@ public class LexerSingletonLongestMatch extends AbstractParser {
       }
 
       tokenList.add(longestMatchToken);
-      positionList.add(leftIndex);
+      leftIndexList.add(leftIndex);
+      rightIndexList.add(longestMatchRightIndex);
       inputIndex = longestMatchRightIndex;
     }
     tokenList.add(0); // Terminating EOS
-    positionList.add(inputString.length());
+    leftIndexList.add(inputString.length());
+    rightIndexList.add(inputString.length() + 1);
     tokens = new int[tokenList.size()];
-    positions = new int[tokenList.size()];
+    leftIndices = new int[tokenList.size()];
+    rightIndices = new int[tokenList.size()];
     for (int i = 0; i < tokens.length; i++) {
       tokens[i] = tokenList.get(i);
-      positions[i] = positionList.get(i);
+      leftIndices[i] = leftIndexList.get(i);
+      rightIndices[i] = rightIndexList.get(i);
     }
   }
 
@@ -89,9 +96,19 @@ public class LexerSingletonLongestMatch extends AbstractParser {
       System.out.print(i + " ");
     System.out.println();
 
-    System.out.print("Positions: ");
-    for (int i : positions)
+    System.out.print("Left indices: ");
+    for (int i : leftIndices)
       System.out.print(i + " ");
+    System.out.println();
+
+    System.out.print("Right indices:");
+    for (int i : rightIndices)
+      System.out.print(" " + i);
+    System.out.println();
+
+    System.out.print("Bare lexemes:");
+    for (int i = 0; i < tokens.length; i++)
+      System.out.print(" '" + inputString.substring(leftIndices[i], rightIndices[i]) + "'");
     System.out.println();
   }
 }

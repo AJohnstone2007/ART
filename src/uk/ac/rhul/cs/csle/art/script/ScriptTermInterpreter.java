@@ -518,10 +518,13 @@ public class ScriptTermInterpreter {
     currentParser.loadSetupTime();
     currentLexer.lex(inputString, currentCFGRules.lexicalKindsArray(), currentCFGRules.lexicalStringsArray(), currentCFGRules.whitespacesArray());
     // currentLexer.report();
-    currentParser.input = currentLexer.tokens;
-    currentParser.positions = currentLexer.positions;
+    // Transfer the lexicalisation to the parser - this will need more sophistication for TWE sets
+    currentParser.tokens = currentLexer.tokens;
+    currentParser.leftIndices = currentLexer.leftIndices;
+    currentParser.rightIndices = currentLexer.rightIndices;
+
     currentParser.loadLexTime();
-    if (currentParser.input != null) currentParser.parse();
+    if (currentParser.tokens != null) currentParser.parse();
     currentParser.loadParseTime();
     if (currentParser.inLanguage) {
       currentParser.chooseLongestMatch();
@@ -550,8 +553,9 @@ public class ScriptTermInterpreter {
         scriptParser.cfgRules.whitespacesArray());
     // scriptLexer.report();
     if (scriptLexer.tokens == null) Util.fatal("Lexical error in script");
-    scriptParser.input = scriptLexer.tokens;
-    scriptParser.positions = scriptLexer.positions;
+    scriptParser.tokens = scriptLexer.tokens;
+    scriptParser.leftIndices = scriptLexer.leftIndices;
+    scriptParser.rightIndices = scriptLexer.rightIndices;
     scriptParser.parse();
     if (!scriptParser.inLanguage) Util.fatal("Syntax error in script");
     if (scriptParser.ambiguityCheck()) Util.fatal("Ambiguity in script SPPF");

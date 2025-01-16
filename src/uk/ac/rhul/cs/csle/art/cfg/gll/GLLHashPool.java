@@ -165,7 +165,7 @@ public class GLLHashPool extends HashPool {
 
   private void ret() {
     if (poolGet(sn + gssNode_gn) == endOfStringNodeNi) {
-      if (cfgRules.acceptingNodeNumbers.contains(gn)) inLanguage |= (i == input.length - 1); // Make gni to boolean array for acceptance testing
+      if (cfgRules.acceptingNodeNumbers.contains(gn)) inLanguage |= (i == tokens.length - 1); // Make gni to boolean array for acceptance testing
       return;
     }
     find(popElementBuckets, popElementBucketCount, popElement_SIZE, i, sn, dn);
@@ -330,7 +330,7 @@ public class GLLHashPool extends HashPool {
       while (true) {
         switch (kindOf[gn]) {
         case T:
-          if (input[i] == elementOf[gn]) {
+          if (tokens[i] == elementOf[gn]) {
             d(1);
             i++;
             gn++;
@@ -354,7 +354,7 @@ public class GLLHashPool extends HashPool {
   }
 
   private void loadCounts() {
-    loadTWECounts(input.length, input.length - 1, 1);
+    loadTWECounts(tokens.length, tokens.length - 1, 1);
     loadGSSCounts(cardinality(descriptorBuckets), cardinality(gssNodeBuckets), cardinality(gssEdgeBuckets), cardinality(popElementBuckets));
 
     int sppfEpsilonNodeCount = 0, sppfTerminalNodeCount = 0, sppfNonterminalNodeCount = 0, sppfIntermediateNodeCount = 0, sppfAmbiguityCount = 0,
