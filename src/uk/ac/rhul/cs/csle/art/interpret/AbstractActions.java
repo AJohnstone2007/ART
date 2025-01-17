@@ -14,4 +14,8 @@ public abstract class AbstractActions {
   protected String lexemeCore() {
     return interpreter.lexemeCore();
   }
+
+  protected void interpret(AbstractActionsNonterminal statement1, AbstractActionsNonterminal attributes) {
+
+  }
 }
