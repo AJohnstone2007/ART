@@ -335,6 +335,9 @@ public class CFGRules {
     Set<String> javaAllowedClasses = Set.of("System", "Math", "Integer", "Double");
     if (javaAllowedClasses.contains(nonterminalID)) return; // Silent return
 
+    Set<String> javaAllowedMethods = Set.of("put", "get");
+    if (javaAllowedMethods.contains(attributeID)) return; // Silent return
+
     if (isNative)
       Util.warning("ignoring native action attribute-like element " + nonterminalID + "." + attributeID + " in production for nonterminal " + lhs);
     else

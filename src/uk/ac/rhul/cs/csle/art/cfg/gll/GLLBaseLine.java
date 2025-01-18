@@ -73,7 +73,7 @@ public class GLLBaseLine extends AbstractParser {
         switch (gn.elm.kind) {
         case B, T, TI, C:
           if (tokens[i] == gn.elm.ei) {
-            // System.out.println("Matched " + input[i]);
+            System.out.println("Matched " + tokens[i]);
             du(1);
             i++;
             gn = gn.seq;
@@ -225,7 +225,17 @@ public class GLLBaseLine extends AbstractParser {
 
   /* Term generation **************************************************************************/
   /* This version handles promotion operators, but does not create ambiguity nodes */
+
   long derivationNodeCount = 0, derivationAmbiguityNodeCount = 0;
+
+  boolean derivationForInterpreter = false;
+
+  public int derivationAsInterpeterTerm() {
+    derivationForInterpreter = true;
+    int ret = derivationAsTerm();
+    derivationForInterpreter = false;
+    return ret;
+  }
 
   @Override
   public int derivationAsTerm() {
@@ -249,11 +259,12 @@ public class GLLBaseLine extends AbstractParser {
     LinkedList<Integer> children = (gn.giftKind == GIFTKind.OVER || gn.giftKind == GIFTKind.UNDER) ? childrenFromParent : new LinkedList<>();
     String constructor = null;
 
+    SPPFPN firstAvailableSPPFPN = null;
     if (sppfn.packNS.size() != 0) { // Non leaf symbol nodes
-      SPPFPN sppfpn = firstAvailablePackNode(sppfn);
-      CFGNode childgn = sppfpn.gn.alt.seq;
+      firstAvailableSPPFPN = firstAvailablePackNode(sppfn);
+      CFGNode childgn = firstAvailableSPPFPN.gn.alt.seq;
       LinkedList<SPPFN> childSymbolNodes = new LinkedList<>();
-      collectChildNodesRec(sppfpn, childSymbolNodes);
+      collectChildNodesRec(firstAvailableSPPFPN, childSymbolNodes);
       for (SPPFN s : childSymbolNodes) {
         String newConstructor = derivationAsTermRec(s, children, childgn);
         if (newConstructor != null) constructor = newConstructor; // Update on every ^^ child so that the last one wins
@@ -262,6 +273,9 @@ public class GLLBaseLine extends AbstractParser {
     }
 
     if (constructor == null) // If there were no OVERs, then set the constructor to be our symbol
+      if (derivationForInterpreter)
+      constructor = firstAvailableSPPFPN == null ? "" + sppfn.li : "" + firstAvailableSPPFPN.gn.alt.num;
+      else
       constructor = (gn.elm.kind == CFGKind.B) ? lexemeOfBuiltin(LexemeKind.valueOf(gn.elm.str), leftIndices[sppfn.li]) : gn.elm.str;
 
     if (children != childrenFromParent) {
@@ -1239,4 +1253,5 @@ public class GLLBaseLine extends AbstractParser {
 
     Util.fatal("During oracle construction, all packed nodes suppressed at " + node); // Not a terminal, and all packed nodes exhausted
   }
+
 }

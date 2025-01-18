@@ -25,9 +25,11 @@ public class AttributeActionInterpreter extends AbstractInterpreter {
   public void interpret(AbstractParser parser) {
     System.out.println("Starting interpretation");
     this.parser = parser;
+    int interpreterTerm = parser.derivationAsInterpeterTerm();
+    System.out.println("InterpeterTerm: " + parser.cfgRules.iTerms.toString(interpreterTerm));
     parser.constructOracle();
     tokenIndex = oracleIndex = 0;
-    interpretRec(0, artActions.init(this));
+    // interpretRec(0, artActions.init(this));
   }
 
   void indent(int level) {

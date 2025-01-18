@@ -170,6 +170,11 @@ public abstract class AbstractParser {
     return 0;
   }
 
+  public int derivationAsInterpeterTerm() {
+    System.out.println("derivationAsInterpreterTerm() not implemented for parser class " + this.getClass().getSimpleName());
+    return 0;
+  }
+
   public void gss2Dot() {
     System.out.println("gss2Dot() not implemented for parser class " + this.getClass().getSimpleName());
   }
