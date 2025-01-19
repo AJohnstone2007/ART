@@ -73,7 +73,7 @@ public class GLLBaseLine extends AbstractParser {
         switch (gn.elm.kind) {
         case B, T, TI, C:
           if (tokens[i] == gn.elm.ei) {
-            System.out.println("Matched " + tokens[i]);
+            // System.out.println("Matched " + tokens[i]);
             du(1);
             i++;
             gn = gn.seq;
@@ -230,6 +230,7 @@ public class GLLBaseLine extends AbstractParser {
 
   boolean derivationForInterpreter = false;
 
+  @Override
   public int derivationAsInterpeterTerm() {
     derivationForInterpreter = true;
     int ret = derivationAsTerm();

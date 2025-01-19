@@ -17,4 +17,6 @@ public abstract class AbstractInterpreter {
     String lexeme = lexeme();
     return lexeme.substring(1, lexeme.length() - 1);
   }
+
+  public abstract void interpretUsingDerivationTermRec(int i, int term, AbstractActionsNonterminal nonterminalActions);
 }

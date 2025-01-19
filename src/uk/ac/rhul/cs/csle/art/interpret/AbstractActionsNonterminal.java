@@ -4,5 +4,5 @@ public abstract class AbstractActionsNonterminal {
 
   public abstract void action(int nodeNumber);
 
-  public abstract AbstractActionsNonterminal call(int nodeNumber);
+  public abstract AbstractActionsNonterminal call(int nodeNumber, int term);
 }
