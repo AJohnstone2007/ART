@@ -14,10 +14,16 @@ public class ARTGeneratedActions extends AbstractActions {
     ART_C_B B;
 
     @Override
-    public AbstractActionsNonterminal init(int nodeNumber, int term) {
+    public void initAttributes(int nodeNumber, int term) {
+      switch (nodeNumber) {
+      }
+    }
+
+    @Override
+    public AbstractActionsNonterminal getAttributes(int nodeNumber) {
       switch (nodeNumber) {
       default:
-        Util.fatal("init: unknown node " + nodeNumber);
+        Util.fatal("attributesOfNode: unknown node " + nodeNumber);
         return null;
       }
     }
@@ -36,17 +42,25 @@ public class ARTGeneratedActions extends AbstractActions {
   public class ART_C_S extends AbstractActionsNonterminal {
 
     ART_C_S S;
-    ART_C_B B1;
+    ART_C_B B1; // How is this working wth noallocation to B1?
 
     @Override
-    public AbstractActionsNonterminal init(int nodeNumber, int term) {
+    public void initAttributes(int nodeNumber, int term) {
       switch (nodeNumber) {
       case 22:
         B1.term = term;
         B1.B = B1;
+        break;
+      }
+    }
+
+    @Override
+    public AbstractActionsNonterminal getAttributes(int nodeNumber) {
+      switch (nodeNumber) {
+      case 22:
         return B1;
       default:
-        Util.fatal("init: unknown node " + nodeNumber);
+        Util.fatal("attributesOfNode: unknown node " + nodeNumber);
         return null;
       }
     }
@@ -67,6 +81,7 @@ public class ARTGeneratedActions extends AbstractActions {
         break;
       }
     }
+
   }
 
   @Override

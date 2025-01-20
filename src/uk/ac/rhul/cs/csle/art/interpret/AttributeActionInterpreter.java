@@ -32,20 +32,21 @@ public class AttributeActionInterpreter extends AbstractInterpreter {
   public void interpret(AbstractActionsNonterminal attributes) {
     CFGNode altNode = parser.cfgRules.numberToNodeMap.get(Integer.parseInt(parser.cfgRules.iTerms.termSymbolString(attributes.term)));
     var children = parser.cfgRules.iTerms.termChildren(attributes.term);
-    int childNumber = -1;
+    int childNumber = 0;
+
+    for (var node = altNode.seq; node.elm.kind != CFGKind.END; node = node.seq) // Skip alt node
+      attributes.initAttributes(node.num, children[childNumber++]);
+
     for (var node = altNode; node.elm.kind != CFGKind.END; node = node.seq) {
       switch (node.elm.kind) {
       case N:
-        if (node.delayed)
-          attributes.init(node.num, children[childNumber]);
-        else
-          interpret(attributes.init(node.num, children[childNumber]));
+        if (!node.delayed) interpret(attributes.getAttributes(node.num));
         break;
       case T, TI, C, B:
         tokenIndex++;
+        break;
       }
       attributes.action(node.num);
-      childNumber++;
     }
   }
 

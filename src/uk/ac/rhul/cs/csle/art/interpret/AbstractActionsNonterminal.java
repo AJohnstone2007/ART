@@ -5,5 +5,7 @@ public abstract class AbstractActionsNonterminal {
 
   public abstract void action(int nodeNumber);
 
-  public abstract AbstractActionsNonterminal init(int nodeNumber, int term);
+  public abstract void initAttributes(int nodeNumber, int term);
+
+  public abstract AbstractActionsNonterminal getAttributes(int nodeNumber);
 }

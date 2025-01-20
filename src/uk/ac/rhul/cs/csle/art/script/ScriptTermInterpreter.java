@@ -532,11 +532,11 @@ public class ScriptTermInterpreter {
       currentParser.loadParseChooseTime();
       currentDerivationTerm = currentParser.derivationAsTerm();
       currentParser.loadTermGenerateTime();
-      // try {
-      currentInterpreter.interpret(currentParser);
-      // } catch (Exception | Error e) {
-      // Util.error("interpreter exited abnormally with exception:\n" + e);
-      // }
+      try {
+        currentInterpreter.interpret(currentParser);
+      } catch (Exception | Error e) {
+        Util.error("interpreter exited abnormally with exception:\n" + e);
+      }
     } else {
       currentDerivationTerm = 0;
       System.out.println("Try failed: syntax error");
