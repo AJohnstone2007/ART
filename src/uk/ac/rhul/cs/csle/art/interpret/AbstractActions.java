@@ -15,4 +15,8 @@ public abstract class AbstractActions {
     return interpreter.lexemeCore();
   }
 
+  public void interpret(AbstractActionsNonterminal instance) {
+    interpreter.interpretUsingDerivationTermRec(instance.term, instance);
+  }
+
 }

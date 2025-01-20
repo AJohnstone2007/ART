@@ -6,7 +6,7 @@ import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
 
 public class AttributeActionInterpreter extends AbstractInterpreter {
   private AbstractActions artActions = new ARTDefaultActions();
-  private int oracleIndex, tokenIndex;
+  private int tokenIndex;
   private AbstractParser parser;
 
   public AttributeActionInterpreter() {
@@ -28,38 +28,24 @@ public class AttributeActionInterpreter extends AbstractInterpreter {
     int interpreterTerm = parser.derivationAsInterpeterTerm();
     System.out.println("InterpeterTerm: " + parser.cfgRules.iTerms.toString(interpreterTerm));
     parser.constructOracle();
-    tokenIndex = oracleIndex = 0;
-    // interpretUsingOracleRec(0, artActions.init(this, 0), 0);
-    interpretUsingDerivationTermRec(0, interpreterTerm, artActions.init(this, interpreterTerm));
-  }
-
-  void indent(int level) {
-    for (int i = 0; i < level; i++)
-      System.out.print(" ");
+    tokenIndex = 0;
+    interpretUsingDerivationTermRec(interpreterTerm, artActions.init(this, interpreterTerm));
   }
 
   @Override
-  public void interpretUsingDerivationTermRec(int level, int term, AbstractActionsNonterminal attributes) {
+  public void interpretUsingDerivationTermRec(int term, AbstractActionsNonterminal attributes) {
     CFGNode node = parser.cfgRules.numberToNodeMap.get(Integer.parseInt(parser.cfgRules.iTerms.termSymbolString(term)));
     var children = parser.cfgRules.iTerms.termChildren(term);
     int childNumber = -1;
-    indent(level);
     System.out.println("Entered tree-based interpreter at cfgNode " + node.num);
     while (node.elm.kind != CFGKind.END) {
-      indent(level);
       System.out.println("About to interpret node " + node.elm + " at child " + childNumber);
       switch (node.elm.kind) {
       case N:
-        indent(level);
-        if (node.delayed) {
-          indent(level);
+        if (node.delayed)
           attributes.call(node.num, children[childNumber]);
-          System.out.println("Skipping delated nonterminal");
-        } else {
-          indent(level);
-          System.out.println("Calling nonterminal");
-          interpretUsingDerivationTermRec(level + 1, children[childNumber], attributes.call(node.num, children[childNumber]));
-        }
+        else
+          interpretUsingDerivationTermRec(children[childNumber], attributes.call(node.num, children[childNumber]));
         break;
       case T, TI, C, B:
         tokenIndex++;
@@ -68,30 +54,7 @@ public class AttributeActionInterpreter extends AbstractInterpreter {
       childNumber++;
       node = node.seq;
     }
-    indent(level);
     System.out.println("Leaving tree-based interpreter at cfgNode " + node.num);
-  }
-
-  private void interpretUsingOracleRec(int level, AbstractActionsNonterminal attributes, int term) {
-    CFGNode node = parser.cfgRules.numberToNodeMap.get(parser.oracle[oracleIndex++]);
-    // indent(level);
-    // System.out.println("Entered oracle-based interpreter with index at " + (oracleIndex - 1));
-    while (node.elm.kind != CFGKind.END) {
-      switch (node.elm.kind) {
-      case N:
-        // indent(level);
-        // System.out.println("About to interpret nonterminal " + node.elm);
-        interpretUsingOracleRec(level + 1, attributes.call(node.num, term), term);
-        break;
-      case T, TI, C, B:
-        tokenIndex++;
-      }
-      attributes.action(node.num);
-      node = node.seq;
-    }
-    // indent(level);
-    // System.out.println("Leaving oracle-based interpreter with index at " + (oracleIndex - 1));
-
   }
 
   @Override

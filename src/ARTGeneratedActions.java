@@ -10,14 +10,8 @@ public class ARTGeneratedActions extends AbstractActions {
   }
 
   public class ART_C_B extends AbstractActionsNonterminal {
-    int term;
     int v;
     ART_C_B B;
-
-    public void activate(ART_C_B parent, int instance) {
-      term = instance;
-      B = parent;
-    }
 
     @Override
     public void action(int nodeNumber) {
@@ -37,23 +31,12 @@ public class ARTGeneratedActions extends AbstractActions {
         return null;
       }
     }
-
-    public void interpret() {
-      interpreter.interpretUsingDerivationTermRec(0, term, this);
-    }
   }
 
   public class ART_C_S extends AbstractActionsNonterminal {
-    int term;
 
     ART_C_S S;
     ART_C_B B1;
-
-    public void activate(ART_C_S parent, int instance) {
-      term = instance;
-      S = parent;
-      B1 = new ART_C_B();
-    }
 
     @Override
     public void action(int nodeNumber) {
@@ -67,7 +50,7 @@ public class ARTGeneratedActions extends AbstractActions {
       case 23:
         System.out.println("Found a c");
         System.out.println("Now calling delayed attribute B1");
-        B1.interpret();
+        interpret(B1);
         break;
       }
     }
@@ -76,7 +59,8 @@ public class ARTGeneratedActions extends AbstractActions {
     public AbstractActionsNonterminal call(int nodeNumber, int term) {
       switch (nodeNumber) {
       case 22:
-        B1.activate(B1, term);
+        B1.term = term;
+        B1.B = B1;
         return B1;
       default:
         Util.fatal("Unknown call node " + nodeNumber);
@@ -89,7 +73,9 @@ public class ARTGeneratedActions extends AbstractActions {
   public AbstractActionsNonterminal init(AbstractInterpreter interpreter, int term) {
     this.interpreter = interpreter;
     var ret = new ART_C_S();
-    ret.activate(null, term);
+    ret.term = term;
+    ret.S = null;
+    ret.B1 = new ART_C_B();
     return ret;
   }
 }
