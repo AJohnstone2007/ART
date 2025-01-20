@@ -39,44 +39,52 @@ public class ActionsGenerator {
 
     for (var e : cfgRules.elements.keySet())
       if (e.kind == CFGKind.N) {
-        text.print("\n public class ART_C_" + e.str + " extends AbstractActionsNonterminal {\n ");
-        for (var a : e.attributes.keySet())
+        text.println("\n  public class ART_C_" + e.str + " extends AbstractActionsNonterminal {");
+        text.print("    int term; ART_C_" + e.str + " " + e.str + " = this;"); // LHS
+
+        for (var a : e.attributes.keySet()) // attributes
           text.print(" " + e.attributes.get(a) + " " + a + ";");
 
-        text.print("\n    ART_C_" + e.str + " " + e.str + ";");
-        for (var r : e.rhsNonterminalsAcrossAllProductions.keySet())
+        for (var r : e.rhsNonterminalsAcrossAllProductions.keySet()) // RHS instances
           for (int n = 0; n < e.rhsNonterminalsAcrossAllProductions.get(r); n++)
             text.print(" ART_C_" + r + " " + r + (n + 1) + ";");
 
-        text.print("public void activate(ART_C_" + e.str + " parent) {");
-        text.print("  " + e.str + " = parent;");
-        for (var r : e.rhsNonterminalsAcrossAllProductions.keySet())
-          for (int n = 0; n < e.rhsNonterminalsAcrossAllProductions.get(r); n++)
-            text.print(r + (n + 1) + " = new ART_C_" + r + "();");
-        text.print("}");
+        // INIT
+        text.println("\n    public void initAttributes(int nodeNumber, int term) { this.term = term; ");
+        text.println("      switch(nodeNumber){");
+        printAllInitsRec(text, cfgRules.elementToNodeMap.get(e).alt);
+        text.print("      }\n    }");
+
+        // GET
+        text.println("\n    public AbstractActionsNonterminal getAttributes(int nodeNumber) { switch(nodeNumber){");
+        printAllGetsRec(text, cfgRules.elementToNodeMap.get(e).alt);
+        text.println("      default: Util.fatal(\"getAttributes: unknown node \" + nodeNumber); return null;\n    }}");
+
+        // ACTION
         text.println("\n    public void action(int nodeNumber) { switch(nodeNumber){");
         printAllActionsRec(text, e, cfgRules.elementToNodeMap.get(e));
         printTermActionsRec(text, cfgRules.elementToNodeMap.get(e));
-        text.println("    }}");
-
-        text.println("\n    public AbstractActionsNonterminal call(int nodeNumber) { switch(nodeNumber){");
-        printAllCallsRec(text, cfgRules.elementToNodeMap.get(e).alt);
-        text.println("      default: Util.fatal(\"Unknown call node \" + nodeNumber); return null;\n    }}\n  }");
-
+        text.println("    }}\n  }");
       }
 
-    text.println("public AbstractActionsNonterminal init(AbstractInterpreter interpreter) { this.interpreter = interpreter; var ret = new ART_C_"
+    text.println("public AbstractActionsNonterminal init(AbstractInterpreter interpreter, int term) { this.interpreter = interpreter; var ret = new ART_C_"
         + cfgRules.startNonterminal.str + "(); ret.activate(null); return ret; }");
     text.println("}");
     text.close();
   }
 
-  private void printAllCallsRec(PrintWriter text, CFGNode cfgNode) {
+  private void printAllInitsRec(PrintWriter text, CFGNode cfgNode) {
     if (cfgNode == null || cfgNode.elm.kind == CFGKind.END) return;
-    if (cfgNode.elm.kind == CFGKind.N) text.println("      case " + cfgNode.num + ": " + cfgNode.elm.str + cfgNode.instanceNumber + ".activate("
-        + cfgNode.elm.str + cfgNode.instanceNumber + "); return " + cfgNode.elm.str + cfgNode.instanceNumber + ";");
-    printAllCallsRec(text, cfgNode.seq);
-    printAllCallsRec(text, cfgNode.alt);
+    if (cfgNode.elm.kind == CFGKind.N) text.println("      case " + cfgNode.num + ": ");
+    printAllInitsRec(text, cfgNode.seq);
+    printAllInitsRec(text, cfgNode.alt);
+  }
+
+  private void printAllGetsRec(PrintWriter text, CFGNode cfgNode) {
+    if (cfgNode == null || cfgNode.elm.kind == CFGKind.END) return;
+    if (cfgNode.elm.kind == CFGKind.N) text.println("      case " + cfgNode.num + ": return " + cfgNode.elm.str + cfgNode.instanceNumber + ";");
+    printAllGetsRec(text, cfgNode.seq);
+    printAllGetsRec(text, cfgNode.alt);
   }
 
   private void printAllActionsRec(PrintWriter text, CFGElement lhs, CFGNode cfgNode) {

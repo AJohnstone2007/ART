@@ -25,7 +25,9 @@ public class AttributeActionInterpreter extends AbstractInterpreter {
   public void interpret(AbstractParser parser) {
     this.parser = parser;
     tokenIndex = 0;
-    interpret(artActions.init(this, parser.derivationAsInterpeterTerm()));
+    int derivationInterpeterTerm = parser.derivationAsInterpeterTerm();
+    System.out.println("Interpeter term: " + parser.cfgRules.iTerms.toString(derivationInterpeterTerm));
+    interpret(artActions.init(this, derivationInterpeterTerm));
   }
 
   @Override

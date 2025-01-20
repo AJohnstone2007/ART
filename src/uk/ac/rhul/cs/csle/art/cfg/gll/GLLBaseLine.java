@@ -274,7 +274,7 @@ public class GLLBaseLine extends AbstractParser {
 
     if (constructor == null) // If there were no OVERs, then set the constructor to be our symbol
       if (derivationForInterpreter)
-      constructor = firstAvailableSPPFPN == null ? "" + sppfn.li : "" + firstAvailableSPPFPN.gn.alt.num;
+      constructor = firstAvailableSPPFPN == null ? "" + -sppfn.ri : "" + firstAvailableSPPFPN.gn.alt.num;
       else
       constructor = (gn.elm.kind == CFGKind.B) ? lexemeOfBuiltin(LexemeKind.valueOf(gn.elm.str), leftIndices[sppfn.li]) : gn.elm.str;
 
