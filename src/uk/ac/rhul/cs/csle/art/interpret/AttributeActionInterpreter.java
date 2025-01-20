@@ -23,11 +23,8 @@ public class AttributeActionInterpreter extends AbstractInterpreter {
 
   @Override
   public void interpret(AbstractParser parser) {
-    System.out.println("Starting interpretation");
     this.parser = parser;
     int interpreterTerm = parser.derivationAsInterpeterTerm();
-    System.out.println("InterpeterTerm: " + parser.cfgRules.iTerms.toString(interpreterTerm));
-    parser.constructOracle();
     tokenIndex = 0;
     interpretUsingDerivationTermRec(interpreterTerm, artActions.init(this, interpreterTerm));
   }
@@ -37,15 +34,13 @@ public class AttributeActionInterpreter extends AbstractInterpreter {
     CFGNode node = parser.cfgRules.numberToNodeMap.get(Integer.parseInt(parser.cfgRules.iTerms.termSymbolString(term)));
     var children = parser.cfgRules.iTerms.termChildren(term);
     int childNumber = -1;
-    System.out.println("Entered tree-based interpreter at cfgNode " + node.num);
     while (node.elm.kind != CFGKind.END) {
-      System.out.println("About to interpret node " + node.elm + " at child " + childNumber);
       switch (node.elm.kind) {
       case N:
         if (node.delayed)
-          attributes.call(node.num, children[childNumber]);
+          attributes.init(node.num, children[childNumber]);
         else
-          interpretUsingDerivationTermRec(children[childNumber], attributes.call(node.num, children[childNumber]));
+          interpretUsingDerivationTermRec(children[childNumber], attributes.init(node.num, children[childNumber]));
         break;
       case T, TI, C, B:
         tokenIndex++;
@@ -54,7 +49,6 @@ public class AttributeActionInterpreter extends AbstractInterpreter {
       childNumber++;
       node = node.seq;
     }
-    System.out.println("Leaving tree-based interpreter at cfgNode " + node.num);
   }
 
   @Override

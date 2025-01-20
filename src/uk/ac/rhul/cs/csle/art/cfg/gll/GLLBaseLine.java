@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
 import java.util.ArrayDeque;
-import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Deque;
 import java.util.HashMap;
@@ -1221,38 +1220,4 @@ public class GLLBaseLine extends AbstractParser {
       sppfPrintSentencesRec(p.rightChild);
     }
   }
-
-  private ArrayList<Integer> oracleList;
-
-  @Override
-  public void constructOracle() {
-    if (sppfRootNode == null) return;
-    oracleList = new ArrayList<>();
-    visitedSPPFNodes.clear();
-    constructOracleRec(sppfRootNode);
-    oracle = new int[oracleList.size()];
-    for (int i = 0; i < oracleList.size(); i++)
-      oracle[i] = oracleList.get(i);
-  }
-
-  private void constructOracleRec(SPPFN node) {
-    if (visitedSPPFNodes.get(node.number)) Util.fatal("Cycle detected during oracle construction");
-    visitedSPPFNodes.set(node.number);
-
-    if (node.packNS.isEmpty()) return; // terminal node
-
-    for (var p : node.packNS)
-      if (!p.suppressed && !cbD.contains(p)) {
-        if (isSymbol(node)) {
-          // System.out.println("*** Start of sequence at grammar node " + p.gn.num + p.gn.toStringAsProduction() + " with start node " + p.gn.alt.num);
-          oracleList.add(p.gn.alt.num);
-        }
-        if (p.leftChild != null) constructOracleRec(p.leftChild);
-        constructOracleRec(p.rightChild);
-        return;
-      }
-
-    Util.fatal("During oracle construction, all packed nodes suppressed at " + node); // Not a terminal, and all packed nodes exhausted
-  }
-
 }

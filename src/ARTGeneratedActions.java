@@ -14,6 +14,15 @@ public class ARTGeneratedActions extends AbstractActions {
     ART_C_B B;
 
     @Override
+    public AbstractActionsNonterminal init(int nodeNumber, int term) {
+      switch (nodeNumber) {
+      default:
+        Util.fatal("Unknown call node " + nodeNumber);
+        return null;
+      }
+    }
+
+    @Override
     public void action(int nodeNumber) {
       switch (nodeNumber) {
       case 17:
@@ -22,21 +31,25 @@ public class ARTGeneratedActions extends AbstractActions {
         break;
       }
     }
-
-    @Override
-    public AbstractActionsNonterminal call(int nodeNumber, int term) {
-      switch (nodeNumber) {
-      default:
-        Util.fatal("Unknown call node " + nodeNumber);
-        return null;
-      }
-    }
   }
 
   public class ART_C_S extends AbstractActionsNonterminal {
 
     ART_C_S S;
     ART_C_B B1;
+
+    @Override
+    public AbstractActionsNonterminal init(int nodeNumber, int term) {
+      switch (nodeNumber) {
+      case 22:
+        B1.term = term;
+        B1.B = B1;
+        return B1;
+      default:
+        Util.fatal("Unknown call node " + nodeNumber);
+        return null;
+      }
+    }
 
     @Override
     public void action(int nodeNumber) {
@@ -52,19 +65,6 @@ public class ARTGeneratedActions extends AbstractActions {
         System.out.println("Now calling delayed attribute B1");
         interpret(B1);
         break;
-      }
-    }
-
-    @Override
-    public AbstractActionsNonterminal call(int nodeNumber, int term) {
-      switch (nodeNumber) {
-      case 22:
-        B1.term = term;
-        B1.B = B1;
-        return B1;
-      default:
-        Util.fatal("Unknown call node " + nodeNumber);
-        return null;
       }
     }
   }
