@@ -17,7 +17,7 @@ public class ARTGeneratedActions extends AbstractActions {
     public AbstractActionsNonterminal init(int nodeNumber, int term) {
       switch (nodeNumber) {
       default:
-        Util.fatal("Unknown call node " + nodeNumber);
+        Util.fatal("init: unknown node " + nodeNumber);
         return null;
       }
     }
@@ -46,7 +46,7 @@ public class ARTGeneratedActions extends AbstractActions {
         B1.B = B1;
         return B1;
       default:
-        Util.fatal("Unknown call node " + nodeNumber);
+        Util.fatal("init: unknown node " + nodeNumber);
         return null;
       }
     }
@@ -55,7 +55,7 @@ public class ARTGeneratedActions extends AbstractActions {
     public void action(int nodeNumber) {
       switch (nodeNumber) {
       case 21:
-        System.out.println("Found an a\n");
+        System.out.println("Found an a");
         break;
       case 22:
         System.out.println("At B");

@@ -6,8 +6,8 @@ import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
 
 public class AttributeActionInterpreter extends AbstractInterpreter {
   private AbstractActions artActions = new ARTDefaultActions();
-  private int tokenIndex;
   private AbstractParser parser;
+  private int tokenIndex;
 
   public AttributeActionInterpreter() {
     System.out.println("Interpreter set to Attribute-Action");
@@ -24,30 +24,28 @@ public class AttributeActionInterpreter extends AbstractInterpreter {
   @Override
   public void interpret(AbstractParser parser) {
     this.parser = parser;
-    int interpreterTerm = parser.derivationAsInterpeterTerm();
     tokenIndex = 0;
-    interpretUsingDerivationTermRec(interpreterTerm, artActions.init(this, interpreterTerm));
+    interpret(artActions.init(this, parser.derivationAsInterpeterTerm()));
   }
 
   @Override
-  public void interpretUsingDerivationTermRec(int term, AbstractActionsNonterminal attributes) {
-    CFGNode node = parser.cfgRules.numberToNodeMap.get(Integer.parseInt(parser.cfgRules.iTerms.termSymbolString(term)));
-    var children = parser.cfgRules.iTerms.termChildren(term);
+  public void interpret(AbstractActionsNonterminal attributes) {
+    CFGNode altNode = parser.cfgRules.numberToNodeMap.get(Integer.parseInt(parser.cfgRules.iTerms.termSymbolString(attributes.term)));
+    var children = parser.cfgRules.iTerms.termChildren(attributes.term);
     int childNumber = -1;
-    while (node.elm.kind != CFGKind.END) {
+    for (var node = altNode; node.elm.kind != CFGKind.END; node = node.seq) {
       switch (node.elm.kind) {
       case N:
         if (node.delayed)
           attributes.init(node.num, children[childNumber]);
         else
-          interpretUsingDerivationTermRec(children[childNumber], attributes.init(node.num, children[childNumber]));
+          interpret(attributes.init(node.num, children[childNumber]));
         break;
       case T, TI, C, B:
         tokenIndex++;
       }
       attributes.action(node.num);
       childNumber++;
-      node = node.seq;
     }
   }
 
