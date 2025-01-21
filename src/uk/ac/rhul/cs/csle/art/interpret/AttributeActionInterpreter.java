@@ -21,19 +21,21 @@ public class AttributeActionInterpreter extends AbstractInterpreter {
     System.out.println("Attached to " + artActions.getClass().getSimpleName() + ": " + artActions.name());
   }
 
+  private int intFromTermSymbol(int term) {
+    return Integer.parseInt(parser.cfgRules.iTerms.termSymbolString(term));
+  }
+
   @Override
   public void interpret(AbstractParser parser) {
     this.parser = parser;
     tokenIndex = 0;
-    int derivationInterpeterTerm = parser.derivationAsInterpeterTerm();
-    System.out.println("Interpeter term: " + parser.cfgRules.iTerms.toString(derivationInterpeterTerm));
-    var root = artActions.init(this, derivationInterpeterTerm);
+    var root = artActions.init(this, parser.derivationAsInterpeterTerm());
     interpret(root);
   }
 
   @Override
   public void interpret(AbstractAttributeBlock attributes) {
-    CFGNode altNode = parser.cfgRules.numberToNodeMap.get(Integer.parseInt(parser.cfgRules.iTerms.termSymbolString(attributes.term)));
+    CFGNode altNode = parser.cfgRules.numberToNodeMap.get(intFromTermSymbol(attributes.term));
     var children = parser.cfgRules.iTerms.termChildren(attributes.term);
     int childNumber = 0;
 

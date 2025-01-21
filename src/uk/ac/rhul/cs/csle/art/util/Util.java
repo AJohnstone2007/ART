@@ -101,6 +101,10 @@ public class Util {
     return lineCount;
   }
 
+  public static String escapeString(String string) {
+    return string.replaceAll("\"", "\\\\\"");
+  }
+
   static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
   public static String timestamp() {
