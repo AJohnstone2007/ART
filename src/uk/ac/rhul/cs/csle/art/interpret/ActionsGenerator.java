@@ -29,7 +29,7 @@ public class ActionsGenerator {
     }
     text.println("import uk.ac.rhul.cs.csle.art.interpret.AbstractInterpreter;");
     text.println("import uk.ac.rhul.cs.csle.art.interpret.AbstractActions;");
-    text.println("import uk.ac.rhul.cs.csle.art.interpret.AbstractActionsNonterminal;");
+    text.println("import uk.ac.rhul.cs.csle.art.interpret.AbstractAttributeBlock;");
 
     text.println("import uk.ac.rhul.cs.csle.art.util.Util;");
     if (filePrelude != null) text.println(filePrelude);
@@ -39,8 +39,8 @@ public class ActionsGenerator {
 
     for (var e : cfgRules.elements.keySet())
       if (e.kind == CFGKind.N) {
-        text.println("\n  public class ART_C_" + e.str + " extends AbstractActionsNonterminal {");
-        text.print("    int term; ART_C_" + e.str + " " + e.str + " = this;"); // LHS
+        text.println("\n  public class ART_C_" + e.str + " extends AbstractAttributeBlock {");
+        text.print("    ART_C_" + e.str + " " + e.str + " = this;"); // LHS
 
         for (var a : e.attributes.keySet()) // attributes
           text.print(" " + e.attributes.get(a) + " " + a + ";");
@@ -50,32 +50,34 @@ public class ActionsGenerator {
             text.print(" ART_C_" + r + " " + r + (n + 1) + ";");
 
         // INIT
-        text.println("\n    public void initAttributes(int nodeNumber, int term) { this.term = term; ");
+        text.println("\n\n    public void initRHSAttributeBlock(int nodeNumber, int term) {");
         text.println("      switch(nodeNumber){");
         printAllInitsRec(text, cfgRules.elementToNodeMap.get(e).alt);
-        text.print("      }\n    }");
+        text.println("      }\n    }");
 
         // GET
-        text.println("\n    public AbstractActionsNonterminal getAttributes(int nodeNumber) { switch(nodeNumber){");
+        text.println("\n    public AbstractAttributeBlock getAttributes(int nodeNumber) {\n      switch(nodeNumber){");
         printAllGetsRec(text, cfgRules.elementToNodeMap.get(e).alt);
-        text.println("      default: Util.fatal(\"getAttributes: unknown node \" + nodeNumber); return null;\n    }}");
+        text.println("      default: Util.fatal(\"getAttributes: unknown node \" + nodeNumber); return null;\n      }\n    }");
 
         // ACTION
-        text.println("\n    public void action(int nodeNumber) { switch(nodeNumber){");
+        text.println("\n    public void action(int nodeNumber) {\n      switch(nodeNumber){");
         printAllActionsRec(text, e, cfgRules.elementToNodeMap.get(e));
         printTermActionsRec(text, cfgRules.elementToNodeMap.get(e));
-        text.println("    }}\n  }");
+        text.println("      }\n    }\n  }");
       }
 
-    text.println("public AbstractActionsNonterminal init(AbstractInterpreter interpreter, int term) { this.interpreter = interpreter; var ret = new ART_C_"
-        + cfgRules.startNonterminal.str + "(); ret.activate(null); return ret; }");
+    text.println(
+        "\n  public AbstractAttributeBlock init(AbstractInterpreter interpreter, int term) {\n    this.interpreter = interpreter;\n    var ret = new ART_C_"
+            + cfgRules.startNonterminal.str + "();\n    ret.term = term;\n    return ret;\n  }");
     text.println("}");
     text.close();
   }
 
   private void printAllInitsRec(PrintWriter text, CFGNode cfgNode) {
     if (cfgNode == null || cfgNode.elm.kind == CFGKind.END) return;
-    if (cfgNode.elm.kind == CFGKind.N) text.println("      case " + cfgNode.num + ": ");
+    if (cfgNode.elm.kind == CFGKind.N) text.println("      case " + cfgNode.num + ": " + cfgNode.elm.str + cfgNode.instanceNumber + " = new ART_C_"
+        + cfgNode.elm.str + "(); " + cfgNode.elm.str + cfgNode.instanceNumber + ".term = term; break;");
     printAllInitsRec(text, cfgNode.seq);
     printAllInitsRec(text, cfgNode.alt);
   }
@@ -92,7 +94,7 @@ public class ActionsGenerator {
     if (cfgNode.slotTerm != 0 && iTerms.termArity(cfgNode.slotTerm) != 0) {
       text.print("      case " + cfgNode.num + ":");
       printSlotTermRec(text, cfgNode.slotTerm);
-      text.println("break;");
+      text.println(" break;");
     }
     printAllActionsRec(text, lhs, cfgNode.seq);
     printAllActionsRec(text, lhs, cfgNode.alt);

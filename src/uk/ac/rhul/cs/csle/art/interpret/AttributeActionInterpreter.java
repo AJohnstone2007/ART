@@ -27,17 +27,18 @@ public class AttributeActionInterpreter extends AbstractInterpreter {
     tokenIndex = 0;
     int derivationInterpeterTerm = parser.derivationAsInterpeterTerm();
     System.out.println("Interpeter term: " + parser.cfgRules.iTerms.toString(derivationInterpeterTerm));
-    interpret(artActions.init(this, derivationInterpeterTerm));
+    var root = artActions.init(this, derivationInterpeterTerm);
+    interpret(root);
   }
 
   @Override
-  public void interpret(AbstractActionsNonterminal attributes) {
+  public void interpret(AbstractAttributeBlock attributes) {
     CFGNode altNode = parser.cfgRules.numberToNodeMap.get(Integer.parseInt(parser.cfgRules.iTerms.termSymbolString(attributes.term)));
     var children = parser.cfgRules.iTerms.termChildren(attributes.term);
     int childNumber = 0;
 
     for (var node = altNode.seq; node.elm.kind != CFGKind.END; node = node.seq) // Skip alt node
-      attributes.initAttributes(node.num, children[childNumber++]);
+      attributes.initRHSAttributeBlock(node.num, children[childNumber++]);
 
     for (var node = altNode; node.elm.kind != CFGKind.END; node = node.seq) {
       switch (node.elm.kind) {

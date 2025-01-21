@@ -5,7 +5,7 @@ public abstract class AbstractActions {
 
   public abstract String name();
 
-  public abstract AbstractActionsNonterminal init(AbstractInterpreter interpreter, int term);
+  public abstract AbstractAttributeBlock init(AbstractInterpreter interpreter, int term);
 
   protected String lexeme() { // convenience wrapper method
     return interpreter.lexeme();
@@ -15,7 +15,7 @@ public abstract class AbstractActions {
     return interpreter.lexemeCore();
   }
 
-  public void interpret(AbstractActionsNonterminal instance) { // convenience wrapper method
+  public void interpret(AbstractAttributeBlock instance) { // convenience wrapper method
     interpreter.interpret(instance);
   }
 

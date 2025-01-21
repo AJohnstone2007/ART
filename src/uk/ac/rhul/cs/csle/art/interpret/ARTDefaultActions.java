@@ -7,7 +7,7 @@ public class ARTDefaultActions extends AbstractActions {
   }
 
   @Override
-  public AbstractActionsNonterminal init(AbstractInterpreter interpreter, int term) {
+  public AbstractAttributeBlock init(AbstractInterpreter interpreter, int term) {
     return null;
   }
 }

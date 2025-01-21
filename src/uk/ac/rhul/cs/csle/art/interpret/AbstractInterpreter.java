@@ -18,7 +18,7 @@ public abstract class AbstractInterpreter {
     return lexeme.substring(1, lexeme.length() - 1);
   }
 
-  public void interpret(AbstractActionsNonterminal nonterminalActions) {
+  public void interpret(AbstractAttributeBlock nonterminalActions) {
     Util.error("interpretProduction() not implemented for interpreter class " + this.getClass().getSimpleName());
   }
 }
