@@ -73,7 +73,9 @@ trTerm ::=
 | __list^^ | __set^^ | __map^^ 
 | ID^^ | IDSTAR^^ | ID^^ '('^ ')'^ | ID^^ '('^ trTerm ')'^ | ID^^ '('^ terms^ ')'^ | trTuple^^ '<'^ terms^ '>'^
 
-// Note: this version of list
+
+__array ::= '['^  __int32 '|' ']'^ | '['^ __int32 '|' __a ']'^
+__a ::= trTerm | trTerm ','^ __a
 
 __list ::= '['^ ']'^ | '['^ __l ']'^
 __l ::= trTerm | trTerm ','^ __l

@@ -12,6 +12,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import uk.ac.rhul.cs.csle.art.util.Util;
+
 public class ITerms {
   private class ValueException extends RuntimeException {
     private static final long serialVersionUID = -8086174221866434606L;
@@ -203,7 +205,7 @@ public class ITerms {
       if (c == '\\') {
         i++;
         c = string.charAt(i);
-        if (!metaCharacters.contains(c)) throw new RewriteException("iTerms.unescapeMeta found escaped non-meta character");
+        if (!metaCharacters.contains(c)) Util.fatal("iTerms.unescapeMeta found escaped non-meta character");
       }
       sb.append(c);
       i++;
@@ -496,7 +498,7 @@ public class ITerms {
     // System.out
     // .println("matchZeroSV() " + closedTermIndex + ":" + toString(closedTermIndex) + " against open term " + openTermIndex + ":" + toString(openTermIndex));
 
-    if (isSequenceVariableTerm(openTermIndex)) throw new RewriteException("in matchZeroSV() right hand side must not contain sequence variables");
+    if (isSequenceVariableTerm(openTermIndex)) Util.fatal("in matchZeroSV() right hand side must not contain sequence variables");
 
     if (isVariableTerm(openTermIndex)) {
       int variableNumber = termVariableNumber(openTermIndex);
@@ -613,10 +615,10 @@ public class ITerms {
 
     // Skip types
     switch (termSymbolStringIndex) {
-    case __lStringIndex, __sStringIndex, __mStringIndex:
+    case __aStringIndex, __lStringIndex, __sStringIndex, __mStringIndex:
       throw new ValueException("term may only appear in collection context");
 
-    case __bottomStringIndex, __doneStringIndex, __emptyStringIndex, __quoteStringIndex, __blobStringIndex, __keyvalStringIndex, __adtProdStringIndex, __adtSumStringIndex, __procStringIndex,
+    case __bottomStringIndex, __doneStringIndex, __emptyStringIndex, __quoteStringIndex, __blobStringIndex, __adtProdStringIndex, __adtSumStringIndex, __procStringIndex,
 
         __boolStringIndex, __charStringIndex, __intAPStringIndex, __int32StringIndex, __realAPStringIndex, __real64StringIndex, __stringStringIndex, __listStringIndex, __setStringIndex, __mapStringIndex:
       return term;
@@ -952,7 +954,17 @@ public class ITerms {
         switch (firstChildSymbolStringIndex) {
         case __stringStringIndex:
           return javaCharacterToTerm(termToJavaString(children[0]).charAt(termToJavaInteger(children[1])));
+        case __arrayStringIndex:
+          Util.fatal("__get not yet implemented for __array");
+          return 0;
         case __listStringIndex:
+          Util.fatal("__get not yet implemented for __list");
+          return 0;
+        case __setStringIndex:
+          Util.fatal("__get not yet implemented for __set");
+          return 0;
+        case __mapStringIndex:
+          Util.fatal("__get not yet implemented for __map");
           return 0;
         default:
           throw new ValueException("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
@@ -963,11 +975,19 @@ public class ITerms {
       }
 
     case 3:
-    case __getStringIndex:
+    case __putStringIndex:
       switch (firstChildSymbolStringIndex) {
-      case __stringStringIndex:
-        return javaStringToTerm(termToJavaString(children[0]).substring(termToJavaInteger(children[1]), termToJavaInteger(children[2])));
+      case __arrayStringIndex:
+        Util.fatal("__put not yet implemented for __array");
+        return 0;
       case __listStringIndex:
+        Util.fatal("__put not yet implemented for __list");
+        return 0;
+      case __setStringIndex:
+        Util.fatal("__put not yet implemented for __set");
+        return 0;
+      case __mapStringIndex:
+        Util.fatal("__put not yet implemented for __map");
         return 0;
       default:
         throw new ValueException("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
@@ -1063,6 +1083,16 @@ public class ITerms {
   public int javaStringToTerm(String value) {
     if (value.length() == 0) return termStringEmpty;
     return findTerm(__stringStringIndex, findTerm(value.toString()));
+  }
+
+  public Object[] termToJavaArray(int term) {
+    Util.fatal("__array type not yet implemented");
+    return null;
+  }
+
+  public int javaArrayToTerm(Object[] vale) {
+    Util.fatal("__array type not yet implemented");
+    return 0;
   }
 
   public LinkedList<Object> termToJavaLinkedList(int term) {
@@ -1189,11 +1219,40 @@ public class ITerms {
   /* String index constant management **********************************************************************/
   // Whenever types or operations are added to or removed form the value system, run this mainline and replace the constants and loadStrings()
   public static void main(String[] args) {
-    String[] s = { "__bottom", "__done", "__empty", "__quote", "__blob", "__keyval", "__adtProd", "__adtSum", "__proc", "__bool", "__char", "__intAP",
-        "__int32", "__realAP", "__real64", "__string", "__list", "__l", "__set", "__s", "__map", "__m", "__eq", "__ne", "__gt", "__lt", "__ge", "__le",
-        "__compare", "__not", "__and", "__or", "__xor", "__shift", "__shiftsigned", "__rotate", "__neg", "__add", "__sub", "__mul", "__div", "__mod", "__exp",
-        "__size", "__cat", "__slice", "__get", "__put", "__contains", "__remove", "__extract", "__union", "__intersection", "__difference", "__cast",
-        "__termArity", "__termRoot", "__plugin" };
+    // @formatter:off
+    String[] s = {
+"__bottom",
+"__done",
+"__empty",
+"__quote",
+"__blob",
+"__adtProd",
+"__adtSum",
+"__proc",
+"__bool",
+"__char",
+"__intAP",
+"__int32",
+"__realAP",
+"__real64",
+"__string",
+"__array", "__a",
+"__list", "__l",
+"__set", "__s",
+"__map", "__m",
+
+"__eq", "__ne", "__gt", "__lt", "__ge", "__le", "__compare",
+"__not", "__and", "__or", "__xor",
+"__shift", "__shiftsigned", "__rotate",
+"__neg", "__add", "__sub", "__mul", "__div", "__mod", "__exp",
+
+"__size",  "__put", "__get", "__extract", "__cat", "__index","__prefix", "__suffix",
+"__union", "__intersection", "__difference",
+
+"__cast", "__termArity", "__termRoot", "__plugin"
+};
+    // @formatter:on
+
     int symbolValue = variableCount + sequenceVariableCount + 1 + 2;
     System.out.print("public final int " + s[0] + "StringIndex = " + (symbolValue++));
     for (int i = 1; i < s.length; i++)
@@ -1212,15 +1271,16 @@ public class ITerms {
   }
 
   public final int __bottomStringIndex = 33, __doneStringIndex = 34, __emptyStringIndex = 35, __quoteStringIndex = 36, __blobStringIndex = 37,
-      __keyvalStringIndex = 38, __adtProdStringIndex = 39, __adtSumStringIndex = 40, __procStringIndex = 41, __boolStringIndex = 42, __charStringIndex = 43,
-      __intAPStringIndex = 44, __int32StringIndex = 45, __realAPStringIndex = 46, __real64StringIndex = 47, __stringStringIndex = 48, __listStringIndex = 49,
-      __lStringIndex = 50, __setStringIndex = 51, __sStringIndex = 52, __mapStringIndex = 53, __mStringIndex = 54, __eqStringIndex = 55, __neStringIndex = 56,
-      __gtStringIndex = 57, __ltStringIndex = 58, __geStringIndex = 59, __leStringIndex = 60, __compareStringIndex = 61, __notStringIndex = 62,
-      __andStringIndex = 63, __orStringIndex = 64, __xorStringIndex = 65, __shiftStringIndex = 66, __shiftsignedStringIndex = 67, __rotateStringIndex = 68,
-      __negStringIndex = 69, __addStringIndex = 70, __subStringIndex = 71, __mulStringIndex = 72, __divStringIndex = 73, __modStringIndex = 74,
-      __expStringIndex = 75, __sizeStringIndex = 76, __catStringIndex = 77, __sliceStringIndex = 78, __getStringIndex = 79, __putStringIndex = 80,
-      __containsStringIndex = 81, __removeStringIndex = 82, __extractStringIndex = 83, __unionStringIndex = 84, __intersectionStringIndex = 85,
-      __differenceStringIndex = 86, __castStringIndex = 87, __termArityStringIndex = 88, __termRootStringIndex = 89, __pluginStringIndex = 90;
+      __adtProdStringIndex = 38, __adtSumStringIndex = 39, __procStringIndex = 40, __boolStringIndex = 41, __charStringIndex = 42, __intAPStringIndex = 43,
+      __int32StringIndex = 44, __realAPStringIndex = 45, __real64StringIndex = 46, __stringStringIndex = 47, __arrayStringIndex = 48, __aStringIndex = 49,
+      __listStringIndex = 50, __lStringIndex = 51, __setStringIndex = 52, __sStringIndex = 53, __mapStringIndex = 54, __mStringIndex = 55, __eqStringIndex = 56,
+      __neStringIndex = 57, __gtStringIndex = 58, __ltStringIndex = 59, __geStringIndex = 60, __leStringIndex = 61, __compareStringIndex = 62,
+      __notStringIndex = 63, __andStringIndex = 64, __orStringIndex = 65, __xorStringIndex = 66, __shiftStringIndex = 67, __shiftsignedStringIndex = 68,
+      __rotateStringIndex = 69, __negStringIndex = 70, __addStringIndex = 71, __subStringIndex = 72, __mulStringIndex = 73, __divStringIndex = 74,
+      __modStringIndex = 75, __expStringIndex = 76, __sizeStringIndex = 77, __putStringIndex = 78, __getStringIndex = 79, __extractStringIndex = 80,
+      __catStringIndex = 81, __indexStringIndex = 82, __prefixStringIndex = 83, __suffixStringIndex = 84, __unionStringIndex = 85,
+      __intersectionStringIndex = 86, __differenceStringIndex = 87, __castStringIndex = 88, __termArityStringIndex = 89, __termRootStringIndex = 90,
+      __pluginStringIndex = 91;
 
   void loadStrings() {
     loadString("__bottom", 33);
@@ -1228,58 +1288,59 @@ public class ITerms {
     loadString("__empty", 35);
     loadString("__quote", 36);
     loadString("__blob", 37);
-    loadString("__keyval", 38);
-    loadString("__adtProd", 39);
-    loadString("__adtSum", 40);
-    loadString("__proc", 41);
-    loadString("__bool", 42);
-    loadString("__char", 43);
-    loadString("__intAP", 44);
-    loadString("__int32", 45);
-    loadString("__realAP", 46);
-    loadString("__real64", 47);
-    loadString("__string", 48);
-    loadString("__list", 49);
-    loadString("__l", 50);
-    loadString("__set", 51);
-    loadString("__s", 52);
-    loadString("__map", 53);
-    loadString("__m", 54);
-    loadString("__eq", 55);
-    loadString("__ne", 56);
-    loadString("__gt", 57);
-    loadString("__lt", 58);
-    loadString("__ge", 59);
-    loadString("__le", 60);
-    loadString("__compare", 61);
-    loadString("__not", 62);
-    loadString("__and", 63);
-    loadString("__or", 64);
-    loadString("__xor", 65);
-    loadString("__shift", 66);
-    loadString("__shiftsigned", 67);
-    loadString("__rotate", 68);
-    loadString("__neg", 69);
-    loadString("__add", 70);
-    loadString("__sub", 71);
-    loadString("__mul", 72);
-    loadString("__div", 73);
-    loadString("__mod", 74);
-    loadString("__exp", 75);
-    loadString("__size", 76);
-    loadString("__cat", 77);
-    loadString("__slice", 78);
+    loadString("__adtProd", 38);
+    loadString("__adtSum", 39);
+    loadString("__proc", 40);
+    loadString("__bool", 41);
+    loadString("__char", 42);
+    loadString("__intAP", 43);
+    loadString("__int32", 44);
+    loadString("__realAP", 45);
+    loadString("__real64", 46);
+    loadString("__string", 47);
+    loadString("__array", 48);
+    loadString("__a", 49);
+    loadString("__list", 50);
+    loadString("__l", 51);
+    loadString("__set", 52);
+    loadString("__s", 53);
+    loadString("__map", 54);
+    loadString("__m", 55);
+    loadString("__eq", 56);
+    loadString("__ne", 57);
+    loadString("__gt", 58);
+    loadString("__lt", 59);
+    loadString("__ge", 60);
+    loadString("__le", 61);
+    loadString("__compare", 62);
+    loadString("__not", 63);
+    loadString("__and", 64);
+    loadString("__or", 65);
+    loadString("__xor", 66);
+    loadString("__shift", 67);
+    loadString("__shiftsigned", 68);
+    loadString("__rotate", 69);
+    loadString("__neg", 70);
+    loadString("__add", 71);
+    loadString("__sub", 72);
+    loadString("__mul", 73);
+    loadString("__div", 74);
+    loadString("__mod", 75);
+    loadString("__exp", 76);
+    loadString("__size", 77);
+    loadString("__put", 78);
     loadString("__get", 79);
-    loadString("__put", 80);
-    loadString("__contains", 81);
-    loadString("__remove", 82);
-    loadString("__extract", 83);
-    loadString("__union", 84);
-    loadString("__intersection", 85);
-    loadString("__difference", 86);
-    loadString("__cast", 87);
-    loadString("__termArity", 88);
-    loadString("__termRoot", 89);
-    loadString("__plugin", 90);
+    loadString("__extract", 80);
+    loadString("__cat", 81);
+    loadString("__index", 82);
+    loadString("__prefix", 83);
+    loadString("__suffix", 84);
+    loadString("__union", 85);
+    loadString("__intersection", 86);
+    loadString("__difference", 87);
+    loadString("__cast", 88);
+    loadString("__termArity", 89);
+    loadString("__termRoot", 90);
+    loadString("__plugin", 91);
   }
 }
