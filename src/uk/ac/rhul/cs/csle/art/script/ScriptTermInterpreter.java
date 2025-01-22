@@ -260,7 +260,7 @@ public class ScriptTermInterpreter {
       break;
 
     case "try":
-      System.out.println("try at " + iTerms.toString(term));
+      // System.out.println("try at " + iTerms.toString(term));
       if (iTerms.termSymbolString(iTerms.subterm(term, 0, 0)).equals("file"))
         try {
           String filename = iTerms.termSymbolString(iTerms.subterm(term, 0, 0, 0));

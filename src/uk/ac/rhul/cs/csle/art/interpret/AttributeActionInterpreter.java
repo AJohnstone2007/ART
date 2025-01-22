@@ -43,7 +43,7 @@ public class AttributeActionInterpreter extends AbstractInterpreter {
 
     childNumber = -1;
     for (var node = altNode; node.elm.kind != CFGKind.END; node = node.seq) {
-      System.out.println("node number " + node.num + " childNumber = " + childNumber + " previous token = " + previousToken);
+      // System.out.println("node number " + node.num + " childNumber = " + childNumber + " previous token = " + previousToken);
       switch (node.elm.kind) {
       case N:
         if (!node.delayed) interpret(attributes.getAttributes(node.num));
@@ -53,7 +53,6 @@ public class AttributeActionInterpreter extends AbstractInterpreter {
         break;
       }
       childNumber++;
-      // node = node.seq;
       attributes.action(node.num);
     }
   }
