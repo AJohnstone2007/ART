@@ -7,7 +7,7 @@ import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
 public class AttributeActionInterpreter extends AbstractInterpreter {
   private AbstractActions artActions = new ARTDefaultActions();
   private AbstractParser parser;
-  private int tokenIndex;
+  private int previousToken;
 
   public AttributeActionInterpreter() {
     System.out.println("Interpreter set to Attribute-Action");
@@ -28,7 +28,6 @@ public class AttributeActionInterpreter extends AbstractInterpreter {
   @Override
   public void interpret(AbstractParser parser) {
     this.parser = parser;
-    tokenIndex = 0;
     var root = artActions.init(this, parser.derivationAsInterpeterTerm());
     interpret(root);
   }
@@ -42,21 +41,25 @@ public class AttributeActionInterpreter extends AbstractInterpreter {
     for (var node = altNode.seq; node.elm.kind != CFGKind.END; node = node.seq) // Skip alt node
       attributes.initRHSAttributeBlock(node.num, children[childNumber++]);
 
+    childNumber = -1;
     for (var node = altNode; node.elm.kind != CFGKind.END; node = node.seq) {
+      System.out.println("node number " + node.num + " childNumber = " + childNumber + " previous token = " + previousToken);
       switch (node.elm.kind) {
       case N:
         if (!node.delayed) interpret(attributes.getAttributes(node.num));
         break;
       case T, TI, C, B:
-        tokenIndex++;
+        previousToken = -intFromTermSymbol(children[childNumber]) - 1; // Change this to get token index from the derivation tree
         break;
       }
+      childNumber++;
+      // node = node.seq;
       attributes.action(node.num);
     }
   }
 
   @Override
   public String lexeme() {
-    return parser.lexeme(tokenIndex - 1);
+    return parser.lexeme(previousToken);
   }
 }
