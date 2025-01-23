@@ -1014,8 +1014,7 @@ public class ITerms {
           Util.fatal("__get not yet implemented for __set");
           return termBottom;
         case __mapStringIndex:
-          Util.fatal("__get not yet implemented for __map");
-          return termBottom;
+          return javaObjectToTerm(termToJavaLinkedHashMap(children[0]).get(termToJavaObject(children[1])));
         default:
           Util.fatal("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
           break;
@@ -1032,12 +1031,6 @@ public class ITerms {
         case __listStringIndex:
           Util.fatal("__get not yet implemented for __list");
           return termBottom;
-        case __setStringIndex:
-          Util.fatal("__get not yet implemented for __set");
-          return termBottom;
-        case __mapStringIndex:
-          Util.fatal("__get not yet implemented for __map");
-          return termBottom;
         default:
           Util.fatal("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
           break;
@@ -1052,12 +1045,6 @@ public class ITerms {
           return termBottom;
         case __listStringIndex:
           Util.fatal("__get not yet implemented for __list");
-          return termBottom;
-        case __setStringIndex:
-          Util.fatal("__get not yet implemented for __set");
-          return termBottom;
-        case __mapStringIndex:
-          Util.fatal("__get not yet implemented for __map");
           return termBottom;
         default:
           Util.fatal("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
@@ -1078,14 +1065,16 @@ public class ITerms {
         Util.fatal("__put not yet implemented for __array");
         return termBottom;
       case __listStringIndex:
-        Util.fatal("__put not yet implemented for __list");
+        Util.fatal("__put on __list must have arity 2");
         return termBottom;
       case __setStringIndex:
-        Util.fatal("__put not yet implemented for __set");
+        Util.fatal("__put on __set muct have arity 2");
         return termBottom;
       case __mapStringIndex:
-        Util.fatal("__put not yet implemented for __map");
-        return termBottom;
+        Map<Object, Object> map = termToJavaLinkedHashMap(children[0]);
+        map.put(termToJavaObject(children[1]), termToJavaObject(children[2]));
+        return javaMapToTerm(map);
+
       default:
         Util.fatal("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
       }
@@ -1261,14 +1250,21 @@ public class ITerms {
       term = children[2];
     }
     ret.put(termToJavaObject(termChildren(term)[0]), termToJavaObject(termChildren(term)[1])); // Add in the last element
-
-    // System.out.println("Built Java map " + ret);
     return ret;
   }
 
-  public int javaMapToTerm(Map<?, ?> value) {
-    Util.fatal("javaMapToTerm not yet implemented");
-    return termBottom;
+  public int javaMapToTerm(Map<Object, Object> value) {
+    Iterator<Object> i = value.keySet().iterator();
+
+    return findTerm("__map", javaMapToTermRec(value, i));
+  }
+
+  private int javaMapToTermRec(Map<Object, Object> value, Iterator<Object> i) {
+    var k = i.next();
+    if (i.hasNext()) {
+      return findTerm("__m", javaObjectToTerm(k), javaObjectToTerm(value.get(k)), javaMapToTermRec(value, i));
+    }
+    return findTerm("__m", javaObjectToTerm(k), javaObjectToTerm(value.get(k)));
   }
 
   public Object termToJavaObject(int term) {
@@ -1298,8 +1294,7 @@ public class ITerms {
       return null;
 
     default:
-      Util.fatal("Term has no Java equivalent: " + toString(term));
-      return termBottom;
+      return new RawTerm(term); // Term has no Java equivalent - retain
     }
   }
 
@@ -1307,6 +1302,7 @@ public class ITerms {
   // This version is acceptable to Java 17 (Sep 21) which is the student default for AY 2024-45
   public int javaObjectToTerm(Object value) {
     if (value == null) return termDone;
+    if (value instanceof RawTerm) return ((RawTerm) value).term;
     if (value instanceof Boolean) return javaBooleanToTerm((Boolean) value);
     if (value instanceof Character) return javaCharacterToTerm((Character) value);
     if (value instanceof Integer) return javaIntegerToTerm((Integer) value);
@@ -1314,9 +1310,10 @@ public class ITerms {
     if (value instanceof Double) return javaDoubleToTerm((Double) value);
     if (value instanceof BigDecimal) return javaBigDecimalToTerm((BigDecimal) value);
     if (value instanceof String) return javaStringToTerm((String) value);
-    if (value instanceof List<?>) return javaListToTerm((List<?>) value);
-    if (value instanceof Set<?>) return javaListToTerm((List<?>) value);
-    if (value instanceof Map<?, ?>) return javaMapToTerm((Map<?, ?>) value);
+    if (value instanceof List<?>) return javaListToTerm((List<Object>) value);
+    if (value instanceof Set<?>) return javaListToTerm((List<Object>) value);
+    if (value instanceof Map<?, ?>) return javaMapToTerm((Map<Object, Object>) value);
+    Util.fatal("Java Class has no ART Value partner type: " + value.getClass());
     return termBottom; // Illegal object class with no term equivalent
   }
 
