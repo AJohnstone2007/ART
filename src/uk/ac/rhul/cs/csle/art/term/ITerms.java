@@ -607,7 +607,8 @@ public class ITerms {
   /* Value system evaluation ********************************************************************************/
   // Evaluate an operation over constants: silently return term if we don't recognise an operation
   public int evaluateTerm(int term, int[] children) {
-    if (children.length == 0 || !termSymbolString(term).startsWith("__")) return term; // Nothing to do
+    String rootSymbolString = termSymbolString(term);
+    if (children.length == 0 || !rootSymbolString.startsWith("__")) return term; // Nothing to do
 
     // System.out.println("Evaluating " + toString(term));
 
@@ -616,7 +617,7 @@ public class ITerms {
     // Skip types
     switch (termSymbolStringIndex) {
     case __aStringIndex, __lStringIndex, __sStringIndex, __mStringIndex:
-      throw new ValueException("term may only appear in collection context");
+      Util.fatal("term may only appear in appropriate collection context");
 
     case __bottomStringIndex, __doneStringIndex, __emptyStringIndex, __quoteStringIndex, __blobStringIndex, __adtProdStringIndex, __adtSumStringIndex, __procStringIndex,
 
@@ -647,7 +648,7 @@ public class ITerms {
         case __intAPStringIndex:
           return javaBigIntegerToTerm(termToJavaBigInteger(children[0]).not());
         default:
-          throw new ValueException("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
+          Util.fatal("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
         }
 
       case __negStringIndex:
@@ -661,10 +662,10 @@ public class ITerms {
         case __realAPStringIndex:
           return javaBigDecimalToTerm(termToJavaBigDecimal(children[0]).negate());
         default:
-          throw new ValueException("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
+          Util.fatal("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
         }
 
-      case __sizeStringIndex:
+      case __cardinalityStringIndex:
         switch (firstChildSymbolStringIndex) {
         case __stringStringIndex:
           return javaIntegerToTerm(termToJavaString(children[0]).length());
@@ -675,18 +676,19 @@ public class ITerms {
         case __mapStringIndex:
           return javaIntegerToTerm(termToJavaLinkedHashMap(children[0]).size());
         default:
-          throw new ValueException("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
+          Util.fatal("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
         }
 
-      case __getStringIndex:
+      case __lookupStringIndex:
         switch (firstChildSymbolStringIndex) {
         case __listStringIndex:
-          return 0;
+          Util.fatal("__lookup not yet implemented for __list");
+          return termBottom;
         default:
-          throw new ValueException("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
+          Util.fatal("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
         }
       default:
-        throw new ValueException("Unrecognised operation " + toRawString(term));
+        Util.fatal("Unrecognised operation " + toRawString(term));
       }
 
     case 2:
@@ -712,7 +714,7 @@ public class ITerms {
         case __stringStringIndex:
           return javaBooleanToTerm(termToJavaString(children[0]).compareTo(termToJavaString(children[1])) > 0);
         default:
-          throw new ValueException("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
+          Util.fatal("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
         }
 
       case __ltStringIndex:
@@ -730,7 +732,7 @@ public class ITerms {
         case __stringStringIndex:
           return javaBooleanToTerm(termToJavaString(children[0]).compareTo(termToJavaString(children[1])) < 0);
         default:
-          throw new ValueException("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
+          Util.fatal("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
         }
 
       case __geStringIndex:
@@ -748,7 +750,7 @@ public class ITerms {
         case __stringStringIndex:
           return javaBooleanToTerm(termToJavaString(children[0]).compareTo(termToJavaString(children[1])) >= 0);
         default:
-          throw new ValueException("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
+          Util.fatal("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
         }
 
       case __leStringIndex:
@@ -766,7 +768,7 @@ public class ITerms {
         case __stringStringIndex:
           return javaBooleanToTerm(termToJavaString(children[0]).compareTo(termToJavaString(children[1])) <= 0);
         default:
-          throw new ValueException("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
+          Util.fatal("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
         }
 
       case __compareStringIndex:
@@ -784,7 +786,7 @@ public class ITerms {
         case __stringStringIndex:
           return javaIntegerToTerm(Integer.signum(termToJavaString(children[0]).compareTo(termToJavaString(children[1]))));
         default:
-          throw new ValueException("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
+          Util.fatal("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
         }
 
       case __andStringIndex:
@@ -796,7 +798,7 @@ public class ITerms {
         case __intAPStringIndex:
           return javaBigIntegerToTerm(termToJavaBigInteger(children[0]).and(termToJavaBigInteger(children[1])));
         default:
-          throw new ValueException("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
+          Util.fatal("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
         }
 
       case __orStringIndex:
@@ -808,7 +810,7 @@ public class ITerms {
         case __intAPStringIndex:
           return javaBigIntegerToTerm(termToJavaBigInteger(children[0]).or(termToJavaBigInteger(children[1])));
         default:
-          throw new ValueException("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
+          Util.fatal("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
         }
 
       case __xorStringIndex:
@@ -820,7 +822,7 @@ public class ITerms {
         case __intAPStringIndex:
           return javaBigIntegerToTerm(termToJavaBigInteger(children[0]).xor(termToJavaBigInteger(children[1])));
         default:
-          throw new ValueException("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
+          Util.fatal("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
         }
 
       case __shiftStringIndex:
@@ -829,7 +831,7 @@ public class ITerms {
           int right = termToJavaInteger(children[1]);
           return javaIntegerToTerm(right > 0 ? termToJavaInteger(children[0]) >>> right : termToJavaInteger(children[0]) << -right);
         default:
-          throw new ValueException("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
+          Util.fatal("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
         }
 
       case __shiftsignedStringIndex:
@@ -840,7 +842,7 @@ public class ITerms {
         case __intAPStringIndex:
           return javaBigIntegerToTerm(termToJavaBigInteger(children[0]).shiftRight(termToJavaBigInteger(children[1]).intValueExact()));
         default:
-          throw new ValueException("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
+          Util.fatal("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
         }
 
       case __rotateStringIndex:
@@ -848,7 +850,7 @@ public class ITerms {
         case __int32StringIndex:
           return javaIntegerToTerm(Integer.rotateRight(termToJavaInteger(children[0]), termToJavaInteger(children[1])));
         default:
-          throw new ValueException("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
+          Util.fatal("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
         }
 
       case __addStringIndex:
@@ -862,7 +864,7 @@ public class ITerms {
         case __realAPStringIndex:
           return javaBigDecimalToTerm(termToJavaBigDecimal(children[0]).add(termToJavaBigDecimal(children[1])));
         default:
-          throw new ValueException("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
+          Util.fatal("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
         }
 
       case __subStringIndex:
@@ -876,7 +878,7 @@ public class ITerms {
         case __realAPStringIndex:
           return javaBigDecimalToTerm(termToJavaBigDecimal(children[0]).subtract(termToJavaBigDecimal(children[1])));
         default:
-          throw new ValueException("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
+          Util.fatal("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
         }
 
       case __mulStringIndex:
@@ -890,7 +892,7 @@ public class ITerms {
         case __realAPStringIndex:
           return javaBigDecimalToTerm(termToJavaBigDecimal(children[0]).multiply(termToJavaBigDecimal(children[1])));
         default:
-          throw new ValueException("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
+          Util.fatal("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
         }
 
       case __divStringIndex:
@@ -904,7 +906,7 @@ public class ITerms {
         case __realAPStringIndex:
           return javaBigDecimalToTerm(termToJavaBigDecimal(children[0]).divide(termToJavaBigDecimal(children[1])));
         default:
-          throw new ValueException("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
+          Util.fatal("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
         }
 
       case __modStringIndex:
@@ -918,7 +920,7 @@ public class ITerms {
         case __realAPStringIndex:
           return javaBigDecimalToTerm(termToJavaBigDecimal(children[0]).remainder(termToJavaBigDecimal(children[1])));
         default:
-          throw new ValueException("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
+          Util.fatal("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
         }
 
       case __expStringIndex:
@@ -935,7 +937,7 @@ public class ITerms {
         case __realAPStringIndex:
           return javaBigDecimalToTerm(termToJavaBigDecimal(children[0]).pow(termToJavaBigDecimal(children[1]).intValueExact())); // Note integer powers only:
         default:
-          throw new ValueException("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
+          Util.fatal("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
         }
 
       case __catStringIndex:
@@ -947,54 +949,55 @@ public class ITerms {
           ret.addAll(termToJavaLinkedList(children[1]));
           return javaListToTerm(ret);
         default:
-          throw new ValueException("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
+          Util.fatal("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
         }
 
-      case __getStringIndex:
+      case __lookupStringIndex:
         switch (firstChildSymbolStringIndex) {
         case __stringStringIndex:
           return javaCharacterToTerm(termToJavaString(children[0]).charAt(termToJavaInteger(children[1])));
         case __arrayStringIndex:
           Util.fatal("__get not yet implemented for __array");
-          return 0;
+          return termBottom;
         case __listStringIndex:
           Util.fatal("__get not yet implemented for __list");
-          return 0;
+          return termBottom;
         case __setStringIndex:
           Util.fatal("__get not yet implemented for __set");
-          return 0;
+          return termBottom;
         case __mapStringIndex:
           Util.fatal("__get not yet implemented for __map");
-          return 0;
+          return termBottom;
         default:
-          throw new ValueException("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
+          Util.fatal("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
         }
 
       default:
-        throw new ValueException("Unrecognised operation " + toRawString(term));
+        Util.fatal("Unrecognised operation " + toRawString(term));
       }
 
     case 3:
-    case __putStringIndex:
+    case __insertStringIndex:
       switch (firstChildSymbolStringIndex) {
       case __arrayStringIndex:
         Util.fatal("__put not yet implemented for __array");
-        return 0;
+        return termBottom;
       case __listStringIndex:
         Util.fatal("__put not yet implemented for __list");
-        return 0;
+        return termBottom;
       case __setStringIndex:
         Util.fatal("__put not yet implemented for __set");
-        return 0;
+        return termBottom;
       case __mapStringIndex:
         Util.fatal("__put not yet implemented for __map");
-        return 0;
+        return termBottom;
       default:
-        throw new ValueException("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
+        Util.fatal("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
       }
 
     default:
-      throw new ValueException("Unrecognised operation " + toRawString(term));
+      Util.fatal("Unrecognised operation " + toRawString(term));
+      return termBottom;
     }
   }
 
@@ -1004,12 +1007,12 @@ public class ITerms {
   }
 
   public void mustHaveSymbol(int term, String symbol) {
-    if (!hasSymbol(term, symbol)) throw new ValueException("Term " + toString(term) + "failed type check type against" + symbol);
+    if (!hasSymbol(term, symbol)) Util.fatal("Term " + toString(term) + "failed type check type against" + symbol);
   }
 
   public void mustHaveSymbol(int term, String symbol, int arity) {
     mustHaveSymbol(term, symbol);
-    if (termArity(term) != arity) throw new ValueException("Term " + toString(term) + "failed type check type against" + symbol + " with arity " + arity);
+    if (termArity(term) != arity) Util.fatal("Term " + toString(term) + "failed type check type against" + symbol + " with arity " + arity);
   }
 
   /* Conversions between Java values and terms ************************************************************************************/
@@ -1021,7 +1024,8 @@ public class ITerms {
     case "false":
       return false;
     }
-    throw new ValueException("Term " + toString(term) + " is not a valid __bool");
+    Util.fatal("Term " + toString(term) + " is not a valid __bool");
+    return false;
   }
 
   public int javaBooleanToTerm(Boolean value) {
@@ -1092,7 +1096,7 @@ public class ITerms {
 
   public int javaArrayToTerm(Object[] vale) {
     Util.fatal("__array type not yet implemented");
-    return 0;
+    return termBottom;
   }
 
   public LinkedList<Object> termToJavaLinkedList(int term) {
@@ -1112,7 +1116,7 @@ public class ITerms {
   }
 
   private int javaCollectionToTermRec(int constructor, Iterator<?> iterator) {
-    if (!iterator.hasNext()) return 0;
+    if (!iterator.hasNext()) return termBottom;
 
     int element = javaObjectToTerm(iterator.next());
     int restOf = javaCollectionToTermRec(constructor, iterator);
@@ -1165,7 +1169,8 @@ public class ITerms {
   }
 
   public int javaMapToTerm(Map<?, ?> value) {
-    throw new ValueException("javaMapToTerm not yet implemented");
+    Util.fatal("javaMapToTerm not yet implemented");
+    return termBottom;
   }
 
   public Object termToJavaObject(int term) {
@@ -1195,7 +1200,8 @@ public class ITerms {
       return null;
 
     default:
-      throw new ValueException("Term has no Java equivalent: " + toString(term));
+      Util.fatal("Term has no Java equivalent: " + toString(term));
+      return termBottom;
     }
   }
 
@@ -1246,7 +1252,7 @@ public class ITerms {
 "__shift", "__shiftsigned", "__rotate",
 "__neg", "__add", "__sub", "__mul", "__div", "__mod", "__exp",
 
-"__size",  "__put", "__get", "__extract", "__cat", "__index","__prefix", "__suffix",
+"__cardinality",  "__insert", "__lookup", "__extract", "__cat", "__prefix", "__suffix",
 "__union", "__intersection", "__difference",
 
 "__cast", "__termArity", "__termRoot", "__plugin"
@@ -1277,10 +1283,10 @@ public class ITerms {
       __neStringIndex = 57, __gtStringIndex = 58, __ltStringIndex = 59, __geStringIndex = 60, __leStringIndex = 61, __compareStringIndex = 62,
       __notStringIndex = 63, __andStringIndex = 64, __orStringIndex = 65, __xorStringIndex = 66, __shiftStringIndex = 67, __shiftsignedStringIndex = 68,
       __rotateStringIndex = 69, __negStringIndex = 70, __addStringIndex = 71, __subStringIndex = 72, __mulStringIndex = 73, __divStringIndex = 74,
-      __modStringIndex = 75, __expStringIndex = 76, __sizeStringIndex = 77, __putStringIndex = 78, __getStringIndex = 79, __extractStringIndex = 80,
-      __catStringIndex = 81, __indexStringIndex = 82, __prefixStringIndex = 83, __suffixStringIndex = 84, __unionStringIndex = 85,
-      __intersectionStringIndex = 86, __differenceStringIndex = 87, __castStringIndex = 88, __termArityStringIndex = 89, __termRootStringIndex = 90,
-      __pluginStringIndex = 91;
+      __modStringIndex = 75, __expStringIndex = 76, __cardinalityStringIndex = 77, __insertStringIndex = 78, __lookupStringIndex = 79,
+      __extractStringIndex = 80, __catStringIndex = 81, __prefixStringIndex = 82, __suffixStringIndex = 83, __unionStringIndex = 84,
+      __intersectionStringIndex = 85, __differenceStringIndex = 86, __castStringIndex = 87, __termArityStringIndex = 88, __termRootStringIndex = 89,
+      __pluginStringIndex = 90;
 
   void loadStrings() {
     loadString("__bottom", 33);
@@ -1327,20 +1333,19 @@ public class ITerms {
     loadString("__div", 74);
     loadString("__mod", 75);
     loadString("__exp", 76);
-    loadString("__size", 77);
-    loadString("__put", 78);
-    loadString("__get", 79);
+    loadString("__cardinality", 77);
+    loadString("__insert", 78);
+    loadString("__lookup", 79);
     loadString("__extract", 80);
     loadString("__cat", 81);
-    loadString("__index", 82);
-    loadString("__prefix", 83);
-    loadString("__suffix", 84);
-    loadString("__union", 85);
-    loadString("__intersection", 86);
-    loadString("__difference", 87);
-    loadString("__cast", 88);
-    loadString("__termArity", 89);
-    loadString("__termRoot", 90);
-    loadString("__plugin", 91);
+    loadString("__prefix", 82);
+    loadString("__suffix", 83);
+    loadString("__union", 84);
+    loadString("__intersection", 85);
+    loadString("__difference", 86);
+    loadString("__cast", 87);
+    loadString("__termArity", 88);
+    loadString("__termRoot", 89);
+    loadString("__plugin", 90);
   }
 }
