@@ -2,6 +2,7 @@ package uk.ac.rhul.cs.csle.art.term;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -1176,20 +1177,31 @@ public class ITerms {
     return findTerm(__stringStringIndex, findTerm(value.toString()));
   }
 
-  public Object[] termToJavaArray(int term) {
-    Util.fatal("__array type not yet implemented");
-    return null;
+  // Arrays
+  public ArrayList<Object> termToJavaArrayList(int term) {
+    mustHaveSymbol(term, "__array");
+    ArrayList<Object> ret = new ArrayList<>();
+    if (termArity(term) == 0) return ret; // Empty
+    term = termChildren(term)[0];
+    while (termArity(term) == 2) {
+      int[] children = termChildren(term);
+      ret.add(termToJavaObject(children[0]));
+      term = children[1];
+    }
+    ret.add(termToJavaObject(termChildren(term)[0])); // Add in the last element
+    return ret;
   }
 
-  public int javaArrayToTerm(Object[] vale) {
-    Util.fatal("__array type not yet implemented");
-    return termBottom;
+  public int javaArrayToTerm(ArrayList<Object> value) {
+    Iterator<Object> i = value.iterator();
+    return findTerm("__array", javaElementsToTermRec("__a", i));
   }
 
+  // List
   public LinkedList<Object> termToJavaLinkedList(int term) {
     mustHaveSymbol(term, "__list");
     LinkedList<Object> ret = new LinkedList<>();
-    if (termArity(term) == 0) return ret; // Empty list
+    if (termArity(term) == 0) return ret; // Empty
     term = termChildren(term)[0];
     while (termArity(term) == 2) {
       int[] children = termChildren(term);
@@ -1197,30 +1209,19 @@ public class ITerms {
       term = children[1];
     }
     ret.add(termToJavaObject(termChildren(term)[0])); // Add in the last element
-
-    // System.out.println("Built Java list " + ret);
     return ret;
-  }
-
-  private int javaCollectionToTermRec(int constructor, Iterator<?> iterator) {
-    if (!iterator.hasNext()) return termBottom;
-
-    int element = javaObjectToTerm(iterator.next());
-    int restOf = javaCollectionToTermRec(constructor, iterator);
-
-    return restOf == 0 ? findTerm(constructor, element) : findTerm(constructor, element, restOf);
   }
 
   public int javaListToTerm(List<?> value) {
-    int ret = findTerm("__list", javaCollectionToTermRec(findString("__l"), value.iterator()));
-    System.out.println("Constructed term from List: " + toString(ret));
-    return ret;
+    Iterator<?> i = value.iterator();
+    return findTerm("__list", javaElementsToTermRec("__l", i));
   }
 
+  // Set
   public LinkedHashSet<Object> termToJavaLinkedHashSet(int term) { // Use LinkedHashSet to mimic linked list 'pure' rules
     mustHaveSymbol(term, "__set");
     LinkedHashSet<Object> ret = new LinkedHashSet<>();
-    if (termArity(term) == 0) return ret; // Empty list
+    if (termArity(term) == 0) return ret; // Empty
     term = termChildren(term)[0];
     while (termArity(term) == 2) {
       int[] children = termChildren(term);
@@ -1228,21 +1229,27 @@ public class ITerms {
       term = children[1];
     }
     ret.add(termToJavaObject(termChildren(term)[0])); // Add in the last element
-
-    // System.out.println("Built Java set " + ret);
     return ret;
   }
 
   public int javaSetToTerm(Set<?> value) {
-    int ret = findTerm("__set", javaCollectionToTermRec(findString("__s"), value.iterator()));
-    System.out.println("Constructed term from Set: " + toString(ret));
-    return ret;
+    Iterator<?> i = value.iterator();
+    return findTerm("__set", javaElementsToTermRec("__s", i));
   }
 
+  private int javaElementsToTermRec(String constructor, Iterator<?> i) {
+    var e = i.next();
+    if (i.hasNext()) {
+      return findTerm(constructor, javaObjectToTerm(e), javaElementsToTermRec(constructor, i));
+    }
+    return findTerm(constructor, javaObjectToTerm(e));
+  }
+
+  // Map
   public LinkedHashMap<Object, Object> termToJavaLinkedHashMap(int term) { // Use LinkedHashMap to mimic linked list 'pure' rules
     mustHaveSymbol(term, "__map");
     LinkedHashMap<Object, Object> ret = new LinkedHashMap<>();
-    if (termArity(term) == 0) return ret; // Empty list
+    if (termArity(term) == 0) return ret; // Empty
     term = termChildren(term)[0];
     while (termArity(term) == 3) {
       int[] children = termChildren(term);
@@ -1253,13 +1260,12 @@ public class ITerms {
     return ret;
   }
 
-  public int javaMapToTerm(Map<Object, Object> value) {
-    Iterator<Object> i = value.keySet().iterator();
-
+  public int javaMapToTerm(Map<?, ?> value) {
+    Iterator<?> i = value.keySet().iterator();
     return findTerm("__map", javaMapToTermRec(value, i));
   }
 
-  private int javaMapToTermRec(Map<Object, Object> value, Iterator<Object> i) {
+  private int javaMapToTermRec(Map<?, ?> value, Iterator<?> i) {
     var k = i.next();
     if (i.hasNext()) {
       return findTerm("__m", javaObjectToTerm(k), javaObjectToTerm(value.get(k)), javaMapToTermRec(value, i));
@@ -1310,9 +1316,9 @@ public class ITerms {
     if (value instanceof Double) return javaDoubleToTerm((Double) value);
     if (value instanceof BigDecimal) return javaBigDecimalToTerm((BigDecimal) value);
     if (value instanceof String) return javaStringToTerm((String) value);
-    if (value instanceof List<?>) return javaListToTerm((List<Object>) value);
-    if (value instanceof Set<?>) return javaListToTerm((List<Object>) value);
-    if (value instanceof Map<?, ?>) return javaMapToTerm((Map<Object, Object>) value);
+    if (value instanceof List<?>) return javaListToTerm((List<?>) value);
+    if (value instanceof Set<?>) return javaSetToTerm((Set<?>) value);
+    if (value instanceof Map<?, ?>) return javaMapToTerm((Map<?, ?>) value);
     Util.fatal("Java Class has no ART Value partner type: " + value.getClass());
     return termBottom; // Illegal object class with no term equivalent
   }
