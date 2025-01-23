@@ -618,6 +618,7 @@ public class ITerms {
     switch (termSymbolStringIndex) {
     case __aStringIndex, __lStringIndex, __sStringIndex, __mStringIndex:
       Util.fatal("term may only appear in appropriate collection context");
+      break;
 
     case __bottomStringIndex, __doneStringIndex, __emptyStringIndex, __quoteStringIndex, __blobStringIndex, __adtProdStringIndex, __adtSumStringIndex, __procStringIndex,
 
@@ -649,7 +650,9 @@ public class ITerms {
           return javaBigIntegerToTerm(termToJavaBigInteger(children[0]).not());
         default:
           Util.fatal("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
+          break;
         }
+        break;
 
       case __negStringIndex:
         switch (firstChildSymbolStringIndex) {
@@ -663,7 +666,9 @@ public class ITerms {
           return javaBigDecimalToTerm(termToJavaBigDecimal(children[0]).negate());
         default:
           Util.fatal("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
+          break;
         }
+        break;
 
       case __cardStringIndex:
         switch (firstChildSymbolStringIndex) {
@@ -677,7 +682,9 @@ public class ITerms {
           return javaIntegerToTerm(termToJavaLinkedHashMap(children[0]).size());
         default:
           Util.fatal("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
+          break;
         }
+        break;
 
       case __getStringIndex:
         switch (firstChildSymbolStringIndex) {
@@ -686,10 +693,15 @@ public class ITerms {
           return termBottom;
         default:
           Util.fatal("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
+          break;
         }
+        break;
+
       default:
         Util.fatal("Unrecognised operation " + toRawString(term));
+        break;
       }
+      break;
 
     case 2:
       switch (termSymbolStringIndex) {
@@ -715,7 +727,9 @@ public class ITerms {
           return javaBooleanToTerm(termToJavaString(children[0]).compareTo(termToJavaString(children[1])) > 0);
         default:
           Util.fatal("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
+          break;
         }
+        break;
 
       case __ltStringIndex:
         switch (firstChildSymbolStringIndex) {
@@ -733,7 +747,9 @@ public class ITerms {
           return javaBooleanToTerm(termToJavaString(children[0]).compareTo(termToJavaString(children[1])) < 0);
         default:
           Util.fatal("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
+          break;
         }
+        break;
 
       case __geStringIndex:
         switch (firstChildSymbolStringIndex) {
@@ -751,7 +767,9 @@ public class ITerms {
           return javaBooleanToTerm(termToJavaString(children[0]).compareTo(termToJavaString(children[1])) >= 0);
         default:
           Util.fatal("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
+          break;
         }
+        break;
 
       case __leStringIndex:
         switch (firstChildSymbolStringIndex) {
@@ -769,7 +787,9 @@ public class ITerms {
           return javaBooleanToTerm(termToJavaString(children[0]).compareTo(termToJavaString(children[1])) <= 0);
         default:
           Util.fatal("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
+          break;
         }
+        break;
 
       case __compStringIndex:
         switch (firstChildSymbolStringIndex) {
@@ -787,7 +807,9 @@ public class ITerms {
           return javaIntegerToTerm(Integer.signum(termToJavaString(children[0]).compareTo(termToJavaString(children[1]))));
         default:
           Util.fatal("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
+          break;
         }
+        break;
 
       case __andStringIndex:
         switch (firstChildSymbolStringIndex) {
@@ -799,7 +821,9 @@ public class ITerms {
           return javaBigIntegerToTerm(termToJavaBigInteger(children[0]).and(termToJavaBigInteger(children[1])));
         default:
           Util.fatal("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
+          break;
         }
+        break;
 
       case __orStringIndex:
         switch (firstChildSymbolStringIndex) {
@@ -811,7 +835,9 @@ public class ITerms {
           return javaBigIntegerToTerm(termToJavaBigInteger(children[0]).or(termToJavaBigInteger(children[1])));
         default:
           Util.fatal("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
+          break;
         }
+        break;
 
       case __xorStringIndex:
         switch (firstChildSymbolStringIndex) {
@@ -823,7 +849,9 @@ public class ITerms {
           return javaBigIntegerToTerm(termToJavaBigInteger(children[0]).xor(termToJavaBigInteger(children[1])));
         default:
           Util.fatal("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
+          break;
         }
+        break;
 
       case __shiftStringIndex:
         switch (firstChildSymbolStringIndex) {
@@ -832,7 +860,9 @@ public class ITerms {
           return javaIntegerToTerm(right > 0 ? termToJavaInteger(children[0]) >>> right : termToJavaInteger(children[0]) << -right);
         default:
           Util.fatal("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
+          break;
         }
+        break;
 
       case __sshiftStringIndex:
         switch (firstChildSymbolStringIndex) {
@@ -843,7 +873,9 @@ public class ITerms {
           return javaBigIntegerToTerm(termToJavaBigInteger(children[0]).shiftRight(termToJavaBigInteger(children[1]).intValueExact()));
         default:
           Util.fatal("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
+          break;
         }
+        break;
 
       case __rotStringIndex:
         switch (firstChildSymbolStringIndex) {
@@ -851,7 +883,9 @@ public class ITerms {
           return javaIntegerToTerm(Integer.rotateRight(termToJavaInteger(children[0]), termToJavaInteger(children[1])));
         default:
           Util.fatal("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
+          break;
         }
+        break;
 
       case __addStringIndex:
         switch (firstChildSymbolStringIndex) {
@@ -865,7 +899,9 @@ public class ITerms {
           return javaBigDecimalToTerm(termToJavaBigDecimal(children[0]).add(termToJavaBigDecimal(children[1])));
         default:
           Util.fatal("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
+          break;
         }
+        break;
 
       case __subStringIndex:
         switch (firstChildSymbolStringIndex) {
@@ -879,7 +915,9 @@ public class ITerms {
           return javaBigDecimalToTerm(termToJavaBigDecimal(children[0]).subtract(termToJavaBigDecimal(children[1])));
         default:
           Util.fatal("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
+          break;
         }
+        break;
 
       case __mulStringIndex:
         switch (firstChildSymbolStringIndex) {
@@ -893,7 +931,9 @@ public class ITerms {
           return javaBigDecimalToTerm(termToJavaBigDecimal(children[0]).multiply(termToJavaBigDecimal(children[1])));
         default:
           Util.fatal("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
+          break;
         }
+        break;
 
       case __divStringIndex:
         switch (firstChildSymbolStringIndex) {
@@ -907,7 +947,9 @@ public class ITerms {
           return javaBigDecimalToTerm(termToJavaBigDecimal(children[0]).divide(termToJavaBigDecimal(children[1])));
         default:
           Util.fatal("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
+          break;
         }
+        break;
 
       case __modStringIndex:
         switch (firstChildSymbolStringIndex) {
@@ -921,7 +963,9 @@ public class ITerms {
           return javaBigDecimalToTerm(termToJavaBigDecimal(children[0]).remainder(termToJavaBigDecimal(children[1])));
         default:
           Util.fatal("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
+          break;
         }
+        break;
 
       case __expStringIndex:
         switch (firstChildSymbolStringIndex) {
@@ -938,7 +982,9 @@ public class ITerms {
           return javaBigDecimalToTerm(termToJavaBigDecimal(children[0]).pow(termToJavaBigDecimal(children[1]).intValueExact())); // Note integer powers only:
         default:
           Util.fatal("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
+          break;
         }
+        break;
 
       case __catStringIndex:
         switch (firstChildSymbolStringIndex) {
@@ -950,7 +996,9 @@ public class ITerms {
           return javaListToTerm(ret);
         default:
           Util.fatal("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
+          break;
         }
+        break;
 
       case __getStringIndex:
         switch (firstChildSymbolStringIndex) {
@@ -970,11 +1018,15 @@ public class ITerms {
           return termBottom;
         default:
           Util.fatal("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
+          break;
         }
+        break;
 
       default:
         Util.fatal("Unrecognised operation " + toRawString(term));
+        break;
       }
+      break;
 
     case 3:
     case __putStringIndex:
@@ -994,11 +1046,14 @@ public class ITerms {
       default:
         Util.fatal("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
       }
+      break;
 
     default:
       Util.fatal("Unrecognised operation " + toRawString(term));
       return termBottom;
     }
+    Util.fatal("Internal evaluator flowcontrol error " + toRawString(term));
+    return termBottom;
   }
 
   public boolean hasSymbol(Integer term, String string) {
