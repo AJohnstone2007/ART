@@ -665,7 +665,7 @@ public class ITerms {
           Util.fatal("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
         }
 
-      case __cardinalityStringIndex:
+      case __cardStringIndex:
         switch (firstChildSymbolStringIndex) {
         case __stringStringIndex:
           return javaIntegerToTerm(termToJavaString(children[0]).length());
@@ -679,7 +679,7 @@ public class ITerms {
           Util.fatal("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
         }
 
-      case __lookupStringIndex:
+      case __getStringIndex:
         switch (firstChildSymbolStringIndex) {
         case __listStringIndex:
           Util.fatal("__lookup not yet implemented for __list");
@@ -771,7 +771,7 @@ public class ITerms {
           Util.fatal("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
         }
 
-      case __compareStringIndex:
+      case __compStringIndex:
         switch (firstChildSymbolStringIndex) {
         case __charStringIndex:
           return javaIntegerToTerm(Integer.signum(termToJavaCharacter(children[0]).compareTo(termToJavaCharacter(children[1]))));
@@ -834,7 +834,7 @@ public class ITerms {
           Util.fatal("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
         }
 
-      case __shiftsignedStringIndex:
+      case __sshiftStringIndex:
         switch (firstChildSymbolStringIndex) {
         case __int32StringIndex:
           int right = termToJavaInteger(children[1]);
@@ -845,7 +845,7 @@ public class ITerms {
           Util.fatal("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
         }
 
-      case __rotateStringIndex:
+      case __rotStringIndex:
         switch (firstChildSymbolStringIndex) {
         case __int32StringIndex:
           return javaIntegerToTerm(Integer.rotateRight(termToJavaInteger(children[0]), termToJavaInteger(children[1])));
@@ -952,7 +952,7 @@ public class ITerms {
           Util.fatal("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
         }
 
-      case __lookupStringIndex:
+      case __getStringIndex:
         switch (firstChildSymbolStringIndex) {
         case __stringStringIndex:
           return javaCharacterToTerm(termToJavaString(children[0]).charAt(termToJavaInteger(children[1])));
@@ -977,7 +977,7 @@ public class ITerms {
       }
 
     case 3:
-    case __insertStringIndex:
+    case __putStringIndex:
       switch (firstChildSymbolStringIndex) {
       case __arrayStringIndex:
         Util.fatal("__put not yet implemented for __array");
@@ -1247,13 +1247,13 @@ public class ITerms {
 "__set", "__s",
 "__map", "__m",
 
-"__eq", "__ne", "__gt", "__lt", "__ge", "__le", "__compare",
+"__eq", "__ne", "__gt", "__lt", "__ge", "__le", "__comp",
 "__not", "__and", "__or", "__xor",
-"__shift", "__shiftsigned", "__rotate",
+"__shift", "__sshift", "__rot",
 "__neg", "__add", "__sub", "__mul", "__div", "__mod", "__exp",
 
-"__cardinality",  "__insert", "__lookup", "__extract", "__cat", "__prefix", "__suffix",
-"__union", "__intersection", "__difference",
+"__card",  "__put", "__get", "__extract", "__cat", "__prefix", "__suffix",
+"__unite", "__intersect", "__diff",
 
 "__cast", "__termArity", "__termRoot", "__plugin"
 };
@@ -1280,13 +1280,12 @@ public class ITerms {
       __adtProdStringIndex = 38, __adtSumStringIndex = 39, __procStringIndex = 40, __boolStringIndex = 41, __charStringIndex = 42, __intAPStringIndex = 43,
       __int32StringIndex = 44, __realAPStringIndex = 45, __real64StringIndex = 46, __stringStringIndex = 47, __arrayStringIndex = 48, __aStringIndex = 49,
       __listStringIndex = 50, __lStringIndex = 51, __setStringIndex = 52, __sStringIndex = 53, __mapStringIndex = 54, __mStringIndex = 55, __eqStringIndex = 56,
-      __neStringIndex = 57, __gtStringIndex = 58, __ltStringIndex = 59, __geStringIndex = 60, __leStringIndex = 61, __compareStringIndex = 62,
-      __notStringIndex = 63, __andStringIndex = 64, __orStringIndex = 65, __xorStringIndex = 66, __shiftStringIndex = 67, __shiftsignedStringIndex = 68,
-      __rotateStringIndex = 69, __negStringIndex = 70, __addStringIndex = 71, __subStringIndex = 72, __mulStringIndex = 73, __divStringIndex = 74,
-      __modStringIndex = 75, __expStringIndex = 76, __cardinalityStringIndex = 77, __insertStringIndex = 78, __lookupStringIndex = 79,
-      __extractStringIndex = 80, __catStringIndex = 81, __prefixStringIndex = 82, __suffixStringIndex = 83, __unionStringIndex = 84,
-      __intersectionStringIndex = 85, __differenceStringIndex = 86, __castStringIndex = 87, __termArityStringIndex = 88, __termRootStringIndex = 89,
-      __pluginStringIndex = 90;
+      __neStringIndex = 57, __gtStringIndex = 58, __ltStringIndex = 59, __geStringIndex = 60, __leStringIndex = 61, __compStringIndex = 62,
+      __notStringIndex = 63, __andStringIndex = 64, __orStringIndex = 65, __xorStringIndex = 66, __shiftStringIndex = 67, __sshiftStringIndex = 68,
+      __rotStringIndex = 69, __negStringIndex = 70, __addStringIndex = 71, __subStringIndex = 72, __mulStringIndex = 73, __divStringIndex = 74,
+      __modStringIndex = 75, __expStringIndex = 76, __cardStringIndex = 77, __putStringIndex = 78, __getStringIndex = 79, __extractStringIndex = 80,
+      __catStringIndex = 81, __prefixStringIndex = 82, __suffixStringIndex = 83, __uniteStringIndex = 84, __intersectStringIndex = 85, __diffStringIndex = 86,
+      __castStringIndex = 87, __termArityStringIndex = 88, __termRootStringIndex = 89, __pluginStringIndex = 90;
 
   void loadStrings() {
     loadString("__bottom", 33);
@@ -1318,14 +1317,14 @@ public class ITerms {
     loadString("__lt", 59);
     loadString("__ge", 60);
     loadString("__le", 61);
-    loadString("__compare", 62);
+    loadString("__comp", 62);
     loadString("__not", 63);
     loadString("__and", 64);
     loadString("__or", 65);
     loadString("__xor", 66);
     loadString("__shift", 67);
-    loadString("__shiftsigned", 68);
-    loadString("__rotate", 69);
+    loadString("__sshift", 68);
+    loadString("__rot", 69);
     loadString("__neg", 70);
     loadString("__add", 71);
     loadString("__sub", 72);
@@ -1333,16 +1332,16 @@ public class ITerms {
     loadString("__div", 74);
     loadString("__mod", 75);
     loadString("__exp", 76);
-    loadString("__cardinality", 77);
-    loadString("__insert", 78);
-    loadString("__lookup", 79);
+    loadString("__card", 77);
+    loadString("__put", 78);
+    loadString("__get", 79);
     loadString("__extract", 80);
     loadString("__cat", 81);
     loadString("__prefix", 82);
     loadString("__suffix", 83);
-    loadString("__union", 84);
-    loadString("__intersection", 85);
-    loadString("__difference", 86);
+    loadString("__unite", 84);
+    loadString("__intersect", 85);
+    loadString("__diff", 86);
     loadString("__cast", 87);
     loadString("__termArity", 88);
     loadString("__termRoot", 89);
