@@ -1022,6 +1022,49 @@ public class ITerms {
         }
         break;
 
+      case __prefixStringIndex:
+        switch (firstChildSymbolStringIndex) {
+        case __stringStringIndex:
+          return javaStringToTerm(termToJavaString(children[0]).substring(0, termToJavaInteger(children[1])));
+        case __arrayStringIndex:
+          Util.fatal("__get not yet implemented for __array");
+          return termBottom;
+        case __listStringIndex:
+          Util.fatal("__get not yet implemented for __list");
+          return termBottom;
+        case __setStringIndex:
+          Util.fatal("__get not yet implemented for __set");
+          return termBottom;
+        case __mapStringIndex:
+          Util.fatal("__get not yet implemented for __map");
+          return termBottom;
+        default:
+          Util.fatal("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
+          break;
+        }
+        break;
+      case __suffixStringIndex:
+        switch (firstChildSymbolStringIndex) {
+        case __stringStringIndex:
+          return javaStringToTerm(termToJavaString(children[0]).substring(termToJavaInteger(children[1])));
+        case __arrayStringIndex:
+          Util.fatal("__get not yet implemented for __array");
+          return termBottom;
+        case __listStringIndex:
+          Util.fatal("__get not yet implemented for __list");
+          return termBottom;
+        case __setStringIndex:
+          Util.fatal("__get not yet implemented for __set");
+          return termBottom;
+        case __mapStringIndex:
+          Util.fatal("__get not yet implemented for __map");
+          return termBottom;
+        default:
+          Util.fatal("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
+          break;
+        }
+        break;
+
       default:
         Util.fatal("Unrecognised operation " + toRawString(term));
         break;
