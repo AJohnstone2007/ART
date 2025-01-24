@@ -125,7 +125,7 @@ public class ITerms {
     termDone = findTerm("__done");
     termEmpty = findTerm("__empty");
     termStringEmpty = findTerm("__string");
-    termArrayEmpty = findTerm("__array");
+    termArrayEmpty = findTerm("__array(__int32(0))");
     termListEmpty = findTerm("__list");
     termSetEmpty = findTerm("__set");
     termMapEmpty = findTerm("__map");
@@ -1018,13 +1018,19 @@ public class ITerms {
 
       case __putStringIndex:
         switch (firstChildSymbolStringIndex) {
+        case __arrayStringIndex:
+          Util.fatal("__put on __array must have arity 3: __put(__array,  _int32, X)");
+          return termBottom;
         case __listStringIndex:
-          Util.fatal("__put not yet implemented for __list");
+          Util.fatal("__put on __list must have arity 3: __put(__list,  _int32, X)");
           return termBottom;
         case __setStringIndex:
           Set<Object> set = termToJavaLinkedHashSet(children[0]);
           set.add(termToJavaObject(children[1]));
           return javaSetToTerm(set);
+        case __mapStringIndex:
+          Util.fatal("__put on __map must have arity 3: __put(__map,  _Key, X)");
+          return termBottom;
         }
         break;
 
@@ -1056,8 +1062,9 @@ public class ITerms {
       case __removeStringIndex:
         switch (firstChildSymbolStringIndex) {
         case __listStringIndex:
-          Util.fatal("__remove not yet implemented for __list");
-          return termBottom;
+          List<Object> list = termToJavaLinkedList(children[0]);
+          list.remove((int) termToJavaInteger(children[1])); // Nasty: remove by position if int; remove by value if Integer
+          return javaListToTerm(list);
         case __setStringIndex:
           Set<Object> set = termToJavaLinkedHashSet(children[0]);
           set.remove(termToJavaObject(children[1]));
@@ -1141,10 +1148,11 @@ public class ITerms {
         Util.fatal("__put not yet implemented for __array");
         return termBottom;
       case __listStringIndex:
-        Util.fatal("__put on __list must have arity 2");
-        return termBottom;
+        List<Object> list = termToJavaLinkedList(children[0]);
+        list.add(termToJavaInteger(children[1]), termToJavaObject(children[2]));
+        return javaListToTerm(list);
       case __setStringIndex:
-        Util.fatal("__put on __set must have arity 2");
+        Util.fatal("__put on __set must have arity 2: __put(__set, X)");
         return termBottom;
       case __mapStringIndex:
         Map<Object, Object> map = termToJavaLinkedHashMap(children[0]);
@@ -1255,21 +1263,25 @@ public class ITerms {
   // Arrays
   public ArrayList<Object> termToJavaArrayList(int term) {
     mustHaveSymbol(term, "__array");
+
     ArrayList<Object> ret = new ArrayList<>();
-    if (termArity(term) == 0) return ret; // Empty
-    term = termChildren(term)[0];
-    while (termArity(term) == 2) {
-      int[] children = termChildren(term);
-      ret.add(termToJavaObject(children[0]));
-      term = children[1];
+    int size = termToJavaInteger(termChildren(term)[0]);
+    if (size > 0) { // Load elements
+      term = termChildren(term)[1];
+      while (termArity(term) == 2) {
+        int[] children = termChildren(term);
+        ret.add(termToJavaObject(children[0]));
+        term = children[1];
+      }
+      ret.add(termToJavaObject(termChildren(term)[0])); // Add in the last element
     }
-    ret.add(termToJavaObject(termChildren(term)[0])); // Add in the last element
+    if (size != ret.size()) Util.fatal("Array size does not match element count");
     return ret;
   }
 
   public int javaArrayToTerm(ArrayList<Object> value) {
     Iterator<Object> i = value.iterator();
-    if (i.hasNext()) return findTerm("__array", javaElementsToTermRec("__a", i));
+    if (i.hasNext()) return findTerm("__array", javaIntegerToTerm(value.size()), javaElementsToTermRec("__a", i));
     return termArrayEmpty;
   }
 
