@@ -702,17 +702,6 @@ public class ITerms {
         }
         break;
 
-      case __getStringIndex:
-        switch (firstChildSymbolStringIndex) {
-        case __listStringIndex:
-          Util.fatal("__lookup not yet implemented for __list");
-          return termBottom;
-        default:
-          Util.fatal("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
-          break;
-        }
-        break;
-
       default:
         Util.fatal("Unrecognised operation " + toRawString(term));
         break;
@@ -1084,7 +1073,8 @@ public class ITerms {
         case __stringStringIndex:
           return javaStringToTerm(termToJavaString(children[0]).substring(0, termToJavaInteger(children[1])));
         case __arrayStringIndex:
-          return javaArrayToTerm((ArrayList<Object>) termToJavaArrayList(children[0]).subList(0, termToJavaInteger(children[1])));
+          return javaArrayToTerm(new ArrayList<Object>(termToJavaArrayList(children[0]).subList(0, termToJavaInteger(children[1])))); // Cannot cast, so make
+                                                                                                                                      // new,sigh
         case __listStringIndex:
           return javaListToTerm(termToJavaLinkedList(children[0]).subList(0, termToJavaInteger(children[1])));
         default:
@@ -1098,7 +1088,7 @@ public class ITerms {
           return javaStringToTerm(termToJavaString(children[0]).substring(termToJavaInteger(children[1])));
         case __arrayStringIndex:
           ArrayList<Object> arrayList = termToJavaArrayList(children[0]);
-          return javaArrayToTerm((ArrayList<Object>) arrayList.subList(termToJavaInteger(children[1]), arrayList.size()));
+          return javaArrayToTerm(new ArrayList<Object>(arrayList.subList(termToJavaInteger(children[1]), arrayList.size())));
         case __listStringIndex:
           List<Object> list = termToJavaLinkedList(children[0]);
           return javaListToTerm(list.subList(termToJavaInteger(children[1]), list.size()));
@@ -1145,8 +1135,9 @@ public class ITerms {
     case __putStringIndex:
       switch (firstChildSymbolStringIndex) {
       case __arrayStringIndex:
-        Util.fatal("__put not yet implemented for __array");
-        return termBottom;
+        ArrayList<Object> arrayList = termToJavaArrayList(children[0]);
+        arrayList.set(termToJavaInteger(children[1]), termToJavaObject(children[2]));
+        return javaArrayToTerm(arrayList);
       case __listStringIndex:
         List<Object> list = termToJavaLinkedList(children[0]);
         list.add(termToJavaInteger(children[1]), termToJavaObject(children[2]));
@@ -1402,7 +1393,7 @@ public class ITerms {
       return null;
 
     default:
-      return new RawTerm(term); // Term has no Java equivalent - retain
+      return new Quote(term); // Term has no Java equivalent - retain
     }
   }
 
@@ -1410,7 +1401,7 @@ public class ITerms {
   // This version is acceptable to Java 17 (Sep 21) which is the student default for AY 2024-45
   public int javaObjectToTerm(Object value) {
     if (value == null) Util.fatal("Cannot convert Java null to a term - try Botton, Done or Empty");
-    if (value instanceof RawTerm) return ((RawTerm) value).term;
+    if (value instanceof Quote) return ((Quote) value).term;
     if (value instanceof Bottom) return termBottom;
     if (value instanceof Done) return termDone;
     if (value instanceof Empty) return termEmpty;

@@ -1,9 +1,9 @@
 package uk.ac.rhul.cs.csle.art.term;
 
-public class RawTerm {
+public class Quote {
   int term;
 
-  public RawTerm(int term) {
+  public Quote(int term) {
     super();
     this.term = term;
   }
@@ -21,14 +21,14 @@ public class RawTerm {
     if (this == obj) return true;
     if (obj == null) return false;
     if (getClass() != obj.getClass()) return false;
-    RawTerm other = (RawTerm) obj;
+    Quote other = (Quote) obj;
     if (term != other.term) return false;
     return true;
   }
 
   @Override
   public String toString() {
-    return "RT:" + term;
+    return "Quote:" + term;
   }
 
 }
