@@ -632,7 +632,7 @@ public class ITerms {
       Util.fatal("term may only appear in appropriate collection context");
       break;
 
-    case __bottomStringIndex, __doneStringIndex, __emptyStringIndex, __quoteStringIndex, __blobStringIndex, __adtProdStringIndex, __adtSumStringIndex, __procStringIndex,
+    case __bottomStringIndex, __doneStringIndex, __emptyStringIndex, __quoteStringIndex, __blobStringIndex, __adtprodStringIndex, __adtsumStringIndex, __procStringIndex,
 
         __boolStringIndex, __charStringIndex, __intAPStringIndex, __int32StringIndex, __realAPStringIndex, __real64StringIndex, __stringStringIndex,
 
@@ -648,13 +648,13 @@ public class ITerms {
       return javaObjectToTerm(plugin.plugin(values));
     }
 
-    int firstChildSymbolStringIndex = termSymbolStringIndex(children[0]);
+    int firstChildSymbolStringIndex = children.length < 1 ? 0 : termSymbolStringIndex(children[0]);
+    int secondChildSymbolStringIndex = children.length < 2 ? 0 : termSymbolStringIndex(children[1]);
 
     switch (children.length) {
     case 1:
       switch (termSymbolStringIndex) {
       case __notStringIndex:
-
         switch (firstChildSymbolStringIndex) {
         case __boolStringIndex:
           return javaBooleanToTerm(!termToJavaBoolean(children[0]));
@@ -701,6 +701,12 @@ public class ITerms {
           break;
         }
         break;
+
+      case __termArityStringIndex:
+        return javaIntegerToTerm(termArity(children[0]));
+
+      case __termRootStringIndex:
+        return findTerm(termSymbolStringIndex(term));
 
       default:
         Util.fatal("Unrecognised operation " + toRawString(term));
@@ -1125,6 +1131,26 @@ public class ITerms {
         }
         break;
 
+      case __castStringIndex:
+        switch (firstChildSymbolStringIndex) {
+
+        case __int32StringIndex:
+          switch (secondChildSymbolStringIndex) {
+          case __int32StringIndex:
+            return children[0]; // No change
+          case __intAPStringIndex:
+            return javaBigIntegerToTerm(new BigInteger(termToJavaInteger(children[0]).toString()));
+          case __real64StringIndex:
+            return javaDoubleToTerm((double) termToJavaInteger(children[0]));
+          case __realAPStringIndex:
+            return javaBigDecimalToTerm(new BigDecimal(termToJavaInteger(children[0]).toString()));
+          }
+
+        default:
+          Util.fatal("Cannot cast " + getString(firstChildSymbolStringIndex) + " to " + getString(secondChildSymbolStringIndex));
+          return termBottom;
+        }
+
       default:
         Util.fatal("Unrecognised operation " + toRawString(term));
         break;
@@ -1366,6 +1392,16 @@ public class ITerms {
 
   public Object termToJavaObject(int term) {
     switch (termSymbolStringIndex(term)) {
+    case __bottomStringIndex:
+      return bottom;
+    case __doneStringIndex:
+      return done;
+    case __emptyStringIndex:
+      return empty;
+    case __quoteStringIndex:
+      return new Quote(subTerm(term, 0));
+    case __blobStringIndex:
+      return termToJavaBlob(term);
     case __boolStringIndex:
       return termToJavaBoolean(term);
     case __charStringIndex:
@@ -1386,15 +1422,15 @@ public class ITerms {
       return termToJavaLinkedHashSet(term);
     case __mapStringIndex:
       return termToJavaLinkedHashMap(term);
-    case __blobStringIndex:
-      return termToJavaBlob(term);
-
-    case __doneStringIndex: // special case - we use __done as term equivalent of null
-      return null;
-
     default:
-      return new Quote(term); // Term has no Java equivalent - retain
+      Util.fatal("Cannot pass term to Java (try using a __quote): " + toString(term));
+      return bottom;
     }
+  }
+
+  private int subTerm(int term, int i) {
+    // TODO Auto-generated method stub
+    return 0;
   }
 
   // Note that in later versions of Java this can be replaced by pattern matching on class
@@ -1430,8 +1466,8 @@ public class ITerms {
 "__empty",
 "__quote",
 "__blob",
-"__adtProd",
-"__adtSum",
+"__adtprod",
+"__adtsum",
 "__proc",
 "__bool",
 "__char",
@@ -1475,7 +1511,7 @@ public class ITerms {
   }
 
   public final int __bottomStringIndex = 33, __doneStringIndex = 34, __emptyStringIndex = 35, __quoteStringIndex = 36, __blobStringIndex = 37,
-      __adtProdStringIndex = 38, __adtSumStringIndex = 39, __procStringIndex = 40, __boolStringIndex = 41, __charStringIndex = 42, __intAPStringIndex = 43,
+      __adtprodStringIndex = 38, __adtsumStringIndex = 39, __procStringIndex = 40, __boolStringIndex = 41, __charStringIndex = 42, __intAPStringIndex = 43,
       __int32StringIndex = 44, __realAPStringIndex = 45, __real64StringIndex = 46, __stringStringIndex = 47, __arrayStringIndex = 48, __aStringIndex = 49,
       __listStringIndex = 50, __lStringIndex = 51, __setStringIndex = 52, __sStringIndex = 53, __mapStringIndex = 54, __mStringIndex = 55, __eqStringIndex = 56,
       __neStringIndex = 57, __gtStringIndex = 58, __ltStringIndex = 59, __geStringIndex = 60, __leStringIndex = 61, __compStringIndex = 62,
@@ -1491,8 +1527,8 @@ public class ITerms {
     loadString("__empty", 35);
     loadString("__quote", 36);
     loadString("__blob", 37);
-    loadString("__adtProd", 38);
-    loadString("__adtSum", 39);
+    loadString("__adtprod", 38);
+    loadString("__adtsum", 39);
     loadString("__proc", 40);
     loadString("__bool", 41);
     loadString("__char", 42);

@@ -11,9 +11,9 @@ public class ARTDefaultPlugin extends AbstractPlugin {
   public Object plugin(Object... args) {
     System.out.println(description() + " called with " + args.length + " argument" + (args.length == 1 ? "" : "s"));
     for (Object a : args) {
-      System.out.println(a == null ? "null" : a.getClass() + " " + a);
+      System.out.println(a.getClass() + " " + a);
     }
-    return args.length == 0 ? null : args[0];
+    return args.length == 0 ? new Empty() : args[0];
   }
 
 }
