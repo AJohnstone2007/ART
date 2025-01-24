@@ -89,6 +89,10 @@ public class ITerms {
   public final int termDone;
   public final int termEmpty;
   public final int termStringEmpty;
+  public final int termArrayEmpty;
+  public final int termListEmpty;
+  public final int termSetEmpty;
+  public final int termMapEmpty;
 
   public ITerms() {
     // 1. Load text traverser default action which appends the escaped version of the constructor
@@ -117,6 +121,10 @@ public class ITerms {
     termDone = findTerm("__done");
     termEmpty = findTerm("__empty");
     termStringEmpty = findTerm("__string");
+    termArrayEmpty = findTerm("__array");
+    termListEmpty = findTerm("__list");
+    termSetEmpty = findTerm("__set");
+    termMapEmpty = findTerm("__map");
 
     // 5. Connect to a plugin - either the default built in to art.jar or one in the use class path if one can be found
     plugin = new ARTDefaultPlugin();
@@ -1001,6 +1009,18 @@ public class ITerms {
         }
         break;
 
+      case __putStringIndex:
+        switch (firstChildSymbolStringIndex) {
+        case __listStringIndex:
+          Util.fatal("__put not yet implemented for __list");
+          return termBottom;
+        case __setStringIndex:
+          Set<Object> set = termToJavaLinkedHashSet(children[0]);
+          set.add(termToJavaObject(children[1]));
+          return javaSetToTerm(set);
+        }
+        break;
+
       case __getStringIndex:
         switch (firstChildSymbolStringIndex) {
         case __stringStringIndex:
@@ -1012,10 +1032,30 @@ public class ITerms {
           Util.fatal("__get not yet implemented for __list");
           return termBottom;
         case __setStringIndex:
-          Util.fatal("__get not yet implemented for __set");
-          return termBottom;
+          return termToJavaLinkedHashSet(children[0]).contains(termToJavaObject(children[1])) ? children[1] : termBottom;
         case __mapStringIndex:
-          return javaObjectToTerm(termToJavaLinkedHashMap(children[0]).get(termToJavaObject(children[1])));
+          Map<Object, Object> map = termToJavaLinkedHashMap(children[0]);
+          Object bound = map.get(termToJavaObject(children[1]));
+          return bound == null ? termBottom : javaObjectToTerm(bound);
+        default:
+          Util.fatal("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
+          break;
+        }
+        break;
+
+      case __removeStringIndex:
+        switch (firstChildSymbolStringIndex) {
+        case __listStringIndex:
+          Util.fatal("__remove not yet implemented for __list");
+          return termBottom;
+        case __setStringIndex:
+          Set<Object> set = termToJavaLinkedHashSet(children[0]);
+          set.remove(termToJavaObject(children[1]));
+          return javaSetToTerm(set);
+        case __mapStringIndex:
+          Map<Object, Object> map = termToJavaLinkedHashMap(children[0]);
+          map.remove(termToJavaObject(children[1]));
+          return javaMapToTerm(map);
         default:
           Util.fatal("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
           break;
@@ -1053,6 +1093,33 @@ public class ITerms {
         }
         break;
 
+      case __uniteStringIndex:
+        switch (firstChildSymbolStringIndex) {
+        case __setStringIndex:
+          Set<Object> set = termToJavaLinkedHashSet(children[0]);
+          set.addAll(termToJavaLinkedHashSet(children[1]));
+          return javaSetToTerm(set);
+        }
+        break;
+
+      case __intersectStringIndex:
+        switch (firstChildSymbolStringIndex) {
+        case __setStringIndex:
+          Set<Object> set = termToJavaLinkedHashSet(children[0]);
+          set.retainAll(termToJavaLinkedHashSet(children[1]));
+          return javaSetToTerm(set);
+        }
+        break;
+
+      case __diffStringIndex:
+        switch (firstChildSymbolStringIndex) {
+        case __setStringIndex:
+          Set<Object> set = termToJavaLinkedHashSet(children[0]);
+          set.removeAll(termToJavaLinkedHashSet(children[1]));
+          return javaSetToTerm(set);
+        }
+        break;
+
       default:
         Util.fatal("Unrecognised operation " + toRawString(term));
         break;
@@ -1069,7 +1136,7 @@ public class ITerms {
         Util.fatal("__put on __list must have arity 2");
         return termBottom;
       case __setStringIndex:
-        Util.fatal("__put on __set muct have arity 2");
+        Util.fatal("__put on __set must have arity 2");
         return termBottom;
       case __mapStringIndex:
         Map<Object, Object> map = termToJavaLinkedHashMap(children[0]);
@@ -1194,7 +1261,8 @@ public class ITerms {
 
   public int javaArrayToTerm(ArrayList<Object> value) {
     Iterator<Object> i = value.iterator();
-    return findTerm("__array", javaElementsToTermRec("__a", i));
+    if (i.hasNext()) return findTerm("__array", javaElementsToTermRec("__a", i));
+    return termArrayEmpty;
   }
 
   // List
@@ -1214,7 +1282,8 @@ public class ITerms {
 
   public int javaListToTerm(List<?> value) {
     Iterator<?> i = value.iterator();
-    return findTerm("__list", javaElementsToTermRec("__l", i));
+    if (i.hasNext()) return findTerm("__list", javaElementsToTermRec("__l", i));
+    return termListEmpty;
   }
 
   // Set
@@ -1234,7 +1303,8 @@ public class ITerms {
 
   public int javaSetToTerm(Set<?> value) {
     Iterator<?> i = value.iterator();
-    return findTerm("__set", javaElementsToTermRec("__s", i));
+    if (i.hasNext()) return findTerm("__set", javaElementsToTermRec("__s", i));
+    return termSetEmpty;
   }
 
   private int javaElementsToTermRec(String constructor, Iterator<?> i) {
@@ -1262,7 +1332,8 @@ public class ITerms {
 
   public int javaMapToTerm(Map<?, ?> value) {
     Iterator<?> i = value.keySet().iterator();
-    return findTerm("__map", javaMapToTermRec(value, i));
+    if (i.hasNext()) return findTerm("__map", javaMapToTermRec(value, i));
+    return termMapEmpty;
   }
 
   private int javaMapToTermRec(Map<?, ?> value, Iterator<?> i) {
@@ -1271,6 +1342,15 @@ public class ITerms {
       return findTerm("__m", javaObjectToTerm(k), javaObjectToTerm(value.get(k)), javaMapToTermRec(value, i));
     }
     return findTerm("__m", javaObjectToTerm(k), javaObjectToTerm(value.get(k)));
+  }
+
+  // Blob
+  public Blob termToJavaBlob(int term) {
+    return Blob.get(term);
+  }
+
+  public int javaBlobToTerm(Blob value) {
+    return findTerm("__blob", javaIntegerToTerm(value.number));
   }
 
   public Object termToJavaObject(int term) {
@@ -1295,6 +1375,8 @@ public class ITerms {
       return termToJavaLinkedHashSet(term);
     case __mapStringIndex:
       return termToJavaLinkedHashMap(term);
+    case __blobStringIndex:
+      return termToJavaBlob(term);
 
     case __doneStringIndex: // special case - we use __done as term equivalent of null
       return null;
@@ -1319,6 +1401,7 @@ public class ITerms {
     if (value instanceof List<?>) return javaListToTerm((List<?>) value);
     if (value instanceof Set<?>) return javaSetToTerm((Set<?>) value);
     if (value instanceof Map<?, ?>) return javaMapToTerm((Map<?, ?>) value);
+    if (value instanceof Blob) return javaBlobToTerm((Blob) value);
     Util.fatal("Java Class has no ART Value partner type: " + value.getClass());
     return termBottom; // Illegal object class with no term equivalent
   }
@@ -1353,7 +1436,7 @@ public class ITerms {
 "__shift", "__sshift", "__rot",
 "__neg", "__add", "__sub", "__mul", "__div", "__mod", "__exp",
 
-"__card",  "__put", "__get", "__extract", "__cat", "__prefix", "__suffix",
+"__card",  "__put", "__get", "__remove", "__cat", "__prefix", "__suffix",
 "__unite", "__intersect", "__diff",
 
 "__cast", "__termArity", "__termRoot", "__plugin"
@@ -1384,7 +1467,7 @@ public class ITerms {
       __neStringIndex = 57, __gtStringIndex = 58, __ltStringIndex = 59, __geStringIndex = 60, __leStringIndex = 61, __compStringIndex = 62,
       __notStringIndex = 63, __andStringIndex = 64, __orStringIndex = 65, __xorStringIndex = 66, __shiftStringIndex = 67, __sshiftStringIndex = 68,
       __rotStringIndex = 69, __negStringIndex = 70, __addStringIndex = 71, __subStringIndex = 72, __mulStringIndex = 73, __divStringIndex = 74,
-      __modStringIndex = 75, __expStringIndex = 76, __cardStringIndex = 77, __putStringIndex = 78, __getStringIndex = 79, __extractStringIndex = 80,
+      __modStringIndex = 75, __expStringIndex = 76, __cardStringIndex = 77, __putStringIndex = 78, __getStringIndex = 79, __removeStringIndex = 80,
       __catStringIndex = 81, __prefixStringIndex = 82, __suffixStringIndex = 83, __uniteStringIndex = 84, __intersectStringIndex = 85, __diffStringIndex = 86,
       __castStringIndex = 87, __termArityStringIndex = 88, __termRootStringIndex = 89, __pluginStringIndex = 90;
 
@@ -1436,7 +1519,7 @@ public class ITerms {
     loadString("__card", 77);
     loadString("__put", 78);
     loadString("__get", 79);
-    loadString("__extract", 80);
+    loadString("__remove", 80);
     loadString("__cat", 81);
     loadString("__prefix", 82);
     loadString("__suffix", 83);
