@@ -94,6 +94,10 @@ public class ITerms {
   public final int termSetEmpty;
   public final int termMapEmpty;
 
+  public final Bottom bottom = new Bottom();
+  public final Done done = new Done();
+  public final Empty empty = new Empty();
+
   public ITerms() {
     // 1. Load text traverser default action which appends the escaped version of the constructor
     rawTextTraverser.addAction(-1, (Integer t) -> rawTextTraverser.append(escapeMeta(termSymbolString(t)) + (termArity(t) == 0 ? "" : "(")),
@@ -614,7 +618,6 @@ public class ITerms {
   // }
 
   /* Value system evaluation ********************************************************************************/
-  // Evaluate an operation over constants: silently return term if we don't recognise an operation
   public int evaluateTerm(int term, int[] children) {
     String rootSymbolString = termSymbolString(term);
     if (children.length == 0 || !rootSymbolString.startsWith("__")) return term; // Nothing to do
@@ -631,7 +634,9 @@ public class ITerms {
 
     case __bottomStringIndex, __doneStringIndex, __emptyStringIndex, __quoteStringIndex, __blobStringIndex, __adtProdStringIndex, __adtSumStringIndex, __procStringIndex,
 
-        __boolStringIndex, __charStringIndex, __intAPStringIndex, __int32StringIndex, __realAPStringIndex, __real64StringIndex, __stringStringIndex, __listStringIndex, __setStringIndex, __mapStringIndex:
+        __boolStringIndex, __charStringIndex, __intAPStringIndex, __int32StringIndex, __realAPStringIndex, __real64StringIndex, __stringStringIndex,
+
+        __arrayStringIndex, __listStringIndex, __setStringIndex, __mapStringIndex:
       return term;
     }
 
@@ -683,6 +688,8 @@ public class ITerms {
         switch (firstChildSymbolStringIndex) {
         case __stringStringIndex:
           return javaIntegerToTerm(termToJavaString(children[0]).length());
+        case __arrayStringIndex:
+          return javaIntegerToTerm(termToJavaArrayList(children[0]).size());
         case __listStringIndex:
           return javaIntegerToTerm(termToJavaLinkedList(children[0]).size());
         case __setStringIndex:
@@ -1026,17 +1033,20 @@ public class ITerms {
         case __stringStringIndex:
           return javaCharacterToTerm(termToJavaString(children[0]).charAt(termToJavaInteger(children[1])));
         case __arrayStringIndex:
-          Util.fatal("__get not yet implemented for __array");
-          return termBottom;
+          ArrayList<Object> arrayList = termToJavaArrayList(children[0]);
+          int indexAL = termToJavaInteger(children[1]);
+          return javaObjectToTerm(arrayList.get(indexAL));
         case __listStringIndex:
-          Util.fatal("__get not yet implemented for __list");
-          return termBottom;
+          LinkedList<Object> list = termToJavaLinkedList(children[0]);
+          int indexL = termToJavaInteger(children[1]);
+          if (indexL >= list.size()) return termEmpty;
+          return javaObjectToTerm(list.get(indexL));
         case __setStringIndex:
-          return termToJavaLinkedHashSet(children[0]).contains(termToJavaObject(children[1])) ? children[1] : termBottom;
+          return termToJavaLinkedHashSet(children[0]).contains(termToJavaObject(children[1])) ? children[1] : termEmpty;
         case __mapStringIndex:
           Map<Object, Object> map = termToJavaLinkedHashMap(children[0]);
           Object bound = map.get(termToJavaObject(children[1]));
-          return bound == null ? termBottom : javaObjectToTerm(bound);
+          return bound == null ? termEmpty : javaObjectToTerm(bound);
         default:
           Util.fatal("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
           break;
@@ -1067,11 +1077,9 @@ public class ITerms {
         case __stringStringIndex:
           return javaStringToTerm(termToJavaString(children[0]).substring(0, termToJavaInteger(children[1])));
         case __arrayStringIndex:
-          Util.fatal("__get not yet implemented for __array");
-          return termBottom;
+          return javaArrayToTerm((ArrayList<Object>) termToJavaArrayList(children[0]).subList(0, termToJavaInteger(children[1])));
         case __listStringIndex:
-          Util.fatal("__get not yet implemented for __list");
-          return termBottom;
+          return javaListToTerm(termToJavaLinkedList(children[0]).subList(0, termToJavaInteger(children[1])));
         default:
           Util.fatal("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
           break;
@@ -1082,11 +1090,11 @@ public class ITerms {
         case __stringStringIndex:
           return javaStringToTerm(termToJavaString(children[0]).substring(termToJavaInteger(children[1])));
         case __arrayStringIndex:
-          Util.fatal("__get not yet implemented for __array");
-          return termBottom;
+          ArrayList<Object> arrayList = termToJavaArrayList(children[0]);
+          return javaArrayToTerm((ArrayList<Object>) arrayList.subList(termToJavaInteger(children[1]), arrayList.size()));
         case __listStringIndex:
-          Util.fatal("__get not yet implemented for __list");
-          return termBottom;
+          List<Object> list = termToJavaLinkedList(children[0]);
+          return javaListToTerm(list.subList(termToJavaInteger(children[1]), list.size()));
         default:
           Util.fatal("Operation " + getString(termSymbolStringIndex) + " not applicable to type " + getString(firstChildSymbolStringIndex));
           break;
@@ -1389,8 +1397,12 @@ public class ITerms {
   // Note that in later versions of Java this can be replaced by pattern matching on class
   // This version is acceptable to Java 17 (Sep 21) which is the student default for AY 2024-45
   public int javaObjectToTerm(Object value) {
-    if (value == null) return termDone;
+    if (value == null) Util.fatal("Cannot convert Java null to a term - try Botton, Done or Empty");
     if (value instanceof RawTerm) return ((RawTerm) value).term;
+    if (value instanceof Bottom) return termBottom;
+    if (value instanceof Done) return termDone;
+    if (value instanceof Empty) return termEmpty;
+    if (value instanceof Blob) return javaBlobToTerm((Blob) value);
     if (value instanceof Boolean) return javaBooleanToTerm((Boolean) value);
     if (value instanceof Character) return javaCharacterToTerm((Character) value);
     if (value instanceof Integer) return javaIntegerToTerm((Integer) value);
@@ -1401,7 +1413,6 @@ public class ITerms {
     if (value instanceof List<?>) return javaListToTerm((List<?>) value);
     if (value instanceof Set<?>) return javaSetToTerm((Set<?>) value);
     if (value instanceof Map<?, ?>) return javaMapToTerm((Map<?, ?>) value);
-    if (value instanceof Blob) return javaBlobToTerm((Blob) value);
     Util.fatal("Java Class has no ART Value partner type: " + value.getClass());
     return termBottom; // Illegal object class with no term equivalent
   }
