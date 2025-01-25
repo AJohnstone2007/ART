@@ -1423,8 +1423,7 @@ public class ITerms {
     case __mapStringIndex:
       return termToJavaLinkedHashMap(term);
     default:
-      Util.fatal("Cannot pass term to Java (try using a __quote): " + toString(term));
-      return bottom;
+      return new Quote(term); // For anything else, autoquote it
     }
   }
 
