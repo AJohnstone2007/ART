@@ -49,14 +49,19 @@ public class CFGRules {
   public Set<CFGElement> paraterminalElements = new HashSet<>();
 
   // Grammar analysis data
+  public final Relation<CFGElement, CFGElement> first = new Relation<>();
+  public final Relation<CFGElement, CFGElement> follow = new Relation<>();
+
   public final Relation<CFGElement, CFGElement> reach1 = new Relation<>(); // { (X,Y) | X ::= \alpha Y \beta }
-  public final Relation<CFGElement, CFGElement> singleton1 = new Relation<>(); // { (X,Y) | X ::= \alpha Y \beta, \alpha, \beta \derives \epsilon }
+  public final Relation<CFGElement, CFGElement> leftNullableReach1 = new Relation<>(); // { (X,Y) | X ::= \alpha Y \beta }
+  public final Relation<CFGElement, CFGElement> rightNullableReach1 = new Relation<>(); // { (X,Y) | X ::= \alpha Y \beta }
 
   public final Relation<CFGElement, CFGElement> reach = new Relation<>(); // reach1*
-  public final Relation<CFGElement, CFGElement> first = new Relation<>(); // first1*
-  public final Relation<CFGElement, CFGElement> follow = new Relation<>(); // definition?
-  public final Relation<CFGElement, CFGElement> last = new Relation<>(); // last1*
-  public final Relation<CFGElement, CFGElement> singleton = new Relation<>(); // singleton1*
+  public final Relation<CFGElement, CFGElement> leftNullableReach = new Relation<>(); // leftNullableReach*
+  public final Relation<CFGElement, CFGElement> rightNullableReach = new Relation<>(); // rightNullableREach*
+
+  // public final Relation<CFGElement, CFGElement> first = new Relation<>(); // first1*
+  // public final Relation<CFGElement, CFGElement> follow = new Relation<>(); // definition?
 
   public final Relation<CFGNode, CFGElement> instanceFirst = new Relation<>(); // definition?
   public final Relation<CFGNode, CFGElement> instanceFollow = new Relation<>(); // definition?
@@ -579,6 +584,7 @@ public class CFGRules {
     sb.append("Elements:\n");
     for (CFGElement s : elements.keySet()) {
       sb.append(" (" + s.toStringDetailed() + ") " + s);
+      if (cyclicNonterminals.contains(s)) sb.append(" cyclic");
       if (paraterminalElements.contains(s)) sb.append(" paraterminal");
       if (!s.attributes.isEmpty()) sb.append(" attributes: " + s.attributes);
       if (showProperties && first.get(s) != null) {

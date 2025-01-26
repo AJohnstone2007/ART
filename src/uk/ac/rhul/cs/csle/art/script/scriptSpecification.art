@@ -138,6 +138,7 @@ directiveElement ::=
 
 | 'trace'^^ __int32
 | 'print'^^ displayElements^
+| 'printraw'^^ displayElements^
 | 'show'^^ displayElements^
 | 'prompt'^^ | 'prompt'^^ &STRING_DQ
 
@@ -167,8 +168,12 @@ displayElement  ::=
   'latex' | file 
 | 'script' | 'scriptDerivation' 
 | 'allRules' | 'cfgRules' | 'chooseRules' | 'trRules'
+| 'gdg'
 | 'lexer' | 'parser' | 'interpreter'
-| 'input' | 'twe' | 'lexicalisations' | 'sentences' |'gss' | 'sppf' | 'bsr' | 'derivation' | 'derivationIndexed' | 'interpretation' 
+| 'input' | 'twe'    | 'lexicalisations' | 'sentences' 
+| 'gss'   | 'sppf'   | 'bsr' 
+| 'derivation' | 'derivationIndexed' 
+| 'interpretation' 
 | 'statistics' | __string
 | 'cyclicNodes' | 'ambiguousNodes' | 'outcome'
 

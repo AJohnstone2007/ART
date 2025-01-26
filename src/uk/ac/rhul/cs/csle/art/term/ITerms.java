@@ -99,7 +99,7 @@ public class ITerms {
   public final Empty empty = new Empty();
 
   public ITerms() {
-    // 1. Load text traverser default action which appends the escaped version of the constructor
+    // 1B. Load text traverser default action which appends the escaped version of the constructor
     rawTextTraverser.addAction(-1, (Integer t) -> rawTextTraverser.append(escapeMeta(termSymbolString(t)) + (termArity(t) == 0 ? "" : "(")),
         (Integer t) -> rawTextTraverser.append(", "), (Integer t) -> rawTextTraverser.append(termArity(t) == 0 ? "" : ")"));
 
@@ -138,7 +138,7 @@ public class ITerms {
     } catch (Exception e) {
       // Silently absorb exception - when the default is used
     }
-    System.out.println("Attached to " + plugin.getClass().getSimpleName() + ": " + plugin.description());
+    System.out.println("Attached to " + plugin.getClass().getSimpleName() + " " + plugin.description());
   }
 
   /* Raw term rendering *************************************************************************************/
@@ -197,7 +197,7 @@ public class ITerms {
   }
 
   /* Meta character handling for string version of a term **************************************************/
-  static Set<Character> metaCharacters = Set.of('(', ')', ',', '_', '*', ':', '\\', '\"', ' ');
+  static Set<Character> metaCharacters = Set.of('(', ')', ',', '*', ':', '\\', '\"', ' ');
 
   public static String escapeMeta(String string) {
     StringBuilder sb = new StringBuilder();
@@ -1145,6 +1145,7 @@ public class ITerms {
           case __realAPStringIndex:
             return javaBigDecimalToTerm(new BigDecimal(termToJavaInteger(children[0]).toString()));
           }
+          break;
 
         default:
           Util.fatal("Cannot cast " + getString(firstChildSymbolStringIndex) + " to " + getString(secondChildSymbolStringIndex));
