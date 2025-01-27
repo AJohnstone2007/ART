@@ -14,7 +14,6 @@ import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import uk.ac.rhul.cs.csle.art.ART;
 import uk.ac.rhul.cs.csle.art.cfg.lexer.LexemeKind;
 import uk.ac.rhul.cs.csle.art.term.ITerms;
 import uk.ac.rhul.cs.csle.art.util.Relation;
@@ -60,9 +59,6 @@ public class CFGRules {
   public final Relation<CFGElement, CFGElement> leftNullableReach = new Relation<>(); // leftNullableReach*
   public final Relation<CFGElement, CFGElement> rightNullableReach = new Relation<>(); // rightNullableREach*
 
-  // public final Relation<CFGElement, CFGElement> first = new Relation<>(); // first1*
-  // public final Relation<CFGElement, CFGElement> follow = new Relation<>(); // definition?
-
   public final Relation<CFGNode, CFGElement> instanceFirst = new Relation<>(); // definition?
   public final Relation<CFGNode, CFGElement> instanceFollow = new Relation<>(); // definition?
 
@@ -105,8 +101,6 @@ public class CFGRules {
       // TODO: recursive traversal of rules required because of EBNF
     }
   }
-
-  private boolean changed;
 
   public void normalise() {
     // Add singleton grammar nodes for terminals, # and epsilon. These are used by the SPPF.
@@ -195,15 +189,14 @@ public class CFGRules {
       if (selfFirst.contains(ge.kind)) first.add(ge, ge);
 
     // Seed follow sets
-    if (startNonterminal != null) follow.get(startNonterminal).add(endOfStringElement);
+    if (startNonterminal != null) follow.add(startNonterminal, endOfStringElement);
 
-    // Closure loop over first and follow set computation
-    changed = true;
-    while (changed) {
-      changed = false;
-      for (CFGElement ge : elements.keySet())
-        if (ge.kind == CFGKind.N) firstAndFollowSetsAlt(elementToNodeMap.get(ge), elementToNodeMap.get(ge).alt);
-    }
+    System.out.println("Initial first sets: " + first);
+    System.out.println("Initial follow sets: " + follow);
+    computeFirstAndFollowSets();
+
+    System.out.println("Final first sets: " + first);
+    System.out.println("Final follow sets: " + follow);
 
     // Collect attributes
     // System.out.println("*** Collecting attributes");
@@ -256,6 +249,24 @@ public class CFGRules {
           }
         }
       }
+    }
+  }
+
+  private void computeFirstAndFollowSets() {
+    // Closure loop over first and follow set computation
+    boolean changed = true;
+    while (changed) {
+      changed = false;
+      for (CFGElement ge : elements.keySet())
+        if (ge.kind == CFGKind.N) {
+          CFGNode topNode = elementToNodeMap.get(ge);
+          System.out.println("Visiting top node " + topNode.num + ":" + topNode);
+          for (CFGNode altNode = topNode.alt; altNode != null; altNode = altNode.alt) {
+            System.out.println("Visiting alt node " + altNode.num + ":" + altNode);
+            for (CFGNode seqNode = altNode.seq; seqNode != altNode; seqNode = seqNode.seq)
+              System.out.println("Visiting seq node " + seqNode.num + ":" + seqNode);
+          }
+        }
     }
   }
 
@@ -400,57 +411,64 @@ public class CFGRules {
     return tmp;
   }
 
-  void firstAndFollowSetsAlt(CFGNode bracketNode, CFGNode gn) {
-    if (ART.tracing) System.out.println("firstAndFollowSetsAlt at " + gn.num);
-    if (gn.alt != null) firstAndFollowSetsAlt(bracketNode, gn.alt); // recurse over ALT nodes
-    firstAndFollowSetsRec(gn, gn.seq); // recurse over sequence
-
-    // changed |= instanceFirst.addAll(gn, removeEpsilon(instanceFirst.get(gn.seq)));
-    // changed |= instanceFirst.addAll(bracketNode, instanceFirst.get(gn));
-    // changed |= first.addAll(bracketNode.elm, instanceFirst.get(bracketNode));
-    //
-    // // For closure nodes, fold first into follow
-    // if (bracketNode.elm.kind == GrammarKind.POS || bracketNode.elm.kind == GrammarKind.KLN)
-    // changed |= instanceFollow.addAll(bracketNode, removeEpsilon(instanceFirst.get(bracketNode)));
-    //
-    // if (bracketNode.elm.kind == GrammarKind.OPT || bracketNode.elm.kind == GrammarKind.KLN) changed |= instanceFirst.add(bracketNode, epsilonElement);
-  }
-
-  // Note: initial and final already computed; nullablePrefix and nullableSuffix also updated accordingly
-  private void firstAndFollowSetsRec(CFGNode bracketNode, CFGNode gn) { // Returns seen only nullable - could be replaced by
-    if (ART.tracing) System.out.println("firstAndFollowSetsRec at " + gn.num);
-
-    // if (leftNullable) nullablePrefixSlots.add(gn);
-
-    if (gn.elm.kind == CFGKind.END) return;
-    firstAndFollowSetsRec(bracketNode, gn.seq);
-
-    // 5. Fold into instanceFirst our element's FIRST
-    // if (gn.elm.kind == GrammarKind.EPS)
-    // changed |= instanceFirst.addAll(gn, first.get(gn.elm));
-    // else
-    // changed |= instanceFirst.addAll(gn, removeEpsilon(first.get(gn.elm)));
-
-    // 6. If our element first contains epsilon, fold in our successor's first as well
-    // if (first.get(gn.elm).contains(epsilonElement)) {
-    // changed |= instanceFirst.get(gn).addAll(instanceFirst.get(gn.seq));
-    // if (instanceFirst.get(gn.seq).contains(epsilonElement)) changed |= nullableSuffixSlots.add(gn);
-    // }
-
-    // 7. Now update nonterminal elements first set with this instanceFirst
-    // if (gn.elm.kind == GrammarKind.N) changed |= first.addAll(gn.elm, instanceFirst.get(gn));
-
-    // 8. If we are an initial slot, update our root instanceFirst set with our instanceFirstSet
-    // if (initialSlots.contains(gn)) changed |= instanceFirst.get(bracketNode).addAll(instanceFirst.get(gn));
-
-    // 9. If we have both a nullable suffix and a nullable prefix, and this element is the bracketNode's element (LHS) then we are cyclic
-    // if (nullablePrefixSlots.contains(gn) && nullableSuffixSlots.contains(gn) && gn.elm.equals(bracketNode.elm)) cyclicNonterminals.add(gn.elm);
-
-    // 8. Update follow sets with first set of successor, and update instance element follow set
-    // changed |= instanceFollow.get(gn).addAll(removeEpsilon(instanceFirst.get(gn.seq)));
-    // if (nullableSuffixSlots.contains(gn.seq)) changed |= instanceFollow.get(gn).addAll(instanceFollow.get(rootNode));
-    // changed |= follow.get(gn.elm).addAll(instanceFollow.get(gn));
-  }
+  // void firstAndFollowSetsAlt(CFGNode bracketNode) {
+  // for (CFGNode gn = bracketNode.alt; gn != null; gn = gn.alt) {
+  // // System.out.println("firstAndFollowSetsAlt at " + gn.num);
+  // firstAndFollowSetsIter(gn); // recurse over sequence
+  //
+  // changed |= instanceFirst.addAll(gn, instanceFirst.get(gn.seq)); // project the first set from the sequence to the first set for this alt node node
+  // changed |= instanceFirst.addAll(bracketNode, instanceFirst.get(gn)); // project this alt's first set up to the bracketNode's first set
+  // changed |= first.addAll(bracketNode.elm, instanceFirst.get(bracketNode)); // project the bracket node's first set up to the instance (which may be LHS)
+  // //
+  // // if (bracketNode.elm.kind == CFGKind.POS || bracketNode.elm.kind == CFGKind.KLN)// If the bracket node is a a closure, fold first into follow
+  // // changed |= instanceFollow.addAll(bracketNode, removeEpsilon(instanceFirst.get(bracketNode)));
+  // //
+  // // if (bracketNode.elm.kind == CFGKind.OPT || bracketNode.elm.kind == CFGKind.KLN) // If the bracket node is Kleene and Optional which can match epsilon,
+  // // // fold epsilon into the firset set
+  // // changed |= instanceFirst.addAll(bracketNode, removeEpsilon(instanceFollow.get(bracketNode)));
+  // }
+  // }
+  //
+  // private void firstAndFollowSetsIter(CFGNode bracketNode) {
+  // CFGNode previousNode = bracketNode;
+  //
+  // for (CFGNode gn = bracketNode.seq; gn.elm.kind != CFGKind.END; gn = gn.seq) {
+  // // System.out.println("firstAndFollowSetsRec at " + gn.num);
+  // // System.out.println("instanceFirst: " + instanceFirst);
+  // // System.out.println("instanceFollow: " + instanceFollow);
+  //
+  // // 5. Fold into instanceFirst our element's FIRST
+  // if (gn.elm.kind == CFGKind.EPS) {
+  // changed |= instanceFirst.addAll(gn, first.get(gn.elm));
+  // // System.out.println("Epsilon node; adding first (epsilon) - " + instanceFirst.get(gn));
+  // } else {
+  // changed |= instanceFirst.add(gn, gn.elm); // This is for nonterminals - terminals will already have their elm in their first sets
+  // changed |= instanceFirst.addAll(gn, removeEpsilon(first.get(gn.elm)));
+  // // System.out.println("Added element first - " + instanceFirst.get(gn));
+  // }
+  //
+  // // 6. If our element first contains epsilon, fold in our successor's first as well
+  // if (first.get(gn.elm).contains(epsilonElement)) changed |= instanceFirst.get(gn).addAll(instanceFirst.get(gn.seq));
+  //
+  // // 8. Update follow sets with first set of successor, and update instance element follow set
+  // changed |= instanceFollow.get(gn).addAll(removeEpsilon(instanceFirst.get(gn.seq))); // instance follow set
+  // changed |= follow.get(gn.elm).addAll(removeEpsilon(instanceFirst.get(gn.seq))); // follow set for this instance's element
+  //
+  // // if (nullableSuffixSlots.contains(gn.seq)) changed |= instanceFollow.get(gn).addAll(instanceFollow.get(bracketNode));
+  // // changed |= follow.get(gn.elm).addAll(instanceFollow.get(gn));
+  // //
+  // // // 9. Update nullable pre/suffix
+  // // if (first.get(gn.elm).contains(epsilonElement)) {
+  // // if (nullablePrefixSlots.contains(previousNode)) nullablePrefixSlots.add(gn); // propogate nullable left prefix
+  // // if (nullablePrefixSlots.contains(gn.seq)) nullableSuffixSlots.add(gn); // propogate nullable left prefix
+  // // }
+  // //
+  // // // 1o. If we have both a nullable suffix and a nullable prefix, and this element is the bracketNode's element (LHS) then we are cyclic
+  // // if (nullablePrefixSlots.contains(gn) && nullableSuffixSlots.contains(gn) && gn.elm.equals(bracketNode.elm)) cyclicNonterminals.add(gn.elm);
+  //
+  // previousNode = gn; // Remember this node for the next iteration so that we can look back
+  // }
+  // }
 
   // Data access for lexers
   public LexemeKind[] lexicalKindsArray() {
@@ -556,7 +574,7 @@ public class CFGRules {
 
   @Override
   public String toString() {
-    return toStringBody(false);
+    return toStringBody(true);
   }
 
   public String toStringBody(boolean showProperties) {
@@ -607,11 +625,13 @@ public class CFGRules {
         if (nullableSuffixSlots.contains(gn)) sb.append(" nullableSuffix");
         if (nullablePrefixSlots.contains(gn)) sb.append(" nullablePrefix");
 
-        sb.append(" instfirst = {");
-        appendElements(sb, instanceFirst.get(gn));
-        sb.append("} instfollow = {");
-        appendElements(sb, instanceFollow.get(gn));
-        sb.append("}");
+        if (!instanceFirst.get(gn).isEmpty()) {
+          sb.append(" instfirst = {");
+          appendElements(sb, instanceFirst.get(gn));
+          sb.append("} instfollow = {");
+          appendElements(sb, instanceFollow.get(gn));
+          sb.append("}");
+        }
       }
       sb.append("\n");
     }
@@ -627,6 +647,8 @@ public class CFGRules {
     sb.append("\nParaterminals: " + paraterminalNames);
 
     sb.append("\nWhitespaces: " + whitespaces);
+
+    sb.append("\nCyclic nonterminals: " + cyclicNonterminals);
 
     return sb.toString();
   }

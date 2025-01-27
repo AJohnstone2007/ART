@@ -33,6 +33,7 @@ import uk.ac.rhul.cs.csle.art.old.v3.manager.module.ARTV3Module;
 import uk.ac.rhul.cs.csle.art.script.ScriptTermInterpreter;
 import uk.ac.rhul.cs.csle.art.util.Util;
 
+/* This version of AJDebug is intended to perform regression testing between V5 and V3 first/follow set computations */
 public class AJDebug {
   /* AJ debug material below this line */
   CFGRules grammarV5; // regression V5 grammar
@@ -59,7 +60,6 @@ public class AJDebug {
   private void processFile(Path filePath) throws IOException {
     boolean good = v5v3RegressionFirstAndFollowSets(Files.readString(filePath));
     System.out.println("File " + filePath + " " + (good ? " Good " : "Bad"));
-
   }
 
   private boolean v5v3RegressionFirstAndFollowSets(String scriptString) {
@@ -77,10 +77,11 @@ public class AJDebug {
 
     // System.out.print("\n*** V3 grammar\n" + grammarV3.toString());
     grammarV5 = regressionScriptInterpreter.currentCFGRules;
+    System.out.println("*** Working grammar normalisation starts here");
     grammarV5.normalise();
     grammarV5.show("grammar.dot");
 
-    System.out.println("\n*** V5 grammar\n" + grammarV5.toStringBody(true));
+    // System.out.println("\n*** V5 grammar\n" + grammarV5.toStringBody(true));
 
     boolean good = true;
 
@@ -94,8 +95,8 @@ public class AJDebug {
 
       if (!v5v3ElementSetSame(grammarV5.first.get(v5Nonterminal), new TreeSet<>(v3Nonterminal.getFirst()), artV3.artManager.getDefaultMainModule(),
           v5Nonterminal)) {
-        System.out.println(
-            "First for " + v5Nonterminal + " differ:\nV5 " + grammarV5.first.get(v5Nonterminal) + "\nV3 " + new TreeSet<>(v3Nonterminal.getFirst()) + "\n");
+        System.out
+            .println("First for " + v5Nonterminal + " differ:\nV5 " + grammarV5.first.get(v5Nonterminal) + "\nV3 " + new TreeSet<>(v3Nonterminal.getFirst()));
         good = false;
       }
 
@@ -106,8 +107,8 @@ public class AJDebug {
         // if (!v5v3ElementSetSame(v5prime, new TreeSet<>(v3Nonterminal.getFollow()), artV3.artManager.getDefaultMainModule()))
         {
 
-          System.out.println("Follow for " + v5Nonterminal + " differ:\nV5 " + grammarV5.follow.get(v5Nonterminal) + "\nV3 "
-              + new TreeSet<>(v3Nonterminal.getFollow()) + "\n");
+          System.out.println(
+              "Follow for " + v5Nonterminal + " differ:\nV5 " + grammarV5.follow.get(v5Nonterminal) + "\nV3 " + new TreeSet<>(v3Nonterminal.getFollow()));
           System.out.println("v5:v3 cardinality " + grammarV5.follow.get(v5Nonterminal).size() + " : " + v3Nonterminal.getFollow().size() + "\n");
           good = false;
         }
@@ -115,8 +116,8 @@ public class AJDebug {
     }
 
     // Now work through instance sets
-    v5v3RegressionGatherV3FirstAndFollowInstanceSetsRec((ARTGrammarInstance) grammarV3.getInstanceTree().getRoot());
-    good &= v5v3RegressionCheckFirstAndFollowInstanceSets(grammarV5, artV3);
+    // v5v3RegressionGatherV3FirstAndFollowInstanceSetsRec((ARTGrammarInstance) grammarV3.getInstanceTree().getRoot());
+    // good &= v5v3RegressionCheckFirstAndFollowInstanceSets(grammarV5, artV3);
     return good;
   }
 

@@ -1151,6 +1151,7 @@ public class ITerms {
           Util.fatal("Cannot cast " + getString(firstChildSymbolStringIndex) + " to " + getString(secondChildSymbolStringIndex));
           return termBottom;
         }
+        break;
 
       default:
         Util.fatal("Unrecognised operation " + toRawString(term));

@@ -77,6 +77,7 @@ public class Relation<T1, T2> {
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
+    sb.append("Relation: \n");
     for (T1 t1 : getDomain()) {
       sb.append(t1 + " ->");
       for (T2 t2 : get(t1))

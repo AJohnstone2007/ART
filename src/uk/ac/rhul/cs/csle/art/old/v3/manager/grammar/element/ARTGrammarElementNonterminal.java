@@ -91,6 +91,7 @@ public class ARTGrammarElementNonterminal extends ARTGrammarElement {
   }
 
   public Set<ARTGrammarElement> getFollow() {
+
     return follow;
   }
 
