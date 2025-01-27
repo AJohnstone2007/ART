@@ -263,8 +263,11 @@ public class CFGRules {
           System.out.println("Visiting top node " + topNode.num + ":" + topNode);
           for (CFGNode altNode = topNode.alt; altNode != null; altNode = altNode.alt) {
             System.out.println("Visiting alt node " + altNode.num + ":" + altNode);
-            for (CFGNode seqNode = altNode.seq; seqNode != altNode; seqNode = seqNode.seq)
+            CFGNode seqNode = altNode;
+            do {
+              seqNode = seqNode.seq;
               System.out.println("Visiting seq node " + seqNode.num + ":" + seqNode);
+            } while (seqNode.elm.kind != CFGKind.END);
           }
         }
     }
