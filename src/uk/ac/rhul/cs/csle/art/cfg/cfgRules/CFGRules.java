@@ -192,11 +192,15 @@ public class CFGRules {
     if (startNonterminal != null) follow.add(startNonterminal, endOfStringElement);
 
     System.out.println("Initial first sets: " + first);
+    System.out.println("Initial instance first sets: " + instanceFirst);
     System.out.println("Initial follow sets: " + follow);
+    System.out.println("Initial instance follow sets: " + instanceFollow);
     computeFirstAndFollowSets();
 
     System.out.println("Final first sets: " + first);
+    System.out.println("Final instance first sets: " + instanceFirst);
     System.out.println("Final follow sets: " + follow);
+    System.out.println("Final instance follow sets: " + instanceFollow);
 
     // Collect attributes
     // System.out.println("*** Collecting attributes");
@@ -249,27 +253,6 @@ public class CFGRules {
           }
         }
       }
-    }
-  }
-
-  private void computeFirstAndFollowSets() {
-    // Closure loop over first and follow set computation
-    boolean changed = true;
-    while (changed) {
-      changed = false;
-      for (CFGElement ge : elements.keySet())
-        if (ge.kind == CFGKind.N) {
-          CFGNode topNode = elementToNodeMap.get(ge);
-          System.out.println("Visiting top node " + topNode.num + ":" + topNode);
-          for (CFGNode altNode = topNode.alt; altNode != null; altNode = altNode.alt) {
-            System.out.println("Visiting alt node " + altNode.num + ":" + altNode);
-            CFGNode seqNode = altNode;
-            do {
-              seqNode = seqNode.seq;
-              System.out.println("Visiting seq node " + seqNode.num + ":" + seqNode);
-            } while (seqNode.elm.kind != CFGKind.END);
-          }
-        }
     }
   }
 
@@ -412,6 +395,31 @@ public class CFGRules {
     Set<CFGElement> tmp = new HashSet<>(set);
     tmp.remove(epsilonElement);
     return tmp;
+  }
+
+  private void computeFirstAndFollowSets() {
+    // Closure loop over first and follow set computation
+    boolean changed = true;
+    while (changed) {
+      changed = false;
+      for (CFGElement ge : elements.keySet())
+        if (ge.kind == CFGKind.N) {
+          CFGNode topNode = elementToNodeMap.get(ge);
+          System.out.println("Visiting top node " + topNode.num + ":" + topNode);
+          for (CFGNode altNode = topNode.alt; altNode != null; altNode = altNode.alt) {
+            System.out.println("Visiting alt node " + altNode.num + ":" + altNode);
+            CFGNode seqNode = altNode;
+            do {
+              seqNode = seqNode.seq;
+              System.out.println("Visiting seq node " + seqNode.num + ":" + seqNode);
+              changed |= instanceFirst.addAll(seqNode, removeEpsilon(first.get(seqNode.elm))); // Update instance first with element first
+              if (first.get(seqNode.elm).contains(epsilonElement)) changed |= instanceFirst.addAll(seqNode, instanceFirst.get(seqNode.seq));
+              changed |= first.addAll(seqNode.elm, instanceFirst.get(seqNode));
+            } while (seqNode.elm.kind != CFGKind.END);
+            changed |= first.addAll(topNode.elm, instanceFirst.get(altNode.seq));
+          }
+        }
+    }
   }
 
   // void firstAndFollowSetsAlt(CFGNode bracketNode) {

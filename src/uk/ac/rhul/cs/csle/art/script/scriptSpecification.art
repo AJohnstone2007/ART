@@ -63,15 +63,15 @@ trPremises ::= #^ | trMatch trPremises^ | trTransition trPremises^
 trMatch ::= trTopTuple '|>'^ trTopTuple
 
 trTransition ::= trTopTuple trRelation^ trTopTuple
-trTopTuple ::= trTerm | trTuple^^ terms^
+trTopTuple ::= trTerm | trTuple^^ trTerms^
 trTuple ::= #^  
-terms ::= trTerm termsTail^
-termsTail ::= ','^ trTerm | ','^ trTerm termsTail^
+trTerms ::= trTerm trTermsTail^
+trTermsTail ::= ','^ trTerm | ','^ trTerm trTermsTail^
 
 trTerm ::= 
   __bool^^ | __char^^ | __intAP^^ | __int32^^ | __realAP^^ | __real64^^ | __string^^  // lexical from builtins - see below  
 | __list^^ | __set^^ | __map^^ 
-| ID^^ | IDSTAR^^ | ID^^ '('^ ')'^ | ID^^ '('^ trTerm ')'^ | ID^^ '('^ terms^ ')'^ | trTuple^^ '<'^ terms^ '>'^
+| ID^^ | IDSTAR^^ | ID^^ '('^ ')'^ | ID^^ '('^ trTerm ')'^ | ID^^ '('^ trTerms^ ')'^ | trTuple^^ '<'^ trTerms^ '>'^
 
 
 __array ::= '['^  __int32 '|' ']'^ | '['^ __int32 '|' __a ']'^
@@ -132,7 +132,8 @@ directiveElement ::=
 | 'generate'^^ ID | 'generate'^^ ID STRING_SHRIEK_SHRIEK STRING_SHRIEK_SHRIEK
 
 | 'start'^^ cfgNonterminal | 'start'^^ trRelation // Set parser start nonterminal or rewriter start relation
-| 'configuration'^^  '#'^ | 'configuration'^^ trRelation ','^ trTerm
+| 'configuration'^^ trRelation trTerms
+| 'terminal'^^ trRelation trTerms
 
 | 'clear'^^ 'allRules' | 'clear'^^ 'cfgRules' | 'clear'^^ 'chooseRules' | 'clear'^^ 'trRules'
 

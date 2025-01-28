@@ -16,7 +16,7 @@ public class TRRules {
   public Map<Integer, Map<Integer, List<Integer>>> trRules = new LinkedHashMap<>(); // Rewritten rules produced by normalise()
   public int defaultStartRelation = 0;
 
-  private Map<Integer, Set<Integer>> rewriteTerminals;
+  private final Map<Integer, Set<Integer>> rewriteTerminals = new HashMap<>();
   private int startRelation;
   private Map<Integer, Integer> termToEnumElementMap;
   private Map<Integer, Integer> enumElementToTermMap;
@@ -32,6 +32,11 @@ public class TRRules {
 
   public TRRules(ITerms iTerms) {
     this.iTerms = iTerms;
+  }
+
+  public void addTerminal(int relation, int terminal) {
+    if (rewriteTerminals.get(relation) == null) rewriteTerminals.put(relation, new HashSet<>());
+    rewriteTerminals.get(relation).add(terminal);
   }
 
   public void buildTRRule(int term) {
@@ -89,7 +94,6 @@ public class TRRules {
       return;
     }
     trRules = new HashMap<>(trScriptRules);
-    rewriteTerminals = new HashMap<>();
     startRelation = 0;
     termToEnumElementMap = new HashMap<>();
     enumElementToTermMap = new HashMap<>();
@@ -160,26 +164,29 @@ public class TRRules {
           reverseVariableNamesByRule.put(ruleIndex, variableNumberMapToVariableStringIndex);
         }
       }
-    }
-    for (int c : constructorCount.keySet())
-      if (termRewriteConstructorDefinitions.get(c) == null) {
 
-        String label = iTerms.getString(c);
+      for (int c : constructorCount.keySet())
+        if (termRewriteConstructorDefinitions.get(c) == null) {
 
-        if (label.charAt(0) == '"') continue;
+          String label = iTerms.getString(c);
 
-        boolean isNumber = true;
-        int i = 0;
-        if (label.charAt(i) == '-') i++;
-        for (; i < label.length(); i++) {
-          char ch = label.charAt(i);
-          if (!Character.isDigit(ch) && ch != '.') isNumber = false;
+          if (label.charAt(0) == '"') continue;
+
+          boolean isNumber = true;
+          int i = 0;
+          if (label.charAt(i) == '-') i++;
+          for (; i < label.length(); i++) {
+            char ch = label.charAt(i);
+            if (!Character.isDigit(ch) && ch != '.') isNumber = false;
+          }
+
+          if (isNumber) continue;
+
+          var terminals = rewriteTerminals.get(scanRelationIndex);
+          if (terminals != null && terminals.contains(iTerms.findTerm(label))) continue;
+          Util.warning("in relation " + iTerms.plainTextTraverser.toString(scanRelationIndex) + " constructor " + label + " has no rule definitions");
         }
-
-        if (isNumber) continue;
-
-        System.err.println("*** Warning: constructor " + label + " has no rule definitions");
-      }
+    }
     // Stage two - generate rewritten rules to use only only numeric variables to normalise the configurations
     for (int normaliseRelationIndex : trRules.keySet()) { // Step through the relations
       for (Integer thetaRoot : trRules.get(normaliseRelationIndex).keySet()) { // Collect the map of rules for this relation

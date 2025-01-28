@@ -79,10 +79,10 @@ public class Relation<T1, T2> {
     StringBuilder sb = new StringBuilder();
     sb.append("Relation: \n");
     for (T1 t1 : getDomain()) {
-      sb.append(t1 + " ->");
+      sb.append(t1 + " -> {");
       for (T2 t2 : get(t1))
         sb.append(" " + t2);
-      sb.append("\n");
+      sb.append(" }\n");
     }
     return sb.toString();
   }

@@ -93,6 +93,10 @@ public class CFGNode {
 
   @Override
   public String toString() {
+    return num + " " + toString1();
+  }
+
+  public String toString1() {
     switch (elm.kind) {
     case EOS:
       return "EOS node";
