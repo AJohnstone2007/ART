@@ -1,0 +1,322 @@
+(* Value system tests using the term rewriter *)
+
+(* One rule for each operation *)
+--- eq(_x, _y) -> __eq(_x, _y)
+--- ne(_x, _y) -> __ne(_x, _y)
+--- gt(_x, _y) -> __gt(_x, _y)
+--- lt(_x, _y) -> __lt(_x, _y)
+--- ge(_x, _y) -> __ge(_x, _y)
+--- le(_x, _y) -> __le(_x, _y)
+--- comp(_x, _y) -> __comp	(_x, _y)
+
+--- not(_x) -> __not(_x)
+--- and(_x, _y) -> __and(_x, _y)
+--- or(_x, _y) -> __or(_x, _y)
+--- xor(_x, _y) -> __xor(_x, _y)
+
+--- shift(_x, _n) -> __shift(_x, _n)
+--- sshift(_x, _n) -> __sshift(_x, _n)
+--- rot(_x, _n) -> __rot(_x, _n)
+
+--- neg(_x) -> __neg(_x)
+--- add(_x, _y) -> __add(_x, _y)
+--- sub(_x, _y) -> __sub(_x, _y)
+--- mul(_x, _y) -> __mul(_x, _y)
+--- div(_x, _y) -> __div(_x, _y)
+--- mod(_x, _y) -> __mod(_x, _y)
+--- exp(_x, _y) -> __exp(_x, _y)
+
+--- card(_x) -> __card(_x)
+--- put(_x, _y) -> __put(_x, _y)
+--- put(_x, _y, _z) -> __put(_x, _y, _z) // Triadic put for maps only
+--- get(_x, _y) -> __get(_x, _y)
+--- remove(_x, _y) -> __remove(_x, _y)
+--- cat(_x, _y) -> __cat(_x, _y)
+--- prefix(_x, _n) -> __prefix(_x, _n)
+--- suffix(_x, _n) -> __suffix(_x, _n)
+
+--- unite(_x, _y) -> __unite(_x, _y)
+--- intersect(_x, _y) -> __intersect(_x, _y)
+--- diff(_x, _y) -> __diff(_x, _y)
+--- cast(_x, _y) -> __cast(_x, _y)
+
+--- termArity(_x) -> __termArity(_x)
+--- termRoot(_x) -> __termRoot(_x)
+--- plugin() -> __plugin()
+--- plugin(_x) -> __plugin(_x)
+--- plugin(_x, _y) -> __plugin(_x, _y)
+--- plugin(_x, _y, _z) -> __plugin(_x, _y, _z)
+
+(* Tests for each type/operation combination *)
+
+!print "** __bottom tests"
+!try eq(__bottom, __bottom) = true
+!try ne(__bottom, __bottom) = false
+
+!print "** __done tests"
+!try eq(__done, __done) = true
+!try ne(__done, __done) = false
+
+!print "** __empty tests"
+!try eq(__empty, __empty) = true
+!try ne(__empty, __empty) = false
+
+!print "** __quote tests"
+!try eq(__quote(a), __quote(a)) = true
+!try ne(__quote(a), __quote(a)) = false
+
+!print "** __adtprod tests"
+!try eq(__adtprod(a, 3), __adtprod(a, 3)) = true
+!try ne(__adtprod(a, 3), __adtprod(a, 3)) = false
+
+!print "** __adtsum tests"
+!try eq(__adtsum(a, 3), __adtsum(a, 3)) = true
+!try ne(__adtsum(a, 3), __adtsum(a, 3)) = false
+
+!print "** __proc tests"
+!try eq(__proc(a), __proc(a)) = true
+!try ne(__proc(a), __proc(a)) = false
+
+!print "** __bool tests"
+!try eq(true, true) = true
+!try ne(true, true) = false
+
+!try eq(true, false) = false
+!try ne(false, true) = true
+
+!try not(true) = false
+!try not(false) = true
+!try and(true, false) = false
+!try and(true, true) = true
+!try or(true, false) = true
+!try or(false, false) = false
+!try xor(true, true) = false
+!try xor(false, true) = true
+
+!print "** __char tests"
+!try eq(`a, `a) = true
+!try ne(`a, `a) = false
+
+!try eq(`a, `c) = false
+!try eq(`c, `c) = true
+
+!try ne(`a, `c) = true
+!try ne(`a, `a) = false
+
+!try gt(`c, `b) = true
+!try gt(`c, `c) = false
+
+!try ge(`c, `b) = true
+!try ge(`c, `c) = true
+
+!try lt(`c, `b) = false
+!try lt(`c, `c) = false
+
+!try le(`c, `b) = false
+!try le(`c, `c) = true
+
+!try comp(`b, `c) = -1
+!try comp(`c, `c) = 0
+!try comp(`c, `b) = 1
+
+!print "** __intAP tests"
+!try eq(£3, £2) = false
+!try eq(£3, £3) = true
+
+!try ne(£3, £2) = true
+!try ne(£3, £3) = false
+
+!try gt(£3, £2) = true
+!try gt(£3, £3) = false
+
+!try ge(£3, £2) = true
+!try ge(£3, £3) = true
+
+!try lt(£3, £2) = false
+!try lt(£3, £3) = false
+
+!try le(£3, £2) = false
+!try le(£3, £3) = true
+
+!try not(£15) = £-16
+!try and(£7, £3) = £3
+!try or(£7, £8) = £15
+!try xor(£3, £2) = £1
+
+!try sshift(£15, £-2) = £60
+!try sshift(£15, £2) = £3
+
+!try add(£3, £2) = £5
+!try sub(£2, £3) = £-1
+!try mul(£-3, £2) = £-6
+!try div(£3, £2) = £1
+!try mod(£3, £2) = £1
+!try exp(£3, £2) = £9
+
+!print "** __int32 tests"
+!try eq(3, 2) = false
+!try eq(3, 3) = true
+
+!try ne(3, 2) = true
+!try ne(3, 3) = false
+
+!try gt(3, 2) = true
+!try gt(3, 3) = false
+
+!try ge(3, 2) = true
+!try ge(3, 3) = true
+
+!try lt(3, 2) = false
+!try lt(3, 3) = false
+
+!try le(3, 2) = false
+!try le(3, 3) = true
+
+!try not(15) = -16
+!try and(7, 3) = 3
+!try or(7, 8) = 15
+!try xor(3, 2) = 1
+
+!try shift(15, -2) = 60
+!try shift(15, 2) = 3
+!try sshift(15, -2) = 60
+!try sshift(15, 2) = 3
+!try rot(15, -2) = 60
+!try rot(15, 2) = -1073741821
+
+!try add(3, 2) = 5
+!try sub(2, 3) = -1
+!try mul(-3, 2) = -6
+!try div(3, 2) = 1
+!try mod(3, 2) = 1
+!try exp(3, 2) = 9
+
+!print "** __realAP tests"
+!try eq(£3.0, £2.0) = false
+!try eq(£3.0, £3.0) = true
+
+!try ne(£3.0, £2.0) = true
+!try ne(£3.0, £3.0) = false
+
+!try gt(£3.0, £2.0) = true
+!try gt(£3.0, £3.0) = false
+
+!try ge(£3.0, £2.0) = true
+!try ge(£3.0, £3.0) = true
+
+!try lt(£3.0, £2.0) = false
+!try lt(£3.0, £3.0) = false
+
+!try le(£3.0, £2.0) = false
+!try le(£3.0, £3.0) = true
+
+!try neg(£3.0) = £-3.0
+!try add(£3.0, £2.0) = £5.0
+!try sub(£3.0, £2.0) = £1.0
+!try mul(£3.0, £2.0) = £6.00 // Quirk of  BigInteger.toString() yields two zeroes...
+!try div(£3.0, £2.0) = £1.5
+!try mod(£3.0, £2.0) = £1.0
+!try exp(£3.0, £2.0) = £9.00 // Quirk of  BigInteger.toString() yields two zeroes...
+
+!print "** _real64 tests"
+!try eq(3.0, 2.0) = false
+!try eq(3.0, 3.0) = true
+
+!try ne(3.0, 2.0) = true
+!try ne(3.0, 3.0) = false
+
+!try gt(3.0, 2.0) = true
+!try gt(3.0, 3.0) = false
+
+!try ge(3.0, 2.0) = true
+!try ge(3.0, 3.0) = true
+
+!try lt(3.0, 2.0) = false
+!try lt(3.0, 3.0) = false
+
+!try le(3.0, 2.0) = false
+!try le(3.0, 3.0) = true
+
+!try neg(3.0) = -3.0
+!try add(3.0, 2.0) = 5.0
+!try sub(3.0, 2.0) = 1.0
+!try mul(3.0, 2.0) = 6.0
+!try div(3.0, 2.0) = 1.5
+!try mod(3.0, 2.0) = 1.0
+!try exp(3.0, 2.0) = 9.0
+
+
+!print "** __string tests"
+!try comp("Adrian", "Johnstone") = -1
+!try comp("Adrian", "Adrian") = 0
+!try comp("ZAdrian", "Johnstone") = 1
+!try comp("", "Johnstone") = -1
+!try comp("", "") = 0
+!try card("") = 0
+!try card("Adrian") = 6
+!try cat("World", "hello") = "Worldhello"
+!try cat("hello", "World") = "helloWorld"
+!try get("Adrian", 1) = `d
+!try prefix("0123456789", 2) = "01"
+!try suffix("0123456789", 2) = "23456789"
+
+!print "** __array tests"
+!try card(__array(3, __a(`a, __a("b", __a(3))))) = 3
+!try put (__array(3, __a(`a, __a("b", __a(3)))), 1, 666) = __array(3, __a(`a, __a(666, __a(3))))  
+!try get(__array(2, __a(`a, __a("b"))), 1) = "b"
+!try prefix(__array(3, __a(`a, __a("b", __a(3)))), 2) = __array(2, __a(`a, __a("b")))  
+!try suffix(__array(3, __a(`a, __a("b", __a(3)))), 1) = __array(2, __a("b", __a(3)))  
+
+!print "** __list tests"
+!try card([`a, "b", 3]) = 3
+!try card(__list(__l("b", __l(3, __(4))))) = 3
+!try put([`a, "b", 3], 2, 666) = [`a, "b", 666, 3]
+!try get([`a, "b", 3, 25.9, "z"], 2) = 3
+!try remove([`a, "b", 3], 1) = [`a, 3]
+!try cat([`a, "b", 3], []) = [`a, "b", 3]
+!try cat([`a, "b", 3], [25.9, "z"]) = [`a, "b", 3, 25.9, "z"]
+!try get([], 3) = __empty
+!try prefix([0,1,2,3,4,5,6,7,8,9], 2) = [0,1]
+!try suffix([0,1,2,3,4,5,6,7,8,9], 2) = [2,3,4,5,6,7,8,9]
+
+!print "** __set tests"
+!try card(__set(__s(`a, __s("b", __s(3))))) = 3
+!try put(__set(__s(`a, __s("b"))), 3) = __set(__s(`a, __s("b", __s(3)))) 
+!try get(__set(__s(`a, __s("b"))), `a) = `a 
+!try get(__set(__s(`a, __s("b"))), `z) = __empty 
+!try remove(__set(__s(`a, __s("b"))), `a) = __set(__s("b")) 
+!try remove(__set(), `a) = __set 
+!try unite(__set(__s(`a, __s("b"))), __set(__s("b", __s(3)))) = __set(__s(`a, __s("b", __s(3)))) 
+!try intersect(__set(__s(`a, __s("b"))), __set(__s("b", __s(3)))) = __set(__s("b")) 
+!try diff(__set(__s(`a, __s("b"))), __set(__s("b", __s(3)))) = __set(__s(`a)) 
+
+!print "** __map tests"
+!try card(__map(__m(`a, 3, __m("b", 4, __m(3, "z"))))) = 3
+!try put(__map(__m(`a, 3, __m("b", 4, __m(3, "z")))), 3, 7) = __map(__m(`a, 3, __m("b", 4, __m(3, 7))))
+!try get(__map(__m(`a, 3, __m("b", 4, __m(3, "z")))), `a) = 3 
+!try get(__map(__m(`a, 3, __m("b", 4, __m(3, "z")))), `z) = __empty
+!try remove(__map(__m(`a, 3, __m("b", 4, __m(3, "z")))), `a) = __map(__m("b", 4, __m(3, "z")))
+!try remove(__map,  `a) = __map
+
+(*
+!print "** __map as hierachical map tests"
+!try card(__map(__empty, __m(`a, 3), __m("b", 4), __m(3, "z"))) = 3
+!try put(__map(__empty, __m(`a, 3), __m("b", 4), __m(3, "z")), 3, 7) = __map(__empty, __m("b", 4), __m(`a, 3), __m(3, 7))
+!try put(__map(__empty, __m(`a, 3), __m("b", 4), __m(3, "z")), 10, 7) = __map(__empty, __m("b", 4), __m(`a, 3), __m(3, "z"), __m(10, 7))
+!try contains(__map(__empty, __m(`a, 3), __m("b", 4), __m(3, "z")), `a) = true 
+!try contains(__map(__empty, __m(`a, 3), __m("b", 4), __m(3, "z")), `z) = false 
+!try extract(__map(__empty, __m(a, 3), __m("b", 4), __m(3, "z"))) = 4
+!try extract(__map(__empty)) = __empty
+*)
+
+!try plugin("test",1,2) = "test"
+!try plugin(666,"test",1) = 666
+!try plugin(__done,"test",1) = __done
+
+
+!try cast(1,3) = 1
+!try cast(1,£3) = £1
+!try cast(1,3.0) = 1.0
+!try cast(1,£3.0) = £1.0
+
+!try plugin() = __done // !!! nonadic constructor failure? 
