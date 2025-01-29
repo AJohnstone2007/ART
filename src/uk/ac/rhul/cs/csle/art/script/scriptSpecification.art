@@ -132,8 +132,10 @@ directiveElement ::=
 | 'generate'^^ ID | 'generate'^^ ID STRING_SHRIEK_SHRIEK STRING_SHRIEK_SHRIEK
 
 | 'start'^^ cfgNonterminal | 'start'^^ trRelation // Set parser start nonterminal or rewriter start relation
-| 'configuration'^^ trRelation trTerms
-| 'terminal'^^ trRelation trTerms
+| 'configuration'^^ trRelation trTerm
+| 'configuration'^^ trRelation trTerm trTermsTail^
+| 'terminal'^^ trRelation trTerm
+| 'terminal'^^ trRelation trTerm trTermsTail^
 
 | 'clear'^^ 'allRules' | 'clear'^^ 'cfgRules' | 'clear'^^ 'chooseRules' | 'clear'^^ 'trRules'
 
@@ -166,7 +168,8 @@ paraterminalElement  ::= cfgNonterminal^^
 
 displayElements ::= displayElement^ | displayElement^ displayElements^
 displayElement  ::= 
-  'latex' | file 
+  'version'
+| 'latex' | file 
 | 'script' | 'scriptDerivation' 
 | 'allRules' | 'cfgRules' | 'chooseRules' | 'trRules'
 | 'gdg'

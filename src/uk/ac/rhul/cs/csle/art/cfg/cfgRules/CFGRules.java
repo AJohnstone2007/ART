@@ -191,16 +191,16 @@ public class CFGRules {
     // Seed follow sets
     if (startNonterminal != null) follow.add(startNonterminal, endOfStringElement);
 
-    System.out.println("Initial first sets: " + first);
-    System.out.println("Initial instance first sets: " + instanceFirst);
-    System.out.println("Initial follow sets: " + follow);
-    System.out.println("Initial instance follow sets: " + instanceFollow);
-    computeFirstAndFollowSets();
-
-    System.out.println("Final first sets: " + first);
-    System.out.println("Final instance first sets: " + instanceFirst);
-    System.out.println("Final follow sets: " + follow);
-    System.out.println("Final instance follow sets: " + instanceFollow);
+    // System.out.println("Initial first sets: " + first);
+    // System.out.println("Initial instance first sets: " + instanceFirst);
+    // System.out.println("Initial follow sets: " + follow);
+    // System.out.println("Initial instance follow sets: " + instanceFollow);
+    // computeFirstAndFollowSets();
+    //
+    // System.out.println("Final first sets: " + first);
+    // System.out.println("Final instance first sets: " + instanceFirst);
+    // System.out.println("Final follow sets: " + follow);
+    // System.out.println("Final instance follow sets: " + instanceFollow);
 
     // Collect attributes
     // System.out.println("*** Collecting attributes");

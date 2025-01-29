@@ -84,7 +84,7 @@ public class TRRules {
   boolean isTerminatingConfiguration(int term, int relation) {
     int thetaRoot = thetaFromConfiguration(term);
     Set<Integer> terminals = rewriteTerminals.get(relation);
-    return iTerms.isSpecialTerm(thetaRoot) || (terminals != null && terminals.contains(thetaRoot));
+    return iTerms.isSpecialTerm(thetaRoot) || (terminals != null && terminals.contains(iTerms.termSymbolStringIndex(thetaRoot)));
   }
 
   public void normalise() {
@@ -183,7 +183,7 @@ public class TRRules {
           if (isNumber) continue;
 
           var terminals = rewriteTerminals.get(scanRelationIndex);
-          if (terminals != null && terminals.contains(iTerms.findTerm(label))) continue;
+          if (terminals != null && terminals.contains(c)) continue;
           Util.warning("in relation " + iTerms.plainTextTraverser.toString(scanRelationIndex) + " constructor " + label + " has no rule definitions");
         }
     }
