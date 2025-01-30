@@ -69,6 +69,7 @@ public class CFGRules {
   public final Set<CFGNode> nullablePrefixSlots = new HashSet<>(); // { X ::= \alpha . \beta} | \alpha =>* \epsilon }
   public final Set<CFGNode> nullableSuffixSlots = new HashSet<>(); // { X ::= \alpha . \beta} | \beta =>* \epsilon }
   public final Set<CFGElement> cyclicNonterminals = new HashSet<>(); // { X ::= \alpha X \beta} | \alpha,\beta =>* \epsilon }
+  public final Set<CFGNode> cyclicSlots = new HashSet<>(); // { X ::= \alpha X \beta} | \alpha,\beta =>* \epsilon }
 
   public final Set<CFGNode> acceptingSlots = new HashSet<>(); // Set of slots which are END nodes of the start production
   public final Set<Integer> acceptingNodeNumbers = new TreeSet<>(); // Set of node number for the slots on accepting slots
@@ -271,19 +272,19 @@ public class CFGRules {
       for (CFGElement lhs : elements.keySet())
         if (lhs.kind == CFGKind.N) {
           CFGNode topNode = elementToNodeMap.get(lhs);
-          System.out.println("Visiting top node " + topNode.num + ":" + topNode);
+          // System.out.println("Visiting top node " + topNode.num + ":" + topNode);
           for (CFGNode altNode = topNode.alt; altNode != null; altNode = altNode.alt) {
-            System.out.println("Visiting alt node " + altNode.num + ":" + altNode);
+            // System.out.println("Visiting alt node " + altNode.num + ":" + altNode);
             CFGNode seqNode = altNode;
             boolean seenOnlyNullable = true;
             while (true) {
               // Flow control
               seqNode = seqNode.seq;
-              System.out.println("Visiting seq node " + seqNode.num + ":" + seqNode + " with seenOnlyNullable " + seenOnlyNullable);
+              // System.out.println("Visiting seq node " + seqNode.num + ":" + seqNode + " with seenOnlyNullable " + seenOnlyNullable);
 
               // 1. Capture nullable prefixes
               if (seenOnlyNullable) {
-                System.out.println("Adding nullable prefixslot " + seqNode.toStringAsProduction());
+                // System.out.println("Adding nullable prefixslot " + seqNode.toStringAsProduction());
                 changed |= nullablePrefixSlots.add(seqNode);
               }
 
@@ -302,7 +303,7 @@ public class CFGRules {
                 seenOnlyNullable = false;
             }
             if (seenOnlyNullable) {
-              System.out.println("All elements in sequence are nullable; adding epsilon to first of " + lhs);
+              // System.out.println("All elements in sequence are nullable; adding epsilon to first of " + lhs);
               changed |= first.add(lhs, epsilonElement); // If the whole sequence is made up of nullable elements, thenadd epsilon to the left hand side
             }
             // Now fold the instance first set of the first slot in this sequence into the LHS
@@ -313,31 +314,32 @@ public class CFGRules {
   }
 
   private void computeNullableSuffixAndCyclic() {
-    for (CFGElement ge : elements.keySet())
-      if (ge.kind == CFGKind.N) {
-        CFGNode topNode = elementToNodeMap.get(ge);
-        System.out.println("Compute nullable suffix visiting top node " + topNode.num + ":" + topNode);
+    for (CFGElement lhs : elements.keySet())
+      if (lhs.kind == CFGKind.N) {
+        CFGNode topNode = elementToNodeMap.get(lhs);
+        // System.out.println("Compute nullable suffix visiting top node " + topNode.num + ":" + topNode);
         for (CFGNode altNode = topNode.alt; altNode != null; altNode = altNode.alt) {
-          System.out.println("Compute nullable suffix visiting alt node " + altNode.num + ":" + altNode);
-          computeNullableSuffixAndCyclicRec(ge, altNode.seq);
+          // System.out.println("Compute nullable suffix visiting alt node " + altNode.num + ":" + altNode);
+          computeNullableSuffixAndCyclicRec(lhs, altNode.seq);
         }
       }
   }
 
   private boolean computeNullableSuffixAndCyclicRec(CFGElement ge, CFGNode seqNode) {
     boolean nullableSuffix;
-    System.out.println("Compute nullable suffix REC visiting seq node " + seqNode.num + ":" + seqNode);
+    // System.out.println("Compute nullable suffix REC visiting seq node " + seqNode.num + ":" + seqNode);
 
-    if (seqNode.elm.kind != CFGKind.END)
+    if (seqNode.elm.kind == CFGKind.END)
       nullableSuffix = true;
     else
       nullableSuffix = computeNullableSuffixAndCyclicRec(ge, seqNode.seq) && first.get(seqNode.elm).contains(epsilonElement);
 
     if (nullableSuffix) nullableSuffixSlots.add(seqNode);
 
-    if (instanceFirst.get(seqNode).contains(ge) && nullablePrefixSlots.contains(seqNode) && nullableSuffixSlots.contains(seqNode.seq))
+    if (instanceFirst.get(seqNode).contains(ge) && nullablePrefixSlots.contains(seqNode) && nullableSuffixSlots.contains(seqNode.seq)) {
       cyclicNonterminals.add(ge);
-
+      cyclicSlots.add(seqNode.seq);
+    }
     return nullableSuffix;
   }
 
@@ -655,6 +657,11 @@ public class CFGRules {
     sb.append("\nWhitespaces: " + whitespaces);
 
     sb.append("\nCyclic nonterminals: " + cyclicNonterminals);
+
+    sb.append("\nCyclic slots:\n");
+    for (var n : cyclicSlots)
+      sb.append(n.toStringAsProduction() + "\n");
+    sb.append("\n");
 
     return sb.toString();
   }
