@@ -93,7 +93,7 @@ public class CFGNode {
 
   @Override
   public String toString() {
-    return num + " " + toString1();
+    return /* num + " " + */ toString1();
   }
 
   public String toString1() {

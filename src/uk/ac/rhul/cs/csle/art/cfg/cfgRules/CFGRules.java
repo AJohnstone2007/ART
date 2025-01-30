@@ -195,7 +195,8 @@ public class CFGRules {
     // System.out.println("Initial instance first sets: " + instanceFirst);
     // System.out.println("Initial follow sets: " + follow);
     // System.out.println("Initial instance follow sets: " + instanceFollow);
-    // computeFirstAndFollowSets();
+    computeFirstSets();
+    computeNullableSuffixAndCyclic();
     //
     // System.out.println("Final first sets: " + first);
     // System.out.println("Final instance first sets: " + instanceFirst);
@@ -254,6 +255,90 @@ public class CFGRules {
         }
       }
     }
+  }
+
+  Set<CFGElement> removeEpsilon(Set<CFGElement> set) {
+    Set<CFGElement> tmp = new HashSet<>(set);
+    tmp.remove(epsilonElement);
+    return tmp;
+  }
+
+  private void computeFirstSets() {
+    // Closure loop
+    boolean changed = true;
+    while (changed) {
+      changed = false;
+      for (CFGElement lhs : elements.keySet())
+        if (lhs.kind == CFGKind.N) {
+          CFGNode topNode = elementToNodeMap.get(lhs);
+          System.out.println("Visiting top node " + topNode.num + ":" + topNode);
+          for (CFGNode altNode = topNode.alt; altNode != null; altNode = altNode.alt) {
+            System.out.println("Visiting alt node " + altNode.num + ":" + altNode);
+            CFGNode seqNode = altNode;
+            boolean seenOnlyNullable = true;
+            while (true) {
+              // Flow control
+              seqNode = seqNode.seq;
+              System.out.println("Visiting seq node " + seqNode.num + ":" + seqNode + " with seenOnlyNullable " + seenOnlyNullable);
+
+              // 1. Capture nullable prefixes
+              if (seenOnlyNullable) {
+                System.out.println("Adding nullable prefixslot " + seqNode.toStringAsProduction());
+                changed |= nullablePrefixSlots.add(seqNode);
+              }
+
+              if (seqNode.elm.kind == CFGKind.END) break;
+
+              // 2. Update instance first with the element itself for nonterminals only
+              if (seqNode.elm.kind == CFGKind.N) changed |= instanceFirst.add(seqNode, seqNode.elm);
+
+              // 3. Fold in the first set of this node's element after suppressing epsilon
+              changed |= instanceFirst.addAll(seqNode, removeEpsilon(first.get(seqNode.elm))); // Update instance first with element first
+
+              // 4. If epsilon is in this node's element's first set, fold the first set of our successor in
+              if (first.get(seqNode.elm).contains(epsilonElement))
+                changed |= instanceFirst.addAll(seqNode, instanceFirst.get(seqNode.seq));
+              else // otherwise reset seenOnlyNullable
+                seenOnlyNullable = false;
+            }
+            if (seenOnlyNullable) {
+              System.out.println("All elements in sequence are nullable; adding epsilon to first of " + lhs);
+              changed |= first.add(lhs, epsilonElement); // If the whole sequence is made up of nullable elements, thenadd epsilon to the left hand side
+            }
+            // Now fold the instance first set of the first slot in this sequence into the LHS
+            changed |= first.addAll(lhs, instanceFirst.get(altNode.seq));
+          }
+        }
+    }
+  }
+
+  private void computeNullableSuffixAndCyclic() {
+    for (CFGElement ge : elements.keySet())
+      if (ge.kind == CFGKind.N) {
+        CFGNode topNode = elementToNodeMap.get(ge);
+        System.out.println("Compute nullable suffix visiting top node " + topNode.num + ":" + topNode);
+        for (CFGNode altNode = topNode.alt; altNode != null; altNode = altNode.alt) {
+          System.out.println("Compute nullable suffix visiting alt node " + altNode.num + ":" + altNode);
+          computeNullableSuffixAndCyclicRec(ge, altNode.seq);
+        }
+      }
+  }
+
+  private boolean computeNullableSuffixAndCyclicRec(CFGElement ge, CFGNode seqNode) {
+    boolean nullableSuffix;
+    System.out.println("Compute nullable suffix REC visiting seq node " + seqNode.num + ":" + seqNode);
+
+    if (seqNode.elm.kind != CFGKind.END)
+      nullableSuffix = true;
+    else
+      nullableSuffix = computeNullableSuffixAndCyclicRec(ge, seqNode.seq) && first.get(seqNode.elm).contains(epsilonElement);
+
+    if (nullableSuffix) nullableSuffixSlots.add(seqNode);
+
+    if (instanceFirst.get(seqNode).contains(ge) && nullablePrefixSlots.contains(seqNode) && nullableSuffixSlots.contains(seqNode.seq))
+      cyclicNonterminals.add(ge);
+
+    return nullableSuffix;
   }
 
   private class InstancePair {
@@ -390,96 +475,6 @@ public class CFGRules {
     if (parentNode == elementToNodeMap.get(startNonterminal)) acceptingNodeNumbers.add(gn.num);
     // System.out.println("processEndNodes updated alt and seq to " + gn.alt.ni + " " + gn.seq.ni);
   }
-
-  Set<CFGElement> removeEpsilon(Set<CFGElement> set) {
-    Set<CFGElement> tmp = new HashSet<>(set);
-    tmp.remove(epsilonElement);
-    return tmp;
-  }
-
-  private void computeFirstAndFollowSets() {
-    // Closure loop over first and follow set computation
-    boolean changed = true;
-    while (changed) {
-      changed = false;
-      for (CFGElement ge : elements.keySet())
-        if (ge.kind == CFGKind.N) {
-          CFGNode topNode = elementToNodeMap.get(ge);
-          System.out.println("Visiting top node " + topNode.num + ":" + topNode);
-          for (CFGNode altNode = topNode.alt; altNode != null; altNode = altNode.alt) {
-            System.out.println("Visiting alt node " + altNode.num + ":" + altNode);
-            CFGNode seqNode = altNode;
-            do {
-              seqNode = seqNode.seq;
-              System.out.println("Visiting seq node " + seqNode.num + ":" + seqNode);
-              changed |= instanceFirst.addAll(seqNode, removeEpsilon(first.get(seqNode.elm))); // Update instance first with element first
-              if (first.get(seqNode.elm).contains(epsilonElement)) changed |= instanceFirst.addAll(seqNode, instanceFirst.get(seqNode.seq));
-              changed |= first.addAll(seqNode.elm, instanceFirst.get(seqNode));
-            } while (seqNode.elm.kind != CFGKind.END);
-            changed |= first.addAll(topNode.elm, instanceFirst.get(altNode.seq));
-          }
-        }
-    }
-  }
-
-  // void firstAndFollowSetsAlt(CFGNode bracketNode) {
-  // for (CFGNode gn = bracketNode.alt; gn != null; gn = gn.alt) {
-  // // System.out.println("firstAndFollowSetsAlt at " + gn.num);
-  // firstAndFollowSetsIter(gn); // recurse over sequence
-  //
-  // changed |= instanceFirst.addAll(gn, instanceFirst.get(gn.seq)); // project the first set from the sequence to the first set for this alt node node
-  // changed |= instanceFirst.addAll(bracketNode, instanceFirst.get(gn)); // project this alt's first set up to the bracketNode's first set
-  // changed |= first.addAll(bracketNode.elm, instanceFirst.get(bracketNode)); // project the bracket node's first set up to the instance (which may be LHS)
-  // //
-  // // if (bracketNode.elm.kind == CFGKind.POS || bracketNode.elm.kind == CFGKind.KLN)// If the bracket node is a a closure, fold first into follow
-  // // changed |= instanceFollow.addAll(bracketNode, removeEpsilon(instanceFirst.get(bracketNode)));
-  // //
-  // // if (bracketNode.elm.kind == CFGKind.OPT || bracketNode.elm.kind == CFGKind.KLN) // If the bracket node is Kleene and Optional which can match epsilon,
-  // // // fold epsilon into the firset set
-  // // changed |= instanceFirst.addAll(bracketNode, removeEpsilon(instanceFollow.get(bracketNode)));
-  // }
-  // }
-  //
-  // private void firstAndFollowSetsIter(CFGNode bracketNode) {
-  // CFGNode previousNode = bracketNode;
-  //
-  // for (CFGNode gn = bracketNode.seq; gn.elm.kind != CFGKind.END; gn = gn.seq) {
-  // // System.out.println("firstAndFollowSetsRec at " + gn.num);
-  // // System.out.println("instanceFirst: " + instanceFirst);
-  // // System.out.println("instanceFollow: " + instanceFollow);
-  //
-  // // 5. Fold into instanceFirst our element's FIRST
-  // if (gn.elm.kind == CFGKind.EPS) {
-  // changed |= instanceFirst.addAll(gn, first.get(gn.elm));
-  // // System.out.println("Epsilon node; adding first (epsilon) - " + instanceFirst.get(gn));
-  // } else {
-  // changed |= instanceFirst.add(gn, gn.elm); // This is for nonterminals - terminals will already have their elm in their first sets
-  // changed |= instanceFirst.addAll(gn, removeEpsilon(first.get(gn.elm)));
-  // // System.out.println("Added element first - " + instanceFirst.get(gn));
-  // }
-  //
-  // // 6. If our element first contains epsilon, fold in our successor's first as well
-  // if (first.get(gn.elm).contains(epsilonElement)) changed |= instanceFirst.get(gn).addAll(instanceFirst.get(gn.seq));
-  //
-  // // 8. Update follow sets with first set of successor, and update instance element follow set
-  // changed |= instanceFollow.get(gn).addAll(removeEpsilon(instanceFirst.get(gn.seq))); // instance follow set
-  // changed |= follow.get(gn.elm).addAll(removeEpsilon(instanceFirst.get(gn.seq))); // follow set for this instance's element
-  //
-  // // if (nullableSuffixSlots.contains(gn.seq)) changed |= instanceFollow.get(gn).addAll(instanceFollow.get(bracketNode));
-  // // changed |= follow.get(gn.elm).addAll(instanceFollow.get(gn));
-  // //
-  // // // 9. Update nullable pre/suffix
-  // // if (first.get(gn.elm).contains(epsilonElement)) {
-  // // if (nullablePrefixSlots.contains(previousNode)) nullablePrefixSlots.add(gn); // propogate nullable left prefix
-  // // if (nullablePrefixSlots.contains(gn.seq)) nullableSuffixSlots.add(gn); // propogate nullable left prefix
-  // // }
-  // //
-  // // // 1o. If we have both a nullable suffix and a nullable prefix, and this element is the bracketNode's element (LHS) then we are cyclic
-  // // if (nullablePrefixSlots.contains(gn) && nullableSuffixSlots.contains(gn) && gn.elm.equals(bracketNode.elm)) cyclicNonterminals.add(gn.elm);
-  //
-  // previousNode = gn; // Remember this node for the next iteration so that we can look back
-  // }
-  // }
 
   // Data access for lexers
   public LexemeKind[] lexicalKindsArray() {
