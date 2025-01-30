@@ -337,7 +337,7 @@ public class CFGRules {
 
     if (nullableSuffix) nullableSuffixSlots.add(seqNode);
 
-    if (instanceFirst.get(seqNode).contains(lhs) && nullablePrefixSlots.contains(seqNode) && nullableSuffixSlots.contains(seqNode.seq)) {
+    if (instanceFirst.get(seqNode).contains(lhs) && nullablePrefixSlots.contains(seqNode) && nullableSuffixSlots.contains(seqNode)) {
       // System.out.println("Adding cyclic nonterminal " + lhs + " from cylic slot " + seqNode.toStringAsProduction());
       cyclicNonterminals.add(lhs);
       cyclicSlots.add(seqNode.seq);
