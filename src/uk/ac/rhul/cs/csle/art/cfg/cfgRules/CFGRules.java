@@ -198,6 +198,7 @@ public class CFGRules {
     // System.out.println("Initial instance follow sets: " + instanceFollow);
     computeFirstSets();
     computeNullableSuffixAndCyclic();
+    computeFollowSets();
     //
     // System.out.println("Final first sets: " + first);
     // System.out.println("Final instance first sets: " + instanceFirst);
@@ -325,22 +326,44 @@ public class CFGRules {
       }
   }
 
-  private boolean computeNullableSuffixAndCyclicRec(CFGElement ge, CFGNode seqNode) {
+  private boolean computeNullableSuffixAndCyclicRec(CFGElement lhs, CFGNode seqNode) {
     boolean nullableSuffix;
-    // System.out.println("Compute nullable suffix REC visiting seq node " + seqNode.num + ":" + seqNode);
+    // System.out.println("Compute nullable suffix REC visiting seq node " + seqNode.num + ":" + seqNode + " under lhs " + lhs);
 
     if (seqNode.elm.kind == CFGKind.END)
       nullableSuffix = true;
     else
-      nullableSuffix = computeNullableSuffixAndCyclicRec(ge, seqNode.seq) && first.get(seqNode.elm).contains(epsilonElement);
+      nullableSuffix = computeNullableSuffixAndCyclicRec(lhs, seqNode.seq) && first.get(seqNode.elm).contains(epsilonElement);
 
     if (nullableSuffix) nullableSuffixSlots.add(seqNode);
 
-    if (instanceFirst.get(seqNode).contains(ge) && nullablePrefixSlots.contains(seqNode) && nullableSuffixSlots.contains(seqNode.seq)) {
-      cyclicNonterminals.add(ge);
+    if (instanceFirst.get(seqNode).contains(lhs) && nullablePrefixSlots.contains(seqNode) && nullableSuffixSlots.contains(seqNode.seq)) {
+      // System.out.println("Adding cyclic nonterminal " + lhs + " from cylic slot " + seqNode.toStringAsProduction());
+      cyclicNonterminals.add(lhs);
       cyclicSlots.add(seqNode.seq);
     }
     return nullableSuffix;
+  }
+
+  private void computeFollowSets() {
+    boolean changed = true;
+    while (changed) {
+      changed = false;
+      for (CFGElement lhs : elements.keySet())
+        if (lhs.kind == CFGKind.N) {
+          CFGNode topNode = elementToNodeMap.get(lhs);
+          // System.out.println("Visiting top node " + topNode.num + ":" + topNode);
+          for (CFGNode altNode = topNode.alt; altNode != null; altNode = altNode.alt) {
+            // System.out.println("Visiting alt node " + altNode.num + ":" + altNode);
+            CFGNode seqNode = altNode.seq;
+            while (true) {
+              instanceFollow.addAll(seqNode, instanceFirst.get(seqNode.seq));
+              if (seqNode.elm.kind == CFGKind.END) break;
+              seqNode = seqNode.seq;
+            }
+          }
+        }
+    }
   }
 
   private class InstancePair {
