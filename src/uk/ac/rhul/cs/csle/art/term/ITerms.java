@@ -574,8 +574,7 @@ public class ITerms {
     if (isVariableTerm(openTermIndex) || isSequenceVariableTerm(openTermIndex)) {
       int termVariableNumber = termVariableNumber(openTermIndex);
       int boundValue = bindings[termVariableNumber];
-      // Speculative comment out for listings examples
-      // if (boundValue == 0) throw new RewriteException("attempt to substitute unbound variable " + tt.toString(openTermIndex));
+      if (boundValue == 0) Util.fatal("attempt to substitute unbound variable");
       ret = boundValue;
       // Now reduce substituted values by evaluation
       if (isSpecialTerm(boundValue))
