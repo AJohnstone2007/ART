@@ -681,7 +681,11 @@ public class CFGRules {
 
     sb.append("\nCyclic nonterminals: " + cyclicNonterminals);
 
-    sb.append("\nCyclic slots:\n");
+    sb.append("\nCocyclic nonterminals: \n");
+    for (var n : cyclicNonterminals)
+      for (var nf : first.get(n))
+        if (cyclicNonterminals.contains(nf)) sb.append(n + "/" + nf + "\n");
+    sb.append("Cyclic slots:\n");
     for (var n : cyclicSlots)
       sb.append(n.toStringAsProduction() + "\n");
     sb.append("\n");
