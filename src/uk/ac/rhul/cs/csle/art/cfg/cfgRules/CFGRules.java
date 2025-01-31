@@ -357,7 +357,9 @@ public class CFGRules {
             // System.out.println("Visiting alt node " + altNode.num + ":" + altNode);
             CFGNode seqNode = altNode.seq;
             while (true) {
-              instanceFollow.addAll(seqNode, instanceFirst.get(seqNode.seq));
+              changed |= instanceFollow.addAll(seqNode, removeEpsilon(instanceFirst.get(seqNode.seq)));
+              if (seqNode.elm.kind == CFGKind.N) changed |= follow.addAll(seqNode.elm, removeEpsilon(instanceFirst.get(seqNode.seq)));
+              if (nullableSuffixSlots.contains(seqNode.seq)) changed |= follow.addAll(seqNode.elm, follow.get(lhs));
               if (seqNode.elm.kind == CFGKind.END) break;
               seqNode = seqNode.seq;
             }
