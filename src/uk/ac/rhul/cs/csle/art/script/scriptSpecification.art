@@ -129,7 +129,8 @@ directiveElement ::=
 | 'lexer'^^ '#'^ | 'lexer'^^ ID
 | 'parser'^^ '#'^ | 'parser'^^ ID
 | 'interpreter'^^ '#'^ | 'interpreter'^^ ID
-| 'generate'^^ ID | 'generate'^^ ID STRING_SHRIEK_SHRIEK STRING_SHRIEK_SHRIEK
+| 'generate'^^ ID
+| 'support'^^ cfgNative cfgNative 
 
 | 'start'^^ cfgNonterminal | 'start'^^ trRelation // Set parser start nonterminal or rewriter start relation
 | 'configuration'^^ trRelation trTerm

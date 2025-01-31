@@ -70,6 +70,8 @@ public class CFGRules {
   public final Set<CFGNode> nullableSuffixSlots = new HashSet<>(); // { X ::= \alpha . \beta} | \beta =>* \epsilon }
   public final Set<CFGElement> cyclicNonterminals = new HashSet<>(); // { X ::= \alpha X \beta} | \alpha,\beta =>* \epsilon }
   public final Set<CFGNode> cyclicSlots = new HashSet<>(); // { X ::= \alpha X \beta} | \alpha,\beta =>* \epsilon }
+  public Relation<CFGElement, CFGElement> derivesExactly;
+  public Relation<CFGElement, CFGElement> derivesExactlyTransitiveClosure;
 
   public final Set<CFGNode> acceptingSlots = new HashSet<>(); // Set of slots which are END nodes of the start production
   public final Set<Integer> acceptingNodeNumbers = new TreeSet<>(); // Set of node number for the slots on accepting slots
@@ -104,6 +106,7 @@ public class CFGRules {
   }
 
   public void normalise() {
+    derivesExactly = new Relation<>();
     // Add singleton grammar nodes for terminals, # and epsilon. These are used by the SPPF.
     for (CFGElement e : elements.keySet())
       if (e.kind == CFGKind.B || e.kind == CFGKind.T || e.kind == CFGKind.TI || e.kind == CFGKind.C || e.kind == CFGKind.EPS)
@@ -321,27 +324,29 @@ public class CFGRules {
         // System.out.println("Compute nullable suffix visiting top node " + topNode.num + ":" + topNode);
         for (CFGNode altNode = topNode.alt; altNode != null; altNode = altNode.alt) {
           // System.out.println("Compute nullable suffix visiting alt node " + altNode.num + ":" + altNode);
-          computeNullableSuffixAndCyclicRec(lhs, altNode.seq);
+          computeNullableSuffixAndDerivesExactlyRec(lhs, altNode.seq);
         }
       }
+    derivesExactlyTransitiveClosure = new Relation<>(derivesExactly);
+    derivesExactlyTransitiveClosure.transitiveClosure();
+    for (var n : derivesExactlyTransitiveClosure.getDomain())
+      if (derivesExactlyTransitiveClosure.get(n).contains(n)) cyclicNonterminals.add(n);
   }
 
-  private boolean computeNullableSuffixAndCyclicRec(CFGElement lhs, CFGNode seqNode) {
+  private boolean computeNullableSuffixAndDerivesExactlyRec(CFGElement lhs, CFGNode seqNode) {
     boolean nullableSuffix;
     // System.out.println("Compute nullable suffix REC visiting seq node " + seqNode.num + ":" + seqNode + " under lhs " + lhs);
 
     if (seqNode.elm.kind == CFGKind.END)
       nullableSuffix = true;
     else
-      nullableSuffix = computeNullableSuffixAndCyclicRec(lhs, seqNode.seq) && first.get(seqNode.elm).contains(epsilonElement);
+      nullableSuffix = computeNullableSuffixAndDerivesExactlyRec(lhs, seqNode.seq) && first.get(seqNode.elm).contains(epsilonElement);
 
     if (nullableSuffix) nullableSuffixSlots.add(seqNode);
 
-    if (instanceFirst.get(seqNode).contains(lhs) && nullablePrefixSlots.contains(seqNode) && nullableSuffixSlots.contains(seqNode)) {
-      // System.out.println("Adding cyclic nonterminal " + lhs + " from cylic slot " + seqNode.toStringAsProduction());
-      cyclicNonterminals.add(lhs);
-      cyclicSlots.add(seqNode.seq);
-    }
+    if (seqNode.elm.kind == CFGKind.N && nullablePrefixSlots.contains(seqNode) && nullableSuffixSlots.contains(seqNode.seq))
+      this.derivesExactly.add(lhs, seqNode.elm);
+
     return nullableSuffix;
   }
 
@@ -684,13 +689,17 @@ public class CFGRules {
     sb.append("\nCyclic nonterminals: " + cyclicNonterminals);
 
     sb.append("\nCocyclic nonterminals: \n");
-    for (var n : cyclicNonterminals)
-      for (var nf : first.get(n))
-        if (cyclicNonterminals.contains(nf)) sb.append(n + "/" + nf + "\n");
-    sb.append("Cyclic slots:\n");
-    for (var n : cyclicSlots)
-      sb.append(n.toStringAsProduction() + "\n");
-    sb.append("\n");
+    for (var n : derivesExactlyTransitiveClosure.getDomain())
+      if (cyclicNonterminals.contains(n)) {
+        sb.append(n + ": {");
+        for (var nf : derivesExactlyTransitiveClosure.get(n))
+          if (cyclicNonterminals.contains(nf)) sb.append(" " + nf);
+        sb.append(" }\n");
+      }
+    // sb.append("Cyclic slots:\n");
+    // for (var n : cyclicSlots)
+    // sb.append(n.toStringAsProduction() + "\n");
+    // sb.append("\n");
 
     return sb.toString();
   }
