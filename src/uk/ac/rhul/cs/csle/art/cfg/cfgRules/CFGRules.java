@@ -688,14 +688,33 @@ public class CFGRules {
 
     sb.append("\nCyclic nonterminals: " + cyclicNonterminals);
 
-    sb.append("\nCocyclic nonterminals: \n");
+    sb.append("\n\nderivesOnly(R):\n");
+    for (var n : derivesExactly.getDomain())
+      if (cyclicNonterminals.contains(n)) {
+        sb.append(n + ": {");
+        for (var nf : derivesExactly.get(n))
+          sb.append(" " + nf);
+        sb.append(" }\n");
+      }
+
+    sb.append("\n\nderivesOnlyClosed (R+):\n");
     for (var n : derivesExactlyTransitiveClosure.getDomain())
       if (cyclicNonterminals.contains(n)) {
         sb.append(n + ": {");
         for (var nf : derivesExactlyTransitiveClosure.get(n))
-          if (cyclicNonterminals.contains(nf)) sb.append(" " + nf);
+          sb.append(" " + nf);
         sb.append(" }\n");
       }
+
+    sb.append("\n\nCocyclic nonterminals: \n");
+    for (var n : derivesExactlyTransitiveClosure.getDomain())
+      if (cyclicNonterminals.contains(n)) {
+        sb.append(n + ": {");
+        for (var nf : derivesExactlyTransitiveClosure.get(n))
+          if (derivesExactlyTransitiveClosure.get(nf).contains(n)) sb.append(" " + nf);
+        sb.append(" }\n");
+      }
+
     // sb.append("Cyclic slots:\n");
     // for (var n : cyclicSlots)
     // sb.append(n.toStringAsProduction() + "\n");
