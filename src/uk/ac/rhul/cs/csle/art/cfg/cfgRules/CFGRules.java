@@ -202,7 +202,7 @@ public class CFGRules {
     computeFirstSets();
     computeNullableSuffixAndCyclic();
     computeFollowSets();
-    //
+    ComputeCyclicSlots();//
     // System.out.println("Final first sets: " + first);
     // System.out.println("Final instance first sets: " + instanceFirst);
     // System.out.println("Final follow sets: " + follow);
@@ -331,6 +331,26 @@ public class CFGRules {
     derivesExactlyTransitiveClosure.transitiveClosure();
     for (var n : derivesExactlyTransitiveClosure.getDomain())
       if (derivesExactlyTransitiveClosure.get(n).contains(n)) cyclicNonterminals.add(n);
+  }
+
+  private void ComputeCyclicSlots() {
+    for (CFGElement lhs : elements.keySet())
+      if (lhs.kind == CFGKind.N) {
+        CFGNode topNode = elementToNodeMap.get(lhs);
+        // System.out.println("Compute nullable suffix visiting top node " + topNode.num + ":" + topNode);
+        for (CFGNode altNode = topNode.alt; altNode != null; altNode = altNode.alt) {
+          CFGNode seqNode = altNode;
+          boolean seenOnlyNullable = true;
+          while (true) {
+            // Flow control
+            seqNode = seqNode.seq;
+            // System.out.println("Visiting seq node " + seqNode.num + ":" + seqNode + " with seenOnlyNullable " + seenOnlyNullable);
+
+            if (cyclicNonterminals.contains(seqNode.elm) && derivesExactlyTransitiveClosure.get(seqNode.elm).contains(lhs)) cyclicSlots.add(seqNode.seq);
+            if (seqNode.elm.kind == CFGKind.END) break;
+          }
+        }
+      }
   }
 
   private boolean computeNullableSuffixAndDerivesExactlyRec(CFGElement lhs, CFGNode seqNode) {
@@ -715,10 +735,10 @@ public class CFGRules {
         sb.append(" }\n");
       }
 
-    // sb.append("Cyclic slots:\n");
-    // for (var n : cyclicSlots)
-    // sb.append(n.toStringAsProduction() + "\n");
-    // sb.append("\n");
+    sb.append("\nCyclic slots:\n");
+    for (var n : cyclicSlots)
+      sb.append(n.toStringAsProduction() + "\n");
+    sb.append("\n");
 
     return sb.toString();
   }
