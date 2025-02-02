@@ -51,7 +51,7 @@ public class ART {
           // System.out.println("Appending contents of ART script file" + args[argp]);
           scriptStringBuilder.append(Files.readString(Paths.get((args[argp]))));
         } catch (IOException e) {
-          Util.fatal("Unable to open script file " + args[argp]);
+          Util.fatal("Unable to read script file " + args[argp] + "\n" + e);
         }
       else if (!args[argp].startsWith("\"") && !args[argp].startsWith("'") && args[argp].contains("."))
         scriptStringBuilder.append("!try '" + args[argp] + "'");

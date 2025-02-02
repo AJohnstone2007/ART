@@ -11,6 +11,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 import uk.ac.rhul.cs.csle.art.cfg.AbstractParser;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGKind;
@@ -1203,21 +1204,36 @@ public class GLLBaseLine extends AbstractParser {
   }
 
   @Override
-  public void sppfPrintSentences() {
+  public void sppfPrintParaterminals() {
     visitedSPPFNodes.clear();
-    System.out.println("(Q&D version: simply list paraterminal instances in SPPF)");
-    sppfPrintSentencesRec(sppfRootNode);
+    sppfCollectParaterminalsRec(sppfRootNode);
+    int rightmostIndex = 0;
+    boolean overlapping = false;
+    for (var i : paraterminalInstances.keySet()) {
+      ;
+      SPPFN node = paraterminalInstances.get(i);
+      if (node.li < rightmostIndex) {
+        overlapping = true;
+        System.out.print("* ");
+      } else
+        System.out.print("  ");
+      rightmostIndex = Math.max(rightmostIndex, node.ri);
+      System.out.println(node);
+    }
+    if (overlapping) System.out.println("SPPF has overlapping paraterminals");
   }
 
-  private void sppfPrintSentencesRec(SPPFN node) {
+  Map<Integer, SPPFN> paraterminalInstances = new TreeMap<>();
+
+  private void sppfCollectParaterminalsRec(SPPFN node) {
     // System.out.println("Print sentences at " + node);
     if (visitedSPPFNodes.get(node.number)) return;
     visitedSPPFNodes.set(node.number);
 
-    if (isSymbol(node) && cfgRules.paraterminalElements.contains(node.gn.elm)) System.out.println(node);
+    if (isSymbol(node) && cfgRules.paraterminalElements.contains(node.gn.elm)) paraterminalInstances.put(node.li, node);
     for (var p : node.packNS) {
-      if (p.leftChild != null) sppfPrintSentencesRec(p.leftChild);
-      sppfPrintSentencesRec(p.rightChild);
+      if (p.leftChild != null) sppfCollectParaterminalsRec(p.leftChild);
+      sppfCollectParaterminalsRec(p.rightChild);
     }
   }
 }
