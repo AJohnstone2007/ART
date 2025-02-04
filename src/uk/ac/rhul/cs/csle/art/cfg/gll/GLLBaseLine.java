@@ -9,6 +9,7 @@ import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -151,7 +152,7 @@ public class GLLBaseLine extends AbstractParser {
     return true;
   }
 
-  /* Stack handling **********************************************************/
+  /* Deque handling **********************************************************/
   Map<GSSN, GSSN> gss;
   GSSN gssRoot;
 
@@ -174,7 +175,7 @@ public class GLLBaseLine extends AbstractParser {
   }
 
   void ret() {
-    if (sn.equals(gssRoot)) { // Stack base
+    if (sn.equals(gssRoot)) { // Deque base
       if (cfgRules.acceptingNodeNumbers.contains(gn.num) && (i == tokens.length - 1)) {
         sppfRootNode = sppf.get(new SPPFN(cfgRules.elementToNodeMap.get(cfgRules.startNonterminal), 0, tokens.length - 1));
         inLanguage = true;
@@ -785,7 +786,7 @@ public class GLLBaseLine extends AbstractParser {
 
   /* SPPF cycle breaking **********************************************************************/
 
-  private final Deque<SPPFNode> visitedStack = new ArrayDeque<>(); // Only usedby sppfCycleRec to keep a list of visited nodes during descent
+  private final Deque<SPPFNode> visitedDeque = new ArrayDeque<>(); // Only usedby sppfCycleRec to keep a list of visited nodes during descent
   private Set<SPPFNode> xNodesBeforeBreaking; // All cyclic nodes - only used by SPPF diagnostics
   private Set<SPPFN> yS; // Set of cYclic symbol or intermediate nodes; a subset of the X in Elizabeth's note
   private Set<SPPFPN> yP; // Set of cYclic packed nodes; Y = yS UP
@@ -1203,6 +1204,7 @@ public class GLLBaseLine extends AbstractParser {
     }
   }
 
+  /** lexicalisation checks *********************************************************************/
   @Override
   public void sppfPrintParaterminals() {
     visitedSPPFNodes.clear();
@@ -1226,7 +1228,7 @@ public class GLLBaseLine extends AbstractParser {
   Map<Integer, SPPFN> paraterminalInstances = new TreeMap<>();
 
   private void sppfCollectParaterminalsRec(SPPFN node) {
-    // System.out.println("Print sentences at " + node);
+    // System.out.println("Collect paraterminals at " + node);
     if (visitedSPPFNodes.get(node.number)) return;
     visitedSPPFNodes.set(node.number);
 
@@ -1235,5 +1237,53 @@ public class GLLBaseLine extends AbstractParser {
       if (p.leftChild != null) sppfCollectParaterminalsRec(p.leftChild);
       sppfCollectParaterminalsRec(p.rightChild);
     }
+  }
+
+  SPPFN[] parasentence;
+  int parasentenceIndex;
+  Set<List<SPPFN>> parasentences;
+
+  @Override
+  public void sppfPrintParasentences() {
+    visitedSPPFNodes.clear();
+    parasentence = new SPPFN[100 * tokens.length + 1];
+    parasentenceIndex = 0;
+    parasentences = new HashSet<>();
+    sppfCollectParasentencesRec(sppfRootNode);
+    System.out.println(parasentences);
+    for (var s : parasentences) {
+      for (var n : s)
+        System.out.print(n.li + ":-" + n.gn.elm.str + "-:" + n.ri + "  ");
+      System.out.println();
+    }
+  }
+
+  private void sppfCollectParasentencesRec(SPPFN node) {
+    System.out.println("Collect parasentences at " + node + " with parasentenceIndex " + parasentenceIndex);
+    int entrySentenceIndex = parasentenceIndex;
+    if (visitedSPPFNodes.get(node.number)) return;
+    visitedSPPFNodes.set(node.number);
+
+    if (node.packNS.isEmpty() || (isSymbol(node) && cfgRules.paraterminalElements.contains(node.gn.elm))) {
+      if (!(node.packNS.isEmpty() && node.gn.elm.kind == CFGKind.EPS)) {
+        parasentence[parasentenceIndex++] = node;
+        // if (node.ri == tokens.length - 1)
+        addParasentence(parasentenceIndex);
+      }
+    } else
+      for (var p : node.packNS) {
+        parasentenceIndex = entrySentenceIndex;
+        if (p.leftChild != null) sppfCollectParasentencesRec(p.leftChild);
+        sppfCollectParasentencesRec(p.rightChild);
+      }
+    visitedSPPFNodes.clear(node.number); // We are enumerating all traversals!
+  }
+
+  private void addParasentence(int length) {
+    System.out.println("Adding sentence of length " + length + parasentence);
+    List<SPPFN> parasentenceList = new LinkedList<>();
+    for (int i = 0; i < length; i++)
+      parasentenceList.add(parasentence[i]);
+    parasentences.add(parasentenceList);
   }
 }

@@ -175,7 +175,7 @@ displayElement  ::=
 | 'allRules' | 'cfgRules' | 'chooseRules' | 'trRules'
 | 'gdg'
 | 'lexer' | 'parser' | 'interpreter'
-| 'input' | 'twe'    | 'lexicalisations' | 'paraterminals' | 'sentences' 
+| 'input' | 'twe'    | 'lexicalisations' | 'paraterminals' | 'parasentences' 
 | 'gss'   | 'sppf'   | 'bsr' 
 | 'derivation' | 'derivationIndexed' 
 | 'interpretation' 

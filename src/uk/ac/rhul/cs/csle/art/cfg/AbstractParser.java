@@ -207,8 +207,8 @@ public abstract class AbstractParser {
     System.out.println("sppfPrintParaterminals() not implemented for parser class " + this.getClass().getSimpleName());
   }
 
-  public void sppfPrintSentences() {
-    System.out.println("sppfPrintSentences() not implemented for parser class " + this.getClass().getSimpleName());
+  public void sppfPrintParasentences() {
+    System.out.println("sppfPrintParasentences() not implemented for parser class " + this.getClass().getSimpleName());
   }
 
   public CFGNode getLHS(CFGNode gn) {
