@@ -1205,6 +1205,8 @@ public class GLLBaseLine extends AbstractParser {
   }
 
   /** lexicalisation checks *********************************************************************/
+  Map<Integer, Set<SPPFN>> paraterminalInstances = new TreeMap<>();
+
   @Override
   public void sppfPrintParaterminals() {
     visitedSPPFNodes.clear();
@@ -1212,31 +1214,27 @@ public class GLLBaseLine extends AbstractParser {
     int rightmostIndex = 0;
     boolean overlapping = false;
     for (var i : paraterminalInstances.keySet()) {
-      ;
-      SPPFN node = paraterminalInstances.get(i);
-      if (node.li < rightmostIndex) {
-        overlapping = true;
-        System.out.print("* ");
-      } else
-        System.out.print("  ");
-      rightmostIndex = Math.max(rightmostIndex, node.ri);
-      System.out.println(node);
+      for (var s : paraterminalInstances.get(i))
+        System.out.println(s.li + "," + s.ri + "  " + s.gn.elm);
     }
-    if (overlapping) System.out.println("SPPF has overlapping paraterminals");
   }
 
-  Map<Integer, SPPFN> paraterminalInstances = new TreeMap<>();
-
-  private void sppfCollectParaterminalsRec(SPPFN node) {
+  private void sppfCollectParaterminalsRec(SPPFN sppfn) {
     // System.out.println("Collect paraterminals at " + node);
-    if (visitedSPPFNodes.get(node.number)) return;
-    visitedSPPFNodes.set(node.number);
+    if (visitedSPPFNodes.get(sppfn.number)) return;
+    visitedSPPFNodes.set(sppfn.number);
 
-    if (isSymbol(node) && cfgRules.paraterminalElements.contains(node.gn.elm)) paraterminalInstances.put(node.li, node);
-    for (var p : node.packNS) {
+    if (isSymbol(sppfn) && cfgRules.paraterminalElements.contains(sppfn.gn.elm)) paraterminalInstanceAdd(sppfn);
+    if (sppfn.packNS.size() == 0) paraterminalInstanceAdd(sppfn);
+    for (var p : sppfn.packNS) {
       if (p.leftChild != null) sppfCollectParaterminalsRec(p.leftChild);
       sppfCollectParaterminalsRec(p.rightChild);
     }
+  }
+
+  private void paraterminalInstanceAdd(SPPFN sppfn) {
+    if (paraterminalInstances.get(sppfn.li) == null) paraterminalInstances.put(sppfn.li, new HashSet<SPPFN>());
+    paraterminalInstances.get(sppfn.li).add(sppfn);
   }
 
   SPPFN[] parasentence;
