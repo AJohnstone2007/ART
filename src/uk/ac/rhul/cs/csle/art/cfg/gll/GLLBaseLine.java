@@ -1224,7 +1224,10 @@ public class GLLBaseLine extends AbstractParser {
     if (visitedSPPFNodes.get(sppfn.number)) return;
     visitedSPPFNodes.set(sppfn.number);
 
-    if (isSymbol(sppfn) && cfgRules.paraterminalElements.contains(sppfn.gn.elm)) paraterminalInstanceAdd(sppfn);
+    if (isSymbol(sppfn) && cfgRules.paraterminalElements.contains(sppfn.gn.elm)) {
+      paraterminalInstanceAdd(sppfn);
+      return;
+    }
     if (sppfn.packNS.size() == 0) paraterminalInstanceAdd(sppfn);
     for (var p : sppfn.packNS) {
       if (p.leftChild != null) sppfCollectParaterminalsRec(p.leftChild);
