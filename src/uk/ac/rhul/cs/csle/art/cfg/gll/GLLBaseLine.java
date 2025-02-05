@@ -1260,7 +1260,7 @@ public class GLLBaseLine extends AbstractParser {
   }
 
   private void sppfCollectParasentencesRec(SPPFN node) {
-    // System.out.println("Collect parasentences at " + node + " with parasentenceIndex " + parasentenceIndex);
+    System.out.println("Collect parasentences at " + node + " with parasentenceIndex " + parasentenceIndex);
     int entrySentenceIndex = parasentenceIndex;
     if (visitedSPPFNodes.get(node.number)) return;
     visitedSPPFNodes.set(node.number);
@@ -1272,21 +1272,21 @@ public class GLLBaseLine extends AbstractParser {
       }
     } else
       for (var p : node.packNS) {
-        if (sppfCyclic.get(p.number)) {
-          // System.out.println("Skipping cyclic node " + p.number);
+        if (cbD.contains(p)) {
+          System.out.println("Skipping cyclic node " + p.number);
           continue;
         }
         parasentenceIndex = entrySentenceIndex;
-        // System.out.println("Calling left child under " + node + " with parasentenceIndex " + parasentenceIndex);
+        System.out.println("Calling left child under " + node + " with parasentenceIndex " + parasentenceIndex);
         if (p.leftChild != null) sppfCollectParasentencesRec(p.leftChild);
-        // System.out.println("Calling right child under " + node + " with parasentenceIndex " + parasentenceIndex);
+        System.out.println("Calling right child under " + node + " with parasentenceIndex " + parasentenceIndex);
         sppfCollectParasentencesRec(p.rightChild);
       }
     visitedSPPFNodes.clear(node.number); // We are enumerating all traversals!
   }
 
   private void addParasentence(int length) {
-    // System.out.println("Adding sentence of length " + length + parasentence);
+    System.out.println("Adding sentence of length " + length + parasentence);
     List<SPPFN> parasentenceList = new LinkedList<>();
     for (int i = 0; i < length; i++)
       parasentenceList.add(parasentence[i]);
