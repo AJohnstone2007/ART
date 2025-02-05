@@ -1251,16 +1251,16 @@ public class GLLBaseLine extends AbstractParser {
     parasentenceIndex = 0;
     parasentences = new HashSet<>();
     sppfCollectParasentencesRec(sppfRootNode);
-    System.out.println(parasentences);
+    // System.out.println(parasentences);
     for (var s : parasentences) {
       for (var n : s)
-        System.out.print(n.li + ":-" + n.gn.elm.str + "-:" + n.ri + "  ");
+        System.out.print(n.li + "," + n.ri + ":" + n.gn.elm.str + "  ");
       System.out.println();
     }
   }
 
   private void sppfCollectParasentencesRec(SPPFN node) {
-    System.out.println("Collect parasentences at " + node + " with parasentenceIndex " + parasentenceIndex);
+    // System.out.println("Collect parasentences at " + node + " with parasentenceIndex " + parasentenceIndex);
     int entrySentenceIndex = parasentenceIndex;
     if (visitedSPPFNodes.get(node.number)) return;
     visitedSPPFNodes.set(node.number);
@@ -1268,20 +1268,25 @@ public class GLLBaseLine extends AbstractParser {
     if (node.packNS.isEmpty() || (isSymbol(node) && cfgRules.paraterminalElements.contains(node.gn.elm))) {
       if (!(node.packNS.isEmpty() && node.gn.elm.kind == CFGKind.EPS)) {
         parasentence[parasentenceIndex++] = node;
-        // if (node.ri == tokens.length - 1)
-        addParasentence(parasentenceIndex);
+        if (node.ri == tokens.length - 1) addParasentence(parasentenceIndex);
       }
     } else
       for (var p : node.packNS) {
+        if (sppfCyclic.get(p.number)) {
+          // System.out.println("Skipping cyclic node " + p.number);
+          continue;
+        }
         parasentenceIndex = entrySentenceIndex;
+        // System.out.println("Calling left child under " + node + " with parasentenceIndex " + parasentenceIndex);
         if (p.leftChild != null) sppfCollectParasentencesRec(p.leftChild);
+        // System.out.println("Calling right child under " + node + " with parasentenceIndex " + parasentenceIndex);
         sppfCollectParasentencesRec(p.rightChild);
       }
     visitedSPPFNodes.clear(node.number); // We are enumerating all traversals!
   }
 
   private void addParasentence(int length) {
-    System.out.println("Adding sentence of length " + length + parasentence);
+    // System.out.println("Adding sentence of length " + length + parasentence);
     List<SPPFN> parasentenceList = new LinkedList<>();
     for (int i = 0; i < length; i++)
       parasentenceList.add(parasentence[i]);
