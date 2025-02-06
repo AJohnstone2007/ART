@@ -1196,12 +1196,12 @@ public class ITerms {
   }
 
   public void mustHaveSymbol(int term, String symbol) {
-    if (!hasSymbol(term, symbol)) Util.fatal("Term " + toString(term) + "failed type check type against" + symbol);
+    if (!hasSymbol(term, symbol)) Util.fatal("Term " + toString(term) + " failed type check type against " + symbol);
   }
 
   public void mustHaveSymbol(int term, String symbol, int arity) {
     mustHaveSymbol(term, symbol);
-    if (termArity(term) != arity) Util.fatal("Term " + toString(term) + "failed type check type against" + symbol + " with arity " + arity);
+    if (termArity(term) != arity) Util.fatal("Term " + toString(term) + " failed type check type against" + symbol + " with arity " + arity);
   }
 
   /* Conversions between Java values and terms ************************************************************************************/

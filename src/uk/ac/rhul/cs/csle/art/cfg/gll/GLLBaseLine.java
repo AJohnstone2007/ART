@@ -1241,16 +1241,15 @@ public class GLLBaseLine extends AbstractParser {
   }
 
   SPPFN[] parasentence;
-  int parasentenceIndex;
   Set<List<SPPFN>> parasentences;
 
   @Override
   public void sppfPrintParasentences() {
     visitedSPPFNodes.clear();
     parasentence = new SPPFN[100 * tokens.length + 1];
-    parasentenceIndex = 0;
+    psCall = 0;
     parasentences = new HashSet<>();
-    sppfCollectParasentencesRec(sppfRootNode);
+    sppfCollectParasentencesRec(sppfRootNode, 0);
     // System.out.println(parasentences);
     for (var s : parasentences) {
       for (var n : s)
@@ -1259,14 +1258,21 @@ public class GLLBaseLine extends AbstractParser {
     }
   }
 
-  private void sppfCollectParasentencesRec(SPPFN node) {
-    System.out.println("Collect parasentences at " + node + " with parasentenceIndex " + parasentenceIndex);
+  private int psCall;
+
+  private int sppfCollectParasentencesRec(SPPFN node, int parasentenceIndex) {
+    int thisCall = ++psCall;
+    System.out.println(thisCall + " collect parasentences at " + node + " with parasentenceIndex " + parasentenceIndex);
     int entrySentenceIndex = parasentenceIndex;
-    if (visitedSPPFNodes.get(node.number)) return;
+    if (visitedSPPFNodes.get(node.number)) {
+      System.out.println("Already called; abort");
+      return parasentenceIndex;
+    }
     visitedSPPFNodes.set(node.number);
 
     if (node.packNS.isEmpty() || (isSymbol(node) && cfgRules.paraterminalElements.contains(node.gn.elm))) {
       if (!(node.packNS.isEmpty() && node.gn.elm.kind == CFGKind.EPS)) {
+        System.out.println("Extending with " + node.gn.elm.str);
         parasentence[parasentenceIndex++] = node;
         if (node.ri == tokens.length - 1) addParasentence(parasentenceIndex);
       }
@@ -1277,12 +1283,16 @@ public class GLLBaseLine extends AbstractParser {
           continue;
         }
         parasentenceIndex = entrySentenceIndex;
-        System.out.println("Calling left child under " + node + " with parasentenceIndex " + parasentenceIndex);
-        if (p.leftChild != null) sppfCollectParasentencesRec(p.leftChild);
-        System.out.println("Calling right child under " + node + " with parasentenceIndex " + parasentenceIndex);
-        sppfCollectParasentencesRec(p.rightChild);
+        if (p.leftChild != null) {
+          System.out.println("Calling left child of " + p + " under " + node + " with parasentenceIndex " + parasentenceIndex);
+          parasentenceIndex = sppfCollectParasentencesRec(p.leftChild, parasentenceIndex);
+        }
+        System.out.println("Calling right child of " + p + " under " + node + " with parasentenceIndex " + parasentenceIndex);
+        parasentenceIndex = sppfCollectParasentencesRec(p.rightChild, parasentenceIndex);
       }
     visitedSPPFNodes.clear(node.number); // We are enumerating all traversals!
+    System.out.println("Return from call " + thisCall);
+    return parasentenceIndex;
   }
 
   private void addParasentence(int length) {

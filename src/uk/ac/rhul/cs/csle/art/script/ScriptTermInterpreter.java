@@ -262,7 +262,7 @@ public class ScriptTermInterpreter {
 
     case "print":
       for (int i = 0; i < iTerms.termArity(iTerms.subterm(term, 0)); i++)
-        printDisplayElement(term, i, true);
+        printDisplayElement(term, i, false);
       break;
 
     case "printraw":
@@ -409,7 +409,7 @@ public class ScriptTermInterpreter {
       else
         // Switch comments if you wanted one line or indented derivations
         // System.out.println("Current derivation term = " + currentDerivationTerm + " " + iTerms.toString(currentDerivationTerm));
-        System.out.println("current derivation term: [" + currentDerivationTerm + "]\n" + iTerms.toString(currentDerivationTerm, true, -1, null));
+        System.out.println("current derivation term: [" + currentDerivationTerm + "]\n" + iTerms.toString(currentDerivationTerm/* , true, -1, null */));
       if (scriptParserTerm == currentDerivationTerm) System.out.println("Bootstrap achieved: script parser term and current derivation term identical");
       break;
 
