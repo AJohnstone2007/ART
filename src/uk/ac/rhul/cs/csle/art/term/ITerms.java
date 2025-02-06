@@ -981,9 +981,11 @@ public class ITerms {
         switch (firstChildSymbolStringIndex) {
         case __int32StringIndex:
           int left = termToJavaInteger(children[0]), right = termToJavaInteger(children[1]);
-          for (int i = 1; i < right; i++)
-            left *= left;
-          return javaIntegerToTerm(left);
+          System.out.println("__exp called on " + left + " and " + right);
+          int ret = 1;
+          for (int i = 1; i <= right; i++)
+            ret *= left;
+          return javaIntegerToTerm(ret);
         case __intAPStringIndex:
           return javaBigIntegerToTerm(termToJavaBigInteger(children[0]).pow(termToJavaBigInteger(children[1]).intValueExact()));
         case __real64StringIndex:
