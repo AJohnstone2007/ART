@@ -19,6 +19,10 @@ public class LexerSingletonLongestMatch extends AbstractParser {
     this.strings = strings;
     this.whitespaces = whitespaces;
 
+    // System.out.println("Starting lexing with kinds/string arrays:");
+    // for (int i = 0; i < kinds.length; i++)
+    // System.out.println(kinds[i] + "/" + strings[i]);
+
     inputAsCharArray = inputString.toCharArray();
     inputIndex = 0;
     inputLength = inputString.length();
@@ -83,32 +87,14 @@ public class LexerSingletonLongestMatch extends AbstractParser {
     }
   }
 
-  public void report() {
-    System.out.println("String: " + inputString);
-    System.out.print("Token names: ");
-    int index = 0;
-    for (int i : tokenList)
-      System.out.print((index++) + ":" + strings[i] + " ");
-    System.out.println();
-
-    System.out.print("Tokens: ");
-    for (int i : tokenList)
-      System.out.print(i + " ");
-    System.out.println();
-
-    System.out.print("Left indices: ");
-    for (int i : leftIndices)
-      System.out.print(i + " ");
-    System.out.println();
-
-    System.out.print("Right indices:");
-    for (int i : rightIndices)
-      System.out.print(" " + i);
-    System.out.println();
-
-    System.out.print("Bare lexemes:");
+  @Override
+  public void printLexicalisations() {
+    // System.out.println("String: " + inputString);
+    // var lexemeKinds = LexemeKind.values();
+    // for (int i = 0; i < lexemeKinds.length; i++)
+    // System.out.println(lexemeKinds[i]);
+    // int index = 0;
     for (int i = 0; i < tokens.length; i++)
-      System.out.print(" '" + inputString.substring(leftIndices[i], rightIndices[i]) + "'");
-    System.out.println();
+      System.out.println(i + ":" + leftIndices[i] + "," + rightIndices[i] + " " + kinds[tokenList.get(i)] + " " + strings[tokens[i]]);
   }
 }

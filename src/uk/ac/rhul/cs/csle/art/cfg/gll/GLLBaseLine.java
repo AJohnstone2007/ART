@@ -691,7 +691,10 @@ public class GLLBaseLine extends AbstractParser {
 
   @Override
   public void sppfPrint() {
-    if (sppf == null || sppfRootNode == null) Util.fatal("Current parser does not have a current SPPF that can be printed");
+    if (sppf == null || sppfRootNode == null) {
+      Util.warning("Current parser does not have a current SPPF - skipping SPPF printing");
+      return;
+    }
     for (var n : sppf.keySet()) {
       System.out.println(n);
       for (var pn : n.packNS)
@@ -703,7 +706,10 @@ public class GLLBaseLine extends AbstractParser {
   public void sppf2Dot() {
     sppfComputeReachability();
 
-    if (sppf == null || sppfRootNode == null) Util.fatal("Current parser does not have a current SPPF that can be visualised as a .dot file");
+    if (sppf == null || sppfRootNode == null) {
+      Util.warning("Current parser does not have a current SPPF - skipping SPPF visualisation");
+      return;
+    }
     SPPF2Dot(sppf, sppfRootNode, "sppf_full.dot", true, true, true); // full SPPF
     SPPF2Dot(sppf, sppfRootNode, "sppf_core.dot", false, true, true); // core SPPF - only nodes reachable from (S,0,n)
   }
@@ -840,6 +846,11 @@ public class GLLBaseLine extends AbstractParser {
     // Load adjacencies
     // Run Warshall's what-did-you-expect algorithm
 
+    if (sppf == null || sppfRootNode == null) {
+      Util.warning("Current parser does not have a current SPPF - skipping reachability analysis");
+      return;
+    }
+
     sppfReachable.clear();
     // System.out.println("After clearing sppfReachable, contents are:\n" + sppfReachable);
     for (var n : sppf.keySet())
@@ -964,6 +975,10 @@ public class GLLBaseLine extends AbstractParser {
 
   @Override
   public void sppfBreakCycles(boolean cycleBreakTrace, TraversalKind cycleBreakTraversalKind, boolean cycleBreakLone, boolean cycleBreakSibling) {
+    if (sppf == null || sppfRootNode == null) {
+      Util.warning("Current parser does not have a current SPPF - skipping cycle breaking");
+      return;
+    }
     this.cycleBreakTrace = cycleBreakTrace;
     this.cycleBreakTraversalKind = cycleBreakTraversalKind;
     this.cycleBreakLone = cycleBreakLone;
@@ -1209,6 +1224,11 @@ public class GLLBaseLine extends AbstractParser {
 
   @Override
   public void sppfPrintParaterminals() {
+    if (sppf == null || sppfRootNode == null) {
+      Util.warning("Current parser does not have a current SPPF - skipping paraterminal instance printing");
+      return;
+    }
+    System.out.println("Paraterminals");
     visitedSPPFNodes.clear();
     sppfCollectParaterminalsRec(sppfRootNode);
     int rightmostIndex = 0;
@@ -1220,7 +1240,7 @@ public class GLLBaseLine extends AbstractParser {
   }
 
   private void sppfCollectParaterminalsRec(SPPFN sppfn) {
-    // System.out.println("Collect paraterminals at " + node);
+    // System.out.println("Collect paraterminals at " + sppfn);
     if (visitedSPPFNodes.get(sppfn.number)) return;
     visitedSPPFNodes.set(sppfn.number);
 
@@ -1245,17 +1265,32 @@ public class GLLBaseLine extends AbstractParser {
 
   @Override
   public void sppfPrintParasentences() {
+    if (sppf == null || sppfRootNode == null) {
+      Util.warning("Current parser does not have a current SPPF - skipping parasentence printing");
+      return;
+    }
+    System.out.println("Parasentences");
     visitedSPPFNodes.clear();
     parasentence = new SPPFN[100 * tokens.length + 1];
     psCall = 0;
     parasentences = new HashSet<>();
-    sppfCollectParasentencesRec(sppfRootNode, 0);
+    // sppfCollectParasentencesRec(sppfRootNode, 0);
+    sppfCollectParasentencesIter(sppfRootNode, 0);
     // System.out.println(parasentences);
     for (var s : parasentences) {
       for (var n : s)
         System.out.print(n.li + "," + n.ri + ":" + n.gn.elm.str + "  ");
       System.out.println();
     }
+  }
+
+  /*
+   * Iterative explorationofderivations
+   *
+   * If packedNode.size == 1 then just descend
+   *
+   */
+  private void sppfCollectParasentencesIter(SPPFN sppfRootNode2, int i) {
   }
 
   private int psCall;

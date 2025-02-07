@@ -403,6 +403,11 @@ public class ScriptTermInterpreter {
       System.out.println(currentParser.inLanguage ? "Accept" : "Reject");
       break;
 
+    case "lexicalisations":
+      System.out.println("Lexicalisations");
+      currentLexer.printLexicalisations();
+      break;
+
     case "derivation":
       if (raw)
         System.out.println("current raw derivation term: [" + currentDerivationTerm + "]\n" + iTerms.toRawString(currentDerivationTerm));
@@ -421,12 +426,10 @@ public class ScriptTermInterpreter {
       break;
 
     case "paraterminals":
-      System.out.println("Paraterminals");
       currentParser.sppfPrintParaterminals();
       break;
 
     case "parasentences":
-      System.out.println("Parasentences");
       currentParser.sppfPrintParasentences();
       break;
 

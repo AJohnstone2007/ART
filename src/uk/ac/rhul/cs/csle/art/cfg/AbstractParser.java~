@@ -462,45 +462,19 @@ public abstract class AbstractParser {
       match_COMMENT_NEST_ART();
       break;
 
-    case SML_COMMENT:
-      match_SML_COMMENT();
-      break;
-    case SML_D:
-      match_SML_D();
-      break;
-    case SML_INT:
-      match_SML_INT();
-      break;
-    case SML_WORD:
-      match_SML_WORD();
-      break;
-    case SML_REAL:
-      match_SML_REAL();
-      break;
-    case SML_CHAR:
-      match_SML_CHAR();
-      break;
-    case SML_STRING:
-      match_SML_STRING();
-      break;
-    case SML_VID:
-      match_SML_VID();
-      break;
-    case SML_TYVAR:
-      match_SML_TYVAR();
-      break;
-    case SML_TYCON:
-      match_SML_TYCON();
-      break;
-    case SML_LAB:
-      match_SML_LAB();
-      break;
-    case SML_STRID:
-      match_SML_STRID();
-      break;
-    case SML_SYMID:
-      match_SML_SYMID();
-      break;
+      SML_COMMENT,
+      SML_D,
+      SML_INT,
+      SML_WORD,
+      SML_REAL,
+      SML_CHAR,
+      SML_STRING,
+      SML_VID,
+      SML_TYVAR,
+      SML_TYCON,
+      SML_LAB,
+      SML_STRID,
+      SML_SYMID,
 
     default:
       Util.fatal("Unknown builtin " + b);
