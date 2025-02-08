@@ -31,11 +31,12 @@ cfgPositive ::= '('^ cfgAlts ')'^ '+'^ | cfgAltNoAction '+'^
 cfgKleene   ::= '('^ cfgAlts ')'^ '*'^ | cfgAltNoAction '*'^  
 
 cfgName ::= cfgPrim^^ | cfgPrim ':'^ ID           // second child if present is a local name
-cfgPrim ::= cfgNonterminal^^ | cfgCaseSensitiveTerminal^^| cfgCaseInsensitiveTerminal^^ | cfgBuiltinTerminal^^ | cfgCharacterTerminal^^ | cfgCharacterRangeTerminal^^   
+cfgPrim ::= cfgNonterminal^^ | cfgCaseSensitiveTerminal^^| cfgCaseInsensitiveTerminal^^ | cfgBuiltinTerminal^^ | cfgBuiltinNoWSTerminal^^ | cfgCharacterTerminal^^ | cfgCharacterRangeTerminal^^   
   cfgNonterminal ::= ID | STRING_DOLLAR
   cfgCaseSensitiveTerminal ::= STRING_PLAIN_SQ
   cfgCaseInsensitiveTerminal ::= STRING_DQ
   cfgBuiltinTerminal ::= '&'^ ID
+  cfgBuiltinNoWSTerminal ::= '&&'^ ID
   cfgCharacterTerminal ::= CHAR_BQ
   cfgCharacterRangeTerminal ::= cfgRange
     cfgRange ::= CHAR_BQ '..'^ CHAR_BQ

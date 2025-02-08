@@ -14,7 +14,7 @@ public class TRRules {
   private final ITerms iTerms;
   private final Map<Integer, Map<Integer, List<Integer>>> trScriptRules = new LinkedHashMap<>(); // Original rules loaded by user
   public Map<Integer, Map<Integer, List<Integer>>> trRules = new LinkedHashMap<>(); // Rewritten rules produced by normalise()
-  Map<Integer, Integer> configurationMap = new HashMap<>(); // Map from relation to configurationElements
+  Map<Integer, Map<Integer, Integer>> configurationMap = new HashMap<>(); // Map from relation to map of config name to config type
   public int defaultStartRelation = 0; // loaded by !start or from first rule seen
 
   private final Map<Integer, Set<Integer>> rewriteTerminals = new HashMap<>();
@@ -42,10 +42,20 @@ public class TRRules {
 
   public void modifyConfiguration(int term) {
     if (!iTerms.hasSymbol(term, "configuration")) Util.fatal("Unexpected term passed to TRRules.modifyConfiguration " + iTerms.toString(term));
-    configurationMap.put(iTerms.subterm(term, 0, 0), iTerms.subterm(term, 1));
+    int relation = iTerms.subterm(term, 0, 0);
+    int configurationElements = iTerms.subterm(term, 1);
+    if (configurationMap.get(relation) == null) configurationMap.put(relation, new LinkedHashMap<>());
+    var relationConfigurationMap = configurationMap.get(relation);
+    for (int i = 0; i < iTerms.termArity(configurationElements); i++)
+      relationConfigurationMap.put(iTerms.subterm(configurationElements, i, 0), iTerms.subterm(configurationElements, i, 1));
     System.out.println("Updated configuration map to: ");
-    for (var r : configurationMap.keySet())
-      System.out.println(iTerms.toRawString(r) + "    " + iTerms.toRawString(configurationMap.get(r)));
+    for (var r : configurationMap.keySet()) {
+      System.out.print(iTerms.toRawString(r));
+      Map<Integer, Integer> relationConfigurationElements = configurationMap.get(r);
+      for (var e : relationConfigurationElements.keySet())
+        System.out.print("  " + iTerms.toRawString(e) + ":" + iTerms.toRawString(relationConfigurationElements.get(e)));
+      System.out.println();
+    }
   }
 
   public int unelideConfiguration(int term, int relation) {
@@ -53,9 +63,30 @@ public class TRRules {
       System.out.println("Uneliding against relation " + iTerms.toRawString(relation) + " but no corresponding !configuration; skipping");
       return term;
     }
-    System.out.println("Uneliding against relation " + iTerms.toRawString(relation) + " as " + iTerms.toRawString(configurationMap.get(relation)) + ": "
-        + iTerms.toRawString(term));
-    return term;
+    System.out.println("Uneliding against relation " + iTerms.toRawString(relation) + "   " + iTerms.toRawString(term));
+    Map<Integer, Integer> relationConfigurationElements = new LinkedHashMap<>(configurationMap.get(relation));
+    // Walk the map, seeting the bound value to the key
+    for (var e : relationConfigurationElements.keySet())
+      relationConfigurationElements.put(e, e);
+
+    // Now walk the terms semantic entities, loading the map with each we find
+    int theta = iTerms.subterm(term, 0);
+    for (int i = 1; i < iTerms.termArity(term); i++)
+      System.out.println("found entity: " + iTerms.toRawString(iTerms.subterm(term, i)));
+
+    // Now reconstitute the term, extracting field names from the map
+    LinkedList<Integer> list = new LinkedList<>();
+    list.add(theta);
+    for (var e : relationConfigurationElements.keySet())
+      list.add(relationConfigurationElements.get(e));
+
+    for (var l : list)
+      System.out.println(iTerms.toRawString(l));
+
+    int ret = iTerms.findTerm("trTuple", list);
+    System.out.println("Unelided term: " + iTerms.toRawString(ret));
+
+    return ret;
   }
 
   public void buildTRRule(int term) {
