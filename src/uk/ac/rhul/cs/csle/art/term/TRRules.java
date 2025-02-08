@@ -48,6 +48,16 @@ public class TRRules {
       System.out.println(iTerms.toRawString(r) + "    " + iTerms.toRawString(configurationMap.get(r)));
   }
 
+  public int unelideConfiguration(int term, int relation) {
+    if (configurationMap.get(relation) == null) {
+      System.out.println("Uneliding against relation " + iTerms.toRawString(relation) + " but no corresponding !configuration; skipping");
+      return term;
+    }
+    System.out.println("Uneliding against relation " + iTerms.toRawString(relation) + " as " + iTerms.toRawString(configurationMap.get(relation)) + ": "
+        + iTerms.toRawString(term));
+    return term;
+  }
+
   public void buildTRRule(int term) {
     // System.out.println("Processing trRule: " + iTerms.toString(term));
     int relation = iTerms.subterm(term, 1, 1, 1);
