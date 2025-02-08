@@ -133,8 +133,7 @@ directiveElement ::=
 | 'support'^^ cfgNative cfgNative 
 
 | 'start'^^ cfgNonterminal | 'start'^^ trRelation // Set parser start nonterminal or rewriter start relation
-| 'configuration'^^ trRelation trTerm
-| 'configuration'^^ trRelation trTerm trTermsTail^
+| 'configuration'^^ trRelation configurationElements
 | 'terminal'^^ trRelation trTerm
 | 'terminal'^^ trRelation trTerm trTermsTail^
 
@@ -163,6 +162,9 @@ file ::= &STRING_PLAIN_SQ
 
 whiteSpaceElements ::= whiteSpaceElement | whiteSpaceElement ','^ whiteSpaceElements^
 whiteSpaceElement  ::= cfgNonterminal^^ | cfgBuiltinTerminal^^
+
+configurationElements ::= configurationElement | configurationElement ','^ configurationElements^
+configurationElement ::= ID ':' ID
 
 paraterminalElements ::= paraterminalElement | paraterminalElement ','^ paraterminalElements^
 paraterminalElement  ::= cfgNonterminal^^
