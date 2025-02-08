@@ -1,5 +1,8 @@
-//!prelude !! import java.util.Map; import java.util.HashMap; !!
-//!support !! Map<String, Integer> variables = new HashMap<>(); !!
+!interpreter attributeAction
+!support
+!! import java.util.Map; import java.util.HashMap; !!
+!! Map<String, Integer> variables = new HashMap<>(); 
+   Map<String, AbstractAttributeBlock> procedures = new HashMap<>(); !!
 
 statements ::= statement statements
 | statement !! System.out.println("Final variable map " + variables); !! 
@@ -22,15 +25,11 @@ e2 ::= INTEGER !!e2.v = INTEGER1.v; !!                  // Integer literal
 | ID !! e2.v = variables.get(ID1.v); !!                 // Variable access 
 | '(' e1 !! e2.v = e11.v; !! ')'                        // Parenthesised expression 
        
-ID <v:String> ::= &ID !! ID.v = lexeme(); !!  
+// Lexical rules
+ID <v:String>        ::= &ID !! ID.v = lexeme(); !!  
 STRING_SQ <v:String> ::= &STRING_SQ !! STRING_SQ.v = lexemeCore().translateEscapes(); !!
-INTEGER      ::= &INTEGER   !! INTEGER.v = Integer.parseInt(lexeme()); !!
+INTEGER              ::= &INTEGER   !! INTEGER.v = Integer.parseInt(lexeme()); !!
 
 !generate actions 
-!! import java.util.Map; import java.util.HashMap; !!
-!! Map<String, Integer> variables = new HashMap<>(); 
-   Map<String, AbstractAttributeBlock> procedures = new HashMap<>(); !!
-
-!interpreter attributeAction
 
 !try "a := 6; b := 9; while a != b do if a > b a := a - b; else b := b - a;"

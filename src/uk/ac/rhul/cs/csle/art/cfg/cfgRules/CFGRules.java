@@ -76,6 +76,9 @@ public class CFGRules {
   public final Set<CFGNode> acceptingSlots = new HashSet<>(); // Set of slots which are END nodes of the start production
   public final Set<Integer> acceptingNodeNumbers = new TreeSet<>(); // Set of node number for the slots on accepting slots
 
+  public String filePrelude = null;
+  public String classPrelude = null;
+
   public CFGRules(String name, ITerms iTerms) {
     this.name = name;
     this.iTerms = iTerms;
