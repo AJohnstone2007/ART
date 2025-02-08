@@ -164,7 +164,7 @@ whiteSpaceElements ::= whiteSpaceElement | whiteSpaceElement ','^ whiteSpaceElem
 whiteSpaceElement  ::= cfgNonterminal^^ | cfgBuiltinTerminal^^
 
 configurationElements ::= configurationElement | configurationElement ','^ configurationElements^
-configurationElement ::= ID ':' ID
+configurationElement ::= ID ':'^ ID
 
 paraterminalElements ::= paraterminalElement | paraterminalElement ','^ paraterminalElements^
 paraterminalElement  ::= cfgNonterminal^^

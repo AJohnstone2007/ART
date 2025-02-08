@@ -14,7 +14,8 @@ public class TRRules {
   private final ITerms iTerms;
   private final Map<Integer, Map<Integer, List<Integer>>> trScriptRules = new LinkedHashMap<>(); // Original rules loaded by user
   public Map<Integer, Map<Integer, List<Integer>>> trRules = new LinkedHashMap<>(); // Rewritten rules produced by normalise()
-  public int defaultStartRelation = 0;
+  Map<Integer, Integer> configurationMap = new HashMap<>(); // Map from relation to configurationElements
+  public int defaultStartRelation = 0; // loaded by !start or from first rule seen
 
   private final Map<Integer, Set<Integer>> rewriteTerminals = new HashMap<>();
   private int startRelation;
@@ -39,6 +40,14 @@ public class TRRules {
     rewriteTerminals.get(relation).add(terminal);
   }
 
+  public void modifyConfiguration(int term) {
+    if (!iTerms.hasSymbol(term, "configuration")) Util.fatal("Unexpected term passed to TRRules.modifyConfiguration " + iTerms.toString(term));
+    configurationMap.put(iTerms.subterm(term, 0, 0), iTerms.subterm(term, 1));
+    System.out.println("Updated configuration map to: ");
+    for (var r : configurationMap.keySet())
+      System.out.println(iTerms.toRawString(r) + "    " + iTerms.toRawString(configurationMap.get(r)));
+  }
+
   public void buildTRRule(int term) {
     // System.out.println("Processing trRule: " + iTerms.toString(term));
     int relation = iTerms.subterm(term, 1, 1, 1);
@@ -49,8 +58,11 @@ public class TRRules {
     Map<Integer, List<Integer>> map = trScriptRules.get(relation);
     if (map.get(constructorIndex) == null) map.put(constructorIndex, new LinkedList<>());
     map.get(constructorIndex).add(term);
-    if (defaultStartRelation == 0) defaultStartRelation = relation;
-    Util.trace(6, 0, "*** Added rewrite rule " + iTerms.toString(term) + "\n");
+    Util.trace(6, 0, "*** Added rewrite rule " + iTerms.toRawString(term) + "\n");
+    if (defaultStartRelation == 0) {
+      defaultStartRelation = relation;
+      Util.trace(6, 0, "*** Set start relation to " + iTerms.toRawString(relation) + "\n");
+    }
     normalised = false;
   }
 
@@ -294,4 +306,5 @@ public class TRRules {
   int thetaLHSFromConfiguration(int term) {
     return iTerms.subterm(thetaFromConfiguration(term), 0);
   }
+
 }
