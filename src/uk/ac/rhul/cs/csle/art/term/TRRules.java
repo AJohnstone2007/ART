@@ -58,32 +58,36 @@ public class TRRules {
     // }
   }
 
+  /*
+   * Note this is unfinished: the outline infrastructure is in place, and we can call the useType variant, but we are not currently loading the map from the
+   * term
+   *
+   */
   public int unelideConfiguration(int term, int relation, boolean useType) {
     if (configurationMap.get(relation) == null) {
       System.out.println("Uneliding against relation " + iTerms.toRawString(relation) + " but no corresponding !configuration; skipping");
       return term;
     }
     // System.out.println("Uneliding against relation " + iTerms.toRawString(relation) + " " + iTerms.toRawString(term));
-    Map<Integer, Integer> relationConfigurationElements = new LinkedHashMap<>(configurationMap.get(relation));
-    // Walk the map, seeting the bound value to the key
-    for (var e : relationConfigurationElements.keySet())
-      relationConfigurationElements.put(e, e);
-
-    // Now walk the terms semantic entities, loading the map with each we find
-    // !TODO
     int theta = iTerms.subterm(term, 0);
-    for (int i = 1; i < iTerms.termArity(term); i++)
-      // System.out.println("found entity: " + iTerms.toRawString(iTerms.subterm(term, i)))
-      ;
+    Map<Integer, Integer> relationConfigurationElements = new LinkedHashMap<>(configurationMap.get(relation));
 
+    if (!useType) { // useType is called after parsing to append all of the types from the configuration to the raw parse term
+      // Walk the map, setting the bound value to the key
+      for (var e : relationConfigurationElements.keySet())
+        relationConfigurationElements.put(e, e);
+
+      // Now walk the terms semantic entities, loading the map with each we find
+      // !TODO
+      for (int i = 1; i < iTerms.termArity(term); i++)
+        // System.out.println("found entity: " + iTerms.toRawString(iTerms.subterm(term, i)))
+        ;
+    }
     // Now reconstitute the term, extracting field names from the map
     LinkedList<Integer> list = new LinkedList<>();
     list.add(theta);
     for (var e : relationConfigurationElements.keySet())
-      if (useType)
-        list.add(relationConfigurationElements.get(e));
-      else
-        list.add(e);
+      list.add(relationConfigurationElements.get(e));
 
     int ret = iTerms.findTerm("trTuple", list);
     // System.out.println("Unelided term: " + iTerms.toRawString(ret));
