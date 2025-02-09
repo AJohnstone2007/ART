@@ -133,8 +133,15 @@ public class Rewriter {
   }
 
   public int rewrite(int currentDerivationTerm, TRRules rewriteRules) {
-    if (currentDerivationTerm == 0 | rewriteRules.defaultStartRelation == 0) return currentDerivationTerm; // Silently skip rewrites if no ruleshave been
-                                                                                                           // defined
+    if (currentDerivationTerm == 0) {
+      Util.warning("no curent derivation term - skipping rewrites");
+      return currentDerivationTerm;
+    }
+
+    if (rewriteRules.defaultStartRelation == 0) {
+      Util.warning("no rewrite rules defined - skipping rewrites");
+      return currentDerivationTerm;
+    }
     tr = rewriteRules;
     tr.normalise();
 

@@ -1,3 +1,4 @@
+(* gcdAttribute.art GCD in attribute-actions with native Java actions - 5 CFG phrase level rules and 3 CFG lexical rules*)
 !interpreter attributeAction
 !support
 !! import java.util.Map; import java.util.HashMap; !!
@@ -9,7 +10,7 @@ statements ::= statement statements
 
 statement ::= 
   ID ':=' e0 ';' !! variables.put(ID1.v, e01.v); !!     // assignment 
-| 'if' e0 statement!< 'else' statement!<                // if statement 
+| 'if' e0 'then' statement!< 'else' statement!<                // if statement 
   !! if (e01.v != 0) interpret(statement1); else interpret(statement2); !! 
 | 'while' e0!< 'do' statement!<                         // while statement 
   !! interpret(e01); while (e01.v != 0) { interpret(statement1); interpret(e01); } !! 
@@ -31,5 +32,4 @@ STRING_SQ <v:String> ::= &STRING_SQ !! STRING_SQ.v = lexemeCore().translateEscap
 INTEGER              ::= &INTEGER   !! INTEGER.v = Integer.parseInt(lexeme()); !!
 
 !generate actions 
-
-!try "a := 6; b := 9; while a != b do if a > b a := a - b; else b := b - a;"
+!try "a := 6; b := 9; while a != b do if a > b then a := a - b; else b := b - a; gcd := a;"

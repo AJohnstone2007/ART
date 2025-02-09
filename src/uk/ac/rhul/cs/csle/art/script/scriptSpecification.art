@@ -71,11 +71,11 @@ trTermsTail ::= ','^ trTerm | ','^ trTerm trTermsTail^
 
 trTerm ::= 
   __bool^^ | __char^^ | __intAP^^ | __int32^^ | __realAP^^ | __real64^^ | __string^^  // lexical from builtins - see below  
-| __list^^ | __set^^ | __map^^ 
+| __array^^ | __list^^ | __set^^ | __map^^ 
 | ID^^ | IDSTAR^^ | ID^^ '('^ ')'^ | ID^^ '('^ trTerm ')'^ | ID^^ '('^ trTerms^ ')'^ | trTuple^^ '<'^ trTerms^ '>'^
 
 
-__array ::= '['^  __int32 '|' ']'^ | '['^ __int32 '|' __a ']'^
+__array ::= '['^  __int32 '|'^ ']'^ | '['^ __int32 '|'^ __a ']'^
 __a ::= trTerm | trTerm ','^ __a
 
 __list ::= '['^ ']'^ | '['^ __l ']'^
@@ -141,9 +141,12 @@ directiveElement ::=
 | 'clear'^^ 'allRules' | 'clear'^^ 'cfgRules' | 'clear'^^ 'chooseRules' | 'clear'^^ 'trRules'
 
 | 'trace'^^ __int32
-| 'print'^^ displayElements^
-| 'printraw'^^ displayElements^
-| 'show'^^ displayElements^
+| 'print'^^ displayElement^
+| 'printraw'^^ displayElement^
+| 'printlatex'^^ displayElement^
+| 'write'^^ file displayElement^
+| 'writelatex'^^ file displayElement^
+| 'show'^^ displayElement^
 | 'prompt'^^ | 'prompt'^^ &STRING_DQ
 
 | 'try'^^ file              
@@ -157,7 +160,7 @@ directiveElement ::=
 | 'nop'^^
 
 cycleModes ::= cycleMode^ | cycleMode^ cycleModes^ 
-cycleMode  ::= 'preorder' | 'postorder' | 'lone' | 'sibling' | 'trace'
+cycleMode  ::= 'preorder' | 'postorder' | 'lone' | 'sibling' | 'trace' | 'slow'
 
 file ::= &STRING_PLAIN_SQ
 
@@ -170,9 +173,9 @@ configurationElement ::= ID ':'^ ID
 paraterminalElements ::= paraterminalElement | paraterminalElement ','^ paraterminalElements^
 paraterminalElement  ::= cfgNonterminal^^
 
-displayElements ::= displayElement^ | displayElement^ displayElements^
 displayElement  ::= 
   'version'
+| 'term' trTerm
 | 'latex' | file 
 | 'script' | 'scriptDerivation' 
 | 'allRules' | 'cfgRules' | 'chooseRules' | 'trRules'
