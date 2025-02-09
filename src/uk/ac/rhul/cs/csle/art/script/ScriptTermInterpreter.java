@@ -294,7 +294,7 @@ public class ScriptTermInterpreter {
       else if (iTerms.termSymbolString(iTerms.subterm(term, 0, 0, 0)).equals("__string")) {
         tryParse("", iTerms.termSymbolString(iTerms.subterm(term, 0, 0, 0, 0)));
         if (currentDerivationTerm != 0) currentDerivationTerm = iTerms.findTerm("trTopTuple", currentDerivationTerm); // augment to tuple
-        currentDerivationTerm = currentTRRules.unelideConfiguration(currentDerivationTerm, currentTRRules.defaultStartRelation);
+        currentDerivationTerm = currentTRRules.unelideConfiguration(currentDerivationTerm, currentTRRules.defaultStartRelation, true);
       } else
         currentDerivationTerm = iTerms.subterm(term, 0, 0); // Go straight to the rewrite stage
 

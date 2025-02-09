@@ -48,43 +48,45 @@ public class TRRules {
     var relationConfigurationMap = configurationMap.get(relation);
     for (int i = 0; i < iTerms.termArity(configurationElements); i++)
       relationConfigurationMap.put(iTerms.subterm(configurationElements, i, 0), iTerms.subterm(configurationElements, i, 1));
-    System.out.println("Updated configuration map to: ");
-    for (var r : configurationMap.keySet()) {
-      System.out.print(iTerms.toRawString(r));
-      Map<Integer, Integer> relationConfigurationElements = configurationMap.get(r);
-      for (var e : relationConfigurationElements.keySet())
-        System.out.print("  " + iTerms.toRawString(e) + ":" + iTerms.toRawString(relationConfigurationElements.get(e)));
-      System.out.println();
-    }
+    // System.out.println("Updated configuration map to: ");
+    // for (var r : configurationMap.keySet()) {
+    // System.out.print(iTerms.toRawString(r));
+    // Map<Integer, Integer> relationConfigurationElements = configurationMap.get(r);
+    // for (var e : relationConfigurationElements.keySet())
+    // System.out.print(" " + iTerms.toRawString(e) + ":" + iTerms.toRawString(relationConfigurationElements.get(e)));
+    // System.out.println();
+    // }
   }
 
-  public int unelideConfiguration(int term, int relation) {
+  public int unelideConfiguration(int term, int relation, boolean useType) {
     if (configurationMap.get(relation) == null) {
       System.out.println("Uneliding against relation " + iTerms.toRawString(relation) + " but no corresponding !configuration; skipping");
       return term;
     }
-    System.out.println("Uneliding against relation " + iTerms.toRawString(relation) + "   " + iTerms.toRawString(term));
+    // System.out.println("Uneliding against relation " + iTerms.toRawString(relation) + " " + iTerms.toRawString(term));
     Map<Integer, Integer> relationConfigurationElements = new LinkedHashMap<>(configurationMap.get(relation));
     // Walk the map, seeting the bound value to the key
     for (var e : relationConfigurationElements.keySet())
       relationConfigurationElements.put(e, e);
 
     // Now walk the terms semantic entities, loading the map with each we find
+    // !TODO
     int theta = iTerms.subterm(term, 0);
     for (int i = 1; i < iTerms.termArity(term); i++)
-      System.out.println("found entity: " + iTerms.toRawString(iTerms.subterm(term, i)));
+      // System.out.println("found entity: " + iTerms.toRawString(iTerms.subterm(term, i)))
+      ;
 
     // Now reconstitute the term, extracting field names from the map
     LinkedList<Integer> list = new LinkedList<>();
     list.add(theta);
     for (var e : relationConfigurationElements.keySet())
-      list.add(relationConfigurationElements.get(e));
-
-    for (var l : list)
-      System.out.println(iTerms.toRawString(l));
+      if (useType)
+        list.add(relationConfigurationElements.get(e));
+      else
+        list.add(e);
 
     int ret = iTerms.findTerm("trTuple", list);
-    System.out.println("Unelided term: " + iTerms.toRawString(ret));
+    // System.out.println("Unelided term: " + iTerms.toRawString(ret));
 
     return ret;
   }

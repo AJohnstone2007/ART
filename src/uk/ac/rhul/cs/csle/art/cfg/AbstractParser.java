@@ -799,7 +799,7 @@ public abstract class AbstractParser {
 
   protected void match_SML_STRID() { // alphanumeric identifiers for structure IDs
     if (isAlpha(peekCh())) {
-      while (isAlphaOrDigit(peekCh()) || peekCh() == '_' || peekCh() == '`')
+      while (isAlphaOrDigit(peekCh()) || peekCh() == '_' || peekCh() == '\'')
         getCh();
     }
   }
