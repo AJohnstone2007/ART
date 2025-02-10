@@ -620,14 +620,14 @@ public class ScriptTermInterpreter {
     ret.addAction("__realAP", "£", "", "");
     ret.addAction("__char", "`", "", "");
     ret.addAction("__string", "\"", "", "\"");
-    ret.addAction("__array", "[", ", ", "]");
-    ret.addAction("__list", "[", ", ", "]");
-    ret.addAction("__set", "{", ", ", "}");
-    ret.addAction("__map", "{", ", ", "}");
-    ret.addAction("__a", null, ",  ", null);
+    ret.addAction("__array", "[", " | ", "]");
+    ret.addAction("__list", "[", null, "]");
+    ret.addAction("__set", "{", null, "}");
+    ret.addAction("__map", "{", null, "}");
+    ret.addAction("__a", null, ", ", null);
     ret.addAction("__l", null, ", ", null);
     ret.addAction("__s", null, ", ", null);
-    ret.addAction("__m", null, ",", null);
+    ret.addAction("__m", null, "=", null);
 
     ret.addEmptyAction("rules");
 
