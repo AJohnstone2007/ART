@@ -334,7 +334,7 @@ public abstract class AbstractParser {
     if (semanticsTime < termGenerateTime) semanticsTime = termGenerateTime;
   }
 
-  private String timeAsMilliseconds(long startTime, long stopTime) {
+  protected String timeAsMilliseconds(long startTime, long stopTime) {
     return String.format("%.3f", (stopTime - startTime) * 1E-6);
   }
 

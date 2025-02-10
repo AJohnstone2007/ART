@@ -988,12 +988,17 @@ public class GLLBaseLine extends AbstractParser {
 
     System.out.println("Cycle breaking SPPF with " + sppfCardinality + " nodes - finding cyclic nodes");
 
+    var reachabilityStartTime = System.nanoTime();
+
     // Load all cyclic nodes to X (in detail to the xS and xP partitions)
     sppfComputeReachability();
+
+    var cycleBreakStartTime = System.nanoTime();
+    System.out.println(
+        "!!! Cycle detect time in milliseconds (note - all SPPF reachability so slow): " + timeAsMilliseconds(reachabilityStartTime, cycleBreakStartTime));
     loadXPartitions();
 
-    // if (cycleBreakTrace)
-    {
+    if (cycleBreakTrace) {
       System.out.println("Before cycle breaking, |Xs| = " + yS.size() + " |Xp| = " + yP.size());
 
       System.out.print("Xs is ");
@@ -1017,8 +1022,10 @@ public class GLLBaseLine extends AbstractParser {
     while (sppfCycleBreak())
       ;
 
-    // if (cycleBreakTrace)
-    {
+    var cycleBreakEndTime = System.nanoTime();
+    System.out.println("!!! Cycle break time in milliseconds: " + timeAsMilliseconds(cycleBreakStartTime, cycleBreakEndTime));
+
+    if (cycleBreakTrace) {
       System.out.println("After cycle breaking, |Xs|=" + yS.size() + " |Xp|=" + yP.size() + " |D|=" + cbD.size() + " |D'|=" + cbDPrime.size());
 
       System.out.print("Xs is ");
@@ -1221,6 +1228,8 @@ public class GLLBaseLine extends AbstractParser {
 
   /** lexicalisation checks *********************************************************************/
   Map<Integer, Set<SPPFN>> paraterminalInstances = new TreeMap<>();
+  int paraterminalCount;
+  int terminalCount;
 
   @Override
   public void sppfPrintParaterminals() {
@@ -1230,7 +1239,11 @@ public class GLLBaseLine extends AbstractParser {
     }
     System.out.println("Paraterminals");
     visitedSPPFNodes.clear();
+    paraterminalCount = terminalCount = 0;
     sppfCollectParaterminalsRec(sppfRootNode);
+    System.out.println("!!! Excluding epsilon leaves, there are " + paraterminalCount + " paraterminal instances and " + terminalCount
+        + " terminal instances reachable from the SPPF root");
+    System.out.println("!!! During paraterminal collection " + visitedSPPFNodes.cardinality() + " SPPFnodes were visited");
     int rightmostIndex = 0;
     boolean overlapping = false;
     for (var i : paraterminalInstances.keySet()) {
@@ -1246,9 +1259,13 @@ public class GLLBaseLine extends AbstractParser {
 
     if (isSymbol(sppfn) && cfgRules.paraterminalElements.contains(sppfn.gn.elm)) {
       paraterminalInstanceAdd(sppfn);
+      paraterminalCount++;
       return;
     }
-    if (sppfn.packNS.size() == 0) paraterminalInstanceAdd(sppfn);
+    if (sppfn.packNS.size() == 0) {
+      paraterminalInstanceAdd(sppfn);
+      if (sppfn.gn.elm.kind != CFGKind.EPS) terminalCount++;
+    }
     for (var p : sppfn.packNS) {
       if (p.leftChild != null) sppfCollectParaterminalsRec(p.leftChild);
       sppfCollectParaterminalsRec(p.rightChild);
