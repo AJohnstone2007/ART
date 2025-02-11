@@ -34,10 +34,11 @@ public class LexerSingletonLongestMatch extends AbstractParser {
 
     longestMatchRightIndex = 0;
     longestMatchToken = 0;
-    // System.out.println("Input: " + inputString);
+    System.out.println("Input: " + inputString);
 
     while (inputIndex < inputAsCharArray.length) {
       // Absorb a run of whitespace tokens
+      // System.out.println("Absorbing WS at index " + inputIndex);
       while (true) {
         int wsStart = inputIndex;
 
@@ -50,7 +51,9 @@ public class LexerSingletonLongestMatch extends AbstractParser {
 
       leftIndex = inputIndex;
 
+      // System.out.println("Running recognisers at index " + inputIndex);
       for (int token = 1; token < kinds.length; token++) {
+        inputIndex = leftIndex;
         processBuiltin(kinds[token], strings[token]);
         checkLongestMatch(token);
       }

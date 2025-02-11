@@ -394,6 +394,7 @@ public abstract class AbstractParser {
   }
 
   protected void processBuiltin(LexemeKind b, String s) {
+    // System.out.print("Checking builtin " + b + "/" + s + " at inputIndex " + inputIndex);
     switch (b) {
     case CHARACTER:
       match_CHARACTER(s);
@@ -506,6 +507,7 @@ public abstract class AbstractParser {
       Util.fatal("Unknown builtin " + b);
       break;
     }
+    // System.out.println(" return " + inputIndex);
   }
 
   protected void lexicalError(String msg) {
@@ -559,11 +561,11 @@ public abstract class AbstractParser {
   }
 
   public static boolean isAlpha(char c) {
-    return Character.isLetter(c);
+    return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
   }
 
   public static boolean isDigit(char c) {
-    return Character.isDigit(c);
+    return (c >= '0' && c <= '9');
   }
 
   public static boolean isHexDigit(char c) {
@@ -769,10 +771,14 @@ public abstract class AbstractParser {
   }
 
   protected void match_SML_TYVAR() {
-    if (peekCh() == '\'' && (isAlpha(peekOneCh()) || peekOneCh() == '_' || peekOneCh() == '\'')) {
+    int lexemeStart = inputIndex;
+    // System.out.println("Tyvar called at index " + inputIndex + " on character " + this.inputAsCharArray[inputIndex]);
+    if (peekCh() == '\'') if (isAlpha(peekOneCh()) || peekOneCh() == '_' || peekOneCh() == '\'') {
       while (isAlphaOrDigit(peekCh()) || peekCh() == '_' || peekCh() == '\'')
         getCh();
     }
+    // System.out.println("Tyvar returns index " + inputIndex + " length " + (inputIndex - lexemeStart));
+
   }
 
   protected void match_SML_TYCON() {
