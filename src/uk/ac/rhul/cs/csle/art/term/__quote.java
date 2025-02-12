@@ -1,9 +1,9 @@
 package uk.ac.rhul.cs.csle.art.term;
 
-public class Quote {
+public class __quote {
   int term;
 
-  public Quote(int term) {
+  public __quote(int term) {
     super();
     this.term = term;
   }
@@ -21,7 +21,7 @@ public class Quote {
     if (this == obj) return true;
     if (obj == null) return false;
     if (getClass() != obj.getClass()) return false;
-    Quote other = (Quote) obj;
+    __quote other = (__quote) obj;
     if (term != other.term) return false;
     return true;
   }

@@ -94,9 +94,9 @@ public class ITerms {
   public final int termSetEmpty;
   public final int termMapEmpty;
 
-  public final Bottom bottom = new Bottom();
-  public final Done done = new Done();
-  public final Empty empty = new Empty();
+  public final __bottom bottom = new __bottom();
+  public final __done done = new __done();
+  public final __empty empty = new __empty();
 
   public ITerms() {
     // 1B. Load text traverser default action which appends the escaped version of the constructor
@@ -139,7 +139,7 @@ public class ITerms {
     } catch (Exception e) {
       // Silently absorb exception - when the default is used
     }
-    System.out.println("Attached to " + plugin.getClass().getSimpleName() + " " + plugin.description());
+    System.out.println("Value system attached to " + plugin.description());
   }
 
   /* Raw term rendering *************************************************************************************/
@@ -1386,11 +1386,11 @@ public class ITerms {
   }
 
   // Blob
-  public Blob termToJavaBlob(int term) {
-    return Blob.get(term);
+  public __blob termToJavaBlob(int term) {
+    return __blob.get(term);
   }
 
-  public int javaBlobToTerm(Blob value) {
+  public int javaBlobToTerm(__blob value) {
     return findTerm("__blob", javaIntegerToTerm(value.number));
   }
 
@@ -1403,7 +1403,7 @@ public class ITerms {
     case __emptyStringIndex:
       return empty;
     case __quoteStringIndex:
-      return new Quote(subTerm(term, 0));
+      return new __quote(subTerm(term, 0));
     case __blobStringIndex:
       return termToJavaBlob(term);
     case __boolStringIndex:
@@ -1427,7 +1427,7 @@ public class ITerms {
     case __mapStringIndex:
       return termToJavaLinkedHashMap(term);
     default:
-      return new Quote(term); // For anything else, autoquote it
+      return new __quote(term); // For anything else, autoquote it
     }
   }
 
@@ -1440,11 +1440,11 @@ public class ITerms {
   // This version is acceptable to Java 17 (Sep 21) which is the student default for AY 2024-45
   public int javaObjectToTerm(Object value) {
     if (value == null) Util.fatal("Cannot convert Java null to a term - try Botton, Done or Empty");
-    if (value instanceof Quote) return ((Quote) value).term;
-    if (value instanceof Bottom) return termBottom;
-    if (value instanceof Done) return termDone;
-    if (value instanceof Empty) return termEmpty;
-    if (value instanceof Blob) return javaBlobToTerm((Blob) value);
+    if (value instanceof __quote) return ((__quote) value).term;
+    if (value instanceof __bottom) return termBottom;
+    if (value instanceof __done) return termDone;
+    if (value instanceof __empty) return termEmpty;
+    if (value instanceof __blob) return javaBlobToTerm((__blob) value);
     if (value instanceof Boolean) return javaBooleanToTerm((Boolean) value);
     if (value instanceof Character) return javaCharacterToTerm((Character) value);
     if (value instanceof Integer) return javaIntegerToTerm((Integer) value);

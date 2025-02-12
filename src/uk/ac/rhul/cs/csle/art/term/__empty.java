@@ -1,8 +1,8 @@
 package uk.ac.rhul.cs.csle.art.term;
 
-public class Bottom {
+public class __empty {
   @Override
   public String toString() {
-    return "Bottom";
+    return "Empty";
   }
 }

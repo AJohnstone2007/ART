@@ -19,7 +19,6 @@ import uk.ac.rhul.cs.csle.art.util.Util;
 import uk.ac.rhul.cs.csle.art.util.Version;
 
 public class ART {
-  public static boolean useIDE = false;
   public static String clargs[];
   public static boolean tracing = false;
 
@@ -27,13 +26,12 @@ public class ART {
   public static void main(String[] args) {
     clargs = args;
     if (args.length > 0) switch (args[0].toLowerCase()) {            // Test for initial special mode argument
-    case "incver":  incVersion(); return;                                        // Undocumented internal mode
-    case "ajdebug": new AJDebug(args); return;                                   // Undocumented internal mode
-    case "v3":      new ARTV3(Arrays.copyOfRange(args, 1, args.length)); return; // Undocumented internal mode
-    case "v4":      new ARTV4(Arrays.copyOfRange(args, 1, args.length)); return; // Undocumented internal mode
-    case "ide":     useIDE = true; Application.launch(FXStart.class, Arrays.copyOfRange(args, 1, args.length)); return;
-    case "fx":      Application.launch(FXStart.class, Arrays.copyOfRange(args, 1, args.length)); return;
-    default:        new ScriptTermInterpreter().interpretARTScript(scriptString(args)); return; // Run batch mode without fx in this context
+    case "incver":    incVersion(); return;                                        // Undocumented internal mode
+    case "ajdebug":   new AJDebug(args); return;                                   // Undocumented internal mode
+    case "v3":        new ARTV3(Arrays.copyOfRange(args, 1, args.length)); return; // Undocumented internal mode
+    case "v4":        new ARTV4(Arrays.copyOfRange(args, 1, args.length)); return; // Undocumented internal mode
+    case "ide", "fx": Application.launch(FXStart.class); return;
+    default:          new ScriptTermInterpreter().interpretARTScript(scriptString(args)); return; // Run batch mode without fx in this context
     }
     // No args
     System.out.println("ART " + Version.version() + "\nUsage:");

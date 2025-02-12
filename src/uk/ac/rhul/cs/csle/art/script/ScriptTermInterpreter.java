@@ -284,7 +284,8 @@ public class ScriptTermInterpreter {
       else
         currentDerivationTerm = iTerms.subterm(term, 0, 0); // No parsing - process term directly
 
-      // Improve this so that it automatically augments the term
+      // Improve this so that it automatically augments the term as necessary and no more
+      // !TODO bare terms are being augmented...
       if (currentTRRules.defaultStartRelation != 0) {// are there TRrules?
         if (currentDerivationTerm != 0) currentDerivationTerm = iTerms.findTerm("trTopTuple", currentDerivationTerm); // augment to tuple
         currentDerivationTerm = currentTRRules.unelideConfiguration(currentDerivationTerm, currentTRRules.defaultStartRelation, true);

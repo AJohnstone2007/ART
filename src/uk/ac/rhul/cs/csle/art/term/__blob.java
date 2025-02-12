@@ -2,14 +2,14 @@ package uk.ac.rhul.cs.csle.art.term;
 
 import java.util.Map;
 
-public class Blob {
+public class __blob {
   private static int nextFreeNumber = 1;
-  private static Map<Integer, Blob> cache;
+  private static Map<Integer, __blob> cache;
 
   public int number;
   public Object payload;
 
-  Blob(Object payload) {
+  __blob(Object payload) {
     number = nextFreeNumber++;
     this.payload = payload;
     cache.put(number, this);
@@ -19,7 +19,7 @@ public class Blob {
     cache.remove(number);
   }
 
-  public static Blob get(int term) {
+  public static __blob get(int term) {
     return cache.get(term);
   }
 
@@ -37,7 +37,7 @@ public class Blob {
     if (this == obj) return true;
     if (obj == null) return false;
     if (getClass() != obj.getClass()) return false;
-    Blob other = (Blob) obj;
+    __blob other = (__blob) obj;
     if (number != other.number) return false;
     if (payload == null) {
       if (other.payload != null) return false;
