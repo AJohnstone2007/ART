@@ -16,7 +16,8 @@ public class ARTValuePluginNoFX extends AbstractPlugin {
       return __done;
 
     case "show":
-      System.out.println("Show: " + args[1] + args[2]);
+      for (var i : args)
+        System.out.println(i);
       return __done;
 
     case "invert":
