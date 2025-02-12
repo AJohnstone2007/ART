@@ -34,7 +34,7 @@ public class LexerSingletonLongestMatch extends AbstractParser {
 
     longestMatchRightIndex = 0;
     longestMatchToken = 0;
-    System.out.println("Input: " + inputString);
+    // System.out.println("Input: " + inputString);
 
     while (inputIndex < inputAsCharArray.length) {
       // Absorb a run of whitespace tokens

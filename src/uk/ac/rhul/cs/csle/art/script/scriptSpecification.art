@@ -84,10 +84,10 @@ __l ::= trTerm | trTerm ','^ __l
 __set  ::= '{'^ '}'^ | '{'^ __s '}'^ 
 __s ::= trTerm | trTerm ','^ __s
 
-__map  ::= '{'^ '->' '}'^  |'{'^ __m '}'^  // Note ugly empty map syntax
-__m ::= trTerm '->'^ trTerm | trTerm '->'^ trTerm ','^ __m
+__map  ::= '{'^ '='^ '}'^  |'{'^ __m '}'^  // Note ugly empty map syntax
+__m ::= trTerm '='^ trTerm | trTerm '='^ trTerm ','^ __m
 
-trRelation ::= '->' | '=>'  | '/>' | '\>' | '~>'  
+trRelation ::= '->' | '=>' | '~>' | ':->' | ':=>' | ':~>'  
 
 (* Choose rules ***************************************************************)
 chooseRule ::= chooseElementRule^^ | chooseSlotRule^^
@@ -129,7 +129,6 @@ directiveElement ::=
 
 | 'lexer'^^ '#'^ | 'lexer'^^ ID
 | 'parser'^^ '#'^ | 'parser'^^ ID
-| 'interpreter'^^ '#'^ | 'interpreter'^^ ID
 | 'support'^^ cfgNative cfgNative 
 | 'generate'^^ ID
 

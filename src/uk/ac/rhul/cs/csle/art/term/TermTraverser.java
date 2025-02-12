@@ -10,6 +10,7 @@ public class TermTraverser {
   protected final ITerms iTerms;
   protected final Map<Integer, Consumer<Integer>> opsPreorder;
   protected final Map<Integer, Consumer<Integer>> opsInorder;
+  protected final Map<Integer, Consumer<Integer>> opsInorderSubsequent;
   protected final Map<Integer, Consumer<Integer>> opsPostorder;
   protected final Set<Integer> breakSet;
 
@@ -17,6 +18,7 @@ public class TermTraverser {
     this.iTerms = iTerms;
     opsPreorder = new HashMap<>();
     opsInorder = new HashMap<>();
+    opsInorderSubsequent = new HashMap<>();
     opsPostorder = new HashMap<>();
     breakSet = new HashSet<>();
   }
@@ -70,7 +72,7 @@ public class TermTraverser {
   }
 
   public void traverse(int termIndex) {
-    // System.out.println("traverse() at term " + iTerms.toString(termIndex));
+    // System.out.println("traverse() at term " + iTerms.toRawString(termIndex));
     perform(opsPreorder, termIndex);
     int[] children = iTerms.termChildren(termIndex);
     int length = children.length;

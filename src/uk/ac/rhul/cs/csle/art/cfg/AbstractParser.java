@@ -224,7 +224,7 @@ public abstract class AbstractParser {
   }
 
   /* Statistics support for RunExp below this line ***************************/
-  private long startTime, setupTime, lexTime, lexChooseTime, parseTime, parseChooseTime, termGenerateTime, semanticsTime;
+  private long startTime, setupTime, lexTime, lexChooseTime, parseTime, parseChooseTime, reachabilityTime, cycleBreakTime, termGenerateTime, semanticsTime;
   private long tweNodeCount, tweEdgeCount, tweLexCount;
   private long descriptorCount;
   private long gssNodeCount, gssEdgeCount, popCount;
@@ -252,6 +252,14 @@ public abstract class AbstractParser {
 
   public void loadParseChooseTime() {
     parseChooseTime = System.nanoTime();
+  }
+
+  public void loadParseReachabilityTime() {
+    reachabilityTime = System.nanoTime();
+  }
+
+  public void loadcycleBreakTime() {
+    cycleBreakTime = System.nanoTime();
   }
 
   public void loadTermGenerateTime() {
@@ -548,7 +556,6 @@ public abstract class AbstractParser {
   }
 
   protected char getCh() {
-    // System.out.println("getCh() at index " + inputIndex + " character " + (int) input[inputIndex]);
     if (inputIndex >= inputLength)
       return '\0';
     else
@@ -581,19 +588,14 @@ public abstract class AbstractParser {
   }
 
   protected void match_CHARACTER(String string) {
-    // System.out.print("At index " + inputIndex + " testing for character " + string + " against " + peekCh() + "...");
     if (string.charAt(0) != peekCh()) {
       inputIndex = leftIndex;
-      // System.out.println(" reject");
       return;
     } else
       getCh();
-
-    // System.out.println(" accept");
   }
 
   protected void match_SINGLETON_CASE_SENSITIVE(String string) {
-    // System.out.print("At index " + inputIndex + " testing for singleton case sensitive " + string + " against " + peekCh() + "...");
     for (int i = 0; i < string.length(); i++)
       if (string.charAt(i) != peekCh()) {
         inputIndex = leftIndex;
@@ -601,21 +603,15 @@ public abstract class AbstractParser {
         return;
       } else
         getCh();
-
-    // System.out.println(" accept");
   }
 
   protected void match_SINGLETON_CASE_INSENSITIVE(String string) {
-    // System.out.print("At index " + inputIndex + " testing for singleton case insensitive " + string + " against " + peekCh() + "...");
     for (int i = 0; i < string.length(); i++)
       if (string.charAt(i) != peekChToLower()) {
         inputIndex = leftIndex;
-        // System.out.println(" reject");
         return;
       } else
         getCh();
-
-    // System.out.println(" accept");
   }
 
   protected void match_SML_COMMENT() {
@@ -772,13 +768,10 @@ public abstract class AbstractParser {
 
   protected void match_SML_TYVAR() {
     int lexemeStart = inputIndex;
-    // System.out.println("Tyvar called at index " + inputIndex + " on character " + this.inputAsCharArray[inputIndex]);
     if (peekCh() == '\'') if (isAlpha(peekOneCh()) || peekOneCh() == '_' || peekOneCh() == '\'') {
       while (isAlphaOrDigit(peekCh()) || peekCh() == '_' || peekCh() == '\'')
         getCh();
     }
-    // System.out.println("Tyvar returns index " + inputIndex + " length " + (inputIndex - lexemeStart));
-
   }
 
   protected void match_SML_TYCON() {

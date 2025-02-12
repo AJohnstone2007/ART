@@ -250,11 +250,14 @@ public class GLLBaseLine extends AbstractParser {
     return carrier.getFirst();
   }
 
+  boolean derivationSeenCycle = false;
+
   private String derivationAsTermRec(SPPFN sppfn, LinkedList<Integer> childrenFromParent, CFGNode gn) {
     // System.out.println("\nEntered derivationAsTermRec() at node " + sppfn + " instance " + gn);
     if (visitedSPPFNodes.get(sppfn.number)) {
-      Util.warning("derivationAsTermRec() found cycle in derivation");
-      return "Cycle in derivation";
+      if (!derivationSeenCycle) Util.error("derivationAsTermRec() found cycle in derivation");
+      derivationSeenCycle = true;
+      return "__CYCLE";
     }
 
     visitedSPPFNodes.set(sppfn.number);
