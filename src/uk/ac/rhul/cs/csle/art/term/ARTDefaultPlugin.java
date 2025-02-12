@@ -9,11 +9,10 @@ public class ARTDefaultPlugin extends AbstractPlugin {
 
   @Override
   public Object plugin(Object... args) {
-    System.out.println("Plugin " + description() + " called with " + args.length + " argument" + (args.length == 1 ? "" : "s"));
+    System.out.println("Plugin called with " + args.length + " argument" + (args.length == 1 ? "" : "s"));
     for (Object a : args) {
-      System.out.println(a.getClass() + " " + a);
+      System.out.println("   " + a.getClass() + " " + a);
     }
     return __done;
   }
-
 }

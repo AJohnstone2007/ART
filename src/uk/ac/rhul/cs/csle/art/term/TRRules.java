@@ -64,12 +64,17 @@ public class TRRules {
    *
    */
   public int unelideConfiguration(int term, int relation, boolean useType) {
+    // System.out.println("!!!Term before unelision is " + iTerms.toRawString(term));
+    if (iTerms.hasSymbol(term, "trTuple")) {
+      // System.out.println("Already tupled; returning");
+      return term;
+    }
     if (configurationMap.get(relation) == null) {
       Util.warning("Uneliding against relation " + iTerms.toRawString(relation) + " but no corresponding !configuration; skipping");
       return term;
     }
     // System.out.println("Uneliding against relation " + iTerms.toRawString(relation) + " " + iTerms.toRawString(term));
-    int theta = iTerms.subterm(term, 0);
+    int theta = iTerms.subterm(term);
     Map<Integer, Integer> relationConfigurationElements = new LinkedHashMap<>(configurationMap.get(relation));
 
     if (!useType) { // useType is called after parsing to append all of the types from the configuration to the raw parse term
@@ -92,6 +97,7 @@ public class TRRules {
     int ret = iTerms.findTerm("trTuple", list);
     // System.out.println("Unelided term: " + iTerms.toRawString(ret));
 
+    // System.out.println("!!!Term after unelision is " + iTerms.toRawString(ret));
     return ret;
   }
 

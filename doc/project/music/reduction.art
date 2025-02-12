@@ -1,4 +1,5 @@
 (* Reduction.art - project starter *)
+
 !configuration -> _sig:__map
 !trace 1
 
@@ -59,6 +60,6 @@ __string::= &STRING_SQ
 //!try "a := 6; b := 9; while a != b do if a > b then a := a - b; else b := b - a;"
 
 (* Plugin tests *)
-//!try "plugin('init'); plugin('show', 1,2,3);"
+!try "plugin('init'); plugin('show', 1,2,3);"
 //!try "plugin('invert', 3);"
-!try "plugin('init'); a := plugin('invert', 3) - plugin('invert',1);" 
+//!try "plugin('init'); a := plugin('invert', 3) - plugin('invert',1);" 

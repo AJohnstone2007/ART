@@ -284,24 +284,20 @@ public class ScriptTermInterpreter {
       else
         currentDerivationTerm = iTerms.subterm(term, 0, 0); // No parsing - process term directly
 
-      // Improve this so that it automatically augments the term as necessary and no more
-      // !TODO bare terms are being augmented...
-      if (currentTRRules.defaultStartRelation != 0) {// are there TRrules?
-        if (currentDerivationTerm != 0) currentDerivationTerm = iTerms.findTerm("trTopTuple", currentDerivationTerm); // augment to tuple
+      if (currentDerivationTerm != 0 && currentTRRules.defaultStartRelation != 0) {// if there is a term and some rules
+        // if (!iTerms.hasSymbol(currentDerivationTerm, "trTopTuple")) currentDerivationTerm = iTerms.findTerm("trTopTuple", currentDerivationTerm); // augment
         currentDerivationTerm = currentTRRules.unelideConfiguration(currentDerivationTerm, currentTRRules.defaultStartRelation, true);
 
         currentRewriteTerm = currentRewriter.rewrite(currentDerivationTerm, currentTRRules); // Run the rewriter
+        if (iTerms.termArity(iTerms.subterm(term, 0)) == 2) // There was a test term
+          if (currentRewriteTerm == iTerms.subterm(term, 0, 1)) {
+            System.out.println("*** Successful test");
+            successfulTests++;
+          } else {
+            System.out.println("*** Failed test: expected " + iTerms.plainTextTraverser.toString(iTerms.subterm(term, 0, 1)));
+            failedTests++;
+          }
       }
-
-      if (iTerms.termArity(iTerms.subterm(term, 0)) == 2) // There was a test term
-        if (currentRewriteTerm == iTerms.subterm(term, 0, 1)) {
-          System.out.println("*** Successful test");
-          successfulTests++;
-        } else {
-          System.out.println("*** Failed test: expected " + iTerms.plainTextTraverser.toString(iTerms.subterm(term, 0, 1)));
-          failedTests++;
-        }
-
       break;
 
     case "prompt":
@@ -316,6 +312,7 @@ public class ScriptTermInterpreter {
       break;
 
     case "breakSPPFcycles":
+
       boolean trace = false;
       TraversalKind traversalKind = TraversalKind.arbitrary;
       boolean lone = false;
