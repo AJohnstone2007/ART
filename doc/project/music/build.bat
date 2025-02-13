@@ -1,1 +1,1 @@
-javac -cp art.jar ARTValuePlugin.java
+javac -cp .;art.jar *.java
