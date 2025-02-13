@@ -1,92 +1,89 @@
-(* slewa.pdf  Chapter 5 examples *)
-!trace 4
-(* Abbreviations *)
-!print "A term with no abbreviations"
-!print term a(b,c)  // Just a term with no abbreviations
+(* slewa.pdf  Chapter 5 examples - see also gcdReduction.art *)
 
-!print "\n__bool"
-!print term true
-!printraw term true
-
-!print term false
-!printraw term false
-
-!print "__char"
-!print term `a
-!printraw term `a
-
-!print "__int32"
-!print term 1234
-!printraw term 1234
-
-!print "__real64"
-!print term 1234.0
-!printraw term 1234.0
-
-!print "__array of size 3"
-!print term [3 | a,b,c ]
-!printraw term [ 3 | a,b,c]
-
-!print "__list"
-!print term [ a,b,c ]
-!printraw term [ a,b,c]
-
-!print "__set"
-!print term { a,b,c }
-!printraw term { a,b,c }
-
-!print "__map"
-!print term { a->p, b->q, c->r }
-!printraw term { a->p, b->q, c->r }
-
-(* Part A - output of expressions *)
-(*
-
+(* Part A - output of expressions over addition *)
 !configuration -> _alpha:__list
+!trace  5
+
 -add 
 _n1 |> __int32(_) _n2 |> __int32(_)
 ---
 add(_n1, _n2), _alpha -> __add(_n1,_n2), _alpha
 
-!print "First go "
-!try add(2,2), __list
+//!try add(5,3), __list
+//!try add(3, add(4,5)), __list
 
--outputInt 
-_n |> __int32(_)
+-addResolveRight
+_n |> __int32(_)  _E, _alpha -> _EP, _alphaP
 ---
-output(_n), _alpha -> __done, __put(_alpha, 0, _n)
+add(_n, _E), _alpha -> add(_n,_EP), _alphaP
 
-!try output(3),__list
-
--outputIntResolve _E -> _EP
----
-output(_E), _alpha -> __done, __put(_alpha, 0, _EP)
-
-
-!try output(add(3,4)),__list
+//!try add(3, add(4,5)), __list
 
 -addResolveLeft
-_E1, _alpha -> _E1P, _alpha
+_E1, _alpha -> _E1P, _alphaP
 ---
-add(_E1, _E2), _alpha -> __add(_E1P,_E2), _alpha
+add(_E1, _E2), _alpha -> add(_E1P,_E2), _alphaP
 
--addResolvRight
-_n |>  __int32(_)  _E -> _EP, _alpha
+
+!trace 3
+//!try add(add(2,3), add(4,5)), __list
+
+-output _E, _alpha -> _EP, _alphaP
 ---
-add(_n, _E), _alpha -> __add(_n,_EP), _alpha
+output(_E), _alpha -> __done, __put(_alphaP, 0, _EP)
 
-!try add(add(6,7),8), __list
+!trace 2
+//!try output(add(3,4)),__list
 
+-sequenceDone                      
+--- 
+seq(__done, _C), _alpha -> _C, _alpha
 
-!print "Second go"
-!clear trRules
+-sequence 
+_C1, _alpha -> _C1P, _alphaP 
+--- 
+seq(_C1, _C2), _alpha -> seq(_C1P, _C2), _alphaP
 
-!try add(2,2), __list // to show that all the rules have been removed - not working!
+!try seq(output(3),output(4)),__list
 
-*)
 (*
+!clear trRules
+!try sub(2,2), __list // to show that all the rules have been removed - not working!
+
+
 (* Part B - development of the GCD language *)
 !configuration -> _sig:__map
+
+-sub 
+_n1 |> __int32(_) _n2 |> __int32(_)
+---
+sub(_n1, _n2), _sig -> __sub(_n1,_n2), _sig
+
+-subResolveLeft
+_E1, _sig -> _E1P, _sig
+---
+sub(_E1, _E2), _sig -> __sub(_E1P,_E2), _sig
+
+-subResolvRight
+_n |>  __int32(_)  _E -> _EP, _sig
+---
+sub(_n, _E), _sig -> __sub(_n,_EP), _sig
+
+-mul 
+_n1 |> __int32(_) _n2 |> __int32(_)
+---
+mul(_n1, _n2), _sig -> __mul(_n1,_n2), _sig
+
+-mulResolveLeft
+_E1, _sig -> _E1P, _sig
+---
+mul(_E1, _E2), _sig -> __mul(_E1P,_E2), _sig
+
+-mulResolvRight
+_n |>  __int32(_)  _E -> _EP, _sig
+---
+mul(_n, _E), _sig -> __mul(_n,_EP), _sig
+
 
 -assign
 _n |> __int32(_)  __put(_sig, _X, _n) |> _sigP 
@@ -102,5 +99,69 @@ deref(_X),_sig -> __get(_sig, _X)
 !try deref(a), __map(_m(a,7))
 !try deref(a), {a->13}
 
-*)
 
+-assignReference
+_E,_sig -> _EP,_sigP
+---
+assign(_X, _E),_sig -> assign(_X, _EP),_sigP
+
+!try assign(a, sub(3,4)), __map
+!try assign(a, mul(3,4)), __map
+
+-gt 
+_n1 |> __int32(_) _n2 |> __int32(_)
+---
+gt(_n1, _n2), _sig -> __gt(_n1,_n2), _sig
+
+-gtResolveLeft
+_E1, _sig -> _E1P, _sig
+---
+gt(_E1, _E2), _sig -> __gt(_E1P,_E2), _sig
+
+-gtResolvRight
+_n |>  __int32(_)  _E -> _EP, _sig
+---
+gt(_n, _E), _sig -> __gt(_n,_EP), _sig
+
+!try gt(3,4), __map
+
+-seqDone
+---
+seq(__done, _C),_sig -> _C,_sig
+
+-seqResolve
+_C1,_sig -> _C1P,_sigP
+---
+seq(_C1, _C2),_sig -> seq(_C1P, _C2),_sigP
+
+!try seq(assign(a,3), assign(b,4)),__map
+
+-ifTrue
+--- if(true, _C),_sig -> _C,_sig
+
+-ifFalse
+--- if(false, _C),_sig -> __done,_sig
+
+!try if(true,3),__map
+!try if(false,3),__map
+
+-ifElseTrue
+--- if(true, _C1, _C2),_sig -> _C1,_sig
+
+-ifElseFalse
+--- if(false, _C1, _C2),_sig -> _C2,_sig
+
+!try if(true,8,9),__map
+!try if(false,8,9),__map
+
+-ifResolve
+_E,_sig -> _EP,_sigP
+---
+if(_E, _C1, _C2), _sig -> if(_EP, _C1, _C2), _sigP
+
+!try if(gt(4,3), 100, 200),__map
+!try if(gt(3,4), 100, 200),__map
+
+-while --- while(_E, _C),_sig -> if(_E, seq(_C, while(_E,_C)), __done), _sig
+
+*)
