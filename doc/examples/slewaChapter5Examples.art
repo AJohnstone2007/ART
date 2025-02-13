@@ -46,7 +46,7 @@ seq(_C1, _C2), _alpha -> seq(_C1P, _C2), _alphaP
 
 !try seq(output(3),output(4)),__list
 
-(*
+
 !clear trRules
 !try sub(2,2), __list // to show that all the rules have been removed - not working!
 
@@ -97,7 +97,7 @@ assign(_X, _n), _sig -> __done,  _sigP
 deref(_X),_sig -> __get(_sig, _X)
 
 !try deref(a), __map(_m(a,7))
-!try deref(a), {a->13}
+!try deref(a), {a=13}
 
 
 -assignReference
@@ -164,4 +164,3 @@ if(_E, _C1, _C2), _sig -> if(_EP, _C1, _C2), _sigP
 
 -while --- while(_E, _C),_sig -> if(_E, seq(_C, while(_E,_C)), __done), _sig
 
-*)
