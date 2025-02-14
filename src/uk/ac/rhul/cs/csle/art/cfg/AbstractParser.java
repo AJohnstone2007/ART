@@ -772,9 +772,7 @@ public abstract class AbstractParser {
       // if (isAlpha(peekOneCh()) || peekOneCh() == '_' || peekOneCh() == '\'') {
       getCh();
     while (isAlphaOrDigit(peekCh()) || peekCh() == '_' || peekCh() == '\'')
-      ;
-
-    getCh();
+      getCh();
   }
 
   protected void match_SML_TYCON() {

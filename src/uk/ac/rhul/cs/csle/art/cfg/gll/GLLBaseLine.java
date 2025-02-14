@@ -880,6 +880,26 @@ public class GLLBaseLine extends AbstractParser {
     // System.out.println("Cyclic node set (fast): " + sppfCyclic);
   }
 
+  private void sppfComputeCyclicReachability() {
+    if (sppf == null || sppfRootNode == null) {
+      Util.warning("Current parser does not have a current SPPF - skipping cyclic reachability analysis");
+      return;
+    }
+
+    sppfReachable.clear();
+    for (var n : sppf.keySet())
+      for (var p : n.packNS) {
+        if (cbD.contains(p)) {
+          // System.out.println("Skipping Deleted packed node " + p);
+          continue;
+        }
+
+        sppfReachable.add(n.number, p.number);
+        if (p.leftChild != null) sppfReachable.add(p.number, p.leftChild.number);
+        sppfReachable.add(p.number, p.rightChild.number);
+      }
+  }
+
   @Override
   public void sppfPrintCyclicNodes() {
     sppfComputeReachability();
