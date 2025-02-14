@@ -768,11 +768,12 @@ public abstract class AbstractParser {
 
   protected void match_SML_TYVAR() {
     int lexemeStart = inputIndex;
-    if (peekCh() == '\'')
+    if (peekCh() == '\'') {
       // if (isAlpha(peekOneCh()) || peekOneCh() == '_' || peekOneCh() == '\'') {
       getCh();
-    while (isAlphaOrDigit(peekCh()) || peekCh() == '_' || peekCh() == '\'')
-      getCh();
+      while (isAlphaOrDigit(peekCh()) || peekCh() == '_' || peekCh() == '\'')
+        getCh();
+    }
   }
 
   protected void match_SML_TYCON() {
