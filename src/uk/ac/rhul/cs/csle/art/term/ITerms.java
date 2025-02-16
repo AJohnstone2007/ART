@@ -139,7 +139,7 @@ public class ITerms {
     } catch (Exception e) {
       // Silently absorb exception - when the default is used
     }
-    System.out.println("Value system attached to " + plugin.description());
+    Util.info("Value system attached to " + plugin.description());
   }
 
   /* Raw term rendering *************************************************************************************/

@@ -707,7 +707,7 @@ public class GLLBaseLine extends AbstractParser {
 
   @Override
   public void sppf2Dot() {
-    sppfComputeReachability();
+    sppfComputeReachability(cfgRules.cyclicSlots);
 
     if (sppf == null || sppfRootNode == null) {
       Util.warning("Current parser does not have a current SPPF - skipping SPPF visualisation");
@@ -843,7 +843,7 @@ public class GLLBaseLine extends AbstractParser {
     // System.out.println("Cyclic node set: " + sppfCyclic);
   }
 
-  private void sppfComputeReachability() {
+  private void sppfComputeReachability(Set<CFGNode> cyclicCFGNodes) {
     // Count SPPF nodes
     // Allocate SPPF node count bitsets of size SPPF node count
     // Load adjacencies
@@ -863,21 +863,24 @@ public class GLLBaseLine extends AbstractParser {
           continue;
         }
 
+        // if (cyclicCFGNodes != null && cyclicCFGNodes.contains(n.gn)) {
+        // System.out.println("Adding cyclicSPPFNode " + n);
         sppfReachable.add(n.number, p.number);
         if (p.leftChild != null) sppfReachable.add(p.number, p.leftChild.number);
         sppfReachable.add(p.number, p.rightChild.number);
+        // }
       }
-    // System.out.println("After initialising sppfReachable, contents are:\n" + sppfReachable);
+    System.out.println("After initialising sppfReachable, contents are:\n" + sppfReachable);
     sppfReachable.transitiveClosure();
-    // System.out.println("After transitive closure of sppfReachable, contents are:\n" + sppfReachable);
+    System.out.println("After transitive closure of sppfReachable, contents are:\n" + sppfReachable);
 
     sppfRootReachable = sppfReachable.getCodomain(sppfRootNode.number);
-    // System.out.println("Root reachable set: " + sppfRootReachable);
+    System.out.println("Root reachable set: " + sppfRootReachable);
     sppfCyclic.clear();
     for (int n = 0; n < sppfReachable.domainSize(); n++)
       if (sppfReachable.get(n, n)) sppfCyclic.set(n);
 
-    // System.out.println("Cyclic node set (fast): " + sppfCyclic);
+    System.out.println("Cyclic node set (fast): " + sppfCyclic);
   }
 
   private void sppfComputeCyclicReachability() {
@@ -902,7 +905,7 @@ public class GLLBaseLine extends AbstractParser {
 
   @Override
   public void sppfPrintCyclicNodes() {
-    sppfComputeReachability();
+    sppfComputeReachability(null);
     printCyclic();
   }
 
@@ -1014,7 +1017,7 @@ public class GLLBaseLine extends AbstractParser {
     var reachabilityStartTime = System.nanoTime();
 
     // Load all cyclic nodes to X (in detail to the xS and xP partitions)
-    sppfComputeReachability();
+    sppfComputeReachability(null);
 
     var cycleBreakStartTime = System.nanoTime();
     System.out.println(
@@ -1080,7 +1083,7 @@ public class GLLBaseLine extends AbstractParser {
           System.out.print("\n  " + d);
 
       System.out.println("\nRecomputing cyclic nodes");
-      sppfComputeReachability();
+      sppfComputeReachability(null);
       printCyclic();
     }
   }
@@ -1166,7 +1169,7 @@ public class GLLBaseLine extends AbstractParser {
   @Override
   public void sppfBreakCyclesRelation() {
     Configuration c, cp;
-    sppfComputeReachability(); // computes sppfCyclic (set of cyclic SPPF nodes)
+    sppfComputeReachability(null); // computes sppfCyclic (set of cyclic SPPF nodes)
     loadXPartitions(); // Load X from computed cyclic nodes as partitions xP and xS
 
     Configuration c_0 = new Configuration(yP, yS, new HashSet<SPPFPN>(), new HashSet<SPPFPN>());

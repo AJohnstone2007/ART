@@ -3,6 +3,7 @@ package uk.ac.rhul.cs.csle.art.interpret;
 import uk.ac.rhul.cs.csle.art.cfg.AbstractParser;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGKind;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
+import uk.ac.rhul.cs.csle.art.util.Util;
 
 public class AttributeActionInterpreter extends AbstractInterpreter {
   private AbstractActions artActions = new ARTDefaultActions();
@@ -18,7 +19,7 @@ public class AttributeActionInterpreter extends AbstractInterpreter {
       // Silently absorb exceptions - uncomment the line below for debugging
       // System.out.println(e.getMessage() + "\nUnable to dynamically load user ARTActions - using default empty actions");
     }
-    System.out.println("Attached to " + artActions.getClass().getSimpleName() + " " + artActions.name());
+    Util.info("Attached to " + artActions.getClass().getSimpleName() + " " + artActions.name());
   }
 
   private int intFromTermSymbol(int term) {
