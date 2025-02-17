@@ -126,11 +126,12 @@ directiveElement ::=
   'include' file
 | 'whitespace'^^ '#'^ | 'whitespace'^^ whiteSpaceElements^ | 'whitespace'^^ '('^ whiteSpaceElements^ ')'^
 | 'paraterminal'^^ '#'^ | 'paraterminal'^^ paraterminalElements^
+| 'chooser'^^ '#'^ | 'chooser'^^ ID
 
 | 'lexer'^^ '#'^ | 'lexer'^^ ID
 | 'parser'^^ '#'^ | 'parser'^^ ID
 | 'support'^^ cfgNative cfgNative 
-| 'generate'^^ ID
+| 'generate'^^ ID | 'generate'^^ __int32 ID
 
 | 'start'^^ cfgNonterminal | 'start'^^ trRelation // Set parser start nonterminal or rewriter start relation
 | 'configuration'^^ trRelation configurationElements
@@ -159,7 +160,7 @@ directiveElement ::=
 | 'nop'^^
 
 cycleModes ::= cycleMode^ | cycleMode^ cycleModes^ 
-cycleMode  ::= 'preorder' | 'postorder' | 'lone' | 'sibling' | 'trace' | 'slow'
+cycleMode  ::= 'preorder' | 'postorder' | 'lone' | 'sibling' | 'trace' | 'slow'| 'check'
 
 file ::= &STRING_PLAIN_SQ
 

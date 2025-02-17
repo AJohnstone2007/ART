@@ -20,6 +20,68 @@ public abstract class AbstractParser {
   public int[] rightIndices;
   public boolean inLanguage;
 
+  public void parse() {
+    System.out.println("parse() not implemented for parser class " + this.getClass().getSimpleName());
+  }
+
+  public void chooseLongestMatch() {
+    System.out.println("chooseLongestMatch() not implemented for parser class " + this.getClass().getSimpleName());
+  }
+
+  public int derivationAsTerm() {
+    System.out.println("derivationAsTerm() not implemented for parser class " + this.getClass().getSimpleName());
+    return 0;
+  }
+
+  public int derivationAsInterpeterTerm() {
+    System.out.println("derivationAsInterpreterTerm() not implemented for parser class " + this.getClass().getSimpleName());
+    return 0;
+  }
+
+  public void gss2Dot() {
+    System.out.println("gss2Dot() not implemented for parser class " + this.getClass().getSimpleName());
+  }
+
+  public void gssPrint() {
+    System.out.println("gssPrint() not implemented for parser class " + this.getClass().getSimpleName());
+  }
+
+  public void derivation2Dot() {
+    System.out.println("derivation2Dot() not implemented for parser class " + this.getClass().getSimpleName());
+  }
+
+  public void sppf2Dot() {
+    System.out.println("sppf2Dot() not implemented for parser class " + this.getClass().getSimpleName());
+  }
+
+  public void sppfPrint() {
+    System.out.println("sppfPrint() not implemented for parser class " + this.getClass().getSimpleName());
+  }
+
+  public void sppfPrintCyclicNodes() {
+    System.out.println("sppfCyclicNodes() not implemented for parser class " + this.getClass().getSimpleName());
+  }
+
+  public void sppfBreakCycles(boolean trace, TraversalKind traversalKind, boolean lone, boolean sibling, boolean check) {
+    System.out.println("sppfBreakCycles() not implemented for parser class " + this.getClass().getSimpleName());
+  }
+
+  public void sppfBreakCyclesRelation() {
+    System.out.println("sppfBreakCyclesRelation() not implemented for parser class " + this.getClass().getSimpleName());
+  }
+
+  public void sppfPrintParaterminals() {
+    System.out.println("sppfPrintParaterminals() not implemented for parser class " + this.getClass().getSimpleName());
+  }
+
+  public void sppfPrintParasentences() {
+    System.out.println("sppfPrintParasentences() not implemented for parser class " + this.getClass().getSimpleName());
+  }
+
+  public void printLexicalisations() {
+    System.out.println("printLexicalisations() not implemented for parser class " + this.getClass().getSimpleName());
+  }
+
   public String lexeme(int l) {
     return inputString.substring(leftIndices[l], rightIndices[l]);
   }
@@ -155,64 +217,6 @@ public abstract class AbstractParser {
 
   protected boolean match(CFGNode gn) {
     return tokens[i] == gn.elm.ei;
-  }
-
-  public void parse() {
-    System.out.println("parse() not implemented for parser class " + this.getClass().getSimpleName());
-  }
-
-  public void chooseLongestMatch() {
-    System.out.println("chooseLongestMatch() not implemented for parser class " + this.getClass().getSimpleName());
-  }
-
-  public int derivationAsTerm() {
-    System.out.println("derivationAsTerm() not implemented for parser class " + this.getClass().getSimpleName());
-    return 0;
-  }
-
-  public int derivationAsInterpeterTerm() {
-    System.out.println("derivationAsInterpreterTerm() not implemented for parser class " + this.getClass().getSimpleName());
-    return 0;
-  }
-
-  public void gss2Dot() {
-    System.out.println("gss2Dot() not implemented for parser class " + this.getClass().getSimpleName());
-  }
-
-  public void gssPrint() {
-    System.out.println("gssPrint() not implemented for parser class " + this.getClass().getSimpleName());
-  }
-
-  public void sppf2Dot() {
-    System.out.println("sppf2Dot() not implemented for parser class " + this.getClass().getSimpleName());
-  }
-
-  public void sppfPrint() {
-    System.out.println("sppfPrint() not implemented for parser class " + this.getClass().getSimpleName());
-  }
-
-  public void sppfPrintCyclicNodes() {
-    System.out.println("sppfCyclicNodes() not implemented for parser class " + this.getClass().getSimpleName());
-  }
-
-  public void sppfBreakCycles(boolean trace, TraversalKind traversalKind, boolean lone, boolean sibling) {
-    System.out.println("sppfBreakCycles() not implemented for parser class " + this.getClass().getSimpleName());
-  }
-
-  public void sppfBreakCyclesRelation() {
-    System.out.println("sppfBreakCyclesRelation() not implemented for parser class " + this.getClass().getSimpleName());
-  }
-
-  public void sppfPrintParaterminals() {
-    System.out.println("sppfPrintParaterminals() not implemented for parser class " + this.getClass().getSimpleName());
-  }
-
-  public void sppfPrintParasentences() {
-    System.out.println("sppfPrintParasentences() not implemented for parser class " + this.getClass().getSimpleName());
-  }
-
-  public void printLexicalisations() {
-    System.out.println("printLexicalisations() not implemented for parser class " + this.getClass().getSimpleName());
   }
 
   public CFGNode getLHS(CFGNode gn) {
@@ -1121,5 +1125,4 @@ public abstract class AbstractParser {
     while (peekCh() != '\n' && peekCh() != '\0') // Quietly accept an input file with no \n at the end.
       getCh();
   }
-
 }

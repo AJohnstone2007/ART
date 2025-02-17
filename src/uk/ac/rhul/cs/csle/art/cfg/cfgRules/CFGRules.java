@@ -832,4 +832,63 @@ public class CFGRules {
   public static boolean isLHS(CFGNode gn) {
     return gn.elm != null && gn.elm.kind == CFGKind.N && gn.seq == null;
   }
+
+  public void generate(int max, boolean sentencesOnly) {
+    LinkedList<LinkedList<CFGElement>> sententialForms = new LinkedList<>();
+    LinkedList<CFGElement> sententialForm = new LinkedList<>();
+    sententialForm.add(startNonterminal);
+    sententialForms.addLast(sententialForm);
+    int leftmostNonterminalIndex;
+    int count = 1;
+
+    while (count <= max && sententialForms.size() > 0) {
+      sententialForm = sententialForms.removeFirst();
+
+      for (leftmostNonterminalIndex = 0; leftmostNonterminalIndex < sententialForm.size(); leftmostNonterminalIndex++)
+        if (sententialForm.get(leftmostNonterminalIndex).kind == CFGKind.N) break;
+
+      if (leftmostNonterminalIndex == sententialForm.size()) { // This is a sentence
+        printSententialForm(count++, sententialForm);
+        continue;
+      }
+
+      if (!sentencesOnly) printSententialForm(count++, sententialForm);
+
+      CFGElement expansionNonterminal = sententialForm.get(leftmostNonterminalIndex);
+
+      for (var altNode = elementToNodeMap.get(expansionNonterminal).alt; altNode != null; altNode = altNode.alt) {
+        LinkedList<CFGElement> newSententialForm = new LinkedList<>();
+
+        for (int i = 0; i < leftmostNonterminalIndex; i++)
+          newSententialForm.addLast(sententialForm.get(i));
+
+        for (var seqNode = altNode.seq; seqNode.elm.kind != CFGKind.END; seqNode = seqNode.seq)
+          switch (seqNode.elm.kind) {
+          case T, TI, C, B, N:
+            newSententialForm.add(seqNode.elm);
+            break;
+          case EPS:
+            break; // do nothing
+          default:
+            Util.error("illegal kind of grammar element encountered during generation: " + seqNode.elm.kind);
+            break;
+          }
+
+        for (int i = leftmostNonterminalIndex + 1; i < sententialForm.size(); i++)
+          newSententialForm.addLast(sententialForm.get(i));
+
+        sententialForms.addLast(newSententialForm);
+      }
+    }
+  }
+
+  private void printSententialForm(int i, LinkedList<CFGElement> sententialForm) {
+    System.out.print(i + ":");
+    for (var e : sententialForm)
+      if (e.kind == CFGKind.N)
+        System.out.print(" _" + e.str);
+      else
+        System.out.print(" " + e.str);
+    System.out.println();
+  }
 }
