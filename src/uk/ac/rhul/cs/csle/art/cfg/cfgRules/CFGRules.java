@@ -883,12 +883,19 @@ public class CFGRules {
   }
 
   private void printSententialForm(int i, LinkedList<CFGElement> sententialForm) {
-    System.out.print(i + ":");
+
+    System.out.print((isSentence(sententialForm) ? "\"" : " ") + i);
     for (var e : sententialForm)
       if (e.kind == CFGKind.N)
         System.out.print(" _" + e.str);
       else
         System.out.print(" " + e.str);
     System.out.println();
+  }
+
+  private boolean isSentence(LinkedList<CFGElement> sententialForm) {
+    for (var e : sententialForm)
+      if (e.kind == CFGKind.N) return false;
+    return true;
   }
 }

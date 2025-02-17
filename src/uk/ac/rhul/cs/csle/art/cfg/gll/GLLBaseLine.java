@@ -724,18 +724,17 @@ public class GLLBaseLine extends AbstractParser {
       Util.warning("Current parser does not have a current SPPF - skipping derivation visualisation");
       return;
     }
-    derivation2Dot(sppf, sppfRootNode, "derivation.dot", true); // full SPPF
+    derivation2Dot(sppf, sppfRootNode, "derivation.dot", false, false); // full SPPF
   }
 
-  public void derivation2Dot(Map<SPPFN, SPPFN> sppf, SPPFN rootNode, String filename, boolean showIndicies) {
-    this.showIndicies = showIndicies;
+  public void derivation2Dot(Map<SPPFN, SPPFN> sppf, SPPFN rootNode, String filename, boolean showNodeNumbers, boolean showIndices) {
 
     try {
       dotOut = new PrintStream(new File(filename));
       dotOut.println("digraph \"Derivation\" {\n"
           + "graph[ordering=out ranksep=0.1]\n node[fontname=Helvetica fontsize=9 shape=box height=0 width=0 margin=0.04 color=gray]\nedge[arrowsize=0.3 color=gray]");
       visitedSPPFNodes.clear();
-      derivationToDotRec(rootNode, 0);
+      derivationToDotRec(rootNode, 0, showNodeNumbers, showIndices);
       dotOut.println("}");
       dotOut.close();
     } catch (FileNotFoundException e) {
@@ -745,7 +744,7 @@ public class GLLBaseLine extends AbstractParser {
 
   int nextFreeNodeNumber = 0;
 
-  private void derivationToDotRec(SPPFN sppfn, int parent) {
+  private void derivationToDotRec(SPPFN sppfn, int parent, boolean showNodeNumbers, boolean showIndices) {
     if (visitedSPPFNodes.get(sppfn.number)) return;
     visitedSPPFNodes.set(sppfn.number);
 
@@ -753,8 +752,8 @@ public class GLLBaseLine extends AbstractParser {
 
     if (isSymbol(sppfn)) {
       nodeNumber = ++nextFreeNodeNumber;
-      dotOut.println(
-          "\"" + nodeNumber + "\"" + symbolNodeStyle + " [label=\"" + nodeNumber + " " + sppfn.gn.toString() + " " + sppfn.li + ", " + sppfn.ri + "\"]");
+      dotOut.println("\"" + nodeNumber + "\"" + symbolNodeStyle + " [label=\"" + (showNodeNumbers ? "" + nodeNumber : "") + " " + sppfn.gn.toString() + " "
+          + (showIndices ? sppfn.li + ", " + sppfn.ri : "") + "\"]");
 
       if (parent != 0) dotOut.println("\"" + parent + "\"" + "->" + "\"" + nodeNumber + "\"");
     }
@@ -762,8 +761,8 @@ public class GLLBaseLine extends AbstractParser {
     // Recurse to an unsuppressed packed node
     for (SPPFPN p : sppfn.packNS) {
       if (!p.suppressed) {
-        if (p.leftChild != null) derivationToDotRec(p.leftChild, nodeNumber);
-        derivationToDotRec(p.rightChild, nodeNumber);
+        if (p.leftChild != null) derivationToDotRec(p.leftChild, nodeNumber, showNodeNumbers, showIndices);
+        derivationToDotRec(p.rightChild, nodeNumber, showNodeNumbers, showIndices);
         break;
       }
     }
