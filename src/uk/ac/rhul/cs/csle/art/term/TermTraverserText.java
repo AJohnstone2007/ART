@@ -28,16 +28,6 @@ public class TermTraverserText extends TermTraverser {
         (inorder == null ? null : (Integer t) -> sb.append(inorder)),
         (postorder == null ? null : (Integer t) -> sb.append(postorder)));
   }
-
-
-  public void addActionInorderSubsequent(Integer symbolIndex, String inorderSubsequent) {
-//    System.out.println("Updating subsequent: " +symbolIndex + inorderSubsequent);
-    opsInorderSubsequent.put(symbolIndex, inorderSubsequent == null ? null:(Integer t) -> sb.append(inorderSubsequent));
-  }
-
-  public void addActionInorderSubsequent(String symbol, String inorderSubsequent) {
-    addActionInorderSubsequent(iTerms.findString(symbol), inorderSubsequent);
-  }
   //@formatter:on
 
   public void addActionBreak(String symbol, String preorder, String inorder, String postorder) {
@@ -115,13 +105,16 @@ public class TermTraverserText extends TermTraverser {
       int[] children = iTerms.termChildren(termIndex);
       int length = children.length;
       int lengthLessOne = length - 1;
-      if (!breakSet.contains(iTerms.termSymbolStringIndex(termIndex))) for (int i = 0; i < length; i++) {
-        traverse(children[i], depth + 1);
-        if (length > 1) {// No inorder output for singletons
-          // sb.append(i + ":");
-          if (i == 0)
-            perform(opsInorder, termIndex);
-          else if (i < lengthLessOne) perform(opsInorderSubsequent, termIndex);
+      if (!breakSet.contains(iTerms.termSymbolStringIndex(termIndex))) {
+        for (int childNumber = 0; childNumber < length; childNumber++) {
+
+          traverse(children[childNumber], depth + 1);
+          if (length > 1) {// No inorder output for singletons
+            // sb.append(i + ":");
+            if (childNumber == 0)
+              perform(opsInorder, termIndex);
+            else if (childNumber < lengthLessOne) perform(opsInorder, 0); // force default for inroders after the first one
+          }
         }
       }
     }

@@ -102,7 +102,6 @@ public class ITerms {
     // 1B. Load text traverser default action which appends the escaped version of the constructor
     rawTextTraverser.addAction(-1, (Integer t) -> rawTextTraverser.append(escapeMeta(termSymbolString(t)) + (termArity(t) == 0 ? "" : "(")),
         (Integer t) -> rawTextTraverser.append(", "), (Integer t) -> rawTextTraverser.append(termArity(t) == 0 ? "" : ")"));
-    rawTextTraverser.addActionInorderSubsequent(-1, ", "); // Special cases for text travers: maybe integrate?
 
     // 2. Create string map entries for variables
     firstVariableIndex = stringNextFreeIndex;

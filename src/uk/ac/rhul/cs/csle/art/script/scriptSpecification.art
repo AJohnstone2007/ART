@@ -151,6 +151,7 @@ directiveElement ::=
 
 | 'try'^^ file              
 | 'try'^^ file '='^ trTopTuple 
+ 
 | 'try'^^ trTopTuple  
 | 'try'^^ trTopTuple '='^ trTopTuple
 

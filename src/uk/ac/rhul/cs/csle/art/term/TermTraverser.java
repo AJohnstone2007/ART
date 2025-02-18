@@ -10,7 +10,6 @@ public class TermTraverser {
   protected final ITerms iTerms;
   protected final Map<Integer, Consumer<Integer>> opsPreorder;
   protected final Map<Integer, Consumer<Integer>> opsInorder;
-  protected final Map<Integer, Consumer<Integer>> opsInorderSubsequent;
   protected final Map<Integer, Consumer<Integer>> opsPostorder;
   protected final Set<Integer> breakSet;
 
@@ -18,7 +17,6 @@ public class TermTraverser {
     this.iTerms = iTerms;
     opsPreorder = new HashMap<>();
     opsInorder = new HashMap<>();
-    opsInorderSubsequent = new HashMap<>();
     opsPostorder = new HashMap<>();
     breakSet = new HashSet<>();
   }
@@ -61,7 +59,11 @@ public class TermTraverser {
  //@formatter:on
 
   public void perform(Map<Integer, Consumer<Integer>> map, int termIndex) { // Perform an action: use default (keyed on -1) if there is no action in the table
-    Consumer<Integer> action = map.get(iTerms.termSymbolStringIndex(termIndex));
+    Consumer<Integer> action;
+    if (termIndex == 0)
+      action = map.get(-1); // if we are passed a null term, then get default action: trick for __m
+    else
+      action = map.get(iTerms.termSymbolStringIndex(termIndex));
     // if (action == null) {
     // System.out.println("no action for " + iTerms.getTermSymbolString(termIndex));
     // } else {
