@@ -62,10 +62,10 @@ __string::= &STRING_SQ
 //!try "a := 6; b := 9; while a != b do if a > b then a := a - b; else b := b - a;"
 
 (* Plugin test *)
-//!try "plugin('init');"
+!try "plugin('init');"
 //!try "plugin('init'); plugin('type', 'B', 'A', 'D');"
 //!try "plugin('init'); type 'B', 'A', 'D';"
 //!try "plugin('init'); plugin('invert', 31);"
  
-!try "plugin('weird', 666); "
+//!try "plugin('weird', 666); "
  

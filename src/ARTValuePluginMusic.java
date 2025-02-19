@@ -14,7 +14,7 @@ import javax.sound.midi.Synthesizer;
 import uk.ac.rhul.cs.csle.art.term.AbstractValuePlugin;
 import uk.ac.rhul.cs.csle.art.util.Util;
 
-public class ARTValuePlugin extends AbstractValuePlugin {
+public class ARTValuePluginMusic extends AbstractValuePlugin {
   @Override
   public String description() {
     return "Adrian's example music plugin";
