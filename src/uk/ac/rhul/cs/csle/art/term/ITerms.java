@@ -66,7 +66,7 @@ public class ITerms {
 
   public static int variableCount = 20;
   public static int sequenceVariableCount = 10;
-  public AbstractPlugin plugin;
+  public AbstractValuePlugin plugin;
   private final TermTraverserText rawTextTraverser = new TermTraverserText(this); // This is intended for debugging - show the raw term
   public TermTraverserText plainTextTraverser; // Plain text pretty printer - loaded by user
   public TermTraverserText latexTraverser; // LaTeX pretty printer - loaded by user
@@ -134,7 +134,7 @@ public class ITerms {
     plugin = new ARTDefaultPlugin();
     // Try and find a plugin for __user() calls
     try {
-      plugin = (AbstractPlugin) getClass().getClassLoader().loadClass("ARTValuePlugin").getDeclaredConstructor().newInstance();
+      plugin = (AbstractValuePlugin) getClass().getClassLoader().loadClass("ARTValuePlugin").getDeclaredConstructor().newInstance();
     } catch (Exception e) {
       // Silently absorb exception - when the default is used
     }

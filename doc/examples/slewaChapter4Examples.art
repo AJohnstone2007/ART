@@ -1,0 +1,124 @@
+
+// First example
+S ::= 'a' R T
+R ::= 'r' 
+T ::= 't'
+!generate 10 sententialforms
+
+
+(*
+// Adding a rule
+S ::= 'a' R T
+R ::= 'r' 
+R ::= 'r' 'r'
+T ::= 't'
+!generate 10 sententialforms
+*)
+
+(*
+// Using the | bar to combine rules
+S ::= 'a' R T
+R ::= 'r' | 'r' 'r' 
+T ::= 't'
+!generate 10 sententialforms
+*)
+
+(*
+// Illegal empty rules style generates syntax error 
+S ::= 'a' R T
+R ::= 
+T ::= 't'
+!generate 10 sententialforms
+*)
+
+(*
+// Correct form for empty rules 
+S ::= 'a' R T
+R ::= #
+T ::= 't'
+!generate 10 sententialforms
+*)
+
+(*
+// Illegal use of #
+
+R ::= 'r' # A
+*)
+
+(*
+// Correct form for empty rules 
+S ::= 'a' R T
+R ::= #
+T ::= 't'
+!generate 10 sententialforms
+!try "at"
+!print outcome
+!show derivation
+*)
+
+(*
+// Using the | bar with an empty rule
+S ::= 'a' R T
+R ::= 'r' | #
+T ::= 't'
+!generate 10 sententialforms
+*)
+
+(*
+// Right recursion
+S ::= 'a' R T
+R ::= 'r' | 'r' R
+T ::= 't'
+!generate 10 sententialforms
+!generate 10 sentences
+*)
+
+(*
+// Left recursion
+S ::= 'a' R T
+R ::= 'r' | R 'r'
+T ::= 't'
+!generate 10 sententialforms
+!generate 10 sentences
+*)
+
+(*
+// Right recursion with empty rule
+S ::= 'a' R T
+R ::= # | 'r' R
+T ::= 't'
+!generate 10 sentences
+*)
+
+(*
+// Ambiguous CFG
+S ::= 'a' R | A 't'
+A ::= 'a' 'r'
+R ::= 'r' 't'
+!generate 10 sententialforms
+!try "art"
+!print derivation
+*)
+
+(*
+// Cyclic CFG
+S ::= 'a' R T
+R ::= 'r'| R
+T ::= 't'
+!generate 10 sententialforms
+*)
+
+(*
+// Thank you letter generator
+letter ::= salutation person ',' 'thank' 'you' 'for' 'my' gift '.' 'It' 'is' reaction '.' 'I' 'will' action 'it' '.'
+gift ::= occasion 'present'
+occasion ::= 'birthday' | 'house' 'warming'
+salutation ::= 'Dearest' | 'Hey'
+person ::= 'you' | 'Madam' | 'Sir'
+reaction ::= 'incredible' | 'in' 'the' 'bin'
+action ::= 'love' | 'hide' | 'try' 'to' 'forget' 
+
+!generate 1000 sententialforms
+!generate 1000 sentences
+*)
+

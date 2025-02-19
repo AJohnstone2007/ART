@@ -1,7 +1,7 @@
-import uk.ac.rhul.cs.csle.art.term.AbstractPlugin;
+import uk.ac.rhul.cs.csle.art.term.AbstractValuePlugin;
 
 // Rename this class to ARTValuePlugin if you want to develop plugins within the Eclipse workspace; but change it back again before distribution
-public class ARTValuePluginNoFX extends AbstractPlugin {
+public class ARTValuePluginFirstExample extends AbstractValuePlugin {
 
   @Override
   public String description() {

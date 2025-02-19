@@ -1,7 +1,6 @@
-(* Reduction.art - project starter *)
+(* Reduction.art - project starter for image processing *)
 
 !configuration -> _sig:__map
-!trace 1
 
 (* Term rewrite rules *)
 -assign  _n |> __int32(_)    --- assign(_X,_n),_sig -> __done,__put(_sig,_X,_n)
@@ -35,13 +34,18 @@
 -plugin --- plugin(_O, _X, _Y),_sig -> __plugin(_O, _X, _Y),_sig
 -plugin --- plugin(_O, _X, _Y, _Z),_sig -> __plugin(_O, _X, _Y, _Z),_sig
 
+-load   --- load(_X),_sig -> __plugin("load", _X),_sig
+-invert --- invert,_sig -> __plugin("invert"),_sig
+
 (*  CFG rules *)
 seq ::= statement^^ | statement seq 
-statement ::= assign^^ | while^^ | if^^ | plugin^^ ';'^
+statement ::= assign^^ | while^^ | if^^ | plugin^^ ';'^ | load^^ ';'^ | invert^^ ';'^
 assign ::= &ID ':='^ expression ';'^
 while ::= 'while'^ expression 'do'^ statement
 if ::= 'if'^ expression 'then'^ statement | 'if'^ expression 'then'^ statement 'else'^ statement
 plugin ::= 'plugin'^ '('^ expressions^ ')'^  
+load ::= 'load'^ __string
+invert ::= 'invert'^
 expressions ::= expression | expression ','^ expressions^
 expression ::= rels^^
 rels ::= adds^^ | gt^^ | ne^^
@@ -56,10 +60,16 @@ deref   ::= &ID
 __string::= &STRING_SQ
 
 (* GCD examples *)
-!try seq(assign(a,6), seq(assign(b,9), while(ne(deref(a), deref(b)), if(gt(deref(a), deref(b)), assign(a, sub(deref(a), deref(b))), assign(b, sub(deref(b), deref(a))))))), __map
+//!try seq(assign(a,6), seq(assign(b,9), while(ne(deref(a), deref(b)), if(gt(deref(a), deref(b)), assign(a, sub(deref(a), deref(b))), assign(b, sub(deref(b), deref(a))))))), __map
 //!try "a := 6; b := 9; while a != b do if a > b then a := a - b; else b := b - a;"
 
-(* Plugin tests *)
-!try "plugin('init'); plugin('show', 1,2,3);"
-//!try "plugin('invert', 3);"
-//!try "plugin('init'); a := plugin('invert', 3) - plugin('invert',1);" 
+(* Plugin test *)
+//!try "plugin('init');"
+//!try "plugin('init'); plugin('load', 'GERTank.PNG');"
+//!try "plugin('init'); plugin('load', 'GERTank.PNG'); plugin('invert');"
+//!try "plugin('init'); plugin('load', 'mountain.jpg'); plugin('invert');"
+ 
+!try "plugin('init'); load 'mountain.jpg'; invert;"
+ 
+//!try "plugin('weird', 666); "
+ 

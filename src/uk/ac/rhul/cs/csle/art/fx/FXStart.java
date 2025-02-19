@@ -6,7 +6,6 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 
 import javafx.application.Application;
-import javafx.application.Platform;
 import javafx.geometry.Rectangle2D;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
@@ -20,9 +19,10 @@ public class FXStart extends Application {
   public void start(Stage primaryStage) {
 
     if (ART.clargs[0].equals("fx")) {
+      var graphicsWindow = new GraphicsWindow(new Stage(), 700, 0, 800, 400, "ART visualiser", new MenuBuilderARTGraphics(), 500.0);
       new ScriptTermInterpreter().interpretARTScript(ART.scriptString(Arrays.copyOfRange(ART.clargs, 1, ART.clargs.length)));
-      Platform.exit();
-      System.exit(0);
+      // Platform.exit();
+      // System.exit(0);
     }
 
     else if (ART.clargs[0].equals("ide")) {

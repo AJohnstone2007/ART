@@ -1,6 +1,6 @@
 package uk.ac.rhul.cs.csle.art.term;
 
-public class ARTDefaultPlugin extends AbstractPlugin {
+public class ARTDefaultPlugin extends AbstractValuePlugin {
 
   @Override
   public String description() {

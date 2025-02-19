@@ -1,47 +1,46 @@
-(* ART front end abbreviations and their internal forms: demonstrate the cooked and the raw *)
-!print "A term with no abbreviations"
+!print "** The term a(b,c) with no abbreviations"
 !print term a(b,c) 
-
-!print "** __bool"
+!printraw term a(b,c) 
+!print "** __bool true"
 !print term true
 !printraw term true
-
+!print "** __bool false"
 !print term false
 !printraw term false
-
-!print "** __char"
+!print "** __char `a"
 !print term `a
 !printraw term `a
-
-!print "** __intAP"
+!print "** __intAP 1234"
 !print term £1234
 !printraw term £1234
-
-!print "** __int32"
+!print "** __int32 1234"
 !print term 1234
 !printraw term 1234
-
-!print "** __realAP"
+!print "** __realAP 1234.0"
 !print term £1234.0
 !printraw term £1234.0
-
-!print "** __real64"
+!print "** __real64 1234.0"
 !print term 1234.0
 !printraw term 1234.0
-
-!print "** __array of size 3"
+!print "** __array of size 3 a,b,c"
 !print term [3 | a,b,c ]
 !printraw term [ 3 | a,b,c]
-
-!print "** __list"
+!print "** __list a,b,c"
 !print term [ a,b,c ]
 !printraw term [ a,b,c]
-
-!print "** __set"
+!print "** empty list"
+!print term [ ]
+!printraw term [ ]
+!print "** __set a,b,c"
 !print term { a,b,c }
 !printraw term { a,b,c }
-
-!print "** __map"
-!print term { a->p, b->q, c->r }
-!printraw term { a->p, b->q, c->r }
+!print "** empty set"
+!print term { }
+!printraw term { }
+!print "** __map a=p, b=q, c=r"
+!print term { a=p, b=q, c=r }
+!printraw term { a=p, b=q, c=r }
+!print "** empty map"
+!print term {=}
+!printraw term {=}
 

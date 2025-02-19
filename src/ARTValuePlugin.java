@@ -1,8 +1,45 @@
+/*
+ * Example music plugin
+ *
+ * Ideas for music operations:
+ *
+ * see https://docs.oracle.com/javase/tutorial/sound/overview-MIDI.html and https://docs.oracle.com/javase/tutorial/sound/accessing-MIDI.html and follow links
+ *
+*/
+
 import javax.sound.midi.MidiChannel;
 import javax.sound.midi.MidiSystem;
 import javax.sound.midi.Synthesizer;
 
-public class MiniMusicPlayer {
+import uk.ac.rhul.cs.csle.art.term.AbstractValuePlugin;
+import uk.ac.rhul.cs.csle.art.util.Util;
+
+public class ARTValuePlugin extends AbstractValuePlugin {
+  @Override
+  public String description() {
+    return "Adrian's example music plugin";
+  }
+
+  @Override
+  public Object plugin(Object... args) {
+    switch ((String) args[0]) {
+    case "init":
+      initialise();
+      break;
+
+    case "play":
+      for (int i = 1; i < args.length; i++)
+        playChord((String) args[i], Chord.MINOR7);
+      break;
+
+    default:
+      Util.fatal("Unknown plugin operation: " + args[0]);
+    }
+
+    return __done;
+  }
+
+  /* ADrian's mini music player support below this line */
   private Synthesizer synthesizer;
   private MidiChannel[] channels;
   private int defaultOctave = 5;
@@ -14,15 +51,14 @@ public class MiniMusicPlayer {
   private int beatSoundDelay = (int) (1000.0 * beatRatio / bps);
   private int beatSilenceDelay = (int) (1000.0 * (1.0 - beatRatio) / bps);
 
-  MiniMusicPlayer() {
+  void initialise() {
     try {
       System.out.print(MidiSystem.getMidiDeviceInfo());
       synthesizer = MidiSystem.getSynthesizer();
       synthesizer.open();
       channels = synthesizer.getChannels();
     } catch (Exception e) {
-      System.err.println("miniMusicPlayer exception: " + e.getMessage());
-      System.exit(1);
+      Util.fatal("Java MIDI exception: " + e.getMessage());
     }
 
     setBeatRatio(0.9);
@@ -67,7 +103,7 @@ public class MiniMusicPlayer {
 
   int noteNameToMidiKey(String n, int octave) {
  // @formatter:off
- int key = octave * 12 + 
+ int key = octave * 12 +
         ( n.equals("C") ? 0
         : n.equals("C#") ? 1
         : n.equals("Db") ? 1
@@ -81,12 +117,12 @@ public class MiniMusicPlayer {
         : n.equals("G") ? 7
         : n.equals("G#") ? 8
         : n.equals("Ab") ? 8
-        : n.equals("A") ? 9            
-        : n.equals("A#") ? 10 
-        : n.equals("Bb") ? 10 
-        : n.equals("B") ? 11 
+        : n.equals("A") ? 9
+        : n.equals("A#") ? 10
+        : n.equals("Bb") ? 10
+        : n.equals("B") ? 11
         : -1);
- // @formatter:on   
+ // @formatter:on
 
     if (key < 0 || key > 127) {
       System.err.println("miniMusicPlayer exception: attempt to access out of range MIDI key " + n + octave);
@@ -257,35 +293,12 @@ public class MiniMusicPlayer {
     synthesizer.close();
   }
 
-  public static void main(String[] args) {
-    System.err.println("miniMusicPlayer test routine");
-    MiniMusicPlayer mp = new MiniMusicPlayer();
-
-    mp.playScale("C", Scale.CHROMATIC);
-    mp.rest(2);
-    String note = "C";
-    int octave = 6;
-    mp.play(note, octave);
-    mp.rest(2);
-    mp.playScale("C", Scale.MAJOR);
-    mp.rest(2);
-    mp.playScale("C", Scale.MINOR_NATURAL);
-    mp.rest(2);
-    mp.playScale("C", Scale.MINOR_HARMONIC);
-    mp.rest(2);
-    mp.playScale("C", Scale.MINOR_MELODIC_ASCENDING);
-    mp.playScale("C", Scale.MINOR_MELODIC_DESCENDING);
-    mp.rest(2);
-    mp.playChord("C", Chord.MAJOR);
-    mp.rest(2);
-    mp.playChord("C", Chord.MINOR);
-    mp.rest(2);
-    mp.tune();
-    mp.rest(2);
-    mp.tuneChordMajor();
-    mp.rest(2);
-    mp.tuneChordMinor();
-    mp.rest(2);
-    mp.close();
+  public enum Scale {
+    CHROMATIC, MAJOR, MINOR_NATURAL, MINOR_HARMONIC, MINOR_MELODIC_ASCENDING, MINOR_MELODIC_DESCENDING
   }
+
+  public enum Chord {
+    NONE, MAJOR, MINOR, MAJOR7, MINOR7
+  }
+
 }
