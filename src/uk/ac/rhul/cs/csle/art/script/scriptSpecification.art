@@ -206,3 +206,11 @@ STRING_DOLLAR ::= &STRING_DOLLAR^^
 STRING_SHRIEK_SHRIEK ::= &STRING_SHRIEK_SHRIEK^^
 STRING_PLAIN_SQ ::= &STRING_PLAIN_SQ^^
 CHAR_BQ ::= &CHAR_BQ^^
+
+!try "
+require "general";
+structure General:GENERAL = General
+;
+"
+!print outcome
+!print cyclicNodes
