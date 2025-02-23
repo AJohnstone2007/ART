@@ -21,6 +21,7 @@ import uk.ac.rhul.cs.csle.art.cfg.lexer.LexerSingletonLongestMatch;
 import uk.ac.rhul.cs.csle.art.cfg.rdsob.RDSOBExplicitStack;
 import uk.ac.rhul.cs.csle.art.cfg.rdsob.RDSOBFunction;
 import uk.ac.rhul.cs.csle.art.cfg.rdsob.RDSOBGenerator;
+import uk.ac.rhul.cs.csle.art.cfg.rdsob.RDSOBV4Generator;
 import uk.ac.rhul.cs.csle.art.choose.ChooseRules;
 import uk.ac.rhul.cs.csle.art.interpret.ActionsGenerator;
 import uk.ac.rhul.cs.csle.art.term.ITerms;
@@ -243,6 +244,9 @@ public class ScriptTermInterpreter {
       case "rdsob":
         new RDSOBGenerator(currentCFGRules, "RDSOB");
         break;
+      case "rdsobv4":
+        new RDSOBV4Generator(currentCFGRules);
+        break;
       case "actions":
         currentCFGRules.normalise();
         if (iTerms.termArity(iTerms.subterm(term, 0)) == 1) new ActionsGenerator(currentCFGRules, currentCFGRules.filePrelude, currentCFGRules.classPrelude);
@@ -259,7 +263,7 @@ public class ScriptTermInterpreter {
 
         default:
           Util.fatal("Unexpected !generate argument " + iTerms.toString(iTerms.subterm(term, 0, 0))
-              + "\nmust be one of (case insensitive)\nrdsob\nactions\n<count> sentences\n<count< sententialforms");
+              + "\nmust be one of (case insensitive)\nrdsob\nrdsobv4\nactions\n<count> sentences\n<count< sententialforms");
         }
       }
         break;

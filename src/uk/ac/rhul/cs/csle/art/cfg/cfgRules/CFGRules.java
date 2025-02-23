@@ -694,6 +694,7 @@ public class CFGRules {
           sb.append("}");
         }
       }
+      if (gn.slotTerm != 0) sb.append(" Action: " + gn.toStringActions());
       sb.append("\n");
     }
 
@@ -830,6 +831,7 @@ public class CFGRules {
   /** Static methods *********************************************************/
 
   public static boolean isLHS(CFGNode gn) {
+    if (gn == null) return false;
     return gn.elm != null && gn.elm.kind == CFGKind.N && gn.seq == null;
   }
 

@@ -173,4 +173,22 @@ public class CFGNode {
     toStringAsSequenceRec(sb, this, slotDenotation, this);
     return sb.toString();
   }
+
+  public String toStringActions() {
+    StringBuilder sb = new StringBuilder();
+    toStringActionsRec(sb, slotTerm);
+    return sb.toString();
+  }
+
+  private void toStringActionsRec(StringBuilder sb, int slotTerm) {
+    // System.out.println(iTerms.termSymbolString(slotTerm));
+
+    if (ScriptTermInterpreter.iTerms.hasSymbol(slotTerm, "cfgNative")) {
+      sb.append(ScriptTermInterpreter.iTerms.toString(ScriptTermInterpreter.iTerms.subterm(slotTerm, 0)));
+      return;
+    }
+    for (int i = 0; i < ScriptTermInterpreter.iTerms.termArity(slotTerm); i++)
+      toStringActionsRec(sb, ScriptTermInterpreter.iTerms.termChildren(slotTerm)[i]);
+  }
+
 }
