@@ -31,14 +31,14 @@ boolean parse_X() {
   /* epsilon */  return true; 
 }
 
- class Attribute_S { int v; }
+ class Attribute_S { }
 
  void semantics_S(Attribute_S S) {
  switch(oracle[co++]) {
  case 1: {
- Initial action 
+
  match("b");
- Found b 
+
  break; }
 
  case 2: {
@@ -50,13 +50,13 @@ boolean parse_X() {
  semantics_X(X1);
 
  match("@");
-
+ System.out.println("Final x count: " + X1.xCount); 
  break; }
 
  }
  }
 
- class Attribute_X { }
+ class Attribute_X { int xCount; }
 
  void semantics_X(Attribute_X X) {
  switch(oracle[co++]) {
@@ -64,14 +64,14 @@ boolean parse_X() {
  Attribute_X X1 = new Attribute_X();
 
  match("x");
-
+ System.out.println("Found an x"); 
  // Instance 1
  semantics_X(X1);
-
+ X.xCount = X1.xCount + 1; 
  break; }
 
  case 2: {
-
+ X.xCount = 0; 
  /* epsilon */
 
  break; }
@@ -89,33 +89,6 @@ void parse(String filename) throws FileNotFoundException {
   System.out.print("Accepted\n");
   System.out.print("Oracle:"); for (int i = 0; i < co; i++) System.out.printf(" %d", oracle[i]); System.out.printf("\n");
   System.out.print("\nSemantics phase\n"); cc = 0; co = 0; builtIn_WHITESPACE(); Attribute_S S = new Attribute_S(); semantics_S(S);
-  System.out.print("\nTree construction phase\n"); cc = 0; co = 0; builtIn_WHITESPACE();
-  TreeNode dt = new TreeNode("S", tree_S(), null, TreeKind.NONTERMINAL, GIFTKind.NONE);
-  dt.dot("dt.dot");  System.out.print("\nDerivation term\n"); dt.printTerm(0);
-  System.out.print("\n\nDerivation tree\n"); dt.printTree(0);
-  TreeNode cloneRoot = dt.clone(null, null);
-    cloneRoot.dot("clone.dot");
-
-    // System.out.print("\nCloned derivation tree\n");
-    // cloneRoot.printTree(0);
-    TreeNode rdtEpsilon = dt.evaluateTIF(null, null, true);
-    rdtEpsilon.dot("rdtEpsilon.dot");
-
-    //System.out.print("\nRDTEpsilon fold tree\n");
-    //rdtEpsilon.printTree(0);
-    rdtEpsilon.foldunderEpsilon();
-    rdtEpsilon.dot("rdtEpsilonFold.dot");
-
-    //System.out.print("\nAnnotated RDTEpsilon tree\n");
-    //rdtEpsilon.printTree(0);
-    rdt = rdtEpsilon.evaluateTIF(null, null, true);
-    rdt.dot("rdt.dot");
-
-    System.out.print("\nRewritten Derivation term\n"); rdt.printTerm(0);
-    System.out.print("\n\nRewritten Derivation Tree\n");
-    rdt.printTree(0);
-    postParse(rdt);
-
 }
 
 public static void main(String[] args) throws FileNotFoundException{

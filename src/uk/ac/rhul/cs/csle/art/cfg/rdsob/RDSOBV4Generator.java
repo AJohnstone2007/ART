@@ -165,35 +165,35 @@ public class RDSOBV4Generator {
         "  System.out.print(\"Accepted\\n\");\n" +
         "  System.out.print(\"Oracle:\"); for (int i = 0; i < co; i++) System.out.printf(\" %%d\", oracle[i]); System.out.printf(\"\\n\");\n" +
         "  System.out.print(\"\\nSemantics phase\\n\"); cc = 0; co = 0; builtIn_WHITESPACE(); Attribute_%s %s = new Attribute_%s(); semantics_%s(%s);\n" +
-        "  System.out.print(\"\\nTree construction phase\\n\"); cc = 0; co = 0; builtIn_WHITESPACE();\n" +
-        "  TreeNode dt = new TreeNode(\"%s\", tree_%s(), null, TreeKind.NONTERMINAL, GIFTKind.NONE);\n" +
-        "  dt.dot(\"dt.dot\");" +
-        "  System.out.print(\"\\nDerivation term\\n\"); dt.printTerm(0);\n" +
-        "  System.out.print(\"\\n\\nDerivation tree\\n\"); dt.printTree(0);\n" +
-        "  TreeNode cloneRoot = dt.clone(null, null);\n" +
-        "    cloneRoot.dot(\"clone.dot\");\n" +
-        "\n" +
-        "    // System.out.print(\"\\nCloned derivation tree\\n\");\n" +
-        "    // cloneRoot.printTree(0);\n" +
-        "    TreeNode rdtEpsilon = dt.evaluateTIF(null, null, true);\n" +
-        "    rdtEpsilon.dot(\"rdtEpsilon.dot\");\n" +
-        "\n" +
-        "    //System.out.print(\"\\nRDTEpsilon fold tree\\n\");\n" +
-        "    //rdtEpsilon.printTree(0);\n" +
-        "    rdtEpsilon.foldunderEpsilon();\n" +
-        "    rdtEpsilon.dot(\"rdtEpsilonFold.dot\");\n" +
-        "\n" +
-        "    //System.out.print(\"\\nAnnotated RDTEpsilon tree\\n\");\n" +
-        "    //rdtEpsilon.printTree(0);\n" +
-        "    rdt = rdtEpsilon.evaluateTIF(null, null, true);\n" +
-        "    rdt.dot(\"rdt.dot\");\n" +
-        "\n" +
-        "    System.out.print(\"\\nRewritten Derivation term\\n\"); rdt.printTerm(0);\n" +
-        "    System.out.print(\"\\n\\nRewritten Derivation Tree\\n\");\n" +
-        "    rdt.printTree(0);\n" +
-        "    postParse(rdt);\n" +
-        "\n" +
-        "" +
+//        "  System.out.print(\"\\nTree construction phase\\n\"); cc = 0; co = 0; builtIn_WHITESPACE();\n" +
+//        "  TreeNode dt = new TreeNode(\"%s\", tree_%s(), null, TreeKind.NONTERMINAL, GIFTKind.NONE);\n" +
+//        "  dt.dot(\"dt.dot\");" +
+//        "  System.out.print(\"\\nDerivation term\\n\"); dt.printTerm(0);\n" +
+//        "  System.out.print(\"\\n\\nDerivation tree\\n\"); dt.printTree(0);\n" +
+//        "  TreeNode cloneRoot = dt.clone(null, null);\n" +
+//        "    cloneRoot.dot(\"clone.dot\");\n" +
+//        "\n" +
+//        "    // System.out.print(\"\\nCloned derivation tree\\n\");\n" +
+//        "    // cloneRoot.printTree(0);\n" +
+//        "    TreeNode rdtEpsilon = dt.evaluateTIF(null, null, true);\n" +
+//        "    rdtEpsilon.dot(\"rdtEpsilon.dot\");\n" +
+//        "\n" +
+//        "    //System.out.print(\"\\nRDTEpsilon fold tree\\n\");\n" +
+//        "    //rdtEpsilon.printTree(0);\n" +
+//        "    rdtEpsilon.foldunderEpsilon();\n" +
+//        "    rdtEpsilon.dot(\"rdtEpsilonFold.dot\");\n" +
+//        "\n" +
+//        "    //System.out.print(\"\\nAnnotated RDTEpsilon tree\\n\");\n" +
+//        "    //rdtEpsilon.printTree(0);\n" +
+//        "    rdt = rdtEpsilon.evaluateTIF(null, null, true);\n" +
+//        "    rdt.dot(\"rdt.dot\");\n" +
+//        "\n" +
+//        "    System.out.print(\"\\nRewritten Derivation term\\n\"); rdt.printTerm(0);\n" +
+//        "    System.out.print(\"\\n\\nRewritten Derivation Tree\\n\");\n" +
+//        "    rdt.printTree(0);\n" +
+//        "    postParse(rdt);\n" +
+//        "\n" +
+//        "" +
         "}\n" +
         "\n" +
         "public static void main(String[] args) throws FileNotFoundException{\n" +

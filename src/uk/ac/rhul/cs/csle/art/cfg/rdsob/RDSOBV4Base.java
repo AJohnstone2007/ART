@@ -223,8 +223,7 @@ public class RDSOBV4Base {
   }
 
   protected boolean match(String s) {
-    /* DEBUG System.out.printf("At %d '%c' match %s\n", cc, input.charAt(cc), s); */
-
+    System.out.printf("At %d '%c' match %s\n", cc, input.charAt(cc), s);
     /* DEBUG System.out.printf("cc=%d s = '%s' length = %d\n", cc, s, s.length()); */
 
     if (input.regionMatches(cc, s, 0, s.length())) {
