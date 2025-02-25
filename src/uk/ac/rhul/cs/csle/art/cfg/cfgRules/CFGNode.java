@@ -181,8 +181,7 @@ public class CFGNode {
   }
 
   private void toStringActionsRec(StringBuilder sb, int slotTerm) {
-    // System.out.println(iTerms.termSymbolString(slotTerm));
-
+    if (slotTerm == 0) return;
     if (ScriptTermInterpreter.iTerms.hasSymbol(slotTerm, "cfgNative")) {
       sb.append(ScriptTermInterpreter.iTerms.toString(ScriptTermInterpreter.iTerms.subterm(slotTerm, 0)));
       return;

@@ -191,6 +191,10 @@ public class RDSOBV4Base {
     return input.substring(ts, te);
   }
 
+  protected String lexeme() {
+    return input.substring(ts, te);
+  }
+
   protected String labelPostString(TreeKind kind) {
     switch (kind) {
     case EPSILON:
@@ -223,16 +227,16 @@ public class RDSOBV4Base {
   }
 
   protected boolean match(String s) {
-    System.out.printf("At %d '%c' match %s\n", cc, input.charAt(cc), s);
-    /* DEBUG System.out.printf("cc=%d s = '%s' length = %d\n", cc, s, s.length()); */
+    // System.out.printf("At %d '%c' match %s", cc, input.charAt(cc), s);
 
     if (input.regionMatches(cc, s, 0, s.length())) {
       cc += s.length();
-      /* DEBUG System.out.printf("successful match\n"); */
+      System.out.printf(" accept\n");
       builtIn_WHITESPACE();
       return true;
     }
 
+    System.out.printf(" reject\n");
     return false;
   }
 

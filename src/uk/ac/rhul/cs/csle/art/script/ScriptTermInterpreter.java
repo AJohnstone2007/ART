@@ -21,7 +21,7 @@ import uk.ac.rhul.cs.csle.art.cfg.lexer.LexerSingletonLongestMatch;
 import uk.ac.rhul.cs.csle.art.cfg.rdsob.RDSOBExplicitStack;
 import uk.ac.rhul.cs.csle.art.cfg.rdsob.RDSOBFunction;
 import uk.ac.rhul.cs.csle.art.cfg.rdsob.RDSOBGenerator;
-import uk.ac.rhul.cs.csle.art.cfg.rdsob.RDSOBV4Generator;
+import uk.ac.rhul.cs.csle.art.cfg.rdsob.RDSOBOracleGenerator;
 import uk.ac.rhul.cs.csle.art.choose.ChooseRules;
 import uk.ac.rhul.cs.csle.art.interpret.ActionsGenerator;
 import uk.ac.rhul.cs.csle.art.term.ITerms;
@@ -244,8 +244,9 @@ public class ScriptTermInterpreter {
       case "rdsob":
         new RDSOBGenerator(currentCFGRules, "RDSOB");
         break;
-      case "rdsobv4":
-        new RDSOBV4Generator(currentCFGRules);
+      case "rdsoboracle":
+        currentCFGRules.normalise();
+        new RDSOBOracleGenerator(currentCFGRules);
         break;
       case "actions":
         currentCFGRules.normalise();
@@ -514,6 +515,7 @@ public class ScriptTermInterpreter {
       break;
 
     case "derivation":
+      iTerms.toDot(currentDerivationTerm, "derivation.dot");
       currentParser.derivation2Dot();
       break;
 

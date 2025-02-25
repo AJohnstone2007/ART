@@ -137,8 +137,7 @@ public class TRRules {
     for (int i = 0; i < bindings.length; i++) {
       if (bindings[i] > 0) {
         if (seen) sb.append(", ");
-        sb.append(
-            iTerms.plainTextTraverser.toString(iTerms.findTerm("_" + i), variableMap) + "=" + iTerms.plainTextTraverser.toString(bindings[i], variableMap));
+        sb.append(iTerms.toRawString(iTerms.findTerm("_" + i), variableMap) + "=" + iTerms.toRawString(bindings[i], variableMap));
         seen = true;
       }
     }

@@ -27,7 +27,8 @@ public class Rewriter {
         + iTerms.toString(relationTerm, tr.variableMap) + "\n");
     if (!cycleCheck.containsKey(relationTerm)) cycleCheck.put(relationTerm, new HashSet<Integer>());
     Set<Integer> cycleSet = cycleCheck.get(relationTerm);
-    // if (cycleSet.contains(configuration)) throw new ARTExceptionFatal("cycle detected " +iTerms.toString(configuration) +iTerms.toString(relationTerm));
+    // if (cycleSet.contains(configuration)) throw new ARTExceptionFatal("cycle detected " +iTerms.toString(configuration)
+    // +iTerms.toString(relationTerm));
     cycleSet.add(term);
 
     if (tr.isTerminatingConfiguration(term, relationTerm)) {

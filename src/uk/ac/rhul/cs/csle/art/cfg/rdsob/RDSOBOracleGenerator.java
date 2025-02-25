@@ -11,12 +11,25 @@ import uk.ac.rhul.cs.csle.art.script.ScriptTermInterpreter;
 import uk.ac.rhul.cs.csle.art.term.ITerms;
 import uk.ac.rhul.cs.csle.art.util.Util;
 
-public class RDSOBV4Generator {
+public class RDSOBOracleGenerator {
   ITerms iTerms;
   PrintWriter text = null;
 
-  public RDSOBV4Generator(CFGRules cfgRules) {
-    String filename = "ARTGeneratedRDSOB";
+  private void printAllInitsRec(CFGNode cfgNode) {
+    if (cfgNode == null || cfgNode.elm.kind == CFGKind.END) return;
+    if (cfgNode.elm.kind == CFGKind.N)
+      text.println("  Attributes_" + cfgNode.elm.str + " " + cfgNode.elm.str + cfgNode.instanceNumber + " = new Attributes_" + cfgNode.elm.str + "(); ");
+    printAllInitsRec(cfgNode.seq);
+    printAllInitsRec(cfgNode.alt);
+  }
+
+  private void printActions(CFGNode node) {
+    String actions = node.toStringActions();
+    if (!actions.equals("")) text.println("   " + node.toStringActions()); // Print initial action
+  }
+
+  public RDSOBOracleGenerator(CFGRules cfgRules) {
+    String filename = "ARTGeneratedRDSOBOracle";
     iTerms = ScriptTermInterpreter.iTerms;
     String timeStamp = Util.timestamp();
     System.out.println("Writing new " + filename + ": " + timeStamp);
@@ -40,14 +53,18 @@ public class RDSOBV4Generator {
           text.printf("\n  /* Nonterminal %s, alternate %d */\n  cc = rc; co = ro; oracleSet(%d);", e.str, pCount, pCount);
 
           int braceCount = 0;
-          for (var i = alt.seq; i.elm.kind != CFGKind.END; i = i.seq) {
-            switch (i.elm.kind) {
+          for (var seq = alt.seq; seq.elm.kind != CFGKind.END; seq = seq.seq) {
+            switch (seq.elm.kind) {
             case N:
-              text.printf("\n  if (parse_%s()) {", i.elm.str);
+              text.printf("\n  if (parse_%s()) {", seq.elm.str);
               braceCount++;
               break;
             case T:
-              text.printf("\n  if (match(\"%s\")) {", i.elm.str);
+              text.printf("\n  if (match(\"%s\")) {", seq.elm.str);
+              braceCount++;
+              break;
+            case B:
+              text.printf("\n  if (builtIn_%s()) {", seq.elm.str);
               braceCount++;
               break;
             case EPS:
@@ -55,7 +72,7 @@ public class RDSOBV4Generator {
               seenEpsilon = true;
               break;
             default:
-              Util.fatal("Unexpected CFGKind in RDSOBV4Generator parse function " + i.elm.kind);
+              Util.fatal("Unexpected CFGKind in RDSOBV4Generator parse function " + seq.elm.kind);
             }
           }
           text.printf(" return true; ");
@@ -72,49 +89,51 @@ public class RDSOBV4Generator {
     // Write semantics functions
     for (var e : cfgRules.elements.keySet())
       if (e.kind == CFGKind.N) {
-        text.printf(" class Attribute_%s {", e.str);
-        boolean first = true;
-        for (var a : e.attributes.keySet()) // attributes
-          text.print(" " + e.attributes.get(a) + " " + a + ";");
+        if (e.attributes.keySet().size() > 0) {
+          text.printf("class Attributes_%s {", e.str);
+          boolean first = true;
+          for (var a : e.attributes.keySet()) // attributes
+            text.print(" " + e.attributes.get(a) + " " + a + ";");
+          text.println(" }\n");
+        }
 
-        text.printf(" }\n\n");
-
-        text.printf(" void semantics_%s(Attribute_%s %s) {\n switch(oracle[co++]) {", e.str, e.str, e.str);
-
+        text.println("void semantics_" + e.str + "(" + (e.attributes.keySet().size() > 0 ? "Attributes_" + e.str + " " + e.str : "") + ") {");
+        // Create attribute blocks for this rule
+        CFGNode lhsRoot = cfgRules.elementToNodeMap.get(e).alt;
+        printAllInitsRec(lhsRoot);
+        text.print("  switch(oracle[co++]) {");
         int pCount = 0;
-        for (var alt = cfgRules.elementToNodeMap.get(e).alt; alt != null; alt = alt.alt) {
+        for (var alt = lhsRoot; alt != null; alt = alt.alt) {
           pCount++;
-          text.printf("\n case %d: {", pCount);
-
-          for (var i = alt.seq; i.elm.kind != CFGKind.END; i = i.seq)
-            if (i.elm.kind == CFGKind.N) text.printf("\n Attribute_%s %s%d = new Attribute_%s();", i.elm.str, i.elm.str, 1/* i.instanceNumber */, i.elm.str);
+          text.println("\n    case " + pCount + ":");
 
           CFGNode seq = alt;
-          if (seq.slotTerm != 0) text.print("\n" + seq.toStringActions()); // Print initial action
+          printActions(seq); // print initial actions which are held on the alt node
           do {
             seq = seq.seq;
             switch (seq.elm.kind) {
             case N:
-              text.printf("\n // Instance %s", seq.instanceNumber);
-
-              text.printf("\n semantics_%s(%s%d);", seq.elm.str, seq.elm.str, seq.instanceNumber);
+              text.printf("    semantics_%s(%s%d);\n", seq.elm.str, seq.elm.str, seq.instanceNumber);
               break;
             case T:
-              text.printf("\n match(\"%s\");", seq.elm.str);
+              text.printf("    match(\"%s\");\n", seq.elm.str);
+              break;
+            case B:
+              text.printf("    builtIn_%s();\n", seq.elm.str);
               break;
             case EPS:
-              text.printf("\n /* epsilon */");
+              text.printf("    /* epsilon */\n");
               break;
             case END: // nothing to do: just here to ensure that the final action is printed
               break;
             default:
               Util.fatal("Unexpected CFGKind in RDSOBV4Generator semantics function " + seq.elm.kind);
             }
-            if (seq.slotTerm != 0) text.print("\n" + seq.toStringActions()); // Print any actions in this node
+            printActions(seq);
           } while (seq.elm.kind != CFGKind.END);
-          text.print("\n break; }\n");
+          text.println("    break;");
         }
-        text.printf("\n }\n }\n\n");
+        text.printf("  }\n }\n\n");
       }
 
     // // Write tree functions
@@ -155,16 +174,16 @@ public class RDSOBV4Generator {
     // }
 
     //@formatter:off
-    text.printf("void parse(String filename) throws FileNotFoundException {\n" +
-        "  input = readInput(filename);\n" +
-        "\n" +
-        "  System.out.printf(\"Input: '%%s'\\n\", input);\n" +
+    text.println("void parse(String filename) throws FileNotFoundException {\n" +
+        "  input = readInput(filename);\n\n" +
+        "  System.out.println(\"Input: \" + input);" +
         "  cc = co = 0; builtIn_WHITESPACE();\n" +
-        "  if (!(parse_%s() && input.charAt(cc) == '\\0')) {System.out.print(\"Rejected\\n\"); return; }\n" +
+        "  if (!(parse_" + cfgRules.startNonterminal.str + "() && input.charAt(cc) == '\\0')) { System.out.print(\"Rejected\\n\"); return; }\n" +
         "\n" +
         "  System.out.print(\"Accepted\\n\");\n" +
-        "  System.out.print(\"Oracle:\"); for (int i = 0; i < co; i++) System.out.printf(\" %%d\", oracle[i]); System.out.printf(\"\\n\");\n" +
-        "  System.out.print(\"\\nSemantics phase\\n\"); cc = 0; co = 0; builtIn_WHITESPACE(); Attribute_%s %s = new Attribute_%s(); semantics_%s(%s);\n" +
+        "  System.out.print(\"Oracle:\"); for (int i = 0; i < co; i++) System.out.printf(\" \" + oracle[i]); System.out.printf(\"\\n\");\n" +
+        "  System.out.print(\"\\nSemantics phase\\n\"); cc = 0; co = 0; builtIn_WHITESPACE(); semantics_" +
+           cfgRules.startNonterminal.str+"("+(cfgRules.startNonterminal.attributes.keySet().size() > 0 ? "new Attributes_" + cfgRules.startNonterminal.str + "()":"")+");\n");
 //        "  System.out.print(\"\\nTree construction phase\\n\"); cc = 0; co = 0; builtIn_WHITESPACE();\n" +
 //        "  TreeNode dt = new TreeNode(\"%s\", tree_%s(), null, TreeKind.NONTERMINAL, GIFTKind.NONE);\n" +
 //        "  dt.dot(\"dt.dot\");" +
@@ -194,7 +213,7 @@ public class RDSOBV4Generator {
 //        "    postParse(rdt);\n" +
 //        "\n" +
 //        "" +
-        "}\n" +
+    text.println("}\n" +
         "\n" +
         "public static void main(String[] args) throws FileNotFoundException{\n" +
         "    if (args.length < 1) {\n" +
@@ -202,10 +221,10 @@ public class RDSOBV4Generator {
         "      System.exit(1);\n" +
         "    } else\n"+
         "      new ARTGeneratedRDSOB().parse(args[0]);\n" +
-        "  }\n", cfgRules.startNonterminal.str,cfgRules.startNonterminal.str,cfgRules.startNonterminal.str,cfgRules.startNonterminal.str,cfgRules.startNonterminal.str,cfgRules.startNonterminal.str,cfgRules.startNonterminal.str,cfgRules.startNonterminal.str);
-    text.print("}\n");
+        "  }\n}\n");
     //@formatter:on
 
     text.close();
   }
+
 }

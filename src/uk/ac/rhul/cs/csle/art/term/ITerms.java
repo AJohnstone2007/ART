@@ -1,5 +1,8 @@
 package uk.ac.rhul.cs.csle.art.term;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -145,6 +148,16 @@ public class ITerms {
   public String toRawString(int term) {
     if (term == 0) return "null term";
     return rawTextTraverser.toString(term);
+  }
+
+  public String toRawString(Integer term, Map<Integer, Integer> localAliases) {
+    if (term == 0) return "null term";
+    return rawTextTraverser.toString(term, false, -1, localAliases);
+  }
+
+  public String toRawString(Integer term, Boolean indent, Integer depthLimit, Map<Integer, Integer> localAliases) {
+    if (term == 0) return "null term";
+    return rawTextTraverser.toString(term, indent, depthLimit, localAliases);
   }
 
   public String toString(int term) {
@@ -1402,7 +1415,7 @@ public class ITerms {
     case __emptyStringIndex:
       return empty;
     case __quoteStringIndex:
-      return new __quote(subTerm(term, 0));
+      return new __quote(subterm(term, 0));
     case __blobStringIndex:
       return termToJavaBlob(term);
     case __boolStringIndex:
@@ -1428,11 +1441,6 @@ public class ITerms {
     default:
       return new __quote(term); // For anything else, autoquote it
     }
-  }
-
-  private int subTerm(int term, int i) {
-    // TODO Auto-generated method stub
-    return 0;
   }
 
   // Note that in later versions of Java this can be replaced by pattern matching on class
@@ -1582,5 +1590,32 @@ public class ITerms {
     loadString("__termArity", 88);
     loadString("__termRoot", 89);
     loadString("__plugin", 90);
+  }
+
+  public void toDot(int term, String filename) {
+    if (term == 0) return;
+    PrintStream dotOut;
+    System.out.println("toDot on " + toString(term));
+    try {
+      dotOut = new PrintStream(new File(filename));
+      dotOut.println("digraph \"GSS\" {\n" + "node[fontname=Helvetica fontsize=9 shape=box height = 0 width = 0 margin= 0.04  color=gray]\n"
+          + "graph[ordering=out ranksep=0.1]\n" + "edge[arrowsize = 0.3  color=gray]");
+      toDotRec(term, dotOut);
+      dotOut.println("}");
+      dotOut.close();
+    } catch (FileNotFoundException e) {
+      System.out.println("Unable to write GSS visualisation to " + filename);
+    }
+  }
+
+  private void toDotRec(int term, PrintStream dotOut) {
+    System.out.println("toDotRec at " + toString(term));
+    dotOut.println(term + "[label=" + termSymbolString(term) + "]");
+    for (int i = 0; i < termArity(term); i++) {
+
+      System.out.println(term + "->" + subterm(term, i));
+      // dotOut.println(term + "->" + subTerm(term, i));
+      toDotRec(subterm(term, i), dotOut);
+    }
   }
 }
