@@ -231,12 +231,12 @@ public class RDSOBV4Base {
 
     if (input.regionMatches(cc, s, 0, s.length())) {
       cc += s.length();
-      System.out.printf(" accept\n");
+      // System.out.printf(" accept\n");
       builtIn_WHITESPACE();
       return true;
     }
 
-    System.out.printf(" reject\n");
+    // System.out.printf(" reject\n");
     return false;
   }
 
