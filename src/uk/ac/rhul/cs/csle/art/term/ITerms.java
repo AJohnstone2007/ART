@@ -1595,7 +1595,7 @@ public class ITerms {
   public void toDot(int term, String filename) {
     if (term == 0) return;
     PrintStream dotOut;
-    System.out.println("toDot on " + toString(term));
+    // System.out.println("toDot on " + toString(term));
     try {
       dotOut = new PrintStream(new File(filename));
       dotOut.println("digraph \"GSS\" {\n" + "node[fontname=Helvetica fontsize=9 shape=box height = 0 width = 0 margin= 0.04  color=gray]\n"
@@ -1609,12 +1609,11 @@ public class ITerms {
   }
 
   private void toDotRec(int term, PrintStream dotOut) {
-    System.out.println("toDotRec at " + toString(term));
-    dotOut.println(term + "[label=" + termSymbolString(term) + "]");
+    // System.out.println("toDotRec at " + toString(term));
+    dotOut.println(term + "[label=\"" + termSymbolString(term) + "\"]");
     for (int i = 0; i < termArity(term); i++) {
 
-      System.out.println(term + "->" + subterm(term, i));
-      // dotOut.println(term + "->" + subTerm(term, i));
+      dotOut.println(term + "->" + subterm(term, i));
       toDotRec(subterm(term, i), dotOut);
     }
   }

@@ -516,7 +516,7 @@ public class ScriptTermInterpreter {
 
     case "derivation":
       iTerms.toDot(currentDerivationTerm, "derivation.dot");
-      currentParser.derivation2Dot();
+      // currentParser.derivation2Dot();
       break;
 
     case "gss":
