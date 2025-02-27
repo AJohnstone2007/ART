@@ -159,16 +159,12 @@ class ARTGeneratedRDSOB extends uk.ac.rhul.cs.csle.art.cfg.rdsob.RDSOBV4Base {
     }
   }
 
-  class Attributes_S {
-    int v;
-  }
-
-  void semantics_S(Attributes_S S) {
+  void semantics_S() {
     Attributes_E1 E11 = new Attributes_E1();
     switch (oracle[co++]) {
     case 1:
       semantics_E1(E11);
-      System.out.println("Result: " + S.v);
+      System.out.println("Result: " + E11.v);
       break;
     }
   }
@@ -193,7 +189,7 @@ class ARTGeneratedRDSOB extends uk.ac.rhul.cs.csle.art.cfg.rdsob.RDSOBV4Base {
     cc = 0;
     co = 0;
     builtIn_WHITESPACE();
-    semantics_S(new Attributes_S());
+    semantics_S();
 
   }
 

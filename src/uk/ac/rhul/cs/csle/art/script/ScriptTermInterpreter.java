@@ -602,17 +602,12 @@ public class ScriptTermInterpreter {
   private TermTraverserText initialisePlainTextTraverser() {
     TermTraverserText ret = new TermTraverserText(iTerms);
     // -1: uncomment these to have shorthand type renditions rather than plain terms
-    ret.addEmptyAction("__bool", "__int32", "__real64");
-    ret.addAction("__intAP", "£", "", "");
-    ret.addAction("__realAP", "£", "", "");
-    ret.addAction("__char", "`", "", "");
-    ret.addAction("__string", "\"", "", "\"");
-    ret.addAction("__array", "[", " | ", "]");
-    ret.addAction("__list", "[", null, "]");
-    ret.addAction("__set", "{", null, "}");
-    ret.addAction("__a", null, ", ", null);
-    ret.addAction("__l", null, ", ", null);
-    ret.addAction("__s", null, ", ", null);
+    /*
+     * ret.addEmptyAction("__bool", "__int32", "__real64"); ret.addAction("__intAP", "£", "", ""); ret.addAction("__realAP", "£", "", "");
+     * ret.addAction("__char", "`", "", ""); ret.addAction("__string", "\"", "", "\""); ret.addAction("__array", "[", " | ", "]"); ret.addAction("__list", "[",
+     * null, "]"); ret.addAction("__set", "{", null, "}"); ret.addAction("__a", null, ", ", null); ret.addAction("__l", null, ", ", null); ret.addAction("__s",
+     * null, ", ", null);
+     */
 
     // __map and __m require special treatment because they don't fit neat pre/in/post string model, so we shall directly program the underlying actions
     // For __map, the preorder action tests the arity of the term, and appends {= instead of {
