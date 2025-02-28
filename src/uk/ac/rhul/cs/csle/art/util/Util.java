@@ -5,7 +5,7 @@ import java.util.Calendar;
 
 public class Util {
 
-  public static int traceLevel = 3;
+  public static int traceLevel = 0;
 
   public static void trace(int level, int indent, String string) {
     if (traceLevel >= level) {

@@ -58,7 +58,7 @@ public abstract class AbstractParser {
     System.out.println("sppfPrint() not implemented for parser class " + this.getClass().getSimpleName());
   }
 
-  public void sppfPrintCyclicNodes() {
+  public void sppfPrintCyclicSPPFNodesFromReachability() {
     System.out.println("sppfCyclicNodes() not implemented for parser class " + this.getClass().getSimpleName());
   }
 
