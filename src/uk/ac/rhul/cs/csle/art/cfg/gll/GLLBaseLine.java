@@ -1053,6 +1053,16 @@ public class GLLBaseLine extends AbstractParser {
     countReachable = new HashSet<>();
     loadXPartitionsFromCFGRules();
 
+    if (statistics) {
+      System.out.print(inputString.length() + "," + getClass().getSimpleName() + "," + (inLanguage ? "accept" : "reject") + ",");
+      countSymbol = countInter = countPacked = countPara = countTerm = countEps = 0;
+      visitedSPPFNodes.clear();
+      countRemove = false;
+      sppfBreakCyclesCountsRec(sppfRootNode);
+      System.out.print(countSymbol + "," + countInter + "," + countPacked + "," + countPara + "," + countTerm + "," + countEps + "," + xS.size() + ","
+          + xP.size() + "," + cbD.size());
+    }
+
     if (counts) {
       System.out.println("Core:\tSymbol\tInter\tPacked\tPara\tTerm\tEps\t|Xs|\t|Xp|\t|D|");
       countSymbol = countInter = countPacked = countPara = countTerm = countEps = 0;
@@ -1066,6 +1076,15 @@ public class GLLBaseLine extends AbstractParser {
     cycleBreakStartTime = System.nanoTime();
     newCycleBreak();
     cycleBreakEndTime = System.nanoTime();
+
+    if (statistics) {
+      countSymbol = countInter = countPacked = countPara = countTerm = countEps = 0;
+      visitedSPPFNodes.clear();
+      countRemove = true;
+      sppfBreakCyclesCountsRec(sppfRootNode);
+      System.out.println("," + countSymbol + "," + countInter + "," + countPacked + "," + countPara + "," + countTerm + "," + countEps + "," + xS.size() + ","
+          + xP.size() + "," + cbD.size() + "," + timeAsMilliseconds(cycleBreakStartTime, cycleBreakEndTime));
+    }
 
     if (counts) {
       countSymbol = countInter = countPacked = countPara = countTerm = countEps = 0;
@@ -1164,12 +1183,6 @@ public class GLLBaseLine extends AbstractParser {
         }
       }
     }
-  }
-
-  @Override
-  public String sppfCycleBreakStatisticsToString() {
-    return inputString.length() + "," + getClass().getSimpleName() + "," + (inLanguage ? "accept" : "reject") + ","
-        + timeAsMilliseconds(cycleBreakStartTime, cycleBreakEndTime);
   }
 
   class Configuration {

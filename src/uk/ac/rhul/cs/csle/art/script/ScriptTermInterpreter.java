@@ -144,7 +144,7 @@ public class ScriptTermInterpreter {
 
     case "trace":
       Util.traceLevel = iTerms.termToJavaInteger(iTerms.subterm(term, 0, 0));
-      System.out.println("Trace level set to " + Util.traceLevel);
+      // System.out.println("Trace level set to " + Util.traceLevel);
       break;
 
     case "configuration":
