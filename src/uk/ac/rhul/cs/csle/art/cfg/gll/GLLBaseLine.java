@@ -20,7 +20,6 @@ import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGKind;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.GIFTKind;
 import uk.ac.rhul.cs.csle.art.cfg.lexer.LexemeKind;
-import uk.ac.rhul.cs.csle.art.script.TraversalKind;
 import uk.ac.rhul.cs.csle.art.util.Relation;
 import uk.ac.rhul.cs.csle.art.util.RelationOverNaturals;
 import uk.ac.rhul.cs.csle.art.util.Util;
@@ -863,9 +862,8 @@ public class GLLBaseLine extends AbstractParser {
   private final BitSet sppfCyclic = new BitSet();
   private BitSet sppfRootReachable;
   private boolean cycleBreakTrace;
-  private TraversalKind cycleBreakTraversalKind;
-  private boolean cycleBreakLone;
-  private boolean cycleBreakSibling;
+  private boolean cycleBreakCounts;
+  private boolean cycleBreakStatistics;
 
   private void sppfComputeReachability(Set<CFGNode> cyclicCFGSlots) {
 
@@ -931,8 +929,6 @@ public class GLLBaseLine extends AbstractParser {
   public void loadXPartitionsFromCFGRules() {
     // In this implementation, X is represented by its packed node and symbol node partitions xP and xS
     // System.out.println("Loading X partition direct");
-    xP = new HashSet<>();
-    xS = new HashSet<>();
     for (var n : sppf.keySet())
       for (var p : n.packNS)
         if (cfgRules.cyclicSlots.contains(p.gn)) {
@@ -1032,89 +1028,100 @@ public class GLLBaseLine extends AbstractParser {
     return false;
   }
 
+  private long cycleBreakStartTime, cycleBreakEndTime;
+  private int countSymbol = 0;
+  private int countInter = 0;
+  private int countPacked = 0;
+  private int countPara = 0;
+  private int countTerm = 0;
+  private int countEps = 0;
+  private boolean countRemove = false;
+  Set<SPPFNode> countReachable;
+
   @Override
-  public void sppfBreakCycles(boolean cycleBreakTrace, TraversalKind cycleBreakTraversalKind, boolean cycleBreakLone, boolean cycleBreakSibling,
-      boolean check) {
+  public void sppfBreakCycles(boolean trace, boolean counts, boolean statistics) {
     if (sppf == null || sppfRootNode == null) {
       Util.warning("Current parser does not have a current SPPF - skipping cycle breaking");
       return;
     }
     this.cycleBreakTrace = cycleBreakTrace;
-    this.cycleBreakTraversalKind = cycleBreakTraversalKind;
-    this.cycleBreakLone = cycleBreakLone;
-    this.cycleBreakSibling = cycleBreakSibling;
-
+    this.cycleBreakCounts = counts;
+    this.cycleBreakStatistics = statistics;
+    xP = new HashSet<>();
+    xS = new HashSet<>();
     cbD = new HashSet<>();
-
-    var cycleBreakStartTime = System.nanoTime();
-
+    countReachable = new HashSet<>();
     loadXPartitionsFromCFGRules();
 
-    if (cycleBreakTrace) {
-      System.out.println("Before cycle breaking, |Xs| = " + xS.size() + " |Xp| = " + xP.size());
-
-      System.out.print("Xs is ");
-      if (xS.size() == 0)
-        System.out.print("empty");
-      else
-        for (var d : xS)
-          System.out.print("\n  " + d);
-
-      System.out.print("\nXp is ");
-      if (xP.size() == 0)
-        System.out.print("empty");
-      else
-        for (var d : xP)
-          System.out.print("\n  " + d);
-
-      System.out.println();
+    if (counts) {
+      System.out.println("Core:\tSymbol\tInter\tPacked\tPara\tTerm\tEps\t|Xs|\t|Xp|\t|D|");
+      countSymbol = countInter = countPacked = countPara = countTerm = countEps = 0;
+      visitedSPPFNodes.clear();
+      countRemove = false;
+      sppfBreakCyclesCountsRec(sppfRootNode);
+      System.out.println("Before\t" + countSymbol + "\t" + countInter + "\t" + countPacked + "\t" + countPara + "\t" + countTerm + "\t" + countEps + "\t"
+          + xS.size() + "\t" + xP.size() + "\t" + cbD.size());
     }
 
-    // cycleBreakPass = 1;
-    // while (sppfCycleBreak())
-    // ;
-
+    cycleBreakStartTime = System.nanoTime();
     newCycleBreak();
+    cycleBreakEndTime = System.nanoTime();
 
-    var cycleBreakEndTime = System.nanoTime();
-    System.out.println("!!! Cycle break time " + timeAsMilliseconds(cycleBreakStartTime, cycleBreakEndTime) + "ms");
-
-    if (cycleBreakTrace) {
-      System.out.println("After cycle breaking, |Xs|=" + xS.size() + " |Xp|=" + xP.size() + " |D|=" + cbD.size() + " |D'|=" + cbDPrime.size());
-
-      System.out.print("Xs is ");
-      if (xS.size() == 0)
-        System.out.print("empty");
+    if (counts) {
+      countSymbol = countInter = countPacked = countPara = countTerm = countEps = 0;
+      visitedSPPFNodes.clear();
+      countRemove = true;
+      sppfBreakCyclesCountsRec(sppfRootNode);
+      System.out.println("After\t" + countSymbol + "\t" + countInter + "\t" + countPacked + "\t" + countPara + "\t" + countTerm + "\t" + countEps + "\t"
+          + xS.size() + "\t" + xP.size() + "\t" + cbD.size());
+      System.out.println("Cycle break time " + timeAsMilliseconds(cycleBreakStartTime, cycleBreakEndTime) + "ms");
+      System.out.println("Nodes made unreachable by cycle breaking");
+      if (countReachable.size() == 0)
+        System.out.println("--None--");
       else
-        for (var d : xS)
-          System.out.print("\n  " + d);
+        for (var n : countReachable) {
+          if (n instanceof SPPFN) {
+            SPPFN nn = (SPPFN) n;
 
-      System.out.print("\nXp is ");
-      if (xP.size() == 0)
-        System.out.print("empty");
-      else
-        for (var d : xP)
-          System.out.print("\n  " + d);
-
-      System.out.print("\nD is ");
-      if (cbD.size() == 0)
-        System.out.print("empty");
-      else
-        for (var d : cbD)
-          System.out.print("\n  " + d);
-
-      System.out.print("\nD' is ");
-      if (cbDPrime.size() == 0)
-        System.out.print("empty");
-      else
-        for (var d : cbDPrime)
-          System.out.print("\n  " + d);
-
+            if (nn.li != nn.ri) System.out.print("*");
+          }
+          System.out.println(n);
+        }
     }
-    if (check) {
-      System.out.print("!!! After cycle breaking ");
 
-      sppfPrintCyclicSPPFNodesFromReachability();
+  }
+
+  private void updateCountReachable(SPPFNode n) {
+    if (countRemove)
+      countReachable.remove(n);
+    else
+      countReachable.add(n);
+  }
+
+  private void sppfBreakCyclesCountsRec(SPPFN sppfn) {
+    // System.out.println("\nEntered sppfBreakCyclesCountsRec() at node " + node);
+    if (visitedSPPFNodes.get(sppfn.number)) return;
+    visitedSPPFNodes.set(sppfn.number);
+    updateCountReachable(sppfn);
+
+    if (sppfn.gn.elm.kind == CFGKind.EPS)
+      countEps++;
+    else if (sppfn.packNS.size() == 0)
+      countTerm++;
+    else if (cfgRules.paraterminalElements.contains(sppfn.gn.elm)) {
+      countPara++;
+      return;
+    } else if (isSymbol(sppfn))
+      countSymbol++;
+    else
+      countInter++;
+
+    for (SPPFPN p : sppfn.packNS) { // Recurse through packed nodes
+      if (cbD.contains(p)) continue;
+      updateCountReachable(p);
+      countPacked++;
+      if (p.leftChild != null) sppfBreakCyclesCountsRec(p.leftChild);
+      if (p.rightChild != null) sppfBreakCyclesCountsRec(p.rightChild);
     }
   }
 
@@ -1157,6 +1164,12 @@ public class GLLBaseLine extends AbstractParser {
         }
       }
     }
+  }
+
+  @Override
+  public String sppfCycleBreakStatisticsToString() {
+    return inputString.length() + "," + getClass().getSimpleName() + "," + (inLanguage ? "accept" : "reject") + ","
+        + timeAsMilliseconds(cycleBreakStartTime, cycleBreakEndTime);
   }
 
   class Configuration {

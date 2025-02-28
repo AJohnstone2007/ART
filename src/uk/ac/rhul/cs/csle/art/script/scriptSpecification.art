@@ -161,7 +161,7 @@ directiveElement ::=
 | 'nop'^^
 
 cycleModes ::= cycleMode^ | cycleMode^ cycleModes^ 
-cycleMode  ::= 'preorder' | 'postorder' | 'lone' | 'sibling' | 'trace' | 'slow'| 'check'
+cycleMode  ::= 'trace' | 'statistics' | 'counts'
 
 file ::= &STRING_PLAIN_SQ
 

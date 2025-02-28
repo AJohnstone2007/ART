@@ -5,7 +5,6 @@ import java.util.Set;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGRules;
 import uk.ac.rhul.cs.csle.art.cfg.lexer.LexemeKind;
-import uk.ac.rhul.cs.csle.art.script.TraversalKind;
 import uk.ac.rhul.cs.csle.art.util.Util;
 
 public abstract class AbstractParser {
@@ -62,12 +61,17 @@ public abstract class AbstractParser {
     System.out.println("sppfCyclicNodes() not implemented for parser class " + this.getClass().getSimpleName());
   }
 
-  public void sppfBreakCycles(boolean trace, TraversalKind traversalKind, boolean lone, boolean sibling, boolean check) {
+  public void sppfBreakCycles(boolean trace, boolean counts, boolean statistics) {
     System.out.println("sppfBreakCycles() not implemented for parser class " + this.getClass().getSimpleName());
   }
 
   public void sppfBreakCyclesRelation() {
     System.out.println("sppfBreakCyclesRelation() not implemented for parser class " + this.getClass().getSimpleName());
+  }
+
+  public String sppfCycleBreakStatisticsToString() {
+    System.out.println("sppfCycleBreakStatistics() not implemented for parser class " + this.getClass().getSimpleName());
+    return "";
   }
 
   public void sppfPrintParaterminals() {
@@ -1125,4 +1129,5 @@ public abstract class AbstractParser {
     while (peekCh() != '\n' && peekCh() != '\0') // Quietly accept an input file with no \n at the end.
       getCh();
   }
+
 }
