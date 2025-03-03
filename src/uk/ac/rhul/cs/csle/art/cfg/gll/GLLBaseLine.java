@@ -716,7 +716,7 @@ public class GLLBaseLine extends AbstractParser {
       Util.warning("Current parser does not have a current SPPF - skipping SPPF visualisation");
       return;
     }
-    sppfComputeReachability(null);
+    sppfComputeCoreReachability(null);
 
     SPPF2Dot(sppf, sppfRootNode, "sppf_full.dot", true, true, false); // full SPPF
     SPPF2Dot(sppf, sppfRootNode, "sppf_core.dot", false, true, true); // core SPPF - only nodes reachable from (S,0,n)
@@ -865,7 +865,7 @@ public class GLLBaseLine extends AbstractParser {
   private boolean cycleBreakCounts;
   private boolean cycleBreakStatistics;
 
-  private void sppfComputeReachability(Set<CFGNode> cyclicCFGSlots) {
+  private void sppfComputeCoreReachability(Set<CFGNode> cyclicCFGSlots) {
 
     if (sppf == null || sppfRootNode == null) {
       Util.warning("Current parser does not have a current SPPF - skipping reachability analysis");
@@ -904,7 +904,7 @@ public class GLLBaseLine extends AbstractParser {
 
   @Override
   public void sppfPrintCyclicSPPFNodesFromReachability() {
-    sppfComputeReachability(cfgRules.cyclicSlots);
+    sppfComputeCoreReachability(cfgRules.cyclicSlots);
     System.out.println(sppfCyclic.isEmpty() ? "There are no cyclic nodes" : "Cyclic nodes are");
     for (int i = 0; i < sppfCyclic.length(); i++)
       if (sppfCyclic.get(i)) System.out.print("  " + i);
@@ -926,17 +926,21 @@ public class GLLBaseLine extends AbstractParser {
       }
   }
 
-  public void loadXPartitionsFromCFGRules() {
-    // In this implementation, X is represented by its packed node and symbol node partitions xP and xS
-    // System.out.println("Loading X partition direct");
-    for (var n : sppf.keySet())
-      for (var p : n.packNS)
-        if (cfgRules.cyclicSlots.contains(p.gn)) {
-          xS.add(n);
-          // System.out.println("Added cyclic symbol node " + n);
-          xP.add(p);
-          // System.out.println("Added cyclic packed node " + p);
-        }
+  public void loadXPartitionsFromCFGRulesRec(SPPFN n) {
+    if (visitedSPPFNodes.get(n.number)) return;
+    visitedSPPFNodes.set(n.number);
+    // System.out.println("loadXPartitionsFromCFGRulesRec() entered " + n);
+    for (var p : n.packNS) {
+      if (cfgRules.cyclicSlots.contains(p.gn)) {
+        xS.add(n);
+        // System.out.println("Added cyclic symbol node " + n);
+        xP.add(p);
+        // System.out.println("Added cyclic packed node " + p);
+      }
+
+      if (p.leftChild != null) loadXPartitionsFromCFGRulesRec(p.leftChild);
+      loadXPartitionsFromCFGRulesRec(p.rightChild);
+    }
   }
 
   void trace(String msg) {
@@ -1051,7 +1055,8 @@ public class GLLBaseLine extends AbstractParser {
     xS = new HashSet<>();
     cbD = new HashSet<>();
     countReachable = new HashSet<>();
-    loadXPartitionsFromCFGRules();
+    visitedSPPFNodes.clear();
+    loadXPartitionsFromCFGRulesRec(sppfRootNode);
 
     if (statistics) {
       System.out.print(inputString.length() + "," + getClass().getSimpleName() + "," + (inLanguage ? "accept" : "reject") + ",");
@@ -1074,7 +1079,10 @@ public class GLLBaseLine extends AbstractParser {
     }
 
     cycleBreakStartTime = System.nanoTime();
-    newCycleBreak();
+    if (xS.size() + xP.size() < 10000)
+      newCycleBreak();
+    else
+      System.out.println("Crowbarred");// Crowbar away large examples
     cycleBreakEndTime = System.nanoTime();
 
     if (statistics) {
@@ -1266,7 +1274,7 @@ public class GLLBaseLine extends AbstractParser {
   @Override
   public void sppfBreakCyclesRelation() {
     Configuration c, cp;
-    sppfComputeReachability(null); // computes sppfCyclic (set of cyclic SPPF nodes)
+    sppfComputeCoreReachability(null); // computes sppfCyclic (set of cyclic SPPF nodes)
     loadXPartitionsFromReachability(); // Load X from computed cyclic nodes as partitions xP and xS
 
     Configuration c_0 = new Configuration(xP, xS, new HashSet<SPPFPN>(), new HashSet<SPPFPN>());
