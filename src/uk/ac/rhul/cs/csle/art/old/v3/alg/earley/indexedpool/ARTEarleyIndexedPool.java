@@ -312,16 +312,16 @@ public class ARTEarleyIndexedPool extends ARTParserBase {
     int[] input = dynamicLexicaliseLongestMatch(stringInput, 1);
 
     if (input == null) {
-      System.out.println("EarleySlotArrayPool: reject lexical");
+      System.out.println("ARTEarleyIndexedPool: reject lexical");
 
-      if (artTrace > 0) artTraceText.println("EarleySlotArrayPool: reject lexical");
+      if (artTrace > 0) artTraceText.println("ARTEarleyIndexedPool: reject lexical");
 
       return;
     }
 
     inputTokenLength = input.length - 2; // input[0] is not used and input[n+1] is $
 
-    if (artTrace > 0) artTraceText.println("EarleySlotArrayPool runnng on " + inputTokenLength + " tokens");
+    if (artTrace > 0) artTraceText.println("ARTEarleyIndexedPool runnng on " + inputTokenLength + " tokens");
     artLoadLexTime();
 
     // E0 , . . . , En , R, Q′ , V = ∅
