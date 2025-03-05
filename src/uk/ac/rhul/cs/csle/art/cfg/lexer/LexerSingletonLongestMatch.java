@@ -91,13 +91,17 @@ public class LexerSingletonLongestMatch extends AbstractParser {
   }
 
   @Override
-  public void printLexicalisations() {
+  public void printLexicalisations(boolean raw) {
     // System.out.println("String: " + inputString);
     // var lexemeKinds = LexemeKind.values();
     // for (int i = 0; i < lexemeKinds.length; i++)
     // System.out.println(lexemeKinds[i]);
     // int index = 0;
-    for (int i = 0; i < tokens.length; i++)
-      System.out.println(i + ":" + leftIndices[i] + "," + rightIndices[i] + " " + kinds[tokenList.get(i)] + " " + strings[tokens[i]]);
+    if (raw)
+      for (int i = 0; i < tokens.length; i++)
+        System.out.println(kinds[tokenList.get(i)] == LexemeKind.SINGLETON_CASE_SENSITIVE ? strings[tokens[i]] : kinds[tokenList.get(i)]);
+    else
+      for (int i = 0; i < tokens.length; i++)
+        System.out.println(i + ":" + leftIndices[i] + "," + rightIndices[i] + " " + kinds[tokenList.get(i)] + " " + strings[tokens[i]]);
   }
 }

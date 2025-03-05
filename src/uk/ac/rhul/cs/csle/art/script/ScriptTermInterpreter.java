@@ -414,7 +414,7 @@ public class ScriptTermInterpreter {
 
     case "lexicalisations":
       System.out.println("Lexicalisations");
-      currentLexer.printLexicalisations();
+      currentLexer.printLexicalisations(raw);
       break;
 
     case "derivation":

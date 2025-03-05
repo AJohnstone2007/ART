@@ -82,7 +82,7 @@ public abstract class AbstractParser {
     System.out.println("sppfPrintParasentences() not implemented for parser class " + this.getClass().getSimpleName());
   }
 
-  public void printLexicalisations() {
+  public void printLexicalisations(boolean raw) {
     System.out.println("printLexicalisations() not implemented for parser class " + this.getClass().getSimpleName());
   }
 
