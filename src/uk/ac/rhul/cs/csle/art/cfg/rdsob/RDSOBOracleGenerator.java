@@ -21,7 +21,8 @@ public class RDSOBOracleGenerator {
 
   private void printAllInitsRec(CFGNode cfgNode) {
     if (cfgNode == null || cfgNode.elm.kind == CFGKind.END) return;
-    if (cfgNode.elm.kind == CFGKind.N) {
+
+    if (cfgNode.elm.kind == CFGKind.N && cfgNode.elm.attributes.keySet().size() > 0) {
       String name = cfgNode.elm.str + cfgNode.instanceNumber;
       if (!printedInits.contains(name)) text.println("  Attributes_" + cfgNode.elm.str + " " + name + " = new Attributes_" + cfgNode.elm.str + "(); ");
       printedInits.add(name);
@@ -36,6 +37,7 @@ public class RDSOBOracleGenerator {
   }
 
   public RDSOBOracleGenerator(CFGRules cfgRules) {
+    if (cfgRules.startNonterminal == null) Util.fatal("RDSOBOracle found no CFG rules");
     String filename = "ARTGeneratedRDSOBOracle";
     iTerms = ScriptTermInterpreter.iTerms;
     String timeStamp = Util.timestamp();
@@ -122,7 +124,10 @@ public class RDSOBOracleGenerator {
             seq = seq.seq;
             switch (seq.elm.kind) {
             case N:
-              text.printf("    semantics_%s(%s%d);\n", seq.elm.str, seq.elm.str, seq.instanceNumber);
+              if (seq.elm.attributes.keySet().size() > 0)
+                text.printf("    semantics_%s(%s%d);\n", seq.elm.str, seq.elm.str, seq.instanceNumber);
+              else
+                text.printf("    semantics_%s();\n", seq.elm.str);
               break;
             case T:
               text.printf("    match(\"%s\");\n", seq.elm.str);
@@ -145,48 +150,48 @@ public class RDSOBOracleGenerator {
         text.printf("  }\n }\n\n");
       }
 
-    // Write term functions
-    for (var e : cfgRules.elements.keySet()) {
-      if (e.kind == CFGKind.N) {
-        text.println("String term_" + e.str + "(LinkedList<String> children) {\n  String newRoot = null;");
-        // Create attribute blocks for this rule
-        CFGNode lhsRoot = cfgRules.elementToNodeMap.get(e).alt;
-        printedInits.clear();
-        printAllInitsRec(lhsRoot);
-        text.print("  switch(oracle[oracleIndex++]) {");
-        int pCount = 0;
-        for (var alt = lhsRoot; alt != null; alt = alt.alt) {
-          pCount++;
-          text.println("\n    case " + pCount + ":");
-
-          CFGNode seq = alt;
-          do {
-            seq = seq.seq;
-            switch (seq.elm.kind) {
-            case N:
-              text.printf("    term_%s(new LinkedList<>());\n", seq.elm.str, seq.elm.str, seq.instanceNumber);
-              break;
-            case T:
-              text.printf("    match(\"%s\");\n", seq.elm.str);
-              break;
-            case B:
-              text.printf("    builtIn_%s();\n", seq.elm.str);
-              break;
-            case EPS:
-              text.printf("    /* epsilon */\n");
-              break;
-            case END: // nothing to do: just here to ensure that the final action is printed
-              break;
-            default:
-              Util.fatal("Unexpected CFGKind in RDSOBV4Generator semantics function " + seq.elm.kind);
-            }
-            // switch (seq.elm)
-          } while (seq.elm.kind != CFGKind.END);
-          text.println("    break;");
-        }
-        text.printf("  }\n  return newRoot;\n }\n\n");
-      }
-    }
+    // // Write term functions
+    // for (var e : cfgRules.elements.keySet()) {
+    // if (e.kind == CFGKind.N) {
+    // text.println("String term_" + e.str + "(LinkedList<String> children) {\n String newRoot = null;");
+    // // Create attribute blocks for this rule
+    // CFGNode lhsRoot = cfgRules.elementToNodeMap.get(e).alt;
+    // printedInits.clear();
+    // printAllInitsRec(lhsRoot);
+    // text.print(" switch(oracle[oracleIndex++]) {");
+    // int pCount = 0;
+    // for (var alt = lhsRoot; alt != null; alt = alt.alt) {
+    // pCount++;
+    // text.println("\n case " + pCount + ":");
+    //
+    // CFGNode seq = alt;
+    // do {
+    // seq = seq.seq;
+    // switch (seq.elm.kind) {
+    // case N:
+    // text.printf(" term_%s(new LinkedList<>());\n", seq.elm.str, seq.elm.str, seq.instanceNumber);
+    // break;
+    // case T:
+    // text.printf(" match(\"%s\");\n", seq.elm.str);
+    // break;
+    // case B:
+    // text.printf(" builtIn_%s();\n", seq.elm.str);
+    // break;
+    // case EPS:
+    // text.printf(" /* epsilon */\n");
+    // break;
+    // case END: // nothing to do: just here to ensure that the final action is printed
+    // break;
+    // default:
+    // Util.fatal("Unexpected CFGKind in RDSOBV4Generator semantics function " + seq.elm.kind);
+    // }
+    // // switch (seq.elm)
+    // } while (seq.elm.kind != CFGKind.END);
+    // text.println(" break;");
+    // }
+    // text.printf(" }\n return newRoot;\n }\n\n");
+    // }
+    // }
 
     //@formatter:off
     text.println("void parse(String filename) throws FileNotFoundException {\n" +
@@ -197,9 +202,9 @@ public class RDSOBOracleGenerator {
         "\n" +
         "  System.out.print(\"Accepted\\n\");\n" +
         "  System.out.print(\"Oracle:\"); for (int i = 0; i < oracleIndex; i++) System.out.printf(\" \" + oracle[i]); System.out.printf(\"\\n\");\n" +
-        "  System.out.print(\"\\nSemantics:\\n\"); inputIndex = oracleIndex = 0; builtIn_WHITESPACE(); semantics_" +
+        "  System.out.print(\"Semantics:\\n\"); inputIndex = oracleIndex = 0; builtIn_WHITESPACE(); semantics_" +
            cfgRules.startNonterminal.str+"("+(cfgRules.startNonterminal.attributes.keySet().size() > 0 ? "new Attributes_" + cfgRules.startNonterminal.str + "()":"")+");\n"+
-        "  System.out.print(\"\\nTerm:\\n\"); inputIndex = oracleIndex = 0; builtIn_WHITESPACE(); term_" + cfgRules.startNonterminal.str+"(new LinkedList<>());\n"+
+//        "  System.out.print(\"\\nTerm:\\n\"); inputIndex = oracleIndex = 0; builtIn_WHITESPACE(); term_" + cfgRules.startNonterminal.str+"(new LinkedList<>());\n"+
         "}\n\n" +
         "public static void main(String[] args) throws FileNotFoundException{\n" +
         "    if (args.length < 1) System.out.println(\"Usage: java " + filename + " <input file name>\");\n"

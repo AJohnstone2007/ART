@@ -1,0 +1,111 @@
+///////// Example 1 - a first RDSOB example: bx*@
+
+S ::= 'b' | 'a' X '@'
+X ::= 'x' X | #  
+
+(*
+// test.str examples: b, a@, ax@, axx@
+
+///////// Example 2 - bx+@
+
+S ::= 'b' | 'a' X '@'
+X ::= 'x' X | 'x'
+
+// test.str examples: b, ax@, axx@ - now a@ not accepted
+
+///////// Example 3 - a broken RDSOB example
+
+S ::= 'b' | 'a' X '@'
+X ::= 'x' | 'x' X   
+
+// test.str examples: b, ax@ - now ax@, axx@ not accepted
+
+///////// Example 4 - add an action to announce x's
+
+S ::= 'b'  | 'a' X '@' 
+X ::= 'x' !! System.out.println("Found an x"); !! X | #  
+
+// test.str examples: b, a@, ax@, axx@
+
+///////// Example 5 - add attributes and actions to count x's
+
+S<z:int> ::= 'b'  | 'a' X '@' !! System.out.println("Final x count: " + X1.xCount); !!
+
+X<xCount:int> ::= 
+  'x' !! System.out.println("Found an x"); !!  
+  X   !! X.xCount = X1.xCount + 1; !! 
+| !! X.xCount = 0; !! #  
+
+// test.str examples: b, a@, ax@, axx@, axxx@
+
+///////// Example 6 - build integers using INHERITED attributes
+
+S ::= integer !! System.out.println("Result: " + integer1.v); !!
+
+integer<v: int> ::= 
+  digit      !! integer1.v = integer.v * 10 + digit1.v; !! integer !! integer.v = integer1.v; !!
+| digit      !! integer.v  = integer.v * 10 + digit1.v; !!
+ 
+digit<v:int> ::= 
+  '0' !! digit.v = 0; !!
+| '1' !! digit.v = 1; !!
+| '2' !! digit.v = 2; !!
+| '3' !! digit.v = 3; !!
+| '4' !! digit.v = 4; !!
+| '5' !! digit.v = 5; !!
+| '6' !! digit.v = 6; !!
+| '7' !! digit.v = 7; !!
+| '8' !! digit.v = 8; !!
+| '9' !! digit.v = 9; !!
+
+// test.str examples: 1, 2, 123
+
+///////// Example 7 - build integers using the &INTEGER builtin
+
+S ::= integerB !! System.out.println("Result: " + integerB1.v); !!
+
+integerB<v:int> ::= 
+  &INTEGER   !! integerB.v = Integer.parseInt(lexeme()); !!
+
+// test.str examples: 1, 2, 123
+
+///////// Example 8 -  A calculator: WARNING right associative operators!
+
+S ::= e1 !! System.out.println("Result: " + e11.v); !!
+
+e1<v:int> ::= 
+  e2 '+' e1  !! e1.v = e21.v + e11.v; !!
+| e2 '-' e1  !! e1.v = e21.v - e11.v; !!
+| e2         !! e1.v = e21.v; !!
+
+e2<v:int> ::= 
+  e3 '*' e2  !! e2.v = e31.v * e21.v; !!
+| e3 '/' e2  !! e2.v = e31.v / e21.v; !!
+| e3         !! e2.v = e31.v; !!
+
+e3<v:int> ::= 
+  '(' e1 ')' !! e3.v = e11.v; !! 
+| integer    !! e3.v = integer1.v; !!
+
+integer<v: int> ::= 
+  digit      !! integer1.v = integer.v * 10 + digit1.v; !! integer !! integer.v = integer1.v; !!
+| digit      !! integer.v  = integer.v * 10 + digit1.v; !!
+ 
+digit<v:int> ::= 
+  '0' !! digit.v = 0; !!
+| '1' !! digit.v = 1; !!
+| '2' !! digit.v = 2; !!
+| '3' !! digit.v = 3; !!
+| '4' !! digit.v = 4; !!
+| '5' !! digit.v = 5; !!
+| '6' !! digit.v = 6; !!
+| '7' !! digit.v = 7; !!
+| '8' !! digit.v = 8; !!
+| '9' !! digit.v = 9; !!
+
+// test.str examples: (3 + 4) * 5
+
+///////// Exercise -  modify example 8 to use builtin
+*)
+     
+!generate rdsobOracle

@@ -243,18 +243,19 @@ public class GLLBaseLine extends AbstractParser {
     return ret;
   }
 
+  boolean derivationSeenCycle;
+
   @Override
   public int derivationAsTerm() {
     if (sppfRootNode == null) return 0;
     visitedSPPFNodes.clear();
+    derivationSeenCycle = false;
     LinkedList<Integer> carrier = new LinkedList<>();
     derivationAsTermRec(sppfRootNode, carrier, firstAvailablePackNode(sppfRootNode).gn.seq); // Root packed node must have a grammar node that is the end of a
                                                                                              // start production
     loadDerivationCounts(derivationNodeCount, derivationAmbiguityNodeCount);
     return carrier.getFirst();
   }
-
-  boolean derivationSeenCycle = false;
 
   private String derivationAsTermRec(SPPFN sppfn, LinkedList<Integer> childrenFromParent, CFGNode gn) {
     // System.out.println("\nEntered derivationAsTermRec() at node " + sppfn + " instance " + gn);
