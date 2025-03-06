@@ -3,9 +3,9 @@
 S ::= 'b' | 'a' X '@'
 X ::= 'x' X | #  
 
-(*
 // test.str examples: b, a@, ax@, axx@
 
+(*
 ///////// Example 2 - bx+@
 
 S ::= 'b' | 'a' X '@'
@@ -103,7 +103,7 @@ digit<v:int> ::=
 | '8' !! digit.v = 8; !!
 | '9' !! digit.v = 9; !!
 
-// test.str examples: (3 + 4) * 5
+// test.str examples: (3 + 4) * 5, 4 - 3 - 2, (4 - 3) - 2, 4 - (3 - 2)
 
 ///////// Exercise -  modify example 8 to use builtin
 *)
