@@ -125,6 +125,7 @@ directive ::= directiveElement
 directiveElement ::=
   'include' file
 | 'whitespace'^^ '#'^ | 'whitespace'^^ whiteSpaceElements^ | 'whitespace'^^ '('^ whiteSpaceElements^ ')'^
+| 'deleteTokens'^^ __int32 
 | 'paraterminal'^^ '#'^ | 'paraterminal'^^ paraterminalElements^
 | 'chooser'^^ '#'^ | 'chooser'^^ ID
 

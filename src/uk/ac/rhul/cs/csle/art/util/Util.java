@@ -16,19 +16,19 @@ public class Util {
   }
 
   public static void info(String msg) {
-    System.err.println("*** " + msg);
+    System.out.println("*** " + msg);
   }
 
   public static void warning(String msg) {
-    System.err.println("*** Warning: " + msg);
+    System.out.println("*** Warning: " + msg);
   }
 
   public static void error(String msg) {
-    System.err.println("*** Error: " + msg);
+    System.out.println("*** Error: " + msg);
   }
 
   public static void fatal(String msg) {
-    System.err.println("*** Fatal: " + msg);
+    System.out.println("*** Fatal: " + msg);
     System.exit(1);
   }
 

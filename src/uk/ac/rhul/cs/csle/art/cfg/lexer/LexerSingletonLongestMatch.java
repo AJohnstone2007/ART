@@ -3,6 +3,7 @@ package uk.ac.rhul.cs.csle.art.cfg.lexer;
 import java.util.ArrayList;
 
 import uk.ac.rhul.cs.csle.art.cfg.AbstractParser;
+import uk.ac.rhul.cs.csle.art.util.Util;
 
 public class LexerSingletonLongestMatch extends AbstractParser {
   private ArrayList<Integer> tokenList;
@@ -11,6 +12,7 @@ public class LexerSingletonLongestMatch extends AbstractParser {
   public int[] tokens;
   public int[] leftIndices;
   public int[] rightIndices;
+  public Integer deleteTokenCount = 0;
 
   @Override
   public void lex(String inputString, LexemeKind[] kinds, String[] strings, LexemeKind[] whitespaces) {
@@ -68,6 +70,12 @@ public class LexerSingletonLongestMatch extends AbstractParser {
       leftIndexList.add(leftIndex);
       rightIndexList.add(longestMatchRightIndex);
       inputIndex = longestMatchRightIndex;
+    }
+    if (deleteTokenCount > 0) {
+      Util.trace(6, 0, "Deleting " + deleteTokenCount + " tokens - original size " + tokenList.size() + "\n");
+      int leftIndex = tokenList.size() / 2 - deleteTokenCount / 2;
+      tokenList.subList(leftIndex, leftIndex + deleteTokenCount).clear();
+      Util.trace(6, 0, "Deleted " + deleteTokenCount + " tokens - final size " + tokenList.size() + "\n");
     }
     tokenList.add(0); // Terminating EOS
     leftIndexList.add(inputString.length());
