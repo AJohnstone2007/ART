@@ -23,15 +23,21 @@ boolean parse_X() {
 
   /* Nonterminal X, alternate 1 */
   inputIndex = iiAtEntry; oracleIndex = oiAtEntry; oracleSet(1);
-  if (match("x")) {
+  if (match("1")) {
   if (parse_X()) { return true; }}
 
   /* Nonterminal X, alternate 2 */
   inputIndex = iiAtEntry; oracleIndex = oiAtEntry; oracleSet(2);
+  if (match("0")) {
+  if (parse_X()) { return true; }}
+
+  /* Nonterminal X, alternate 3 */
+  inputIndex = iiAtEntry; oracleIndex = oiAtEntry; oracleSet(3);
   /* epsilon */  return true; 
 }
 
 void semantics_S() {
+  Attributes_X X1 = new Attributes_X(); 
   switch(oracle[oracleIndex++]) {
     case 1:
     match("b");
@@ -39,20 +45,32 @@ void semantics_S() {
 
     case 2:
     match("a");
-    semantics_X();
+    semantics_X(X1);
+    System.out.println("Result is: " + X1.v); 
     match("@");
     break;
   }
  }
 
-void semantics_X() {
+class Attributes_X { int v; }
+
+void semantics_X(Attributes_X X) {
+  Attributes_X X1 = new Attributes_X(); 
   switch(oracle[oracleIndex++]) {
     case 1:
-    match("x");
-    semantics_X();
+    match("1");
+    semantics_X(X1);
+    X.v = 1 + X1.v; 
     break;
 
     case 2:
+    match("0");
+    semantics_X(X1);
+    X.v = X1.v; 
+    break;
+
+    case 3:
+    X.v = 0; 
     /* epsilon */
     break;
   }

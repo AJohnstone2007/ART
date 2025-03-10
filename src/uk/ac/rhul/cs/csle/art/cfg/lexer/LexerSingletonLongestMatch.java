@@ -13,6 +13,7 @@ public class LexerSingletonLongestMatch extends AbstractParser {
   public int[] leftIndices;
   public int[] rightIndices;
   public Integer deleteTokenCount = 0;
+  public Integer swapTokenCount = 0;
 
   @Override
   public void lex(String inputString, LexemeKind[] kinds, String[] strings, LexemeKind[] whitespaces) {
@@ -87,6 +88,27 @@ public class LexerSingletonLongestMatch extends AbstractParser {
       tokens[i] = tokenList.get(i);
       leftIndices[i] = leftIndexList.get(i);
       rightIndices[i] = rightIndexList.get(i);
+    }
+    if (swapTokenCount > 0) {
+      Util.trace(2, 0, "Swapping " + swapTokenCount + " tokens\n");
+      int leftIndex = tokenList.size() / 2 - swapTokenCount / 2;
+      int rightIndex = tokenList.size() / 2 + swapTokenCount / 2;
+      while (leftIndex < rightIndex) {
+        int tmp = tokens[leftIndex];
+        tokens[leftIndex] = tokens[rightIndex];
+        tokens[rightIndex] = tmp;
+
+        tmp = leftIndices[leftIndex];
+        leftIndices[leftIndex] = leftIndices[rightIndex];
+        leftIndices[rightIndex] = tmp;
+
+        tmp = rightIndices[leftIndex];
+        rightIndices[leftIndex] = rightIndices[rightIndex];
+        rightIndices[rightIndex] = tmp;
+
+        leftIndex++;
+        rightIndex--;
+      }
     }
   }
 

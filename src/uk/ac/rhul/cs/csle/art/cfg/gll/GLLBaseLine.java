@@ -110,9 +110,10 @@ public class GLLBaseLine extends AbstractParser {
           break;
         }
       }
-    if (!inLanguage)
+    if (!inLanguage) {
       System.out.print(Util.echo("GLLBL " + "syntax error", leftIndices[sppfWidestIndex()], inputString));
-    else
+      // System.out.print("Widest index: " + sppfWidestIndex());
+    } else
       Util.trace(3, 0, "Accept\n");
 
     loadCounts();
@@ -260,7 +261,7 @@ public class GLLBaseLine extends AbstractParser {
   private String derivationAsTermRec(SPPFN sppfn, LinkedList<Integer> childrenFromParent, CFGNode gn) {
     // System.out.println("\nEntered derivationAsTermRec() at node " + sppfn + " instance " + gn);
     if (visitedSPPFNodes.get(sppfn.number)) {
-      if (!derivationSeenCycle) Util.error("derivationAsTermRec() found cycle in derivation");
+      if (!derivationSeenCycle) Util.error(System.err, "derivationAsTermRec() found cycle in derivation");
       derivationSeenCycle = true;
       return "__CYCLE";
     }

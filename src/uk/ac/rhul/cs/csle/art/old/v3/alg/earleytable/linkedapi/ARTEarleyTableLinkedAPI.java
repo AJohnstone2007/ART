@@ -179,7 +179,7 @@ public class ARTEarleyTableLinkedAPI extends ARTParserBase {
       System.out.println("Total removals from R = " + rSetRemovals);
       System.out.println("Final raw P with Chi set based BSRs: |PChi| = " + p.getSet().size());
       System.out.println("Final raw P with simple BSRs: |Psimple| = " + simpleBSRSet.getBSRSet().size());
-      if (artTrace > 0) {
+      if (true /* artTrace > 0 */) {
         artTraceText.println("\n" + (artIsInLanguage ? "Accept" : "Reject"));
         artTraceText.println("Total removals from R = " + rSetRemovals);
         artTraceText.println("Final raw P with Chi set based BSRs: |PChi| = " + p.getSet().size());

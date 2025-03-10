@@ -126,11 +126,13 @@ directiveElement ::=
   'include' file
 | 'whitespace'^^ '#'^ | 'whitespace'^^ whiteSpaceElements^ | 'whitespace'^^ '('^ whiteSpaceElements^ ')'^
 | 'deleteTokens'^^ __int32 
+| 'swapTokens'^^ __int32 
 | 'paraterminal'^^ '#'^ | 'paraterminal'^^ paraterminalElements^
 | 'chooser'^^ '#'^ | 'chooser'^^ ID
 
 | 'lexer'^^ '#'^ | 'lexer'^^ ID
 | 'parser'^^ '#'^ | 'parser'^^ ID
+| 'interpreter'^^ '#'^ | 'interpreter'^^ ID
 | 'support'^^ cfgNative cfgNative 
 | 'generate'^^ ID | 'generate'^^ __int32 ID
 

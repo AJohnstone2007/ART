@@ -1,5 +1,6 @@
 package uk.ac.rhul.cs.csle.art.util;
 
+import java.io.PrintStream;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
@@ -16,19 +17,35 @@ public class Util {
   }
 
   public static void info(String msg) {
-    System.out.println("*** " + msg);
+    info(System.out, msg);
+  }
+
+  public static void info(PrintStream stream, String msg) {
+    stream.println("*** " + msg);
   }
 
   public static void warning(String msg) {
-    System.out.println("*** Warning: " + msg);
+    info(System.out, msg);
+  }
+
+  public static void warning(PrintStream stream, String msg) {
+    stream.println("*** Warning: " + msg);
   }
 
   public static void error(String msg) {
-    System.out.println("*** Error: " + msg);
+    info(System.out, msg);
+  }
+
+  public static void error(PrintStream stream, String msg) {
+    stream.println("*** Error: " + msg);
   }
 
   public static void fatal(String msg) {
-    System.out.println("*** Fatal: " + msg);
+    info(System.out, msg);
+  }
+
+  public static void fatal(PrintStream stream, String msg) {
+    stream.println("*** Fatal: " + msg);
     System.exit(1);
   }
 

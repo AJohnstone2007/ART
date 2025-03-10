@@ -19,20 +19,25 @@ import java.util.Scanner;
 import java.util.Set;
 
 class RunExp {
+
   DateTimeFormatter dtf = DateTimeFormatter.ofPattern("YYYY-MM-dd,HH:mm:ss");
   int line = 1;
   static String logFileName = "log.csv", timeSummaryFileName = "timeSummary.csv", spaceSummaryFileName = "spaceSummary.csv";
 
   public static void main(String[] args) throws IOException, InterruptedException {
-    new RunExp(args);
+    if (args.length < 2)
+      fatal("Usage: java RunExp <RLC> <count> <group> <group>? ...\n" + "where <RLC> is the path to the ReferenceLanguageCorpora directory root\n"
+          + "      <count> is the number of iterations per experiment\n" + "      <group> is a group of grammars and strings to test\n\n"
+          + "      If countis zero, then skip the experimetal run, otherwise there must be at least one group. Standard groups include: org cws tok amb");
+    if (Integer.parseInt(args[1]) > 0)
+      new RunExp(args);
+    else
+      System.out.println("Count is zero - skipping experimental run and recomputing summaries");
     new MakeTimeSummary(logFileName, timeSummaryFileName);
     new MakeSpaceSummary(logFileName, spaceSummaryFileName);
   }
 
   RunExp(String[] args) throws IOException, InterruptedException {
-    if (args.length < 3) fatal("Usage: java RunExp <RLC> <count> <group> <group>? ...\n"
-        + "where <RLC> is the path to the ReferenceLanguageCorpora directory root\n" + "      <count> is the number of iterations per experiment\n"
-        + "      <group> is a group of grammars and strings to test\n\n" + "      There must be at least one group. Standard groups include: org cws tok amb");
 
     Files.deleteIfExists(Paths.get(logFileName));
     File logFile = new File(logFileName);
@@ -107,6 +112,11 @@ class RunExp {
                     System.out.println("Warning - skipping unknown script file type " + s.getName() + " must be one of: bat gtb sh");
   }
 
+  static void fatal(String msg) {
+    System.out.println(msg);
+    System.exit(0);
+  }
+
   void logExperiment(File log, int iteration, File s, File l, String a, File g, File c, File tt, File gg, File cc) throws IOException {
     String toolName = tt == null ? "bat" : tt.getName();
     System.out.println(line + " " + dtf.format(LocalDateTime.now(ZoneId.systemDefault())) + " " + toolName + " " + s.getName() + " " + l.getName() + " "
@@ -150,10 +160,6 @@ class RunExp {
     return tmp == null ? empty : tmp;
   }
 
-  void fatal(String msg) {
-    System.err.println(msg);
-    System.exit(0);
-  }
 }
 
 class SummaryKey {
@@ -239,54 +245,85 @@ class SummaryKey {
     builder.append(result);
     return builder.toString();
   }
+
 }
 
 class MakeTimeSummary {
+  final int lineCol = 0, dateCol = 1, timeCol = 2, toolCol = 3, scriptCol = 4, iterCol = 5, languageCol = 6, grammarCol = 7, stringCol = 8, lengthCol = 9,
+      algorithmCol = 10, resultCol = 11, statusCol = 12, TSetupCol = 13, TLexCol = 14, TLChooseCol = 15, TParseCol = 16, TPChooseCol = 17, TTermCol = 18,
+      TSemCol = 19, tweNCol = 20, tweECol = 21, lexesCol = 22, DescCol = 23, GSSNCol = 24, GGSECol = 25, PopsCol = 26, SPPFEpsCol = 27, SPPFTCol = 28,
+      SPPFNonTCol = 29, SPPFInterCol = 30, SPPFSymInterCol = 31, SPPFPackCol = 32, SPPFAmbCol = 33, SPPFEdgeCol = 34, SPPFCycCol = 35; // SCC Deriv N Deriv Amb
+                                                                                                                                       // Mem Pool H0 H1 H2 H3
+                                                                                                                                       // H4 H5 H6+;
+
   MakeTimeSummary(String logFileName, String summaryFileName) throws IOException {
     Files.deleteIfExists(Paths.get(summaryFileName));
     var fw = new FileWriter(new File(summaryFileName), true);
-    fw.write("tool,script,language,grammar,string,tokens,algorithm,result," + "Runs,TMin,TMax,TMean,TBest5Mean,,Results...\n");
+    fw.write("tool,script,language,grammar,string,tokens,algorithm,result,"
+        + "Runs,TMin,TMax,TMean,TStdev,TMedian,Outlier threshold,Dropped,TMeanAfterDrop,TStdedAfterDrop,Results...\n");
 
     var scanner = new Scanner(new File(logFileName));
     var header = scanner.nextLine();
     Map<SummaryKey, ArrayList<Double>> map = new HashMap<>();
     while (scanner.hasNext()) {
       String line = scanner.nextLine();
+      System.out.println(line);
       var fields = line.split(",");
       if (fields.length < 17) {
         System.out.println("Bad format: " + line);
         continue;
       }
-      var key = new SummaryKey(fields[3], fields[4], fields[6], fields[7], fields[8], fields[21], fields[10], fields[11]);
+      var key = new SummaryKey(fields[toolCol], fields[scriptCol], fields[languageCol], fields[grammarCol], fields[stringCol], fields[tweECol],
+          fields[algorithmCol], fields[resultCol]);
       if (map.get(key) == null) map.put(key, new ArrayList<Double>());
-      map.get(key).add(Double.parseDouble(fields[16])); // Add parse time
+      map.get(key).add(Double.parseDouble(fields[TParseCol])); // Add parse time
       // map.get(key).add(Double.parseDouble(fields[17])); // Add parse chooser time
     }
 
     for (var k : map.keySet()) {
-      double mean = 0;
-      double meanOfBestFive = 0;
-
       ArrayList<Double> list = map.get(k);
       Collections.sort(list);
 
+      double mean = 0;
       for (var l : list)
         mean += l;
 
       mean /= list.size();
 
-      if (list.size() < 5)
-        meanOfBestFive = mean;
-      else {
-        for (int i = 0; i < 5 && i < list.size(); i++)
-          meanOfBestFive += list.get(i);
-        meanOfBestFive /= 5;
-      }
-      fw.write(k + "," + list.size() + "," + list.get(0) + "," + list.get(list.size() - 1) + "," + String.format("%6.3f", mean) + ","
-          + String.format("%6.3f", meanOfBestFive));
-      fw.write(",***,");
+      double stdDev = 0;
       for (var l : list)
-        fw.write(l + ",");
+        stdDev += (l - mean) * (l - mean);
+
+      stdDev = Math.sqrt(stdDev / (list.size() - 1));
+
+      double quartile1 = list.get(list.size() / 4);
+      double median = list.get(list.size() / 2);
+      double quartile3 = list.get(3 * list.size() / 4);
+      double iqr = quartile3 - quartile1;
+      double outlierThreshold = quartile3 + 1.5 * iqr;
+
+      int highWaterMark;
+      for (highWaterMark = list.size() - 1; highWaterMark > 0; highWaterMark--)
+        if (list.get(highWaterMark) < outlierThreshold) break;
+
+      double meanAfterDrop = 0;
+      for (int i = 0; i <= highWaterMark; i++)
+        meanAfterDrop += list.get(i);
+
+      meanAfterDrop /= highWaterMark;
+
+      double stdDevAfterDrop = 0;
+      for (int i = 0; i <= highWaterMark; i++)
+        stdDevAfterDrop += (list.get(i) - meanAfterDrop) * (list.get(i) - meanAfterDrop);
+
+      stdDevAfterDrop = Math.sqrt(stdDevAfterDrop / (highWaterMark - 1));
+
+      fw.write(k + "," + list.size() + "," + list.get(0) + "," + list.get(list.size() - 1) + "," + String.format("%6.3f", mean) + ","
+          + String.format("%6.3f", stdDev) + "," + String.format("%6.3f", median) + "," + String.format("%6.3f", outlierThreshold) + ","
+          + (list.size() - highWaterMark) + "," + String.format("%6.3f", meanAfterDrop) + "," + String.format("%6.3f", stdDevAfterDrop));
+      fw.write(",***,");
+      // for (var l : list)
+      // fw.write(l + ",");
       fw.write("\n");
     }
     fw.close();
@@ -295,45 +332,45 @@ class MakeTimeSummary {
 
 class MakeSpaceSummary {
   MakeSpaceSummary(String logFileName, String summaryFileName) throws IOException {
-    Files.deleteIfExists(Paths.get(summaryFileName));
-    var fw = new FileWriter(new File(summaryFileName), true);
-    fw.write("tool,script,language,grammar,string,tokens,algorithm,result," + "Runs,...\n");
-
-    var scanner = new Scanner(new File(logFileName));
-    var header = scanner.nextLine();
-    Map<SummaryKey, ArrayList<Double>> map = new HashMap<>();
-    while (scanner.hasNext()) {
-      String line = scanner.nextLine();
-      var fields = line.split(",");
-      if (fields.length < 17) {
-        System.out.println("Bad format: " + line);
-        continue;
-      }
-      var key = new SummaryKey(fields[3], fields[4], fields[6], fields[7], fields[8], fields[9], fields[10], fields[11]);
-      if (map.get(key) == null) map.put(key, new ArrayList<Double>());
-      map.get(key).add(Double.parseDouble(fields[16])); // Add parse time
-    }
-
-    for (var k : map.keySet()) {
-      double mean = 0;
-      double meanOfBestFive = 0;
-
-      ArrayList<Double> list = map.get(k);
-      Collections.sort(list);
-
-      for (var l : list)
-        mean += l;
-
-      for (int i = 0; i < 5 && i < list.size(); i++)
-        meanOfBestFive += list.get(i);
-
-      fw.write(k + "," + list.size() + "," + list.get(0) + "," + list.get(list.size() - 1) + "," + String.format("%6.3f", mean / list.size()) + ","
-          + String.format("%6.3f", meanOfBestFive / 5));
-      fw.write(",***,");
-      for (var l : list)
-        fw.write(l + ",");
-      fw.write("\n");
-    }
-    fw.close();
+    // Files.deleteIfExists(Paths.get(summaryFileName));
+    // var fw = new FileWriter(new File(summaryFileName), true);
+    // fw.write("tool,script,language,grammar,string,tokens,algorithm,result," + "Runs,...\n");
+    //
+    // var scanner = new Scanner(new File(logFileName));
+    // var header = scanner.nextLine();
+    // Map<SummaryKey, ArrayList<Double>> map = new HashMap<>();
+    // while (scanner.hasNext()) {
+    // String line = scanner.nextLine();
+    // var fields = line.split(",");
+    // if (fields.length < 17) {
+    // System.out.println("Bad format: " + line);
+    // continue;
+    // }
+    // var key = new SummaryKey(fields[3], fields[4], fields[6], fields[7], fields[8], fields[9], fields[10], fields[11]);
+    // if (map.get(key) == null) map.put(key, new ArrayList<Double>());
+    // map.get(key).add(Double.parseDouble(fields[16])); // Add parse time
+    // }
+    //
+    // for (var k : map.keySet()) {
+    // double mean = 0;
+    // double meanOfBestFive = 0;
+    //
+    // ArrayList<Double> list = map.get(k);
+    // Collections.sort(list);
+    //
+    // for (var l : list)
+    // mean += l;
+    //
+    // for (int i = 0; i < 5 && i < list.size(); i++)
+    // meanOfBestFive += list.get(i);
+    //
+    // fw.write(k + "," + list.size() + "," + list.get(0) + "," + list.get(list.size() - 1) + "," + String.format("%6.3f", mean / list.size()) + ","
+    // + String.format("%6.3f", meanOfBestFive / 5));
+    // fw.write(",***,");
+    // for (var l : list)
+    // fw.write(l + ",");
+    // fw.write("\n");
+    // }
+    // fw.close();
   }
 }

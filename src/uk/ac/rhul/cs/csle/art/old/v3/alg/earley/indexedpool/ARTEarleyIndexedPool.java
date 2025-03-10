@@ -515,9 +515,9 @@ public class ARTEarleyIndexedPool extends ARTParserBase {
       // System.out.printf("e=%d, offset = %d, slot = %d\n", e, offset, slot);
 
       if (offset == 0 && pool.mapLookup_1(acceptingSlotsSet, slot) != 0) artIsInLanguage = true;
-      artLoadParseTime();
-      artLoadEndPoolAllocated(pool.poolAllocated());
     }
+    artLoadParseTime();
+    artLoadEndPoolAllocated(pool.poolAllocated());
   }
 
   // For Java...
