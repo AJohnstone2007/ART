@@ -7,11 +7,10 @@ import uk.ac.rhul.cs.csle.art.util.Util;
 
 public class AttributeActionInterpreter extends AbstractInterpreter {
   private AbstractActions artActions = new ARTDefaultActions();
-  private AbstractParser parser;
   private int previousToken;
 
   public AttributeActionInterpreter() {
-    System.out.println("Interpreter set to Attribute-Action");
+    // System.out.println("Interpreter set to Attribute-Action");
     artActions = new ARTDefaultActions(); // Set default
     try { // try to connect to user actions
       artActions = (AbstractActions) getClass().getClassLoader().loadClass("ARTGeneratedActions").getDeclaredConstructor().newInstance();

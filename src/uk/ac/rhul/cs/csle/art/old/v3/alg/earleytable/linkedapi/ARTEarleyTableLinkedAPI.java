@@ -180,22 +180,22 @@ public class ARTEarleyTableLinkedAPI extends ARTParserBase {
       System.out.println("Final raw P with Chi set based BSRs: |PChi| = " + p.getSet().size());
       System.out.println("Final raw P with simple BSRs: |Psimple| = " + simpleBSRSet.getBSRSet().size());
       if (true /* artTrace > 0 */) {
-        artTraceText.println("\n" + (artIsInLanguage ? "Accept" : "Reject"));
-        artTraceText.println("Total removals from R = " + rSetRemovals);
-        artTraceText.println("Final raw P with Chi set based BSRs: |PChi| = " + p.getSet().size());
-        artTraceText.println("Final raw P with simple BSRs: |Psimple| = " + simpleBSRSet.getBSRSet().size());
+        System.out.println("\n" + (artIsInLanguage ? "Accept" : "Reject"));
+        System.out.println("Total removals from R = " + rSetRemovals);
+        System.out.println("Final raw P with Chi set based BSRs: |PChi| = " + p.getSet().size());
+        System.out.println("Final raw P with simple BSRs: |Psimple| = " + simpleBSRSet.getBSRSet().size());
         int totalCardinality = 0;
-        artTraceText.println("Earley table sets\n");
+        System.out.println("Earley table sets\n");
         for (int i = 0; i < E.length; i++) {
           if (E[i] == null || E[i].set == null) continue;
           totalCardinality += E[i].set.size();
-          artTraceText.println(i + ": " + E[i].getSet());
+          System.out.println(i + ": " + E[i].getSet());
         }
-        artTraceText.println("Total cardinality of Earley Table sets: " + totalCardinality + "\n");
+        System.out.println("Total cardinality of Earley Table sets: " + totalCardinality + "\n");
 
-        artTraceText.println("\nFinal raw P with Chi set based BSRs: |PChi| = " + p.getSet().size() + "\n" + p);
+        System.out.println("\nFinal raw P with Chi set based BSRs: |PChi| = " + p.getSet().size() + "\n" + p);
 
-        artTraceText.println("\nFinal raw P with simple BSRs: |Psimple| = " + simpleBSRSet.getBSRSet().size() + "\n" + simpleBSRSet);
+        System.out.println("\nFinal raw P with simple BSRs: |Psimple| = " + simpleBSRSet.getBSRSet().size() + "\n" + simpleBSRSet);
       }
     }
 
@@ -259,6 +259,7 @@ public class ARTEarleyTableLinkedAPI extends ARTParserBase {
 
   @Override
   public void artParse(String inputString) {
+    artParse(inputString, "???", true);
   }
 
   @Override

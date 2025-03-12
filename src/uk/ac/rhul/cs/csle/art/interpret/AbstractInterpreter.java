@@ -4,6 +4,8 @@ import uk.ac.rhul.cs.csle.art.cfg.AbstractParser;
 import uk.ac.rhul.cs.csle.art.util.Util;
 
 public abstract class AbstractInterpreter {
+  protected AbstractParser parser;
+
   public void interpret(AbstractParser parser) {
     Util.error("interpret() not implemented for interpreter class " + this.getClass().getSimpleName());
   }
@@ -19,6 +21,6 @@ public abstract class AbstractInterpreter {
   }
 
   public void interpret(AbstractAttributeBlock nonterminalActions) {
-    Util.error("interpretProduction() not implemented for interpreter class " + this.getClass().getSimpleName());
+    Util.error("interpret() not implemented for interpreter class " + this.getClass().getSimpleName());
   }
 }

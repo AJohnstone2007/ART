@@ -111,8 +111,8 @@ public class GLLBaseLine extends AbstractParser {
         }
       }
     if (!inLanguage) {
-      System.out.print(Util.echo("GLLBL " + "syntax error", leftIndices[sppfWidestIndex()], inputString));
-      // System.out.print("Widest index: " + sppfWidestIndex());
+      System.out.println(Util.echo("GLLBL " + "syntax error", leftIndices[sppfWidestIndex()], inputString));
+      System.out.println("Widest index: " + sppfWidestIndex());
     } else
       Util.trace(3, 0, "Accept\n");
 

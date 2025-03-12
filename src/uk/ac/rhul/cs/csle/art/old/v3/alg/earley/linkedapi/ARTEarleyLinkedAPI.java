@@ -77,17 +77,17 @@ public class ARTEarleyLinkedAPI extends ARTParserBase {
   }
 
   private void printSets() {
-    artTraceText.println("Earley sets");
+    System.out.println("Earley sets");
     int totalCardinality = 0;
     for (int i = 0; i < eSets.size(); i++) {
       totalCardinality += eSets.get(i).size();
       for (ARTEarleyItem s : eSets.get(i))
-        artTraceText.println(i + ": " + s);
+        System.out.println(i + ": " + s);
     }
-    artTraceText.println("Q = " + qSet + "\nQ' = " + qPrimeSet + "\nR = " + rSet);
-    artTraceText.println("Sum over Earley set cardinalities = " + totalCardinality);
+    System.out.println("Q = " + qSet + "\nQ' = " + qPrimeSet + "\nR = " + rSet);
     System.out.println("Sum over Earley set cardinalities = " + totalCardinality);
-    artTraceText.println("Total removals from R =  " + rSetRemovals + ", total removals from Q = " + qSetRemovals + ", total removals from Q nd R together = "
+    System.out.println("Sum over Earley set cardinalities = " + totalCardinality);
+    System.out.println("Total removals from R =  " + rSetRemovals + ", total removals from Q = " + qSetRemovals + ", total removals from Q nd R together = "
         + (rSetRemovals + qSetRemovals));
     System.out.println("Total removals from R =  " + rSetRemovals + ", total removals from Q = " + qSetRemovals + ", total removals from Q nd R together = "
         + (rSetRemovals + qSetRemovals));
@@ -101,7 +101,7 @@ public class ARTEarleyLinkedAPI extends ARTParserBase {
         if (f.right != null) sppfEdgeCount++;
       }
     }
-    artTraceText.println("SPPF symbol/intermediate node count = " + sppfSymbolIntermdiateNodeCount + ", SPPF packed node count = " + sppfPackedNodeCount
+    System.out.println("SPPF symbol/intermediate node count = " + sppfSymbolIntermdiateNodeCount + ", SPPF packed node count = " + sppfPackedNodeCount
         + ", SPF edge count = " + sppfEdgeCount);
     System.out.println("SPPF symbol/intermediate node count = " + sppfSymbolIntermdiateNodeCount + ", SPPF packed node count = " + sppfPackedNodeCount
         + ", SPF edge count = " + sppfEdgeCount);
@@ -380,7 +380,8 @@ public class ARTEarleyLinkedAPI extends ARTParserBase {
 
   @Override
   public void artParse(String inputString) {
-    System.out.println("Internal error: grammar supplied to " + this.getClass());
+    artParse(inputString, null);
+    printSets();
   }
 
   @Override

@@ -15,8 +15,12 @@ public abstract class AbstractActions {
     return interpreter.lexemeCore();
   }
 
-  public void interpret(AbstractAttributeBlock instance) { // convenience wrapper method
+  protected void interpret(AbstractAttributeBlock instance) { // convenience wrapper method
     interpreter.interpret(instance);
+  }
+
+  protected Object plugin(Object... args) {
+    return interpreter.parser.cfgRules.iTerms.plugin.plugin(args);
   }
 
 }
