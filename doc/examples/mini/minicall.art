@@ -3,6 +3,11 @@
 * minicall.art for ART V5 - Adrian Johnstone 16 January 2025
 *
 *******************************************************************************)
+!support 
+!! import java.util.Map; import java.util.HashMap; !!
+!! Map<String, Integer> variables = new HashMap<>(); 
+   Map<String, AbstractAttributeBlock> procedures = new HashMap<>(); !!
+
 text ::= statements !! System.out.println("Final variable map " + variables); !!
 statements ::= statement | statement statements  
 
@@ -74,12 +79,8 @@ ID <v:String> ::= &ID !! ID.v = lexeme(); !!
 STRING_SQ <v:String> ::= &STRING_SQ !! STRING_SQ.v = lexemeCore().translateEscapes(); !!
 INTEGER      ::= &INTEGER   !! INTEGER.v = Integer.parseInt(lexeme()); !!
 
-!generate actions 
-!! import java.util.Map; import java.util.HashMap; !!
-!! Map<String, Integer> variables = new HashMap<>(); 
-   Map<String, AbstractAttributeBlock> procedures = new HashMap<>(); !!
-
-!interpreter attributeAction
+//!generate actions
+//!interpreter attributeAction
 
 //!try "print('Result: ', (3+4)*2, '\n');"
 //!try "x = 3;"

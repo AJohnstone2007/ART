@@ -48,9 +48,8 @@ e5  <v:int> ::=
 STRING_SQ <v:String> ::= &STRING_SQ !! STRING_SQ.v = lexemeCore().translateEscapes(); !!
 INTEGER <v:int>      ::= &INTEGER   !! INTEGER.v = Integer.parseInt(lexeme()); !!
 
-!interpreter attributeAction
+//!generate actions 
+//!interpreter attributeAction
 
 !try "print('Result: ', 3+4, '\n');"
-!print outcome
-!generate actions 
 

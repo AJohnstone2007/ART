@@ -1,0 +1,51 @@
+(*******************************************************************************
+*
+* miniSyntax.art for ART V5 - Adrian Johnstone 31 December 2024
+*
+*******************************************************************************)
+statement ::= 'print' '(' printElements ')' ';'
+
+printElements ::= 
+  STRING_SQ  
+| STRING_SQ ',' printElements 
+| e0                
+| e0 ',' printElements
+
+e0 ::= 
+  e1        
+| e1 '>'  e1   
+| e1 '<'  e1   
+| e1 '>=' e1   
+| e1 '<=' e1   
+| e1 '==' e1   
+| e1 '!=' e1   
+
+e1 ::= 
+  e2
+| e1 '+' e2     
+| e1 '-' e2    
+
+e2 ::= 
+  e3         
+| e2 '*' e3  
+| e2 '/' e3  
+| e2 '%' e3  
+
+e3 ::= 
+  e4        
+| '+' e3     
+| '-' e3     
+
+e4 ::= 
+  e5         
+| e5 '**' e4
+
+e5 ::= 
+  INTEGER 
+| '(' e1 ')'
+
+(* Lexical productions *)
+STRING_SQ ::= &STRING_SQ
+INTEGER   ::= &INTEGER  
+
+!try "print('Result: ', 3+4, '\n');"
