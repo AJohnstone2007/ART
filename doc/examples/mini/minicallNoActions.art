@@ -1,0 +1,67 @@
+text ::= statements 
+statements ::= statement | statement statements  
+
+statement ::= 
+  ID '=' e0 ';'      
+| 'if' e0 'then' statement elseOpt 
+| 'while' e0 'do' statement        
+| 'print' '(' printElements ')' ';' 
+| 'procedure' ID statement!< 
+| 'call' ID ';'  
+| '{' statements '}'                
+
+elseOpt ::= 'else' statement | #     
+
+printElements ::= 
+  STRING_SQ | STRING_SQ  ',' printElements 
+| e0 | e0  ',' printElements  
+
+e0 ::= 
+  e1 
+| e1 '>'  e1        (* Greater than *)
+| e1 '<'  e1        (* Less than *)
+| e1 '>=' e1        (* Greater than or equals*)
+| e1 '<=' e1        (* Less than or equals *)
+| e1 '==' e1        (* Equal to *)
+| e1 '!=' e1        (* Not equal to *)
+
+e1 ::= 
+  e2   
+| e1 '+' e2         (* Add *)
+| e1 '-' e2         (* Subtract *)
+
+e2 ::= 
+  e3   
+| e2 '*' e3         (* Multiply *)
+| e2 '/' e3         (* Divide *)
+| e2 '%' e3         (* Mod *)
+
+e3 ::= 
+  e4  
+| '+' e3            (* Posite *)
+| '-' e3            (* Negate *)
+
+e4 ::= 
+  e5  
+| e5 '**' e4        (* exponentiate *)
+
+e5 ::= 
+  INTEGER           (* Integer literal *)
+| ID                (* Variable access *)
+| '(' e1  ')'       (* Parenthesised expression *)
+       
+(* Lexical productions *)
+ID ::= &ID   
+STRING_SQ ::= &STRING_SQ 
+INTEGER  ::= &INTEGER   
+
+!try "
+procedure sub { print('Hello from a procedure\n'); }
+
+x = 3;
+while x > 0 do { print('x is ', x, '\n'); x = x -1; }
+
+call sub;
+"
+
+
