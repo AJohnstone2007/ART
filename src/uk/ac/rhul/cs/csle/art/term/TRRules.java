@@ -70,7 +70,7 @@ public class TRRules {
       return term;
     }
     if (configurationMap.get(relation) == null) {
-      Util.warning("Uneliding against relation " + iTerms.toRawString(relation) + " but no corresponding !configuration; skipping");
+      // Util.warning("Uneliding against relation " + iTerms.toRawString(relation) + " but no corresponding !configuration; skipping");
       return term;
     }
     // System.out.println("Uneliding against relation " + iTerms.toRawString(relation) + " " + iTerms.toRawString(term));
