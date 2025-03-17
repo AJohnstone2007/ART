@@ -481,7 +481,7 @@ public class CFGRules {
     if (javaAllowedMethods.contains(attributeID)) return; // Silent return
 
     if (isNative)
-      Util.warning("ignoring native action attribute-like element " + nonterminalID + "." + attributeID + " in production for nonterminal " + lhs);
+      ; // Util.warning("ignoring native action attribute-like element " + nonterminalID + "." + attributeID + " in production for nonterminal " + lhs);
     else
       Util.fatal("invalid attribute " + nonterminalID + "." + attributeID + " in production for nonterminal " + lhs);
   }

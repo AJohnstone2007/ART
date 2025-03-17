@@ -58,7 +58,8 @@ public class ActionsGenerator {
         // GET
         text.println("\n    public AbstractAttributeBlock getAttributes(int nodeNumber) {\n      switch(nodeNumber){");
         printAllGetsRec(text, cfgRules.elementToNodeMap.get(e).alt);
-        text.println("      default: Util.fatal(\"getAttributes: unknown node \" + nodeNumber); return null;\n      }\n    }");
+        text.println(
+            "      default: Util.fatal(\"getAttributes: unknown node \" + nodeNumber + \". Probable out-of-date ARTGeneratedActions - regenerate and recompile\"); return null;\n      }\n    }");
 
         // ACTION
         text.println("\n    public void action(int nodeNumber) {\n      switch(nodeNumber){");

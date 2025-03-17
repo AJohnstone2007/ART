@@ -40,7 +40,7 @@ printElements ::=
 | e0 !! System.out.print(e01.v); !! 
 | e0 !! System.out.print(e01.v); !! ',' printElements  
 
-e0 ::= 
+e0<v:int> ::= 
   e1 !! e0.v = e11.v; !!
 | e1 '>'  e1 !! e0.v = e11.v >  e12.v ? 1 : 0; !!       (* Greater than *)
 | e1 '<'  e1 !! e0.v = e11.v <  e12.v ? 1 : 0; !!       (* Less than *)
@@ -49,27 +49,27 @@ e0 ::=
 | e1 '==' e1 !! e0.v = e11.v == e12.v ? 1 : 0; !!       (* Equal to *)
 | e1 '!=' e1 !! e0.v = e11.v != e12.v ? 1 : 0; !!       (* Not equal to *)
 
-e1 ::= 
+e1<v:int> ::= 
   e2 !! e1.v = e21.v; !!  
 | e1 '+' e2 !! e1.v = e11.v + e21.v; !!                 (* Add *)
 | e1 '-' e2 !! e1.v = e11.v - e21.v; !!                 (* Subtract *)
 
-e2 ::= 
+e2<v:int> ::= 
   e3 !! e2.v= e31.v; !!  
 | e2 '*' e3 !! e2.v = e21.v * e31.v; !!                 (* Multiply *)
 | e2 '/' e3 !! e2.v = e21.v / e31.v; !!                 (* Divide *)
 | e2 '%' e3 !! e2.v = e21.v % e31.v; !!                 (* Mod *)
 
-e3 ::= 
+e3<v:int> ::= 
   e4 !!e3.v = e41.v; !! 
 | '+' e3 !!e3.v = e31.v; !!                             (* Posite *)
 | '-' e3 !!e3.v = -e31.v; !!                            (* Negate *)
 
-e4 ::= 
+e4<v:int> ::= 
   e5 !! e4.v = e51.v; !! 
 | e5 '**' e4 !!e4.v = (int) Math.pow(e51.v, e41.v); !!  (* exponentiate *)
 
-e5 ::= 
+e5<v:int> ::= 
   INTEGER !!e5.v = INTEGER1.v; !!                       (* Integer literal *)
 | ID !! e5.v = variables.get(ID1.v); !!                 (* Variable access *)
 | '(' e1 !! e5.v = e11.v; !! ')'                        (* Parenthesised expression *)
@@ -77,7 +77,7 @@ e5 ::=
 (* Lexical productions *)
 ID <v:String> ::= &ID !! ID.v = lexeme(); !!  
 STRING_SQ <v:String> ::= &STRING_SQ !! STRING_SQ.v = lexemeCore().translateEscapes(); !!
-INTEGER      ::= &INTEGER   !! INTEGER.v = Integer.parseInt(lexeme()); !!
+INTEGER<v:int>       ::= &INTEGER   !! INTEGER.v = Integer.parseInt(lexeme()); !!
 
 //!generate actions
 //!interpreter attributeAction
@@ -87,15 +87,12 @@ INTEGER      ::= &INTEGER   !! INTEGER.v = Integer.parseInt(lexeme()); !!
 
 
 !try "
-{
 procedure sub { print('Hello from a procedure\n'); }
-
 
 x = 3;
 while x > 0 do { print('x is ', x, '\n'); x = x -1; }
 
 call sub;
-}
 "
 
 

@@ -34,6 +34,7 @@ public class AttributeActionInterpreter extends AbstractInterpreter {
 
   @Override
   public void interpret(AbstractAttributeBlock attributes) {
+    if (attributes == null) Util.fatal("Invalid ARTGeneratedActions - debug, regenerate and recompile");
     CFGNode altNode = parser.cfgRules.numberToNodeMap.get(intFromTermSymbol(attributes.term));
     var children = parser.cfgRules.iTerms.termChildren(attributes.term);
     int childNumber = 0;

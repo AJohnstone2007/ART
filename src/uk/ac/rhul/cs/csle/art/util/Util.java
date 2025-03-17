@@ -41,7 +41,7 @@ public class Util {
   }
 
   public static void fatal(String msg) {
-    info(System.out, msg);
+    fatal(System.out, msg);
   }
 
   public static void fatal(PrintStream stream, String msg) {
