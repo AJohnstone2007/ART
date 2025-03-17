@@ -87,7 +87,7 @@ public class CFGNode {
       ret = "???";
       break;
     }
-    if (slotTerm != 0) ret += (Util.escapeString(ScriptTermInterpreter.iTerms.toString(slotTerm)));
+    if (slotTerm != 0) ret += Util.escapeString(ScriptTermInterpreter.iTerms.toString(slotTerm), false);
     return ret;
   }
 

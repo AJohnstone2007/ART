@@ -122,8 +122,78 @@ public class Util {
     return lineCount;
   }
 
-  public static String escapeString(String string) {
-    return string.replaceAll("\"", "\\\\\"");
+  public static String unescapeString(String str) {
+    return unescapeString(str, 0, 0);
+  }
+
+  public static String unescapeString(String str, int leftDelimiterWidth, int rightDelimiterWidth) {
+    char ret[] = new char[str.length()];
+    int retI = 0;
+    char[] chars = str.toCharArray();
+
+    for (int i = leftDelimiterWidth; i < chars.length - rightDelimiterWidth; i++)
+      if (chars[i] == '\\')
+        switch (chars[++i]) {
+        case 'b':
+          ret[retI++] = '\b';
+          break;
+        case 'f':
+          ret[retI++] = '\f';
+          break;
+        case 'n':
+          ret[retI++] = '\n';
+          break;
+        case 'r':
+          ret[retI++] = '\r';
+          break;
+        case 't':
+          ret[retI++] = '\t';
+          break;
+        default:
+          ret[retI++] = chars[i];
+        }
+      else
+        ret[retI++] = chars[i];
+
+    return new String(ret, 0, retI);
+  }
+
+  public static String escapeString(String str, boolean escapeSpace) {
+    StringBuilder sb = new StringBuilder();
+    char[] chars = str.toCharArray();
+
+    for (var c : chars)
+      switch (c) {
+      case '\b':
+        sb.append("\\b");
+        break;
+      case '\f':
+        sb.append("\\f");
+        break;
+      case '\n':
+        sb.append("\\n");
+        break;
+      case '\r':
+        sb.append("\\r");
+        break;
+      case '\t':
+        sb.append("\\t");
+        break;
+      case '\'':
+        sb.append("\\'");
+        break;
+      case '"':
+        sb.append("\\\"");
+        break;
+      case ' ':
+        if (escapeSpace) sb.append("\\");
+        sb.append(c);
+        break;
+      default:
+        sb.append(c);
+      }
+
+    return sb.toString();
   }
 
   static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");

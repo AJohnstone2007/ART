@@ -42,8 +42,14 @@ public class AJDebug {
   ScriptTermInterpreter regressionScriptInterpreter;
 
   public AJDebug(String[] args) {
+    System.out.println("ajdebug " + args[1]);
+    testStringEscapes();
+
+    // testSetRegressions(args);
+  }
+
+  private void testSetRegressions(String[] args) {
     try {
-      System.out.println("ajdebug " + args[1]);
       Path arg1AsPath = Paths.get(args[1]);
       if (args[1].endsWith(".art"))
         processFile(arg1AsPath);
@@ -55,6 +61,16 @@ public class AJDebug {
     } catch (IOException e) {
       e.printStackTrace();
     }
+  }
+
+  void testStringEscapes() {
+    String str = "adr\"i\'\n\t\r  an";
+    System.out.println(str);
+    String escStr = Util.escapeString(str, true);
+    System.out.println(escStr);
+    String unescStr = Util.unescapeString(escStr);
+    System.out.println(unescStr);
+    System.out.println(unescStr.equals(str) ? "Same" : "Different");
   }
 
   private void processFile(Path filePath) throws IOException {

@@ -210,14 +210,30 @@ public class ITerms {
   }
 
   /* Meta character handling for string version of a term **************************************************/
-  static Set<Character> metaCharacters = Set.of('(', ')', ',', '*', ':', '\\', '\"', ' ');
+  static Set<Character> termMetaCharacters = Set.of('(', ')', ',', ':', ' ', '\\', (char) 0, '\b', '\n', '\r', '\t');
+  static Set<Character> termStopCharacters = Set.of('(', ')', ',', ':', ' ', (char) 0, '\b', '\n', '\r', '\t');
 
   public static String escapeMeta(String string) {
     StringBuilder sb = new StringBuilder();
     for (int i = 0; i < string.length(); i++) {
       char c = string.charAt(i);
-      if (metaCharacters.contains(c)) sb.append('\\');
-      sb.append(c);
+      if (termMetaCharacters.contains(c)) sb.append('\\');
+      switch (c) {
+      case '\b':
+        sb.append('b');
+        break;
+      case '\n':
+        sb.append('n');
+        break;
+      case '\r':
+        sb.append('r');
+        break;
+      case '\t':
+        sb.append('t');
+        break;
+      default:
+        sb.append(c);
+      }
     }
     return sb.toString();
   }
@@ -231,7 +247,7 @@ public class ITerms {
       if (c == '\\') {
         i++;
         c = string.charAt(i);
-        if (!metaCharacters.contains(c)) Util.fatal("iTerms.unescapeMeta found escaped non-meta character");
+        if (!termMetaCharacters.contains(c)) Util.fatal("iTerms.unescapeMeta found escaped non-meta character");
       }
       sb.append(c);
       i++;
@@ -392,37 +408,30 @@ public class ITerms {
 
   private int parseSymbolName() {
     String name = new String();
-    if (Character.isWhitespace(parseCurrentCharacter) || parseCurrentCharacter == '(' || parseCurrentCharacter == ')' || parseCurrentCharacter == ','
-        || parseCurrentCharacter == ':' || parseCurrentCharacter == (char) 0) {
-      parseSyntaxError("Empty name");
-    }
-    /* 31 March 2021 - added literal strings as names */
-    /* 3 January 2022 - dropped quotes from parsed payload */
-    /* 27 May 2022 - retain backslashes */
+    if (termStopCharacters.contains(parseCurrentCharacter)) parseSyntaxError("Empty name");
 
-    // 1. String processing
-    if (parseCurrentCharacter == '"') {
-      do {
-        name += parseCurrentCharacter;
-        if (parseCurrentCharacter == '\\') {
-          getc();
-          name += parseCurrentCharacter;
-        }
-        getc();
-      } while (parseCurrentCharacter != '"');
-      name += parseCurrentCharacter;
-      getc();
-    } else
-      // 2. nonstring processing
-      while (!Character.isWhitespace(parseCurrentCharacter) && parseCurrentCharacter != '(' && parseCurrentCharacter != ')' && parseCurrentCharacter != ','
-          && parseCurrentCharacter != ':' && parseCurrentCharacter != (char) 0) {
-        if (parseCurrentCharacter == '\\') {
-          // name += cc;
-          getc();
-        }
-        name += parseCurrentCharacter;
+    // // 1. String processing
+    // if (parseCurrentCharacter == '"') {
+    // do {
+    // name += parseCurrentCharacter;
+    // if (parseCurrentCharacter == '\\') {
+    // getc();
+    // name += parseCurrentCharacter;
+    // }
+    // getc();
+    // } while (parseCurrentCharacter != '"');
+    // name += parseCurrentCharacter;
+    // getc();
+    // } else
+    // 2. nonstring processing
+    while (!termStopCharacters.contains(parseCurrentCharacter)) {
+      if (parseCurrentCharacter == '\\') {
+        // name += cc;
         getc();
       }
+      name += parseCurrentCharacter;
+      getc();
+    }
 
     parseWhiteSpace();
     return findString(name);
