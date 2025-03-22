@@ -25,7 +25,7 @@ public class Util {
   }
 
   public static void warning(String msg) {
-    info(System.out, msg);
+    warning(System.out, msg);
   }
 
   public static void warning(PrintStream stream, String msg) {
@@ -33,7 +33,7 @@ public class Util {
   }
 
   public static void error(String msg) {
-    info(System.out, msg);
+    error(System.out, msg);
   }
 
   public static void error(PrintStream stream, String msg) {

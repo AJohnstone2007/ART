@@ -28,7 +28,10 @@ public class AttributeActionInterpreter extends AbstractInterpreter {
   @Override
   public void interpret(AbstractParser parser) {
     this.parser = parser;
-    var root = artActions.init(this, parser.derivationAsInterpeterTerm());
+    int interpreterTerm = parser.derivationAsInterpeterTerm();
+    // ScriptTermInterpreter.iTerms.toDot(interpreterTerm, "interpreterTerm.dot");
+
+    var root = artActions.init(this, interpreterTerm);
     interpret(root);
   }
 
@@ -54,6 +57,7 @@ public class AttributeActionInterpreter extends AbstractInterpreter {
         break;
       }
       childNumber++;
+      // System.out.println("Calling action " + node.toStringAsProduction());
       attributes.action(node.num);
     }
   }
