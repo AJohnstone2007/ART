@@ -112,7 +112,7 @@ public class ScriptTermInterpreter {
     ret.addActionBreak("directive", (Integer t) -> directiveAction(t), null, null);
 
     ret.addActionBreak("cfgLHS", (Integer t) -> currentCFGRules.lhsAction(childSymbolString(t)), null, null);
-    ret.addActionBreak("cfgAttributeDeclaration", (Integer t) -> currentCFGRules.attributeAction(childSymbolString(t), childSymbolString1(t)), null, null);
+    ret.addAction("cfgAttributeDeclaration", (Integer t) -> currentCFGRules.attributeAction(childSymbolString(t), childSymbolString1(t)), null, null);
     ret.addAction("cfgSeq", (Integer t) -> currentCFGRules.altAction(), null, (Integer t) -> currentCFGRules.endAction(""));
 
     ret.addAction("cfgEpsilon", (Integer t) -> currentCFGRules.updateWorkingNode(CFGKind.EPS, "#", t), null, null);
