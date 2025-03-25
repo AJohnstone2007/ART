@@ -1,4 +1,6 @@
-package uk.ac.rhul.cs.csle.art.util;
+package uk.ac.rhul.cs.csle.art.util.gss;
+
+import uk.ac.rhul.cs.csle.art.util.sppf.SPPFN;
 
 public class GSSE {
   public final GSSN dst;

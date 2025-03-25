@@ -1,4 +1,4 @@
-package uk.ac.rhul.cs.csle.art.util;
+package uk.ac.rhul.cs.csle.art.util.relation;
 
 import java.util.HashMap;
 import java.util.HashSet;

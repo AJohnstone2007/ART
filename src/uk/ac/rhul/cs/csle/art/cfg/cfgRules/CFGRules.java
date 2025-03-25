@@ -16,8 +16,8 @@ import java.util.regex.Pattern;
 
 import uk.ac.rhul.cs.csle.art.cfg.lexer.LexemeKind;
 import uk.ac.rhul.cs.csle.art.term.ITerms;
-import uk.ac.rhul.cs.csle.art.util.Relation;
 import uk.ac.rhul.cs.csle.art.util.Util;
+import uk.ac.rhul.cs.csle.art.util.relation.Relation;
 
 public class CFGRules {
   public final ITerms iTerms;

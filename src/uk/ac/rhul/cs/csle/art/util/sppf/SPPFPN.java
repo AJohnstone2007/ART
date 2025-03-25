@@ -1,4 +1,4 @@
-package uk.ac.rhul.cs.csle.art.util;
+package uk.ac.rhul.cs.csle.art.util.sppf;
 
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
 

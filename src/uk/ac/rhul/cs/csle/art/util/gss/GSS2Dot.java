@@ -1,4 +1,4 @@
-package uk.ac.rhul.cs.csle.art.util;
+package uk.ac.rhul.cs.csle.art.util.gss;
 
 import java.io.File;
 import java.io.FileNotFoundException;

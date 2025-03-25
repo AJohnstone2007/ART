@@ -20,57 +20,28 @@ import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGKind;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.GIFTKind;
 import uk.ac.rhul.cs.csle.art.cfg.lexer.LexemeKind;
-import uk.ac.rhul.cs.csle.art.util.Desc;
-import uk.ac.rhul.cs.csle.art.util.GSS2Dot;
-import uk.ac.rhul.cs.csle.art.util.GSSE;
-import uk.ac.rhul.cs.csle.art.util.GSSN;
-import uk.ac.rhul.cs.csle.art.util.Relation;
-import uk.ac.rhul.cs.csle.art.util.RelationOverNaturals;
-import uk.ac.rhul.cs.csle.art.util.SPPFN;
-import uk.ac.rhul.cs.csle.art.util.SPPFNode;
-import uk.ac.rhul.cs.csle.art.util.SPPFPN;
 import uk.ac.rhul.cs.csle.art.util.Util;
+import uk.ac.rhul.cs.csle.art.util.gss.GSS2Dot;
+import uk.ac.rhul.cs.csle.art.util.gss.GSSE;
+import uk.ac.rhul.cs.csle.art.util.gss.GSSN;
+import uk.ac.rhul.cs.csle.art.util.process.Desc;
+import uk.ac.rhul.cs.csle.art.util.relation.Relation;
+import uk.ac.rhul.cs.csle.art.util.relation.RelationOverNaturals;
+import uk.ac.rhul.cs.csle.art.util.sppf.SPPF;
+import uk.ac.rhul.cs.csle.art.util.sppf.SPPFN;
+import uk.ac.rhul.cs.csle.art.util.sppf.SPPFNode;
+import uk.ac.rhul.cs.csle.art.util.sppf.SPPFPN;
 
 public class GLLBaseLine extends AbstractParser {
-  private final BitSet visitedSPPFNodes = new BitSet(), suppressedSPPFNode = new BitSet();
-
-  /* Temporary disambiguation before choosers are implemented ****************/
-  @Override
-  public void chooseLongestMatch() {
-    visitedSPPFNodes.clear();
-    chooseLongestMatchRec(sppfRootNode);
-  }
-
-  private void chooseLongestMatchRec(SPPFN sn) {
-    if (visitedSPPFNodes.get(sn.number)) return;
-    visitedSPPFNodes.set(sn.number);
-
-    int rightMostPivot = -1;
-    SPPFPN candidate = null;
-    if (sn.packNS.size() > 1) {
-      Util.warning("Ambiguity detected at SPPF node " + sn.number + ": " + sn.gn.toStringAsProduction() + " involving ");
-      for (var p : sn.packNS)
-        Util.info("   " + p.toString());
-    }
-    for (SPPFPN p : sn.packNS) {
-      if (p.pivot > rightMostPivot) {
-        rightMostPivot = p.pivot;
-        candidate = p;
-      }
-      if (p.leftChild != null) chooseLongestMatchRec(p.leftChild);
-      if (p.rightChild != null) chooseLongestMatchRec(p.rightChild);
-    }
-
-    for (SPPFPN p : sn.packNS)
-      if (p != candidate) p.suppressed = true;
-  }
+  SPPF sppf = new SPPF();
+  final BitSet visitedSPPFNodes = new BitSet();
+  private final BitSet suppressedSPPFNode = new BitSet();
 
   /* Parser ******************************************************************/
   @Override
   public void parse() {
     descS = new HashSet<>();
     descQ = new LinkedList<>();
-    sppf = new HashMap<>();
     gss = new HashMap<>();
     gssRoot = new GSSN(cfgRules.endOfStringNode, 0);
     gss.put(gssRoot, gssRoot);
@@ -129,22 +100,7 @@ public class GLLBaseLine extends AbstractParser {
       Util.trace(3, 0, "Accept\n");
 
     loadCounts();
-    numberSPPFNodes();
-  }
-
-  int sppfCardinality;
-
-  private void numberSPPFNodes() {
-    sppfCardinality = 1;
-    for (var n : sppf.keySet())
-      n.number = sppfCardinality++;
-    for (var n : sppf.keySet())
-      for (var p : n.packNS) {
-        p.parent = n;
-        p.number = sppfCardinality++;
-      }
-
-    sppfReachable = new RelationOverNaturals(sppfCardinality, sppfCardinality);
+    sppf.numberSPPFNodes();
   }
 
   /* Thread handling *********************************************************/
@@ -194,7 +150,7 @@ public class GLLBaseLine extends AbstractParser {
   void ret() {
     if (sn.equals(gssRoot)) { // Deque base
       if (cfgRules.acceptingNodeNumbers.contains(gn.num) && (i == tokens.length - 1)) {
-        sppfRootNode = sppf.get(new SPPFN(cfgRules.elementToNodeMap.get(cfgRules.startNonterminal), 0, tokens.length - 1));
+        sppf.rootNode = sppf.nodes.get(new SPPFN(cfgRules.elementToNodeMap.get(cfgRules.startNonterminal), 0, tokens.length - 1));
         inLanguage = true;
       }
       return; // End of parse
@@ -205,19 +161,16 @@ public class GLLBaseLine extends AbstractParser {
   }
 
   /* Derivation handling *****************************************************/
-  Map<SPPFN, SPPFN> sppf;
-  SPPFN sppfRootNode;
-
   SPPFN sppfFind(CFGNode dn, int li, int ri) {
     // System.out.print("sppfFind with dn " + dn.toStringAsProduction() + " with extents " + li + "," + ri);
 
     SPPFN tmp = new SPPFN(dn, li, ri);
-    if (!sppf.containsKey(tmp)) {
-      sppf.put(tmp, tmp);
+    if (!sppf.nodes.containsKey(tmp)) {
+      sppf.nodes.put(tmp, tmp);
       // System.out.print(" added " + tmp);
     }
-    // System.out.println(" resulting sppf\n" + sppf.keySet());
-    return sppf.get(tmp);
+    // System.out.println(" resulting sppf\n" + sppf.nodes.keySet());
+    return sppf.nodes.get(tmp);
   }
 
   SPPFN sppfUpdate(CFGNode gn, SPPFN ln, SPPFN rn) {
@@ -236,7 +189,7 @@ public class GLLBaseLine extends AbstractParser {
 
   private int sppfWidestIndex() {
     int ret = 0;
-    for (SPPFN s : sppf.keySet())
+    for (SPPFN s : sppf.nodes.keySet())
       if (ret < s.ri) ret = s.ri;
     return ret;
   }
@@ -260,12 +213,12 @@ public class GLLBaseLine extends AbstractParser {
 
   @Override
   public int derivationAsTerm() {
-    if (sppfRootNode == null) return 0;
+    if (sppf.rootNode == null) return 0;
     visitedSPPFNodes.clear();
     derivationSeenCycle = false;
     LinkedList<Integer> carrier = new LinkedList<>();
-    derivationAsTermRec(sppfRootNode, carrier, firstAvailablePackNode(sppfRootNode).gn.seq); // Root packed node must have a grammar node that is the end of a
-                                                                                             // start production
+    derivationAsTermRec(sppf.rootNode, carrier, firstAvailablePackNode(sppf.rootNode).gn.seq); // Root packed node must have a grammar node that is the end of a
+    // start production
     loadDerivationCounts(derivationNodeCount, derivationAmbiguityNodeCount);
     return carrier.getFirst();
   }
@@ -349,7 +302,7 @@ public class GLLBaseLine extends AbstractParser {
 
   public boolean ambiguityCheck() {
     ambiguousSPPF = false;
-    if (sppfRootNode != null) ambiguityCheckRec(sppfRootNode);
+    if (sppf.rootNode != null) ambiguityCheckRec(sppf.rootNode);
     return ambiguousSPPF;
   }
 
@@ -385,7 +338,7 @@ public class GLLBaseLine extends AbstractParser {
 
     int sppfEpsilonNodeCount = 0, sppfTerminalNodeCount = 0, sppfNonterminalNodeCount = 0, sppfIntermediateNodeCount = 0, sppfPackNodeCount = 0,
         sppfAmbiguityCount = 0, sppfEdgeCount = 0;
-    for (SPPFN s : sppf.keySet()) {
+    for (SPPFN s : sppf.nodes.keySet()) {
       switch (s.gn.elm.kind) {
       // Dodgy - how do we test the flavour of an SPPF node?
       case T, TI, C, B:
@@ -404,8 +357,8 @@ public class GLLBaseLine extends AbstractParser {
       }
     }
 
-    loadSPPFCounts(sppfEpsilonNodeCount, sppfTerminalNodeCount, sppfNonterminalNodeCount, sppfIntermediateNodeCount, sppf.keySet().size(), sppfPackNodeCount,
-        sppfAmbiguityCount, sppfEdgeCount);
+    loadSPPFCounts(sppfEpsilonNodeCount, sppfTerminalNodeCount, sppfNonterminalNodeCount, sppfIntermediateNodeCount, sppf.nodes.keySet().size(),
+        sppfPackNodeCount, sppfAmbiguityCount, sppfEdgeCount);
     // loadPoolAllocated(-1);
     // loadHashCounts(-20, -21, -22, -23, -24, -25, -26);
   }
@@ -420,808 +373,650 @@ public class GLLBaseLine extends AbstractParser {
 
   @Override
   public void sppfPrint() {
-    if (sppf == null || sppfRootNode == null) {
+    if (sppf == null || sppf.rootNode == null) {
       Util.warning("Current parser does not have a current SPPF - skipping SPPF printing");
       return;
     }
-    for (var n : sppf.keySet()) {
+    for (var n : sppf.nodes.keySet()) {
       System.out.println(n);
       for (var pn : n.packNS)
         System.out.println(pn);
     }
   }
 
-  // class SPPF2Dot {
-  final String rootNodeStyle = "[style=filled fillcolor=lightgreen]";
-  final String packNodeStyle = "[style=rounded]";
-  final String ambiguousStyle = "[color=orange]";
-  final String cycleStyle = "[color=red]";
-  final String intermediateNodeStyle = "[style=filled fillcolor=grey92]";
-  final String symbolNodeStyle = "";
-  final String unreachableSymbolNodeStyle = "[style=filled fillcolor=lightyellow]";
-  final String unreachablePackNodeStyle = "[style=\"filled,rounded\" fillcolor=lightyellow]";
-  final String deletedPackNodeStyle = "[style=\"filled,rounded\" fillcolor=cornflowerblue]";
-  final String deletedPrimePackNodeStyle = "[style=\"filled,rounded\" fillcolor=pink]";
-  final String deletedAndDeletedPrimePackNodeStyle = "[style=\"filled,rounded\" fillcolor=mediumpurple]";
-  PrintStream dotOut = null;
-  private boolean showIndicies;
-  private boolean showIntermediates;
+  class SPPFCycleBreak {
+    private final SPPF sppf;
+    private final Deque<SPPFNode> visitedDeque = new ArrayDeque<>(); // Only usedby sppfCycleRec to keep a list of visited nodes during descent
+    private Set<SPPFNode> xNodesBeforeBreaking; // All cyclic nodes - only used by SPPF diagnostics
+    private Set<SPPFN> xS; // Set of cYclic symbol or intermediate nodes; a subset of the X in Elizabeth's note
+    private Set<SPPFPN> xP; // Set of cYclic packed nodes; X = Xs U Xp
+    private final Relation<SPPFNode, SPPFNode> sppfReachableSlow = new Relation<>();
+    private RelationOverNaturals sppfReachable;
+    private boolean cycleBreakTrace;
+    private boolean cycleBreakCounts;
+    private boolean cycleBreakStatistics;
 
-  @Override
-  public void sppf2Dot() {
-
-    if (sppf == null || sppfRootNode == null) {
-      Util.warning("Current parser does not have a current SPPF - skipping SPPF visualisation");
-      return;
-    }
-    sppfComputeCoreReachability(null);
-
-    SPPF2Dot(sppf, sppfRootNode, "sppf_full.dot", true, true, false); // full SPPF
-    SPPF2Dot(sppf, sppfRootNode, "sppf_core.dot", false, true, true); // core SPPF - only nodes reachable from (S,0,n)
-  }
-
-  @Override
-  public void derivation2Dot() {
-    if (sppf == null || sppfRootNode == null) {
-      Util.warning("Current parser does not have a current SPPF - skipping derivation visualisation");
-      return;
-    }
-    derivation2Dot(sppf, sppfRootNode, "derivation.dot", false, false); // full SPPF
-  }
-
-  public void derivation2Dot(Map<SPPFN, SPPFN> sppf, SPPFN rootNode, String filename, boolean showNodeNumbers, boolean showIndices) {
-
-    try {
-      dotOut = new PrintStream(new File(filename));
-      dotOut.println("digraph \"Derivation\" {\n"
-          + "graph[ordering=out ranksep=0.1]\n node[fontname=Helvetica fontsize=9 shape=box height=0 width=0 margin=0.04 color=gray]\nedge[arrowsize=0.3 color=gray]");
-      visitedSPPFNodes.clear();
-      derivationToDotRec(rootNode, 0, showNodeNumbers, showIndices);
-      dotOut.println("}");
-      dotOut.close();
-    } catch (FileNotFoundException e) {
-      System.out.println("Unable to write SPPF visualisation to " + filename);
-    }
-  }
-
-  int nextFreeNodeNumber = 0;
-
-  private void derivationToDotRec(SPPFN sppfn, int parent, boolean showNodeNumbers, boolean showIndices) {
-    if (visitedSPPFNodes.get(sppfn.number)) return;
-    visitedSPPFNodes.set(sppfn.number);
-
-    int nodeNumber = parent;
-
-    if (sppfn.isSymbol()) {
-      nodeNumber = ++nextFreeNodeNumber;
-      dotOut.println("\"" + nodeNumber + "\"" + symbolNodeStyle + " [label=\"" + (showNodeNumbers ? "" + nodeNumber : "") + " " + sppfn.gn.toString() + " "
-          + (showIndices ? sppfn.li + ", " + sppfn.ri : "") + "\"]");
-
-      if (parent != 0) dotOut.println("\"" + parent + "\"" + "->" + "\"" + nodeNumber + "\"");
+    SPPFCycleBreak(SPPF sppf) {
+      this.sppf = sppf;
     }
 
-    // Recurse to an unsuppressed packed node
-    for (SPPFPN p : sppfn.packNS) {
-      if (!p.suppressed) {
-        if (p.leftChild != null) derivationToDotRec(p.leftChild, nodeNumber, showNodeNumbers, showIndices);
-        derivationToDotRec(p.rightChild, nodeNumber, showNodeNumbers, showIndices);
-        break;
-      }
-    }
-    visitedSPPFNodes.clear(sppfn.number);
-  }
+    void sppfComputeCoreReachability(Set<CFGNode> cyclicCFGSlots) {
 
-  public void SPPF2Dot(Map<SPPFN, SPPFN> sppf, SPPFN rootNode, String filename, boolean full, boolean showIndicies, boolean showIntermediates) {
-    this.showIndicies = showIndicies;
-    this.showIntermediates = showIntermediates;
-
-    try {
-      dotOut = new PrintStream(new File(filename));
-      dotOut.println("digraph \"SPPF\" {\n"
-          + "graph[ordering=out ranksep=0.1]\n node[fontname=Helvetica fontsize=9 shape=box height=0 width=0 margin=0.04 color=gray]\nedge[arrowsize=0.3 color=gray]");
-      if (full)
-        for (SPPFN n : sppf.keySet())
-          sppfSubtreeToDot(n);
-      else {
-        visitedSPPFNodes.clear();
-        coreSPPFToDotRec(rootNode);
-      }
-      dotOut.println("}");
-      dotOut.close();
-    } catch (FileNotFoundException e) {
-      System.out.println("Unable to write SPPF visualisation to " + filename);
-    }
-  }
-
-  private void coreSPPFToDotRec(SPPFN sppfn) {
-    if (visitedSPPFNodes.get(sppfn.number)) return;
-    visitedSPPFNodes.set(sppfn.number);
-
-    sppfSubtreeToDot(sppfn);
-
-    for (SPPFPN p : sppfn.packNS) { // Recurse through packed nodes
-      if (p.leftChild != null) coreSPPFToDotRec(p.leftChild);
-      if (p.rightChild != null) coreSPPFToDotRec(p.rightChild);
-    }
-  }
-
-  private void sppfSubtreeToDot(SPPFN sppfn) {
-    boolean isAmbiguous = sppfn.packNS.size() > 1;
-    if (sppfn.isSymbol())
-      dotOut.println(
-          "\"" + sppfn.number + "\"" + symbolNodeStyle + " [label=\"" + sppfn.number + " " + sppfn.gn.toString() + " " + sppfn.li + ", " + sppfn.ri + "\"]");
-    else
-      dotOut.println("\"" + sppfn.number + "\"" + intermediateNodeStyle + " [label=\"" + sppfn.number + " " + sppfn.gn.toStringAsProduction() + " " + sppfn.li
-          + ", " + sppfn.ri + "\"]");
-
-    if (isAmbiguous) dotOut.println(ambiguousStyle);
-    if (sppfCyclic.get(sppfn.number)) dotOut.println(cycleStyle);
-    if (!sppfRootReachable.get(sppfn.number)) dotOut.println(unreachableSymbolNodeStyle);
-    if (sppfn == sppfRootNode) dotOut.println(rootNodeStyle);
-
-    for (SPPFPN p : sppfn.packNS) {
-      boolean isCyclicP = sppfCyclic.get(p.number);
-
-      dotOut.println("\"" + p.number + "\"" + packNodeStyle + " [label=\"" + p.number + ": " + p.gn.toStringAsProduction() + " , " + p.pivot + "\"]");
-      if (isCyclicP) dotOut.println(cycleStyle);
-      if (!sppfRootReachable.get(p.number)) dotOut.println(unreachablePackNodeStyle);
-
-      if (cbD.contains(p) && cbDPrime.contains(p))
-        dotOut.println(deletedAndDeletedPrimePackNodeStyle);
-      else if (cbD.contains(p))
-        dotOut.println(deletedPackNodeStyle);
-      else if (cbDPrime.contains(p)) dotOut.println(deletedPrimePackNodeStyle);
-      dotOut.println("\"" + sppfn.number + "\"" + "->" + "\"" + p.number + "\"");
-
-      if (isCyclicP)
-        dotOut.println(cycleStyle);
-      else if (isAmbiguous) dotOut.println(ambiguousStyle);
-
-      if (p.leftChild != null) {
-        dotOut.println("\"" + p.number + "\"" + "->" + "\"" + p.leftChild.number + "\"");
-        if (isCyclicP && sppfCyclic.get(p.leftChild.number)) dotOut.println(cycleStyle);
+      if (sppf == null || sppf.rootNode == null) {
+        Util.warning("Current parser does not have a current SPPF - skipping reachability analysis");
+        return;
       }
 
-      dotOut.println("\"" + p.number + "\"" + "->" + "\"" + p.rightChild.number + "\"");
-      if (isCyclicP && sppfCyclic.get(p.rightChild.number)) dotOut.println(cycleStyle);
-    }
-  }
-  // }
-  /* SPPF cycle breaking **********************************************************************/
+      // System.out.println("Cyclic slots: " + cyclicCFGSlots);
 
-  private final Deque<SPPFNode> visitedDeque = new ArrayDeque<>(); // Only usedby sppfCycleRec to keep a list of visited nodes during descent
-  private Set<SPPFNode> xNodesBeforeBreaking; // All cyclic nodes - only used by SPPF diagnostics
-  private Set<SPPFN> xS; // Set of cYclic symbol or intermediate nodes; a subset of the X in Elizabeth's note
-  private Set<SPPFPN> xP; // Set of cYclic packed nodes; X = Xs U Xp
-  private Set<SPPFPN> cbD = new HashSet<>(); // Set of deleted cyclic nodes: D in Elizabeth's note
-  private final Set<SPPFPN> cbDPrime = new HashSet<>(); // Set of deleted cyclic nodes: D' in Elizabeth's note
-  private final Relation<SPPFNode, SPPFNode> sppfReachableSlow = new Relation<>();
-  private RelationOverNaturals sppfReachable;
-  private final BitSet sppfCyclic = new BitSet();
-  private BitSet sppfRootReachable;
-  private boolean cycleBreakTrace;
-  private boolean cycleBreakCounts;
-  private boolean cycleBreakStatistics;
-
-  private void sppfComputeCoreReachability(Set<CFGNode> cyclicCFGSlots) {
-
-    if (sppf == null || sppfRootNode == null) {
-      Util.warning("Current parser does not have a current SPPF - skipping reachability analysis");
-      return;
-    }
-
-    // System.out.println("Cyclic slots: " + cyclicCFGSlots);
-
-    sppfReachable.clear();
-    // System.out.println("After clearing sppfReachable, contents are:\n" + sppfReachable);
-    for (var n : sppf.keySet())
-      for (var p : n.packNS) {
-        if (cbD.contains(p)) {
-          // System.out.println("Skipping Deleted packed node " + p);
-          continue;
-        }
-
-        if (cyclicCFGSlots != null && !cyclicCFGSlots.contains(p.gn)) continue;
-
-        // System.out.println("Adding cyclicSPPFNode " + n);
-        sppfReachable.add(n.number, p.number);
-        if (p.leftChild != null) sppfReachable.add(p.number, p.leftChild.number);
-        sppfReachable.add(p.number, p.rightChild.number);
-
-      }
-    // System.out.println("After initialising sppfReachable, contents are:\n" + sppfReachable);
-    sppfReachable.transitiveClosure();
-    // System.out.println("After transitive closure of sppfReachable, contents are:\n" + sppfReachable);
-
-    sppfRootReachable = sppfReachable.getCodomain(sppfRootNode.number);
-    // System.out.println("Root reachable set: " + sppfRootReachable);
-    sppfCyclic.clear();
-    for (int n = 0; n < sppfReachable.domainSize(); n++)
-      if (sppfReachable.get(n, n)) sppfCyclic.set(n);
-  }
-
-  @Override
-  public void sppfPrintCyclicSPPFNodesFromReachability() {
-    sppfComputeCoreReachability(cfgRules.cyclicSlots);
-    System.out.println(sppfCyclic.isEmpty() ? "There are no cyclic nodes" : "Cyclic nodes are");
-    for (int i = 0; i < sppfCyclic.length(); i++)
-      if (sppfCyclic.get(i)) System.out.print("  " + i);
-    System.out.println();
-  }
-
-  public void loadXPartitionsFromReachability() {
-    // In this implementation, X is represented by its packed node and symbol node partitions xP and xS
-    xP = new HashSet<>();
-    xS = new HashSet<>();
-    for (var n : sppf.keySet())
-      if (sppfCyclic.get(n.number)) {
-        xS.add(n);
-        for (var p : n.packNS)
-          if (sppfCyclic.get(p.number)) {
-            // xNodesBeforeBreaking.add(p);
-            xP.add(p);
+      sppfReachable.clear();
+      // System.out.println("After clearing sppfReachable, contents are:\n" + sppfReachable);
+      for (var n : sppf.nodes.keySet())
+        for (var p : n.packNS) {
+          if (sppf.cbD.contains(p)) {
+            // System.out.println("Skipping Deleted packed node " + p);
+            continue;
           }
-      }
-  }
 
-  public void loadXPartitionsFromCFGRulesRec(SPPFN n) {
-    if (visitedSPPFNodes.get(n.number)) return;
-    visitedSPPFNodes.set(n.number);
-    // System.out.println("loadXPartitionsFromCFGRulesRec() entered " + n);
-    for (var p : n.packNS) {
-      if (cfgRules.cyclicSlots.contains(p.gn)) {
-        xS.add(n);
-        // System.out.println("Added cyclic symbol node " + n);
-        xP.add(p);
-        // System.out.println("Added cyclic packed node " + p);
-      }
+          if (cyclicCFGSlots != null && !cyclicCFGSlots.contains(p.gn)) continue;
 
-      if (p.leftChild != null) loadXPartitionsFromCFGRulesRec(p.leftChild);
-      loadXPartitionsFromCFGRulesRec(p.rightChild);
-    }
-  }
+          // System.out.println("Adding cyclicSPPFNode " + n);
+          sppfReachable.add(n.number, p.number);
+          if (p.leftChild != null) sppfReachable.add(p.number, p.leftChild.number);
+          sppfReachable.add(p.number, p.rightChild.number);
 
-  void trace(String msg) {
-    if (cycleBreakTrace) System.out.println(msg);
-  }
-
-  private int cycleBreakPass;
-
-  boolean sppfCycleBreak() {
-    trace("SPPF cycle break pass " + cycleBreakPass++ + " with xS:" + xS + " xP:" + xP + " D:" + cbD + " D':" + cbDPrime);
-    for (var v : new HashSet<>(xS)) {
-      trace("Checking symbol node " + v + " with child predicate " + noPackedChildInXp(v, xP));
-      if (noPackedChildInXp(v, xP)) {
-        xS.remove(v);
-        if (cycleBreakTrace) System.out.println("Removed from xS: " + v);
-        return true;
-      }
-    }
-
-    for (var v : new HashSet<>(xP)) {
-      trace("Checking packed node " + v + " with child predicate " + noSymbolChildInXs(v, xS) + " and sibling predicate " + somePackedSiblingNotInXp(v, xP));
-
-      if (noSymbolChildInXs(v, xS) || somePackedSiblingNotInXp(v, xP)) {
-        xP.remove(v);
-        if (cycleBreakTrace) System.out.println("Removed from xP: " + v);
-        if (!noSymbolChildInXs(v, xS) && somePackedSiblingNotInXp(v, xP)) cbD.add(v);
-        return true;
-      }
-    }
-    return false;
-  }
-
-  boolean sppfCycleBreakOriginal() {
-    trace("SPPF cycle break pass " + cycleBreakPass++ + " with xS:" + xS + " xP:" + xP + " D:" + cbD + " D':" + cbDPrime);
-    for (var v : new HashSet<>(xS)) {
-      trace("Checking symbol node " + v + " with child predicate " + noPackedChildInXp(v, xP));
-      if (noPackedChildInXp(v, xP)) {
-        xS.remove(v);
-        if (cycleBreakTrace) System.out.println("Removed from xS: " + v);
-        return true; // Unnecessary? Experiment 1
-        // break; // Experiment 2: Break out of loop instead of return
-        // Experiment 3: remember v in loop and then remove directly from xS outside of the loop
-      }
-    }
-
-    for (var v : new HashSet<>(xP)) {
-      trace("Checking packed node " + v + " with child predicate " + noSymbolChildInXs(v, xS) + " and sibling predicate " + somePackedSiblingNotInXp(v, xP));
-
-      if (noSymbolChildInXs(v, xS) || somePackedSiblingNotInXp(v, xP)) {
-        xP.remove(v);
-        if (cycleBreakTrace) System.out.println("Removed from xP: " + v);
-        // if (noSymbolChildInX(v, xS) && somePackedSiblingNotInX(v, xP)) cbDPrime.add(v); // Not needed for base algorithm
-        if (!noSymbolChildInXs(v, xS) && somePackedSiblingNotInXp(v, xP)) cbD.add(v);
-        return true;
-      }
-    }
-    return false;
-  }
-
-  private void cbUpdate(SPPFPN v, Set<SPPFPN> Dset) {
-    Dset.add(v);
-    xP.remove(v);
-    if (cycleBreakTrace) System.out.println("Removed from xP: " + v);
-  }
-
-  private void cbUpdate(SPPFN v) {
-    xS.remove(v);
-    if (cycleBreakTrace) System.out.println("Removed from xS: " + v);
-  }
-
-  // children(v) ∩ Xi = ∅ (symbol node child predicate)
-  public boolean noPackedChildInXp(SPPFN sppfN, Set<SPPFPN> xP) {
-    for (var pn : sppfN.packNS)
-      if (xP.contains(pn)) return false;
-    return true;
-  }
-
-  // children(v) ∩ Xi = ∅ (packed node child predicate)
-  public boolean noSymbolChildInXs(SPPFPN sppfPN, Set<SPPFN> xS) {
-    if (sppfPN.leftChild != null && xS.contains(sppfPN.leftChild)) return false;
-    if (xS.contains(sppfPN.rightChild)) return false;
-    return true;
-  }
-
-  // sibling(v) ̸⊆ Xi (packed node sibling predicate)
-  public boolean somePackedSiblingNotInXp(SPPFPN sppfPN, Set<SPPFPN> xP) {
-    for (var p : sppfPN.parent.packNS)
-      if (p != sppfPN && !xP.contains(p)) return true;
-    return false;
-  }
-
-  private long cycleBreakStartTime, cycleBreakEndTime;
-  private int countSymbol = 0;
-  private int countInter = 0;
-  private int countPacked = 0;
-  private int countPara = 0;
-  private int countTerm = 0;
-  private int countEps = 0;
-  private boolean countRemove = false;
-  Set<SPPFNode> countReachable;
-
-  @Override
-  public void sppfBreakCycles(boolean trace, boolean counts, boolean statistics) {
-    if (sppf == null || sppfRootNode == null) {
-      Util.warning("Current parser does not have a current SPPF - skipping cycle breaking");
-      return;
-    }
-    this.cycleBreakTrace = cycleBreakTrace;
-    this.cycleBreakCounts = counts;
-    this.cycleBreakStatistics = statistics;
-    xP = new HashSet<>();
-    xS = new HashSet<>();
-    cbD = new HashSet<>();
-    countReachable = new HashSet<>();
-    visitedSPPFNodes.clear();
-    loadXPartitionsFromCFGRulesRec(sppfRootNode);
-
-    if (statistics) {
-      System.out.print(inputString.length() + "," + getClass().getSimpleName() + "," + (inLanguage ? "accept" : "reject") + ",");
-      countSymbol = countInter = countPacked = countPara = countTerm = countEps = 0;
-      visitedSPPFNodes.clear();
-      countRemove = false;
-      sppfBreakCyclesCountsRec(sppfRootNode);
-      System.out.print(countSymbol + "," + countInter + "," + countPacked + "," + countPara + "," + countTerm + "," + countEps + "," + xS.size() + ","
-          + xP.size() + "," + cbD.size());
-    }
-
-    if (counts) {
-      System.out.println("Core:\tSymbol\tInter\tPacked\tPara\tTerm\tEps\t|Xs|\t|Xp|\t|D|");
-      countSymbol = countInter = countPacked = countPara = countTerm = countEps = 0;
-      visitedSPPFNodes.clear();
-      countRemove = false;
-      sppfBreakCyclesCountsRec(sppfRootNode);
-      System.out.println("Before\t" + countSymbol + "\t" + countInter + "\t" + countPacked + "\t" + countPara + "\t" + countTerm + "\t" + countEps + "\t"
-          + xS.size() + "\t" + xP.size() + "\t" + cbD.size());
-    }
-
-    cycleBreakStartTime = System.nanoTime();
-    if (xS.size() + xP.size() < 10000)
-      newCycleBreak();
-    else
-      System.out.println("Crowbarred");// Crowbar away large examples
-    cycleBreakEndTime = System.nanoTime();
-
-    if (statistics) {
-      countSymbol = countInter = countPacked = countPara = countTerm = countEps = 0;
-      visitedSPPFNodes.clear();
-      countRemove = true;
-      sppfBreakCyclesCountsRec(sppfRootNode);
-      System.out.println("," + countSymbol + "," + countInter + "," + countPacked + "," + countPara + "," + countTerm + "," + countEps + "," + xS.size() + ","
-          + xP.size() + "," + cbD.size() + "," + timeAsMilliseconds(cycleBreakStartTime, cycleBreakEndTime));
-    }
-
-    if (counts) {
-      countSymbol = countInter = countPacked = countPara = countTerm = countEps = 0;
-      visitedSPPFNodes.clear();
-      countRemove = true;
-      sppfBreakCyclesCountsRec(sppfRootNode);
-      System.out.println("After\t" + countSymbol + "\t" + countInter + "\t" + countPacked + "\t" + countPara + "\t" + countTerm + "\t" + countEps + "\t"
-          + xS.size() + "\t" + xP.size() + "\t" + cbD.size());
-      System.out.println("Cycle break time " + timeAsMilliseconds(cycleBreakStartTime, cycleBreakEndTime) + "ms");
-      System.out.println("Nodes made unreachable by cycle breaking");
-      if (countReachable.size() == 0)
-        System.out.println("--None--");
-      else
-        for (var n : countReachable) {
-          if (n instanceof SPPFN) {
-            SPPFN nn = (SPPFN) n;
-
-            if (nn.li != nn.ri) System.out.print("*");
-          }
-          System.out.println(n);
         }
+      // System.out.println("After initialising sppfReachable, contents are:\n" + sppfReachable);
+      sppfReachable.transitiveClosure();
+      // System.out.println("After transitive closure of sppfReachable, contents are:\n" + sppfReachable);
+
+      sppf.rootReachable = sppfReachable.getCodomain(sppf.rootNode.number);
+      // System.out.println("Root reachable set: " + sppfRootReachable);
+      sppf.cyclic.clear();
+      for (int n = 0; n < sppfReachable.domainSize(); n++)
+        if (sppfReachable.get(n, n)) sppf.cyclic.set(n);
     }
 
-  }
-
-  private void updateCountReachable(SPPFNode n) {
-    if (countRemove)
-      countReachable.remove(n);
-    else
-      countReachable.add(n);
-  }
-
-  private void sppfBreakCyclesCountsRec(SPPFN sppfn) {
-    // System.out.println("\nEntered sppfBreakCyclesCountsRec() at node " + node);
-    if (visitedSPPFNodes.get(sppfn.number)) return;
-    visitedSPPFNodes.set(sppfn.number);
-    updateCountReachable(sppfn);
-
-    if (sppfn.gn.elm.kind == CFGKind.EPS)
-      countEps++;
-    else if (sppfn.packNS.size() == 0)
-      countTerm++;
-    else if (cfgRules.paraterminalElements.contains(sppfn.gn.elm)) {
-      countPara++;
-      return;
-    } else if (sppfn.isSymbol())
-      countSymbol++;
-    else
-      countInter++;
-
-    for (SPPFPN p : sppfn.packNS) { // Recurse through packed nodes
-      if (cbD.contains(p)) continue;
-      updateCountReachable(p);
-      countPacked++;
-      if (p.leftChild != null) sppfBreakCyclesCountsRec(p.leftChild);
-      if (p.rightChild != null) sppfBreakCyclesCountsRec(p.rightChild);
+    public void sppfPrintCyclicSPPFNodesFromReachability() {
+      sppfComputeCoreReachability(cfgRules.cyclicSlots);
+      System.out.println(sppf.cyclic.isEmpty() ? "There are no cyclic nodes" : "Cyclic nodes are");
+      for (int i = 0; i < sppf.cyclic.length(); i++)
+        if (sppf.cyclic.get(i)) System.out.print("  " + i);
+      System.out.println();
     }
-  }
 
-  private void newCycleBreak() {
-    boolean changedXpI, changedXpO = true;
-    Stack<SPPFN> y1 = new Stack<>();
-    Stack<SPPFPN> y2 = new Stack<>();
-    SPPFPN v = null;
-
-    while (changedXpO) {
-      changedXpO = false;
-      for (var vp : xP) {
-        if (somePackedSiblingNotInXp(vp, xP)) {
-          v = vp;
-          cbD.add(vp);
-          changedXpO = true;
-          break;
-        }
-      }
-
-      if (changedXpO) {
-        xP.remove(v);
-        changedXpI = true;
-        while (changedXpI) {
-          changedXpI = false;
-          for (var vs : xS)
-            if (noPackedChildInXp(vs, xP)) y1.push(vs);
-          while (!y1.empty())
-            xS.remove(y1.pop());
-
-          for (var vip : xP) {
-            if (noSymbolChildInXs(vip, xS)) {
-              y2.push(vip);
-              changedXpI = true;
+    public void loadXPartitionsFromReachability() {
+      // In this implementation, X is represented by its packed node and symbol node partitions xP and xS
+      xP = new HashSet<>();
+      xS = new HashSet<>();
+      for (var n : sppf.nodes.keySet())
+        if (sppf.cyclic.get(n.number)) {
+          xS.add(n);
+          for (var p : n.packNS)
+            if (sppf.cyclic.get(p.number)) {
+              // xNodesBeforeBreaking.add(p);
+              xP.add(p);
             }
-          }
-
-          while (!y2.empty())
-            xP.remove(y2.pop());
         }
+    }
+
+    public void loadXPartitionsFromCFGRulesRec(SPPFN n) {
+      if (visitedSPPFNodes.get(n.number)) return;
+      visitedSPPFNodes.set(n.number);
+      // System.out.println("loadXPartitionsFromCFGRulesRec() entered " + n);
+      for (var p : n.packNS) {
+        if (cfgRules.cyclicSlots.contains(p.gn)) {
+          xS.add(n);
+          // System.out.println("Added cyclic symbol node " + n);
+          xP.add(p);
+          // System.out.println("Added cyclic packed node " + p);
+        }
+
+        if (p.leftChild != null) loadXPartitionsFromCFGRulesRec(p.leftChild);
+        loadXPartitionsFromCFGRulesRec(p.rightChild);
       }
     }
-  }
 
-  class Configuration {
-    final Set<SPPFPN> xP1;
-    final Set<SPPFN> xS1;
-    final Set<SPPFPN> d;
-    final Set<SPPFPN> dPrime;
-
-    public Configuration(Set<SPPFPN> xP, Set<SPPFN> xS, Set<SPPFPN> d, Set<SPPFPN> dPrime) {
-      super();
-      this.xP1 = xP;
-      this.xS1 = xS;
-      this.d = d;
-      this.dPrime = dPrime;
+    void trace(String msg) {
+      if (cycleBreakTrace) System.out.println(msg);
     }
 
-    public Configuration(Configuration c) {
-      xP1 = new HashSet<>(c.xP1);
-      xS1 = new HashSet<>(c.xS1);
-      d = new HashSet<>(c.d);
-      dPrime = new HashSet<>(c.dPrime);
+    private int cycleBreakPass;
+
+    boolean sppfCycleBreak() {
+      trace("SPPF cycle break pass " + cycleBreakPass++ + " with xS:" + xS + " xP:" + xP + " D:" + sppf.cbD + " D':" + sppf.cbDPrime);
+      for (var v : new HashSet<>(xS)) {
+        trace("Checking symbol node " + v + " with child predicate " + noPackedChildInXp(v, xP));
+        if (noPackedChildInXp(v, xP)) {
+          xS.remove(v);
+          if (cycleBreakTrace) System.out.println("Removed from xS: " + v);
+          return true;
+        }
+      }
+
+      for (var v : new HashSet<>(xP)) {
+        trace("Checking packed node " + v + " with child predicate " + noSymbolChildInXs(v, xS) + " and sibling predicate " + somePackedSiblingNotInXp(v, xP));
+
+        if (noSymbolChildInXs(v, xS) || somePackedSiblingNotInXp(v, xP)) {
+          xP.remove(v);
+          if (cycleBreakTrace) System.out.println("Removed from xP: " + v);
+          if (!noSymbolChildInXs(v, xS) && somePackedSiblingNotInXp(v, xP)) sppf.cbD.add(v);
+          return true;
+        }
+      }
+      return false;
     }
 
-    @Override
-    public int hashCode() {
-      final int prime = 31;
-      int result = 1;
-      result = prime * result + ((d == null) ? 0 : d.hashCode());
-      result = prime * result + ((dPrime == null) ? 0 : dPrime.hashCode());
-      result = prime * result + ((xP1 == null) ? 0 : xP1.hashCode());
-      result = prime * result + ((xS1 == null) ? 0 : xS1.hashCode());
-      return result;
+    boolean sppfCycleBreakOriginal() {
+      trace("SPPF cycle break pass " + cycleBreakPass++ + " with xS:" + xS + " xP:" + xP + " D:" + sppf.cbD + " D':" + sppf.cbDPrime);
+      for (var v : new HashSet<>(xS)) {
+        trace("Checking symbol node " + v + " with child predicate " + noPackedChildInXp(v, xP));
+        if (noPackedChildInXp(v, xP)) {
+          xS.remove(v);
+          if (cycleBreakTrace) System.out.println("Removed from xS: " + v);
+          return true; // Unnecessary? Experiment 1
+          // break; // Experiment 2: Break out of loop instead of return
+          // Experiment 3: remember v in loop and then remove directly from xS outside of the loop
+        }
+      }
+
+      for (var v : new HashSet<>(xP)) {
+        trace("Checking packed node " + v + " with child predicate " + noSymbolChildInXs(v, xS) + " and sibling predicate " + somePackedSiblingNotInXp(v, xP));
+
+        if (noSymbolChildInXs(v, xS) || somePackedSiblingNotInXp(v, xP)) {
+          xP.remove(v);
+          if (cycleBreakTrace) System.out.println("Removed from xP: " + v);
+          // if (noSymbolChildInX(v, xS) && somePackedSiblingNotInX(v, xP)) sppf.cbDPrime.add(v); // Not needed for base algorithm
+          if (!noSymbolChildInXs(v, xS) && somePackedSiblingNotInXp(v, xP)) sppf.cbD.add(v);
+          return true;
+        }
+      }
+      return false;
     }
 
-    @Override
-    public boolean equals(Object obj) {
-      if (this == obj) return true;
-      if (obj == null) return false;
-      if (getClass() != obj.getClass()) return false;
-      Configuration other = (Configuration) obj;
-      if (d == null) {
-        if (other.d != null) return false;
-      } else if (!d.equals(other.d)) return false;
-      if (dPrime == null) {
-        if (other.dPrime != null) return false;
-      } else if (!dPrime.equals(other.dPrime)) return false;
-      if (xP1 == null) {
-        if (other.xP1 != null) return false;
-      } else if (!xP1.equals(other.xP1)) return false;
-      if (xS1 == null) {
-        if (other.xS1 != null) return false;
-      } else if (!xS1.equals(other.xS1)) return false;
+    private void cbUpdate(SPPFPN v, Set<SPPFPN> Dset) {
+      Dset.add(v);
+      xP.remove(v);
+      if (cycleBreakTrace) System.out.println("Removed from xP: " + v);
+    }
+
+    private void cbUpdate(SPPFN v) {
+      xS.remove(v);
+      if (cycleBreakTrace) System.out.println("Removed from xS: " + v);
+    }
+
+    // children(v) ∩ Xi = ∅ (symbol node child predicate)
+    public boolean noPackedChildInXp(SPPFN sppfN, Set<SPPFPN> xP) {
+      for (var pn : sppfN.packNS)
+        if (xP.contains(pn)) return false;
       return true;
     }
 
-    @Override
-    public String toString() {
-      StringBuilder builder = new StringBuilder();
-      builder.append("< xP:");
-      builder.append(xP1);
-      // builder.append("\n");
-      builder.append(" xS:");
-      builder.append(xS1);
-      // builder.append("\n");
-      builder.append(" d:");
-      builder.append(d);
-      // builder.append("\n");
-      builder.append(" dP':");
-      builder.append(dPrime);
-      builder.append(">");
-      return builder.toString();
+    // children(v) ∩ Xi = ∅ (packed node child predicate)
+    public boolean noSymbolChildInXs(SPPFPN sppfPN, Set<SPPFN> xS) {
+      if (sppfPN.leftChild != null && xS.contains(sppfPN.leftChild)) return false;
+      if (xS.contains(sppfPN.rightChild)) return false;
+      return true;
     }
-  }
 
-  Deque<Configuration> q = new LinkedList<>();
-  Set<Configuration> queued = new HashSet<>();
-  Relation<Configuration, Configuration> breakRelation = new Relation<>();
-  // PrintStream dotOut = null;
+    // sibling(v) ̸⊆ Xi (packed node sibling predicate)
+    public boolean somePackedSiblingNotInXp(SPPFPN sppfPN, Set<SPPFPN> xP) {
+      for (var p : sppfPN.parent.packNS)
+        if (p != sppfPN && !xP.contains(p)) return true;
+      return false;
+    }
 
-  boolean breakCyclesRelationTrace = false;
+    private long cycleBreakStartTime, cycleBreakEndTime;
+    private int countSymbol = 0;
+    private int countInter = 0;
+    private int countPacked = 0;
+    private int countPara = 0;
+    private int countTerm = 0;
+    private int countEps = 0;
+    private boolean countRemove = false;
+    Set<SPPFNode> countReachable;
 
-  @Override
-  public void sppfBreakCyclesRelation() {
-    Configuration c, cp;
-    sppfComputeCoreReachability(null); // computes sppfCyclic (set of cyclic SPPF nodes)
-    loadXPartitionsFromReachability(); // Load X from computed cyclic nodes as partitions xP and xS
+    public void sppfBreakCycles(boolean trace, boolean counts, boolean statistics) {
+      if (sppf == null || sppf.rootNode == null) {
+        Util.warning("Current parser does not have a current SPPF - skipping cycle breaking");
+        return;
+      }
+      this.cycleBreakTrace = cycleBreakTrace;
+      this.cycleBreakCounts = counts;
+      this.cycleBreakStatistics = statistics;
+      xP = new HashSet<>();
+      xS = new HashSet<>();
+      sppf.cbD = new HashSet<>();
+      countReachable = new HashSet<>();
+      visitedSPPFNodes.clear();
+      loadXPartitionsFromCFGRulesRec(sppf.rootNode);
 
-    Configuration c_0 = new Configuration(xP, xS, new HashSet<SPPFPN>(), new HashSet<SPPFPN>());
-    q.add(c_0); // enqueue start element
-    System.out.println("C_0: " + c_0);
+      if (statistics) {
+        System.out.print(inputString.length() + "," + getClass().getSimpleName() + "," + (inLanguage ? "accept" : "reject") + ",");
+        countSymbol = countInter = countPacked = countPara = countTerm = countEps = 0;
+        visitedSPPFNodes.clear();
+        countRemove = false;
+        sppfBreakCyclesCountsRec(sppf.rootNode);
+        System.out.print(countSymbol + "," + countInter + "," + countPacked + "," + countPara + "," + countTerm + "," + countEps + "," + xS.size() + ","
+            + xP.size() + "," + sppf.cbD.size());
+      }
 
-    while (q.size() != 0) {
-      c = q.removeFirst(); // deqeue c
-      if (breakCyclesRelationTrace) System.out.println("** Processing: " + c);
+      if (counts) {
+        System.out.println("Core:\tSymbol\tInter\tPacked\tPara\tTerm\tEps\t|Xs|\t|Xp|\t|D|");
+        countSymbol = countInter = countPacked = countPara = countTerm = countEps = 0;
+        visitedSPPFNodes.clear();
+        countRemove = false;
+        sppfBreakCyclesCountsRec(sppf.rootNode);
+        System.out.println("Before\t" + countSymbol + "\t" + countInter + "\t" + countPacked + "\t" + countPara + "\t" + countTerm + "\t" + countEps + "\t"
+            + xS.size() + "\t" + xP.size() + "\t" + sppf.cbD.size());
+      }
 
-      for (var v : c.xS1) {
-        if (breakCyclesRelationTrace) System.out.println("Checking symbol node: " + v);
-        if (noPackedChildInXp(v, c.xP1)) {
-          zcbUpdate(c, v, false, false);
+      cycleBreakStartTime = System.nanoTime();
+      if (xS.size() + xP.size() < 10000)
+        newCycleBreak();
+      else
+        System.out.println("Crowbarred");// Crowbar away large examples
+      cycleBreakEndTime = System.nanoTime();
+
+      if (statistics) {
+        countSymbol = countInter = countPacked = countPara = countTerm = countEps = 0;
+        visitedSPPFNodes.clear();
+        countRemove = true;
+        sppfBreakCyclesCountsRec(sppf.rootNode);
+        System.out.println("," + countSymbol + "," + countInter + "," + countPacked + "," + countPara + "," + countTerm + "," + countEps + "," + xS.size() + ","
+            + xP.size() + "," + sppf.cbD.size() + "," + timeAsMilliseconds(cycleBreakStartTime, cycleBreakEndTime));
+      }
+
+      if (counts) {
+        countSymbol = countInter = countPacked = countPara = countTerm = countEps = 0;
+        visitedSPPFNodes.clear();
+        countRemove = true;
+        sppfBreakCyclesCountsRec(sppf.rootNode);
+        System.out.println("After\t" + countSymbol + "\t" + countInter + "\t" + countPacked + "\t" + countPara + "\t" + countTerm + "\t" + countEps + "\t"
+            + xS.size() + "\t" + xP.size() + "\t" + sppf.cbD.size());
+        System.out.println("Cycle break time " + timeAsMilliseconds(cycleBreakStartTime, cycleBreakEndTime) + "ms");
+        System.out.println("Nodes made unreachable by cycle breaking");
+        if (countReachable.size() == 0)
+          System.out.println("--None--");
+        else
+          for (var n : countReachable) {
+            if (n instanceof SPPFN) {
+              SPPFN nn = (SPPFN) n;
+
+              if (nn.li != nn.ri) System.out.print("*");
+            }
+            System.out.println(n);
+          }
+      }
+
+    }
+
+    private void updateCountReachable(SPPFNode n) {
+      if (countRemove)
+        countReachable.remove(n);
+      else
+        countReachable.add(n);
+    }
+
+    private void sppfBreakCyclesCountsRec(SPPFN sppfn) {
+      // System.out.println("\nEntered sppfBreakCyclesCountsRec() at node " + node);
+      if (visitedSPPFNodes.get(sppfn.number)) return;
+      visitedSPPFNodes.set(sppfn.number);
+      updateCountReachable(sppfn);
+
+      if (sppfn.gn.elm.kind == CFGKind.EPS)
+        countEps++;
+      else if (sppfn.packNS.size() == 0)
+        countTerm++;
+      else if (cfgRules.paraterminalElements.contains(sppfn.gn.elm)) {
+        countPara++;
+        return;
+      } else if (sppfn.isSymbol())
+        countSymbol++;
+      else
+        countInter++;
+
+      for (SPPFPN p : sppfn.packNS) { // Recurse through packed nodes
+        if (sppf.cbD.contains(p)) continue;
+        updateCountReachable(p);
+        countPacked++;
+        if (p.leftChild != null) sppfBreakCyclesCountsRec(p.leftChild);
+        if (p.rightChild != null) sppfBreakCyclesCountsRec(p.rightChild);
+      }
+    }
+
+    private void newCycleBreak() {
+      boolean changedXpI, changedXpO = true;
+      Stack<SPPFN> y1 = new Stack<>();
+      Stack<SPPFPN> y2 = new Stack<>();
+      SPPFPN v = null;
+
+      while (changedXpO) {
+        changedXpO = false;
+        for (var vp : xP) {
+          if (somePackedSiblingNotInXp(vp, xP)) {
+            v = vp;
+            sppf.cbD.add(vp);
+            changedXpO = true;
+            break;
+          }
+        }
+
+        if (changedXpO) {
+          xP.remove(v);
+          changedXpI = true;
+          while (changedXpI) {
+            changedXpI = false;
+            for (var vs : xS)
+              if (noPackedChildInXp(vs, xP)) y1.push(vs);
+            while (!y1.empty())
+              xS.remove(y1.pop());
+
+            for (var vip : xP) {
+              if (noSymbolChildInXs(vip, xS)) {
+                y2.push(vip);
+                changedXpI = true;
+              }
+            }
+
+            while (!y2.empty())
+              xP.remove(y2.pop());
+          }
+        }
+      }
+    }
+
+    class Configuration {
+      final Set<SPPFPN> xP1;
+      final Set<SPPFN> xS1;
+      final Set<SPPFPN> d;
+      final Set<SPPFPN> dPrime;
+
+      public Configuration(Set<SPPFPN> xP, Set<SPPFN> xS, Set<SPPFPN> d, Set<SPPFPN> dPrime) {
+        super();
+        this.xP1 = xP;
+        this.xS1 = xS;
+        this.d = d;
+        this.dPrime = dPrime;
+      }
+
+      public Configuration(Configuration c) {
+        xP1 = new HashSet<>(c.xP1);
+        xS1 = new HashSet<>(c.xS1);
+        d = new HashSet<>(c.d);
+        dPrime = new HashSet<>(c.dPrime);
+      }
+
+      @Override
+      public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((d == null) ? 0 : d.hashCode());
+        result = prime * result + ((dPrime == null) ? 0 : dPrime.hashCode());
+        result = prime * result + ((xP1 == null) ? 0 : xP1.hashCode());
+        result = prime * result + ((xS1 == null) ? 0 : xS1.hashCode());
+        return result;
+      }
+
+      @Override
+      public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null) return false;
+        if (getClass() != obj.getClass()) return false;
+        Configuration other = (Configuration) obj;
+        if (d == null) {
+          if (other.d != null) return false;
+        } else if (!d.equals(other.d)) return false;
+        if (dPrime == null) {
+          if (other.dPrime != null) return false;
+        } else if (!dPrime.equals(other.dPrime)) return false;
+        if (xP1 == null) {
+          if (other.xP1 != null) return false;
+        } else if (!xP1.equals(other.xP1)) return false;
+        if (xS1 == null) {
+          if (other.xS1 != null) return false;
+        } else if (!xS1.equals(other.xS1)) return false;
+        return true;
+      }
+
+      @Override
+      public String toString() {
+        StringBuilder builder = new StringBuilder();
+        builder.append("< xP:");
+        builder.append(xP1);
+        // builder.append("\n");
+        builder.append(" xS:");
+        builder.append(xS1);
+        // builder.append("\n");
+        builder.append(" d:");
+        builder.append(d);
+        // builder.append("\n");
+        builder.append(" dP':");
+        builder.append(dPrime);
+        builder.append(">");
+        return builder.toString();
+      }
+    }
+
+    Deque<Configuration> q = new LinkedList<>();
+    Set<Configuration> queued = new HashSet<>();
+    Relation<Configuration, Configuration> breakRelation = new Relation<>();
+    // PrintStream dotOut = null;
+
+    boolean breakCyclesRelationTrace = false;
+
+    public void sppfBreakCyclesRelation() {
+      Configuration c, cp;
+      sppfComputeCoreReachability(null); // computes sppf.cyclic (set of cyclic SPPF nodes)
+      loadXPartitionsFromReachability(); // Load X from computed cyclic nodes as partitions xP and xS
+
+      Configuration c_0 = new Configuration(xP, xS, new HashSet<SPPFPN>(), new HashSet<SPPFPN>());
+      q.add(c_0); // enqueue start element
+      System.out.println("C_0: " + c_0);
+
+      while (q.size() != 0) {
+        c = q.removeFirst(); // deqeue c
+        if (breakCyclesRelationTrace) System.out.println("** Processing: " + c);
+
+        for (var v : c.xS1) {
+          if (breakCyclesRelationTrace) System.out.println("Checking symbol node: " + v);
+          if (noPackedChildInXp(v, c.xP1)) {
+            zcbUpdate(c, v, false, false);
+          }
+        }
+
+        for (var v : c.xP1) {
+          if (breakCyclesRelationTrace) System.out.println("Checking packed node: " + v);
+          if (!noSymbolChildInXs(v, c.xS1) && somePackedSiblingNotInXp(v, c.xP1)) {
+            zcbUpdate(c, v, true, false);
+          } else if (somePackedSiblingNotInXp(v, c.xP1)) {
+            zcbUpdate(c, v, false, true);
+          }
         }
       }
 
-      for (var v : c.xP1) {
-        if (breakCyclesRelationTrace) System.out.println("Checking packed node: " + v);
-        if (!noSymbolChildInXs(v, c.xS1) && somePackedSiblingNotInXp(v, c.xP1)) {
-          zcbUpdate(c, v, true, false);
-        } else if (somePackedSiblingNotInXp(v, c.xP1)) {
-          zcbUpdate(c, v, false, true);
-        }
-      }
-    }
-
-    System.out.println("Relation has " + breakRelation.getDomain().size() + " nodes with terminals");
-    for (var de : breakRelation.getDomain()) {
-      // System.out.println(de + "->" + r.get(de));
-      if (breakRelation.get(de).size() == 0) System.out.println(de);
-    }
-    System.out.println("Relation is:\n" + breakRelation);
-
-    // System.out.println("Queued");
-    // for (var v : queued)
-    // System.out.println(v);
-
-    // Output relation as .dot file
-    try {
-      dotOut = new PrintStream(new File("sppfCycleBreakRelation.dot"));
-      dotOut.println("digraph \"SPPF\" {\n" + "rankdir=\"LR\" "
-          + "graph[ordering=out ranksep=0.1]\n node[fontname=Helvetica fontsize=9 shape=box height=0 width=0 margin=0.04 color=gray]\nedge[arrowsize=0.3 color=gray]");
+      System.out.println("Relation has " + breakRelation.getDomain().size() + " nodes with terminals");
       for (var de : breakRelation.getDomain()) {
-        for (var cde : breakRelation.get(de))
-          dotOut.println("\"" + de + "\"->\"" + cde + "\"");
-        dotOut.println();
+        // System.out.println(de + "->" + r.get(de));
+        if (breakRelation.get(de).size() == 0) System.out.println(de);
       }
-      dotOut.println("}");
-      dotOut.close();
-    } catch (FileNotFoundException e) {
-      System.out.println("Unable to write SPPF visualisation to sppfCycleBreakRelation.dot");
+      System.out.println("Relation is:\n" + breakRelation);
+
+      // System.out.println("Queued");
+      // for (var v : queued)
+      // System.out.println(v);
+
+      // Output relation as .dot file
+      try {
+        PrintStream dotOut = new PrintStream(new File("sppfCycleBreakRelation.dot"));
+        dotOut.println("digraph \"SPPF\" {\n" + "rankdir=\"LR\" "
+            + "graph[ordering=out ranksep=0.1]\n node[fontname=Helvetica fontsize=9 shape=box height=0 width=0 margin=0.04 color=gray]\nedge[arrowsize=0.3 color=gray]");
+        for (var de : breakRelation.getDomain()) {
+          for (var cde : breakRelation.get(de))
+            dotOut.println("\"" + de + "\"->\"" + cde + "\"");
+          dotOut.println();
+        }
+        dotOut.println("}");
+        dotOut.close();
+      } catch (FileNotFoundException e) {
+        System.out.println("Unable to write SPPF visualisation to sppfCycleBreakRelation.dot");
+      }
+
     }
 
-  }
+    private void zcbUpdate(Configuration c, SPPFNode v, Boolean D, Boolean DPrime) {
+      var cp = new Configuration(c);
+      if (v instanceof SPPFPN)
+        cp.xP1.remove(v);
+      else
+        cp.xS1.remove(v);
+      if (D) cp.d.add((SPPFPN) v);
+      if (DPrime) cp.dPrime.add((SPPFPN) v);
+      newState(c, cp);
 
-  private void zcbUpdate(Configuration c, SPPFNode v, Boolean D, Boolean DPrime) {
-    var cp = new Configuration(c);
-    if (v instanceof SPPFPN)
-      cp.xP1.remove(v);
-    else
-      cp.xS1.remove(v);
-    if (D) cp.d.add((SPPFPN) v);
-    if (DPrime) cp.dPrime.add((SPPFPN) v);
-    newState(c, cp);
-
-  }
-
-  public void newState(Configuration c, Configuration cp) {
-    if (c.equals(cp)) {
-      System.out.println("\n!Bang!");
     }
-    breakRelation.add(c, cp);
-    breakRelation.add(cp);
-    if (breakCyclesRelationTrace) System.out.println("Added (" + c + ", " + cp + ")");
-    if (!queued.contains(cp)) {
-      q.add(cp);
-      queued.add(cp);
-      if (breakCyclesRelationTrace) System.out.println("Queued" + cp);
+
+    public void newState(Configuration c, Configuration cp) {
+      if (c.equals(cp)) {
+        System.out.println("\n!Bang!");
+      }
+      breakRelation.add(c, cp);
+      breakRelation.add(cp);
+      if (breakCyclesRelationTrace) System.out.println("Added (" + c + ", " + cp + ")");
+      if (!queued.contains(cp)) {
+        q.add(cp);
+        queued.add(cp);
+        if (breakCyclesRelationTrace) System.out.println("Queued" + cp);
+      }
     }
-  }
 
-  /** lexicalisation checks *********************************************************************/
-  Map<Integer, Set<SPPFN>> paraterminalInstances = new TreeMap<>();
-  int paraterminalCount;
-  int terminalCount;
+    /** lexicalisation checks *********************************************************************/
+    Map<Integer, Set<SPPFN>> paraterminalInstances = new TreeMap<>();
+    int paraterminalCount;
+    int terminalCount;
 
-  @Override
-  public void sppfPrintParaterminals() {
-    if (sppf == null || sppfRootNode == null) {
-      Util.warning("Current parser does not have a current SPPF - skipping paraterminal instance printing");
-      return;
+    public void sppfPrintParaterminals() {
+      if (sppf == null || sppf.rootNode == null) {
+        Util.warning("Current parser does not have a current SPPF - skipping paraterminal instance printing");
+        return;
+      }
+      System.out.println("Paraterminals");
+      visitedSPPFNodes.clear();
+      paraterminalCount = terminalCount = 0;
+      sppfCollectParaterminalsRec(sppf.rootNode);
+      System.out.println("!!! Excluding epsilon leaves, there are " + paraterminalCount + " paraterminal instances and " + terminalCount
+          + " terminal instances reachable from the SPPF root");
+      System.out.println("!!! During paraterminal collection " + visitedSPPFNodes.cardinality() + " SPPFnodes were visited");
+      int rightmostIndex = 0;
+      boolean overlapping = false;
+      for (var i : paraterminalInstances.keySet()) {
+        for (var s : paraterminalInstances.get(i))
+          System.out.println(s.li + "," + s.ri + "  " + s.gn.elm);
+      }
     }
-    System.out.println("Paraterminals");
-    visitedSPPFNodes.clear();
-    paraterminalCount = terminalCount = 0;
-    sppfCollectParaterminalsRec(sppfRootNode);
-    System.out.println("!!! Excluding epsilon leaves, there are " + paraterminalCount + " paraterminal instances and " + terminalCount
-        + " terminal instances reachable from the SPPF root");
-    System.out.println("!!! During paraterminal collection " + visitedSPPFNodes.cardinality() + " SPPFnodes were visited");
-    int rightmostIndex = 0;
-    boolean overlapping = false;
-    for (var i : paraterminalInstances.keySet()) {
-      for (var s : paraterminalInstances.get(i))
-        System.out.println(s.li + "," + s.ri + "  " + s.gn.elm);
+
+    private void sppfCollectParaterminalsRec(SPPFN sppfn) {
+      // System.out.println("Collect paraterminals at " + sppfn);
+      if (visitedSPPFNodes.get(sppfn.number)) return;
+      visitedSPPFNodes.set(sppfn.number);
+
+      if (sppfn.isSymbol() && cfgRules.paraterminalElements.contains(sppfn.gn.elm)) {
+        paraterminalInstanceAdd(sppfn);
+        paraterminalCount++;
+        return;
+      }
+      if (sppfn.packNS.size() == 0) {
+        paraterminalInstanceAdd(sppfn);
+        if (sppfn.gn.elm.kind != CFGKind.EPS) terminalCount++;
+      }
+      for (var p : sppfn.packNS) {
+        if (p.leftChild != null) sppfCollectParaterminalsRec(p.leftChild);
+        sppfCollectParaterminalsRec(p.rightChild);
+      }
     }
-  }
 
-  private void sppfCollectParaterminalsRec(SPPFN sppfn) {
-    // System.out.println("Collect paraterminals at " + sppfn);
-    if (visitedSPPFNodes.get(sppfn.number)) return;
-    visitedSPPFNodes.set(sppfn.number);
-
-    if (sppfn.isSymbol() && cfgRules.paraterminalElements.contains(sppfn.gn.elm)) {
-      paraterminalInstanceAdd(sppfn);
-      paraterminalCount++;
-      return;
+    private void paraterminalInstanceAdd(SPPFN sppfn) {
+      if (paraterminalInstances.get(sppfn.li) == null) paraterminalInstances.put(sppfn.li, new HashSet<SPPFN>());
+      paraterminalInstances.get(sppfn.li).add(sppfn);
     }
-    if (sppfn.packNS.size() == 0) {
-      paraterminalInstanceAdd(sppfn);
-      if (sppfn.gn.elm.kind != CFGKind.EPS) terminalCount++;
+
+    SPPFN[] parasentence;
+    Set<List<SPPFN>> parasentences;
+
+    public void sppfPrintParasentences() {
+      if (sppf == null || sppf.rootNode == null) {
+        Util.warning("Current parser does not have a current SPPF - skipping parasentence printing");
+        return;
+      }
+      System.out.println("Parasentences");
+      visitedSPPFNodes.clear();
+      parasentence = new SPPFN[100 * tokens.length + 1];
+      psCall = 0;
+      parasentences = new HashSet<>();
+      // sppfCollectParasentencesRec(sppf.rootNode, 0);
+      sppfCollectParasentencesIter(sppf.rootNode, 0);
+      // System.out.println(parasentences);
+      for (var s : parasentences) {
+        for (var n : s)
+          System.out.print(n.li + "," + n.ri + ":" + n.gn.elm.str + "  ");
+        System.out.println();
+      }
     }
-    for (var p : sppfn.packNS) {
-      if (p.leftChild != null) sppfCollectParaterminalsRec(p.leftChild);
-      sppfCollectParaterminalsRec(p.rightChild);
+
+    private void sppfCollectParasentencesIter(SPPFN rootNode, int i) {
+      // TODO Auto-generated method stub
+
     }
-  }
 
-  private void paraterminalInstanceAdd(SPPFN sppfn) {
-    if (paraterminalInstances.get(sppfn.li) == null) paraterminalInstances.put(sppfn.li, new HashSet<SPPFN>());
-    paraterminalInstances.get(sppfn.li).add(sppfn);
-  }
+    /*
+     * Iterative explorationofderivations
+     *
+     * If packedNode.size == 1 then just descend
+     *
+     */
+    private int psCall;
 
-  SPPFN[] parasentence;
-  Set<List<SPPFN>> parasentences;
+    private int sppfCollectParasentencesRec(SPPFN node, int parasentenceIndex) {
+      int thisCall = ++psCall;
+      System.out.println(thisCall + " collect parasentences at " + node + " with parasentenceIndex " + parasentenceIndex);
+      int entrySentenceIndex = parasentenceIndex;
+      if (visitedSPPFNodes.get(node.number)) {
+        System.out.println("Already called; abort");
+        return parasentenceIndex;
+      }
+      visitedSPPFNodes.set(node.number);
 
-  @Override
-  public void sppfPrintParasentences() {
-    if (sppf == null || sppfRootNode == null) {
-      Util.warning("Current parser does not have a current SPPF - skipping parasentence printing");
-      return;
-    }
-    System.out.println("Parasentences");
-    visitedSPPFNodes.clear();
-    parasentence = new SPPFN[100 * tokens.length + 1];
-    psCall = 0;
-    parasentences = new HashSet<>();
-    // sppfCollectParasentencesRec(sppfRootNode, 0);
-    sppfCollectParasentencesIter(sppfRootNode, 0);
-    // System.out.println(parasentences);
-    for (var s : parasentences) {
-      for (var n : s)
-        System.out.print(n.li + "," + n.ri + ":" + n.gn.elm.str + "  ");
-      System.out.println();
-    }
-  }
-
-  /*
-   * Iterative explorationofderivations
-   *
-   * If packedNode.size == 1 then just descend
-   *
-   */
-  private void sppfCollectParasentencesIter(SPPFN sppfRootNode2, int i) {
-  }
-
-  private int psCall;
-
-  private int sppfCollectParasentencesRec(SPPFN node, int parasentenceIndex) {
-    int thisCall = ++psCall;
-    System.out.println(thisCall + " collect parasentences at " + node + " with parasentenceIndex " + parasentenceIndex);
-    int entrySentenceIndex = parasentenceIndex;
-    if (visitedSPPFNodes.get(node.number)) {
-      System.out.println("Already called; abort");
+      if (node.packNS.isEmpty() || (node.isSymbol() && cfgRules.paraterminalElements.contains(node.gn.elm))) {
+        if (!(node.packNS.isEmpty() && node.gn.elm.kind == CFGKind.EPS)) {
+          System.out.println("Extending with " + node.gn.elm.str);
+          parasentence[parasentenceIndex++] = node;
+          if (node.ri == tokens.length - 1) addParasentence(parasentenceIndex);
+        }
+      } else
+        for (var p : node.packNS) {
+          if (sppf.cbD.contains(p)) {
+            System.out.println("Skipping cyclic node " + p.number);
+            continue;
+          }
+          parasentenceIndex = entrySentenceIndex;
+          if (p.leftChild != null) {
+            System.out.println("Calling left child of " + p + " under " + node + " with parasentenceIndex " + parasentenceIndex);
+            parasentenceIndex = sppfCollectParasentencesRec(p.leftChild, parasentenceIndex);
+          }
+          System.out.println("Calling right child of " + p + " under " + node + " with parasentenceIndex " + parasentenceIndex);
+          parasentenceIndex = sppfCollectParasentencesRec(p.rightChild, parasentenceIndex);
+        }
+      visitedSPPFNodes.clear(node.number); // We are enumerating all traversals!
+      System.out.println("Return from call " + thisCall);
       return parasentenceIndex;
     }
-    visitedSPPFNodes.set(node.number);
 
-    if (node.packNS.isEmpty() || (node.isSymbol() && cfgRules.paraterminalElements.contains(node.gn.elm))) {
-      if (!(node.packNS.isEmpty() && node.gn.elm.kind == CFGKind.EPS)) {
-        System.out.println("Extending with " + node.gn.elm.str);
-        parasentence[parasentenceIndex++] = node;
-        if (node.ri == tokens.length - 1) addParasentence(parasentenceIndex);
-      }
-    } else
-      for (var p : node.packNS) {
-        if (cbD.contains(p)) {
-          System.out.println("Skipping cyclic node " + p.number);
-          continue;
-        }
-        parasentenceIndex = entrySentenceIndex;
-        if (p.leftChild != null) {
-          System.out.println("Calling left child of " + p + " under " + node + " with parasentenceIndex " + parasentenceIndex);
-          parasentenceIndex = sppfCollectParasentencesRec(p.leftChild, parasentenceIndex);
-        }
-        System.out.println("Calling right child of " + p + " under " + node + " with parasentenceIndex " + parasentenceIndex);
-        parasentenceIndex = sppfCollectParasentencesRec(p.rightChild, parasentenceIndex);
-      }
-    visitedSPPFNodes.clear(node.number); // We are enumerating all traversals!
-    System.out.println("Return from call " + thisCall);
-    return parasentenceIndex;
-  }
-
-  private void addParasentence(int length) {
-    System.out.println("Adding sentence of length " + length + parasentence);
-    List<SPPFN> parasentenceList = new LinkedList<>();
-    for (int i = 0; i < length; i++)
-      parasentenceList.add(parasentence[i]);
-    parasentences.add(parasentenceList);
+    private void addParasentence(int length) {
+      System.out.println("Adding sentence of length " + length + parasentence);
+      List<SPPFN> parasentenceList = new LinkedList<>();
+      for (int i = 0; i < length; i++)
+        parasentenceList.add(parasentence[i]);
+      parasentences.add(parasentenceList);
+    }
   }
 }

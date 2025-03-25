@@ -1,9 +1,10 @@
-package uk.ac.rhul.cs.csle.art.util;
+package uk.ac.rhul.cs.csle.art.util.gss;
 
 import java.util.HashSet;
 import java.util.Set;
 
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
+import uk.ac.rhul.cs.csle.art.util.sppf.SPPFN;
 
 public class GSSN {
   public final CFGNode gn;

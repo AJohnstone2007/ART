@@ -1,6 +1,8 @@
-package uk.ac.rhul.cs.csle.art.util;
+package uk.ac.rhul.cs.csle.art.util.process;
 
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
+import uk.ac.rhul.cs.csle.art.util.gss.GSSN;
+import uk.ac.rhul.cs.csle.art.util.sppf.SPPFN;
 
 public class Desc {
   public CFGNode gn;
