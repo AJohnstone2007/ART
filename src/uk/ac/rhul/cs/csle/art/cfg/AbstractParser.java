@@ -90,6 +90,136 @@ public abstract class AbstractParser {
     return inputString.substring(leftIndices[l], rightIndices[l]);
   }
 
+  // !! Static version for use with new March 2025 parsers
+  public static String lexemeOfBuiltin(LexemeKind kind, String inputString, int inputIndex) {
+    switch (kind) {
+    case ID: {
+      int right = inputIndex;
+      while (right < inputString.length()
+          && (Character.isAlphabetic(inputString.charAt(right)) || Character.isDigit(inputString.charAt(right)) || inputString.charAt(right) == '_'))
+        right++;
+
+      return inputString.substring(inputIndex, right);
+    }
+    case CHARACTER:
+      return inputString.substring(inputIndex + 1, inputIndex + 2);
+    case CHAR_BQ:
+      return inputString.substring(inputIndex + 1, inputIndex + 2);
+    case COMMENT_BLOCK_C:
+      break;
+    case COMMENT_LINE_C:
+      break;
+    case COMMENT_NEST_ART:
+      break;
+    case INTEGER: {
+      int right = inputIndex;
+      while (right < inputString.length() && (Character.isDigit(inputString.charAt(right)) || inputString.charAt(right) == '_'))
+        right++;
+      return inputString.substring(inputIndex, right);
+    }
+    case SIGNED_INTEGER: {
+      int right = inputIndex;
+      if (inputString.charAt(right) == '-') right++;
+      while (right < inputString.length() && (Character.isDigit(inputString.charAt(right)) || inputString.charAt(right) == '_'))
+        right++;
+      return inputString.substring(inputIndex, right);
+    }
+    case AP_INTEGER: {
+      int right = inputIndex + 1; // skip £
+      if (inputString.charAt(right) == '-') right++;
+      while (right < inputString.length() && (Character.isDigit(inputString.charAt(right)) || inputString.charAt(right) == '_'))
+        right++;
+      return inputString.substring(inputIndex + 1, right);
+    }
+    case REAL: {
+      int right = inputIndex;
+      while (right < inputString.length() && Character.isDigit(inputString.charAt(right)))
+        right++;
+      right++; // skip decimal point
+      while (right < inputString.length() && Character.isDigit(inputString.charAt(right)))
+        right++;
+      return inputString.substring(inputIndex, right);
+    }
+    case SIGNED_REAL: {
+      int right = inputIndex;
+      if (inputString.charAt(right) == '-') right++;
+      while (right < inputString.length() && Character.isDigit(inputString.charAt(right)))
+        right++;
+      right++; // skip decimal point
+      while (right < inputString.length() && Character.isDigit(inputString.charAt(right)))
+        right++;
+      return inputString.substring(inputIndex, right);
+    }
+    case AP_REAL: {
+      int right = inputIndex + 1;
+      if (inputString.charAt(right) == '-') right++;
+      while (right < inputString.length() && Character.isDigit(inputString.charAt(right)))
+        right++;
+      right++; // skip decimal point
+      while (right < inputString.length() && Character.isDigit(inputString.charAt(right)))
+        right++;
+      return inputString.substring(inputIndex + 1, right);
+    }
+    case SIMPLE_WHITESPACE:
+      break;
+    case SINGLETON_CASE_INSENSITIVE:
+      break;
+    case SINGLETON_CASE_SENSITIVE:
+      break;
+    case STRING_PLAIN_SQ: {
+      int right = inputIndex + 1;
+      while (inputString.charAt(right) != '\'')
+        right++;
+      return inputString.substring(inputIndex + 1, right);
+    }
+    case STRING_DQ: {
+      int right = inputIndex + 1;
+      while (inputString.charAt(right) != '\"')
+        right++;
+      return inputString.substring(inputIndex + 1, right);
+    }
+    case STRING_BRACE_NEST: {
+      int level = 1, right = inputIndex + 1;
+      while (level != 0) {
+        if (inputString.charAt(right) == '{')
+          level++;
+        else if (inputString.charAt(right) == '}') level--;
+        right++;
+      }
+      return inputString.substring(inputIndex + 1, right);
+    }
+    case STRING_BRACKET_NEST: {
+      int level = 1, right = inputIndex + 1;
+      while (level != 0) {
+        if (inputString.charAt(right) == '<')
+          level++;
+        else if (inputString.charAt(right) == '>') level--;
+        right++;
+      }
+      return inputString.substring(inputIndex + 1, right);
+    }
+    case STRING_DOLLAR: {
+      int right = inputIndex + 1;
+      while (inputString.charAt(right) != '$')
+        right++;
+      return inputString.substring(inputIndex + 1, right);
+    }
+    case STRING_SHRIEK_SHRIEK: {
+      int right = inputIndex + 2;
+      while (!(inputString.charAt(right) == '!' && inputString.charAt(right + 1) == '!'))
+        right++;
+      return inputString.substring(inputIndex + 2, right);
+    }
+    case STRING_SQ: {
+      int right = inputIndex + 1;
+      while (inputString.charAt(right) != '\'')
+        right++;
+      return inputString.substring(inputIndex + 1, right);
+    }
+    }
+    return "unprocessed lexeme";
+  }
+
   protected String lexemeOfBuiltin(LexemeKind kind, int inputIndex) {
     switch (kind) {
     case ID: {
@@ -350,14 +480,11 @@ public abstract class AbstractParser {
     if (semanticsTime < termGenerateTime) semanticsTime = termGenerateTime;
   }
 
-  protected String timeAsMilliseconds(long startTime, long stopTime) {
-    return String.format("%.3f", (stopTime - startTime) * 1E-6);
-  }
-
   private String artGetTimes() {
-    return timeAsMilliseconds(startTime, setupTime) + "," + timeAsMilliseconds(setupTime, lexTime) + "," + timeAsMilliseconds(lexTime, lexChooseTime) + ","
-        + timeAsMilliseconds(lexChooseTime, parseTime) + "," + timeAsMilliseconds(parseTime, parseChooseTime) + ","
-        + timeAsMilliseconds(parseChooseTime, termGenerateTime) + "," + timeAsMilliseconds(termGenerateTime, semanticsTime);
+    return Util.timeAsMilliseconds(startTime, setupTime) + "," + Util.timeAsMilliseconds(setupTime, lexTime) + ","
+        + Util.timeAsMilliseconds(lexTime, lexChooseTime) + "," + Util.timeAsMilliseconds(lexChooseTime, parseTime) + ","
+        + Util.timeAsMilliseconds(parseTime, parseChooseTime) + "," + Util.timeAsMilliseconds(parseChooseTime, termGenerateTime) + ","
+        + Util.timeAsMilliseconds(termGenerateTime, semanticsTime);
   }
 
   private String getTWECounts() {

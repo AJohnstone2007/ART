@@ -202,4 +202,8 @@ public class Util {
     return dateFormat.format(Calendar.getInstance().getTime());
   }
 
+  public static String timeAsMilliseconds(long startTime, long stopTime) {
+    return String.format("%.3f", (stopTime - startTime) * 1E-6);
+  }
+
 }
