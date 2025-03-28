@@ -15,6 +15,7 @@ import uk.ac.rhul.cs.csle.art.cfg.cfgRules.GIFTKind;
 import uk.ac.rhul.cs.csle.art.cfg.chart.AlgX;
 import uk.ac.rhul.cs.csle.art.cfg.chart.CYK;
 import uk.ac.rhul.cs.csle.art.cfg.gll.GLLBaseLine;
+import uk.ac.rhul.cs.csle.art.cfg.gll.GLLBaseLineRefactored;
 import uk.ac.rhul.cs.csle.art.cfg.gll.GLLHashPool;
 import uk.ac.rhul.cs.csle.art.cfg.lexer.LexemeKind;
 import uk.ac.rhul.cs.csle.art.cfg.lexer.LexerSingletonLongestMatch;
@@ -241,6 +242,9 @@ public class ScriptTermInterpreter {
           break;
         case "gllbaseline":
           currentParser = new GLLBaseLine();
+          break;
+        case "gllbaselineRefactored":
+          currentParser = new GLLBaseLineRefactored();
           break;
         case "rdsobfunction":
           currentParser = new RDSOBFunction();
