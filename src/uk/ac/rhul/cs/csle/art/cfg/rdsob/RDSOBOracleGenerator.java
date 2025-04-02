@@ -20,11 +20,11 @@ public class RDSOBOracleGenerator {
   private final Set<String> printedInits = new HashSet<>();
 
   private void printAllInitsRec(CFGNode cfgNode) {
-    if (cfgNode == null || cfgNode.elm.kind == CFGKind.END) return;
+    if (cfgNode == null || cfgNode.element.kind == CFGKind.END) return;
 
-    if (cfgNode.elm.kind == CFGKind.N && cfgNode.elm.attributes.keySet().size() > 0) {
-      String name = cfgNode.elm.str + cfgNode.instanceNumber;
-      if (!printedInits.contains(name)) text.println("  Attributes_" + cfgNode.elm.str + " " + name + " = new Attributes_" + cfgNode.elm.str + "(); ");
+    if (cfgNode.element.kind == CFGKind.N && cfgNode.element.attributes.keySet().size() > 0) {
+      String name = cfgNode.element.str + cfgNode.instanceNumber;
+      if (!printedInits.contains(name)) text.println("  Attributes_" + cfgNode.element.str + " " + name + " = new Attributes_" + cfgNode.element.str + "(); ");
       printedInits.add(name);
     }
     printAllInitsRec(cfgNode.seq);
@@ -63,18 +63,18 @@ public class RDSOBOracleGenerator {
           text.printf("\n  /* Nonterminal %s, alternate %d */\n  inputIndex = iiAtEntry; oracleIndex = oiAtEntry; oracleSet(%d);", e.str, pCount, pCount);
 
           int braceCount = 0;
-          for (var seq = alt.seq; seq.elm.kind != CFGKind.END; seq = seq.seq) {
-            switch (seq.elm.kind) {
+          for (var seq = alt.seq; seq.element.kind != CFGKind.END; seq = seq.seq) {
+            switch (seq.element.kind) {
             case N:
-              text.printf("\n  if (parse_%s()) {", seq.elm.str);
+              text.printf("\n  if (parse_%s()) {", seq.element.str);
               braceCount++;
               break;
             case T:
-              text.printf("\n  if (match(\"%s\")) {", seq.elm.str);
+              text.printf("\n  if (match(\"%s\")) {", seq.element.str);
               braceCount++;
               break;
             case B:
-              text.printf("\n  if (builtIn_%s()) {", seq.elm.str);
+              text.printf("\n  if (builtIn_%s()) {", seq.element.str);
               braceCount++;
               break;
             case EPS:
@@ -82,7 +82,7 @@ public class RDSOBOracleGenerator {
               seenEpsilon = true;
               break;
             default:
-              Util.fatal("Unexpected CFGKind in RDSOBV4Generator parse function " + seq.elm.kind);
+              Util.fatal("Unexpected CFGKind in RDSOBV4Generator parse function " + seq.element.kind);
             }
           }
           text.printf(" return true; ");
@@ -122,18 +122,18 @@ public class RDSOBOracleGenerator {
           printActions(seq); // print initial actions which are held on the alt node
           do {
             seq = seq.seq;
-            switch (seq.elm.kind) {
+            switch (seq.element.kind) {
             case N:
-              if (seq.elm.attributes.keySet().size() > 0)
-                text.printf("    semantics_%s(%s%d);\n", seq.elm.str, seq.elm.str, seq.instanceNumber);
+              if (seq.element.attributes.keySet().size() > 0)
+                text.printf("    semantics_%s(%s%d);\n", seq.element.str, seq.element.str, seq.instanceNumber);
               else
-                text.printf("    semantics_%s();\n", seq.elm.str);
+                text.printf("    semantics_%s();\n", seq.element.str);
               break;
             case T:
-              text.printf("    match(\"%s\");\n", seq.elm.str);
+              text.printf("    match(\"%s\");\n", seq.element.str);
               break;
             case B:
-              text.printf("    builtIn_%s();\n", seq.elm.str);
+              text.printf("    builtIn_%s();\n", seq.element.str);
               break;
             case EPS:
               text.printf("    /* epsilon */\n");
@@ -141,10 +141,10 @@ public class RDSOBOracleGenerator {
             case END: // nothing to do: just here to ensure that the final action is printed
               break;
             default:
-              Util.fatal("Unexpected CFGKind in RDSOBV4Generator semantics function " + seq.elm.kind);
+              Util.fatal("Unexpected CFGKind in RDSOBV4Generator semantics function " + seq.element.kind);
             }
             printActions(seq);
-          } while (seq.elm.kind != CFGKind.END);
+          } while (seq.element.kind != CFGKind.END);
           text.println("    break;");
         }
         text.printf("  }\n }\n\n");

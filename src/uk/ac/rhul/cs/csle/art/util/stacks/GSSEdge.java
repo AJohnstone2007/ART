@@ -1,12 +1,12 @@
-package uk.ac.rhul.cs.csle.art.util.gss;
+package uk.ac.rhul.cs.csle.art.util.stacks;
 
-import uk.ac.rhul.cs.csle.art.util.sppf.SPPFN;
+import uk.ac.rhul.cs.csle.art.util.derivations.SPPFSymbolNode;
 
-public class GSSE {
-  public final GSSN dst;
-  public final SPPFN sppfnode;
+public class GSSEdge {
+  public final GSSNode dst;
+  public final SPPFSymbolNode sppfnode;
 
-  public GSSE(GSSN dst, SPPFN sppfNode) {
+  public GSSEdge(GSSNode dst, SPPFSymbolNode sppfNode) {
     this.sppfnode = sppfNode;
     this.dst = dst;
   }
@@ -25,7 +25,7 @@ public class GSSE {
     if (this == obj) return true;
     if (obj == null) return false;
     if (getClass() != obj.getClass()) return false;
-    GSSE other = (GSSE) obj;
+    GSSEdge other = (GSSEdge) obj;
     if (dst == null) {
       if (other.dst != null) return false;
     } else if (!dst.equals(other.dst)) return false;

@@ -27,10 +27,10 @@ public class RDSOBExplicitStack extends AbstractParser {
 
   boolean rdsobExplicitStack() {
     while (true)
-      switch (gn.elm.kind) {
+      switch (gn.element.kind) {
       case B, C, T, TI:
         if (match(gn)) {
-          i++;
+          tokenIndex++;
           gn = gn.seq;
         } else if (backtrack()) return false;
         break;
@@ -51,7 +51,7 @@ public class RDSOBExplicitStack extends AbstractParser {
   }
 
   void call(CFGNode caller) {
-    sn = new SNode(caller.seq, i, sn, dn);
+    sn = new SNode(caller.seq, tokenIndex, sn, dn);
     gn = getLHS(gn).alt.seq;
   }
 
@@ -63,13 +63,13 @@ public class RDSOBExplicitStack extends AbstractParser {
 
   boolean backtrack() { // return true if no backtrack target found
     while (true) {
-      while (gn.elm.kind != CFGKind.END)
+      while (gn.element.kind != CFGKind.END)
         gn = gn.seq;
       if (gn.alt.alt == null) {
         gn = retrn();
         if (sn == null) return true;
       } else {
-        i = sn.i_entry;
+        tokenIndex = sn.i_entry;
         dn = sn.dnAtEntry;
         gn = gn.alt.alt.seq;
         dn.gn = gn;
@@ -82,10 +82,10 @@ public class RDSOBExplicitStack extends AbstractParser {
   @Override
   public void parse() {
     gn = cfgRules.elementToNodeMap.get(cfgRules.startNonterminal).alt.seq;
-    i = 0;
+    tokenIndex = 0;
     dnRoot = dn = new DerivationSingletonNode(cfgRules.endOfStringNode, null);
     sn = new SNode(cfgRules.endOfStringNode, 0, null, dn);
-    inLanguage = rdsobExplicitStack() && tokens[i] == 0;
+    inLanguage = rdsobExplicitStack() && tokens[tokenIndex] == 0;
   }
 
   protected DerivationSingletonNode dnRoot, dn;

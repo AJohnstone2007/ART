@@ -10,7 +10,7 @@ public class CFGNode {
   public static String builtinTerminalStrop = "&";
 
   public int num;
-  public final CFGElement elm; // Grammar element
+  public final CFGElement element; // Grammar element
   public CFGNode seq; // sequence link
   public CFGNode alt; // alternate link
   public final GIFTKind giftKind;
@@ -23,7 +23,7 @@ public class CFGNode {
   public CFGNode(CFGRules grammar, CFGKind kind, String str, int slotTerm, GIFTKind giftKind, CFGNode previous, CFGNode parent) {
     super();
     if (str == null) str = "" + nextUniqueNumericLabel++; // EBNF and ALT nodes have null string - uniquify
-    this.elm = grammar.findElement(kind, str);
+    this.element = grammar.findElement(kind, str);
     this.slotTerm = slotTerm;
     this.giftKind = giftKind;
     if (previous != null) previous.seq = this;
@@ -35,7 +35,7 @@ public class CFGNode {
     final int prime = 31;
     int result = 1;
     result = prime * result + num;
-    result = prime * result + ((elm == null) ? 0 : elm.hashCode());
+    result = prime * result + ((element == null) ? 0 : element.hashCode());
     return result;
   }
 
@@ -46,9 +46,9 @@ public class CFGNode {
     if (getClass() != obj.getClass()) return false;
     CFGNode other = (CFGNode) obj;
     if (num != other.num) return false;
-    if (elm == null) {
-      if (other.elm != null) return false;
-    } else if (!elm.equals(other.elm)) return false;
+    if (element == null) {
+      if (other.element != null) return false;
+    } else if (!element.equals(other.element)) return false;
     return true;
   }
 
@@ -73,12 +73,12 @@ public class CFGNode {
 
   public String toStringDot() {
     String ret = num + " ";
-    switch (elm.kind) {
+    switch (element.kind) {
     case EOS, ALT, DO, KLN, OPT, POS:
-      ret += elm.kind;
+      ret += element.kind;
       break;
     case T, C, B, N, EPS:
-      ret += elm.kind + "\n" + elm.str + giftToString();
+      ret += element.kind + "\n" + element.str + giftToString();
       break;
     case END:
       ret += "END " + "\n(" + seq.num + "," + alt.num + ")";
@@ -97,19 +97,19 @@ public class CFGNode {
   }
 
   public String toString1() {
-    switch (elm.kind) {
+    switch (element.kind) {
     case EOS:
       return "EOS node";
     case T:
-      return caseSensitiveTerminalStrop + elm.str + caseSensitiveTerminalStrop + giftToString();
+      return caseSensitiveTerminalStrop + element.str + caseSensitiveTerminalStrop + giftToString();
     case C:
-      return characterTerminalStrop + elm.str + giftToString();
+      return characterTerminalStrop + element.str + giftToString();
     case B:
-      return builtinTerminalStrop + elm.str + giftToString();
+      return builtinTerminalStrop + element.str + giftToString();
     case EPS:
       return "#" + giftToString();
     case N:
-      return elm.str + giftToString() + delayedToString();
+      return element.str + giftToString() + delayedToString();
     case ALT:
       return "|";
     case END:
@@ -136,15 +136,15 @@ public class CFGNode {
     StringBuilder sb = new StringBuilder();
 
     if (CFGRules.isLHS(this) || (seq == null && alt == null))
-      sb.append(elm.str);
-    else if (seq.elm.kind == CFGKind.EOS)
+      sb.append(element.str);
+    else if (seq.element.kind == CFGKind.EOS)
       sb.append(seq);
     else {
       CFGNode tmp;
-      for (tmp = this; !(tmp.elm.kind == CFGKind.END && CFGRules.isLHS(tmp.seq)); tmp = tmp.seq) {// Locate the end of this production
+      for (tmp = this; !(tmp.element.kind == CFGKind.END && CFGRules.isLHS(tmp.seq)); tmp = tmp.seq) {// Locate the end of this production
         // System.out.println("toStringAsProduction at " + tmp + " with next-in-sequence element " + tmp.seq.elm);
       }
-      sb.append(tmp.seq.elm.str + rewritesDenotation); // Render LHS
+      sb.append(tmp.seq.element.str + rewritesDenotation); // Render LHS
 
       toStringAsSequenceRec(sb, tmp.alt, slotDenotation, this); // Render RHS
     }
@@ -153,17 +153,17 @@ public class CFGNode {
 
   private void toStringAsSequenceRec(StringBuilder sb, CFGNode alt, String slotDenotation, CFGNode targetNode) {
     // System.out.println("toStringAsSequenceRec called on " + this.instanceNumber + ":" + this);
-    if (alt.elm.kind != CFGKind.ALT) Util.fatal("toStringAsSequenceRec() called on node " + alt.num + " which is not not an ALT node");
+    if (alt.element.kind != CFGKind.ALT) Util.fatal("toStringAsSequenceRec() called on node " + alt.num + " which is not not an ALT node");
     for (CFGNode tmpSeq = alt.seq;; tmpSeq = tmpSeq.seq) { // run down this sequence
       if (tmpSeq == targetNode) sb.append(slotDenotation);
-      if (tmpSeq.elm.kind != CFGKind.END && tmpSeq.alt != null) { // If this element has an alt, then recursively process it first
+      if (tmpSeq.element.kind != CFGKind.END && tmpSeq.alt != null) { // If this element has an alt, then recursively process it first
         sb.append(" (");
         for (CFGNode tmpAlt = tmpSeq.alt; tmpAlt != null; tmpAlt = tmpAlt.alt) {
           toStringAsSequenceRec(sb, tmpAlt, slotDenotation, targetNode);
           if (tmpAlt.alt != null) sb.append(" |"); // Closing parethesis supplied by next level up
         }
       }
-      if (tmpSeq.elm.kind == CFGKind.END) return;
+      if (tmpSeq.element.kind == CFGKind.END) return;
       sb.append(" " + tmpSeq);
     }
   }

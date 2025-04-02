@@ -1,4 +1,4 @@
-package uk.ac.rhul.cs.csle.art.util.sppf;
+package uk.ac.rhul.cs.csle.art.util.derivations;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -95,7 +95,7 @@ class SPPF2Dot {
       dotOut.println("digraph \"SPPF\" {\n"
           + "graph[ordering=out ranksep=0.1]\n node[fontname=Helvetica fontsize=9 shape=box height=0 width=0 margin=0.04 color=gray]\nedge[arrowsize=0.3 color=gray]");
       if (full)
-        for (SPPFN n : sppf.nodes.keySet())
+        for (SPPFSymbolNode n : sppf.nodes.keySet())
           sppfSubtreeToDot(n);
       else {
         sppf.visited.clear();
@@ -108,20 +108,20 @@ class SPPF2Dot {
     }
   }
 
-  private void coreSPPFToDotRec(SPPFN sppfn) {
+  private void coreSPPFToDotRec(SPPFSymbolNode sppfn) {
     if (sppf.visited.get(sppfn.number)) return;
     sppf.visited.set(sppfn.number);
 
     sppfSubtreeToDot(sppfn);
 
-    for (SPPFPN p : sppfn.packNS) { // Recurse through packed nodes
+    for (SPPFPackedNode p : sppfn.packNodes) { // Recurse through packed nodes
       if (p.leftChild != null) coreSPPFToDotRec(p.leftChild);
       if (p.rightChild != null) coreSPPFToDotRec(p.rightChild);
     }
   }
 
-  private void sppfSubtreeToDot(SPPFN sppfn) {
-    boolean isAmbiguous = sppfn.packNS.size() > 1;
+  private void sppfSubtreeToDot(SPPFSymbolNode sppfn) {
+    boolean isAmbiguous = sppfn.packNodes.size() > 1;
     if (sppfn.isSymbol())
       dotOut.println(
           "\"" + sppfn.number + "\"" + symbolNodeStyle + " [label=\"" + sppfn.number + " " + sppfn.gn.toString() + " " + sppfn.li + ", " + sppfn.ri + "\"]");
@@ -134,10 +134,10 @@ class SPPF2Dot {
     if (!sppf.rootReachable.get(sppfn.number)) dotOut.println(unreachableSymbolNodeStyle);
     if (sppfn == sppf.rootNode) dotOut.println(rootNodeStyle);
 
-    for (SPPFPN p : sppfn.packNS) {
+    for (SPPFPackedNode p : sppfn.packNodes) {
       boolean isCyclicP = sppf.cyclic.get(p.number);
 
-      dotOut.println("\"" + p.number + "\"" + packNodeStyle + " [label=\"" + p.number + ": " + p.gn.toStringAsProduction() + " , " + p.pivot + "\"]");
+      dotOut.println("\"" + p.number + "\"" + packNodeStyle + " [label=\"" + p.number + ": " + p.grammarNode.toStringAsProduction() + " , " + p.pivot + "\"]");
       if (isCyclicP) dotOut.println(cycleStyle);
       if (!sppf.rootReachable.get(p.number)) dotOut.println(unreachablePackNodeStyle);
 

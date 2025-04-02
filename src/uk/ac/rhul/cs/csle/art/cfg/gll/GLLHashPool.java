@@ -146,7 +146,7 @@ public class GLLHashPool extends HashPool {
 
   /* Stack handling **********************************************************/
   private void call(int nonterminalNi) {
-    find(gssNodeBuckets, gssNodeBucketCount, gssNode_SIZE, gn + 1, i);
+    find(gssNodeBuckets, gssNodeBucketCount, gssNode_SIZE, gn + 1, tokenIndex);
     int parentGSSNode = findIndex;
 
     find(gssEdgeBuckets, gssEdgeBucketCount, gssEdge_SIZE, parentGSSNode, sn, dn);
@@ -159,23 +159,23 @@ public class GLLHashPool extends HashPool {
         int rightChild = poolGet(contingent + popElement_dn);
         enqueueDescriptor(gn + 1, poolGet(rightChild + sppfNode_rightExt), sn, derivationUpdate(gn + 1, dn, rightChild));
       }
-      enqueueDescriptorsFor(targetOf[nonterminalNi], i, parentGSSNode, 0);
+      enqueueDescriptorsFor(targetOf[nonterminalNi], tokenIndex, parentGSSNode, 0);
     }
   }
 
   private void ret() {
     if (poolGet(sn + gssNode_gn) == endOfStringNodeNi) {
-      if (cfgRules.acceptingNodeNumbers.contains(gn)) inLanguage |= (i == tokens.length - 1); // Make gni to boolean array for acceptance testing
+      if (cfgRules.acceptingNodeNumbers.contains(gn)) inLanguage |= (tokenIndex == tokens.length - 1); // Make gni to boolean array for acceptance testing
       return;
     }
-    find(popElementBuckets, popElementBucketCount, popElement_SIZE, i, sn, dn);
+    find(popElementBuckets, popElementBucketCount, popElement_SIZE, tokenIndex, sn, dn);
     if (findMadeNew) {
       poolSet(findIndex + popElement_popList, poolGet(sn + gssNode_popList));
       poolSet(sn + gssNode_popList, findIndex);
     }
 
     for (int e = poolGet(sn + gssNode_edgeList); e != 0; e = poolGet(e + gssEdge_edgeList))
-      enqueueDescriptor(poolGet(sn + gssNode_gn), i, poolGet(e + gssEdge_dst), derivationUpdate(poolGet(sn + gssNode_gn), poolGet(e + gssEdge_dn), dn));
+      enqueueDescriptor(poolGet(sn + gssNode_gn), tokenIndex, poolGet(e + gssEdge_dst), derivationUpdate(poolGet(sn + gssNode_gn), poolGet(e + gssEdge_dn), dn));
   }
 
   /* Derivation handling *****************************************************/
@@ -200,7 +200,7 @@ public class GLLHashPool extends HashPool {
   }
 
   private void d(int width) {
-    dn = derivationUpdate(gn + 1, dn, derivationFindNode(gn, i, i + width));
+    dn = derivationUpdate(gn + 1, dn, derivationFindNode(gn, tokenIndex, tokenIndex + width));
   }
 
   /* Thread handling *********************************************************/
@@ -212,7 +212,7 @@ public class GLLHashPool extends HashPool {
   private boolean dequeueDescriptor() { // load current descriptor
     if (descriptorQueue == 0) return false;
     gn = poolGet(descriptorQueue + descriptor_gn);
-    i = poolGet(descriptorQueue + descriptor_i);
+    tokenIndex = poolGet(descriptorQueue + descriptor_i);
     sn = poolGet(descriptorQueue + descriptor_sn);
     dn = poolGet(descriptorQueue + descriptor_dn);
 
@@ -294,10 +294,10 @@ public class GLLHashPool extends HashPool {
     // 3. Initialise parser data structures
     find(gssNodeBuckets, gssNodeBucketCount, gssNode_SIZE, endOfStringNodeNi, 0);
     int gssRoot = findIndex;
-    i = 0;
+    tokenIndex = 0;
     sn = gssRoot;
     dn = 0;
-    enqueueDescriptorsFor(startNonterminalNodeNi, i, sn, dn);
+    enqueueDescriptorsFor(startNonterminalNodeNi, tokenIndex, sn, dn);
   }
 
   @Override
@@ -330,9 +330,9 @@ public class GLLHashPool extends HashPool {
       while (true) {
         switch (kindOf[gn]) {
         case T:
-          if (tokens[i] == elementOf[gn]) {
+          if (tokens[tokenIndex] == elementOf[gn]) {
             d(1);
-            i++;
+            tokenIndex++;
             gn++;
             break;
           } else

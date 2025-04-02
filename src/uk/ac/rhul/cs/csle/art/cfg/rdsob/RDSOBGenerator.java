@@ -34,7 +34,7 @@ public class RDSOBGenerator {
         firstLexeme = false;
       else
         text.print(", ");
-      text.print("\"" + s.str + "\"/*" + s.ei + "*/");
+      text.print("\"" + s.str + "\"/*" + s.number + "*/");
     }
 
     text.println("};\n");
@@ -49,13 +49,13 @@ public class RDSOBGenerator {
         else
           text.print("\n i = eI; dn = eDN;");
         seqLoop: for (CFGNode seq = alt.seq;; seq = seq.seq) {
-          switch (seq.elm.kind) {
+          switch (seq.element.kind) {
           case T:
-            text.print("\n if (input[i]==" + seq.elm.ei + "/*" + seq.elm.str + "*/) {i++;");
+            text.print("\n if (input[i]==" + seq.element.number + "/*" + seq.element.str + "*/) {i++;");
             braceCount++;
             break;
           case N:
-            text.print("\n if (p_" + seq.elm.str + "()) {");
+            text.print("\n if (p_" + seq.element.str + "()) {");
             braceCount++;
             break;
           case EPS:

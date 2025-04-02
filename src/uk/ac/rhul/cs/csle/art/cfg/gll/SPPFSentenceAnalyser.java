@@ -9,12 +9,12 @@ import java.util.TreeMap;
 
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGKind;
 import uk.ac.rhul.cs.csle.art.util.Util;
-import uk.ac.rhul.cs.csle.art.util.sppf.SPPF;
-import uk.ac.rhul.cs.csle.art.util.sppf.SPPFN;
+import uk.ac.rhul.cs.csle.art.util.derivations.SPPF;
+import uk.ac.rhul.cs.csle.art.util.derivations.SPPFSymbolNode;
 
 class SPPFSentenceAnalyser {
   final SPPF sppf;
-  Map<Integer, Set<SPPFN>> paraterminalInstances = new TreeMap<>();
+  Map<Integer, Set<SPPFSymbolNode>> paraterminalInstances = new TreeMap<>();
   int paraterminalCount;
   int terminalCount;
 
@@ -38,37 +38,37 @@ class SPPFSentenceAnalyser {
     boolean overlapping = false;
     for (var i : paraterminalInstances.keySet()) {
       for (var s : paraterminalInstances.get(i))
-        System.out.println(s.li + "," + s.ri + "  " + s.gn.elm);
+        System.out.println(s.li + "," + s.ri + "  " + s.gn.element);
     }
   }
 
-  private void sppfCollectParaterminalsRec(SPPFN sppfn) {
+  private void sppfCollectParaterminalsRec(SPPFSymbolNode sppfn) {
     // System.out.println("Collect paraterminals at " + sppfn);
     if (sppf.visited.get(sppfn.number)) return;
     sppf.visited.set(sppfn.number);
 
-    if (sppfn.isSymbol() && sppf.cfgRules.paraterminalElements.contains(sppfn.gn.elm)) {
+    if (sppfn.isSymbol() && sppf.cfgRules.paraterminalElements.contains(sppfn.gn.element)) {
       paraterminalInstanceAdd(sppfn);
       paraterminalCount++;
       return;
     }
-    if (sppfn.packNS.size() == 0) {
+    if (sppfn.packNodes.size() == 0) {
       paraterminalInstanceAdd(sppfn);
-      if (sppfn.gn.elm.kind != CFGKind.EPS) terminalCount++;
+      if (sppfn.gn.element.kind != CFGKind.EPS) terminalCount++;
     }
-    for (var p : sppfn.packNS) {
+    for (var p : sppfn.packNodes) {
       if (p.leftChild != null) sppfCollectParaterminalsRec(p.leftChild);
       sppfCollectParaterminalsRec(p.rightChild);
     }
   }
 
-  private void paraterminalInstanceAdd(SPPFN sppfn) {
-    if (paraterminalInstances.get(sppfn.li) == null) paraterminalInstances.put(sppfn.li, new HashSet<SPPFN>());
+  private void paraterminalInstanceAdd(SPPFSymbolNode sppfn) {
+    if (paraterminalInstances.get(sppfn.li) == null) paraterminalInstances.put(sppfn.li, new HashSet<SPPFSymbolNode>());
     paraterminalInstances.get(sppfn.li).add(sppfn);
   }
 
-  SPPFN[] parasentence;
-  Set<List<SPPFN>> parasentences;
+  SPPFSymbolNode[] parasentence;
+  Set<List<SPPFSymbolNode>> parasentences;
 
   public void sppfPrintParasentences() {
     if (sppf == null || sppf.rootNode == null) {
@@ -77,7 +77,7 @@ class SPPFSentenceAnalyser {
     }
     System.out.println("Parasentences");
     sppf.visited.clear();
-    parasentence = new SPPFN[100 * sppf.tokens.length + 1];
+    parasentence = new SPPFSymbolNode[100 * sppf.tokens.length + 1];
     psCall = 0;
     parasentences = new HashSet<>();
     // sppfCollectParasentencesRec(sppf.rootNode, 0);
@@ -85,12 +85,12 @@ class SPPFSentenceAnalyser {
     // System.out.println(parasentences);
     for (var s : parasentences) {
       for (var n : s)
-        System.out.print(n.li + "," + n.ri + ":" + n.gn.elm.str + "  ");
+        System.out.print(n.li + "," + n.ri + ":" + n.gn.element.str + "  ");
       System.out.println();
     }
   }
 
-  private void sppfCollectParasentencesIter(SPPFN rootNode, int i) {
+  private void sppfCollectParasentencesIter(SPPFSymbolNode rootNode, int i) {
     // TODO Auto-generated method stub
 
   }
@@ -103,7 +103,7 @@ class SPPFSentenceAnalyser {
    */
   private int psCall;
 
-  private int sppfCollectParasentencesRec(SPPFN node, int parasentenceIndex) {
+  private int sppfCollectParasentencesRec(SPPFSymbolNode node, int parasentenceIndex) {
     int thisCall = ++psCall;
     System.out.println(thisCall + " collect parasentences at " + node + " with parasentenceIndex " + parasentenceIndex);
     int entrySentenceIndex = parasentenceIndex;
@@ -113,14 +113,14 @@ class SPPFSentenceAnalyser {
     }
     sppf.visited.set(node.number);
 
-    if (node.packNS.isEmpty() || (node.isSymbol() && sppf.cfgRules.paraterminalElements.contains(node.gn.elm))) {
-      if (!(node.packNS.isEmpty() && node.gn.elm.kind == CFGKind.EPS)) {
-        System.out.println("Extending with " + node.gn.elm.str);
+    if (node.packNodes.isEmpty() || (node.isSymbol() && sppf.cfgRules.paraterminalElements.contains(node.gn.element))) {
+      if (!(node.packNodes.isEmpty() && node.gn.element.kind == CFGKind.EPS)) {
+        System.out.println("Extending with " + node.gn.element.str);
         parasentence[parasentenceIndex++] = node;
         if (node.ri == sppf.tokens.length - 1) addParasentence(parasentenceIndex);
       }
     } else
-      for (var p : node.packNS) {
+      for (var p : node.packNodes) {
         if (sppf.cbD.contains(p)) {
           System.out.println("Skipping cyclic node " + p.number);
           continue;
@@ -140,7 +140,7 @@ class SPPFSentenceAnalyser {
 
   private void addParasentence(int length) {
     System.out.println("Adding sentence of length " + length + parasentence);
-    List<SPPFN> parasentenceList = new LinkedList<>();
+    List<SPPFSymbolNode> parasentenceList = new LinkedList<>();
     for (int i = 0; i < length; i++)
       parasentenceList.add(parasentence[i]);
     parasentences.add(parasentenceList);

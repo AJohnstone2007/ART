@@ -13,7 +13,7 @@ public abstract class AbstractParser {
   public String inputString = ""; // Original input string
   public String inputStringName = "";
   public int[] tokens; // Input as array of tokens
-  protected int i; // Current input index
+  protected int tokenIndex; // Current input index
   public int[] oracle;
   public int[] leftIndices;
   public int[] rightIndices;
@@ -91,20 +91,20 @@ public abstract class AbstractParser {
   }
 
   // !! Static version for use with new March 2025 parsers
-  public static String lexemeOfBuiltin(LexemeKind kind, String inputString, int inputIndex) {
+  public static String lexemeOfBuiltin(LexemeKind kind, String inputString, int startIndex) {
     switch (kind) {
     case ID: {
-      int right = inputIndex;
+      int right = startIndex;
       while (right < inputString.length()
           && (Character.isAlphabetic(inputString.charAt(right)) || Character.isDigit(inputString.charAt(right)) || inputString.charAt(right) == '_'))
         right++;
 
-      return inputString.substring(inputIndex, right);
+      return inputString.substring(startIndex, right);
     }
     case CHARACTER:
-      return inputString.substring(inputIndex + 1, inputIndex + 2);
+      return inputString.substring(startIndex + 1, startIndex + 2);
     case CHAR_BQ:
-      return inputString.substring(inputIndex + 1, inputIndex + 2);
+      return inputString.substring(startIndex + 1, startIndex + 2);
     case COMMENT_BLOCK_C:
       break;
     case COMMENT_LINE_C:
@@ -112,53 +112,53 @@ public abstract class AbstractParser {
     case COMMENT_NEST_ART:
       break;
     case INTEGER: {
-      int right = inputIndex;
+      int right = startIndex;
       while (right < inputString.length() && (Character.isDigit(inputString.charAt(right)) || inputString.charAt(right) == '_'))
         right++;
-      return inputString.substring(inputIndex, right);
+      return inputString.substring(startIndex, right);
     }
     case SIGNED_INTEGER: {
-      int right = inputIndex;
+      int right = startIndex;
       if (inputString.charAt(right) == '-') right++;
       while (right < inputString.length() && (Character.isDigit(inputString.charAt(right)) || inputString.charAt(right) == '_'))
         right++;
-      return inputString.substring(inputIndex, right);
+      return inputString.substring(startIndex, right);
     }
     case AP_INTEGER: {
-      int right = inputIndex + 1; // skip £
+      int right = startIndex + 1; // skip £
       if (inputString.charAt(right) == '-') right++;
       while (right < inputString.length() && (Character.isDigit(inputString.charAt(right)) || inputString.charAt(right) == '_'))
         right++;
-      return inputString.substring(inputIndex + 1, right);
+      return inputString.substring(startIndex + 1, right);
     }
     case REAL: {
-      int right = inputIndex;
+      int right = startIndex;
       while (right < inputString.length() && Character.isDigit(inputString.charAt(right)))
         right++;
       right++; // skip decimal point
       while (right < inputString.length() && Character.isDigit(inputString.charAt(right)))
         right++;
-      return inputString.substring(inputIndex, right);
+      return inputString.substring(startIndex, right);
     }
     case SIGNED_REAL: {
-      int right = inputIndex;
+      int right = startIndex;
       if (inputString.charAt(right) == '-') right++;
       while (right < inputString.length() && Character.isDigit(inputString.charAt(right)))
         right++;
       right++; // skip decimal point
       while (right < inputString.length() && Character.isDigit(inputString.charAt(right)))
         right++;
-      return inputString.substring(inputIndex, right);
+      return inputString.substring(startIndex, right);
     }
     case AP_REAL: {
-      int right = inputIndex + 1;
+      int right = startIndex + 1;
       if (inputString.charAt(right) == '-') right++;
       while (right < inputString.length() && Character.isDigit(inputString.charAt(right)))
         right++;
       right++; // skip decimal point
       while (right < inputString.length() && Character.isDigit(inputString.charAt(right)))
         right++;
-      return inputString.substring(inputIndex + 1, right);
+      return inputString.substring(startIndex + 1, right);
     }
     case SIMPLE_WHITESPACE:
       break;
@@ -167,73 +167,73 @@ public abstract class AbstractParser {
     case SINGLETON_CASE_SENSITIVE:
       break;
     case STRING_PLAIN_SQ: {
-      int right = inputIndex + 1;
+      int right = startIndex + 1;
       while (inputString.charAt(right) != '\'')
         right++;
-      return inputString.substring(inputIndex + 1, right);
+      return inputString.substring(startIndex + 1, right);
     }
     case STRING_DQ: {
-      int right = inputIndex + 1;
+      int right = startIndex + 1;
       while (inputString.charAt(right) != '\"')
         right++;
-      return inputString.substring(inputIndex + 1, right);
+      return inputString.substring(startIndex + 1, right);
     }
     case STRING_BRACE_NEST: {
-      int level = 1, right = inputIndex + 1;
+      int level = 1, right = startIndex + 1;
       while (level != 0) {
         if (inputString.charAt(right) == '{')
           level++;
         else if (inputString.charAt(right) == '}') level--;
         right++;
       }
-      return inputString.substring(inputIndex + 1, right);
+      return inputString.substring(startIndex + 1, right);
     }
     case STRING_BRACKET_NEST: {
-      int level = 1, right = inputIndex + 1;
+      int level = 1, right = startIndex + 1;
       while (level != 0) {
         if (inputString.charAt(right) == '<')
           level++;
         else if (inputString.charAt(right) == '>') level--;
         right++;
       }
-      return inputString.substring(inputIndex + 1, right);
+      return inputString.substring(startIndex + 1, right);
     }
     case STRING_DOLLAR: {
-      int right = inputIndex + 1;
+      int right = startIndex + 1;
       while (inputString.charAt(right) != '$')
         right++;
-      return inputString.substring(inputIndex + 1, right);
+      return inputString.substring(startIndex + 1, right);
     }
     case STRING_SHRIEK_SHRIEK: {
-      int right = inputIndex + 2;
+      int right = startIndex + 2;
       while (!(inputString.charAt(right) == '!' && inputString.charAt(right + 1) == '!'))
         right++;
-      return inputString.substring(inputIndex + 2, right);
+      return inputString.substring(startIndex + 2, right);
     }
     case STRING_SQ: {
-      int right = inputIndex + 1;
+      int right = startIndex + 1;
       while (inputString.charAt(right) != '\'')
         right++;
-      return inputString.substring(inputIndex + 1, right);
+      return inputString.substring(startIndex + 1, right);
     }
     }
     return "unprocessed lexeme";
   }
 
-  protected String lexemeOfBuiltin(LexemeKind kind, int inputIndex) {
+  protected String lexemeOfBuiltin(LexemeKind kind, int startIndex) {
     switch (kind) {
     case ID: {
-      int right = inputIndex;
+      int right = startIndex;
       while (right < inputString.length()
           && (Character.isAlphabetic(inputString.charAt(right)) || Character.isDigit(inputString.charAt(right)) || inputString.charAt(right) == '_'))
         right++;
 
-      return inputString.substring(inputIndex, right);
+      return inputString.substring(startIndex, right);
     }
     case CHARACTER:
-      return inputString.substring(inputIndex + 1, inputIndex + 2);
+      return inputString.substring(startIndex + 1, startIndex + 2);
     case CHAR_BQ:
-      return inputString.substring(inputIndex + 1, inputIndex + 2);
+      return inputString.substring(startIndex + 1, startIndex + 2);
     case COMMENT_BLOCK_C:
       break;
     case COMMENT_LINE_C:
@@ -241,53 +241,53 @@ public abstract class AbstractParser {
     case COMMENT_NEST_ART:
       break;
     case INTEGER: {
-      int right = inputIndex;
+      int right = startIndex;
       while (right < inputString.length() && (Character.isDigit(inputString.charAt(right)) || inputString.charAt(right) == '_'))
         right++;
-      return inputString.substring(inputIndex, right);
+      return inputString.substring(startIndex, right);
     }
     case SIGNED_INTEGER: {
-      int right = inputIndex;
+      int right = startIndex;
       if (inputString.charAt(right) == '-') right++;
       while (right < inputString.length() && (Character.isDigit(inputString.charAt(right)) || inputString.charAt(right) == '_'))
         right++;
-      return inputString.substring(inputIndex, right);
+      return inputString.substring(startIndex, right);
     }
     case AP_INTEGER: {
-      int right = inputIndex + 1; // skip £
+      int right = startIndex + 1; // skip £
       if (inputString.charAt(right) == '-') right++;
       while (right < inputString.length() && (Character.isDigit(inputString.charAt(right)) || inputString.charAt(right) == '_'))
         right++;
-      return inputString.substring(inputIndex + 1, right);
+      return inputString.substring(startIndex + 1, right);
     }
     case REAL: {
-      int right = inputIndex;
+      int right = startIndex;
       while (right < inputString.length() && Character.isDigit(inputString.charAt(right)))
         right++;
       right++; // skip decimal point
       while (right < inputString.length() && Character.isDigit(inputString.charAt(right)))
         right++;
-      return inputString.substring(inputIndex, right);
+      return inputString.substring(startIndex, right);
     }
     case SIGNED_REAL: {
-      int right = inputIndex;
+      int right = startIndex;
       if (inputString.charAt(right) == '-') right++;
       while (right < inputString.length() && Character.isDigit(inputString.charAt(right)))
         right++;
       right++; // skip decimal point
       while (right < inputString.length() && Character.isDigit(inputString.charAt(right)))
         right++;
-      return inputString.substring(inputIndex, right);
+      return inputString.substring(startIndex, right);
     }
     case AP_REAL: {
-      int right = inputIndex + 1;
+      int right = startIndex + 1;
       if (inputString.charAt(right) == '-') right++;
       while (right < inputString.length() && Character.isDigit(inputString.charAt(right)))
         right++;
       right++; // skip decimal point
       while (right < inputString.length() && Character.isDigit(inputString.charAt(right)))
         right++;
-      return inputString.substring(inputIndex + 1, right);
+      return inputString.substring(startIndex + 1, right);
     }
     case SIMPLE_WHITESPACE:
       break;
@@ -296,65 +296,65 @@ public abstract class AbstractParser {
     case SINGLETON_CASE_SENSITIVE:
       break;
     case STRING_PLAIN_SQ: {
-      int right = inputIndex + 1;
+      int right = startIndex + 1;
       while (inputString.charAt(right) != '\'')
         right++;
-      return inputString.substring(inputIndex + 1, right);
+      return inputString.substring(startIndex + 1, right);
     }
     case STRING_DQ: {
-      int right = inputIndex + 1;
+      int right = startIndex + 1;
       while (inputString.charAt(right) != '\"')
         right++;
-      return inputString.substring(inputIndex + 1, right);
+      return inputString.substring(startIndex + 1, right);
     }
     case STRING_BRACE_NEST: {
-      int level = 1, right = inputIndex + 1;
+      int level = 1, right = startIndex + 1;
       while (level != 0) {
         if (inputString.charAt(right) == '{')
           level++;
         else if (inputString.charAt(right) == '}') level--;
         right++;
       }
-      return inputString.substring(inputIndex + 1, right);
+      return inputString.substring(startIndex + 1, right);
     }
     case STRING_BRACKET_NEST: {
-      int level = 1, right = inputIndex + 1;
+      int level = 1, right = startIndex + 1;
       while (level != 0) {
         if (inputString.charAt(right) == '<')
           level++;
         else if (inputString.charAt(right) == '>') level--;
         right++;
       }
-      return inputString.substring(inputIndex + 1, right);
+      return inputString.substring(startIndex + 1, right);
     }
     case STRING_DOLLAR: {
-      int right = inputIndex + 1;
+      int right = startIndex + 1;
       while (inputString.charAt(right) != '$')
         right++;
-      return inputString.substring(inputIndex + 1, right);
+      return inputString.substring(startIndex + 1, right);
     }
     case STRING_SHRIEK_SHRIEK: {
-      int right = inputIndex + 2;
+      int right = startIndex + 2;
       while (!(inputString.charAt(right) == '!' && inputString.charAt(right + 1) == '!'))
         right++;
-      return inputString.substring(inputIndex + 2, right);
+      return inputString.substring(startIndex + 2, right);
     }
     case STRING_SQ: {
-      int right = inputIndex + 1;
+      int right = startIndex + 1;
       while (inputString.charAt(right) != '\'')
         right++;
-      return inputString.substring(inputIndex + 1, right);
+      return inputString.substring(startIndex + 1, right);
     }
     }
     return "unprocessed lexeme";
   }
 
   protected boolean match(CFGNode gn) {
-    return tokens[i] == gn.elm.ei;
+    return tokens[tokenIndex] == gn.element.number;
   }
 
   public CFGNode getLHS(CFGNode gn) {
-    return cfgRules.elementToNodeMap.get(gn.elm);
+    return cfgRules.elementToNodeMap.get(gn.element);
   }
 
   protected void trace(int level, String msg) {
@@ -530,7 +530,7 @@ public abstract class AbstractParser {
   protected LexemeKind[] whitespaces;
 
   protected char[] inputAsCharArray;
-  protected int inputIndex, inputLength, leftIndex, longestMatchToken, longestMatchRightIndex, firstBuiltin;
+  protected int lexerInputIndex, inputLength, leftIndex, longestMatchToken, longestMatchRightIndex, firstBuiltin;
 
   public void lex(String inputString, LexemeKind[] kinds, String[] strings, LexemeKind[] whitespaces) {
     System.out.println("lex() not implemented for parser class " + this.getClass().getSimpleName());
@@ -654,7 +654,7 @@ public abstract class AbstractParser {
   }
 
   protected void lexicalError(String msg) {
-    Util.fatal(Util.echo(msg, inputIndex, inputString));
+    Util.fatal(Util.echo(msg, lexerInputIndex, inputString));
   }
 
   /******************************************************************************
@@ -663,42 +663,42 @@ public abstract class AbstractParser {
    *
    ******************************************************************************/
   protected char peekCh() {
-    if (inputIndex >= inputLength)
+    if (lexerInputIndex >= inputLength)
       return '\0';
     else
-      return inputAsCharArray[inputIndex];
+      return inputAsCharArray[lexerInputIndex];
   }
 
   protected char peekChToLower() {
-    if (inputIndex >= inputLength)
+    if (lexerInputIndex >= inputLength)
       return '\0';
     else
-      return Character.toLowerCase(inputAsCharArray[inputIndex]);
+      return Character.toLowerCase(inputAsCharArray[lexerInputIndex]);
   }
 
   protected char peekOneCh() {
-    if (inputIndex + 1 >= inputLength)
+    if (lexerInputIndex + 1 >= inputLength)
       return '\0';
     else
-      return inputAsCharArray[inputIndex + 1];
+      return inputAsCharArray[lexerInputIndex + 1];
   }
 
   protected char peekCh(int offset) {
-    if (inputIndex + offset >= inputLength)
+    if (lexerInputIndex + offset >= inputLength)
       return '\0';
     else
-      return inputAsCharArray[inputIndex + offset];
+      return inputAsCharArray[lexerInputIndex + offset];
   }
 
   protected char getCh() {
-    if (inputIndex >= inputLength)
+    if (lexerInputIndex >= inputLength)
       return '\0';
     else
-      return inputAsCharArray[inputIndex++];
+      return inputAsCharArray[lexerInputIndex++];
   }
 
   protected void seekCh(int offset) {
-    inputIndex = offset;
+    lexerInputIndex = offset;
     getCh();
   }
 
@@ -724,7 +724,7 @@ public abstract class AbstractParser {
 
   protected void match_CHARACTER(String string) {
     if (string.charAt(0) != peekCh()) {
-      inputIndex = leftIndex;
+      lexerInputIndex = leftIndex;
       return;
     } else
       getCh();
@@ -733,7 +733,7 @@ public abstract class AbstractParser {
   protected void match_SINGLETON_CASE_SENSITIVE(String string) {
     for (int i = 0; i < string.length(); i++)
       if (string.charAt(i) != peekCh()) {
-        inputIndex = leftIndex;
+        lexerInputIndex = leftIndex;
         // System.out.println(" reject");
         return;
       } else
@@ -743,7 +743,7 @@ public abstract class AbstractParser {
   protected void match_SINGLETON_CASE_INSENSITIVE(String string) {
     for (int i = 0; i < string.length(); i++)
       if (string.charAt(i) != peekChToLower()) {
-        inputIndex = leftIndex;
+        lexerInputIndex = leftIndex;
         return;
       } else
         getCh();
@@ -789,7 +789,7 @@ public abstract class AbstractParser {
       getCh();
       getCh(); // Skip over hex introducer
       if (!isHexDigit(peekCh())) {
-        inputIndex = leftIndex;
+        lexerInputIndex = leftIndex;
         return;
       }
       while (isHexDigit(peekCh()))
@@ -811,7 +811,7 @@ public abstract class AbstractParser {
     if (hex) {
       getCh(); // Skip over hex introducer
       if (!isHexDigit(peekCh())) {
-        inputIndex = leftIndex;
+        lexerInputIndex = leftIndex;
         return;
       }
       while (isHexDigit(peekCh()))
@@ -845,7 +845,7 @@ public abstract class AbstractParser {
       getCh(); // skip e | E
 
       if (!(isDigit(peekCh()) || (peekCh() == '~' && isDigit(peekOneCh())))) {
-        inputIndex = leftIndex;
+        lexerInputIndex = leftIndex;
         return;
       }
 
@@ -859,7 +859,7 @@ public abstract class AbstractParser {
 
     // One or other or both of the optional parts must be present for this to be a float
     if (invalid) {
-      inputIndex = leftIndex;
+      lexerInputIndex = leftIndex;
       return;
     }
   }
@@ -902,7 +902,7 @@ public abstract class AbstractParser {
   }
 
   protected void match_SML_TYVAR() {
-    int lexemeStart = inputIndex;
+    int lexemeStart = lexerInputIndex;
     if (peekCh() == '\'') {
       // if (isAlpha(peekOneCh()) || peekOneCh() == '_' || peekOneCh() == '\'') {
       getCh();
@@ -983,7 +983,7 @@ public abstract class AbstractParser {
       getCh();
       getCh(); // Skip over hex introducer
       if (!isHexDigit(peekCh())) {
-        inputIndex = leftIndex;
+        lexerInputIndex = leftIndex;
         return;
       }
       while (isHexDigit(getCh()))
@@ -1014,7 +1014,7 @@ public abstract class AbstractParser {
 
     // System.out.println("Testing for real at " + artCharacterStringInputIndex + ": current characters are " + peekCh() + " and " + peekOneCh());
     if (!(peekCh() == '.' && isDigit(peekOneCh()))) {
-      inputIndex = leftIndex;
+      lexerInputIndex = leftIndex;
       return;
     }
 
@@ -1052,7 +1052,7 @@ public abstract class AbstractParser {
     getCh(); // Skip delimiter
     if (getCh() == '\\') artSkipEscapeSequence();
     if (peekCh() != '\'') {
-      inputIndex = leftIndex;
+      lexerInputIndex = leftIndex;
       return;
     } // Abort and return
     getCh(); // Skip delimiter

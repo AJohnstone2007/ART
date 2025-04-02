@@ -159,7 +159,7 @@ public class AJDebug {
       // }
     }
     // System.out.println();
-    if (v5.elm.kind == CFGKind.END) return good;
+    if (v5.element.kind == CFGKind.END) return good;
 
     good &= v5v3RegressionCheckFirstAndFollowInstanceSetsRec(v5.seq, artV3);
     good &= v5v3RegressionCheckFirstAndFollowInstanceSetsRec(v5.alt, artV3);

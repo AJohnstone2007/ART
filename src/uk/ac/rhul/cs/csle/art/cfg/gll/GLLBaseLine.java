@@ -21,15 +21,15 @@ import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.GIFTKind;
 import uk.ac.rhul.cs.csle.art.cfg.lexer.LexemeKind;
 import uk.ac.rhul.cs.csle.art.util.Util;
-import uk.ac.rhul.cs.csle.art.util.gss.GSS2Dot;
-import uk.ac.rhul.cs.csle.art.util.gss.GSSE;
-import uk.ac.rhul.cs.csle.art.util.gss.GSSN;
-import uk.ac.rhul.cs.csle.art.util.process.Desc;
+import uk.ac.rhul.cs.csle.art.util.derivations.AbstractSPPFNode;
+import uk.ac.rhul.cs.csle.art.util.derivations.SPPFPackedNode;
+import uk.ac.rhul.cs.csle.art.util.derivations.SPPFSymbolNode;
+import uk.ac.rhul.cs.csle.art.util.process.Descriptor;
 import uk.ac.rhul.cs.csle.art.util.relation.Relation;
 import uk.ac.rhul.cs.csle.art.util.relation.RelationOverNaturals;
-import uk.ac.rhul.cs.csle.art.util.sppf.SPPFN;
-import uk.ac.rhul.cs.csle.art.util.sppf.SPPFNode;
-import uk.ac.rhul.cs.csle.art.util.sppf.SPPFPN;
+import uk.ac.rhul.cs.csle.art.util.stacks.GSS2Dot;
+import uk.ac.rhul.cs.csle.art.util.stacks.GSSEdge;
+import uk.ac.rhul.cs.csle.art.util.stacks.GSSNode;
 
 public class GLLBaseLine extends AbstractParser {
   private final BitSet visitedSPPFNodes = new BitSet(), suppressedSPPFNode = new BitSet();
@@ -41,18 +41,18 @@ public class GLLBaseLine extends AbstractParser {
     chooseLongestMatchRec(sppfRootNode);
   }
 
-  private void chooseLongestMatchRec(SPPFN sn) {
+  private void chooseLongestMatchRec(SPPFSymbolNode sn) {
     if (visitedSPPFNodes.get(sn.number)) return;
     visitedSPPFNodes.set(sn.number);
 
     int rightMostPivot = -1;
-    SPPFPN candidate = null;
-    if (sn.packNS.size() > 1) {
+    SPPFPackedNode candidate = null;
+    if (sn.packNodes.size() > 1) {
       Util.warning("Ambiguity detected at SPPF node " + sn.number + ": " + sn.gn.toStringAsProduction() + " involving ");
-      for (var p : sn.packNS)
+      for (var p : sn.packNodes)
         Util.info("   " + p.toString());
     }
-    for (SPPFPN p : sn.packNS) {
+    for (SPPFPackedNode p : sn.packNodes) {
       if (p.pivot > rightMostPivot) {
         rightMostPivot = p.pivot;
         candidate = p;
@@ -61,7 +61,7 @@ public class GLLBaseLine extends AbstractParser {
       if (p.rightChild != null) chooseLongestMatchRec(p.rightChild);
     }
 
-    for (SPPFPN p : sn.packNS)
+    for (SPPFPackedNode p : sn.packNodes)
       if (p != candidate) p.suppressed = true;
   }
 
@@ -72,23 +72,23 @@ public class GLLBaseLine extends AbstractParser {
     descQ = new LinkedList<>();
     sppf = new HashMap<>();
     gss = new HashMap<>();
-    gssRoot = new GSSN(cfgRules.endOfStringNode, 0);
+    gssRoot = new GSSNode(cfgRules.endOfStringNode, 0);
     gss.put(gssRoot, gssRoot);
-    i = 0;
+    tokenIndex = 0;
     sn = gssRoot;
     dn = null;
     for (CFGNode p = cfgRules.elementToNodeMap.get(cfgRules.startNonterminal).alt; p != null; p = p.alt)
-      queueDesc(p.seq, i, sn, dn);
+      queueDesc(p.seq, tokenIndex, sn, dn);
     inLanguage = false;
 
     nextDescriptor: while (dequeueDesc())
       while (true) {
-        switch (gn.elm.kind) {
+        switch (gn.element.kind) {
         case B, T, TI, C:
-          if (tokens[i] == gn.elm.ei) {
+          if (tokens[tokenIndex] == gn.element.number) {
             // System.out.println("Matched " + tokens[i]);
             du(1);
-            i++;
+            tokenIndex++;
             gn = gn.seq;
             break;
           } else
@@ -108,7 +108,7 @@ public class GLLBaseLine extends AbstractParser {
           break;
         case ALT:
           for (CFGNode tmp = gn; tmp != null; tmp = tmp.alt)
-            queueDesc(tmp.seq, i, sn, dn);
+            queueDesc(tmp.seq, tokenIndex, sn, dn);
           continue nextDescriptor;
         case EOS:
           break;
@@ -139,7 +139,7 @@ public class GLLBaseLine extends AbstractParser {
     for (var n : sppf.keySet())
       n.number = sppfCardinality++;
     for (var n : sppf.keySet())
-      for (var p : n.packNS) {
+      for (var p : n.packNodes) {
         p.parent = n;
         p.number = sppfCardinality++;
       }
@@ -148,70 +148,70 @@ public class GLLBaseLine extends AbstractParser {
   }
 
   /* Thread handling *********************************************************/
-  Set<Desc> descS;
-  Deque<Desc> descQ;
+  Set<Descriptor> descS;
+  Deque<Descriptor> descQ;
   CFGNode gn;
-  GSSN sn;
-  SPPFN dn;
+  GSSNode sn;
+  SPPFSymbolNode dn;
 
-  void queueDesc(CFGNode gn, int i, GSSN gssN, SPPFN sppfN) {
-    Desc tmp = new Desc(gn, i, gssN, sppfN);
+  void queueDesc(CFGNode gn, int i, GSSNode gssN, SPPFSymbolNode sppfN) {
+    Descriptor tmp = new Descriptor(gn, i, gssN, sppfN);
     if (descS.add(tmp)) descQ.addFirst(tmp);
   }
 
   boolean dequeueDesc() {
-    Desc tmp = descQ.poll();
+    Descriptor tmp = descQ.poll();
     if (tmp == null) return false;
-    gn = tmp.gn;
-    i = tmp.i;
-    sn = tmp.sn;
-    dn = tmp.dn;
+    gn = tmp.grammarNode;
+    tokenIndex = tmp.inputIndex;
+    sn = tmp.stackNode;
+    dn = tmp.derivationNode;
     return true;
   }
 
   /* Deque handling **********************************************************/
-  Map<GSSN, GSSN> gss;
-  GSSN gssRoot;
+  Map<GSSNode, GSSNode> gss;
+  GSSNode gssRoot;
 
-  GSSN gssFind(CFGNode gn, int i) {
-    GSSN gssN = new GSSN(gn, i);
+  GSSNode gssFind(CFGNode gn, int i) {
+    GSSNode gssN = new GSSNode(gn, i);
     if (gss.get(gssN) == null) gss.put(gssN, gssN);
     return gss.get(gssN);
   }
 
   void call(CFGNode gn) {
-    GSSN gssN = gssFind(gn.seq, i);
-    GSSE gssE = new GSSE(sn, dn);
+    GSSNode gssN = gssFind(gn.seq, tokenIndex);
+    GSSEdge gssE = new GSSEdge(sn, dn);
     if (!gssN.edges.contains(gssE)) {
       gssN.edges.add(gssE);
-      for (SPPFN rc : gssN.pops)
+      for (SPPFSymbolNode rc : gssN.pops)
         queueDesc(gn.seq, rc.ri, sn, sppfUpdate(gn.seq, dn, rc));
     }
-    for (CFGNode p = cfgRules.elementToNodeMap.get(gn.elm).alt; p != null; p = p.alt)
-      queueDesc(p.seq, i, gssN, null);
+    for (CFGNode p = cfgRules.elementToNodeMap.get(gn.element).alt; p != null; p = p.alt)
+      queueDesc(p.seq, tokenIndex, gssN, null);
   }
 
   void ret() {
     if (sn.equals(gssRoot)) { // Deque base
-      if (cfgRules.acceptingNodeNumbers.contains(gn.num) && (i == tokens.length - 1)) {
-        sppfRootNode = sppf.get(new SPPFN(cfgRules.elementToNodeMap.get(cfgRules.startNonterminal), 0, tokens.length - 1));
+      if (cfgRules.acceptingNodeNumbers.contains(gn.num) && (tokenIndex == tokens.length - 1)) {
+        sppfRootNode = sppf.get(new SPPFSymbolNode(cfgRules.elementToNodeMap.get(cfgRules.startNonterminal), 0, tokens.length - 1));
         inLanguage = true;
       }
       return; // End of parse
     }
     sn.pops.add(dn);
-    for (GSSE e : sn.edges)
-      queueDesc(sn.gn, i, e.dst, sppfUpdate(sn.gn, e.sppfnode, dn));
+    for (GSSEdge e : sn.edges)
+      queueDesc(sn.grammarNode, tokenIndex, e.dst, sppfUpdate(sn.grammarNode, e.sppfnode, dn));
   }
 
   /* Derivation handling *****************************************************/
-  Map<SPPFN, SPPFN> sppf;
-  SPPFN sppfRootNode;
+  Map<SPPFSymbolNode, SPPFSymbolNode> sppf;
+  SPPFSymbolNode sppfRootNode;
 
-  SPPFN sppfFind(CFGNode dn, int li, int ri) {
+  SPPFSymbolNode sppfFind(CFGNode dn, int li, int ri) {
     // System.out.print("sppfFind with dn " + dn.toStringAsProduction() + " with extents " + li + "," + ri);
 
-    SPPFN tmp = new SPPFN(dn, li, ri);
+    SPPFSymbolNode tmp = new SPPFSymbolNode(dn, li, ri);
     if (!sppf.containsKey(tmp)) {
       sppf.put(tmp, tmp);
       // System.out.print(" added " + tmp);
@@ -220,23 +220,23 @@ public class GLLBaseLine extends AbstractParser {
     return sppf.get(tmp);
   }
 
-  SPPFN sppfUpdate(CFGNode gn, SPPFN ln, SPPFN rn) {
-    SPPFN ret = sppfFind(gn.elm.kind == CFGKind.END ? gn.seq : gn, ln == null ? rn.li : ln.li, rn.ri);
+  SPPFSymbolNode sppfUpdate(CFGNode gn, SPPFSymbolNode ln, SPPFSymbolNode rn) {
+    SPPFSymbolNode ret = sppfFind(gn.element.kind == CFGKind.END ? gn.seq : gn, ln == null ? rn.li : ln.li, rn.ri);
     // System.out.println(
     // "Updating SPPF node with gn " + gn.toStringAsProduction() + " and extents " + (ln == null ? rn.li : ln.li) + "," + rn.ri + " retrieves node " + ret);
-    ret.packNS.add(new SPPFPN(gn, ln == null ? rn.li : ln.ri, ln, rn));
+    ret.packNodes.add(new SPPFPackedNode(gn, ln == null ? rn.li : ln.ri, ln, rn));
     return ret;
   }
 
   void du(int width) {
     // dn = sppfUpdate(gn.seq, dn, sppfFind(gn, i, i + width)); // SLE paper version
-    var gnp = cfgRules.elementToNodeMap.get(gn.elm);
-    dn = sppfUpdate(gn.seq, dn, sppfFind(gnp, i, i + width)); // singleton element version to reduce SPPF size and correct for grammars with cycles
+    var gnp = cfgRules.elementToNodeMap.get(gn.element);
+    dn = sppfUpdate(gn.seq, dn, sppfFind(gnp, tokenIndex, tokenIndex + width)); // singleton element version to reduce SPPF size and correct for grammars with cycles
   }
 
   private int sppfWidestIndex() {
     int ret = 0;
-    for (SPPFN s : sppf.keySet())
+    for (SPPFSymbolNode s : sppf.keySet())
       if (ret < s.ri) ret = s.ri;
     return ret;
   }
@@ -264,13 +264,13 @@ public class GLLBaseLine extends AbstractParser {
     visitedSPPFNodes.clear();
     derivationSeenCycle = false;
     LinkedList<Integer> carrier = new LinkedList<>();
-    derivationAsTermRec(sppfRootNode, carrier, firstAvailablePackNode(sppfRootNode).gn.seq); // Root packed node must have a grammar node that is the end of a
+    derivationAsTermRec(sppfRootNode, carrier, firstAvailablePackNode(sppfRootNode).grammarNode.seq); // Root packed node must have a grammar node that is the end of a
                                                                                              // start production
     loadDerivationCounts(derivationNodeCount, derivationAmbiguityNodeCount);
     return carrier.getFirst();
   }
 
-  private String derivationAsTermRec(SPPFN sppfn, LinkedList<Integer> childrenFromParent, CFGNode gn) {
+  private String derivationAsTermRec(SPPFSymbolNode sppfn, LinkedList<Integer> childrenFromParent, CFGNode gn) {
     // System.out.println("\nEntered derivationAsTermRec() at node " + sppfn + " instance " + gn);
     if (visitedSPPFNodes.get(sppfn.number)) {
       if (!derivationSeenCycle) Util.error(System.err, "derivationAsTermRec() found cycle in derivation");
@@ -282,13 +282,13 @@ public class GLLBaseLine extends AbstractParser {
     LinkedList<Integer> children = (gn.giftKind == GIFTKind.OVER || gn.giftKind == GIFTKind.UNDER) ? childrenFromParent : new LinkedList<>();
     String constructor = null;
 
-    SPPFPN firstAvailableSPPFPN = null;
-    if (sppfn.packNS.size() != 0) { // Non leaf symbol nodes
+    SPPFPackedNode firstAvailableSPPFPN = null;
+    if (sppfn.packNodes.size() != 0) { // Non leaf symbol nodes
       firstAvailableSPPFPN = firstAvailablePackNode(sppfn);
-      CFGNode childgn = firstAvailableSPPFPN.gn.alt.seq;
-      LinkedList<SPPFN> childSymbolNodes = new LinkedList<>();
+      CFGNode childgn = firstAvailableSPPFPN.grammarNode.alt.seq;
+      LinkedList<SPPFSymbolNode> childSymbolNodes = new LinkedList<>();
       collectChildNodesRec(firstAvailableSPPFPN, childSymbolNodes);
-      for (SPPFN s : childSymbolNodes) {
+      for (SPPFSymbolNode s : childSymbolNodes) {
         String newConstructor = derivationAsTermRec(s, children, childgn);
         if (newConstructor != null) constructor = newConstructor; // Update on every ^^ child so that the last one wins
         childgn = childgn.seq; // Step to next child grammar node
@@ -297,9 +297,9 @@ public class GLLBaseLine extends AbstractParser {
 
     if (constructor == null) // If there were no OVERs, then set the constructor to be our symbol
       if (derivationForInterpreter)
-      constructor = firstAvailableSPPFPN == null ? "" + -sppfn.ri : "" + firstAvailableSPPFPN.gn.alt.num;
+      constructor = firstAvailableSPPFPN == null ? "" + -sppfn.ri : "" + firstAvailableSPPFPN.grammarNode.alt.num;
       else
-      constructor = (gn.elm.kind == CFGKind.B) ? lexemeOfBuiltin(LexemeKind.valueOf(gn.elm.str), leftIndices[sppfn.li]) : gn.elm.str;
+      constructor = (gn.element.kind == CFGKind.B) ? lexemeOfBuiltin(LexemeKind.valueOf(gn.element.str), leftIndices[sppfn.li]) : gn.element.str;
 
     if (children != childrenFromParent) {
       childrenFromParent.add(cfgRules.iTerms.findTerm(constructor, children));
@@ -310,9 +310,9 @@ public class GLLBaseLine extends AbstractParser {
     return (gn.giftKind == GIFTKind.OVER) ? constructor : null;
   }
 
-  private void collectChildNodesRec(SPPFPN sppfpn, LinkedList<SPPFN> childNodes) {
+  private void collectChildNodesRec(SPPFPackedNode sppfpn, LinkedList<SPPFSymbolNode> childNodes) {
     // System.out.println("CollectChildNodesRec() at pack node " + sppfpn);
-    SPPFN leftChild = sppfpn.leftChild, rightChild = sppfpn.rightChild;
+    SPPFSymbolNode leftChild = sppfpn.leftChild, rightChild = sppfpn.rightChild;
     if (leftChild != null) {
       if (leftChild.isSymbol()) // found a symbol
         childNodes.add(leftChild);
@@ -326,10 +326,10 @@ public class GLLBaseLine extends AbstractParser {
       collectChildNodesRec(firstAvailablePackNode(rightChild), childNodes);
   }
 
-  private SPPFPN firstAvailablePackNode(SPPFN sppfn) {
-    SPPFPN candidate = null;
+  private SPPFPackedNode firstAvailablePackNode(SPPFSymbolNode sppfn) {
+    SPPFPackedNode candidate = null;
     boolean ambiguous = false;
-    for (SPPFPN p : sppfn.packNS)
+    for (SPPFPackedNode p : sppfn.packNodes)
       if (!p.suppressed) if (candidate == null)
         candidate = p;
       else
@@ -339,7 +339,7 @@ public class GLLBaseLine extends AbstractParser {
 
     if (ambiguous) {
       System.out.println("Ambiguous SPPF node " + sppfn.toString() + " involving slots: ");
-      for (SPPFPN p : sppfn.packNS)
+      for (SPPFPackedNode p : sppfn.packNodes)
         if (!p.suppressed) System.out.println("  " + p);
     }
     return candidate;
@@ -353,10 +353,10 @@ public class GLLBaseLine extends AbstractParser {
     return ambiguousSPPF;
   }
 
-  public void ambiguityCheckRec(SPPFN sppfn) {
+  public void ambiguityCheckRec(SPPFSymbolNode sppfn) {
     // if (sppfn.gn.elm.kind != CFGKind.N) return;
     int activePackedNodes = 0;
-    for (SPPFPN p : sppfn.packNS)
+    for (SPPFPackedNode p : sppfn.packNodes)
       if (!p.suppressed) {
         activePackedNodes++;
         if (p.leftChild != null) ambiguityCheckRec(p.leftChild);
@@ -368,7 +368,7 @@ public class GLLBaseLine extends AbstractParser {
     if (activePackedNodes > 1) {
       ambiguousSPPF = true;
       System.out.println("Ambiguous SPPF node " + sppfn.toString() + " involving slots: ");
-      for (SPPFPN p : sppfn.packNS)
+      for (SPPFPackedNode p : sppfn.packNodes)
         if (!p.suppressed) System.out.println("  " + p);
     }
   }
@@ -377,7 +377,7 @@ public class GLLBaseLine extends AbstractParser {
     loadTWECounts(tokens.length, tokens.length - 1, 1);
 
     int gssEdgeCount = 0, popCount = 0;
-    for (GSSN g : gss.keySet()) {
+    for (GSSNode g : gss.keySet()) {
       gssEdgeCount += g.edges.size();
       popCount += g.pops.size();
     }
@@ -385,8 +385,8 @@ public class GLLBaseLine extends AbstractParser {
 
     int sppfEpsilonNodeCount = 0, sppfTerminalNodeCount = 0, sppfNonterminalNodeCount = 0, sppfIntermediateNodeCount = 0, sppfPackNodeCount = 0,
         sppfAmbiguityCount = 0, sppfEdgeCount = 0;
-    for (SPPFN s : sppf.keySet()) {
-      switch (s.gn.elm.kind) {
+    for (SPPFSymbolNode s : sppf.keySet()) {
+      switch (s.gn.element.kind) {
       // Dodgy - how do we test the flavour of an SPPF node?
       case T, TI, C, B:
         sppfTerminalNodeCount++;
@@ -395,9 +395,9 @@ public class GLLBaseLine extends AbstractParser {
         sppfEpsilonNodeCount++;
         break;
       }
-      sppfPackNodeCount += s.packNS.size();
-      if (s.packNS.size() > 1) sppfAmbiguityCount++;
-      for (SPPFPN p : s.packNS) {
+      sppfPackNodeCount += s.packNodes.size();
+      if (s.packNodes.size() > 1) sppfAmbiguityCount++;
+      for (SPPFPackedNode p : s.packNodes) {
         sppfEdgeCount++; // inedge
         if (p.leftChild != null) sppfEdgeCount++;
         if (p.rightChild != null) sppfEdgeCount++;
@@ -426,7 +426,7 @@ public class GLLBaseLine extends AbstractParser {
     }
     for (var n : sppf.keySet()) {
       System.out.println(n);
-      for (var pn : n.packNS)
+      for (var pn : n.packNodes)
         System.out.println(pn);
     }
   }
@@ -469,7 +469,7 @@ public class GLLBaseLine extends AbstractParser {
     derivation2Dot(sppf, sppfRootNode, "derivation.dot", false, false); // full SPPF
   }
 
-  public void derivation2Dot(Map<SPPFN, SPPFN> sppf, SPPFN rootNode, String filename, boolean showNodeNumbers, boolean showIndices) {
+  public void derivation2Dot(Map<SPPFSymbolNode, SPPFSymbolNode> sppf, SPPFSymbolNode rootNode, String filename, boolean showNodeNumbers, boolean showIndices) {
 
     try {
       dotOut = new PrintStream(new File(filename));
@@ -486,7 +486,7 @@ public class GLLBaseLine extends AbstractParser {
 
   int nextFreeNodeNumber = 0;
 
-  private void derivationToDotRec(SPPFN sppfn, int parent, boolean showNodeNumbers, boolean showIndices) {
+  private void derivationToDotRec(SPPFSymbolNode sppfn, int parent, boolean showNodeNumbers, boolean showIndices) {
     if (visitedSPPFNodes.get(sppfn.number)) return;
     visitedSPPFNodes.set(sppfn.number);
 
@@ -501,7 +501,7 @@ public class GLLBaseLine extends AbstractParser {
     }
 
     // Recurse to an unsuppressed packed node
-    for (SPPFPN p : sppfn.packNS) {
+    for (SPPFPackedNode p : sppfn.packNodes) {
       if (!p.suppressed) {
         if (p.leftChild != null) derivationToDotRec(p.leftChild, nodeNumber, showNodeNumbers, showIndices);
         derivationToDotRec(p.rightChild, nodeNumber, showNodeNumbers, showIndices);
@@ -511,7 +511,7 @@ public class GLLBaseLine extends AbstractParser {
     visitedSPPFNodes.clear(sppfn.number);
   }
 
-  public void SPPF2Dot(Map<SPPFN, SPPFN> sppf, SPPFN rootNode, String filename, boolean full, boolean showIndicies, boolean showIntermediates) {
+  public void SPPF2Dot(Map<SPPFSymbolNode, SPPFSymbolNode> sppf, SPPFSymbolNode rootNode, String filename, boolean full, boolean showIndicies, boolean showIntermediates) {
     this.showIndicies = showIndicies;
     this.showIntermediates = showIntermediates;
 
@@ -520,7 +520,7 @@ public class GLLBaseLine extends AbstractParser {
       dotOut.println("digraph \"SPPF\" {\n"
           + "graph[ordering=out ranksep=0.1]\n node[fontname=Helvetica fontsize=9 shape=box height=0 width=0 margin=0.04 color=gray]\nedge[arrowsize=0.3 color=gray]");
       if (full)
-        for (SPPFN n : sppf.keySet())
+        for (SPPFSymbolNode n : sppf.keySet())
           sppfSubtreeToDot(n);
       else {
         visitedSPPFNodes.clear();
@@ -533,20 +533,20 @@ public class GLLBaseLine extends AbstractParser {
     }
   }
 
-  private void coreSPPFToDotRec(SPPFN sppfn) {
+  private void coreSPPFToDotRec(SPPFSymbolNode sppfn) {
     if (visitedSPPFNodes.get(sppfn.number)) return;
     visitedSPPFNodes.set(sppfn.number);
 
     sppfSubtreeToDot(sppfn);
 
-    for (SPPFPN p : sppfn.packNS) { // Recurse through packed nodes
+    for (SPPFPackedNode p : sppfn.packNodes) { // Recurse through packed nodes
       if (p.leftChild != null) coreSPPFToDotRec(p.leftChild);
       if (p.rightChild != null) coreSPPFToDotRec(p.rightChild);
     }
   }
 
-  private void sppfSubtreeToDot(SPPFN sppfn) {
-    boolean isAmbiguous = sppfn.packNS.size() > 1;
+  private void sppfSubtreeToDot(SPPFSymbolNode sppfn) {
+    boolean isAmbiguous = sppfn.packNodes.size() > 1;
     if (sppfn.isSymbol())
       dotOut.println(
           "\"" + sppfn.number + "\"" + symbolNodeStyle + " [label=\"" + sppfn.number + " " + sppfn.gn.toString() + " " + sppfn.li + ", " + sppfn.ri + "\"]");
@@ -559,10 +559,10 @@ public class GLLBaseLine extends AbstractParser {
     if (!sppfRootReachable.get(sppfn.number)) dotOut.println(unreachableSymbolNodeStyle);
     if (sppfn == sppfRootNode) dotOut.println(rootNodeStyle);
 
-    for (SPPFPN p : sppfn.packNS) {
+    for (SPPFPackedNode p : sppfn.packNodes) {
       boolean isCyclicP = sppfCyclic.get(p.number);
 
-      dotOut.println("\"" + p.number + "\"" + packNodeStyle + " [label=\"" + p.number + ": " + p.gn.toStringAsProduction() + " , " + p.pivot + "\"]");
+      dotOut.println("\"" + p.number + "\"" + packNodeStyle + " [label=\"" + p.number + ": " + p.grammarNode.toStringAsProduction() + " , " + p.pivot + "\"]");
       if (isCyclicP) dotOut.println(cycleStyle);
       if (!sppfRootReachable.get(p.number)) dotOut.println(unreachablePackNodeStyle);
 
@@ -589,13 +589,13 @@ public class GLLBaseLine extends AbstractParser {
   // }
   /* SPPF cycle breaking **********************************************************************/
 
-  private final Deque<SPPFNode> visitedDeque = new ArrayDeque<>(); // Only usedby sppfCycleRec to keep a list of visited nodes during descent
-  private Set<SPPFNode> xNodesBeforeBreaking; // All cyclic nodes - only used by SPPF diagnostics
-  private Set<SPPFN> xS; // Set of cYclic symbol or intermediate nodes; a subset of the X in Elizabeth's note
-  private Set<SPPFPN> xP; // Set of cYclic packed nodes; X = Xs U Xp
-  private Set<SPPFPN> cbD = new HashSet<>(); // Set of deleted cyclic nodes: D in Elizabeth's note
-  private final Set<SPPFPN> cbDPrime = new HashSet<>(); // Set of deleted cyclic nodes: D' in Elizabeth's note
-  private final Relation<SPPFNode, SPPFNode> sppfReachableSlow = new Relation<>();
+  private final Deque<AbstractSPPFNode> visitedDeque = new ArrayDeque<>(); // Only usedby sppfCycleRec to keep a list of visited nodes during descent
+  private Set<AbstractSPPFNode> xNodesBeforeBreaking; // All cyclic nodes - only used by SPPF diagnostics
+  private Set<SPPFSymbolNode> xS; // Set of cYclic symbol or intermediate nodes; a subset of the X in Elizabeth's note
+  private Set<SPPFPackedNode> xP; // Set of cYclic packed nodes; X = Xs U Xp
+  private Set<SPPFPackedNode> cbD = new HashSet<>(); // Set of deleted cyclic nodes: D in Elizabeth's note
+  private final Set<SPPFPackedNode> cbDPrime = new HashSet<>(); // Set of deleted cyclic nodes: D' in Elizabeth's note
+  private final Relation<AbstractSPPFNode, AbstractSPPFNode> sppfReachableSlow = new Relation<>();
   private RelationOverNaturals sppfReachable;
   private final BitSet sppfCyclic = new BitSet();
   private BitSet sppfRootReachable;
@@ -615,13 +615,13 @@ public class GLLBaseLine extends AbstractParser {
     sppfReachable.clear();
     // System.out.println("After clearing sppfReachable, contents are:\n" + sppfReachable);
     for (var n : sppf.keySet())
-      for (var p : n.packNS) {
+      for (var p : n.packNodes) {
         if (cbD.contains(p)) {
           // System.out.println("Skipping Deleted packed node " + p);
           continue;
         }
 
-        if (cyclicCFGSlots != null && !cyclicCFGSlots.contains(p.gn)) continue;
+        if (cyclicCFGSlots != null && !cyclicCFGSlots.contains(p.grammarNode)) continue;
 
         // System.out.println("Adding cyclicSPPFNode " + n);
         sppfReachable.add(n.number, p.number);
@@ -656,7 +656,7 @@ public class GLLBaseLine extends AbstractParser {
     for (var n : sppf.keySet())
       if (sppfCyclic.get(n.number)) {
         xS.add(n);
-        for (var p : n.packNS)
+        for (var p : n.packNodes)
           if (sppfCyclic.get(p.number)) {
             // xNodesBeforeBreaking.add(p);
             xP.add(p);
@@ -664,12 +664,12 @@ public class GLLBaseLine extends AbstractParser {
       }
   }
 
-  public void loadXPartitionsFromCFGRulesRec(SPPFN n) {
+  public void loadXPartitionsFromCFGRulesRec(SPPFSymbolNode n) {
     if (visitedSPPFNodes.get(n.number)) return;
     visitedSPPFNodes.set(n.number);
     // System.out.println("loadXPartitionsFromCFGRulesRec() entered " + n);
-    for (var p : n.packNS) {
-      if (cfgRules.cyclicSlots.contains(p.gn)) {
+    for (var p : n.packNodes) {
+      if (cfgRules.cyclicSlots.contains(p.grammarNode)) {
         xS.add(n);
         // System.out.println("Added cyclic symbol node " + n);
         xP.add(p);
@@ -738,34 +738,34 @@ public class GLLBaseLine extends AbstractParser {
     return false;
   }
 
-  private void cbUpdate(SPPFPN v, Set<SPPFPN> Dset) {
+  private void cbUpdate(SPPFPackedNode v, Set<SPPFPackedNode> Dset) {
     Dset.add(v);
     xP.remove(v);
     if (cycleBreakTrace) System.out.println("Removed from xP: " + v);
   }
 
-  private void cbUpdate(SPPFN v) {
+  private void cbUpdate(SPPFSymbolNode v) {
     xS.remove(v);
     if (cycleBreakTrace) System.out.println("Removed from xS: " + v);
   }
 
   // children(v) ∩ Xi = ∅ (symbol node child predicate)
-  public boolean noPackedChildInXp(SPPFN sppfN, Set<SPPFPN> xP) {
-    for (var pn : sppfN.packNS)
+  public boolean noPackedChildInXp(SPPFSymbolNode sppfN, Set<SPPFPackedNode> xP) {
+    for (var pn : sppfN.packNodes)
       if (xP.contains(pn)) return false;
     return true;
   }
 
   // children(v) ∩ Xi = ∅ (packed node child predicate)
-  public boolean noSymbolChildInXs(SPPFPN sppfPN, Set<SPPFN> xS) {
+  public boolean noSymbolChildInXs(SPPFPackedNode sppfPN, Set<SPPFSymbolNode> xS) {
     if (sppfPN.leftChild != null && xS.contains(sppfPN.leftChild)) return false;
     if (xS.contains(sppfPN.rightChild)) return false;
     return true;
   }
 
   // sibling(v) ̸⊆ Xi (packed node sibling predicate)
-  public boolean somePackedSiblingNotInXp(SPPFPN sppfPN, Set<SPPFPN> xP) {
-    for (var p : sppfPN.parent.packNS)
+  public boolean somePackedSiblingNotInXp(SPPFPackedNode sppfPN, Set<SPPFPackedNode> xP) {
+    for (var p : sppfPN.parent.packNodes)
       if (p != sppfPN && !xP.contains(p)) return true;
     return false;
   }
@@ -778,7 +778,7 @@ public class GLLBaseLine extends AbstractParser {
   private int countTerm = 0;
   private int countEps = 0;
   private boolean countRemove = false;
-  Set<SPPFNode> countReachable;
+  Set<AbstractSPPFNode> countReachable;
 
   @Override
   public void sppfBreakCycles(boolean trace, boolean counts, boolean statistics) {
@@ -845,8 +845,8 @@ public class GLLBaseLine extends AbstractParser {
         System.out.println("--None--");
       else
         for (var n : countReachable) {
-          if (n instanceof SPPFN) {
-            SPPFN nn = (SPPFN) n;
+          if (n instanceof SPPFSymbolNode) {
+            SPPFSymbolNode nn = (SPPFSymbolNode) n;
 
             if (nn.li != nn.ri) System.out.print("*");
           }
@@ -856,24 +856,24 @@ public class GLLBaseLine extends AbstractParser {
 
   }
 
-  private void updateCountReachable(SPPFNode n) {
+  private void updateCountReachable(AbstractSPPFNode n) {
     if (countRemove)
       countReachable.remove(n);
     else
       countReachable.add(n);
   }
 
-  private void sppfBreakCyclesCountsRec(SPPFN sppfn) {
+  private void sppfBreakCyclesCountsRec(SPPFSymbolNode sppfn) {
     // System.out.println("\nEntered sppfBreakCyclesCountsRec() at node " + node);
     if (visitedSPPFNodes.get(sppfn.number)) return;
     visitedSPPFNodes.set(sppfn.number);
     updateCountReachable(sppfn);
 
-    if (sppfn.gn.elm.kind == CFGKind.EPS)
+    if (sppfn.gn.element.kind == CFGKind.EPS)
       countEps++;
-    else if (sppfn.packNS.size() == 0)
+    else if (sppfn.packNodes.size() == 0)
       countTerm++;
-    else if (cfgRules.paraterminalElements.contains(sppfn.gn.elm)) {
+    else if (cfgRules.paraterminalElements.contains(sppfn.gn.element)) {
       countPara++;
       return;
     } else if (sppfn.isSymbol())
@@ -881,7 +881,7 @@ public class GLLBaseLine extends AbstractParser {
     else
       countInter++;
 
-    for (SPPFPN p : sppfn.packNS) { // Recurse through packed nodes
+    for (SPPFPackedNode p : sppfn.packNodes) { // Recurse through packed nodes
       if (cbD.contains(p)) continue;
       updateCountReachable(p);
       countPacked++;
@@ -892,9 +892,9 @@ public class GLLBaseLine extends AbstractParser {
 
   private void newCycleBreak() {
     boolean changedXpI, changedXpO = true;
-    Stack<SPPFN> y1 = new Stack<>();
-    Stack<SPPFPN> y2 = new Stack<>();
-    SPPFPN v = null;
+    Stack<SPPFSymbolNode> y1 = new Stack<>();
+    Stack<SPPFPackedNode> y2 = new Stack<>();
+    SPPFPackedNode v = null;
 
     while (changedXpO) {
       changedXpO = false;
@@ -932,12 +932,12 @@ public class GLLBaseLine extends AbstractParser {
   }
 
   class Configuration {
-    final Set<SPPFPN> xP1;
-    final Set<SPPFN> xS1;
-    final Set<SPPFPN> d;
-    final Set<SPPFPN> dPrime;
+    final Set<SPPFPackedNode> xP1;
+    final Set<SPPFSymbolNode> xS1;
+    final Set<SPPFPackedNode> d;
+    final Set<SPPFPackedNode> dPrime;
 
-    public Configuration(Set<SPPFPN> xP, Set<SPPFN> xS, Set<SPPFPN> d, Set<SPPFPN> dPrime) {
+    public Configuration(Set<SPPFPackedNode> xP, Set<SPPFSymbolNode> xS, Set<SPPFPackedNode> d, Set<SPPFPackedNode> dPrime) {
       super();
       this.xP1 = xP;
       this.xS1 = xS;
@@ -1016,7 +1016,7 @@ public class GLLBaseLine extends AbstractParser {
     sppfComputeCoreReachability(null); // computes sppfCyclic (set of cyclic SPPF nodes)
     loadXPartitionsFromReachability(); // Load X from computed cyclic nodes as partitions xP and xS
 
-    Configuration c_0 = new Configuration(xP, xS, new HashSet<SPPFPN>(), new HashSet<SPPFPN>());
+    Configuration c_0 = new Configuration(xP, xS, new HashSet<SPPFPackedNode>(), new HashSet<SPPFPackedNode>());
     q.add(c_0); // enqueue start element
     System.out.println("C_0: " + c_0);
 
@@ -1070,14 +1070,14 @@ public class GLLBaseLine extends AbstractParser {
 
   }
 
-  private void zcbUpdate(Configuration c, SPPFNode v, Boolean D, Boolean DPrime) {
+  private void zcbUpdate(Configuration c, AbstractSPPFNode v, Boolean D, Boolean DPrime) {
     var cp = new Configuration(c);
-    if (v instanceof SPPFPN)
+    if (v instanceof SPPFPackedNode)
       cp.xP1.remove(v);
     else
       cp.xS1.remove(v);
-    if (D) cp.d.add((SPPFPN) v);
-    if (DPrime) cp.dPrime.add((SPPFPN) v);
+    if (D) cp.d.add((SPPFPackedNode) v);
+    if (DPrime) cp.dPrime.add((SPPFPackedNode) v);
     newState(c, cp);
 
   }
@@ -1097,7 +1097,7 @@ public class GLLBaseLine extends AbstractParser {
   }
 
   /** lexicalisation checks *********************************************************************/
-  Map<Integer, Set<SPPFN>> paraterminalInstances = new TreeMap<>();
+  Map<Integer, Set<SPPFSymbolNode>> paraterminalInstances = new TreeMap<>();
   int paraterminalCount;
   int terminalCount;
 
@@ -1118,37 +1118,37 @@ public class GLLBaseLine extends AbstractParser {
     boolean overlapping = false;
     for (var i : paraterminalInstances.keySet()) {
       for (var s : paraterminalInstances.get(i))
-        System.out.println(s.li + "," + s.ri + "  " + s.gn.elm);
+        System.out.println(s.li + "," + s.ri + "  " + s.gn.element);
     }
   }
 
-  private void sppfCollectParaterminalsRec(SPPFN sppfn) {
+  private void sppfCollectParaterminalsRec(SPPFSymbolNode sppfn) {
     // System.out.println("Collect paraterminals at " + sppfn);
     if (visitedSPPFNodes.get(sppfn.number)) return;
     visitedSPPFNodes.set(sppfn.number);
 
-    if (sppfn.isSymbol() && cfgRules.paraterminalElements.contains(sppfn.gn.elm)) {
+    if (sppfn.isSymbol() && cfgRules.paraterminalElements.contains(sppfn.gn.element)) {
       paraterminalInstanceAdd(sppfn);
       paraterminalCount++;
       return;
     }
-    if (sppfn.packNS.size() == 0) {
+    if (sppfn.packNodes.size() == 0) {
       paraterminalInstanceAdd(sppfn);
-      if (sppfn.gn.elm.kind != CFGKind.EPS) terminalCount++;
+      if (sppfn.gn.element.kind != CFGKind.EPS) terminalCount++;
     }
-    for (var p : sppfn.packNS) {
+    for (var p : sppfn.packNodes) {
       if (p.leftChild != null) sppfCollectParaterminalsRec(p.leftChild);
       sppfCollectParaterminalsRec(p.rightChild);
     }
   }
 
-  private void paraterminalInstanceAdd(SPPFN sppfn) {
-    if (paraterminalInstances.get(sppfn.li) == null) paraterminalInstances.put(sppfn.li, new HashSet<SPPFN>());
+  private void paraterminalInstanceAdd(SPPFSymbolNode sppfn) {
+    if (paraterminalInstances.get(sppfn.li) == null) paraterminalInstances.put(sppfn.li, new HashSet<SPPFSymbolNode>());
     paraterminalInstances.get(sppfn.li).add(sppfn);
   }
 
-  SPPFN[] parasentence;
-  Set<List<SPPFN>> parasentences;
+  SPPFSymbolNode[] parasentence;
+  Set<List<SPPFSymbolNode>> parasentences;
 
   @Override
   public void sppfPrintParasentences() {
@@ -1158,7 +1158,7 @@ public class GLLBaseLine extends AbstractParser {
     }
     System.out.println("Parasentences");
     visitedSPPFNodes.clear();
-    parasentence = new SPPFN[100 * tokens.length + 1];
+    parasentence = new SPPFSymbolNode[100 * tokens.length + 1];
     psCall = 0;
     parasentences = new HashSet<>();
     // sppfCollectParasentencesRec(sppfRootNode, 0);
@@ -1166,7 +1166,7 @@ public class GLLBaseLine extends AbstractParser {
     // System.out.println(parasentences);
     for (var s : parasentences) {
       for (var n : s)
-        System.out.print(n.li + "," + n.ri + ":" + n.gn.elm.str + "  ");
+        System.out.print(n.li + "," + n.ri + ":" + n.gn.element.str + "  ");
       System.out.println();
     }
   }
@@ -1177,12 +1177,12 @@ public class GLLBaseLine extends AbstractParser {
    * If packedNode.size == 1 then just descend
    *
    */
-  private void sppfCollectParasentencesIter(SPPFN sppfRootNode2, int i) {
+  private void sppfCollectParasentencesIter(SPPFSymbolNode sppfRootNode2, int i) {
   }
 
   private int psCall;
 
-  private int sppfCollectParasentencesRec(SPPFN node, int parasentenceIndex) {
+  private int sppfCollectParasentencesRec(SPPFSymbolNode node, int parasentenceIndex) {
     int thisCall = ++psCall;
     System.out.println(thisCall + " collect parasentences at " + node + " with parasentenceIndex " + parasentenceIndex);
     int entrySentenceIndex = parasentenceIndex;
@@ -1192,14 +1192,14 @@ public class GLLBaseLine extends AbstractParser {
     }
     visitedSPPFNodes.set(node.number);
 
-    if (node.packNS.isEmpty() || (node.isSymbol() && cfgRules.paraterminalElements.contains(node.gn.elm))) {
-      if (!(node.packNS.isEmpty() && node.gn.elm.kind == CFGKind.EPS)) {
-        System.out.println("Extending with " + node.gn.elm.str);
+    if (node.packNodes.isEmpty() || (node.isSymbol() && cfgRules.paraterminalElements.contains(node.gn.element))) {
+      if (!(node.packNodes.isEmpty() && node.gn.element.kind == CFGKind.EPS)) {
+        System.out.println("Extending with " + node.gn.element.str);
         parasentence[parasentenceIndex++] = node;
         if (node.ri == tokens.length - 1) addParasentence(parasentenceIndex);
       }
     } else
-      for (var p : node.packNS) {
+      for (var p : node.packNodes) {
         if (cbD.contains(p)) {
           System.out.println("Skipping cyclic node " + p.number);
           continue;
@@ -1219,7 +1219,7 @@ public class GLLBaseLine extends AbstractParser {
 
   private void addParasentence(int length) {
     System.out.println("Adding sentence of length " + length + parasentence);
-    List<SPPFN> parasentenceList = new LinkedList<>();
+    List<SPPFSymbolNode> parasentenceList = new LinkedList<>();
     for (int i = 0; i < length; i++)
       parasentenceList.add(parasentence[i]);
     parasentences.add(parasentenceList);

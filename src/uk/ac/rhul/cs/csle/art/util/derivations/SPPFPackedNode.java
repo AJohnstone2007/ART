@@ -1,20 +1,20 @@
-package uk.ac.rhul.cs.csle.art.util.sppf;
+package uk.ac.rhul.cs.csle.art.util.derivations;
 
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
 
-public class SPPFPN extends SPPFNode {
-  // Note Nov 2024 added parent to support SPPF cycle detection
+public class SPPFPackedNode extends AbstractSPPFNode {
+  // Note Nov 2024 added parent to support SPPF cycle detection - not needed in all variants
   public int number = 0; // Numbers allocated after parse
-  public SPPFN parent = null; // Parents allocated after parse
-  public final CFGNode gn;
+  public SPPFSymbolNode parent = null; // Parents allocated after parse
+  public final CFGNode grammarNode;
   public final int pivot;
-  public final SPPFN leftChild;
-  public final SPPFN rightChild;
+  public final SPPFSymbolNode leftChild;
+  public final SPPFSymbolNode rightChild;
   public boolean suppressed = false;
 
-  public SPPFPN(CFGNode gn, int pivot, SPPFN leftChild, SPPFN rightChild) {
+  public SPPFPackedNode(CFGNode grammarNode, int pivot, SPPFSymbolNode leftChild, SPPFSymbolNode rightChild) {
     super();
-    this.gn = gn;
+    this.grammarNode = grammarNode;
     this.pivot = pivot;
     this.leftChild = leftChild;
     this.rightChild = rightChild;
@@ -24,7 +24,7 @@ public class SPPFPN extends SPPFNode {
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result = prime * result + ((gn == null) ? 0 : gn.hashCode());
+    result = prime * result + ((grammarNode == null) ? 0 : grammarNode.hashCode());
     result = prime * result + number;
     result = prime * result + pivot;
     return result;
@@ -35,10 +35,10 @@ public class SPPFPN extends SPPFNode {
     if (this == obj) return true;
     if (obj == null) return false;
     if (getClass() != obj.getClass()) return false;
-    SPPFPN other = (SPPFPN) obj;
-    if (gn == null) {
-      if (other.gn != null) return false;
-    } else if (!gn.equals(other.gn)) return false;
+    SPPFPackedNode other = (SPPFPackedNode) obj;
+    if (grammarNode == null) {
+      if (other.grammarNode != null) return false;
+    } else if (!grammarNode.equals(other.grammarNode)) return false;
     if (number != other.number) return false;
     if (pivot != other.pivot) return false;
     return true;
@@ -49,7 +49,7 @@ public class SPPFPN extends SPPFNode {
     StringBuilder sb = new StringBuilder();
     sb.append(number);
     sb.append(": ");
-    sb.append(gn.toStringAsProduction());
+    sb.append(grammarNode.toStringAsProduction());
     sb.append(", " + pivot);
     sb.append(" under ");
     sb.append(parent);

@@ -1,4 +1,4 @@
-package uk.ac.rhul.cs.csle.art.util.sppf;
+package uk.ac.rhul.cs.csle.art.util.derivations;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -6,14 +6,14 @@ import java.util.Set;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGKind;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
 
-public class SPPFN extends SPPFNode {
+public class SPPFSymbolNode extends AbstractSPPFNode {
   public int number = 0; // to be set after parsing
   public final CFGNode gn;
   public final int li;
   public final int ri;
-  public final Set<SPPFPN> packNS = new HashSet<>();
+  public final Set<SPPFPackedNode> packNodes = new HashSet<>();
 
-  public SPPFN(CFGNode gn, int li, int ri) {
+  public SPPFSymbolNode(CFGNode gn, int li, int ri) {
     super();
     this.gn = gn;
     this.li = li;
@@ -21,7 +21,7 @@ public class SPPFN extends SPPFNode {
   }
 
   public boolean isSymbol() {
-    return packNS.size() == 0 /* terminal or epsilon */ || (gn.elm.kind == CFGKind.N && gn.seq == null /* LHS */);
+    return packNodes.size() == 0 /* terminal or epsilon */ || (gn.element.kind == CFGKind.N && gn.seq == null /* LHS */);
   }
 
   @Override
@@ -39,7 +39,7 @@ public class SPPFN extends SPPFNode {
     if (this == obj) return true;
     if (obj == null) return false;
     if (getClass() != obj.getClass()) return false;
-    SPPFN other = (SPPFN) obj;
+    SPPFSymbolNode other = (SPPFSymbolNode) obj;
     if (gn == null) {
       if (other.gn != null) return false;
     } else if (!gn.equals(other.gn)) return false;

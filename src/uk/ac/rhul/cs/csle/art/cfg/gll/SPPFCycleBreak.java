@@ -13,20 +13,20 @@ import java.util.Stack;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGKind;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
 import uk.ac.rhul.cs.csle.art.util.Util;
+import uk.ac.rhul.cs.csle.art.util.derivations.AbstractSPPFNode;
+import uk.ac.rhul.cs.csle.art.util.derivations.SPPF;
+import uk.ac.rhul.cs.csle.art.util.derivations.SPPFPackedNode;
+import uk.ac.rhul.cs.csle.art.util.derivations.SPPFSymbolNode;
 import uk.ac.rhul.cs.csle.art.util.relation.Relation;
 import uk.ac.rhul.cs.csle.art.util.relation.RelationOverNaturals;
-import uk.ac.rhul.cs.csle.art.util.sppf.SPPF;
-import uk.ac.rhul.cs.csle.art.util.sppf.SPPFN;
-import uk.ac.rhul.cs.csle.art.util.sppf.SPPFNode;
-import uk.ac.rhul.cs.csle.art.util.sppf.SPPFPN;
 
 class SPPFCycleBreak {
   final SPPF sppf;
-  private final Deque<SPPFNode> visitedDeque = new ArrayDeque<>(); // Only usedby sppfCycleRec to keep a list of visited nodes during descent
-  private Set<SPPFNode> xNodesBeforeBreaking; // All cyclic nodes - only used by SPPF diagnostics
-  private Set<SPPFN> xS; // Set of cYclic symbol or intermediate nodes; a subset of the X in Elizabeth's note
-  private Set<SPPFPN> xP; // Set of cYclic packed nodes; X = Xs U Xp
-  private final Relation<SPPFNode, SPPFNode> sppfReachableSlow = new Relation<>();
+  private final Deque<AbstractSPPFNode> visitedDeque = new ArrayDeque<>(); // Only usedby sppfCycleRec to keep a list of visited nodes during descent
+  private Set<AbstractSPPFNode> xNodesBeforeBreaking; // All cyclic nodes - only used by SPPF diagnostics
+  private Set<SPPFSymbolNode> xS; // Set of cYclic symbol or intermediate nodes; a subset of the X in Elizabeth's note
+  private Set<SPPFPackedNode> xP; // Set of cYclic packed nodes; X = Xs U Xp
+  private final Relation<AbstractSPPFNode, AbstractSPPFNode> sppfReachableSlow = new Relation<>();
   private RelationOverNaturals sppfReachable;
   private boolean cycleBreakTrace;
   private boolean cycleBreakCounts;
@@ -48,13 +48,13 @@ class SPPFCycleBreak {
     sppfReachable.clear();
     // System.out.println("After clearing sppfReachable, contents are:\n" + sppfReachable);
     for (var n : sppf.nodes.keySet())
-      for (var p : n.packNS) {
+      for (var p : n.packNodes) {
         if (sppf.cbD.contains(p)) {
           // System.out.println("Skipping Deleted packed node " + p);
           continue;
         }
 
-        if (cyclicCFGSlots != null && !cyclicCFGSlots.contains(p.gn)) continue;
+        if (cyclicCFGSlots != null && !cyclicCFGSlots.contains(p.grammarNode)) continue;
 
         // System.out.println("Adding cyclicSPPFNode " + n);
         sppfReachable.add(n.number, p.number);
@@ -88,7 +88,7 @@ class SPPFCycleBreak {
     for (var n : sppf.nodes.keySet())
       if (sppf.cyclic.get(n.number)) {
         xS.add(n);
-        for (var p : n.packNS)
+        for (var p : n.packNodes)
           if (sppf.cyclic.get(p.number)) {
             // xNodesBeforeBreaking.add(p);
             xP.add(p);
@@ -96,12 +96,12 @@ class SPPFCycleBreak {
       }
   }
 
-  public void loadXPartitionsFromCFGRulesRec(SPPFN n) {
+  public void loadXPartitionsFromCFGRulesRec(SPPFSymbolNode n) {
     if (sppf.visited.get(n.number)) return;
     sppf.visited.set(n.number);
     // System.out.println("loadXPartitionsFromCFGRulesRec() entered " + n);
-    for (var p : n.packNS) {
-      if (sppf.cfgRules.cyclicSlots.contains(p.gn)) {
+    for (var p : n.packNodes) {
+      if (sppf.cfgRules.cyclicSlots.contains(p.grammarNode)) {
         xS.add(n);
         // System.out.println("Added cyclic symbol node " + n);
         xP.add(p);
@@ -170,34 +170,34 @@ class SPPFCycleBreak {
     return false;
   }
 
-  private void cbUpdate(SPPFPN v, Set<SPPFPN> Dset) {
+  private void cbUpdate(SPPFPackedNode v, Set<SPPFPackedNode> Dset) {
     Dset.add(v);
     xP.remove(v);
     if (cycleBreakTrace) System.out.println("Removed from xP: " + v);
   }
 
-  private void cbUpdate(SPPFN v) {
+  private void cbUpdate(SPPFSymbolNode v) {
     xS.remove(v);
     if (cycleBreakTrace) System.out.println("Removed from xS: " + v);
   }
 
   // children(v) ∩ Xi = ∅ (symbol node child predicate)
-  public boolean noPackedChildInXp(SPPFN sppfN, Set<SPPFPN> xP) {
-    for (var pn : sppfN.packNS)
+  public boolean noPackedChildInXp(SPPFSymbolNode sppfN, Set<SPPFPackedNode> xP) {
+    for (var pn : sppfN.packNodes)
       if (xP.contains(pn)) return false;
     return true;
   }
 
   // children(v) ∩ Xi = ∅ (packed node child predicate)
-  public boolean noSymbolChildInXs(SPPFPN sppfPN, Set<SPPFN> xS) {
+  public boolean noSymbolChildInXs(SPPFPackedNode sppfPN, Set<SPPFSymbolNode> xS) {
     if (sppfPN.leftChild != null && xS.contains(sppfPN.leftChild)) return false;
     if (xS.contains(sppfPN.rightChild)) return false;
     return true;
   }
 
   // sibling(v) ̸⊆ Xi (packed node sibling predicate)
-  public boolean somePackedSiblingNotInXp(SPPFPN sppfPN, Set<SPPFPN> xP) {
-    for (var p : sppfPN.parent.packNS)
+  public boolean somePackedSiblingNotInXp(SPPFPackedNode sppfPN, Set<SPPFPackedNode> xP) {
+    for (var p : sppfPN.parent.packNodes)
       if (p != sppfPN && !xP.contains(p)) return true;
     return false;
   }
@@ -210,7 +210,7 @@ class SPPFCycleBreak {
   private int countTerm = 0;
   private int countEps = 0;
   private boolean countRemove = false;
-  Set<SPPFNode> countReachable;
+  Set<AbstractSPPFNode> countReachable;
 
   public void sppfBreakCycles(boolean trace, boolean counts, boolean statistics) {
     if (sppf == null || sppf.rootNode == null) {
@@ -276,8 +276,8 @@ class SPPFCycleBreak {
         System.out.println("--None--");
       else
         for (var n : countReachable) {
-          if (n instanceof SPPFN) {
-            SPPFN nn = (SPPFN) n;
+          if (n instanceof SPPFSymbolNode) {
+            SPPFSymbolNode nn = (SPPFSymbolNode) n;
 
             if (nn.li != nn.ri) System.out.print("*");
           }
@@ -287,24 +287,24 @@ class SPPFCycleBreak {
 
   }
 
-  private void updateCountReachable(SPPFNode n) {
+  private void updateCountReachable(AbstractSPPFNode n) {
     if (countRemove)
       countReachable.remove(n);
     else
       countReachable.add(n);
   }
 
-  private void sppfBreakCyclesCountsRec(SPPFN sppfn) {
+  private void sppfBreakCyclesCountsRec(SPPFSymbolNode sppfn) {
     // System.out.println("\nEntered sppfBreakCyclesCountsRec() at node " + node);
     if (sppf.visited.get(sppfn.number)) return;
     sppf.visited.set(sppfn.number);
     updateCountReachable(sppfn);
 
-    if (sppfn.gn.elm.kind == CFGKind.EPS)
+    if (sppfn.gn.element.kind == CFGKind.EPS)
       countEps++;
-    else if (sppfn.packNS.size() == 0)
+    else if (sppfn.packNodes.size() == 0)
       countTerm++;
-    else if (sppf.cfgRules.paraterminalElements.contains(sppfn.gn.elm)) {
+    else if (sppf.cfgRules.paraterminalElements.contains(sppfn.gn.element)) {
       countPara++;
       return;
     } else if (sppfn.isSymbol())
@@ -312,7 +312,7 @@ class SPPFCycleBreak {
     else
       countInter++;
 
-    for (SPPFPN p : sppfn.packNS) { // Recurse through packed nodes
+    for (SPPFPackedNode p : sppfn.packNodes) { // Recurse through packed nodes
       if (sppf.cbD.contains(p)) continue;
       updateCountReachable(p);
       countPacked++;
@@ -323,9 +323,9 @@ class SPPFCycleBreak {
 
   private void newCycleBreak() {
     boolean changedXpI, changedXpO = true;
-    Stack<SPPFN> y1 = new Stack<>();
-    Stack<SPPFPN> y2 = new Stack<>();
-    SPPFPN v = null;
+    Stack<SPPFSymbolNode> y1 = new Stack<>();
+    Stack<SPPFPackedNode> y2 = new Stack<>();
+    SPPFPackedNode v = null;
 
     while (changedXpO) {
       changedXpO = false;
@@ -363,12 +363,12 @@ class SPPFCycleBreak {
   }
 
   class Configuration {
-    final Set<SPPFPN> xP1;
-    final Set<SPPFN> xS1;
-    final Set<SPPFPN> d;
-    final Set<SPPFPN> dPrime;
+    final Set<SPPFPackedNode> xP1;
+    final Set<SPPFSymbolNode> xS1;
+    final Set<SPPFPackedNode> d;
+    final Set<SPPFPackedNode> dPrime;
 
-    public Configuration(Set<SPPFPN> xP, Set<SPPFN> xS, Set<SPPFPN> d, Set<SPPFPN> dPrime) {
+    public Configuration(Set<SPPFPackedNode> xP, Set<SPPFSymbolNode> xS, Set<SPPFPackedNode> d, Set<SPPFPackedNode> dPrime) {
       super();
       this.xP1 = xP;
       this.xS1 = xS;
@@ -446,7 +446,7 @@ class SPPFCycleBreak {
     sppfComputeCoreReachability(null); // computes sppf.cyclic (set of cyclic SPPF nodes)
     loadXPartitionsFromReachability(); // Load X from computed cyclic nodes as partitions xP and xS
 
-    Configuration c_0 = new Configuration(xP, xS, new HashSet<SPPFPN>(), new HashSet<SPPFPN>());
+    Configuration c_0 = new Configuration(xP, xS, new HashSet<SPPFPackedNode>(), new HashSet<SPPFPackedNode>());
     q.add(c_0); // enqueue start element
     System.out.println("C_0: " + c_0);
 
@@ -500,14 +500,14 @@ class SPPFCycleBreak {
 
   }
 
-  private void zcbUpdate(Configuration c, SPPFNode v, Boolean D, Boolean DPrime) {
+  private void zcbUpdate(Configuration c, AbstractSPPFNode v, Boolean D, Boolean DPrime) {
     var cp = new Configuration(c);
-    if (v instanceof SPPFPN)
+    if (v instanceof SPPFPackedNode)
       cp.xP1.remove(v);
     else
       cp.xS1.remove(v);
-    if (D) cp.d.add((SPPFPN) v);
-    if (DPrime) cp.dPrime.add((SPPFPN) v);
+    if (D) cp.d.add((SPPFPackedNode) v);
+    if (DPrime) cp.dPrime.add((SPPFPackedNode) v);
     newState(c, cp);
 
   }

@@ -11,17 +11,17 @@ public class RDSOBFunction extends AbstractParser {
     dn = dn.next;
     DerivationSingletonNode dnAtEntry = dn;
 
-    int i_entry = i;
+    int i_entry = tokenIndex;
     altLoop: for (CFGNode tmp = lhs.alt; tmp != null; tmp = tmp.alt) {
-      i = i_entry;
+      tokenIndex = i_entry;
       dn = dnAtEntry;
       dn.gn = tmp;
       CFGNode gn = tmp.seq;
       while (true) {
-        switch (gn.elm.kind) {
+        switch (gn.element.kind) {
         case B, C, T, TI:
           if (match(gn)) {
-            i++;
+            tokenIndex++;
             gn = gn.seq;
             break;
           } else
@@ -47,10 +47,10 @@ public class RDSOBFunction extends AbstractParser {
 
   @Override
   public void parse() {
-    i = 0;
+    tokenIndex = 0;
     dnRoot = dn = new DerivationSingletonNode(cfgRules.endOfStringNode, null);
-    inLanguage = rdsobFunction(cfgRules.elementToNodeMap.get(cfgRules.startNonterminal)) && tokens[i] == 0;
-    if (!inLanguage) Util.echo("Syntax error at location " + i, Util.lineNumber(i, inputString), inputString);
+    inLanguage = rdsobFunction(cfgRules.elementToNodeMap.get(cfgRules.startNonterminal)) && tokens[tokenIndex] == 0;
+    if (!inLanguage) Util.echo("Syntax error at location " + tokenIndex, Util.lineNumber(tokenIndex, inputString), inputString);
   }
 
   protected DerivationSingletonNode dnRoot, dn;

@@ -243,7 +243,7 @@ public class ScriptTermInterpreter {
         case "gllbaseline":
           currentParser = new GLLBaseLine();
           break;
-        case "gllbaselineRefactored":
+        case "gllbaseliner" + "efactored":
           currentParser = new GLLBaseLineRefactored();
           break;
         case "rdsobfunction":

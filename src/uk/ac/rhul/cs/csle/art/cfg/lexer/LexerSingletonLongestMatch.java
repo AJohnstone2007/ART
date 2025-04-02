@@ -27,7 +27,7 @@ public class LexerSingletonLongestMatch extends AbstractParser {
     // System.out.println(kinds[i] + "/" + strings[i]);
 
     inputAsCharArray = inputString.toCharArray();
-    inputIndex = 0;
+    lexerInputIndex = 0;
     inputLength = inputString.length();
 
     tokenList = new ArrayList<>();
@@ -39,24 +39,24 @@ public class LexerSingletonLongestMatch extends AbstractParser {
     longestMatchToken = 0;
     // System.out.println("Input: " + inputString);
 
-    while (inputIndex < inputAsCharArray.length) {
+    while (lexerInputIndex < inputAsCharArray.length) {
       // Absorb a run of whitespace tokens
       // System.out.println("Absorbing WS at index " + inputIndex);
       while (true) {
-        int wsStart = inputIndex;
+        int wsStart = lexerInputIndex;
 
         for (LexemeKind w : whitespaces)
           processBuiltin(w, null);
-        if (inputIndex == wsStart) break;
+        if (lexerInputIndex == wsStart) break;
       }
 
-      if (inputIndex == inputLength) break;
+      if (lexerInputIndex == inputLength) break;
 
-      leftIndex = inputIndex;
+      leftIndex = lexerInputIndex;
 
       // System.out.println("Running recognisers at index " + inputIndex);
       for (int token = 1; token < kinds.length; token++) {
-        inputIndex = leftIndex;
+        lexerInputIndex = leftIndex;
         processBuiltin(kinds[token], strings[token]);
         checkLongestMatch(token);
       }
@@ -70,7 +70,7 @@ public class LexerSingletonLongestMatch extends AbstractParser {
       tokenList.add(longestMatchToken);
       leftIndexList.add(leftIndex);
       rightIndexList.add(longestMatchRightIndex);
-      inputIndex = longestMatchRightIndex;
+      lexerInputIndex = longestMatchRightIndex;
     }
     if (deleteTokenCount > 0) {
       Util.trace(6, 0, "Deleting " + deleteTokenCount + " tokens - original size " + tokenList.size() + "\n");
@@ -113,10 +113,10 @@ public class LexerSingletonLongestMatch extends AbstractParser {
   }
 
   private void checkLongestMatch(int token) {
-    if (inputIndex > longestMatchRightIndex) {
-      longestMatchRightIndex = inputIndex;
+    if (lexerInputIndex > longestMatchRightIndex) {
+      longestMatchRightIndex = lexerInputIndex;
       longestMatchToken = token;
-      inputIndex = leftIndex;
+      lexerInputIndex = leftIndex;
     }
   }
 

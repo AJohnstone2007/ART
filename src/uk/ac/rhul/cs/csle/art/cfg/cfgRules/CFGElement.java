@@ -5,7 +5,7 @@ import java.util.Map;
 
 public class CFGElement implements Comparable<Object> {
 
-  public int ei;
+  public int number;
   public final CFGKind kind;
   public final String str;
 
@@ -19,7 +19,7 @@ public class CFGElement implements Comparable<Object> {
   }
 
   public String toStringDetailed() {
-    return ei + ": " + kind + " " + str;
+    return number + ": " + kind + " " + str;
   }
 
   @Override
