@@ -585,21 +585,18 @@ public class ScriptTermInterpreter {
       return;
     }
     currentChooser.normalise(currentCFGRules);
-
-    currentParser.traceLevel = Util.traceLevel;
-    currentParser.inputStringName = inputStringName;
-    currentParser.inputString = inputString;
+    currentLexer.inputStringName = inputStringName;
+    currentLexer.inputString = inputString;
     currentParser.cfgRules = currentCFGRules;
     currentDerivationTerm = 0;
     currentParser.inLanguage = false;
     currentParser.loadSetupTime();
     currentLexer.lex(inputString, currentCFGRules.lexicalKindsArray(), currentCFGRules.lexicalStringsArray(), currentCFGRules.whitespacesArray());
     // Transfer the lexicalisation to the parser - this will need more sophistication for TWE sets
-    currentParser.tokens = currentLexer.tokens;
-    currentParser.leftIndices = currentLexer.leftIndices;
-    currentParser.rightIndices = currentLexer.rightIndices;
-    currentParser.loadLexTime();
-    if (currentParser.tokens != null) currentParser.parse();
+    currentLexer.tokens = currentLexer.tokens;
+    currentLexer.leftIndices = currentLexer.leftIndices;
+    currentLexer.rightIndices = currentLexer.rightIndices;
+    if (currentLexer.tokens != null) currentParser.parse();
     currentParser.loadParseTime();
     if (currentParser.inLanguage) {
       if (!disableChoosers) currentParser.chooseLongestMatch();
@@ -611,19 +608,12 @@ public class ScriptTermInterpreter {
     currentParser.loadEndMemory();
   }
 
-  // This version interprets the string with no tricks
   public void interpretARTScript(String scriptString) {
     currentCFGRules = new CFGRules("currentGrammar", iTerms);
-    // Lex the script string
-    scriptParser.inputString = scriptString;
-    scriptParser.inLanguage = false;
-    scriptLexer.lex(scriptParser.inputString, scriptParser.cfgRules.lexicalKindsArray(), scriptParser.cfgRules.lexicalStringsArray(),
+    scriptLexer.lex(scriptString, scriptParser.cfgRules.lexicalKindsArray(), scriptParser.cfgRules.lexicalStringsArray(),
         scriptParser.cfgRules.whitespacesArray());
     // scriptLexer.report();
     if (scriptLexer.tokens == null) Util.fatal("Lexical error in script");
-    scriptParser.tokens = scriptLexer.tokens;
-    scriptParser.leftIndices = scriptLexer.leftIndices;
-    scriptParser.rightIndices = scriptLexer.rightIndices;
     scriptParser.parse();
     if (!scriptParser.inLanguage) Util.fatal("Syntax error in script");
     if (scriptParser.ambiguityCheck()) Util.fatal("Ambiguity in script SPPF");

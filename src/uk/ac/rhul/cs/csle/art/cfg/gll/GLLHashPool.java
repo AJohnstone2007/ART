@@ -165,7 +165,7 @@ public class GLLHashPool extends HashPool {
 
   private void ret() {
     if (poolGet(sn + gssNode_gn) == endOfStringNodeNi) {
-      if (cfgRules.acceptingNodeNumbers.contains(gn)) inLanguage |= (tokenIndex == tokens.length - 1); // Make gni to boolean array for acceptance testing
+      if (cfgRules.acceptingNodeNumbers.contains(gn)) inLanguage |= (tokenIndex == lexer.tokens.length - 1); // Make gni to boolean array for acceptance testing
       return;
     }
     find(popElementBuckets, popElementBucketCount, popElement_SIZE, tokenIndex, sn, dn);
@@ -175,7 +175,8 @@ public class GLLHashPool extends HashPool {
     }
 
     for (int e = poolGet(sn + gssNode_edgeList); e != 0; e = poolGet(e + gssEdge_edgeList))
-      enqueueDescriptor(poolGet(sn + gssNode_gn), tokenIndex, poolGet(e + gssEdge_dst), derivationUpdate(poolGet(sn + gssNode_gn), poolGet(e + gssEdge_dn), dn));
+      enqueueDescriptor(poolGet(sn + gssNode_gn), tokenIndex, poolGet(e + gssEdge_dst),
+          derivationUpdate(poolGet(sn + gssNode_gn), poolGet(e + gssEdge_dn), dn));
   }
 
   /* Derivation handling *****************************************************/
@@ -330,7 +331,7 @@ public class GLLHashPool extends HashPool {
       while (true) {
         switch (kindOf[gn]) {
         case T:
-          if (tokens[tokenIndex] == elementOf[gn]) {
+          if (lexer.tokens[tokenIndex] == elementOf[gn]) {
             d(1);
             tokenIndex++;
             gn++;
@@ -354,7 +355,7 @@ public class GLLHashPool extends HashPool {
   }
 
   private void loadCounts() {
-    loadTWECounts(tokens.length, tokens.length - 1, 1);
+    loadTWECounts(lexer.tokens.length, lexer.tokens.length - 1, 1);
     loadGSSCounts(cardinality(descriptorBuckets), cardinality(gssNodeBuckets), cardinality(gssEdgeBuckets), cardinality(popElementBuckets));
 
     int sppfEpsilonNodeCount = 0, sppfTerminalNodeCount = 0, sppfNonterminalNodeCount = 0, sppfIntermediateNodeCount = 0, sppfAmbiguityCount = 0,

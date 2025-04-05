@@ -64,6 +64,6 @@ public class AttributeActionInterpreter extends AbstractInterpreter {
 
   @Override
   public String lexeme() {
-    return parser.lexeme(previousToken);
+    return parser.lexer.lexeme(previousToken);
   }
 }

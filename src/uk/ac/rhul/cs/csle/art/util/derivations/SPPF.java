@@ -7,11 +7,11 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 
-import uk.ac.rhul.cs.csle.art.cfg.AbstractParser;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGKind;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGRules;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.GIFTKind;
+import uk.ac.rhul.cs.csle.art.cfg.lexer.AbstractLexer;
 import uk.ac.rhul.cs.csle.art.cfg.lexer.LexemeKind;
 import uk.ac.rhul.cs.csle.art.util.Util;
 import uk.ac.rhul.cs.csle.art.util.relation.RelationOverNaturals;
@@ -154,7 +154,7 @@ public class SPPF extends AbstractDerivations {
       if (derivationForInterpreter)
       constructor = firstAvailableSPPFPN == null ? "" + -sppfn.ri : "" + firstAvailableSPPFPN.grammarNode.alt.num;
       else
-      constructor = (gn.element.kind == CFGKind.B) ? AbstractParser.lexemeOfBuiltin(LexemeKind.valueOf(gn.element.str), inputString, leftIndices[sppfn.li])
+      constructor = (gn.element.kind == CFGKind.B) ? AbstractLexer.lexemeOfBuiltin(LexemeKind.valueOf(gn.element.str), inputString, leftIndices[sppfn.li])
           : gn.element.str;
 
     if (children != childrenFromParent) {

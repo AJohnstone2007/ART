@@ -85,8 +85,8 @@ public class GLLBaseLine extends AbstractParser {
       while (true) {
         switch (gn.element.kind) {
         case B, T, TI, C:
-          if (tokens[tokenIndex] == gn.element.number) {
-            // System.out.println("Matched " + tokens[i]);
+          if (lexer.tokens[tokenIndex] == gn.element.number) {
+            // System.out.println("Matched " + lexer.tokens[i]);
             du(1);
             tokenIndex++;
             gn = gn.seq;
@@ -123,7 +123,7 @@ public class GLLBaseLine extends AbstractParser {
         }
       }
     if (!inLanguage) {
-      System.out.println(Util.echo("GLLBL " + "syntax error", leftIndices[sppfWidestIndex()], inputString));
+      System.out.println(Util.echo("GLLBL " + "syntax error", lexer.leftIndices[sppfWidestIndex()], lexer.inputString));
       // System.out.println("Widest index: " + sppfWidestIndex());
     } else
       Util.trace(3, 0, "Accept\n");
@@ -193,8 +193,8 @@ public class GLLBaseLine extends AbstractParser {
 
   void ret() {
     if (sn.equals(gssRoot)) { // Deque base
-      if (cfgRules.acceptingNodeNumbers.contains(gn.num) && (tokenIndex == tokens.length - 1)) {
-        sppfRootNode = sppf.get(new SPPFSymbolNode(cfgRules.elementToNodeMap.get(cfgRules.startNonterminal), 0, tokens.length - 1));
+      if (cfgRules.acceptingNodeNumbers.contains(gn.num) && (tokenIndex == lexer.tokens.length - 1)) {
+        sppfRootNode = sppf.get(new SPPFSymbolNode(cfgRules.elementToNodeMap.get(cfgRules.startNonterminal), 0, lexer.tokens.length - 1));
         inLanguage = true;
       }
       return; // End of parse
@@ -231,7 +231,8 @@ public class GLLBaseLine extends AbstractParser {
   void du(int width) {
     // dn = sppfUpdate(gn.seq, dn, sppfFind(gn, i, i + width)); // SLE paper version
     var gnp = cfgRules.elementToNodeMap.get(gn.element);
-    dn = sppfUpdate(gn.seq, dn, sppfFind(gnp, tokenIndex, tokenIndex + width)); // singleton element version to reduce SPPF size and correct for grammars with cycles
+    dn = sppfUpdate(gn.seq, dn, sppfFind(gnp, tokenIndex, tokenIndex + width)); // singleton element version to reduce SPPF size and correct for grammars with
+                                                                                // cycles
   }
 
   private int sppfWidestIndex() {
@@ -264,8 +265,9 @@ public class GLLBaseLine extends AbstractParser {
     visitedSPPFNodes.clear();
     derivationSeenCycle = false;
     LinkedList<Integer> carrier = new LinkedList<>();
-    derivationAsTermRec(sppfRootNode, carrier, firstAvailablePackNode(sppfRootNode).grammarNode.seq); // Root packed node must have a grammar node that is the end of a
-                                                                                             // start production
+    derivationAsTermRec(sppfRootNode, carrier, firstAvailablePackNode(sppfRootNode).grammarNode.seq); // Root packed node must have a grammar node that is the
+                                                                                                      // end of a
+    // start production
     loadDerivationCounts(derivationNodeCount, derivationAmbiguityNodeCount);
     return carrier.getFirst();
   }
@@ -299,7 +301,7 @@ public class GLLBaseLine extends AbstractParser {
       if (derivationForInterpreter)
       constructor = firstAvailableSPPFPN == null ? "" + -sppfn.ri : "" + firstAvailableSPPFPN.grammarNode.alt.num;
       else
-      constructor = (gn.element.kind == CFGKind.B) ? lexemeOfBuiltin(LexemeKind.valueOf(gn.element.str), leftIndices[sppfn.li]) : gn.element.str;
+      constructor = (gn.element.kind == CFGKind.B) ? lexer.lexemeOfBuiltin(LexemeKind.valueOf(gn.element.str), lexer.leftIndices[sppfn.li]) : gn.element.str;
 
     if (children != childrenFromParent) {
       childrenFromParent.add(cfgRules.iTerms.findTerm(constructor, children));
@@ -374,7 +376,7 @@ public class GLLBaseLine extends AbstractParser {
   }
 
   private void loadCounts() {
-    loadTWECounts(tokens.length, tokens.length - 1, 1);
+    loadTWECounts(lexer.tokens.length, lexer.tokens.length - 1, 1);
 
     int gssEdgeCount = 0, popCount = 0;
     for (GSSNode g : gss.keySet()) {
@@ -511,7 +513,8 @@ public class GLLBaseLine extends AbstractParser {
     visitedSPPFNodes.clear(sppfn.number);
   }
 
-  public void SPPF2Dot(Map<SPPFSymbolNode, SPPFSymbolNode> sppf, SPPFSymbolNode rootNode, String filename, boolean full, boolean showIndicies, boolean showIntermediates) {
+  public void SPPF2Dot(Map<SPPFSymbolNode, SPPFSymbolNode> sppf, SPPFSymbolNode rootNode, String filename, boolean full, boolean showIndicies,
+      boolean showIntermediates) {
     this.showIndicies = showIndicies;
     this.showIntermediates = showIntermediates;
 
@@ -797,7 +800,7 @@ public class GLLBaseLine extends AbstractParser {
     loadXPartitionsFromCFGRulesRec(sppfRootNode);
 
     if (statistics) {
-      System.out.print(inputString.length() + "," + getClass().getSimpleName() + "," + (inLanguage ? "accept" : "reject") + ",");
+      System.out.print(lexer.inputString.length() + "," + getClass().getSimpleName() + "," + (inLanguage ? "accept" : "reject") + ",");
       countSymbol = countInter = countPacked = countPara = countTerm = countEps = 0;
       visitedSPPFNodes.clear();
       countRemove = false;
@@ -1158,7 +1161,7 @@ public class GLLBaseLine extends AbstractParser {
     }
     System.out.println("Parasentences");
     visitedSPPFNodes.clear();
-    parasentence = new SPPFSymbolNode[100 * tokens.length + 1];
+    parasentence = new SPPFSymbolNode[100 * lexer.tokens.length + 1];
     psCall = 0;
     parasentences = new HashSet<>();
     // sppfCollectParasentencesRec(sppfRootNode, 0);
@@ -1196,7 +1199,7 @@ public class GLLBaseLine extends AbstractParser {
       if (!(node.packNodes.isEmpty() && node.gn.element.kind == CFGKind.EPS)) {
         System.out.println("Extending with " + node.gn.element.str);
         parasentence[parasentenceIndex++] = node;
-        if (node.ri == tokens.length - 1) addParasentence(parasentenceIndex);
+        if (node.ri == lexer.tokens.length - 1) addParasentence(parasentenceIndex);
       }
     } else
       for (var p : node.packNodes) {

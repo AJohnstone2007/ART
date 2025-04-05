@@ -5,15 +5,18 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 public class Util {
-
   public static int traceLevel = 0;
 
-  public static void trace(int level, int indent, String string) {
+  public static void trace(int level, int indent, String msg) {
     if (traceLevel >= level) {
       for (int i = 0; i < indent; i++)
         System.out.print("  ");
-      System.out.print(string);
+      System.out.print(msg);
     }
+  }
+
+  protected void trace(int level, String msg) {
+    trace(level, 0, msg);
   }
 
   public static void info(String msg) {
@@ -205,5 +208,4 @@ public class Util {
   public static String timeAsMilliseconds(long startTime, long stopTime) {
     return String.format("%.3f", (stopTime - startTime) * 1E-6);
   }
-
 }

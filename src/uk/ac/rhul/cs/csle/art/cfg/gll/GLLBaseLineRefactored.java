@@ -45,8 +45,8 @@ public class GLLBaseLineRefactored extends AbstractParser {
           grammarNode = grammarNode.seq;
           break;
         case B, T, TI, C:
-          if (tokens[tokenIndex] == grammarNode.element.number) {
-            // System.out.println("Matched " + tokens[i]);
+          if (lexer.tokens[tokenIndex] == grammarNode.element.number) {
+            // System.out.println("Matched " + lexer.tokens[i]);
             derivationUpdate(1);
             tokenIndex++;
             grammarNode = grammarNode.seq;
@@ -70,7 +70,7 @@ public class GLLBaseLineRefactored extends AbstractParser {
     if (inLanguage)
       Util.trace(3, 0, "Accept\n");
     else
-      Util.trace(0, 0, Util.echo("GLLBL " + "syntax error before position " + sppf.widestIndex(), leftIndices[sppf.widestIndex()], inputString));
+      Util.trace(0, 0, Util.echo("GLLBL " + "syntax error before position " + sppf.widestIndex(), lexer.leftIndices[sppf.widestIndex()], lexer.inputString));
 
     loadCounts();
     sppf.numberSPPFNodes();
@@ -122,8 +122,8 @@ public class GLLBaseLineRefactored extends AbstractParser {
 
   void ret() {
     if (stackNode.equals(gssRoot)) { // Deque base
-      if (cfgRules.acceptingNodeNumbers.contains(grammarNode.num) && (tokenIndex == tokens.length - 1)) {
-        sppf.rootNode = sppf.nodes.get(new SPPFSymbolNode(cfgRules.elementToNodeMap.get(cfgRules.startNonterminal), 0, tokens.length - 1));
+      if (cfgRules.acceptingNodeNumbers.contains(grammarNode.num) && (tokenIndex == lexer.tokens.length - 1)) {
+        sppf.rootNode = sppf.nodes.get(new SPPFSymbolNode(cfgRules.elementToNodeMap.get(cfgRules.startNonterminal), 0, lexer.tokens.length - 1));
         inLanguage = true;
       }
       return; // End of parse
@@ -164,7 +164,7 @@ public class GLLBaseLineRefactored extends AbstractParser {
   }
 
   private void loadCounts() {
-    loadTWECounts(tokens.length, tokens.length - 1, 1);
+    loadTWECounts(lexer.tokens.length, lexer.tokens.length - 1, 1);
 
     int gssEdgeCount = 0, popCount = 0;
     for (GSSNode g : gss.keySet()) {
