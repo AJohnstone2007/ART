@@ -3,6 +3,7 @@ package uk.ac.rhul.cs.csle.art.cfg.rdsob;
 import uk.ac.rhul.cs.csle.art.cfg.AbstractParser;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGKind;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
+import uk.ac.rhul.cs.csle.art.cfg.lexer.AbstractLexer;
 import uk.ac.rhul.cs.csle.art.util.Util;
 
 public class RDSOBExplicitStack extends AbstractParser {
@@ -79,7 +80,8 @@ public class RDSOBExplicitStack extends AbstractParser {
   }
 
   @Override
-  public void parse() {
+  public void parse(AbstractLexer lexer) {
+    this.lexer = lexer;
     gn = cfgRules.elementToNodeMap.get(cfgRules.startNonterminal).alt.seq;
     tokenIndex = 0;
     dnRoot = dn = new DerivationSingletonNode(cfgRules.endOfStringNode, null);

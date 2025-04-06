@@ -10,6 +10,7 @@ import java.util.Set;
 import uk.ac.rhul.cs.csle.art.cfg.AbstractParser;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGKind;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
+import uk.ac.rhul.cs.csle.art.cfg.lexer.AbstractLexer;
 import uk.ac.rhul.cs.csle.art.util.Util;
 import uk.ac.rhul.cs.csle.art.util.derivations.SPPF;
 import uk.ac.rhul.cs.csle.art.util.derivations.SPPFPackedNode;
@@ -24,7 +25,8 @@ public class GLLBaseLineRefactored extends AbstractParser {
 
   /* Parser ******************************************************************/
   @Override
-  public void parse() {
+  public void parse(AbstractLexer lexer) {
+    this.lexer = lexer;
     descriptorSeen = new HashSet<>();
     descriptorQueue = new LinkedList<>();
     gss = new HashMap<>();

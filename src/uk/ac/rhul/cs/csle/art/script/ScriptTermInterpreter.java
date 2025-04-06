@@ -596,7 +596,7 @@ public class ScriptTermInterpreter {
     currentLexer.tokens = currentLexer.tokens;
     currentLexer.leftIndices = currentLexer.leftIndices;
     currentLexer.rightIndices = currentLexer.rightIndices;
-    if (currentLexer.tokens != null) currentParser.parse();
+    if (currentLexer.tokens != null) currentParser.parse(currentLexer);
     currentParser.loadParseTime();
     if (currentParser.inLanguage) {
       if (!disableChoosers) currentParser.chooseLongestMatch();
@@ -614,7 +614,7 @@ public class ScriptTermInterpreter {
         scriptParser.cfgRules.whitespacesArray());
     // scriptLexer.report();
     if (scriptLexer.tokens == null) Util.fatal("Lexical error in script");
-    scriptParser.parse();
+    scriptParser.parse(scriptLexer);
     if (!scriptParser.inLanguage) Util.fatal("Syntax error in script");
     if (scriptParser.ambiguityCheck()) Util.fatal("Ambiguity in script SPPF");
     scriptDerivationTerm = scriptParser.derivationAsTerm();

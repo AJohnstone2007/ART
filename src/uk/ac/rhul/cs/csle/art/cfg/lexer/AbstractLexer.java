@@ -1,5 +1,7 @@
 package uk.ac.rhul.cs.csle.art.cfg.lexer;
 
+import java.util.ArrayList;
+
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
 
 public class AbstractLexer {
@@ -9,6 +11,18 @@ public class AbstractLexer {
   public int[] oracle;
   public int[] leftIndices;
   public int[] rightIndices;
+  protected ArrayList<Integer> tokenList;
+  protected ArrayList<Integer> leftIndexList;
+  protected ArrayList<Integer> rightIndexList;
+  public Integer deleteTokenCount = 0;
+  public Integer swapTokenCount = 0;
+  /* Lexers **********************************************************************/
+  protected LexemeKind[] kinds;
+  protected String[] strings;
+  protected LexemeKind[] whitespaces;
+
+  protected char[] inputAsCharArray;
+  protected int lexerInputIndex, inputLength, leftIndex, longestMatchToken, longestMatchRightIndex, firstBuiltin;
 
   public void printLexicalisations(boolean raw) {
     System.out.println("printLexicalisations() not implemented for parser class " + this.getClass().getSimpleName());

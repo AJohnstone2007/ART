@@ -11,8 +11,8 @@ public abstract class AbstractParser {
   public CFGRules cfgRules;
   public boolean inLanguage;
 
-  public void parse() {
-    System.out.println("parse() not implemented for parser class " + this.getClass().getSimpleName());
+  public void parse(AbstractLexer lexer) {
+    System.out.println("parse(lexer) not implemented for parser class " + this.getClass().getSimpleName());
   }
 
   public void chooseLongestMatch() {

@@ -6,22 +6,6 @@ import java.util.Set;
 import uk.ac.rhul.cs.csle.art.util.Util;
 
 public class LexerSingletonLongestMatch extends AbstractLexer {
-  private ArrayList<Integer> tokenList;
-  private ArrayList<Integer> leftIndexList;
-  private ArrayList<Integer> rightIndexList;
-  public int[] tokens;
-  public int[] leftIndices;
-  public int[] rightIndices;
-  public Integer deleteTokenCount = 0;
-  public Integer swapTokenCount = 0;
-  /* Lexers **********************************************************************/
-  protected LexemeKind[] kinds;
-  protected String[] strings;
-  protected LexemeKind[] whitespaces;
-
-  protected char[] inputAsCharArray;
-  protected int lexerInputIndex, inputLength, leftIndex, longestMatchToken, longestMatchRightIndex, firstBuiltin;
-
   public void lex(String inputString, LexemeKind[] kinds, String[] strings, LexemeKind[] whitespaces) {
     this.inputString = inputString + "\0";
     this.kinds = kinds;

@@ -19,6 +19,7 @@ import uk.ac.rhul.cs.csle.art.cfg.AbstractParser;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGKind;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.GIFTKind;
+import uk.ac.rhul.cs.csle.art.cfg.lexer.AbstractLexer;
 import uk.ac.rhul.cs.csle.art.cfg.lexer.LexemeKind;
 import uk.ac.rhul.cs.csle.art.util.Util;
 import uk.ac.rhul.cs.csle.art.util.derivations.AbstractSPPFNode;
@@ -66,8 +67,8 @@ public class GLLBaseLine extends AbstractParser {
   }
 
   /* Parser ******************************************************************/
-  @Override
-  public void parse() {
+  public void parse(AbstractLexer lexer) {
+    this.lexer = lexer;
     descS = new HashSet<>();
     descQ = new LinkedList<>();
     sppf = new HashMap<>();
@@ -1227,4 +1228,5 @@ public class GLLBaseLine extends AbstractParser {
       parasentenceList.add(parasentence[i]);
     parasentences.add(parasentenceList);
   }
+
 }

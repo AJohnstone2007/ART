@@ -5,6 +5,7 @@ import java.util.Map;
 
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGKind;
 import uk.ac.rhul.cs.csle.art.cfg.hashpool.HashPool;
+import uk.ac.rhul.cs.csle.art.cfg.lexer.AbstractLexer;
 import uk.ac.rhul.cs.csle.art.util.Util;
 
 public class GLLHashPool extends HashPool {
@@ -302,7 +303,8 @@ public class GLLHashPool extends HashPool {
   }
 
   @Override
-  public void parse() {
+  public void parse(AbstractLexer lexer) {
+    this.lexer = lexer;
     gllHashPool();
     if (!inLanguage) {
       // int rightmost = 0;

@@ -2,6 +2,7 @@ package uk.ac.rhul.cs.csle.art.cfg.rdsob;
 
 import uk.ac.rhul.cs.csle.art.cfg.AbstractParser;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
+import uk.ac.rhul.cs.csle.art.cfg.lexer.AbstractLexer;
 import uk.ac.rhul.cs.csle.art.util.Util;
 
 public class RDSOBFunction extends AbstractParser {
@@ -45,7 +46,8 @@ public class RDSOBFunction extends AbstractParser {
   }
 
   @Override
-  public void parse() {
+  public void parse(AbstractLexer lexer) {
+    this.lexer = lexer;
     tokenIndex = 0;
     dnRoot = dn = new DerivationSingletonNode(cfgRules.endOfStringNode, null);
     inLanguage = rdsobFunction(cfgRules.elementToNodeMap.get(cfgRules.startNonterminal)) && lexer.tokens[tokenIndex] == 0;
