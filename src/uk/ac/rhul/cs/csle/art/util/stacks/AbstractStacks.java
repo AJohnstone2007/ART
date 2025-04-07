@@ -1,5 +1,6 @@
 package uk.ac.rhul.cs.csle.art.util.stacks;
 
-public class AbstractStacks {
+import uk.ac.rhul.cs.csle.art.util.OutputInterface;
 
+public class AbstractStacks implements OutputInterface {
 }

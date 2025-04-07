@@ -306,25 +306,7 @@ public class GLLHashPool extends HashPool {
   public void parse(AbstractLexer lexer) {
     this.lexer = lexer;
     gllHashPool();
-    if (!inLanguage) {
-      // int rightmost = 0;
-      // TODO Implement
-      // Scan all SPPF modes for rightmost index
-      // for (SPPFNode s : sppf.keySet())
-      // rightmost = Math.max(rightmost, sppf.get(s).rightIndex);
-      // System.out.println("Reject: widest parse consumed " + rightmost + " tokens");
-    }
     loadCounts();
-  }
-
-  /* These are here just to quieten error messages - need to be implemented */
-  @Override
-  public void chooseLongestMatch() {
-  }
-
-  @Override
-  public int derivationAsTerm() {
-    return 0;
   }
 
   void gllHashPool() {

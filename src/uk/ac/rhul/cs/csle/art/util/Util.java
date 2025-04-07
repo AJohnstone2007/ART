@@ -208,4 +208,8 @@ public class Util {
   public static String timeAsMilliseconds(long startTime, long stopTime) {
     return String.format("%.3f", (stopTime - startTime) * 1E-6);
   }
+
+  public static void notImplemented(String methodName, Class<?> classObject) {
+    error(methodName + " not implemented for class" + classObject.getSimpleName());
+  }
 }

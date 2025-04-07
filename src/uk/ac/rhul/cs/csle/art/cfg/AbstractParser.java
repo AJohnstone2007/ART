@@ -4,74 +4,21 @@ import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGRules;
 import uk.ac.rhul.cs.csle.art.cfg.lexer.AbstractLexer;
 import uk.ac.rhul.cs.csle.art.util.Util;
+import uk.ac.rhul.cs.csle.art.util.derivations.AbstractDerivations;
+import uk.ac.rhul.cs.csle.art.util.process.AbstractProcesses;
+import uk.ac.rhul.cs.csle.art.util.stacks.AbstractStacks;
 
 public abstract class AbstractParser {
   public AbstractLexer lexer;
   protected int tokenIndex; // Current input index
+  public AbstractProcesses processes = null;
+  public AbstractDerivations derivations = null;
+  public AbstractStacks stacks = null;
   public CFGRules cfgRules;
   public boolean inLanguage;
 
   public void parse(AbstractLexer lexer) {
     System.out.println("parse(lexer) not implemented for parser class " + this.getClass().getSimpleName());
-  }
-
-  public void chooseLongestMatch() {
-    System.out.println("chooseLongestMatch() not implemented for parser class " + this.getClass().getSimpleName());
-  }
-
-  public int derivationAsTerm() {
-    System.out.println("derivationAsTerm() not implemented for parser class " + this.getClass().getSimpleName());
-    return 0;
-  }
-
-  public int derivationAsInterpeterTerm() {
-    System.out.println("derivationAsInterpreterTerm() not implemented for parser class " + this.getClass().getSimpleName());
-    return 0;
-  }
-
-  public void gss2Dot() {
-    System.out.println("gss2Dot() not implemented for parser class " + this.getClass().getSimpleName());
-  }
-
-  public void gssPrint() {
-    System.out.println("gssPrint() not implemented for parser class " + this.getClass().getSimpleName());
-  }
-
-  public void derivation2Dot() {
-    System.out.println("derivation2Dot() not implemented for parser class " + this.getClass().getSimpleName());
-  }
-
-  public void sppf2Dot() {
-    System.out.println("sppf2Dot() not implemented for parser class " + this.getClass().getSimpleName());
-  }
-
-  public void sppfPrint() {
-    System.out.println("sppfPrint() not implemented for parser class " + this.getClass().getSimpleName());
-  }
-
-  public void sppfPrintCyclicSPPFNodesFromReachability() {
-    System.out.println("sppfCyclicNodes() not implemented for parser class " + this.getClass().getSimpleName());
-  }
-
-  public void sppfBreakCycles(boolean trace, boolean counts, boolean statistics) {
-    System.out.println("sppfBreakCycles() not implemented for parser class " + this.getClass().getSimpleName());
-  }
-
-  public void sppfBreakCyclesRelation() {
-    System.out.println("sppfBreakCyclesRelation() not implemented for parser class " + this.getClass().getSimpleName());
-  }
-
-  public String sppfCycleBreakStatisticsToString() {
-    System.out.println("sppfCycleBreakStatistics() not implemented for parser class " + this.getClass().getSimpleName());
-    return "";
-  }
-
-  public void sppfPrintParaterminals() {
-    System.out.println("sppfPrintParaterminals() not implemented for parser class " + this.getClass().getSimpleName());
-  }
-
-  public void sppfPrintParasentences() {
-    System.out.println("sppfPrintParasentences() not implemented for parser class " + this.getClass().getSimpleName());
   }
 
   public CFGNode getLHS(CFGNode gn) {

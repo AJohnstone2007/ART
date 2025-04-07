@@ -29,6 +29,19 @@ public class SPPF extends AbstractDerivations {
     this.rootNode = rootNode;
   }
 
+  @Override
+  public void print() {
+    if (rootNode == null) {
+      Util.warning("no SPPF root node - skipping printing");
+      return;
+    }
+    for (var n : nodes.keySet()) {
+      System.out.println(n);
+      for (var pn : n.packNodes)
+        System.out.println(pn);
+    }
+  }
+
   public void loadLexicalisation(String inputString, int[] tokens, int[] leftIndices) {
     this.inputString = inputString;
     this.tokens = tokens;
@@ -50,7 +63,7 @@ public class SPPF extends AbstractDerivations {
 
   }
 
-  public void numberSPPFNodes() {
+  public void numberNodes() {
     int nextFreeNodeNumber = 1;
     for (var n : nodes.keySet())
       n.number = nextFreeNodeNumber++;
@@ -71,6 +84,7 @@ public class SPPF extends AbstractDerivations {
   }
 
   /* Temporary disambiguation before choosers are implemented ****************/
+  @Override
   public void chooseLongestMatch() {
     visited.clear();
     chooseLongestMatchRec(rootNode);
@@ -107,6 +121,7 @@ public class SPPF extends AbstractDerivations {
 
   boolean derivationForInterpreter = false;
 
+  @Override
   public int derivationAsInterpeterTerm() {
     derivationForInterpreter = true;
     int ret = derivationAsTerm();
@@ -116,6 +131,7 @@ public class SPPF extends AbstractDerivations {
 
   boolean derivationSeenCycle;
 
+  @Override
   public int derivationAsTerm() {
     if (rootNode == null) return 0;
     visited.clear();
@@ -203,13 +219,14 @@ public class SPPF extends AbstractDerivations {
 
   private boolean ambiguousSPPF;
 
+  @Override
   public boolean ambiguityCheck() {
     ambiguousSPPF = false;
     if (rootNode != null) ambiguityCheckRec(rootNode);
     return ambiguousSPPF;
   }
 
-  public void ambiguityCheckRec(SPPFSymbolNode sppfn) {
+  private void ambiguityCheckRec(SPPFSymbolNode sppfn) {
     // if (sppfn.gn.elm.kind != CFGKind.N) return;
     int activePackedNodes = 0;
     for (SPPFPackedNode p : sppfn.packNodes)

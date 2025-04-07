@@ -1,5 +1,7 @@
 package uk.ac.rhul.cs.csle.art.util.tokenisations;
 
-public class AbstractTokenisations {
+import uk.ac.rhul.cs.csle.art.util.OutputInterface;
+
+public class AbstractTokenisations implements OutputInterface {
 
 }

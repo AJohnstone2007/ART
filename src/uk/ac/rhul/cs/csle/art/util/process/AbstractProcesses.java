@@ -1,5 +1,7 @@
 package uk.ac.rhul.cs.csle.art.util.process;
 
-public class AbstractProcesses {
+import uk.ac.rhul.cs.csle.art.util.OutputInterface;
+
+public class AbstractProcesses implements OutputInterface {
 
 }
