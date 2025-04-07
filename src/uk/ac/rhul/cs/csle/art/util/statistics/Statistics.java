@@ -10,19 +10,23 @@ import uk.ac.rhul.cs.csle.art.util.Util;
 public class Statistics implements OutputInterface {
   private final Map<String, Object> elements = new LinkedHashMap<>();
 
-  Statistics(String... elementKeys) {
+  public Statistics(String... elementKeys) {
     for (var k : elementKeys)
       elements.put(k, null);
   }
 
-  void put(String k, Object v) {
+  public void put(String k, Object v) {
     if (!elements.keySet().contains(k))
       Util.warning("Statistics.put() passed unknown key " + k);
     else
       elements.put(k, v);
   }
 
-  Object get(String k) {
+  public void putTime(String key) {
+    put(key, System.nanoTime());
+  }
+
+  public Object get(String k) {
     if (!elements.keySet().contains(k)) {
       Util.warning("Statistics.get() passed unknown key " + k);
       return null;
@@ -42,13 +46,4 @@ public class Statistics implements OutputInterface {
       ps.print(elements.get(k) + ",");
   }
 
-  @Override
-  public void printDot(PrintStream ps) {
-    Util.notImplemented("printDot()", getClass());
-  }
-
-  @Override
-  public void show() {
-    Util.notImplemented("show()", getClass());
-  }
 }

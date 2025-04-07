@@ -34,6 +34,7 @@ import uk.ac.rhul.cs.csle.art.term.TermTraverser;
 import uk.ac.rhul.cs.csle.art.term.TermTraverserText;
 import uk.ac.rhul.cs.csle.art.util.Util;
 import uk.ac.rhul.cs.csle.art.util.Version;
+import uk.ac.rhul.cs.csle.art.util.statistics.Statistics;
 
 public class ScriptTermInterpreter {
   public static final ITerms iTerms = new ITerms();
@@ -65,6 +66,7 @@ public class ScriptTermInterpreter {
   private TRRules currentTRRules;
   private final Rewriter currentRewriter;
   private AbstractInterpreter currentInterpreter = null;
+  public final static Statistics currentStatistics = new Statistics();
   String consoleInputLine = "";
   Scanner console = new Scanner(System.in);
 
@@ -484,7 +486,10 @@ public class ScriptTermInterpreter {
       break;
 
     case "statistics":
-      System.out.println(currentParser.statisticsToString());
+      if (currentStatistics == null)
+        Util.warning("No statistics defined: skipping statistics output");
+      else
+        currentStatistics.print(System.out);
       break;
 
     case "__string":
@@ -572,8 +577,6 @@ public class ScriptTermInterpreter {
   private void tryParse(String inputStringName, String inputString) {
     // System.out.println("tryParse on " + inputString);
 
-    currentParser.resetStatistics();
-    currentParser.loadStartMemory();
     currentCFGRules.normalise();
     if (currentCFGRules.isEmpty()) {
       System.out.println("Try failed: grammar has no rules");
@@ -585,22 +588,21 @@ public class ScriptTermInterpreter {
     currentParser.cfgRules = currentCFGRules;
     currentDerivationTerm = 0;
     currentParser.inLanguage = false;
-    currentParser.loadSetupTime();
+    currentStatistics.putTime("SetupTime");
     currentLexer.lex(inputString, currentCFGRules.lexicalKindsArray(), currentCFGRules.lexicalStringsArray(), currentCFGRules.whitespacesArray());
     // Transfer the lexicalisation to the parser - this will need more sophistication for TWE sets
     currentLexer.tokens = currentLexer.tokens;
     currentLexer.leftIndices = currentLexer.leftIndices;
     currentLexer.rightIndices = currentLexer.rightIndices;
     if (currentLexer.tokens != null) currentParser.parse(currentLexer);
-    currentParser.loadParseTime();
+    currentStatistics.putTime("ParseTime");
     if (currentParser.inLanguage) {
       if (!disableChoosers) currentParser.derivations.chooseLongestMatch();
-      currentParser.loadParseChooseTime();
+      currentStatistics.putTime("ChooseTime");
       currentDerivationTerm = currentParser.derivations.derivationAsTerm();
-      currentParser.loadTermGenerateTime();
+      currentStatistics.putTime("TermGenerateTime");
     } else
       currentDerivationTerm = 0;
-    currentParser.loadEndMemory();
   }
 
   private TermTraverserText initialisePlainTextTraverser() {

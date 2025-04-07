@@ -9,6 +9,7 @@ import uk.ac.rhul.cs.csle.art.cfg.AbstractParser;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGKind;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
 import uk.ac.rhul.cs.csle.art.cfg.lexer.AbstractLexer;
+import uk.ac.rhul.cs.csle.art.script.ScriptTermInterpreter;
 import uk.ac.rhul.cs.csle.art.util.Util;
 import uk.ac.rhul.cs.csle.art.util.derivations.SPPF;
 import uk.ac.rhul.cs.csle.art.util.derivations.SPPFPackedNode;
@@ -155,14 +156,19 @@ public class GLLBaseLineRefactored extends AbstractParser {
   }
 
   private void loadCounts() {
-    loadTWECounts(lexer.tokens.length, lexer.tokens.length - 1, 1);
+    ScriptTermInterpreter.currentStatistics.put("tweNodeCount", (long) lexer.tokens.length);
+    ScriptTermInterpreter.currentStatistics.put("tweEdgeCount", lexer.tokens.length - 1);
+    ScriptTermInterpreter.currentStatistics.put("tweLexCount", 1);
 
     int gssEdgeCount = 0, popCount = 0;
     for (GSSNode g : gss.nodes.keySet()) {
       gssEdgeCount += g.edges.size();
       popCount += g.pops.size();
     }
-    loadGSSCounts(descriptorSeen.size(), gss.nodes.keySet().size(), gssEdgeCount, popCount);
+    ScriptTermInterpreter.currentStatistics.put("descriptorCount", descriptorSeen.size());
+    ScriptTermInterpreter.currentStatistics.put("gssNodeCount", gss.nodes.keySet().size());
+    ScriptTermInterpreter.currentStatistics.put("gssEdgeCount", gssEdgeCount);
+    ScriptTermInterpreter.currentStatistics.put("popCount", popCount);
 
     int sppfEpsilonNodeCount = 0, sppfTerminalNodeCount = 0, sppfNonterminalNodeCount = 0, sppfIntermediateNodeCount = 0, sppfPackNodeCount = 0,
         sppfAmbiguityCount = 0, sppfEdgeCount = 0;
@@ -185,7 +191,13 @@ public class GLLBaseLineRefactored extends AbstractParser {
       }
     }
 
-    loadSPPFCounts(sppfEpsilonNodeCount, sppfTerminalNodeCount, sppfNonterminalNodeCount, sppfIntermediateNodeCount, sppf.nodes.keySet().size(),
-        sppfPackNodeCount, sppfAmbiguityCount, sppfEdgeCount);
+    ScriptTermInterpreter.currentStatistics.put("sppfEpsilonNodeCount", sppfEpsilonNodeCount);
+    ScriptTermInterpreter.currentStatistics.put("sppfTerminalNodeCount", sppfTerminalNodeCount);
+    ScriptTermInterpreter.currentStatistics.put("sppfNonterminalNodeCount", sppfNonterminalNodeCount);
+    ScriptTermInterpreter.currentStatistics.put("sppfIntermediateNodeCount", sppfIntermediateNodeCount);
+    ScriptTermInterpreter.currentStatistics.put("sppfSymbolPlusIntermediateNodeCount", sppf.nodes.keySet().size());
+    ScriptTermInterpreter.currentStatistics.put("sppfPackNodeCount", sppfPackNodeCount);
+    ScriptTermInterpreter.currentStatistics.put("sppfAmbiguityCount", sppfAmbiguityCount);
+    ScriptTermInterpreter.currentStatistics.put("sppfEdgeCount", sppfEdgeCount);
   }
 }

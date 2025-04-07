@@ -110,7 +110,6 @@ public class LexerSingletonLongestMatch extends AbstractLexer {
     }
   }
 
-  @Override
   public void printLexicalisations(boolean raw) {
     // System.out.println("String: " + inputString);
     // var lexemeKinds = LexemeKind.values();

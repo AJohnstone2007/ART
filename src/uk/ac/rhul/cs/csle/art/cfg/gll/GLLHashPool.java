@@ -6,6 +6,7 @@ import java.util.Map;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGKind;
 import uk.ac.rhul.cs.csle.art.cfg.hashpool.HashPool;
 import uk.ac.rhul.cs.csle.art.cfg.lexer.AbstractLexer;
+import uk.ac.rhul.cs.csle.art.script.ScriptTermInterpreter;
 import uk.ac.rhul.cs.csle.art.util.Util;
 
 public class GLLHashPool extends HashPool {
@@ -339,14 +340,17 @@ public class GLLHashPool extends HashPool {
   }
 
   private void loadCounts() {
-    loadTWECounts(lexer.tokens.length, lexer.tokens.length - 1, 1);
-    loadGSSCounts(cardinality(descriptorBuckets), cardinality(gssNodeBuckets), cardinality(gssEdgeBuckets), cardinality(popElementBuckets));
+    ScriptTermInterpreter.currentStatistics.put("tweNodeCount", lexer.tokens.length);
+    ScriptTermInterpreter.currentStatistics.put("tweEdgeCount", lexer.tokens.length - 1);
+    ScriptTermInterpreter.currentStatistics.put("tweLexCount", 1);
+    ScriptTermInterpreter.currentStatistics.put("descriptorCount", cardinality(descriptorBuckets));
+    ScriptTermInterpreter.currentStatistics.put("gssNodeCount", cardinality(gssNodeBuckets));
+    ScriptTermInterpreter.currentStatistics.put("gssEdgeCount", cardinality(gssEdgeBuckets));
+    ScriptTermInterpreter.currentStatistics.put("popCount", cardinality(popElementBuckets));
 
-    int sppfEpsilonNodeCount = 0, sppfTerminalNodeCount = 0, sppfNonterminalNodeCount = 0, sppfIntermediateNodeCount = 0, sppfAmbiguityCount = 0,
-        sppfEdgeCount = 0;
-    loadSPPFCounts(sppfEpsilonNodeCount, sppfTerminalNodeCount, sppfNonterminalNodeCount, sppfIntermediateNodeCount, cardinality(sppfNodeBuckets),
-        cardinality(sppfPackNodeBuckets), sppfAmbiguityCount, sppfEdgeCount);
-    loadPoolAllocated(getFirstUnusedElement());
+    ScriptTermInterpreter.currentStatistics.put("sppfSymbolPlusIntermediateNodeCount", cardinality(sppfNodeBuckets));
+    ScriptTermInterpreter.currentStatistics.put("sppfPackNodeCount", cardinality(sppfPackNodeBuckets));
+    ScriptTermInterpreter.currentStatistics.put("poolAllocated", getFirstUnusedElement());
 
     Map<Integer, Integer> hist = new HashMap<>();
     hist.put(0, 0);
@@ -364,7 +368,13 @@ public class GLLHashPool extends HashPool {
     accumulateOccupancies(hist, sppfNodeBuckets);
     accumulateOccupancies(hist, sppfPackNodeBuckets);
 
-    loadHashCounts(hist.get(0), hist.get(1), hist.get(2), hist.get(3), hist.get(4), hist.get(5), hist.get(-1));
+    ScriptTermInterpreter.currentStatistics.put("h0", hist.get(0));
+    ScriptTermInterpreter.currentStatistics.put("h1", hist.get(1));
+    ScriptTermInterpreter.currentStatistics.put("h2", hist.get(2));
+    ScriptTermInterpreter.currentStatistics.put("h3", hist.get(3));
+    ScriptTermInterpreter.currentStatistics.put("h4", hist.get(4));
+    ScriptTermInterpreter.currentStatistics.put("h5", hist.get(5));
+    ScriptTermInterpreter.currentStatistics.put("h6more", hist.get(-1));
   }
 
 }

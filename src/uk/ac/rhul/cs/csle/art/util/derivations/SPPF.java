@@ -1,5 +1,6 @@
 package uk.ac.rhul.cs.csle.art.util.derivations;
 
+import java.io.PrintStream;
 import java.util.BitSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -23,31 +24,6 @@ public class SPPF extends AbstractDerivations {
   public int[] tokens; // Input as array of tokens
   public int[] leftIndices;
 
-  public SPPF(CFGRules cfgRules) {
-    super();
-    this.cfgRules = cfgRules;
-    this.rootNode = rootNode;
-  }
-
-  @Override
-  public void print() {
-    if (rootNode == null) {
-      Util.warning("no SPPF root node - skipping printing");
-      return;
-    }
-    for (var n : nodes.keySet()) {
-      System.out.println(n);
-      for (var pn : n.packNodes)
-        System.out.println(pn);
-    }
-  }
-
-  public void loadLexicalisation(String inputString, int[] tokens, int[] leftIndices) {
-    this.inputString = inputString;
-    this.tokens = tokens;
-    this.leftIndices = leftIndices;
-  }
-
   public final Map<SPPFSymbolNode, SPPFSymbolNode> nodes = new HashMap<>();
   public final BitSet visited = new BitSet();
 
@@ -58,9 +34,29 @@ public class SPPF extends AbstractDerivations {
   public final Set<SPPFPackedNode> cbD = new HashSet<>(); // Set of deleted cyclic nodes: D in Elizabeth's note
   public final Set<SPPFPackedNode> cbDPrime = new HashSet<>(); // Set of deleted cyclic nodes: D' in Elizabeth's note
 
-  public void computeCoreReachability(Object object) {
-    // TODO Auto-generated method stub
+  public SPPF(CFGRules cfgRules) {
+    super();
+    this.cfgRules = cfgRules;
+    this.rootNode = rootNode;
+  }
 
+  @Override
+  public void print(PrintStream ps) {
+    if (rootNode == null) {
+      Util.warning("no SPPF root node - skipping printing");
+      return;
+    }
+    for (var n : nodes.keySet()) {
+      ps.println(n);
+      for (var pn : n.packNodes)
+        ps.println(pn);
+    }
+  }
+
+  public void loadLexicalisation(String inputString, int[] tokens, int[] leftIndices) {
+    this.inputString = inputString;
+    this.tokens = tokens;
+    this.leftIndices = leftIndices;
   }
 
   public void numberNodes() {

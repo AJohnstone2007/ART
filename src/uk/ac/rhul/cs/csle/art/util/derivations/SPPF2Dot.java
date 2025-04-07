@@ -25,11 +25,10 @@ class SPPF2Dot {
 
   public SPPF2Dot(SPPF sppf) {
     this.sppf = sppf;
-    if (sppf == null || sppf.rootNode == null) {
-      Util.warning("Current parser does not have a current SPPF - skipping SPPF visualisation");
+    if (sppf.rootNode == null) {
+      Util.warning("Missing SPPF root node - skipping SPPF visualisation");
       return;
     }
-    sppf.computeCoreReachability(null);
 
     sppf2Dot("sppf_full.dot", true, true, false); // full SPPF
     sppf2Dot("sppf_core.dot", false, true, true); // core SPPF - only nodes reachable from (S,0,n)

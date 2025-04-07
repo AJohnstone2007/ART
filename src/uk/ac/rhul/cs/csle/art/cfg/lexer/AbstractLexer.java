@@ -24,10 +24,6 @@ public class AbstractLexer {
   protected char[] inputAsCharArray;
   protected int lexerInputIndex, inputLength, leftIndex, longestMatchToken, longestMatchRightIndex, firstBuiltin;
 
-  public void printLexicalisations(boolean raw) {
-    System.out.println("printLexicalisations() not implemented for parser class " + this.getClass().getSimpleName());
-  }
-
   public String lexeme(int l) {
     return inputString.substring(leftIndices[l], rightIndices[l]);
   }

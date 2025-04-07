@@ -42,17 +42,7 @@ public class AbstractDerivations implements OutputInterface {
 
   }
 
-  public void print() {
-    // TODO Auto-generated method stub
-
-  }
-
   public void printCyclicSPPFNodesFromReachability() {
-    // TODO Auto-generated method stub
-
-  }
-
-  public void show() {
     // TODO Auto-generated method stub
 
   }
