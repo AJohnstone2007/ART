@@ -120,7 +120,7 @@ public class GLLHashPool extends HashPool {
           count++; // Inedge
           if (poolGet(packNode + sppfPackNode_leftChild) != 0) count++;
           if (poolGet(packNode + sppfPackNode_rightChild) != 0) count++;
-          // System.out.println("SPPF node " + toStringSPPFNode(chain) + " pack node " + toStringSPPFPackNode(packNode) + ": " + "["
+          // Util.info("SPPF node " + toStringSPPFNode(chain) + " pack node " + toStringSPPFPackNode(packNode) + ": " + "["
           // + toStringSPPFNode(poolGet(packNode + sppfPackNode_leftChild)) + "] " + "[" + toStringSPPFNode(poolGet(packNode + sppfPackNode_rightChild))
           // + "]");
 
@@ -224,7 +224,7 @@ public class GLLHashPool extends HashPool {
   }
 
   private void enqueueDescriptor(int gn, int i, int sn, int dn) {
-    // System.out.println("enqueueDescriptor(" + gni + "," + i + "," + sni + "," + dni + ")");
+    // Util.info("enqueueDescriptor(" + gni + "," + i + "," + sni + "," + dni + ")");
     find(descriptorBuckets, descriptorBucketCount, descriptor_SIZE, gn, i, sn, dn);
     if (findMadeNew) {
       poolSet(findIndex + descriptor_queue, descriptorQueue);
@@ -256,10 +256,10 @@ public class GLLHashPool extends HashPool {
     if (END != CFGKind.END.ordinal()) Util.fatal("Enumeration mismatch for END - check ParserHashPool.java for consistency with Kind enumeration");
 
     // 1a. (Debug): print precomputed tables
-    // System.out.println(grammar);
+    // Util.info(grammar);
     // for (int i = 0; i < kindOf.length; i++)
     // System.out.print(i + ":" + kindOf[i] + " ");
-    // System.out.println();
+    // Util.info();
     // for (int i = 0; i < altOf.length; i++) {
     // System.out.print(i + ":");
     // if (altOf[i] == null)
@@ -267,12 +267,12 @@ public class GLLHashPool extends HashPool {
     // else
     // for (int j = 0; j < altOf[i].length; j++)
     // System.out.print(altOf[i][j] + " ");
-    // System.out.println();
+    // Util.info();
     // }
     // for (int i = 0; i < targetOf.length; i++)
-    // System.out.println(i + ":" + targetOf[i] + " ");
+    // Util.info(i + ":" + targetOf[i] + " ");
     // for (int i = 0; i < elementOf.length; i++)
-    // System.out.println(i + ":" + elementOf[i] + " ");
+    // Util.info(i + ":" + elementOf[i] + " ");
 
     // 2. Clean hash pool and tables
     initialisehashPool();

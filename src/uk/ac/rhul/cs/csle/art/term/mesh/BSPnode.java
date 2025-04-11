@@ -35,7 +35,7 @@ public class BSPnode {
 
   BSPnode() {
     number = nextFreeNumber++;
-    // System.out.println("Created node " + number);
+    // Util.info("Created node " + number);
     plane = null;
     front = null;
     back = null;

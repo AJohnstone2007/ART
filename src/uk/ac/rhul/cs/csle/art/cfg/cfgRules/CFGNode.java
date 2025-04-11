@@ -132,7 +132,7 @@ public class CFGNode {
   }
 
   public String toStringAsProduction(String rewritesDenotation, String slotDenotation) { // Print a node in the context of its production
-    // System.out.println("toStringAsProduction called on " + num + ": " + this);
+    // Util.info("toStringAsProduction called on " + num + ": " + this);
     StringBuilder sb = new StringBuilder();
 
     if (CFGRules.isLHS(this) || (seq == null && alt == null))
@@ -142,7 +142,7 @@ public class CFGNode {
     else {
       CFGNode tmp;
       for (tmp = this; !(tmp.element.kind == CFGKind.END && CFGRules.isLHS(tmp.seq)); tmp = tmp.seq) {// Locate the end of this production
-        // System.out.println("toStringAsProduction at " + tmp + " with next-in-sequence element " + tmp.seq.elm);
+        // Util.info("toStringAsProduction at " + tmp + " with next-in-sequence element " + tmp.seq.elm);
       }
       sb.append(tmp.seq.element.str + rewritesDenotation); // Render LHS
 
@@ -152,7 +152,7 @@ public class CFGNode {
   }
 
   private void toStringAsSequenceRec(StringBuilder sb, CFGNode alt, String slotDenotation, CFGNode targetNode) {
-    // System.out.println("toStringAsSequenceRec called on " + this.instanceNumber + ":" + this);
+    // Util.info("toStringAsSequenceRec called on " + this.instanceNumber + ":" + this);
     if (alt.element.kind != CFGKind.ALT) Util.fatal("toStringAsSequenceRec() called on node " + alt.num + " which is not not an ALT node");
     for (CFGNode tmpSeq = alt.seq;; tmpSeq = tmpSeq.seq) { // run down this sequence
       if (tmpSeq == targetNode) sb.append(slotDenotation);

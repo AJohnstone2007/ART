@@ -17,7 +17,8 @@ public class Statistics implements OutputInterface {
 
   public void put(String k, Object v) {
     if (!elements.keySet().contains(k))
-      Util.warning("Statistics.put() passed unknown key " + k);
+      // Util.warning("Statistics.put() passed unknown key " + k)
+      ;
     else
       elements.put(k, v);
   }

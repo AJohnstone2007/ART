@@ -8,21 +8,18 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 
+import uk.ac.rhul.cs.csle.art.cfg.AbstractParser;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGKind;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
-import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGRules;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.GIFTKind;
-import uk.ac.rhul.cs.csle.art.cfg.lexer.AbstractLexer;
 import uk.ac.rhul.cs.csle.art.cfg.lexer.LexemeKind;
 import uk.ac.rhul.cs.csle.art.util.Util;
 import uk.ac.rhul.cs.csle.art.util.relation.RelationOverNaturals;
 
 public class SPPF extends AbstractDerivations {
-  public final CFGRules cfgRules;
-  public SPPFSymbolNode rootNode;
+  public final AbstractParser parser;
+  public SPPFSymbolNode root;
   public String inputString; // Original input string
-  public int[] tokens; // Input as array of tokens
-  public int[] leftIndices;
 
   public final Map<SPPFSymbolNode, SPPFSymbolNode> nodes = new HashMap<>();
   public final BitSet visited = new BitSet();
@@ -34,15 +31,34 @@ public class SPPF extends AbstractDerivations {
   public final Set<SPPFPackedNode> cbD = new HashSet<>(); // Set of deleted cyclic nodes: D in Elizabeth's note
   public final Set<SPPFPackedNode> cbDPrime = new HashSet<>(); // Set of deleted cyclic nodes: D' in Elizabeth's note
 
-  public SPPF(CFGRules cfgRules) {
+  public SPPF(AbstractParser parser) {
     super();
-    this.cfgRules = cfgRules;
-    this.rootNode = rootNode;
+    this.parser = parser;
+  }
+
+  public SPPFSymbolNode find(CFGNode dn, int li, int ri) {
+    // System.out.print("sppfFind with dn " + dn.toStringAsProduction() + " with extents " + li + "," + ri);
+
+    SPPFSymbolNode tmp = new SPPFSymbolNode(dn, li, ri);
+    if (!nodes.containsKey(tmp)) {
+      nodes.put(tmp, tmp);
+      // System.out.print(" added " + tmp);
+    }
+    // Util.info(" resulting sppf\n" + nodes.keySet());
+    return nodes.get(tmp);
+  }
+
+  public SPPFSymbolNode update(CFGNode gn, SPPFSymbolNode ln, SPPFSymbolNode rn) {
+    SPPFSymbolNode ret = find(gn.element.kind == CFGKind.END ? gn.seq : gn, ln == null ? rn.leftExtent : ln.leftExtent, rn.rightExtent);
+    // Util.info(
+    // "Updating SPPF node with gn " + gn.toStringAsProduction() + " and extents " + (ln == null ? rn.li : ln.li) + "," + rn.ri + " retrieves node " + ret);
+    ret.packNodes.add(new SPPFPackedNode(gn, ln == null ? rn.leftExtent : ln.rightExtent, ln, rn));
+    return ret;
   }
 
   @Override
   public void print(PrintStream ps) {
-    if (rootNode == null) {
+    if (root == null) {
       Util.warning("no SPPF root node - skipping printing");
       return;
     }
@@ -51,12 +67,6 @@ public class SPPF extends AbstractDerivations {
       for (var pn : n.packNodes)
         ps.println(pn);
     }
-  }
-
-  public void loadLexicalisation(String inputString, int[] tokens, int[] leftIndices) {
-    this.inputString = inputString;
-    this.tokens = tokens;
-    this.leftIndices = leftIndices;
   }
 
   public void numberNodes() {
@@ -75,7 +85,7 @@ public class SPPF extends AbstractDerivations {
   public int widestIndex() {
     int ret = 0;
     for (SPPFSymbolNode s : nodes.keySet())
-      if (ret < s.ri) ret = s.ri;
+      if (ret < s.rightExtent) ret = s.rightExtent;
     return ret;
   }
 
@@ -83,7 +93,7 @@ public class SPPF extends AbstractDerivations {
   @Override
   public void chooseLongestMatch() {
     visited.clear();
-    chooseLongestMatchRec(rootNode);
+    chooseLongestMatchRec(root);
   }
 
   private void chooseLongestMatchRec(SPPFSymbolNode sn) {
@@ -93,7 +103,7 @@ public class SPPF extends AbstractDerivations {
     int rightMostPivot = -1;
     SPPFPackedNode candidate = null;
     if (sn.packNodes.size() > 1) {
-      Util.warning("Ambiguity detected at SPPF node " + sn.number + ": " + sn.gn.toStringAsProduction() + " involving ");
+      Util.warning("Ambiguity detected at SPPF node " + sn.number + ": " + sn.grammarNode.toStringAsProduction() + " involving ");
       for (var p : sn.packNodes)
         Util.info("   " + p.toString());
     }
@@ -129,16 +139,16 @@ public class SPPF extends AbstractDerivations {
 
   @Override
   public int derivationAsTerm() {
-    if (rootNode == null) return 0;
+    if (root == null) return 0;
     visited.clear();
     derivationSeenCycle = false;
     LinkedList<Integer> carrier = new LinkedList<>();
-    derivationAsTermRec(rootNode, carrier, firstAvailablePackNode(rootNode).grammarNode.seq); // Root grammar node is the end of a start production
+    derivationAsTermRec(root, carrier, firstAvailablePackNode(root).grammarNode.seq); // Root grammar node is the end of a start production
     return carrier.getFirst();
   }
 
   private String derivationAsTermRec(SPPFSymbolNode sppfn, LinkedList<Integer> childrenFromParent, CFGNode gn) {
-    // System.out.println("\nEntered derivationAsTermRec() at node " + sppfn + " instance " + gn);
+    // Util.debug("Entered derivationAsTermRec() at node (" + sppfn + ") instance " + gn.toStringAsProduction());
     if (visited.get(sppfn.number)) {
       if (!derivationSeenCycle) Util.error(System.err, "derivationAsTermRec() found cycle in derivation");
       derivationSeenCycle = true;
@@ -164,13 +174,14 @@ public class SPPF extends AbstractDerivations {
 
     if (constructor == null) // If there were no OVERs, then set the constructor to be our symbol
       if (derivationForInterpreter)
-      constructor = firstAvailableSPPFPN == null ? "" + -sppfn.ri : "" + firstAvailableSPPFPN.grammarNode.alt.num;
+      constructor = firstAvailableSPPFPN == null ? "" + -sppfn.rightExtent : "" + firstAvailableSPPFPN.grammarNode.alt.num;
       else
-      constructor = (gn.element.kind == CFGKind.B) ? AbstractLexer.lexemeOfBuiltin(LexemeKind.valueOf(gn.element.str), inputString, leftIndices[sppfn.li])
+      constructor = (gn.element.kind == CFGKind.B)
+          ? parser.lexer.lexemeOfBuiltin(LexemeKind.valueOf(gn.element.str), parser.lexer.leftIndices[sppfn.leftExtent])
           : gn.element.str;
 
     if (children != childrenFromParent) {
-      childrenFromParent.add(cfgRules.iTerms.findTerm(constructor, children));
+      childrenFromParent.add(parser.cfgRules.iTerms.findTerm(constructor, children));
       derivationNodeCount++;
     }
 
@@ -179,7 +190,7 @@ public class SPPF extends AbstractDerivations {
   }
 
   private void collectChildNodesRec(SPPFPackedNode sppfpn, LinkedList<SPPFSymbolNode> childNodes) {
-    // System.out.println("CollectChildNodesRec() at pack node " + sppfpn);
+    // Util.info("CollectChildNodesRec() at pack node " + sppfpn);
     SPPFSymbolNode leftChild = sppfpn.leftChild, rightChild = sppfpn.rightChild;
     if (leftChild != null) {
       if (leftChild.isSymbol()) // found a symbol
@@ -203,12 +214,12 @@ public class SPPF extends AbstractDerivations {
       else
         ambiguous = true;
 
-    if (candidate == null) System.out.println("No unsuppressed pack nodes found at SPPF node " + sppfn);
+    if (candidate == null) Util.info("No unsuppressed pack nodes found at SPPF node " + sppfn);
 
     if (ambiguous) {
-      System.out.println("Ambiguous SPPF node " + sppfn.toString() + " involving slots: ");
+      Util.info("Ambiguous SPPF node " + sppfn.toString() + " involving slots: ");
       for (SPPFPackedNode p : sppfn.packNodes)
-        if (!p.suppressed) System.out.println("  " + p);
+        if (!p.suppressed) Util.info("  " + p);
     }
     return candidate;
   }
@@ -218,7 +229,7 @@ public class SPPF extends AbstractDerivations {
   @Override
   public boolean ambiguityCheck() {
     ambiguousSPPF = false;
-    if (rootNode != null) ambiguityCheckRec(rootNode);
+    if (root != null) ambiguityCheckRec(root);
     return ambiguousSPPF;
   }
 
@@ -232,13 +243,21 @@ public class SPPF extends AbstractDerivations {
         ambiguityCheckRec(p.rightChild);
       }
 
-    // if (activePackedNodes == 0) System.out.println("No unsuppressed pack nodes found at SPPF node " + sppfn);
+    // if (activePackedNodes == 0) Util.info("No unsuppressed pack nodes found at SPPF node " + sppfn);
 
     if (activePackedNodes > 1) {
       ambiguousSPPF = true;
-      System.out.println("Ambiguous SPPF node " + sppfn.toString() + " involving slots: ");
+      Util.info("Ambiguous SPPF node " + sppfn.toString() + " involving slots: ");
       for (SPPFPackedNode p : sppfn.packNodes)
-        if (!p.suppressed) System.out.println("  " + p);
+        if (!p.suppressed) Util.info("  " + p);
     }
   }
+
+  public int sppfWidestIndex() {
+    int ret = 0;
+    for (SPPFSymbolNode s : nodes.keySet())
+      if (ret < s.rightExtent) ret = s.rightExtent;
+    return ret;
+  }
+
 }

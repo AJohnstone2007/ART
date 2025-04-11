@@ -4,6 +4,7 @@ import javafx.scene.Group;
 import javafx.scene.transform.Rotate;
 import javafx.scene.transform.Scale;
 import javafx.scene.transform.Translate;
+import uk.ac.rhul.cs.csle.art.util.Util;
 
 public class Transformer3D extends Group {
 
@@ -200,8 +201,8 @@ public class Transformer3D extends Group {
   }
 
   public void debug() {
-    System.out.println("t = (" + t.getX() + ", " + t.getY() + ", " + t.getZ() + ")  " + "r = (" + rx.getAngle() + ", " + ry.getAngle() + ", " + rz.getAngle()
-        + ")  " + "s = (" + s.getX() + ", " + s.getY() + ", " + s.getZ() + ")  " + "p = (" + p.getX() + ", " + p.getY() + ", " + p.getZ() + ")  " + "ip = ("
-        + ip.getX() + ", " + ip.getY() + ", " + ip.getZ() + ")");
+    Util.info("t = (" + t.getX() + ", " + t.getY() + ", " + t.getZ() + ")  " + "r = (" + rx.getAngle() + ", " + ry.getAngle() + ", " + rz.getAngle() + ")  "
+        + "s = (" + s.getX() + ", " + s.getY() + ", " + s.getZ() + ")  " + "p = (" + p.getX() + ", " + p.getY() + ", " + p.getZ() + ")  " + "ip = (" + ip.getX()
+        + ", " + ip.getY() + ", " + ip.getZ() + ")");
   }
 }

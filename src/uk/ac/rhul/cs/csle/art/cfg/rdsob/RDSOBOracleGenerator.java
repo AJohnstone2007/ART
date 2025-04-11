@@ -41,7 +41,7 @@ public class RDSOBOracleGenerator {
     String filename = "ARTGeneratedRDSOBOracle";
     iTerms = ScriptTermInterpreter.iTerms;
     String timeStamp = Util.timestamp();
-    System.out.println("Writing new " + filename + ": " + timeStamp);
+    Util.info("Writing new " + filename + ": " + timeStamp);
     try {
       text = new PrintWriter(new File(filename + ".java"));
     } catch (FileNotFoundException e) {
@@ -201,7 +201,7 @@ public class RDSOBOracleGenerator {
         "  if (!(parse_" + cfgRules.startNonterminal.str + "() && input.charAt(inputIndex) == '\\0')) { System.out.print(\"Rejected\\n\"); return; }\n" +
         "\n" +
         "  System.out.print(\"Accepted\\n\");\n" +
-        "  System.out.print(\"Oracle:\"); for (int i = 0; i < oracleIndex; i++) System.out.printf(\" \" + oracle[i]); System.out.printf(\"\\n\");\n" +
+        "  System.out.print(\"Oracle:\"); for (int i = 0; i < oracleIndex; i++) System.out.println(\" \" + oracle[i]); System.out.println();\n" +
         "  System.out.print(\"Semantics:\\n\"); inputIndex = oracleIndex = 0; builtIn_WHITESPACE(); semantics_" +
            cfgRules.startNonterminal.str+"("+(cfgRules.startNonterminal.attributes.keySet().size() > 0 ? "new Attributes_" + cfgRules.startNonterminal.str + "()":"")+");\n"+
 //        "  System.out.print(\"\\nTerm:\\n\"); inputIndex = oracleIndex = 0; builtIn_WHITESPACE(); term_" + cfgRules.startNonterminal.str+"(new LinkedList<>());\n"+

@@ -5,46 +5,56 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 public class Util {
-  public static int traceLevel = 0;
+  public static PrintStream console = System.out;
+  public static int traceLevel = 3;
+  public static int errorLevel = 1;
 
   public static void trace(int level, int indent, String msg) {
     if (traceLevel >= level) {
       for (int i = 0; i < indent; i++)
-        System.out.print("  ");
-      System.out.print(msg);
+        console.print("  ");
+      console.println(msg);
     }
   }
 
-  protected void trace(int level, String msg) {
+  public static void trace(int level, String msg) {
     trace(level, 0, msg);
   }
 
+  public static void debug(String msg) {
+    debug(console, msg);
+  }
+
+  public static void debug(PrintStream stream, String msg) {
+    stream.println("!!! " + msg);
+  }
+
   public static void info(String msg) {
-    info(System.out, msg);
+    info(console, msg);
   }
 
   public static void info(PrintStream stream, String msg) {
-    stream.println("*** " + msg);
+    if (errorLevel >= 3) stream.println(msg);
   }
 
   public static void warning(String msg) {
-    warning(System.out, msg);
+    warning(console, msg);
   }
 
   public static void warning(PrintStream stream, String msg) {
-    stream.println("*** Warning: " + msg);
+    if (errorLevel >= 2) stream.println("*** Warning: " + msg);
   }
 
   public static void error(String msg) {
-    error(System.out, msg);
+    error(console, msg);
   }
 
   public static void error(PrintStream stream, String msg) {
-    stream.println("*** Error: " + msg);
+    if (errorLevel >= 1) stream.println("*** Error: " + msg);
   }
 
   public static void fatal(String msg) {
-    fatal(System.out, msg);
+    fatal(console, msg);
   }
 
   public static void fatal(PrintStream stream, String msg) {
@@ -95,7 +105,7 @@ public class Util {
       sb.append("\n"); // Special case: at start of buffer and empty line
     else
       for (; i < length && buffer.charAt(i) != '\n'; i++) {
-        // System.out.println("Appending " + buffer.charAt(i) + "[" + ((int) buffer.charAt(i)) + "]");
+        // console.println("Appending " + buffer.charAt(i) + "[" + ((int) buffer.charAt(i)) + "]");
         sb.append(buffer.charAt(i));
       }
 

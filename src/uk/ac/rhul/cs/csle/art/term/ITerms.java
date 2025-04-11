@@ -350,12 +350,12 @@ public class ITerms {
   }
 
   private void parseSyntaxError(String s) {
-    System.out.println("V5 " + echo(s));
-    // System.out.println("** " + s);
-    // System.out.println(input);
+    Util.info(echo(s));
+    // Util.info("** " + s);
+    // Util.info(input);
     // for (int i = 0; i < cp - 1; i++)
     // System.out.print("-");
-    // System.out.println("^");
+    // Util.info("^");
     System.exit(1);
   }
 
@@ -538,12 +538,12 @@ public class ITerms {
     if (isVariableTerm(openTermIndex)) {
       int variableNumber = termVariableNumber(openTermIndex);
       if (variableNumber == 0) {
-        // System.out.println("matchZeroSV() matches wildcard and returns true with no update to bindings");
+        // Util.info("matchZeroSV() matches wildcard and returns true with no update to bindings");
         return true;
       }
 
       bindings[variableNumber] = closedTermIndex; // Variable zero means match anything but don't bind
-      // System.out.println("matchZeroSV() binds to variable and returns true");
+      // Util.info("matchZeroSV() binds to variable and returns true");
       return true;
     }
 
@@ -552,7 +552,7 @@ public class ITerms {
     for (int i = 0; i < termArity(openTermIndex); i++)
       if (!matchZeroSV(termChildren(closedTermIndex)[i], termChildren(openTermIndex)[i], bindings)) return false;
 
-    // System.out.println("matchZeroSV() matched children and root, and returns true");
+    // Util.info("matchZeroSV() matched children and root, and returns true");
 
     return true;
   }
@@ -562,10 +562,10 @@ public class ITerms {
 
     // Postorder substitution so substitute children first
 
-    // System.out.println(level + " Substitute " + toString(openTermIndex) + " with bindings {" + toStringBindings(bindings) + "}");
-    // System.out.println(level + " Open term is " + toString(openTermIndex));
+    // Util.info(level + " Substitute " + toString(openTermIndex) + " with bindings {" + toStringBindings(bindings) + "}");
+    // Util.info(level + " Open term is " + toString(openTermIndex));
     int arity = termArity(openTermIndex);
-    // System.out.println(level + " Arity is " + arity);
+    // Util.info(level + " Arity is " + arity);
 
     int[] children = new int[arity];
     int newArity = 0;
@@ -577,7 +577,7 @@ public class ITerms {
         newArity++;
     }
 
-    // System.out.println(level + " After substitution, open term is " + toString(openTermIndex));
+    // Util.info(level + " After substitution, open term is " + toString(openTermIndex));
 
     // if (newArity != arity) {// There were sequence variable bindings, so we must promote the children of the sequences
     // int[] newChildren = new int[newArity];
@@ -608,7 +608,7 @@ public class ITerms {
     else
       ret = findTerm(termSymbolStringIndex(openTermIndex), children);
 
-    // System.out.println("Substitute " + toString(openTermIndex) + " with bindings " + toStringBindings(bindings) + " returns " + toString(ret));
+    // Util.info("Substitute " + toString(openTermIndex) + " with bindings " + toStringBindings(bindings) + " returns " + toString(ret));
     return ret;
   }
 
@@ -643,7 +643,7 @@ public class ITerms {
     String rootSymbolString = termSymbolString(term);
     if (children.length == 0 || !rootSymbolString.startsWith("__")) return term; // Nothing to do
 
-    // System.out.println("Evaluating " + toString(term));
+    // Util.info("Evaluating " + toString(term));
 
     int termSymbolStringIndex = termSymbolStringIndex(term);
 
@@ -1003,7 +1003,7 @@ public class ITerms {
         switch (firstChildSymbolStringIndex) {
         case __int32StringIndex:
           int left = termToJavaInteger(children[0]), right = termToJavaInteger(children[1]);
-          System.out.println("__exp called on " + left + " and " + right);
+          Util.info("__exp called on " + left + " and " + right);
           int ret = 1;
           for (int i = 1; i <= right; i++)
             ret *= left;
@@ -1215,7 +1215,7 @@ public class ITerms {
   }
 
   public boolean hasSymbol(Integer term, String string) {
-    // System.out.println("Checking term " + toString(term) + " against symbol " + string);
+    // Util.info("Checking term " + toString(term) + " against symbol " + string);
     return termSymbolStringIndex(term) == this.findString(string);
   }
 
@@ -1516,17 +1516,17 @@ public class ITerms {
     System.out.print("public final int " + s[0] + "StringIndex = " + (symbolValue++));
     for (int i = 1; i < s.length; i++)
       System.out.print(", " + s[i] + "StringIndex = " + (symbolValue++));
-    System.out.println(";");
+    Util.info(";");
 
     symbolValue = variableCount + sequenceVariableCount + 1 + 2;
-    System.out.println("void loadStrings() {");
+    Util.info("void loadStrings() {");
     for (String sym : s)
-      System.out.println("loadString(\"" + sym + "\"," + symbolValue++ + ");");
-    System.out.println("}");
+      Util.info("loadString(\"" + sym + "\"," + symbolValue++ + ");");
+    Util.info("}");
   }
 
   private void loadString(String string, int index) {
-    if (findString(string) != index) System.out.println("String index mismatch for " + string);
+    if (findString(string) != index) Util.info("String index mismatch for " + string);
   }
 
   public final int __bottomStringIndex = 33, __doneStringIndex = 34, __emptyStringIndex = 35, __quoteStringIndex = 36, __blobStringIndex = 37,
@@ -1604,7 +1604,7 @@ public class ITerms {
   public void toDot(int term, String filename) {
     if (term == 0) return;
     PrintStream dotOut;
-    // System.out.println("toDot on " + toString(term));
+    // Util.info("toDot on " + toString(term));
     try {
       dotOut = new PrintStream(new File(filename));
       dotOut.println("digraph \"GSS\" {\n" + "node[fontname=Helvetica fontsize=9 shape=box height = 0 width = 0 margin= 0.04  color=gray]\n"
@@ -1613,12 +1613,12 @@ public class ITerms {
       dotOut.println("}");
       dotOut.close();
     } catch (FileNotFoundException e) {
-      System.out.println("Unable to write GSS visualisation to " + filename);
+      Util.info("Unable to write GSS visualisation to " + filename);
     }
   }
 
   private void toDotRec(int term, PrintStream dotOut) {
-    // System.out.println("toDotRec at " + toString(term));
+    // Util.info("toDotRec at " + toString(term));
     dotOut.println(term + "[label=\"" + termSymbolString(term) + "\"]");
     for (int i = 0; i < termArity(term); i++) {
 

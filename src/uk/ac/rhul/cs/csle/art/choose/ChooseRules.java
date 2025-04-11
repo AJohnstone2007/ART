@@ -26,9 +26,9 @@ public class ChooseRules {
   }
 
   public void normalise(CFGRules grammar) {
-    // System.out.println("Building chooser relation on " + chooseRules);
+    // Util.info("Building chooser relation on " + chooseRules);
     // for (var i : chooseRules) {
-    // System.out.println("Term i:");
+    // Util.info("Term i:");
     //
     // }
 
@@ -94,21 +94,21 @@ public class ChooseRules {
     bindings[anyTerminal] = iTerms.findTerm(anyStr);
 
     // Debug: announce what we have just constructed
-    // System.out.println("Characters: " + iTerms.toString(bindings[1]));
-    // System.out.println("Builtins: " + iTerms.toString(bindings[2]));
-    // System.out.println("CaseSensitives: " + iTerms.toString(bindings[3]));
-    // System.out.println("CaseInsensitives: " + iTerms.toString(bindings[4]));
-    // System.out.println("Paras: " + iTerms.toString(bindings[5]));
-    // System.out.println("Nons: " + iTerms.toString(bindings[6]));
-    // System.out.println("Literals: " + iTerms.toString(bindings[7]));
-    // System.out.println("Any: " + iTerms.toString(bindings[8]));
+    // Util.info("Characters: " + iTerms.toString(bindings[1]));
+    // Util.info("Builtins: " + iTerms.toString(bindings[2]));
+    // Util.info("CaseSensitives: " + iTerms.toString(bindings[3]));
+    // Util.info("CaseInsensitives: " + iTerms.toString(bindings[4]));
+    // Util.info("Paras: " + iTerms.toString(bindings[5]));
+    // Util.info("Nons: " + iTerms.toString(bindings[6]));
+    // Util.info("Literals: " + iTerms.toString(bindings[7]));
+    // Util.info("Any: " + iTerms.toString(bindings[8]));
 
     // for (String chooserSetID : ARTV3Module.getChoosers().keySet()) {
     // List<String> chooseExpressionList = ARTV3Module.getChoosers().get(chooserSetID);
     // ARTChooserSet chooserSet = findChooserSet(chooserSetID);
     //
     // for (String expression : chooseExpressionList) {
-    // // System.out.println("Evaluating chooser expression:" + expression);
+    // // Util.info("Evaluating chooser expression:" + expression);
     //
     // int root = iTerms.findTerm(expression);
     //
@@ -116,7 +116,7 @@ public class ChooseRules {
     // || iTerms.getTermSymbolString(iTerms.getSubterm(root, 1)).equals("chooseSPPF"))
     // if (!(iTerms.getTermSymbolString(iTerms.getSubterm(root, 0)).equals("chooseSPPF")
     // && iTerms.getTermSymbolString(iTerms.getSubterm(root, 1)).equals("chooseSPPF"))) {
-    // System.out.println("SPPF choosers can only use productions: skipping");
+    // Util.info("SPPF choosers can only use productions: skipping");
     // continue;
     // }
     //
@@ -137,12 +137,12 @@ public class ChooseRules {
     // }
     // }
     //
-    // // System.out.println("Used nonterminals " + usedNonterminals);
-    // // System.out.println("Paraterminals " + paraterminals);
+    // // Util.info("Used nonterminals " + usedNonterminals);
+    // // Util.info("Paraterminals " + paraterminals);
     //
     // for (ARTGrammarElementNonterminal n : nonterminals)
     // if (n.getProductions().isEmpty() && usedNonterminals.contains(n))
-    // if (!paraterminals.contains(n)) System.out.println("*** Warning - undefined nonterminal " + n);
+    // if (!paraterminals.contains(n)) Util.info("*** Warning - undefined nonterminal " + n);
   }
 
   private String extendStringList(String string, String extension) {
@@ -153,7 +153,7 @@ public class ChooseRules {
 
   private void updateChooser(ARTV3Module ARTV3Module, ARTBitSet[] bits, int lhsTerm, int rhsTerm) {
     for (int l = 0; l < iTerms.termArity(lhsTerm); l++) {
-      // System.out.println("Updating chooser with: " + iTerms.toString(lhsTerm) + " relation " + iTerms.toString(rhsTerm));
+      // Util.info("Updating chooser with: " + iTerms.toString(lhsTerm) + " relation " + iTerms.toString(rhsTerm));
       int lTerm = iTerms.subterm(lhsTerm, l);
       for (int r = 0; r < iTerms.termArity(rhsTerm); r++) {
         int rTerm = iTerms.subterm(rhsTerm, r);
@@ -172,7 +172,7 @@ public class ChooseRules {
 
   private int convertTermToEnumerationElement(ARTV3Module module, int term) {
     String child = ITerms.unescapeMeta(iTerms.termSymbolString(iTerms.subterm(term, 0)));
-    // System.out.println("Converting: " + child);
+    // Util.info("Converting: " + child);
 
     ARTGrammarElement element = null;
 
@@ -198,13 +198,13 @@ public class ChooseRules {
     // }
 
     // if (element == null) {
-    // System.out.println("Warning - chooser element " + child + " does not appear in any grammar rule");
+    // Util.info("Warning - chooser element " + child + " does not appear in any grammar rule");
     // return -1;
     // }
     //
     int ret = element.getElementNumber();
 
-    // System.out.println("Returning: " + ret);
+    // Util.info("Returning: " + ret);
 
     return ret;
   }

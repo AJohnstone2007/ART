@@ -5,6 +5,8 @@ import java.io.FileNotFoundException;
 import java.io.PrintStream;
 import java.util.Map;
 
+import uk.ac.rhul.cs.csle.art.util.Util;
+
 public class GSS2Dot {
   public GSS2Dot(Map<GSSNode, GSSNode> gss, String filename) {
     if (gss == null) return;
@@ -22,7 +24,7 @@ public class GSS2Dot {
       gssOut.println("}");
       gssOut.close();
     } catch (FileNotFoundException e) {
-      System.out.println("Unable to write GSS visualisation to " + filename);
+      Util.error("Unable to write GSS visualisation to " + filename);
     }
   }
 }

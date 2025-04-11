@@ -42,7 +42,7 @@ public class AJDebug {
   ScriptTermInterpreter regressionScriptInterpreter;
 
   public AJDebug(String[] args) {
-    System.out.println("ajdebug " + args[1]);
+    Util.info("ajdebug " + args[1]);
     testStringEscapes();
 
     // testSetRegressions(args);
@@ -65,17 +65,17 @@ public class AJDebug {
 
   void testStringEscapes() {
     String str = "adr\"i\'\n\t\r  an";
-    System.out.println(str);
+    Util.info(str);
     String escStr = Util.escapeString(str, true);
-    System.out.println(escStr);
+    Util.info(escStr);
     String unescStr = Util.unescapeString(escStr);
-    System.out.println(unescStr);
-    System.out.println(unescStr.equals(str) ? "Same" : "Different");
+    Util.info(unescStr);
+    Util.info(unescStr.equals(str) ? "Same" : "Different");
   }
 
   private void processFile(Path filePath) throws IOException {
     boolean good = v5v3RegressionFirstAndFollowSets(Files.readString(filePath));
-    System.out.println("File " + filePath + " " + (good ? " Good " : "Bad"));
+    Util.info("File " + filePath + " " + (good ? " Good " : "Bad"));
   }
 
   private boolean v5v3RegressionFirstAndFollowSets(String scriptString) {
@@ -93,11 +93,11 @@ public class AJDebug {
 
     // System.out.print("\n*** V3 grammar\n" + grammarV3.toString());
     grammarV5 = regressionScriptInterpreter.currentCFGRules;
-    System.out.println("*** Working grammar normalisation starts here");
+    Util.info("*** Working grammar normalisation starts here");
     grammarV5.normalise();
     grammarV5.show("grammar.dot");
 
-    // System.out.println("\n*** V5 grammar\n" + grammarV5.toStringBody(true));
+    // Util.info("\n*** V5 grammar\n" + grammarV5.toStringBody(true));
 
     boolean good = true;
 
@@ -105,9 +105,9 @@ public class AJDebug {
     for (ARTGrammarElementNonterminal v3Nonterminal : grammarV3.getNonterminals()) {
       CFGElement v5Nonterminal = grammarV5.elements.get(new CFGElement(CFGKind.N, v3Nonterminal.getId()));
 
-      // System.out.println(
+      // Util.info(
       // "V3 nonterminal " + v3Nonterminal + " first " + new TreeSet<>(v3Nonterminal.getFirst()) + " follow " + new TreeSet<>(v3Nonterminal.getFollow()));
-      // System.out.println("V5 nonterminal " + v5Nonterminal + " first " + v5Nonterminal.first + " follow " + v5Nonterminal.follow + "\n");
+      // Util.info("V5 nonterminal " + v5Nonterminal + " first " + v5Nonterminal.first + " follow " + v5Nonterminal.follow + "\n");
 
       if (!v5v3ElementSetSame(grammarV5.first.get(v5Nonterminal), new TreeSet<>(v3Nonterminal.getFirst()), artV3.artManager.getDefaultMainModule(),
           v5Nonterminal)) {
@@ -123,9 +123,8 @@ public class AJDebug {
         // if (!v5v3ElementSetSame(v5prime, new TreeSet<>(v3Nonterminal.getFollow()), artV3.artManager.getDefaultMainModule()))
         {
 
-          System.out.println(
-              "Follow for " + v5Nonterminal + " differ:\nV5 " + grammarV5.follow.get(v5Nonterminal) + "\nV3 " + new TreeSet<>(v3Nonterminal.getFollow()));
-          System.out.println("v5:v3 cardinality " + grammarV5.follow.get(v5Nonterminal).size() + " : " + v3Nonterminal.getFollow().size() + "\n");
+          Util.info("Follow for " + v5Nonterminal + " differ:\nV5 " + grammarV5.follow.get(v5Nonterminal) + "\nV3 " + new TreeSet<>(v3Nonterminal.getFollow()));
+          Util.info("v5:v3 cardinality " + grammarV5.follow.get(v5Nonterminal).size() + " : " + v3Nonterminal.getFollow().size() + "\n");
           good = false;
         }
       }
@@ -142,23 +141,23 @@ public class AJDebug {
 
     boolean good = true;
     String key = v5.toStringAsProduction().replaceAll("\\s", "");
-    // System.out.println("V5 instance " + key + " first " + v5.instanceFirst + " follow " + v5.instanceFollow);
+    // Util.info("V5 instance " + key + " first " + v5.instanceFirst + " follow " + v5.instanceFollow);
     Set<ARTGrammarElement> v3InstanceFirst = v3InstanceFirsts.get(key), v3InstanceFollow = v3InstanceFollows.get(key);
 
     if (v3InstanceFirsts.get(key) == null)
-      // System.out.println(" v3 key is missing")
+      // Util.info(" v3 key is missing")
       ;
     else {
       // if (!v5v3ElementSetSame(v5.instanceFirst, v3InstanceFirst, artV3.artManager.getDefaultMainModule())) {
-      // System.out.println("Instance first differ: V5 " + v5.instanceFirst + " V3 " + v3InstanceFirst);
+      // Util.info("Instance first differ: V5 " + v5.instanceFirst + " V3 " + v3InstanceFirst);
       // good = false;
       // }
       // if (v5.elm.kind == GrammarKind.N && !v5v3ElementSetSame(v5.instanceFollow, v3InstanceFollow, artV3.artManager.getDefaultMainModule())) {
-      // System.out.println("Instance follow differ: V5 " + v5.instanceFollow + " V3 " + v3InstanceFollow);
+      // Util.info("Instance follow differ: V5 " + v5.instanceFollow + " V3 " + v3InstanceFollow);
       // good = false;
       // }
     }
-    // System.out.println();
+    // Util.info();
     if (v5.element.kind == CFGKind.END) return good;
 
     good &= v5v3RegressionCheckFirstAndFollowInstanceSetsRec(v5.seq, artV3);
@@ -181,7 +180,7 @@ public class AJDebug {
 
   void v5v3RegressionGatherV3FirstAndFollowInstanceSetsRec(ARTGrammarInstance v3) {
     if (v3 == null) return;
-    // System.out.println(
+    // Util.info(
     // "v5v3RegressionGatherV3FirstAndFollowInstanceSetsRec at [" + v3.getKey() + "] " + v3.toGrammarString() + " first=" + v3.first + " follow=" +
     // v3.follow);
     if (v3 instanceof ARTGrammarInstanceSlot) {
@@ -198,14 +197,14 @@ public class AJDebug {
     for (CFGElement ve5 : v5) {
       if (ve5.equals(v5IgnoreElement)) continue;
       ret &= v3.contains(v5Element2v3Element(ve5, artv3Module));
-      // System.out.println("Checked v5 " + ve5 + " " + ret);
+      // Util.info("Checked v5 " + ve5 + " " + ret);
     }
 
     for (ARTGrammarElement ve3 : v3) {
       CFGElement ve5 = v3Element2v5Element(ve3);
 
       ret &= v5.contains(ve5);
-      // System.out.println("Checked v3 " + ve3 + " " + ret + " with v5 as " + ve5);
+      // Util.info("Checked v3 " + ve3 + " " + ret + " with v5 as " + ve5);
     }
     return ret;
   }

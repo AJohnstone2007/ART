@@ -15,7 +15,6 @@ import uk.ac.rhul.cs.csle.art.cfg.cfgRules.GIFTKind;
 import uk.ac.rhul.cs.csle.art.cfg.chart.AlgX;
 import uk.ac.rhul.cs.csle.art.cfg.chart.CYK;
 import uk.ac.rhul.cs.csle.art.cfg.gll.GLLBaseLine;
-import uk.ac.rhul.cs.csle.art.cfg.gll.GLLBaseLineRefactored;
 import uk.ac.rhul.cs.csle.art.cfg.gll.GLLHashPool;
 import uk.ac.rhul.cs.csle.art.cfg.lexer.LexemeKind;
 import uk.ac.rhul.cs.csle.art.cfg.lexer.LexerSingletonLongestMatch;
@@ -34,6 +33,9 @@ import uk.ac.rhul.cs.csle.art.term.TermTraverser;
 import uk.ac.rhul.cs.csle.art.term.TermTraverserText;
 import uk.ac.rhul.cs.csle.art.util.Util;
 import uk.ac.rhul.cs.csle.art.util.Version;
+import uk.ac.rhul.cs.csle.art.util.derivations.SPPFPackedNode;
+import uk.ac.rhul.cs.csle.art.util.derivations.SPPFSymbolNode;
+import uk.ac.rhul.cs.csle.art.util.stacks.GSSNode;
 import uk.ac.rhul.cs.csle.art.util.statistics.Statistics;
 
 public class ScriptTermInterpreter {
@@ -68,7 +70,7 @@ public class ScriptTermInterpreter {
   private AbstractInterpreter currentInterpreter = null;
   public final static Statistics currentStatistics = new Statistics();
   String consoleInputLine = "";
-  Scanner console = new Scanner(System.in);
+  Scanner keyboard = new Scanner(System.in);
 
   int successfulTests = 0;
   int failedTests = 0;
@@ -84,7 +86,7 @@ public class ScriptTermInterpreter {
     scriptTraverser.traverse(scriptParserTerm); // Construct the script parser grammar by walking the script parser term from the last bootstrap
     currentCFGRules.normalise();
     scriptParser.cfgRules = currentCFGRules; // Now we have a usable script parser
-    // System.out.println("script grammar" + currentGrammar.toString());
+    // Util.debug("script grammar" + currentCFGRules.toString());
 
     currentChooser = new ChooseRules(iTerms);
     currentChooser.normalise(currentCFGRules);
@@ -144,27 +146,29 @@ public class ScriptTermInterpreter {
 
   public void interpretARTScript(String scriptString) {
     currentCFGRules = new CFGRules("currentGrammar", iTerms);
+    Util.traceLevel = Util.errorLevel = 0;
     scriptLexer.lex(scriptString, scriptParser.cfgRules.lexicalKindsArray(), scriptParser.cfgRules.lexicalStringsArray(),
         scriptParser.cfgRules.whitespacesArray());
     // scriptLexer.report();
-    if (scriptLexer.tokens == null) Util.fatal("Lexical error in script");
+    if (scriptLexer.tokens == null) Util.fatal("Script lexical error");
     scriptParser.parse(scriptLexer);
-    if (!scriptParser.inLanguage) Util.fatal("Syntax error in script");
-    if (scriptParser.derivations.ambiguityCheck()) Util.fatal("Ambiguity in script SPPF");
+    if (!scriptParser.inLanguage) Util.fatal("Script syntax error");
+    scriptParser.sppf.numberNodes();
+    if (scriptParser.derivations.ambiguityCheck()) Util.fatal("Script ambiguity");
     scriptDerivationTerm = scriptParser.derivations.derivationAsTerm();
-    // System.out.println("Script term:\n" + iTerms.toString(scriptDerivationTerm, true, -1, null));
-    Util.traceLevel = 3;
+    // Util.info("Script term:\n" + iTerms.toString(scriptDerivationTerm, true, -1, null));
+    Util.traceLevel = Util.errorLevel = 3;
     scriptTraverser.traverse(scriptDerivationTerm);
-    if (successfulTests != 0 || failedTests != 0) System.out.print("Successful tests: " + successfulTests + "; failed tests " + failedTests);
+    if (successfulTests != 0 || failedTests != 0) Util.info("Successful tests: " + successfulTests + "; failed tests " + failedTests);
   }
 
   private void directiveAction(int term) {
-    Util.trace(5, 0, "*** !" + iTerms.toString(iTerms.subterm(term, 0)) + "\n");
+    // Util.debug("Evaluating directive !" + iTerms.toString(iTerms.subterm(term, 0)));
     switch (iTerms.termSymbolString(iTerms.subterm(term, 0))) {
 
     case "trace":
       Util.traceLevel = iTerms.termToJavaInteger(iTerms.subterm(term, 0, 0));
-      // System.out.println("Trace level set to " + Util.traceLevel);
+      // Util.debug("Trace level set to " + Util.traceLevel);
       break;
 
     case "configuration":
@@ -254,9 +258,6 @@ public class ScriptTermInterpreter {
         case "gllbaseline":
           currentParser = new GLLBaseLine();
           break;
-        case "gllbaseliner" + "efactored":
-          currentParser = new GLLBaseLineRefactored();
-          break;
         case "rdsobfunction":
           currentParser = new RDSOBFunction();
           break;
@@ -321,7 +322,7 @@ public class ScriptTermInterpreter {
       break;
 
     case "print":
-      printDisplayElement(term, false, false, System.out);
+      printDisplayElement(term, false, false, Util.console);
       break;
 
     case "printLaTeX":
@@ -345,11 +346,11 @@ public class ScriptTermInterpreter {
       break;
 
     case "try":
-      // System.out.println("try at " + iTerms.toString(term));
+      // Util.debug("processing try " + iTerms.toString(term));
       if (iTerms.termSymbolString(iTerms.subterm(term, 0, 0)).equals("file")) // Parse contents of file
         try {
           String filename = iTerms.termSymbolString(iTerms.subterm(term, 0, 0, 0));
-          // System.out.println("Attempting to open file " + filename);
+          // Util.info("Attempting to open file " + filename);
           tryParse(filename, Files.readString(Paths.get(filename)));
         } catch (IOException e) {
           Util.fatal("Unable to open try file; skipping " + iTerms.toString(term));
@@ -366,10 +367,10 @@ public class ScriptTermInterpreter {
         currentRewriteTerm = currentRewriter.rewrite(currentDerivationTerm, currentTRRules); // Run the rewriter
         if (iTerms.termArity(iTerms.subterm(term, 0)) == 2) // There was a test term
           if (currentRewriteTerm == iTerms.subterm(term, 0, 1)) {
-            System.out.println("*** Successful test");
+            Util.info("*** Successful test");
             successfulTests++;
           } else {
-            System.out.println("*** Failed test: expected " + iTerms.plainTextTraverser.toString(iTerms.subterm(term, 0, 1)));
+            Util.info("*** Failed test: expected " + iTerms.plainTextTraverser.toString(iTerms.subterm(term, 0, 1)));
             failedTests++;
           }
       }
@@ -382,7 +383,7 @@ public class ScriptTermInterpreter {
         System.out.print("\n*** Press return to continue");
       else
         System.out.print("\n" + iTerms.termSymbolString(iTerms.subterm(term, 0, 0)));
-      consoleInputLine = console.nextLine();
+      consoleInputLine = keyboard.nextLine();
       break;
 
     case "nop": // No operation
@@ -426,7 +427,7 @@ public class ScriptTermInterpreter {
 
     switch (displayElement) {
     case "version":
-      System.out.println("ART " + Version.version());
+      Util.info("ART " + Version.version());
       break;
 
     case "term":
@@ -441,40 +442,40 @@ public class ScriptTermInterpreter {
     case "scriptExpansion":
       // currentRewriter.normalise();
       currentCFGRules.normalise();
-      System.out.println(currentCFGRules);
+      Util.info(currentCFGRules.toString());
       break;
 
     case "scriptDerivation":
       // Switch comments if you wanted one line or indented derivations
-      // System.out.println("script derivation term: [" + scriptDerivationTerm + "]\n" + iTerms.toString(scriptDerivationTerm, false, -1, null));
-      System.out.println("Script derivation term: [" + scriptDerivationTerm + "]\n" + iTerms.toRawString(scriptDerivationTerm));
+      // Util.info("script derivation term: [" + scriptDerivationTerm + "]\n" + iTerms.toString(scriptDerivationTerm, false, -1, null));
+      Util.info("Script derivation term: [" + scriptDerivationTerm + "]\n" + iTerms.toRawString(scriptDerivationTerm));
       break;
 
     case "cfgRules":
       currentCFGRules.normalise();
-      System.out.println(currentCFGRules);
+      Util.info(currentCFGRules.toString());
       break;
 
     case "lexicalisations":
-      System.out.println("Lexicalisations");
+      Util.info("Lexicalisations");
       currentLexer.printLexicalisations(raw);
       break;
 
     case "derivation":
       if (raw)
-        System.out.println("current raw derivation term: [" + currentDerivationTerm + "]\n" + iTerms.toRawString(currentDerivationTerm));
+        Util.info("current raw derivation term: [" + currentDerivationTerm + "]\n" + iTerms.toRawString(currentDerivationTerm));
       else
         // Switch comments if you wanted one line or indented derivations
-        // System.out.println("Current derivation term = " + currentDerivationTerm + " " + iTerms.toString(currentDerivationTerm));
-        System.out.println("current derivation term: [" + currentDerivationTerm + "]\n" + iTerms.toString(currentDerivationTerm/* , true, -1, null */));
-      if (scriptParserTerm == currentDerivationTerm) System.out.println("Bootstrap achieved: script parser term and current derivation term identical");
+        // Util.info("Current derivation term = " + currentDerivationTerm + " " + iTerms.toString(currentDerivationTerm));
+        Util.info("current derivation term: [" + currentDerivationTerm + "]\n" + iTerms.toString(currentDerivationTerm/* , true, -1, null */));
+      if (scriptParserTerm == currentDerivationTerm) Util.info("Bootstrap achieved: script parser term and current derivation term identical");
       break;
 
     case "derivationIndexed":
       // Switch comments if you wanted one line or indented derivations
       currentIndexedDerivationTerm = currentParser.derivations.derivationAsInterpeterTerm();
-      System.out.println("Current indexed derivation term = " + currentIndexedDerivationTerm + " " + iTerms.toRawString(currentIndexedDerivationTerm));
-      // System.out.println("current derivation term: [" + currentDerivationTerm + "]\n" + iTerms.toString(currentDerivationTerm, true, -1, null));
+      Util.info("Current indexed derivation term = " + currentIndexedDerivationTerm + " " + iTerms.toRawString(currentIndexedDerivationTerm));
+      // Util.info("current derivation term: [" + currentDerivationTerm + "]\n" + iTerms.toString(currentDerivationTerm, true, -1, null));
       break;
 
     case "paraterminals":
@@ -493,7 +494,7 @@ public class ScriptTermInterpreter {
       break;
 
     case "__string":
-      System.out.println(iTerms.termSymbolString(iTerms.subterm(term, 0, 0, 0)));
+      Util.info(iTerms.termSymbolString(iTerms.subterm(term, 0, 0, 0)));
       break;
 
     case "gss":
@@ -523,8 +524,8 @@ public class ScriptTermInterpreter {
 
     case "scriptDerivation":
       // Switch comments if you wanted one line or indented derivations
-      // System.out.println("script derivation term: [" + scriptDerivationTerm + "]\n" + iTerms.toString(scriptDerivationTerm, false, -1, null));
-      System.out.println("Script derivation term: [" + scriptDerivationTerm + "]\n" + iTerms.toString(scriptDerivationTerm, true, -1, null));
+      // Util.info("script derivation term: [" + scriptDerivationTerm + "]\n" + iTerms.toString(scriptDerivationTerm, false, -1, null));
+      Util.info("Script derivation term: [" + scriptDerivationTerm + "]\n" + iTerms.toString(scriptDerivationTerm, true, -1, null));
       break;
 
     case "cfgRules":
@@ -533,7 +534,7 @@ public class ScriptTermInterpreter {
         cfgRulesOut.println(currentCFGRules.toStringDot());
         cfgRulesOut.close();
       } catch (FileNotFoundException e) {
-        System.out.println("Unable to write CFG rules visualisation to cfgRules.dot");
+        Util.info("Unable to write CFG rules visualisation to cfgRules.dot");
       }
 
       currentCFGRules.normalise();
@@ -545,7 +546,7 @@ public class ScriptTermInterpreter {
         gdgOut.println(currentCFGRules.reach.toStringDot());
         gdgOut.close();
       } catch (FileNotFoundException e) {
-        System.out.println("Unable to write Grammar Dependency Graph visualisation to gdg.dot");
+        Util.info("Unable to write Grammar Dependency Graph visualisation to gdg.dot");
       }
       break;
 
@@ -575,11 +576,11 @@ public class ScriptTermInterpreter {
   }
 
   private void tryParse(String inputStringName, String inputString) {
-    // System.out.println("tryParse on " + inputString);
+    // Util.info("tryParse on " + inputString);
 
     currentCFGRules.normalise();
     if (currentCFGRules.isEmpty()) {
-      System.out.println("Try failed: grammar has no rules");
+      Util.info("Try failed: grammar has no rules");
       return;
     }
     currentChooser.normalise(currentCFGRules);
@@ -595,6 +596,7 @@ public class ScriptTermInterpreter {
     currentLexer.leftIndices = currentLexer.leftIndices;
     currentLexer.rightIndices = currentLexer.rightIndices;
     if (currentLexer.tokens != null) currentParser.parse(currentLexer);
+    currentParser.sppf.numberNodes();
     currentStatistics.putTime("ParseTime");
     if (currentParser.inLanguage) {
       if (!disableChoosers) currentParser.derivations.chooseLongestMatch();
@@ -695,7 +697,7 @@ public class ScriptTermInterpreter {
     });
 
     // Debug - print keys from text traverser tables
-    // System.out.println("text traverser: " + ret);
+    // Util.info("text traverser: " + ret);
 
     return ret;
   }
@@ -847,7 +849,7 @@ public class ScriptTermInterpreter {
     });
 
     // Debug - print keys from text traverser tables
-    // System.out.println("text traverser: " + pp.tt);
+    // Util.info("text traverser: " + pp.tt);
 
     return ret;
   }
@@ -900,7 +902,55 @@ public class ScriptTermInterpreter {
       Util.fatal("identifier " + s + " begins with three or more underscores");
     }
 
-    // System.out.println(" to yield " + ret);
+    // Util.info(" to yield " + ret);
     return ret;
+  }
+
+  private void loadCounts() {
+    ScriptTermInterpreter.currentStatistics.put("tweNodeCount", (long) currentParser.lexer.tokens.length);
+    ScriptTermInterpreter.currentStatistics.put("tweEdgeCount", currentParser.lexer.tokens.length - 1);
+    ScriptTermInterpreter.currentStatistics.put("tweLexCount", 1);
+
+    int gssEdgeCount = 0, popCount = 0;
+    for (GSSNode g : currentParser.gss.nodes.keySet()) {
+      gssEdgeCount += g.edges.size();
+      popCount += g.pops.size();
+    }
+    ScriptTermInterpreter.currentStatistics.put("descriptorCount", currentParser.descriptors.size());
+    ScriptTermInterpreter.currentStatistics.put("gssNodeCount", currentParser.gss.nodes.keySet().size());
+    ScriptTermInterpreter.currentStatistics.put("gssEdgeCount", gssEdgeCount);
+    ScriptTermInterpreter.currentStatistics.put("popCount", popCount);
+
+    int sppfEpsilonNodeCount = 0, sppfTerminalNodeCount = 0, sppfNonterminalNodeCount = 0, sppfIntermediateNodeCount = 0, sppfPackNodeCount = 0,
+        sppfAmbiguityCount = 0, sppfEdgeCount = 0;
+    for (SPPFSymbolNode s : currentParser.sppf.nodes.keySet()) {
+      switch (s.grammarNode.element.kind) {
+      // Dodgy - how do we test the flavour of an SPPF node?
+      case T, TI, C, B:
+        sppfTerminalNodeCount++;
+        break;
+      case EPS:
+        sppfEpsilonNodeCount++;
+        break;
+      }
+      sppfPackNodeCount += s.packNodes.size();
+      if (s.packNodes.size() > 1) sppfAmbiguityCount++;
+      for (SPPFPackedNode p : s.packNodes) {
+        sppfEdgeCount++; // inedge
+        if (p.leftChild != null) sppfEdgeCount++;
+        if (p.rightChild != null) sppfEdgeCount++;
+      }
+    }
+
+    ScriptTermInterpreter.currentStatistics.put("sppfEpsilonNodeCount", sppfEpsilonNodeCount);
+    ScriptTermInterpreter.currentStatistics.put("sppfTerminalNodeCount", sppfTerminalNodeCount);
+    ScriptTermInterpreter.currentStatistics.put("sppfNonterminalNodeCount", sppfNonterminalNodeCount);
+    ScriptTermInterpreter.currentStatistics.put("sppfIntermediateNodeCount", sppfIntermediateNodeCount);
+    ScriptTermInterpreter.currentStatistics.put("sppfSymbolPlusIntermediateNodeCount", currentParser.sppf.nodes.keySet().size());
+    ScriptTermInterpreter.currentStatistics.put("sppfPackNodeCount", sppfPackNodeCount);
+    ScriptTermInterpreter.currentStatistics.put("sppfAmbiguityCount", sppfAmbiguityCount);
+    ScriptTermInterpreter.currentStatistics.put("sppfEdgeCount", sppfEdgeCount);
+    // loadPoolAllocated(-1);
+    // loadHashCounts(-20, -21, -22, -23, -24, -25, -26);
   }
 }

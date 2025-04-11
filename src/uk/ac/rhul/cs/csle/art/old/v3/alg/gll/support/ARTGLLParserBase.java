@@ -880,7 +880,7 @@ public abstract class ARTGLLParserBase extends ARTParserBase {
    */
   // returns node label if an ^^ has been encountered or we are intermediate, otherwise zero
   private int artDerivationAsTermRec(int element, List<Integer> parentChildren, ITerms iTerms, int fold) {
-    // artText.printf("ArtDerivationAsTermRec() at node %d %s with fold arg %d%n", element, artLabelInternalStrings[artSPPFNodeLabel(element)], fold);
+    // Util.debug("ArtDerivationAsTermRec() at node " + element + " " + artLabelInternalStrings[artSPPFNodeLabel(element)] + " with fold arg " + fold);
     if (artSPPFNodeVisited(element)) throw new ARTUncheckedException("ArtDerivationAsTermRec() found cycle in derivation");
 
     // 1. Decide whether to append our children onto our parent's children or whether we will eventually make a new DT node

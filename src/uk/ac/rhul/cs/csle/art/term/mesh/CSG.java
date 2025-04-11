@@ -49,7 +49,7 @@ public class CSG {
       faceAsVertexList.add(new Vertex(p1));
       faceAsVertexList.add(new Vertex(p2));
       faceAsVertexList.add(new Vertex(p3));
-      // System.out.println("CSG: adding polygon for face " + f + ": " + faceAsVertexList);
+      // Util.info("CSG: adding polygon for face " + f + ": " + faceAsVertexList);
       polygons.add(new Polygon(faceAsVertexList));
     }
   }

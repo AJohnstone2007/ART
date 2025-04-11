@@ -1,19 +1,19 @@
-package uk.ac.rhul.cs.csle.art.util.process;
+package uk.ac.rhul.cs.csle.art.util.tasks;
 
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
 import uk.ac.rhul.cs.csle.art.util.derivations.SPPFSymbolNode;
 import uk.ac.rhul.cs.csle.art.util.stacks.GSSNode;
 
-public class Descriptor {
+public class DescriptorGLL {
   public CFGNode grammarNode;
-  public int inputIndex;
+  public int tokenIndex;
   public GSSNode stackNode;
   public SPPFSymbolNode derivationNode;
 
-  public Descriptor(CFGNode grammarNode, int inputIndex, GSSNode stackNode, SPPFSymbolNode derivationNode) {
+  public DescriptorGLL(CFGNode grammarNode, int inputIndex, GSSNode stackNode, SPPFSymbolNode derivationNode) {
     super();
     this.grammarNode = grammarNode;
-    this.inputIndex = inputIndex;
+    this.tokenIndex = inputIndex;
     this.stackNode = stackNode;
     this.derivationNode = derivationNode;
   }
@@ -22,7 +22,7 @@ public class Descriptor {
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("(");
-    sb.append(inputIndex);
+    sb.append(tokenIndex);
     sb.append(", ");
     sb.append(grammarNode.toStringAsProduction());
     sb.append(", ");
@@ -38,7 +38,7 @@ public class Descriptor {
     final int prime = 31;
     int result = 1;
     result = prime * result + ((stackNode == null) ? 0 : stackNode.hashCode());
-    result = prime * result + inputIndex;
+    result = prime * result + tokenIndex;
     result = prime * result + ((grammarNode == null) ? 0 : grammarNode.hashCode());
     result = prime * result + ((derivationNode == null) ? 0 : derivationNode.hashCode());
     return result;
@@ -49,11 +49,11 @@ public class Descriptor {
     if (this == obj) return true;
     if (obj == null) return false;
     if (getClass() != obj.getClass()) return false;
-    Descriptor other = (Descriptor) obj;
+    DescriptorGLL other = (DescriptorGLL) obj;
     if (stackNode == null) {
       if (other.stackNode != null) return false;
     } else if (!stackNode.equals(other.stackNode)) return false;
-    if (inputIndex != other.inputIndex) return false;
+    if (tokenIndex != other.tokenIndex) return false;
     if (grammarNode == null) {
       if (other.grammarNode != null) return false;
     } else if (!grammarNode.equals(other.grammarNode)) return false;

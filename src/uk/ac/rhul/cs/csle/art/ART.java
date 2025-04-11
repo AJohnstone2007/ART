@@ -34,10 +34,10 @@ public class ART {
     default:          new ScriptTermInterpreter().interpretARTScript(scriptString(args)); return; // Run batch mode without fx in this context
     }
     // No args
-    System.out.println("ART " + Version.version() + "\nUsage:");
-    System.out.println("  ide <specfilename> <tryfilename> - open IDE windows on ART specification in file <specfilename> and try input in file <tryfilename>");
-    System.out.println("  fx <spec> - interpret <spec> directly under JavaFX");
-    System.out.println("  <spec> - interpret <spec> directly without JavaFX");
+    Util.info("ART " + Version.version() + "\nUsage:");
+    Util.info("  ide <specfilename> <tryfilename> - open IDE windows on ART specification in file <specfilename> and try input in file <tryfilename>");
+    Util.info("  fx <spec> - interpret <spec> directly under JavaFX");
+    Util.info("  <spec> - interpret <spec> directly without JavaFX");
   }
   // @formatter:on
 
@@ -46,7 +46,7 @@ public class ART {
     for (int argp = 0; argp < args.length; argp++) {
       if (args[argp].endsWith(".art"))
         try {
-          // System.out.println("Appending contents of ART script file" + args[argp]);
+          // Util.info("Appending contents of ART script file" + args[argp]);
           scriptStringBuilder.append(Files.readString(Paths.get((args[argp]))));
         } catch (IOException e) {
           Util.fatal("Unable to read script file " + args[argp] + "\n" + e);
@@ -58,7 +58,7 @@ public class ART {
       scriptStringBuilder.append("\n");
     }
 
-    // System.out.println("Script string builder returns\n" + scriptStringBuilder);
+    // Util.info("Script string builder returns\n" + scriptStringBuilder);
     return scriptStringBuilder.toString();
 
   }
@@ -69,7 +69,7 @@ public class ART {
       String timeStamp = LocalDate.now() + " " + LocalTime.now();
       timeStamp = timeStamp.substring(0, timeStamp.indexOf('.'));
 
-      System.out.printf("Updating from %s: new build %d%n", Version.version(), newBuild, timeStamp);
+      Util.info("Updating from " + Version.version() + ": new build " + newBuild + " at " + timeStamp);
       PrintWriter pw;
       pw = new PrintWriter("Version.java.new");
       pw.printf(

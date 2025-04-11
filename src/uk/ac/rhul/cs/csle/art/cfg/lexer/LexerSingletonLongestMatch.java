@@ -12,9 +12,9 @@ public class LexerSingletonLongestMatch extends AbstractLexer {
     this.strings = strings;
     this.whitespaces = whitespaces;
 
-    // System.out.println("Starting lexing with kinds/string arrays:");
+    // Util.info("Starting lexing with kinds/string arrays:");
     // for (int i = 0; i < kinds.length; i++)
-    // System.out.println(kinds[i] + "/" + strings[i]);
+    // Util.info(kinds[i] + "/" + strings[i]);
 
     inputAsCharArray = inputString.toCharArray();
     lexerInputIndex = 0;
@@ -27,11 +27,11 @@ public class LexerSingletonLongestMatch extends AbstractLexer {
 
     longestMatchRightIndex = 0;
     longestMatchToken = 0;
-    // System.out.println("Input: " + inputString);
+    // Util.info("Input: " + inputString);
 
     while (lexerInputIndex < inputAsCharArray.length) {
       // Absorb a run of whitespace tokens
-      // System.out.println("Absorbing WS at index " + inputIndex);
+      // Util.info("Absorbing WS at index " + inputIndex);
       while (true) {
         int wsStart = lexerInputIndex;
 
@@ -44,7 +44,7 @@ public class LexerSingletonLongestMatch extends AbstractLexer {
 
       leftIndex = lexerInputIndex;
 
-      // System.out.println("Running recognisers at index " + inputIndex);
+      // Util.info("Running recognisers at index " + inputIndex);
       for (int token = 1; token < kinds.length; token++) {
         lexerInputIndex = leftIndex;
         processBuiltin(kinds[token], strings[token]);
@@ -63,10 +63,10 @@ public class LexerSingletonLongestMatch extends AbstractLexer {
       lexerInputIndex = longestMatchRightIndex;
     }
     if (deleteTokenCount > 0) {
-      Util.trace(6, 0, "Deleting " + deleteTokenCount + " tokens - original size " + tokenList.size() + "\n");
+      Util.info("Deleting " + deleteTokenCount + " tokens - original size " + tokenList.size() + "\n");
       int leftIndex = tokenList.size() / 2 - deleteTokenCount / 2;
       tokenList.subList(leftIndex, leftIndex + deleteTokenCount).clear();
-      Util.trace(6, 0, "Deleted " + deleteTokenCount + " tokens - final size " + tokenList.size() + "\n");
+      Util.info("Deleted " + deleteTokenCount + " tokens - final size " + tokenList.size() + "\n");
     }
     tokenList.add(0); // Terminating EOS
     leftIndexList.add(inputString.length());
@@ -111,17 +111,17 @@ public class LexerSingletonLongestMatch extends AbstractLexer {
   }
 
   public void printLexicalisations(boolean raw) {
-    // System.out.println("String: " + inputString);
+    // Util.info("String: " + inputString);
     // var lexemeKinds = LexemeKind.values();
     // for (int i = 0; i < lexemeKinds.length; i++)
-    // System.out.println(lexemeKinds[i]);
+    // Util.info(lexemeKinds[i]);
     // int index = 0;
     if (raw)
       for (int i = 0; i < tokens.length; i++)
-        System.out.println(kinds[tokenList.get(i)] == LexemeKind.SINGLETON_CASE_SENSITIVE ? strings[tokens[i]] : kinds[tokenList.get(i)]);
+        Util.info(kinds[tokenList.get(i)] == LexemeKind.SINGLETON_CASE_SENSITIVE ? strings[tokens[i]] : kinds[tokenList.get(i)].toString());
     else
       for (int i = 0; i < tokens.length; i++)
-        System.out.println(i + ":" + leftIndices[i] + "," + rightIndices[i] + " " + kinds[tokenList.get(i)] + " " + strings[tokens[i]]);
+        Util.info(i + ":" + leftIndices[i] + "," + rightIndices[i] + " " + kinds[tokenList.get(i)] + " " + strings[tokens[i]]);
   }
 
   protected void processBuiltin(LexemeKind b, String s) {
@@ -238,7 +238,7 @@ public class LexerSingletonLongestMatch extends AbstractLexer {
       Util.fatal("Unknown builtin " + b);
       break;
     }
-    // System.out.println(" return " + inputIndex);
+    // Util.info(" return " + inputIndex);
   }
 
   protected void lexicalError(String msg) {
@@ -322,7 +322,7 @@ public class LexerSingletonLongestMatch extends AbstractLexer {
     for (int i = 0; i < string.length(); i++)
       if (string.charAt(i) != peekCh()) {
         lexerInputIndex = leftIndex;
-        // System.out.println(" reject");
+        // Util.info(" reject");
         return;
       } else
         getCh();
@@ -600,7 +600,7 @@ public class LexerSingletonLongestMatch extends AbstractLexer {
     while (isDigit(peekCh()))
       getCh();
 
-    // System.out.println("Testing for real at " + artCharacterStringInputIndex + ": current characters are " + peekCh() + " and " + peekOneCh());
+    // Util.info("Testing for real at " + artCharacterStringInputIndex + ": current characters are " + peekCh() + " and " + peekOneCh());
     if (!(peekCh() == '.' && isDigit(peekOneCh()))) {
       lexerInputIndex = leftIndex;
       return;
@@ -829,7 +829,7 @@ public class LexerSingletonLongestMatch extends AbstractLexer {
 
     do {
       if (peekCh() == '\0') {
-        System.out.println("Unterminated /* ... */ comment");
+        lexicalError("Unterminated /* ... */ comment");
         return;
       }
       getCh();

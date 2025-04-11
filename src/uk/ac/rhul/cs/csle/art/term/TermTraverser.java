@@ -49,7 +49,7 @@ public class TermTraverser {
 
   public void addEmptyAction(String... symbolString) { // force no operation for all actions on a particular key
     for (String s : symbolString) {
-//      System.out.println("Setting empty action for " + s);
+//      Util.info("Setting empty action for " + s);
       addAction(s,
           (Integer t) -> {},
           (Integer t) -> {},
@@ -65,16 +65,16 @@ public class TermTraverser {
     else
       action = map.get(iTerms.termSymbolStringIndex(termIndex));
     // if (action == null) {
-    // System.out.println("no action for " + iTerms.getTermSymbolString(termIndex));
+    // Util.info("no action for " + iTerms.getTermSymbolString(termIndex));
     // } else {
-    // System.out.println("found action for " + iTerms.getTermSymbolString(termIndex));
+    // Util.info("found action for " + iTerms.getTermSymbolString(termIndex));
     // }
     if (action == null) action = map.get(-1); // get default action
     if (action != null) action.accept(termIndex);
   }
 
   public void traverse(int termIndex) {
-    // System.out.println("traverse() at term " + iTerms.toRawString(termIndex));
+    // Util.info("traverse() at term " + iTerms.toRawString(termIndex));
     perform(opsPreorder, termIndex);
     int[] children = iTerms.termChildren(termIndex);
     int length = children.length;

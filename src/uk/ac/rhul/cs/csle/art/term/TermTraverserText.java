@@ -86,7 +86,7 @@ public class TermTraverserText extends TermTraverser {
   }
 
   public void traverse(int termIndex, int depth) {
-    // System.out.println("Traverser at term " + termIndex + " labeled " + iTerms.termSymbolStringIndex(termIndex) + ":" + iTerms.termSymbolString(termIndex) +
+    // Util.info("Traverser at term " + termIndex + " labeled " + iTerms.termSymbolStringIndex(termIndex) + ":" + iTerms.termSymbolString(termIndex) +
     // "$"
     // + " and string " + sb
     // );
@@ -96,25 +96,25 @@ public class TermTraverserText extends TermTraverser {
         sb.append(" ");
     }
     perform(opsPreorder, termIndex);
-    if (depthLimit >= 0 && depth >= depthLimit)
-      sb.append("..");
-    else {
-      int[] children = iTerms.termChildren(termIndex);
-      int length = children.length;
-      int lengthLessOne = length - 1;
-      if (!breakSet.contains(iTerms.termSymbolStringIndex(termIndex))) {
-        for (int childNumber = 0; childNumber < length; childNumber++) {
+    int[] children = iTerms.termChildren(termIndex);
+    int length = children.length;
+    int lengthLessOne = length - 1;
+    if (!breakSet.contains(iTerms.termSymbolStringIndex(termIndex))) {
+      for (int childNumber = 0; childNumber < length; childNumber++) {
 
+        if (depthLimit >= 0 && depth >= depthLimit)
+          sb.append("..");
+        else
           traverse(children[childNumber], depth + 1);
-          if (length > 1) {// No inorder output for singletons
-            // sb.append(i + ":");
-            if (childNumber == 0)
-              perform(opsInorder, termIndex);
-            else if (childNumber < lengthLessOne) perform(opsInorder, 0); // force default for inroders after the first one
-          }
+        if (length > 1) {// No inorder output for singletons
+          // sb.append(i + ":");
+          if (childNumber == 0)
+            perform(opsInorder, termIndex);
+          else if (childNumber < lengthLessOne) perform(opsInorder, 0); // force default for inroders after the first one
         }
       }
     }
+
     perform(opsPostorder, termIndex);
   }
 

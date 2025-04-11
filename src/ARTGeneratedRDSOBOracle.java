@@ -1,6 +1,6 @@
 import java.io.FileNotFoundException;import java.util.LinkedList;
 
-class ARTGeneratedRDSOBOracle extends uk.ac.rhul.cs.csle.art.cfg.rdsob.RDSOBAbstract {
+class ARTGeneratedRDSOBOracle extends uk.ac.rhul.cs.csle.art.cfg.rdsob.AbstractRDSOB {
 
 boolean parse_S() {
   int iiAtEntry = inputIndex, oiAtEntry = oracleIndex;

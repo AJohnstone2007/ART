@@ -144,7 +144,7 @@ public class CFGRules {
     int token = 0;
     lexicalStringsArray[0] = "EOS";
     for (CFGElement e1 : elements.keySet()) {
-      // System.out.println("Computing lexical arrays for " + e);
+      // Util.info("Computing lexical arrays for " + e);
       switch (e1.kind) {
       case B:
         try {
@@ -198,30 +198,30 @@ public class CFGRules {
     // Seed follow sets
     if (startNonterminal != null) follow.add(startNonterminal, endOfStringElement);
 
-    // System.out.println("Initial first sets: " + first);
-    // System.out.println("Initial instance first sets: " + instanceFirst);
-    // System.out.println("Initial follow sets: " + follow);
-    // System.out.println("Initial instance follow sets: " + instanceFollow);
+    // Util.info("Initial first sets: " + first);
+    // Util.info("Initial instance first sets: " + instanceFirst);
+    // Util.info("Initial follow sets: " + follow);
+    // Util.info("Initial instance follow sets: " + instanceFollow);
     computeFirstSets();
     computeNullableSuffixAndCyclic();
     computeFollowSets();
     ComputeCyclicSlots();//
-    // System.out.println("Final first sets: " + first);
-    // System.out.println("Final instance first sets: " + instanceFirst);
-    // System.out.println("Final follow sets: " + follow);
-    // System.out.println("Final instance follow sets: " + instanceFollow);
+    // Util.info("Final first sets: " + first);
+    // Util.info("Final instance first sets: " + instanceFirst);
+    // Util.info("Final follow sets: " + follow);
+    // Util.info("Final instance follow sets: " + instanceFollow);
 
     // Collect attributes
-    // System.out.println("*** Collecting attributes");
+    // Util.info("*** Collecting attributes");
     for (CFGElement e : elements.keySet()) {
-      // System.out.println("*** Collecting attributes for element " + e.toStringDetailed());
+      // Util.info("*** Collecting attributes for element " + e.toStringDetailed());
       Map<String, Integer> rhsNonterminalsInProduction = new HashMap<>();
       if (e.kind == CFGKind.N) { // Only look at nonterminals
         String lhs = e.str;
         for (CFGNode gn = elementToNodeMap.get(e).alt; gn != null; gn = gn.alt) { // iterate over the productions
           rhsNonterminalsInProduction.clear();
           for (CFGNode gs = gn.seq; gs.element.kind != CFGKind.END; gs = gs.seq) {
-            // System.out.println("Collecting RHS nonterminals at " + gs + " " + iTerms.toRawString(gs.slotTerm));
+            // Util.info("Collecting RHS nonterminals at " + gs + " " + iTerms.toRawString(gs.slotTerm));
             if (gs.element.kind == CFGKind.N) {
               if (rhsNonterminalsInProduction.get(gs.element.str) == null)
                 rhsNonterminalsInProduction.put(gs.element.str, 1);
@@ -238,14 +238,14 @@ public class CFGRules {
           }
         }
 
-        // System.out.println("LHS: " + lhs + " with valid nonterminals=instances: " + rhsNonterminalsInProduction);
+        // Util.info("LHS: " + lhs + " with valid nonterminals=instances: " + rhsNonterminalsInProduction);
 
         // Now check each action to see if it is trying to access a RHS nonterminal which is not instances in this LHS
         for (CFGNode gn = elementToNodeMap.get(e).alt; gn != null; gn = gn.alt) {
           for (CFGNode gs = gn.seq; gs.element.kind != CFGKind.END; gs = gs.seq) {
             for (int i = 0; i < iTerms.termArity(gs.slotTerm); i++) {
               int annotationRoot = iTerms.subterm(gs.slotTerm, i);
-              // System.out.println("Processing slot annotation " + iTerms.toString(annotationRoot));
+              // Util.info("Processing slot annotation " + iTerms.toString(annotationRoot));
               switch (iTerms.termSymbolString(annotationRoot)) {
               case "cfgEquation", "cfgAssignment":
                 checkTermActionsRec(annotationRoot, lhs, e.rhsNonterminalsAcrossAllProductions);
@@ -258,7 +258,7 @@ public class CFGRules {
                 break;
               }
             }
-            // System.out.println("Collecting attributes at " + gs + " " + iTerms.toRawString(gs.slotTerm));
+            // Util.info("Collecting attributes at " + gs + " " + iTerms.toRawString(gs.slotTerm));
           }
         }
       }
@@ -279,19 +279,19 @@ public class CFGRules {
       for (CFGElement lhs : elements.keySet())
         if (lhs.kind == CFGKind.N) {
           CFGNode topNode = elementToNodeMap.get(lhs);
-          // System.out.println("Visiting top node " + topNode.num + ":" + topNode);
+          // Util.info("Visiting top node " + topNode.num + ":" + topNode);
           for (CFGNode altNode = topNode.alt; altNode != null; altNode = altNode.alt) {
-            // System.out.println("Visiting alt node " + altNode.num + ":" + altNode);
+            // Util.info("Visiting alt node " + altNode.num + ":" + altNode);
             CFGNode seqNode = altNode;
             boolean seenOnlyNullable = true;
             while (true) {
               // Flow control
               seqNode = seqNode.seq;
-              // System.out.println("Visiting seq node " + seqNode.num + ":" + seqNode + " with seenOnlyNullable " + seenOnlyNullable);
+              // Util.info("Visiting seq node " + seqNode.num + ":" + seqNode + " with seenOnlyNullable " + seenOnlyNullable);
 
               // 1. Capture nullable prefixes
               if (seenOnlyNullable) {
-                // System.out.println("Adding nullable prefixslot " + seqNode.toStringAsProduction());
+                // Util.info("Adding nullable prefixslot " + seqNode.toStringAsProduction());
                 changed |= nullablePrefixSlots.add(seqNode);
               }
 
@@ -310,7 +310,7 @@ public class CFGRules {
                 seenOnlyNullable = false;
             }
             if (seenOnlyNullable) {
-              // System.out.println("All elements in sequence are nullable; adding epsilon to first of " + lhs);
+              // Util.info("All elements in sequence are nullable; adding epsilon to first of " + lhs);
               changed |= first.add(lhs, epsilonElement); // If the whole sequence is made up of nullable elements, thenadd epsilon to the left hand side
             }
             // Now fold the instance first set of the first slot in this sequence into the LHS
@@ -324,9 +324,9 @@ public class CFGRules {
     for (CFGElement lhs : elements.keySet())
       if (lhs.kind == CFGKind.N) {
         CFGNode topNode = elementToNodeMap.get(lhs);
-        // System.out.println("Compute nullable suffix visiting top node " + topNode.num + ":" + topNode);
+        // Util.info("Compute nullable suffix visiting top node " + topNode.num + ":" + topNode);
         for (CFGNode altNode = topNode.alt; altNode != null; altNode = altNode.alt) {
-          // System.out.println("Compute nullable suffix visiting alt node " + altNode.num + ":" + altNode);
+          // Util.info("Compute nullable suffix visiting alt node " + altNode.num + ":" + altNode);
           computeNullableSuffixAndDerivesExactlyRec(lhs, altNode.seq);
         }
       }
@@ -340,16 +340,17 @@ public class CFGRules {
     for (CFGElement lhs : elements.keySet())
       if (lhs.kind == CFGKind.N) {
         CFGNode topNode = elementToNodeMap.get(lhs);
-        // System.out.println("Compute nullable suffix visiting top node " + topNode.num + ":" + topNode);
+        // Util.info("Compute nullable suffix visiting top node " + topNode.num + ":" + topNode);
         for (CFGNode altNode = topNode.alt; altNode != null; altNode = altNode.alt) {
           CFGNode seqNode = altNode;
           boolean seenOnlyNullable = true;
           while (true) {
             // Flow control
             seqNode = seqNode.seq;
-            // System.out.println("Visiting seq node " + seqNode.num + ":" + seqNode + " with seenOnlyNullable " + seenOnlyNullable);
+            // Util.info("Visiting seq node " + seqNode.num + ":" + seqNode + " with seenOnlyNullable " + seenOnlyNullable);
 
-            if (cyclicNonterminals.contains(seqNode.element) && derivesExactlyTransitiveClosure.get(seqNode.element).contains(lhs)) cyclicSlots.add(seqNode.seq);
+            if (cyclicNonterminals.contains(seqNode.element) && derivesExactlyTransitiveClosure.get(seqNode.element).contains(lhs))
+              cyclicSlots.add(seqNode.seq);
             if (seqNode.element.kind == CFGKind.END) break;
           }
         }
@@ -358,7 +359,7 @@ public class CFGRules {
 
   private boolean computeNullableSuffixAndDerivesExactlyRec(CFGElement lhs, CFGNode seqNode) {
     boolean nullableSuffix;
-    // System.out.println("Compute nullable suffix REC visiting seq node " + seqNode.num + ":" + seqNode + " under lhs " + lhs);
+    // Util.info("Compute nullable suffix REC visiting seq node " + seqNode.num + ":" + seqNode + " under lhs " + lhs);
 
     if (seqNode.element.kind == CFGKind.END)
       nullableSuffix = true;
@@ -380,9 +381,9 @@ public class CFGRules {
       for (CFGElement lhs : elements.keySet())
         if (lhs.kind == CFGKind.N) {
           CFGNode topNode = elementToNodeMap.get(lhs);
-          // System.out.println("Visiting top node " + topNode.num + ":" + topNode);
+          // Util.info("Visiting top node " + topNode.num + ":" + topNode);
           for (CFGNode altNode = topNode.alt; altNode != null; altNode = altNode.alt) {
-            // System.out.println("Visiting alt node " + altNode.num + ":" + altNode);
+            // Util.info("Visiting alt node " + altNode.num + ":" + altNode);
             CFGNode seqNode = altNode.seq;
             while (true) {
               changed |= instanceFollow.addAll(seqNode, removeEpsilon(instanceFirst.get(seqNode.seq)));
@@ -451,7 +452,7 @@ public class CFGRules {
   }
 
   private void validateAttribute(String nonterminalID, String attributeID, String lhs, Map<String, Integer> rhsNonterminals, boolean isNative) {
-    // System.out.println("Validating attribute " + nonterminalID + "," + attributeID);
+    // Util.info("Validating attribute " + nonterminalID + "," + attributeID);
 
     if (nonterminalID.equals(lhs)) { // Case 1: attribute ID is LHS, even though it might end in a digit
       addAttribute(nonterminalID, attributeID);
@@ -490,7 +491,7 @@ public class CFGRules {
     for (CFGElement s : elements.keySet()) {
       s.number = nextFreeEnumerationElement++;
       if (lexKinds.contains(s.kind)) lexSize = s.number;
-      // System.out.println("Enumerating grammar element " + s.ei + ": " + s.str);
+      // Util.info("Enumerating grammar element " + s.ei + ": " + s.str);
     }
     lexSize++;
 
@@ -520,15 +521,15 @@ public class CFGRules {
   private void setEndNodeLinksRec(CFGNode parentNode, CFGNode altNode) {
     CFGNode gn;
     for (gn = altNode.seq; gn.element.kind != CFGKind.END; gn = gn.seq) {
-      // System.out.println("processEndNodes at " + gn.ni + " " + gn);
+      // Util.info("processEndNodes at " + gn.ni + " " + gn);
       if (gn.alt != null) for (CFGNode alternate = gn.alt; alternate != null; alternate = alternate.alt)
         setEndNodeLinksRec(gn, alternate); // Recurse into brackets
     }
-    // System.out.println("processEndNodes processing " + gn.ni + " " + gn);
+    // Util.info("processEndNodes processing " + gn.ni + " " + gn);
     gn.alt = altNode; // We are now at the end of a production or of a bracketed alternate
     gn.seq = parentNode;
     if (parentNode == elementToNodeMap.get(startNonterminal)) acceptingNodeNumbers.add(gn.num);
-    // System.out.println("processEndNodes updated alt and seq to " + gn.alt.ni + " " + gn.seq.ni);
+    // Util.info("processEndNodes updated alt and seq to " + gn.alt.ni + " " + gn.seq.ni);
   }
 
   // Data access for lexers
@@ -770,7 +771,7 @@ public class CFGRules {
       ps.println(toStringDot());
       ps.close();
     } catch (FileNotFoundException e) {
-      System.out.println("Unable to open visualisation file " + filename);
+      Util.info("Unable to open visualisation file " + filename);
     }
   }
 

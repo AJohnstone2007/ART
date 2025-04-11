@@ -20,7 +20,7 @@ public class RDSOBGenerator {
       Util.fatal("Unable to open output file " + className + ".java");
     }
 
-    System.out.println(grammar);
+    Util.info(grammar.toString());
     grammar.show("grammar.dot");
     text.print(
         "import java.io.IOException;\nimport java.nio.file.Files;\nimport java.nio.file.Paths;\nimport uk.ac.rhul.cs.csle.art.v5.DNode;\nimport uk.ac.rhul.cs.csle.art.v5.grammar.Kind;\n"
@@ -84,6 +84,6 @@ public class RDSOBGenerator {
         + " System.out.println((parser.accepted ? \"Accept\" : \"Reject\")\n    + \" with derivation: \" + parser.dn);\n }\n}");
 
     text.close();
-    System.out.println("SOBRD generated parser for grammar '" + grammar.name + "' written to " + className + ".java");
+    Util.info("SOBRD generated parser for grammar '" + grammar.name + "' written to " + className + ".java");
   }
 }

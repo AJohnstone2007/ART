@@ -20,7 +20,7 @@ public class ActionsGenerator {
     String filename = "ARTGeneratedActions";
     iTerms = ScriptTermInterpreter.iTerms;
     String timeStamp = Util.timestamp();
-    System.out.println("Writing new " + filename + ": " + timeStamp);
+    Util.info("Writing new " + filename + ": " + timeStamp);
     PrintWriter text = null;
     try {
       text = new PrintWriter(new File(filename + ".java"));
@@ -102,7 +102,7 @@ public class ActionsGenerator {
   }
 
   private void printSlotTermRec(PrintWriter text, int slotTerm) {
-    // System.out.println(iTerms.termSymbolString(slotTerm));
+    // Util.info(iTerms.termSymbolString(slotTerm));
 
     if (iTerms.hasSymbol(slotTerm, "cfgNative")) {
       text.print(iTerms.toString(iTerms.subterm(slotTerm, 0)));

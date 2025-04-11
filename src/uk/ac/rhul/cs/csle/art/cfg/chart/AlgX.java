@@ -1,6 +1,7 @@
 package uk.ac.rhul.cs.csle.art.cfg.chart;
 
 import uk.ac.rhul.cs.csle.art.term.ITerms;
+import uk.ac.rhul.cs.csle.art.util.Util;
 
 public class AlgX extends ChartBase {
 
@@ -8,7 +9,7 @@ public class AlgX extends ChartBase {
     super(iTerms);
     int n = 10;
     chartInit(n + 1);
-    System.out.println("Operation key: -1:initFromStart  -2:initFromPreviousColumb  -3:crossProduct  -4:completeColumn");
+    Util.info("Operation key: -1:initFromStart  -2:initFromPreviousColumb  -3:crossProduct  -4:completeColumn");
     int sequenceNumber = 1;
     chartUnion(0, 0, sequenceNumber++); // initialise from start sybol
     initialiseFromStartSymbol();
@@ -22,7 +23,7 @@ public class AlgX extends ChartBase {
       chartUnion(j, j, sequenceNumber++);
       completeColumn(j);
     }
-    System.out.println(chartToString());
+    Util.info(chartToString());
   }
 
   private void initialiseFromStartSymbol() {

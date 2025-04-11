@@ -20,5 +20,4 @@ public class GSS {
     if (nodes.get(gssNode) == null) nodes.put(gssNode, gssNode);
     return nodes.get(gssNode);
   }
-
 }

@@ -18,6 +18,8 @@ import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
 
+import uk.ac.rhul.cs.csle.art.util.Util;
+
 class RunExp {
 
   DateTimeFormatter dtf = DateTimeFormatter.ofPattern("YYYY-MM-dd,HH:mm:ss");
@@ -32,7 +34,7 @@ class RunExp {
     if (Integer.parseInt(args[1]) > 0)
       new RunExp(args);
     else
-      System.out.println("Count is zero - skipping experimental run and recomputing summaries");
+      Util.info("Count is zero - skipping experimental run and recomputing summaries");
     new MakeTimeSummary(logFileName, timeSummaryFileName);
     new MakeSpaceSummary(logFileName, spaceSummaryFileName);
   }
@@ -67,7 +69,7 @@ class RunExp {
                     String toolsDir = rlc + "/experiments/try/tools/gtb";
                     var t = getFiles(toolsDir);
                     if (t.length == 0) {
-                      System.out.println("Warning - script " + gg + " requires GTB, but no relevant tools found in " + toolsDir);
+                      Util.info("Warning - script " + gg + " requires GTB, but no relevant tools found in " + toolsDir);
                       continue;
                     }
                     fileCat("test.str", cc);
@@ -75,7 +77,7 @@ class RunExp {
                     for (var tt : t)
                       for (int i = 1; i <= count; i++) {// iteration count
                         logExperiment(logFile, i, s, l, a, g, c, tt, gg, cc);
-                        System.out.println("   " + tt + "test.gtb");
+                        Util.info("   " + tt + "test.gtb");
                         execute(logFile, tt.toString(), "test.gtb");
                       }
                   } else if (getFileType(s.getName()).equals("bat") || getFileType(s.getName()).equals("sh")) {
@@ -83,7 +85,7 @@ class RunExp {
                     String toolsDir = rlc + "/experiments/try/tools/art";
                     var t = getFiles(toolsDir); // collect tools
                     if (t.length == 0) {
-                      System.out.println("Warning - script " + gg + " requires ART, but no relevant tools found in " + toolsDir);
+                      Util.info("Warning - script " + gg + " requires ART, but no relevant tools found in " + toolsDir);
                       continue;
                     }
                     for (var tt : t) { // tool
@@ -103,24 +105,24 @@ class RunExp {
                           ss = ss.replaceAll("$1", ttPath); // P1 is the tool filename (Un*x)
                           ss = ss.replaceAll("$2", ggPath); // P2 is the grammar filename (Un*x)
                           ss = ss.replaceAll("$3", ccPath); // P3 is the corpus string filename (Un*x)
-                          System.out.println("   " + ss);
+                          Util.info("   " + ss);
                           execute(logFile, ss.split(" "));
                         }
                       }
                     }
                   } else
-                    System.out.println("Warning - skipping unknown script file type " + s.getName() + " must be one of: bat gtb sh");
+                    Util.info("Warning - skipping unknown script file type " + s.getName() + " must be one of: bat gtb sh");
   }
 
   static void fatal(String msg) {
-    System.out.println(msg);
+    Util.info(msg);
     System.exit(0);
   }
 
   void logExperiment(File log, int iteration, File s, File l, String a, File g, File c, File tt, File gg, File cc) throws IOException {
     String toolName = tt == null ? "bat" : tt.getName();
-    System.out.println(line + " " + dtf.format(LocalDateTime.now(ZoneId.systemDefault())) + " " + toolName + " " + s.getName() + " " + l.getName() + " "
-        + g.getName() + "/" + a + "/" + gg.getName() + " " + c.getName() + "/" + a + "/" + cc.getName() + " " + iteration);
+    Util.info(line + " " + dtf.format(LocalDateTime.now(ZoneId.systemDefault())) + " " + toolName + " " + s.getName() + " " + l.getName() + " " + g.getName()
+        + "/" + a + "/" + gg.getName() + " " + c.getName() + "/" + a + "/" + cc.getName() + " " + iteration);
     appendTo(log, (line++) + "," + dtf.format(LocalDateTime.now(ZoneId.systemDefault())) + "," + toolName + "," + s.getName() + "," + iteration + ","
         + l.getName() + "," + g.getName() + "/" + a + "/" + gg.getName() + "," + c.getName() + "/" + a + "/" + cc.getName() + ",");
   }
@@ -267,10 +269,10 @@ class MakeTimeSummary {
     Map<SummaryKey, ArrayList<Double>> map = new HashMap<>();
     while (scanner.hasNext()) {
       String line = scanner.nextLine();
-      System.out.println(line);
+      Util.info(line);
       var fields = line.split(",");
       if (fields.length < 17) {
-        System.out.println("Bad format: " + line);
+        Util.info("Bad format: " + line);
         continue;
       }
       var key = new SummaryKey(fields[toolCol], fields[scriptCol], fields[languageCol], fields[grammarCol], fields[stringCol], fields[tweECol],
@@ -343,7 +345,7 @@ class MakeSpaceSummary {
     // String line = scanner.nextLine();
     // var fields = line.split(",");
     // if (fields.length < 17) {
-    // System.out.println("Bad format: " + line);
+    // Util.info("Bad format: " + line);
     // continue;
     // }
     // var key = new SummaryKey(fields[3], fields[4], fields[6], fields[7], fields[8], fields[9], fields[10], fields[11]);

@@ -42,15 +42,14 @@ public class RewriterESOS extends Rewriter {
 
     if (relationTerm == 0) throw new ARTUncheckedException("rewrite attempted on null relation");
 
-    // trace(3, level, "Rewrite attempt " + ++pp.rewriteAttemptCounter + ": " + pp.render(term) + pp.render(relationTerm));
-    trace(3, level, "Rewrite call " + ++pp.rewriteAttemptCounter + " " + pp.render(term) + pp.render(relationTerm));
+    trace(4, level, "Rewrite call " + ++pp.rewriteAttemptCounter + " " + pp.render(term) + pp.render(relationTerm));
     if (!pp.cycleCheck.containsKey(relationTerm)) pp.cycleCheck.put(relationTerm, new HashSet<Integer>());
     Set<Integer> cycleSet = pp.cycleCheck.get(relationTerm);
     // if (cycleSet.contains(configuration)) throw new ARTExceptionFatal("cycle detected " +iTerms.toString(configuration) +iTerms.toString(relationTerm));
     cycleSet.add(term);
 
     if (isTerminatingConfiguration(term, relationTerm)) {
-      trace(3, level + 1, "Terminal " + pp.tt.toString(term));
+      trace(4, level + 1, "Terminal " + pp.tt.toString(term));
       return term;
     }
 
@@ -65,7 +64,7 @@ public class RewriterESOS extends Rewriter {
     }
 
     if (ruleList == null) {
-      trace(3, level, "No rules in relation " + pp.render(relationTerm) + " for constructor " + pp.iTerms.getTermSymbolString(rootTheta));
+      trace(4, level, "No rules in relation " + pp.render(relationTerm) + " for constructor " + pp.iTerms.getTermSymbolString(rootTheta));
       return term;
     }
 
@@ -74,7 +73,7 @@ public class RewriterESOS extends Rewriter {
       // System.out.println("Variable map: ");
       // for (int i : pp.variableMap.keySet())
       // System.out.println(i + ":" + pp.iTerms.getString(pp.variableMap.get(i)));
-      trace(3, level, pp.render(ruleIndex)); // Announce the next rule we are going to try
+      trace(4, level, pp.render(ruleIndex)); // Announce the next rule we are going to try
       int lhs = pp.iTerms.getSubterm(ruleIndex, 1, 1, 0);
       int premises = pp.iTerms.getSubterm(ruleIndex, 1, 0);
       int premiseCount = pp.iTerms.getTermArity(premises);
@@ -83,18 +82,18 @@ public class RewriterESOS extends Rewriter {
 
       int ruleLabel = thetaFromConfiguration(ruleIndex);
       if (!pp.iTerms.matchZeroSV(term, lhs, bindings)) {
-        trace(3, level, pp.render(pp.iTerms.getSubterm(ruleLabel, 0)) + " Theta match failed: seek another rule");
+        trace(4, level, pp.render(pp.iTerms.getSubterm(ruleLabel, 0)) + " Theta match failed: move to next rule");
         continue nextRule;
       }
-      trace(5, level, pp.render(pp.iTerms.getSubterm(ruleLabel, 0)) + "bindings after Theta match " + bindingsToString(bindings, pp.variableMap));
+      trace(7, level, pp.render(pp.iTerms.getSubterm(ruleLabel, 0)) + "bindings after Theta match " + bindingsToString(bindings, pp.variableMap));
 
       // Now work through the premises
       for (int premiseNumber = 0; premiseNumber < premiseCount; premiseNumber++) {
         int premise = pp.iTerms.getSubterm(premises, premiseNumber);
-        trace(4, level, pp.render(pp.iTerms.getSubterm(ruleLabel, 0)) + "premise " + (premiseNumber + 1) + " " + pp.render(premise));
+        trace(6, level, pp.render(pp.iTerms.getSubterm(ruleLabel, 0)) + "premise " + (premiseNumber + 1) + " " + pp.render(premise));
         if (pp.iTerms.hasSymbol(premise, "trMatch")) {// |> match expressions
           if (!pp.iTerms.matchZeroSV(pp.iTerms.substitute(bindings, pp.iTerms.getSubterm(premise, 0), 0), pp.iTerms.getSubterm(premise, 1), bindings)) {
-            trace(4, level, pp.render(pp.iTerms.getSubterm(ruleLabel, 0)) + "premise " + (premiseNumber + 1) + " failed: seek another rule");
+            trace(6, level, pp.render(pp.iTerms.getSubterm(ruleLabel, 0)) + "premise " + (premiseNumber + 1) + " failed: move to next rule");
             continue nextRule;
           }
         } else { // transition
@@ -103,14 +102,14 @@ public class RewriterESOS extends Rewriter {
             int rewriteRelation = pp.iTerms.getSubterm(premise, 1);
             int rewrittenTerm = rewriteAttempt(rewriteTerm, rewriteRelation, level + 1);
             if (rewrittenTerm < 0) {
-              trace(4, level, pp.render(pp.iTerms.getSubterm(ruleLabel, 0)) + "premise" + (premiseNumber + 1) + " failed: seek another rule");
+              trace(6, level, pp.render(pp.iTerms.getSubterm(ruleLabel, 0)) + "premise" + (premiseNumber + 1) + " failed: move to next rule");
               continue nextRule;
             }
             if (!pp.iTerms.matchZeroSV(rewrittenTerm, pp.iTerms.getSubterm(premise, 2), bindings)) continue nextRule;
           } else
             throw new ARTUncheckedException("Unknown premise kind " + pp.render(premise));
         }
-        trace(5, level,
+        trace(7, level,
             pp.render(pp.iTerms.getSubterm(ruleLabel, 0)) + "bindings after premise " + (premiseNumber + 1) + " " + bindingsToString(bindings, pp.variableMap));
       }
 
@@ -119,7 +118,7 @@ public class RewriterESOS extends Rewriter {
       pp.rewriteActive = pp.rewriteResume;
 
       if (pp.rewriteContractum) {
-        trace(5, level, pp.render(pp.iTerms.getSubterm(ruleLabel, 0)) + "rewrites contractum\n");
+        trace(4, level, pp.render(pp.iTerms.getSubterm(ruleLabel, 0)) + "rewrites contractum\n");
         term = rewriteTraverse(term, relationTerm, level + 1);
       }
       return term;

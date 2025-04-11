@@ -25,7 +25,7 @@ class SPPF2Dot {
 
   public SPPF2Dot(SPPF sppf) {
     this.sppf = sppf;
-    if (sppf.rootNode == null) {
+    if (sppf.root == null) {
       Util.warning("Missing SPPF root node - skipping SPPF visualisation");
       return;
     }
@@ -54,7 +54,7 @@ class SPPF2Dot {
   // dotOut.println("}");
   // dotOut.close();
   // } catch (FileNotFoundException e) {
-  // System.out.println("Unable to write SPPF visualisation to " + filename);
+  // Util.info("Unable to write SPPF visualisation to " + filename);
   // }
   // }
   //
@@ -98,12 +98,12 @@ class SPPF2Dot {
           sppfSubtreeToDot(n);
       else {
         sppf.visited.clear();
-        coreSPPFToDotRec(sppf.rootNode);
+        coreSPPFToDotRec(sppf.root);
       }
       dotOut.println("}");
       dotOut.close();
     } catch (FileNotFoundException e) {
-      System.out.println("Unable to write SPPF visualisation to " + filename);
+      Util.error("Unable to write SPPF visualisation to " + filename);
     }
   }
 
@@ -122,16 +122,16 @@ class SPPF2Dot {
   private void sppfSubtreeToDot(SPPFSymbolNode sppfn) {
     boolean isAmbiguous = sppfn.packNodes.size() > 1;
     if (sppfn.isSymbol())
-      dotOut.println(
-          "\"" + sppfn.number + "\"" + symbolNodeStyle + " [label=\"" + sppfn.number + " " + sppfn.gn.toString() + " " + sppfn.li + ", " + sppfn.ri + "\"]");
+      dotOut.println("\"" + sppfn.number + "\"" + symbolNodeStyle + " [label=\"" + sppfn.number + " " + sppfn.grammarNode.toString() + " " + sppfn.leftExtent
+          + ", " + sppfn.rightExtent + "\"]");
     else
-      dotOut.println("\"" + sppfn.number + "\"" + intermediateNodeStyle + " [label=\"" + sppfn.number + " " + sppfn.gn.toStringAsProduction() + " " + sppfn.li
-          + ", " + sppfn.ri + "\"]");
+      dotOut.println("\"" + sppfn.number + "\"" + intermediateNodeStyle + " [label=\"" + sppfn.number + " " + sppfn.grammarNode.toStringAsProduction() + " "
+          + sppfn.leftExtent + ", " + sppfn.rightExtent + "\"]");
 
     if (isAmbiguous) dotOut.println(ambiguousStyle);
     if (sppf.cyclic.get(sppfn.number)) dotOut.println(cycleStyle);
     if (!sppf.rootReachable.get(sppfn.number)) dotOut.println(unreachableSymbolNodeStyle);
-    if (sppfn == sppf.rootNode) dotOut.println(rootNodeStyle);
+    if (sppfn == sppf.root) dotOut.println(rootNodeStyle);
 
     for (SPPFPackedNode p : sppfn.packNodes) {
       boolean isCyclicP = sppf.cyclic.get(p.number);

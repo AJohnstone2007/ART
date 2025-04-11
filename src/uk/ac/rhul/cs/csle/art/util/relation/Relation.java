@@ -65,7 +65,7 @@ public class Relation<T1, T2> {
           Set<T2> nextEdges = get((T1) t2);
           if (nextEdges != null) for (T2 next : nextEdges) {
             changed |= add(t1, next);
-            // System.out.println("Transitive closure with base " + t1 + " intermediate " + t2 + " and target " + next + "\nAdding edge from " + t1 + " to " +
+            // Util.info("Transitive closure with base " + t1 + " intermediate " + t2 + " and target " + next + "\nAdding edge from " + t1 + " to " +
             // next
             // + (changed ? " CHANGE" : " SAME"));
           }

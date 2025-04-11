@@ -272,12 +272,12 @@ public class GraphicsWindow {
           } else {
             cameraRotator.rz.setAngle(cameraRotator.rz.getAngle() - mouseDeltaX * modifier);
             cameraRotator.rx.setAngle(cameraRotator.rx.getAngle() + mouseDeltaY * modifier);
-            // System.out.println("rx = " + cameraRotator.rx.getAngle() + " ry = " + cameraRotator.ry.getAngle() + " rz = " + cameraRotator.rz.getAngle());
+            // Util.info("rx = " + cameraRotator.rx.getAngle() + " ry = " + cameraRotator.ry.getAngle() + " rz = " + cameraRotator.rz.getAngle());
           }
         } else if (me.isSecondaryButtonDown()) {
           cameraPanner.t.setX(cameraPanner.t.getX() + mouseDeltaX * modifier); // -
           cameraPanner.t.setY(cameraPanner.t.getY() + mouseDeltaY * modifier); // -
-          // System.out.println("tx = " + cameraPanner.t.getX() + "ty = " + cameraPanner.t.getY());
+          // Util.info("tx = " + cameraPanner.t.getX() + "ty = " + cameraPanner.t.getY());
         }
       }
     });

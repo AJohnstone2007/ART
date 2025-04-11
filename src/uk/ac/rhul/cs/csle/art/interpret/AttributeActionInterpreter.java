@@ -10,13 +10,13 @@ public class AttributeActionInterpreter extends AbstractInterpreter {
   private int previousToken;
 
   public AttributeActionInterpreter() {
-    // System.out.println("Interpreter set to Attribute-Action");
+    // Util.info("Interpreter set to Attribute-Action");
     artActions = new ARTDefaultActions(); // Set default
     try { // try to connect to user actions
       artActions = (AbstractActions) getClass().getClassLoader().loadClass("ARTGeneratedActions").getDeclaredConstructor().newInstance();
     } catch (Exception e) {
       // Silently absorb exceptions - uncomment the line below for debugging
-      // System.out.println(e.getMessage() + "\nUnable to dynamically load user ARTActions - using default empty actions");
+      // Util.info(e.getMessage() + "\nUnable to dynamically load user ARTActions - using default empty actions");
     }
     Util.info("Attached to " + artActions.getClass().getSimpleName() + " " + artActions.name());
   }
@@ -47,7 +47,7 @@ public class AttributeActionInterpreter extends AbstractInterpreter {
 
     childNumber = -1;
     for (var node = altNode; node.element.kind != CFGKind.END; node = node.seq) {
-      // System.out.println("node number " + node.num + " childNumber = " + childNumber + " previous token = " + previousToken);
+      // Util.info("node number " + node.num + " childNumber = " + childNumber + " previous token = " + previousToken);
       switch (node.element.kind) {
       case N:
         if (!node.delayed) interpret(attributes.getAttributes(node.num));
@@ -57,7 +57,7 @@ public class AttributeActionInterpreter extends AbstractInterpreter {
         break;
       }
       childNumber++;
-      // System.out.println("Calling action " + node.toStringAsProduction());
+      // Util.info("Calling action " + node.toStringAsProduction());
       attributes.action(node.num);
     }
   }

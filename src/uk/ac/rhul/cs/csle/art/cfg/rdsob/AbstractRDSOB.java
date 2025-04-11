@@ -5,7 +5,7 @@ import java.io.FileNotFoundException;
 import java.util.Arrays;
 import java.util.Scanner;
 
-public class RDSOBAbstract {
+public class AbstractRDSOB {
   protected String input;
   protected int inputIndex;
   protected int oracleIndex;
@@ -13,7 +13,7 @@ public class RDSOBAbstract {
   protected int lexemeR;
   protected int oracle[];
 
-  protected RDSOBAbstract() {
+  protected AbstractRDSOB() {
     oracle = new int[1000];
     inputIndex = oracleIndex = 0;
   }

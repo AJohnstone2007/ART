@@ -1,238 +1,121 @@
 package uk.ac.rhul.cs.csle.art.cfg.gll;
 
-import java.util.BitSet;
 import java.util.Deque;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.Map;
-import java.util.Set;
 
 import uk.ac.rhul.cs.csle.art.cfg.AbstractParser;
-import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGKind;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
 import uk.ac.rhul.cs.csle.art.cfg.lexer.AbstractLexer;
-import uk.ac.rhul.cs.csle.art.script.ScriptTermInterpreter;
 import uk.ac.rhul.cs.csle.art.util.Util;
 import uk.ac.rhul.cs.csle.art.util.derivations.SPPF;
-import uk.ac.rhul.cs.csle.art.util.derivations.SPPFPackedNode;
 import uk.ac.rhul.cs.csle.art.util.derivations.SPPFSymbolNode;
-import uk.ac.rhul.cs.csle.art.util.process.Descriptor;
+import uk.ac.rhul.cs.csle.art.util.stacks.GSS;
 import uk.ac.rhul.cs.csle.art.util.stacks.GSSEdge;
 import uk.ac.rhul.cs.csle.art.util.stacks.GSSNode;
+import uk.ac.rhul.cs.csle.art.util.tasks.DescriptorGLL;
 
 public class GLLBaseLine extends AbstractParser {
-  private final BitSet visitedSPPFNodes = new BitSet(), suppressedSPPFNode = new BitSet();
-  SPPF sppf;
+  Deque<DescriptorGLL> descriptorQueue;
+  CFGNode grammarNode;
+  GSSNode stackNode;
+  SPPFSymbolNode derivationNode;
 
-  /* Parser ******************************************************************/
   @Override
   public void parse(AbstractLexer lexer) {
     this.lexer = lexer;
-    derivations = sppf = new SPPF(cfgRules);
-    descS = new HashSet<>();
-    descQ = new LinkedList<>();
-    gss = new HashMap<>();
-    gssRoot = new GSSNode(cfgRules.endOfStringNode, 0);
-    gss.put(gssRoot, gssRoot);
-    tokenIndex = 0;
-    sn = gssRoot;
-    dn = null;
+    derivations = sppf = new SPPF(this);
+    descriptors = new HashSet<>();
+    descriptorQueue = new LinkedList<>();
+    gss = new GSS(cfgRules);
     for (CFGNode p = cfgRules.elementToNodeMap.get(cfgRules.startNonterminal).alt; p != null; p = p.alt)
-      queueDesc(p.seq, tokenIndex, sn, dn);
+      queueDesc(p.seq, 0, gss.root, null);
     inLanguage = false;
 
     nextDescriptor: while (dequeueDesc())
       while (true) {
-        switch (gn.element.kind) {
+        switch (grammarNode.element.kind) {
+        case ALT:
+          for (CFGNode tmp = grammarNode; tmp != null; tmp = tmp.alt)
+            queueDesc(tmp.seq, tokenIndex, stackNode, derivationNode);
+          continue nextDescriptor;
         case B, T, TI, C:
-          if (lexer.tokens[tokenIndex] == gn.element.number) {
-            // System.out.println("Matched " + lexer.tokens[i]);
-            du(1);
+          if (lexer.tokens[tokenIndex] == grammarNode.element.number) {
+            Util.trace(8, 0, "Matched " + grammarNode.element);
+            derivationUpdate();
             tokenIndex++;
-            gn = gn.seq;
+            grammarNode = grammarNode.seq;
             break;
           } else
             continue nextDescriptor;
-        case N:
-          call(gn);
-          continue nextDescriptor;
         case EPS:
-          du(0);
-          gn = gn.seq;
+          derivationUpdateEpsilon();
+          grammarNode = grammarNode.seq;
           break;
+        case N:
+          call(grammarNode);
+          continue nextDescriptor;
         case END:
           ret();
           continue nextDescriptor;
-        case DO:
-          gn = gn.alt;
-          break;
-        case ALT:
-          for (CFGNode tmp = gn; tmp != null; tmp = tmp.alt)
-            queueDesc(tmp.seq, tokenIndex, sn, dn);
-          continue nextDescriptor;
-        case EOS:
-          break;
-        case KLN:
-          break;
-        case OPT:
-          break;
-        case POS:
-          break;
         default:
           break;
         }
       }
-    if (!inLanguage) {
-      System.out.println(Util.echo("GLLBL " + "syntax error", lexer.leftIndices[sppfWidestIndex()], lexer.inputString));
-      // System.out.println("Widest index: " + sppfWidestIndex());
-    } else
-      Util.trace(3, 0, "Accept\n");
-
-    loadCounts();
-    sppf.numberNodes();
+    if (inLanguage)
+      Util.trace(1, "Parser accept");
+    else
+      Util.error(Util.echo("GLLBL " + "syntax error", lexer.leftIndices[sppf.widestIndex()], lexer.inputString));
   }
 
   /* Thread handling *********************************************************/
-  Set<Descriptor> descS;
-  Deque<Descriptor> descQ;
-  CFGNode gn;
-  GSSNode sn;
-  SPPFSymbolNode dn;
-
   void queueDesc(CFGNode gn, int i, GSSNode gssN, SPPFSymbolNode sppfN) {
-    Descriptor tmp = new Descriptor(gn, i, gssN, sppfN);
-    if (descS.add(tmp)) descQ.addFirst(tmp);
+    DescriptorGLL tmp = new DescriptorGLL(gn, i, gssN, sppfN);
+    if (descriptors.add(tmp)) descriptorQueue.addFirst(tmp);
   }
 
   boolean dequeueDesc() {
-    Descriptor tmp = descQ.poll();
+    DescriptorGLL tmp = descriptorQueue.poll();
     if (tmp == null) return false;
-    gn = tmp.grammarNode;
-    tokenIndex = tmp.inputIndex;
-    sn = tmp.stackNode;
-    dn = tmp.derivationNode;
+    grammarNode = tmp.grammarNode;
+    tokenIndex = tmp.tokenIndex;
+    stackNode = tmp.stackNode;
+    derivationNode = tmp.derivationNode;
     return true;
   }
 
   /* Stack handling **********************************************************/
-  Map<GSSNode, GSSNode> gss;
-  GSSNode gssRoot;
-
-  GSSNode gssFind(CFGNode gn, int i) {
-    GSSNode gssN = new GSSNode(gn, i);
-    if (gss.get(gssN) == null) gss.put(gssN, gssN);
-    return gss.get(gssN);
-  }
-
   void call(CFGNode gn) {
-    GSSNode gssN = gssFind(gn.seq, tokenIndex);
-    GSSEdge gssE = new GSSEdge(sn, dn);
-    if (!gssN.edges.contains(gssE)) {
-      gssN.edges.add(gssE);
-      for (SPPFSymbolNode rc : gssN.pops)
-        queueDesc(gn.seq, rc.ri, sn, sppfUpdate(gn.seq, dn, rc));
+    GSSNode gssNode = gss.find(gn.seq, tokenIndex);
+    GSSEdge gssEdge = new GSSEdge(stackNode, derivationNode);
+    if (!gssNode.edges.contains(gssEdge)) {
+      gssNode.edges.add(gssEdge);
+      for (SPPFSymbolNode rc : gssNode.pops)
+        queueDesc(gn.seq, rc.rightExtent, stackNode, sppf.update(gn.seq, derivationNode, rc));
     }
     for (CFGNode p = cfgRules.elementToNodeMap.get(gn.element).alt; p != null; p = p.alt)
-      queueDesc(p.seq, tokenIndex, gssN, null);
+      queueDesc(p.seq, tokenIndex, gssNode, null);
   }
 
   void ret() {
-    if (sn.equals(gssRoot)) { // Deque base
-      if (cfgRules.acceptingNodeNumbers.contains(gn.num) && (tokenIndex == lexer.tokens.length - 1)) {
-        sppfRootNode = sppf.nodes.get(new SPPFSymbolNode(cfgRules.elementToNodeMap.get(cfgRules.startNonterminal), 0, lexer.tokens.length - 1));
+    if (stackNode.equals(gss.root)) { // Deque base
+      if (cfgRules.acceptingNodeNumbers.contains(grammarNode.num) && (tokenIndex == lexer.tokens.length - 1)) {
+        sppf.root = sppf.nodes.get(new SPPFSymbolNode(cfgRules.elementToNodeMap.get(cfgRules.startNonterminal), 0, lexer.tokens.length - 1));
         inLanguage = true;
       }
       return; // End of parse
     }
-    sn.pops.add(dn);
-    for (GSSEdge e : sn.edges)
-      queueDesc(sn.grammarNode, tokenIndex, e.dst, sppfUpdate(sn.grammarNode, e.sppfnode, dn));
+    stackNode.pops.add(derivationNode);
+    for (GSSEdge e : stackNode.edges)
+      queueDesc(stackNode.grammarNode, tokenIndex, e.dst, sppf.update(stackNode.grammarNode, e.sppfnode, derivationNode));
   }
 
   /* Derivation handling *****************************************************/
-  SPPFSymbolNode sppfRootNode;
-
-  SPPFSymbolNode sppfFind(CFGNode dn, int li, int ri) {
-    // System.out.print("sppfFind with dn " + dn.toStringAsProduction() + " with extents " + li + "," + ri);
-
-    SPPFSymbolNode tmp = new SPPFSymbolNode(dn, li, ri);
-    if (!sppf.nodes.containsKey(tmp)) {
-      sppf.nodes.put(tmp, tmp);
-      // System.out.print(" added " + tmp);
-    }
-    // System.out.println(" resulting sppf\n" + sppf.nodes,keySet());
-    return sppf.nodes.get(tmp);
+  void derivationUpdate() {
+    derivationNode = sppf.update(grammarNode.seq, derivationNode, sppf.find(cfgRules.elementToNodeMap.get(grammarNode.element), tokenIndex, tokenIndex + 1));
   }
 
-  SPPFSymbolNode sppfUpdate(CFGNode gn, SPPFSymbolNode ln, SPPFSymbolNode rn) {
-    SPPFSymbolNode ret = sppfFind(gn.element.kind == CFGKind.END ? gn.seq : gn, ln == null ? rn.li : ln.li, rn.ri);
-    // System.out.println(
-    // "Updating SPPF node with gn " + gn.toStringAsProduction() + " and extents " + (ln == null ? rn.li : ln.li) + "," + rn.ri + " retrieves node " + ret);
-    ret.packNodes.add(new SPPFPackedNode(gn, ln == null ? rn.li : ln.ri, ln, rn));
-    return ret;
+  void derivationUpdateEpsilon() {
+    derivationNode = sppf.update(grammarNode.seq, derivationNode, sppf.find(cfgRules.elementToNodeMap.get(grammarNode.element), tokenIndex, tokenIndex));
   }
-
-  void du(int width) {
-    // dn = sppfUpdate(gn.seq, dn, sppfFind(gn, i, i + width)); // SLE paper version
-    var gnp = cfgRules.elementToNodeMap.get(gn.element);
-    dn = sppfUpdate(gn.seq, dn, sppfFind(gnp, tokenIndex, tokenIndex + width)); // singleton element version to reduce SPPF size and correct for grammars with
-                                                                                // cycles
-  }
-
-  private int sppfWidestIndex() {
-    int ret = 0;
-    for (SPPFSymbolNode s : sppf.nodes.keySet())
-      if (ret < s.ri) ret = s.ri;
-    return ret;
-  }
-
-  private void loadCounts() {
-    ScriptTermInterpreter.currentStatistics.put("tweNodeCount", (long) lexer.tokens.length);
-    ScriptTermInterpreter.currentStatistics.put("tweEdgeCount", lexer.tokens.length - 1);
-    ScriptTermInterpreter.currentStatistics.put("tweLexCount", 1);
-
-    int gssEdgeCount = 0, popCount = 0;
-    for (GSSNode g : gss.keySet()) {
-      gssEdgeCount += g.edges.size();
-      popCount += g.pops.size();
-    }
-    ScriptTermInterpreter.currentStatistics.put("descriptorCount", descS.size());
-    ScriptTermInterpreter.currentStatistics.put("gssNodeCount", gss.keySet().size());
-    ScriptTermInterpreter.currentStatistics.put("gssEdgeCount", gssEdgeCount);
-    ScriptTermInterpreter.currentStatistics.put("popCount", popCount);
-
-    int sppfEpsilonNodeCount = 0, sppfTerminalNodeCount = 0, sppfNonterminalNodeCount = 0, sppfIntermediateNodeCount = 0, sppfPackNodeCount = 0,
-        sppfAmbiguityCount = 0, sppfEdgeCount = 0;
-    for (SPPFSymbolNode s : sppf.nodes.keySet()) {
-      switch (s.gn.element.kind) {
-      // Dodgy - how do we test the flavour of an SPPF node?
-      case T, TI, C, B:
-        sppfTerminalNodeCount++;
-        break;
-      case EPS:
-        sppfEpsilonNodeCount++;
-        break;
-      }
-      sppfPackNodeCount += s.packNodes.size();
-      if (s.packNodes.size() > 1) sppfAmbiguityCount++;
-      for (SPPFPackedNode p : s.packNodes) {
-        sppfEdgeCount++; // inedge
-        if (p.leftChild != null) sppfEdgeCount++;
-        if (p.rightChild != null) sppfEdgeCount++;
-      }
-    }
-
-    ScriptTermInterpreter.currentStatistics.put("sppfEpsilonNodeCount", sppfEpsilonNodeCount);
-    ScriptTermInterpreter.currentStatistics.put("sppfTerminalNodeCount", sppfTerminalNodeCount);
-    ScriptTermInterpreter.currentStatistics.put("sppfNonterminalNodeCount", sppfNonterminalNodeCount);
-    ScriptTermInterpreter.currentStatistics.put("sppfIntermediateNodeCount", sppfIntermediateNodeCount);
-    ScriptTermInterpreter.currentStatistics.put("sppfSymbolPlusIntermediateNodeCount", sppf.nodes.keySet().size());
-    ScriptTermInterpreter.currentStatistics.put("sppfPackNodeCount",sppfPackNodeCount);
-    ScriptTermInterpreter.currentStatistics.put("sppfAmbiguityCount",sppfAmbiguityCount);
-    ScriptTermInterpreter.currentStatistics.put("sppfEdgeCount",sppfEdgeCount);
-    // loadPoolAllocated(-1);
-    // loadHashCounts(-20, -21, -22, -23, -24, -25, -26);
-  }
-
 }
