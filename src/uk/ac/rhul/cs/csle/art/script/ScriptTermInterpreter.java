@@ -33,9 +33,6 @@ import uk.ac.rhul.cs.csle.art.term.TermTraverser;
 import uk.ac.rhul.cs.csle.art.term.TermTraverserText;
 import uk.ac.rhul.cs.csle.art.util.Util;
 import uk.ac.rhul.cs.csle.art.util.Version;
-import uk.ac.rhul.cs.csle.art.util.derivations.SPPFPackedNode;
-import uk.ac.rhul.cs.csle.art.util.derivations.SPPFSymbolNode;
-import uk.ac.rhul.cs.csle.art.util.stacks.GSSNode;
 import uk.ac.rhul.cs.csle.art.util.statistics.Statistics;
 
 public class ScriptTermInterpreter {
@@ -153,7 +150,7 @@ public class ScriptTermInterpreter {
     if (scriptLexer.tokens == null) Util.fatal("Script lexical error");
     scriptParser.parse(scriptLexer);
     if (!scriptParser.inLanguage) Util.fatal("Script syntax error");
-    scriptParser.sppf.numberNodes();
+    scriptParser.derivations.numberNodes();
     if (scriptParser.derivations.ambiguityCheck()) Util.fatal("Script ambiguity");
     scriptDerivationTerm = scriptParser.derivations.derivationAsTerm();
     // Util.info("Script term:\n" + iTerms.toString(scriptDerivationTerm, true, -1, null));
@@ -596,7 +593,7 @@ public class ScriptTermInterpreter {
     currentLexer.leftIndices = currentLexer.leftIndices;
     currentLexer.rightIndices = currentLexer.rightIndices;
     if (currentLexer.tokens != null) currentParser.parse(currentLexer);
-    currentParser.sppf.numberNodes();
+    currentParser.derivations.numberNodes();
     currentStatistics.putTime("ParseTime");
     if (currentParser.inLanguage) {
       if (!disableChoosers) currentParser.derivations.chooseLongestMatch();
@@ -909,50 +906,7 @@ public class ScriptTermInterpreter {
   }
 
   private void loadCounts() {
-    ScriptTermInterpreter.currentStatistics.put("tweNodeCount", (long) currentParser.lexer.tokens.length);
-    ScriptTermInterpreter.currentStatistics.put("tweEdgeCount", currentParser.lexer.tokens.length - 1);
-    ScriptTermInterpreter.currentStatistics.put("tweLexCount", 1);
-
-    int gssEdgeCount = 0, popCount = 0;
-    for (GSSNode g : currentParser.gss.nodes.keySet()) {
-      gssEdgeCount += g.edges.size();
-      popCount += g.pops.size();
-    }
-    ScriptTermInterpreter.currentStatistics.put("descriptorCount", currentParser.descriptors.size());
-    ScriptTermInterpreter.currentStatistics.put("gssNodeCount", currentParser.gss.nodes.keySet().size());
-    ScriptTermInterpreter.currentStatistics.put("gssEdgeCount", gssEdgeCount);
-    ScriptTermInterpreter.currentStatistics.put("popCount", popCount);
-
-    int sppfEpsilonNodeCount = 0, sppfTerminalNodeCount = 0, sppfNonterminalNodeCount = 0, sppfIntermediateNodeCount = 0, sppfPackNodeCount = 0,
-        sppfAmbiguityCount = 0, sppfEdgeCount = 0;
-    for (SPPFSymbolNode s : currentParser.sppf.nodes.keySet()) {
-      switch (s.grammarNode.element.kind) {
-      // Dodgy - how do we test the flavour of an SPPF node?
-      case T, TI, C, B:
-        sppfTerminalNodeCount++;
-        break;
-      case EPS:
-        sppfEpsilonNodeCount++;
-        break;
-      }
-      sppfPackNodeCount += s.packNodes.size();
-      if (s.packNodes.size() > 1) sppfAmbiguityCount++;
-      for (SPPFPackedNode p : s.packNodes) {
-        sppfEdgeCount++; // inedge
-        if (p.leftChild != null) sppfEdgeCount++;
-        if (p.rightChild != null) sppfEdgeCount++;
-      }
-    }
-
-    ScriptTermInterpreter.currentStatistics.put("sppfEpsilonNodeCount", sppfEpsilonNodeCount);
-    ScriptTermInterpreter.currentStatistics.put("sppfTerminalNodeCount", sppfTerminalNodeCount);
-    ScriptTermInterpreter.currentStatistics.put("sppfNonterminalNodeCount", sppfNonterminalNodeCount);
-    ScriptTermInterpreter.currentStatistics.put("sppfIntermediateNodeCount", sppfIntermediateNodeCount);
-    ScriptTermInterpreter.currentStatistics.put("sppfSymbolPlusIntermediateNodeCount", currentParser.sppf.nodes.keySet().size());
-    ScriptTermInterpreter.currentStatistics.put("sppfPackNodeCount", sppfPackNodeCount);
-    ScriptTermInterpreter.currentStatistics.put("sppfAmbiguityCount", sppfAmbiguityCount);
-    ScriptTermInterpreter.currentStatistics.put("sppfEdgeCount", sppfEdgeCount);
-    // loadPoolAllocated(-1);
-    // loadHashCounts(-20, -21, -22, -23, -24, -25, -26);
+    currentLexer.statistics(currentStatistics);
+    currentParser.statistics(currentStatistics);
   }
 }

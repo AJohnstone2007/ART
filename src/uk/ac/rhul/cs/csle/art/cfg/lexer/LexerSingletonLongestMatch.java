@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Set;
 
 import uk.ac.rhul.cs.csle.art.util.Util;
+import uk.ac.rhul.cs.csle.art.util.statistics.Statistics;
 
 public class LexerSingletonLongestMatch extends AbstractLexer {
   public void lex(String inputString, LexemeKind[] kinds, String[] strings, LexemeKind[] whitespaces) {
@@ -843,6 +844,15 @@ public class LexerSingletonLongestMatch extends AbstractLexer {
 
     while (peekCh() != '\n' && peekCh() != '\0') // Quietly accept an input file with no \n at the end.
       getCh();
+  }
+
+  @Override
+  public void statistics(Statistics statistics) {
+    {
+      statistics.put("tweNodeCount", (long) tokens.length);
+      statistics.put("tweEdgeCount", tokens.length - 1);
+      statistics.put("tweLexCount", 1);
+    }
   }
 
 }

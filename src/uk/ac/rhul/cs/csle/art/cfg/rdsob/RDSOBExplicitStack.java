@@ -5,6 +5,7 @@ import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGKind;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
 import uk.ac.rhul.cs.csle.art.cfg.lexer.AbstractLexer;
 import uk.ac.rhul.cs.csle.art.util.Util;
+import uk.ac.rhul.cs.csle.art.util.statistics.Statistics;
 
 public class RDSOBExplicitStack extends AbstractParser {
   class SNode {
@@ -105,6 +106,12 @@ public class RDSOBExplicitStack extends AbstractParser {
     public String toString() {
       return gn.toString();
     }
+  }
+
+  @Override
+  public void statistics(Statistics currentstatistics) {
+    // TODO Auto-generated method stub
+
   }
 
 }

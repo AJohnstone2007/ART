@@ -1,6 +1,7 @@
 package uk.ac.rhul.cs.csle.art.util.derivations;
 
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
+import uk.ac.rhul.cs.csle.art.util.Util;
 
 public class SPPFPackedNode extends AbstractSPPFNode {
   // Note Nov 2024 added parent to support SPPF cycle detection - not needed in all variants
@@ -54,5 +55,17 @@ public class SPPFPackedNode extends AbstractSPPFNode {
     sb.append(" under ");
     sb.append(parent);
     return sb.toString();
+  }
+
+  @Override
+  public int getLeftExtent() {
+    Util.fatal("Internal error: attempt to access left Extent in SPPFPackedNode");
+    return -1;
+  }
+
+  @Override
+  public int getRightExtent() {
+    Util.fatal("Internal error: attempt to access right Extent in SPPFPackedNode");
+    return -1;
   }
 }

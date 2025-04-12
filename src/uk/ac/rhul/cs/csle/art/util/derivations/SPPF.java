@@ -36,23 +36,26 @@ public class SPPF extends AbstractDerivations {
     this.parser = parser;
   }
 
-  public SPPFSymbolNode find(CFGNode dn, int li, int ri) {
+  @Override
+  public AbstractDerivationNode find(CFGNode dn, int li, int ri) {
     // System.out.print("sppfFind with dn " + dn.toStringAsProduction() + " with extents " + li + "," + ri);
 
-    SPPFSymbolNode tmp = new SPPFSymbolNode(dn, li, ri);
+    AbstractDerivationNode tmp = new SPPFSymbolNode(dn, li, ri);
     if (!nodes.containsKey(tmp)) {
-      nodes.put(tmp, tmp);
+      nodes.put((SPPFSymbolNode) tmp, (SPPFSymbolNode) tmp);
       // System.out.print(" added " + tmp);
     }
     // Util.info(" resulting sppf\n" + nodes.keySet());
     return nodes.get(tmp);
   }
 
-  public SPPFSymbolNode update(CFGNode gn, SPPFSymbolNode ln, SPPFSymbolNode rn) {
-    SPPFSymbolNode ret = find(gn.element.kind == CFGKind.END ? gn.seq : gn, ln == null ? rn.leftExtent : ln.leftExtent, rn.rightExtent);
+  @Override
+  public AbstractDerivationNode update(CFGNode gn, AbstractDerivationNode ln, AbstractDerivationNode rn) {
+    SPPFSymbolNode ret = (SPPFSymbolNode) find(gn.element.kind == CFGKind.END ? gn.seq : gn, ln == null ? rn.getLeftExtent() : ln.getLeftExtent(),
+        rn.getRightExtent());
     // Util.info(
     // "Updating SPPF node with gn " + gn.toStringAsProduction() + " and extents " + (ln == null ? rn.li : ln.li) + "," + rn.ri + " retrieves node " + ret);
-    ret.packNodes.add(new SPPFPackedNode(gn, ln == null ? rn.leftExtent : ln.rightExtent, ln, rn));
+    ret.packNodes.add(new SPPFPackedNode(gn, ln == null ? rn.getLeftExtent() : ln.getRightExtent(), (SPPFSymbolNode) ln, (SPPFSymbolNode) rn));
     return ret;
   }
 
@@ -82,6 +85,7 @@ public class SPPF extends AbstractDerivations {
     reachable = new RelationOverNaturals(nextFreeNodeNumber, nextFreeNodeNumber);
   }
 
+  @Override
   public int widestIndex() {
     int ret = 0;
     for (SPPFSymbolNode s : nodes.keySet())
@@ -253,11 +257,9 @@ public class SPPF extends AbstractDerivations {
     }
   }
 
-  public int sppfWidestIndex() {
-    int ret = 0;
-    for (SPPFSymbolNode s : nodes.keySet())
-      if (ret < s.rightExtent) ret = s.rightExtent;
-    return ret;
+  @Override
+  public void setRoot(CFGNode cfgNode, int n) {
+    root = nodes.get(new SPPFSymbolNode(cfgNode, 0, n));
   }
 
 }

@@ -1,16 +1,16 @@
 package uk.ac.rhul.cs.csle.art.util.tasks;
 
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
-import uk.ac.rhul.cs.csle.art.util.derivations.SPPFSymbolNode;
+import uk.ac.rhul.cs.csle.art.util.derivations.AbstractDerivationNode;
 import uk.ac.rhul.cs.csle.art.util.stacks.GSSNode;
 
 public class DescriptorGLL {
   public CFGNode grammarNode;
   public int tokenIndex;
   public GSSNode stackNode;
-  public SPPFSymbolNode derivationNode;
+  public AbstractDerivationNode derivationNode;
 
-  public DescriptorGLL(CFGNode grammarNode, int inputIndex, GSSNode stackNode, SPPFSymbolNode derivationNode) {
+  public DescriptorGLL(CFGNode grammarNode, int inputIndex, GSSNode stackNode, AbstractDerivationNode derivationNode) {
     super();
     this.grammarNode = grammarNode;
     this.tokenIndex = inputIndex;

@@ -6,6 +6,7 @@ import java.util.Set;
 
 import uk.ac.rhul.cs.csle.art.cfg.AbstractParser;
 import uk.ac.rhul.cs.csle.art.term.ITerms;
+import uk.ac.rhul.cs.csle.art.util.statistics.Statistics;
 
 public class ChartBase extends AbstractParser {
   private final ITerms iTerms;
@@ -61,5 +62,11 @@ public class ChartBase extends AbstractParser {
     }
     sb.append("}");
     return "{" + String.format("%4s", sb.toString());
+  }
+
+  @Override
+  public void statistics(Statistics currentstatistics) {
+    // TODO Auto-generated method stub
+
   }
 }

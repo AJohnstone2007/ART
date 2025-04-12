@@ -1,13 +1,13 @@
 package uk.ac.rhul.cs.csle.art.util.stacks;
 
-import uk.ac.rhul.cs.csle.art.util.derivations.SPPFSymbolNode;
+import uk.ac.rhul.cs.csle.art.util.derivations.AbstractDerivationNode;
 
 public class GSSEdge {
   public final GSSNode dst;
-  public final SPPFSymbolNode sppfnode;
+  public final AbstractDerivationNode derivationNode;
 
-  public GSSEdge(GSSNode dst, SPPFSymbolNode sppfNode) {
-    this.sppfnode = sppfNode;
+  public GSSEdge(GSSNode dst, AbstractDerivationNode derivationNode) {
+    this.derivationNode = derivationNode;
     this.dst = dst;
   }
 
@@ -16,7 +16,7 @@ public class GSSEdge {
     final int prime = 31;
     int result = 1;
     result = prime * result + ((dst == null) ? 0 : dst.hashCode());
-    result = prime * result + ((sppfnode == null) ? 0 : sppfnode.hashCode());
+    result = prime * result + ((derivationNode == null) ? 0 : derivationNode.hashCode());
     return result;
   }
 
@@ -29,9 +29,9 @@ public class GSSEdge {
     if (dst == null) {
       if (other.dst != null) return false;
     } else if (!dst.equals(other.dst)) return false;
-    if (sppfnode == null) {
-      if (other.sppfnode != null) return false;
-    } else if (!sppfnode.equals(other.sppfnode)) return false;
+    if (derivationNode == null) {
+      if (other.derivationNode != null) return false;
+    } else if (!derivationNode.equals(other.derivationNode)) return false;
     return true;
   }
 }

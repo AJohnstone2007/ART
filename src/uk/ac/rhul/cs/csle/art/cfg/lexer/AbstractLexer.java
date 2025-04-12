@@ -3,8 +3,9 @@ package uk.ac.rhul.cs.csle.art.cfg.lexer;
 import java.util.ArrayList;
 
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
+import uk.ac.rhul.cs.csle.art.util.statistics.Statistics;
 
-public class AbstractLexer {
+public abstract class AbstractLexer {
   public String inputString = ""; // Original input string
   public String inputStringName = "";
   public int[] tokens; // Input as array of tokens
@@ -23,6 +24,8 @@ public class AbstractLexer {
 
   protected char[] inputAsCharArray;
   protected int lexerInputIndex, inputLength, leftIndex, longestMatchToken, longestMatchRightIndex, firstBuiltin;
+
+  public abstract void statistics(Statistics statistics);
 
   public String lexeme(int l) {
     return inputString.substring(leftIndices[l], rightIndices[l]);

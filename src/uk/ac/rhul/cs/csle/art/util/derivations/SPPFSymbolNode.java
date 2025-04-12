@@ -67,4 +67,14 @@ public class SPPFSymbolNode extends AbstractSPPFNode {
 
     return sb.toString();
   }
+
+  @Override
+  public int getLeftExtent() {
+    return leftExtent;
+  }
+
+  @Override
+  public int getRightExtent() {
+    return rightExtent;
+  }
 }

@@ -4,13 +4,13 @@ import java.util.HashSet;
 import java.util.Set;
 
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
-import uk.ac.rhul.cs.csle.art.util.derivations.SPPFSymbolNode;
+import uk.ac.rhul.cs.csle.art.util.derivations.AbstractDerivationNode;
 
 public class GSSNode {
   public final CFGNode grammarNode;
   final int inputIndex;
   public final Set<GSSEdge> edges = new HashSet<>();
-  public final Set<SPPFSymbolNode> pops = new HashSet<>();
+  public final Set<AbstractDerivationNode> pops = new HashSet<>();
 
   public GSSNode(CFGNode grammarNode, int inputIndex) {
     super();
