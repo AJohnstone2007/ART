@@ -621,7 +621,9 @@ public class ScriptTermInterpreter {
     // For __map, the preorder action tests the arity of the term, and appends {= instead of {
     ret.addAction("__map", (Integer t) -> ret.sb.append(iTerms.termArity(t) == 0 ? "{=" : "{"), null, (Integer t) -> ret.sb.append("}"));
     ret.addAction("__m", null, "=", null); // note that intext traverses, inorder always adds , after the second argument
-    ret.addEmptyAction("rules");
+
+    // 0. Line break after each rule
+    ret.addAction("rules", null, "\n", null);
 
     // 1. Context Free Grammar pretty print controls
     ret.addEmptyAction("cfgSlot");
@@ -631,7 +633,7 @@ public class ScriptTermInterpreter {
       ret.append(" ::=");
     }, null, null);
 
-    ret.addAction("cfgRule", null, null, "\n");
+    ret.addEmptyAction("cfgRule");
     ret.addAction("cfgAlts", null, "|", null);
     ret.addAction("cfgSeq", null, " ", null);
     ret.addAction("cfgName", null, ":", null);
@@ -664,7 +666,7 @@ public class ScriptTermInterpreter {
 
     // 2. Chooser pretty print controls
     ret.addEmptyAction("chooseElement");
-    ret.addAction("chooseRule", null, null, "\n");
+    ret.addEmptyAction("chooseRule");
     ret.addAction("chooseHigher", " > ", null, null);
     ret.addAction("chooseLower", " < ", null, null);
     ret.addAction("chooseLonger", " >> ", null, null);
@@ -675,7 +677,7 @@ public class ScriptTermInterpreter {
     ret.addActionBreak("choosePredefinedSet", (Integer t) -> ret.append(ret.childSymbolString(t, 0)), null, null);
 
     // 3. Term rewrite pretty print controls
-    ret.addAction("trRule", null, null, "\n");
+    ret.addEmptyAction("trRule");
     ret.addAction("tr", null, " --- ", null);
     ret.addAction("trPremises", null, "  ", null);
     ret.addActionBreak("trLabel", (Integer t) -> ret.append(iTerms.termArity(t) > 0 ? ("-" + ret.childSymbolString(t, 0) + " ") : " "), null, null);
