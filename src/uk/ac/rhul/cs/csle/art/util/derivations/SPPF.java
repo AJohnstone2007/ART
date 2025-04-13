@@ -13,8 +13,10 @@ import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGKind;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.GIFTKind;
 import uk.ac.rhul.cs.csle.art.cfg.lexer.LexemeKind;
+import uk.ac.rhul.cs.csle.art.script.ScriptTermInterpreter;
 import uk.ac.rhul.cs.csle.art.util.Util;
 import uk.ac.rhul.cs.csle.art.util.relation.RelationOverNaturals;
+import uk.ac.rhul.cs.csle.art.util.statistics.Statistics;
 
 public class SPPF extends AbstractDerivations {
   public final AbstractParser parser;
@@ -38,24 +40,25 @@ public class SPPF extends AbstractDerivations {
 
   @Override
   public AbstractDerivationNode find(CFGNode dn, int li, int ri) {
-    // System.out.print("sppfFind with dn " + dn.toStringAsProduction() + " with extents " + li + "," + ri);
+    // Util.debug("sppfFind with dn " + dn.toStringAsProduction() + " with extents " + li + "," + ri);
 
     AbstractDerivationNode tmp = new SPPFSymbolNode(dn, li, ri);
     if (!nodes.containsKey(tmp)) {
       nodes.put((SPPFSymbolNode) tmp, (SPPFSymbolNode) tmp);
-      // System.out.print(" added " + tmp);
+      // Util.debug(" added " + tmp);
     }
-    // Util.info(" resulting sppf\n" + nodes.keySet());
+    // Util.debug(" resulting sppf\n" + nodes.keySet());
     return nodes.get(tmp);
   }
 
   @Override
-  public AbstractDerivationNode update(CFGNode gn, AbstractDerivationNode ln, AbstractDerivationNode rn) {
-    SPPFSymbolNode ret = (SPPFSymbolNode) find(gn.element.kind == CFGKind.END ? gn.seq : gn, ln == null ? rn.getLeftExtent() : ln.getLeftExtent(),
-        rn.getRightExtent());
-    // Util.info(
-    // "Updating SPPF node with gn " + gn.toStringAsProduction() + " and extents " + (ln == null ? rn.li : ln.li) + "," + rn.ri + " retrieves node " + ret);
-    ret.packNodes.add(new SPPFPackedNode(gn, ln == null ? rn.getLeftExtent() : ln.getRightExtent(), (SPPFSymbolNode) ln, (SPPFSymbolNode) rn));
+  public AbstractDerivationNode extend(CFGNode gn, AbstractDerivationNode leftNode, AbstractDerivationNode rightNode) {
+    SPPFSymbolNode ret = (SPPFSymbolNode) find(gn.element.kind == CFGKind.END ? gn.seq : gn,
+        leftNode == null ? rightNode.getLeftExtent() : leftNode.getLeftExtent(), rightNode.getRightExtent());
+    // Util.debug(
+    // "Extending SPPF node with gn " + gn.toStringAsProduction() + " and extents " + (ln == null ? rn.li : ln.li) + "," + rn.ri + " retrieves node " + ret);
+    ret.packNodes.add(new SPPFPackedNode(gn, leftNode == null ? rightNode.getLeftExtent() : leftNode.getRightExtent(), (SPPFSymbolNode) leftNode,
+        (SPPFSymbolNode) rightNode));
     return ret;
   }
 
@@ -72,6 +75,7 @@ public class SPPF extends AbstractDerivations {
     }
   }
 
+  @Override
   public void numberNodes() {
     int nextFreeNodeNumber = 1;
     for (var n : nodes.keySet())
@@ -262,4 +266,38 @@ public class SPPF extends AbstractDerivations {
     root = nodes.get(new SPPFSymbolNode(cfgNode, 0, n));
   }
 
+  @Override
+  public void statistics(Statistics currentStatistics) {
+    int sppfEpsilonNodeCount = 0, sppfTerminalNodeCount = 0, sppfNonterminalNodeCount = 0, sppfIntermediateNodeCount = 0, sppfPackNodeCount = 0,
+        sppfAmbiguityCount = 0, sppfEdgeCount = 0;
+    for (SPPFSymbolNode s : nodes.keySet()) {
+      switch (s.grammarNode.element.kind) {
+      // Dodgy - how do we test the flavour of an SPPF node?
+      case T, TI, C, B:
+        sppfTerminalNodeCount++;
+        break;
+      case EPS:
+        sppfEpsilonNodeCount++;
+        break;
+      }
+      sppfPackNodeCount += s.packNodes.size();
+      if (s.packNodes.size() > 1) sppfAmbiguityCount++;
+      for (SPPFPackedNode p : s.packNodes) {
+        sppfEdgeCount++; // inedge
+        if (p.leftChild != null) sppfEdgeCount++;
+        if (p.rightChild != null) sppfEdgeCount++;
+      }
+    }
+
+    ScriptTermInterpreter.currentStatistics.put("sppfEpsilonNodeCount", sppfEpsilonNodeCount);
+    ScriptTermInterpreter.currentStatistics.put("sppfTerminalNodeCount", sppfTerminalNodeCount);
+    ScriptTermInterpreter.currentStatistics.put("sppfNonterminalNodeCount", sppfNonterminalNodeCount);
+    ScriptTermInterpreter.currentStatistics.put("sppfIntermediateNodeCount", sppfIntermediateNodeCount);
+    ScriptTermInterpreter.currentStatistics.put("sppfSymbolPlusIntermediateNodeCount", nodes.keySet().size());
+    ScriptTermInterpreter.currentStatistics.put("sppfPackNodeCount", sppfPackNodeCount);
+    ScriptTermInterpreter.currentStatistics.put("sppfAmbiguityCount", sppfAmbiguityCount);
+    ScriptTermInterpreter.currentStatistics.put("sppfEdgeCount", sppfEdgeCount);
+    // loadPoolAllocated(-1);
+    // loadHashCounts(-20, -21, -22, -23, -24, -25, -26);
+  }
 }

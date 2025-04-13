@@ -3,12 +3,12 @@ package uk.ac.rhul.cs.csle.art.util.stacks;
 import uk.ac.rhul.cs.csle.art.util.derivations.AbstractDerivationNode;
 
 public class GSSEdge {
-  public final GSSNode dst;
+  public final AbstractStackNode dst;
   public final AbstractDerivationNode derivationNode;
 
-  public GSSEdge(GSSNode dst, AbstractDerivationNode derivationNode) {
+  public GSSEdge(AbstractStackNode stackNode, AbstractDerivationNode derivationNode) {
     this.derivationNode = derivationNode;
-    this.dst = dst;
+    this.dst = stackNode;
   }
 
   @Override

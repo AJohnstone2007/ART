@@ -6,11 +6,26 @@ import java.util.Set;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
 import uk.ac.rhul.cs.csle.art.util.derivations.AbstractDerivationNode;
 
-public class GSSNode {
+public class GSSNode extends AbstractStackNode {
   public final CFGNode grammarNode;
   final int inputIndex;
   public final Set<GSSEdge> edges = new HashSet<>();
   public final Set<AbstractDerivationNode> pops = new HashSet<>();
+
+  @Override
+  public CFGNode getGrammarNode() {
+    return grammarNode;
+  }
+
+  @Override
+  public Set<AbstractDerivationNode> getPops() {
+    return pops;
+  }
+
+  @Override
+  public Set<GSSEdge> getEdges() {
+    return edges;
+  }
 
   public GSSNode(CFGNode grammarNode, int inputIndex) {
     super();
