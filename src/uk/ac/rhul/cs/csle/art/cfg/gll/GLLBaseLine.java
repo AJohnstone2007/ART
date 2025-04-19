@@ -2,13 +2,13 @@ package uk.ac.rhul.cs.csle.art.cfg.gll;
 
 import uk.ac.rhul.cs.csle.art.cfg.AbstractParser;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
+import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGRules;
 import uk.ac.rhul.cs.csle.art.cfg.lexer.AbstractLexer;
 import uk.ac.rhul.cs.csle.art.util.Util;
 import uk.ac.rhul.cs.csle.art.util.derivations.AbstractDerivationNode;
 import uk.ac.rhul.cs.csle.art.util.derivations.SPPF;
 import uk.ac.rhul.cs.csle.art.util.stacks.AbstractStackNode;
 import uk.ac.rhul.cs.csle.art.util.stacks.GSS;
-import uk.ac.rhul.cs.csle.art.util.statistics.Statistics;
 import uk.ac.rhul.cs.csle.art.util.tasks.TasksGLL;
 
 public class GLLBaseLine extends AbstractParser {
@@ -17,19 +17,30 @@ public class GLLBaseLine extends AbstractParser {
   AbstractDerivationNode derivationNode;
 
   @Override
-  public void parse(AbstractLexer lexer) {
+  public void parse(String input, CFGRules cfgRules, AbstractLexer lexer) {
     inLanguage = false;
+    this.input = input;
+    this.cfgRules = cfgRules;
     this.lexer = lexer;
     tasks = new TasksGLL();
     stacks = new GSS(cfgRules);
     derivations = new SPPF(this);
-    queueProductionTasks(0, cfgRules.elementToNodeMap.get(cfgRules.startNonterminal).alt, stacks.getRoot(), null);
+
+    lexer.lex(input, cfgRules);
+    // lexer.report();
+    if (lexer.tokens == null) Util.error("Lexical error");
+
+    tokenIndex = 0;
+    cfgNode = cfgRules.elementToNodeMap.get(cfgRules.startNonterminal).alt;
+    stackNode = stacks.getRoot();
+    derivationNode = null;
+    queueProductionTasks();
 
     nextTask: while (nextTask())
       while (true) {
         switch (cfgNode.element.kind) {
         case ALT:
-          queueProductionTasks(tokenIndex, cfgNode, stackNode, derivationNode);
+          queueProductionTasks();
           continue nextTask;
         case B, T, TI, C:
           if (lexer.tokens[tokenIndex] == cfgNode.element.number) {
@@ -53,6 +64,7 @@ public class GLLBaseLine extends AbstractParser {
           Util.fatal("Unexpected CFGNode kind " + cfgNode.element.kind + " in " + getClass().getSimpleName());
         }
       }
+    derivations.numberNodes();
     if (inLanguage)
       Util.trace(1, "Parser accept");
     else
@@ -65,7 +77,7 @@ public class GLLBaseLine extends AbstractParser {
     derivationNode = derivations.extend(cfgNode.seq, derivationNode, rightNode);
   }
 
-  private void queueProductionTasks(int tokenIndex, CFGNode cfgNode, AbstractStackNode stackNode, AbstractDerivationNode derivationNode) {
+  private void queueProductionTasks() {
     for (CFGNode production = cfgNode; production != null; production = production.alt)
       tasks.queue(tokenIndex, production.seq, stackNode, derivationNode);
   }
@@ -80,13 +92,13 @@ public class GLLBaseLine extends AbstractParser {
     return true;
   }
 
-  void call(CFGNode cfgNode) {
+  private void call(CFGNode cfgNode) {
     var newStackNode = stacks.push(derivations, tasks, tokenIndex, cfgNode, stackNode, derivationNode);
     for (CFGNode p = cfgRules.elementToNodeMap.get(cfgNode.element).alt; p != null; p = p.alt)
       tasks.queue(tokenIndex, p.seq, newStackNode, null);
   }
 
-  void retrn() {
+  private void retrn() {
     if (stackNode.equals(stacks.getRoot())) {
       if (cfgRules.acceptingNodeNumbers.contains(cfgNode.num) && (tokenIndex == lexer.tokens.length - 1)) {
         derivations.setRoot(cfgRules.elementToNodeMap.get(cfgRules.startNonterminal), lexer.tokens.length - 1);
@@ -95,12 +107,5 @@ public class GLLBaseLine extends AbstractParser {
       return;
     }
     stacks.pop(derivations, tasks, tokenIndex, stackNode, derivationNode);
-  }
-
-  @Override
-  public void statistics(Statistics currentStatistics) {
-    tasks.statistics(currentStatistics);
-    stacks.statistics(currentStatistics);
-    derivations.statistics(currentStatistics);
   }
 }

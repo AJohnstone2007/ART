@@ -5,7 +5,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 
-/* 
+/*
  JPEGFX.java by Adrian Johnstone, V01.00 December 2014
 
  A decoder for sequential DCT-based JPEG images which renders using Javafx
@@ -19,25 +19,25 @@ import java.io.IOException;
  Permission is hereby granted, free of charge, to any person obtaining a copy
  of this software and associated documentation files (the "Software"), to deal
  in the Software without restriction, including without limitation the rights
- to use, copy, modify, merge, publish, distribute, sublicense, and/or sell 
+ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  copies of the Software, and to permit persons to whom the Software is furnished
  to do so, subject to the following conditions:
 
- The above copyright notice and this permission notice shall be included in all 
+ The above copyright notice and this permission notice shall be included in all
  copies or substantial portions of the Software.
 
- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
- FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR 
- COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER 
- IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
+ FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
  Please send bug reports and comments to a.johnstone@rhul.ac.uk
 
  Understanding this implementation might be easier if you read these documents, probably in the order given.
 
- 1. JPEG, concisely by Adrian Johnstone of Royal Holloway, University of London: 
+ 1. JPEG, concisely by Adrian Johnstone of Royal Holloway, University of London:
  see pages below https://www.royalholloway.ac.uk/computerscience/research/csle/cslehome.aspx
 
  A short technical report which describes baseline JPEG processing and this code.
@@ -52,7 +52,7 @@ import java.io.IOException;
 
  4. JPEG File Interchange Format V1.02 by Eric Hamilton of C-Cube systems: see http://222.w3.org/Graphics/JPEG/jfif3.pdff
 
- JFIF is the de facto file format used by most JPEG tools; 
+ JFIF is the de facto file format used by most JPEG tools;
 
  5. JPEG standard (JPEG ISO/IEC 10918-1 ITU-T Recommendation T.81): see http://222.w3.org/Graphics/JPEG/itu-t81.pdf
 
@@ -141,17 +141,17 @@ public class ARTJPEGDecodeBaseline {
   private final int[] spreadMapSimple = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31,
       32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63 };
 
-  private final int[] spreadMapA = { 0, 0, 1, 1, 2, 2, 3, 3, 0, 0, 1, 1, 2, 2, 3, 3, 8, 8, 9, 9, 10, 10, 11, 11, 8, 8, 9, 9, 10, 10, 11, 11, 16, 16, 17, 17,
-      18, 18, 19, 19, 16, 16, 17, 17, 18, 18, 19, 19, 24, 24, 25, 25, 26, 26, 27, 27, 24, 24, 25, 25, 26, 26, 27, 27 };
+  private final int[] spreadMapA = { 0, 0, 1, 1, 2, 2, 3, 3, 0, 0, 1, 1, 2, 2, 3, 3, 8, 8, 9, 9, 10, 10, 11, 11, 8, 8, 9, 9, 10, 10, 11, 11, 16, 16, 17, 17, 18,
+      18, 19, 19, 16, 16, 17, 17, 18, 18, 19, 19, 24, 24, 25, 25, 26, 26, 27, 27, 24, 24, 25, 25, 26, 26, 27, 27 };
 
-  private final int[] spreadMapB = { 4, 4, 5, 5, 6, 6, 7, 7, 4, 4, 5, 5, 6, 6, 7, 7, 12, 12, 13, 13, 14, 14, 15, 15, 12, 12, 13, 13, 14, 14, 15, 15, 20, 20,
-      21, 21, 22, 22, 23, 23, 20, 20, 21, 21, 22, 22, 23, 23, 28, 28, 29, 29, 30, 30, 31, 31, 28, 28, 29, 29, 30, 30, 31, 31 };
+  private final int[] spreadMapB = { 4, 4, 5, 5, 6, 6, 7, 7, 4, 4, 5, 5, 6, 6, 7, 7, 12, 12, 13, 13, 14, 14, 15, 15, 12, 12, 13, 13, 14, 14, 15, 15, 20, 20, 21,
+      21, 22, 22, 23, 23, 20, 20, 21, 21, 22, 22, 23, 23, 28, 28, 29, 29, 30, 30, 31, 31, 28, 28, 29, 29, 30, 30, 31, 31 };
 
-  private final int[] spreadMapC = { 32, 32, 33, 33, 34, 34, 35, 35, 32, 32, 33, 33, 34, 34, 35, 35, 40, 40, 41, 41, 42, 42, 43, 43, 40, 40, 41, 41, 42, 42,
-      43, 43, 48, 48, 49, 49, 50, 50, 51, 51, 48, 48, 49, 49, 50, 50, 51, 51, 56, 56, 57, 57, 58, 58, 59, 59, 56, 56, 57, 57, 58, 58, 59, 59 };
+  private final int[] spreadMapC = { 32, 32, 33, 33, 34, 34, 35, 35, 32, 32, 33, 33, 34, 34, 35, 35, 40, 40, 41, 41, 42, 42, 43, 43, 40, 40, 41, 41, 42, 42, 43,
+      43, 48, 48, 49, 49, 50, 50, 51, 51, 48, 48, 49, 49, 50, 50, 51, 51, 56, 56, 57, 57, 58, 58, 59, 59, 56, 56, 57, 57, 58, 58, 59, 59 };
 
-  private final int[] spreadMapD = { 36, 36, 37, 37, 38, 38, 39, 39, 36, 36, 37, 37, 38, 38, 39, 39, 44, 44, 45, 45, 46, 46, 47, 47, 44, 44, 45, 45, 46, 46,
-      47, 47, 52, 52, 53, 53, 54, 54, 55, 55, 52, 52, 53, 53, 54, 54, 55, 55, 60, 60, 61, 61, 62, 62, 63, 63, 60, 60, 61, 61, 62, 62, 63, 63 };
+  private final int[] spreadMapD = { 36, 36, 37, 37, 38, 38, 39, 39, 36, 36, 37, 37, 38, 38, 39, 39, 44, 44, 45, 45, 46, 46, 47, 47, 44, 44, 45, 45, 46, 46, 47,
+      47, 52, 52, 53, 53, 54, 54, 55, 55, 52, 52, 53, 53, 54, 54, 55, 55, 60, 60, 61, 61, 62, 62, 63, 63, 60, 60, 61, 61, 62, 62, 63, 63 };
 
   private double iDCTlookup[][]; // A lookup table of pre-computed iDCT factors
 
@@ -316,7 +316,7 @@ public class ARTJPEGDecodeBaseline {
 
         System.err.printf("Error: unexpected marker - parameter length 0x%04x\n", imageBufferIndex - 4, parameterLength);
         System.exit(1);
-
+        break;
       case JPG_marker_StartOfImage:
         if (TRACE) System.err.printf("StartOfImage\n");
         break;
@@ -362,18 +362,16 @@ public class ARTJPEGDecodeBaseline {
           if (TRACE) System.err.printf("%s table %d\n", isACTable == 0 ? "DC" : "AC", htNumber);
           for (int length = 0; length < 16; length++) {
             huffmanSymbolCounts[isACTable][htNumber][length] = imageReadByte();
-            if (TRACE)
-              System.err.printf("%s table %d length %d has %d entries\n", isACTable == 0 ? "DC" : "AC", htNumber, length + 1,
-                  huffmanSymbolCounts[isACTable][htNumber][length]);
+            if (TRACE) System.err.printf("%s table %d length %d has %d entries\n", isACTable == 0 ? "DC" : "AC", htNumber, length + 1,
+                huffmanSymbolCounts[isACTable][htNumber][length]);
           }
           for (int length = 0; length < 16; length++)
             if (huffmanSymbolCounts[isACTable][htNumber][length] > 0) {
               huffmanSymbols[isACTable][htNumber][length] = new int[huffmanSymbolCounts[isACTable][htNumber][length]];
               for (int symbol = 0; symbol < huffmanSymbolCounts[isACTable][htNumber][length]; symbol++) {
                 huffmanSymbols[isACTable][htNumber][length][symbol] = imageReadByte();
-                if (TRACE)
-                  System.err.printf("%s table %d at length %d, symbol %d = %d (0x%X)\n", isACTable == 0 ? "DC" : "AC", htNumber, length + 1, symbol,
-                      huffmanSymbols[isACTable][htNumber][length][symbol], huffmanSymbols[isACTable][htNumber][length][symbol]);
+                if (TRACE) System.err.printf("%s table %d at length %d, symbol %d = %d (0x%X)\n", isACTable == 0 ? "DC" : "AC", htNumber, length + 1, symbol,
+                    huffmanSymbols[isACTable][htNumber][length][symbol], huffmanSymbols[isACTable][htNumber][length][symbol]);
               }
             }
           if (TRACE) {
@@ -444,10 +442,9 @@ public class ARTJPEGDecodeBaseline {
         successiveApproximationBitHigh >>= 4;
 
         if (TRACE) {
-          System.err
-              .printf(
-                  "scanComponentCount: %d, startOfSpectralSelection: %d, endOfSpectralSelection: %d, successiveApproximationBitHigh: %d, successiveApproximationBitLow: %d\n",
-                  scanComponentCount, startOfSpectralSelection, endOfSpectralSelection, successiveApproximationBitHigh, successiveApproximationBitLow);
+          System.err.printf(
+              "scanComponentCount: %d, startOfSpectralSelection: %d, endOfSpectralSelection: %d, successiveApproximationBitHigh: %d, successiveApproximationBitLow: %d\n",
+              scanComponentCount, startOfSpectralSelection, endOfSpectralSelection, successiveApproximationBitHigh, successiveApproximationBitLow);
           for (int tmp = 0; tmp < scanComponentCount; tmp++)
             System.err.printf("Component: %d, scanComponentSelector: %d, DCEntropyEncodingTable: %d, ACEntropyEncodingTables: %d\n", tmp,
                 scanComponentSelectors[tmp], DCEntropyEncodingTables[tmp], ACEntropyEncodingTables[tmp]);
@@ -639,16 +636,15 @@ public class ARTJPEGDecodeBaseline {
   }
 
   void paintDataUnit(int x, int y, int[] luminanceDataUnitA, int[] chrominanceBDataUnit, int[] chrominanceRDataUnit, int[] spreadMap) {
-    if (DATAUNITTRACE)
-      if (dataTracing) {
-        System.err.printf("\nPixel YCbCr data in hexadecimal\n");
-        for (int yy = 0; yy < 8; yy++) {
-          for (int xx = 0; xx < 8; xx++)
-            System.err.printf("%02X%02X%02X  ", luminanceDataUnitA[yy << 3 | xx] & 0xFF, chrominanceBDataUnit[yy << 3 | xx] & 0xFF,
-                chrominanceRDataUnit[yy << 3 | xx] & 0xFF);
-          System.err.printf("\n");
-        }
+    if (DATAUNITTRACE) if (dataTracing) {
+      System.err.printf("\nPixel YCbCr data in hexadecimal\n");
+      for (int yy = 0; yy < 8; yy++) {
+        for (int xx = 0; xx < 8; xx++)
+          System.err.printf("%02X%02X%02X  ", luminanceDataUnitA[yy << 3 | xx] & 0xFF, chrominanceBDataUnit[yy << 3 | xx] & 0xFF,
+              chrominanceRDataUnit[yy << 3 | xx] & 0xFF);
+        System.err.printf("\n");
       }
+    }
 
     int xxyy = 0;
     for (int py = 0; py < 8; py++)

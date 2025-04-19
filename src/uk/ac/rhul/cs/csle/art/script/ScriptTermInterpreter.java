@@ -16,7 +16,8 @@ import uk.ac.rhul.cs.csle.art.cfg.chart.AlgX;
 import uk.ac.rhul.cs.csle.art.cfg.chart.CYK;
 import uk.ac.rhul.cs.csle.art.cfg.gll.GLLBaseLine;
 import uk.ac.rhul.cs.csle.art.cfg.gll.GLLHashPool;
-import uk.ac.rhul.cs.csle.art.cfg.lexer.LexemeKind;
+import uk.ac.rhul.cs.csle.art.cfg.lexer.AbstractLexer;
+import uk.ac.rhul.cs.csle.art.cfg.lexer.TokenKind;
 import uk.ac.rhul.cs.csle.art.cfg.lexer.LexerSingletonLongestMatch;
 import uk.ac.rhul.cs.csle.art.cfg.rdsob.RDSOBExplicitStack;
 import uk.ac.rhul.cs.csle.art.cfg.rdsob.RDSOBFunction;
@@ -49,11 +50,11 @@ public class ScriptTermInterpreter {
   private final LexerSingletonLongestMatch scriptLexer = new LexerSingletonLongestMatch();
   private final int scriptParserTerm; // This received the derivation from scriptParser
 
-  private int scriptDerivationTerm;
+  private final int scriptDerivationTerm;
   private final TermTraverser scriptTraverser;
 
-  private final LexerSingletonLongestMatch currentLexer = new LexerSingletonLongestMatch(); // default current lexer is longest match - change to TWE set lexer
-                                                                                            // when available
+  private final AbstractLexer currentLexer = new LexerSingletonLongestMatch(); // default current lexer is longest match - change to TWE set lexer
+                                                                               // when available
   private AbstractParser currentParser = new GLLBaseLine(); // default current parser is GLL base line - change to MGLL when available
   public CFGRules currentCFGRules; // scriptTraverser builds CFG rules into this grammar
   private int currentDerivationTerm = 0;
@@ -72,7 +73,7 @@ public class ScriptTermInterpreter {
   int successfulTests = 0;
   int failedTests = 0;
 
-  public ScriptTermInterpreter() {
+  public ScriptTermInterpreter(String scriptString) {
     iTerms.plainTextTraverser = initialisePlainTextTraverser(); // Set up plain pretty printer actions
     iTerms.latexTraverser = initialiseLaTeXTraverser(); // Set up LaTeX pretty printer actions
     scriptTraverser = initialiseScriptTraverser(); // Set up script interpetation actions
@@ -82,7 +83,7 @@ public class ScriptTermInterpreter {
     currentCFGRules = new CFGRules("Script grammar", iTerms);
     scriptTraverser.traverse(scriptParserTerm); // Construct the script parser grammar by walking the script parser term from the last bootstrap
     currentCFGRules.normalise();
-    scriptParser.cfgRules = currentCFGRules; // Now we have a usable script parser
+    var scriptCFGRules = currentCFGRules; // Now we have a usable script parser
     // Util.debug("script grammar" + currentCFGRules.toString());
 
     currentChooser = new ChooseRules(iTerms);
@@ -91,6 +92,18 @@ public class ScriptTermInterpreter {
     // Initialise rewriter
     currentTRRules = new TRRules(iTerms);
     currentRewriter = new Rewriter(iTerms);
+
+    currentCFGRules = new CFGRules("currentGrammar", iTerms);
+    Util.traceLevel = Util.errorLevel = 0;
+    scriptParser.parse(scriptString, scriptCFGRules, scriptLexer);
+    if (!scriptParser.inLanguage) Util.fatal("Script syntax error");
+    scriptParser.derivations.numberNodes();
+    if (scriptParser.derivations.ambiguityCheck()) Util.fatal("Script ambiguity");
+    scriptDerivationTerm = scriptParser.derivations.derivationAsTerm();
+    // Util.info("Script term:\n" + iTerms.toString(scriptDerivationTerm, true, -1, null));
+    Util.traceLevel = Util.errorLevel = 3;
+    scriptTraverser.traverse(scriptDerivationTerm);
+    if (successfulTests != 0 || failedTests != 0) Util.info("Successful tests: " + successfulTests + "; failed tests " + failedTests);
   }
 
   private TermTraverserText initialiseScriptTraverser() {
@@ -141,24 +154,6 @@ public class ScriptTermInterpreter {
     return iTerms.termSymbolString(iTerms.subterm(t, 1));
   }
 
-  public void interpretARTScript(String scriptString) {
-    currentCFGRules = new CFGRules("currentGrammar", iTerms);
-    Util.traceLevel = Util.errorLevel = 0;
-    scriptLexer.lex(scriptString, scriptParser.cfgRules.lexicalKindsArray(), scriptParser.cfgRules.lexicalStringsArray(),
-        scriptParser.cfgRules.whitespacesArray());
-    // scriptLexer.report();
-    if (scriptLexer.tokens == null) Util.fatal("Script lexical error");
-    scriptParser.parse(scriptLexer);
-    if (!scriptParser.inLanguage) Util.fatal("Script syntax error");
-    scriptParser.derivations.numberNodes();
-    if (scriptParser.derivations.ambiguityCheck()) Util.fatal("Script ambiguity");
-    scriptDerivationTerm = scriptParser.derivations.derivationAsTerm();
-    // Util.info("Script term:\n" + iTerms.toString(scriptDerivationTerm, true, -1, null));
-    Util.traceLevel = Util.errorLevel = 3;
-    scriptTraverser.traverse(scriptDerivationTerm);
-    if (successfulTests != 0 || failedTests != 0) Util.info("Successful tests: " + successfulTests + "; failed tests " + failedTests);
-  }
-
   private void directiveAction(int term) {
     // Util.debug("Evaluating directive !" + iTerms.toString(iTerms.subterm(term, 0)));
     switch (iTerms.termSymbolString(iTerms.subterm(term, 0))) {
@@ -182,16 +177,16 @@ public class ScriptTermInterpreter {
       for (int i = 0; i < iTerms.termArity(iTerms.subterm(term, 0)); i++)
         if (iTerms.termSymbolString(iTerms.subterm(term, 0, i)).equals("cfgBuiltinTerminal")) switch (iTerms.termSymbolString(iTerms.subterm(term, 0, i, 0))) {
         case "SIMPLE_WHITESPACE":
-          currentCFGRules.whitespaces.add(LexemeKind.SIMPLE_WHITESPACE);
+          currentCFGRules.whitespaces.add(TokenKind.SIMPLE_WHITESPACE);
           break;
         case "COMMENT_NEST_ART":
-          currentCFGRules.whitespaces.add(LexemeKind.COMMENT_NEST_ART);
+          currentCFGRules.whitespaces.add(TokenKind.COMMENT_NEST_ART);
           break;
         case "COMMENT_LINE_C":
-          currentCFGRules.whitespaces.add(LexemeKind.COMMENT_LINE_C);
+          currentCFGRules.whitespaces.add(TokenKind.COMMENT_LINE_C);
           break;
         case "COMMENT_BLOCK_C":
-          currentCFGRules.whitespaces.add(LexemeKind.COMMENT_BLOCK_C);
+          currentCFGRules.whitespaces.add(TokenKind.COMMENT_BLOCK_C);
           break;
         default:
           Util.fatal("Unexpected !whitespace element " + iTerms.toString(iTerms.subterm(term, 0, i, 0)));
@@ -576,24 +571,9 @@ public class ScriptTermInterpreter {
     // Util.info("tryParse on " + inputString);
 
     currentCFGRules.normalise();
-    if (currentCFGRules.isEmpty()) {
-      Util.info("Try failed: grammar has no rules");
-      return;
-    }
     currentChooser.normalise(currentCFGRules);
-    currentLexer.inputStringName = inputStringName;
-    currentLexer.inputString = inputString;
-    currentParser.cfgRules = currentCFGRules;
-    currentDerivationTerm = 0;
-    currentParser.inLanguage = false;
     currentStatistics.putTime("SetupTime");
-    currentLexer.lex(inputString, currentCFGRules.lexicalKindsArray(), currentCFGRules.lexicalStringsArray(), currentCFGRules.whitespacesArray());
-    // Transfer the lexicalisation to the parser - this will need more sophistication for TWE sets
-    currentLexer.tokens = currentLexer.tokens;
-    currentLexer.leftIndices = currentLexer.leftIndices;
-    currentLexer.rightIndices = currentLexer.rightIndices;
-    if (currentLexer.tokens != null) currentParser.parse(currentLexer);
-    currentParser.derivations.numberNodes();
+    currentParser.parse(inputString, currentCFGRules, currentLexer);
     currentStatistics.putTime("ParseTime");
     if (currentParser.inLanguage) {
       if (!disableChoosers) currentParser.derivations.chooseLongestMatch();

@@ -1,7 +1,7 @@
 package uk.ac.rhul.cs.csle.art.cfg.lexer;
 
 // @formatter:off
-public enum LexemeKind {
+public enum TokenKind {
   CHARACTER,
   SINGLETON_CASE_SENSITIVE,
   SINGLETON_CASE_INSENSITIVE,

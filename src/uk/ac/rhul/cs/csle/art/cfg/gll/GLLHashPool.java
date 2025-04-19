@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGKind;
+import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGRules;
 import uk.ac.rhul.cs.csle.art.cfg.hashpool.HashPool;
 import uk.ac.rhul.cs.csle.art.cfg.lexer.AbstractLexer;
 import uk.ac.rhul.cs.csle.art.script.ScriptTermInterpreter;
@@ -104,46 +105,103 @@ public class GLLHashPool extends HashPool {
   int sppfPackNodeBucketCount;
   int sppfPackNodeBuckets[];
 
-  int sppfAmbiguityCount() {
-    int count = 0;
-    for (int bucket : sppfNodeBuckets)
-      for (int chain = bucket; chain != 0; chain = poolGet(chain))
-        if (poolGet(poolGet(chain + sppfNode_packNodeList) + sppfPackNode_packNodeList) != 0) count++;
-    return count;
+  /* Parser ******************************************************************/
+  private void initialise() {
+    // 1. Make local references to grammar tables
+    endOfStringNodeNi = cfgRules.endOfStringNode.num;
+    startNonterminalNodeNi = cfgRules.elementToNodeMap.get(cfgRules.startNonterminal).num;
+    kindOf = cfgRules.makeKindsArray();
+    altOf = cfgRules.makeAltsArray();
+    seqOf = cfgRules.makeSeqsArray();
+    targetOf = cfgRules.makeCallTargetsArray();
+    elementOf = cfgRules.makeElementOfArray();
+    // Defensive programming - make sure we've not messed up the enumeration value
+    if (T != CFGKind.T.ordinal()) Util.fatal("Enumeration mismatch for T - check ParserHashPool.java for consistency with Kind enumeration");
+    if (EPS != CFGKind.EPS.ordinal()) Util.fatal("Enumeration mismatch for EPS - check ParserHashPool.java for consistency with Kind enumeration");
+    if (N != CFGKind.N.ordinal()) Util.fatal("Enumeration mismatch for N - check ParserHashPool.java for consistency with Kind enumeration");
+    if (END != CFGKind.END.ordinal()) Util.fatal("Enumeration mismatch for END - check ParserHashPool.java for consistency with Kind enumeration");
+
+    // 1a. (Debug): print precomputed tables
+    // Util.info(grammar);
+    // for (int i = 0; i < kindOf.length; i++)
+    // System.out.print(i + ":" + kindOf[i] + " ");
+    // Util.info();
+    // for (int i = 0; i < altOf.length; i++) {
+    // System.out.print(i + ":");
+    // if (altOf[i] == null)
+    // System.out.print("null");
+    // else
+    // for (int j = 0; j < altOf[i].length; j++)
+    // System.out.print(altOf[i][j] + " ");
+    // Util.info();
+    // }
+    // for (int i = 0; i < targetOf.length; i++)
+    // Util.info(i + ":" + targetOf[i] + " ");
+    // for (int i = 0; i < elementOf.length; i++)
+    // Util.info(i + ":" + elementOf[i] + " ");
+
+    // 2. Clean hash pool and tables
+    initialisehashPool();
+    descriptorBucketCount = descriptorBucketInitialCount;
+    descriptorBuckets = clean(descriptorBuckets, descriptorBucketCount);
+
+    gssNodeBucketCount = gssNodeBucketInitialCount;
+    gssNodeBuckets = clean(gssNodeBuckets, gssNodeBucketCount);
+
+    gssEdgeBucketCount = gssEdgeBucketInitialCount;
+    gssEdgeBuckets = clean(gssEdgeBuckets, gssEdgeBucketCount);
+
+    popElementBucketCount = popElementBucketInitialCount;
+    popElementBuckets = clean(popElementBuckets, popElementBucketCount);
+
+    sppfNodeBucketCount = sppfNodeBucketInitialCount;
+    sppfNodeBuckets = clean(sppfNodeBuckets, sppfNodeBucketCount);
+
+    sppfPackNodeBucketCount = sppfPackNodeBucketInitialCount;
+    sppfPackNodeBuckets = clean(sppfPackNodeBuckets, sppfPackNodeBucketCount);
+
+    // 3. Initialise parser data structures
+    find(gssNodeBuckets, gssNodeBucketCount, gssNode_SIZE, endOfStringNodeNi, 0);
+    int gssRoot = findIndex;
+    tokenIndex = 0;
+    sn = gssRoot;
+    dn = 0;
+    enqueueDescriptorsFor(startNonterminalNodeNi, tokenIndex, sn, dn);
   }
 
-  int sppfEdgeCount() {
-    int count = 0;
-    for (int bucket : sppfNodeBuckets)
-      for (int chain = bucket; chain != 0; chain = poolGet(chain)) {
-        for (int packNode = poolGet(chain + sppfNode_packNodeList); packNode != 0; packNode = poolGet(packNode + sppfPackNode_packNodeList)) {
-          count++; // Inedge
-          if (poolGet(packNode + sppfPackNode_leftChild) != 0) count++;
-          if (poolGet(packNode + sppfPackNode_rightChild) != 0) count++;
-          // Util.info("SPPF node " + toStringSPPFNode(chain) + " pack node " + toStringSPPFPackNode(packNode) + ": " + "["
-          // + toStringSPPFNode(poolGet(packNode + sppfPackNode_leftChild)) + "] " + "[" + toStringSPPFNode(poolGet(packNode + sppfPackNode_rightChild))
-          // + "]");
-
+  @Override
+  public void parse(String input, CFGRules cfgRules, AbstractLexer lexer) {
+    inLanguage = false;
+    this.input = input;
+    this.cfgRules = cfgRules;
+    this.lexer = lexer;
+    initialise();
+    nextDescriptor: while (dequeueDescriptor())
+      while (true) {
+        switch (kindOf[gn]) {
+        case T:
+          if (lexer.tokens[tokenIndex] == elementOf[gn]) {
+            d(1);
+            tokenIndex++;
+            gn++;
+            break;
+          } else
+            continue nextDescriptor;
+        case N:
+          call(gn);
+          continue nextDescriptor;
+        case EPS:
+          d(0);
+          gn++;
+          break;
+        case END:
+          retrn();
+          continue nextDescriptor;
+        default:
+          Util.fatal("internal error - unexpected grammar node in gllHashPool");
         }
       }
-    return count;
-  }
-
-  String toStringSPPFNode(int n) {
-    if (n == 0) return "null SPPF node";
-    int gn = poolGet(n + sppfNode_gn);
-    int leftExtent = poolGet(n + sppfNode_leftExt);
-    int rightExtent = poolGet(n + sppfNode_rightExt);
-
-    return cfgRules.numberToNodeMap.get(gn).toStringAsProduction() + ", " + leftExtent + ", " + rightExtent;
-  }
-
-  String toStringSPPFPackNode(int n) {
-    if (n == 0) return "null SPPF pack node";
-    int gn = poolGet(n + sppfPackNode_gn);
-    int pivot = poolGet(n + sppfPackNode_pivot);
-
-    return cfgRules.numberToNodeMap.get(gn).toStringAsProduction() + ", " + pivot;
+    loadCounts();
   }
 
   /* Stack handling **********************************************************/
@@ -165,7 +223,7 @@ public class GLLHashPool extends HashPool {
     }
   }
 
-  private void ret() {
+  private void retrn() {
     if (poolGet(sn + gssNode_gn) == endOfStringNodeNi) {
       if (cfgRules.acceptingNodeNumbers.contains(gn)) inLanguage |= (tokenIndex == lexer.tokens.length - 1); // Make gni to boolean array for acceptance testing
       return;
@@ -239,106 +297,7 @@ public class GLLHashPool extends HashPool {
       enqueueDescriptor(productions[p++] + 1, i, parentGSSNode, sppfNode);
   }
 
-  /* Parser ******************************************************************/
-  private void initialise() {
-    // 1. Make local references to grammar tables
-    endOfStringNodeNi = cfgRules.endOfStringNode.num;
-    startNonterminalNodeNi = cfgRules.elementToNodeMap.get(cfgRules.startNonterminal).num;
-    kindOf = cfgRules.makeKindsArray();
-    altOf = cfgRules.makeAltsArray();
-    seqOf = cfgRules.makeSeqsArray();
-    targetOf = cfgRules.makeCallTargetsArray();
-    elementOf = cfgRules.makeElementOfArray();
-    // Defensive programming - make sure we've not messed up the enumeration value
-    if (T != CFGKind.T.ordinal()) Util.fatal("Enumeration mismatch for T - check ParserHashPool.java for consistency with Kind enumeration");
-    if (EPS != CFGKind.EPS.ordinal()) Util.fatal("Enumeration mismatch for EPS - check ParserHashPool.java for consistency with Kind enumeration");
-    if (N != CFGKind.N.ordinal()) Util.fatal("Enumeration mismatch for N - check ParserHashPool.java for consistency with Kind enumeration");
-    if (END != CFGKind.END.ordinal()) Util.fatal("Enumeration mismatch for END - check ParserHashPool.java for consistency with Kind enumeration");
-
-    // 1a. (Debug): print precomputed tables
-    // Util.info(grammar);
-    // for (int i = 0; i < kindOf.length; i++)
-    // System.out.print(i + ":" + kindOf[i] + " ");
-    // Util.info();
-    // for (int i = 0; i < altOf.length; i++) {
-    // System.out.print(i + ":");
-    // if (altOf[i] == null)
-    // System.out.print("null");
-    // else
-    // for (int j = 0; j < altOf[i].length; j++)
-    // System.out.print(altOf[i][j] + " ");
-    // Util.info();
-    // }
-    // for (int i = 0; i < targetOf.length; i++)
-    // Util.info(i + ":" + targetOf[i] + " ");
-    // for (int i = 0; i < elementOf.length; i++)
-    // Util.info(i + ":" + elementOf[i] + " ");
-
-    // 2. Clean hash pool and tables
-    initialisehashPool();
-    descriptorBucketCount = descriptorBucketInitialCount;
-    descriptorBuckets = clean(descriptorBuckets, descriptorBucketCount);
-
-    gssNodeBucketCount = gssNodeBucketInitialCount;
-    gssNodeBuckets = clean(gssNodeBuckets, gssNodeBucketCount);
-
-    gssEdgeBucketCount = gssEdgeBucketInitialCount;
-    gssEdgeBuckets = clean(gssEdgeBuckets, gssEdgeBucketCount);
-
-    popElementBucketCount = popElementBucketInitialCount;
-    popElementBuckets = clean(popElementBuckets, popElementBucketCount);
-
-    sppfNodeBucketCount = sppfNodeBucketInitialCount;
-    sppfNodeBuckets = clean(sppfNodeBuckets, sppfNodeBucketCount);
-
-    sppfPackNodeBucketCount = sppfPackNodeBucketInitialCount;
-    sppfPackNodeBuckets = clean(sppfPackNodeBuckets, sppfPackNodeBucketCount);
-
-    // 3. Initialise parser data structures
-    find(gssNodeBuckets, gssNodeBucketCount, gssNode_SIZE, endOfStringNodeNi, 0);
-    int gssRoot = findIndex;
-    tokenIndex = 0;
-    sn = gssRoot;
-    dn = 0;
-    enqueueDescriptorsFor(startNonterminalNodeNi, tokenIndex, sn, dn);
-  }
-
-  @Override
-  public void parse(AbstractLexer lexer) {
-    this.lexer = lexer;
-    gllHashPool();
-    loadCounts();
-  }
-
-  void gllHashPool() {
-    initialise();
-    nextDescriptor: while (dequeueDescriptor())
-      while (true) {
-        switch (kindOf[gn]) {
-        case T:
-          if (lexer.tokens[tokenIndex] == elementOf[gn]) {
-            d(1);
-            tokenIndex++;
-            gn++;
-            break;
-          } else
-            continue nextDescriptor;
-        case N:
-          call(gn);
-          continue nextDescriptor;
-        case EPS:
-          d(0);
-          gn++;
-          break;
-        case END:
-          ret();
-          continue nextDescriptor;
-        default:
-          Util.fatal("internal error - unexpected grammar node in gllHashPool");
-        }
-      }
-  }
-
+  /* Statistics support ******************************************************/
   private void loadCounts() {
     ScriptTermInterpreter.currentStatistics.put("tweNodeCount", lexer.tokens.length);
     ScriptTermInterpreter.currentStatistics.put("tweEdgeCount", lexer.tokens.length - 1);
@@ -377,4 +336,45 @@ public class GLLHashPool extends HashPool {
     ScriptTermInterpreter.currentStatistics.put("h6more", hist.get(-1));
   }
 
+  int sppfAmbiguityCount() {
+    int count = 0;
+    for (int bucket : sppfNodeBuckets)
+      for (int chain = bucket; chain != 0; chain = poolGet(chain))
+        if (poolGet(poolGet(chain + sppfNode_packNodeList) + sppfPackNode_packNodeList) != 0) count++;
+    return count;
+  }
+
+  int sppfEdgeCount() {
+    int count = 0;
+    for (int bucket : sppfNodeBuckets)
+      for (int chain = bucket; chain != 0; chain = poolGet(chain)) {
+        for (int packNode = poolGet(chain + sppfNode_packNodeList); packNode != 0; packNode = poolGet(packNode + sppfPackNode_packNodeList)) {
+          count++; // Inedge
+          if (poolGet(packNode + sppfPackNode_leftChild) != 0) count++;
+          if (poolGet(packNode + sppfPackNode_rightChild) != 0) count++;
+          // Util.info("SPPF node " + toStringSPPFNode(chain) + " pack node " + toStringSPPFPackNode(packNode) + ": " + "["
+          // + toStringSPPFNode(poolGet(packNode + sppfPackNode_leftChild)) + "] " + "[" + toStringSPPFNode(poolGet(packNode + sppfPackNode_rightChild))
+          // + "]");
+
+        }
+      }
+    return count;
+  }
+
+  String toStringSPPFNode(int n) {
+    if (n == 0) return "null SPPF node";
+    int gn = poolGet(n + sppfNode_gn);
+    int leftExtent = poolGet(n + sppfNode_leftExt);
+    int rightExtent = poolGet(n + sppfNode_rightExt);
+
+    return cfgRules.numberToNodeMap.get(gn).toStringAsProduction() + ", " + leftExtent + ", " + rightExtent;
+  }
+
+  String toStringSPPFPackNode(int n) {
+    if (n == 0) return "null SPPF pack node";
+    int gn = poolGet(n + sppfPackNode_gn);
+    int pivot = poolGet(n + sppfPackNode_pivot);
+
+    return cfgRules.numberToNodeMap.get(gn).toStringAsProduction() + ", " + pivot;
+  }
 }

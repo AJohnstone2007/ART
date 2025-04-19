@@ -3,9 +3,9 @@ package uk.ac.rhul.cs.csle.art.cfg.rdsob;
 import uk.ac.rhul.cs.csle.art.cfg.AbstractParser;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGKind;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
+import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGRules;
 import uk.ac.rhul.cs.csle.art.cfg.lexer.AbstractLexer;
 import uk.ac.rhul.cs.csle.art.util.Util;
-import uk.ac.rhul.cs.csle.art.util.statistics.Statistics;
 
 public class RDSOBExplicitStack extends AbstractParser {
   class SNode {
@@ -27,11 +27,15 @@ public class RDSOBExplicitStack extends AbstractParser {
   SNode sn;
   CFGNode gn;
 
+  public boolean match(CFGNode gn, int tokenIndex) {
+    return lexer.tokens[tokenIndex] == gn.element.number;
+  }
+
   boolean rdsobExplicitStack() {
     while (true)
       switch (gn.element.kind) {
       case B, C, T, TI:
-        if (lexer.match(gn, tokenIndex++))
+        if (match(gn, tokenIndex++))
           gn = gn.seq;
         else if (backtrack()) return false;
         break;
@@ -53,7 +57,7 @@ public class RDSOBExplicitStack extends AbstractParser {
 
   void call(CFGNode caller) {
     sn = new SNode(caller.seq, tokenIndex, sn, dn);
-    gn = getLHS(gn).alt.seq;
+    gn = cfgRules.elementToNodeMap.get(gn.element).alt.seq;
   }
 
   CFGNode retrn() {
@@ -81,7 +85,10 @@ public class RDSOBExplicitStack extends AbstractParser {
   }
 
   @Override
-  public void parse(AbstractLexer lexer) {
+  public void parse(String input, CFGRules cfgRules, AbstractLexer lexer) {
+    inLanguage = false;
+    this.input = input;
+    this.cfgRules = cfgRules;
     this.lexer = lexer;
     gn = cfgRules.elementToNodeMap.get(cfgRules.startNonterminal).alt.seq;
     tokenIndex = 0;
@@ -106,12 +113,6 @@ public class RDSOBExplicitStack extends AbstractParser {
     public String toString() {
       return gn.toString();
     }
-  }
-
-  @Override
-  public void statistics(Statistics currentstatistics) {
-    // TODO Auto-generated method stub
-
   }
 
 }

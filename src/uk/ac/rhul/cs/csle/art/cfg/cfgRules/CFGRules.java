@@ -14,7 +14,7 @@ import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import uk.ac.rhul.cs.csle.art.cfg.lexer.LexemeKind;
+import uk.ac.rhul.cs.csle.art.cfg.lexer.TokenKind;
 import uk.ac.rhul.cs.csle.art.term.ITerms;
 import uk.ac.rhul.cs.csle.art.util.Util;
 import uk.ac.rhul.cs.csle.art.util.relation.Relation;
@@ -39,10 +39,10 @@ public class CFGRules {
   public final Map<CFGElement, CFGNode> elementToNodeMap = new TreeMap<>(); // Map from nonterminals to list of productions represented by their LHS node
 
   public int lexSize;
-  public final Set<LexemeKind> whitespaces = new HashSet<>(); // This should be a set of elements, with the builtins added to elements
-  public LexemeKind[] lexicalKindsArray;
+  public final Set<TokenKind> whitespaces = new HashSet<>(); // This should be a set of elements, with the builtins added to elements
+  public TokenKind[] lexicalKindsArray;
   public String[] lexicalStringsArray;
-  public LexemeKind[] whitespacesArray;
+  public TokenKind[] whitespacesArray;
 
   public Set<String> paraterminalNames = new HashSet<>();
   public Set<CFGElement> paraterminalElements = new HashSet<>();
@@ -88,7 +88,7 @@ public class CFGRules {
     endOfStringNode = new CFGNode(this, CFGKind.EOS, "$", 0, GIFTKind.NONE, null, null);
     endOfStringNode.seq = endOfStringNode; // trick to ensure initial call collects rootNode
 
-    whitespaces.add(LexemeKind.SIMPLE_WHITESPACE); // default whitespace if non declared
+    whitespaces.add(TokenKind.SIMPLE_WHITESPACE); // default whitespace if non declared
   }
 
   public CFGRules(CFGRules that, boolean binarise) {
@@ -138,7 +138,7 @@ public class CFGRules {
     }
 
     // Compute lexical data
-    lexicalKindsArray = new LexemeKind[lexSize];
+    lexicalKindsArray = new TokenKind[lexSize];
     lexicalStringsArray = new String[lexSize];
 
     int token = 0;
@@ -148,22 +148,22 @@ public class CFGRules {
       switch (e1.kind) {
       case B:
         try {
-          lexicalKindsArray[token] = LexemeKind.valueOf(e1.str);
+          lexicalKindsArray[token] = TokenKind.valueOf(e1.str);
         } catch (IllegalArgumentException ex) {
           Util.fatal("Unknown builtin &" + e1.str);
         }
         lexicalStringsArray[token] = e1.str;
         break;
       case C:
-        lexicalKindsArray[token] = LexemeKind.CHARACTER;
+        lexicalKindsArray[token] = TokenKind.CHARACTER;
         lexicalStringsArray[token] = e1.str;
         break;
       case T:
-        lexicalKindsArray[token] = LexemeKind.SINGLETON_CASE_SENSITIVE;
+        lexicalKindsArray[token] = TokenKind.SINGLETON_CASE_SENSITIVE;
         lexicalStringsArray[token] = e1.str;
         break;
       case TI:
-        lexicalKindsArray[token] = LexemeKind.SINGLETON_CASE_INSENSITIVE;
+        lexicalKindsArray[token] = TokenKind.SINGLETON_CASE_INSENSITIVE;
         lexicalStringsArray[token] = e1.str;
         break;
       default:
@@ -172,7 +172,7 @@ public class CFGRules {
       token++;
     }
 
-    whitespacesArray = whitespaces.toArray(new LexemeKind[0]);
+    whitespacesArray = whitespaces.toArray(new TokenKind[0]);
 
     // Set positional attributes and accepting slots, and seed nullablePrefixSlots and nullableSuffixSlots
     for (CFGElement ge : elements.keySet())
@@ -533,7 +533,7 @@ public class CFGRules {
   }
 
   // Data access for lexers
-  public LexemeKind[] lexicalKindsArray() {
+  public TokenKind[] lexicalKindsArray() {
     return lexicalKindsArray;
   }
 
@@ -541,7 +541,7 @@ public class CFGRules {
     return lexicalStringsArray;
   }
 
-  public LexemeKind[] whitespacesArray() {
+  public TokenKind[] whitespacesArray() {
     return whitespacesArray;
   }
 

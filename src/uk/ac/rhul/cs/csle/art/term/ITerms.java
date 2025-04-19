@@ -70,7 +70,7 @@ public class ITerms {
   public static int variableCount = 20;
   public static int sequenceVariableCount = 10;
   public AbstractValuePlugin plugin;
-  private final TermTraverserText rawTextTraverser = new TermTraverserText(this); // This is intended for debugging - show the raw term
+  public TermTraverserText rawTextTraverser = new TermTraverserText(this); // This is intended for debugging - show the raw term
   public TermTraverserText plainTextTraverser; // Plain text pretty printer - loaded by user
   public TermTraverserText latexTraverser; // LaTeX pretty printer - loaded by user
 

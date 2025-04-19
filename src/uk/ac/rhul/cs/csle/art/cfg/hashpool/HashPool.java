@@ -14,7 +14,7 @@ import uk.ac.rhul.cs.csle.art.util.statistics.Statistics;
  */
 
 // public class HashPool { // Uncomment this line for standalone HashPool
-public class HashPool extends AbstractParser { // Uncomment this line for HashPool that also inherits all of ReferenceParser
+public abstract class HashPool extends AbstractParser { // Uncomment this line for HashPool that also inherits all of ReferenceParser
 
   private int[][] pool;
   private final int poolBlockInitialCount = 1024;

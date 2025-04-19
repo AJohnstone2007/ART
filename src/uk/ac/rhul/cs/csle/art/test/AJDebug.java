@@ -80,12 +80,10 @@ public class AJDebug {
 
   private boolean v5v3RegressionFirstAndFollowSets(String scriptString) {
 
-    regressionScriptInterpreter = new ScriptTermInterpreter();
-
     // System.out.print("v5v3RegressionFirstAndFollowSets");
 
     ART.tracing = true;
-    regressionScriptInterpreter.interpretARTScript(scriptString);
+    regressionScriptInterpreter = new ScriptTermInterpreter(scriptString);
 
     ARTV3 artV3 = new ARTV3(scriptString);
 

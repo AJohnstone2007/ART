@@ -10,6 +10,6 @@ public class ARTFX extends Application {
   @Override
   public void start(Stage primaryStage) throws Exception {
     ARTFX.primaryStage = primaryStage;
-    new ScriptTermInterpreter().interpretARTScript(ART.scriptString(getParameters().getRaw().toArray(new String[0])));
+    new ScriptTermInterpreter(ART.scriptString(getParameters().getRaw().toArray(new String[0])));
   }
 }

@@ -31,7 +31,7 @@ public class ART {
     case "v3":        new ARTV3(Arrays.copyOfRange(args, 1, args.length)); return; // Undocumented internal mode
     case "v4":        new ARTV4(Arrays.copyOfRange(args, 1, args.length)); return; // Undocumented internal mode
     case "ide", "fx": Application.launch(FXStart.class); return;
-    default:          new ScriptTermInterpreter().interpretARTScript(scriptString(args)); return; // Run batch mode without fx in this context
+    default:          new ScriptTermInterpreter(scriptString(args)); return; // Run batch mode without fx in this context
     }
     // No args
     Util.info("ART " + Version.version() + "\nUsage:");
