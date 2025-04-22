@@ -156,7 +156,7 @@ public class AJDebug {
       // }
     }
     // Util.info();
-    if (v5.element.kind == CFGKind.END) return good;
+    if (v5.element.cfgKind == CFGKind.END) return good;
 
     good &= v5v3RegressionCheckFirstAndFollowInstanceSetsRec(v5.seq, artV3);
     good &= v5v3RegressionCheckFirstAndFollowInstanceSetsRec(v5.alt, artV3);
@@ -167,7 +167,7 @@ public class AJDebug {
   private boolean v5v3RegressionCheckFirstAndFollowInstanceSets(CFGRules grammarV5, ARTV3 artV3) {
     boolean good = true;
     for (CFGElement e : grammarV5.elements.keySet())
-      if (e.kind == CFGKind.N) good &= v5v3RegressionCheckFirstAndFollowInstanceSetsRec(grammarV5.elementToNodeMap.get(e).alt, artV3);
+      if (e.cfgKind == CFGKind.N) good &= v5v3RegressionCheckFirstAndFollowInstanceSetsRec(grammarV5.elementToNodeMap.get(e).alt, artV3);
 
     return good;
   }
@@ -220,7 +220,7 @@ public class AJDebug {
   }
 
   ARTGrammarElement v5Element2v3Element(CFGElement elem, ARTV3Module artV3Module) {
-    switch (elem.kind) {
+    switch (elem.cfgKind) {
     case ALT, DO, END, KLN, OPT, POS:
       return null; // These should not appear
 

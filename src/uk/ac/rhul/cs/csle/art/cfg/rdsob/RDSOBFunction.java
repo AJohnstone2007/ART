@@ -9,7 +9,7 @@ import uk.ac.rhul.cs.csle.art.util.Util;
 public class RDSOBFunction extends AbstractParser {
 
   public boolean match(CFGNode gn, int tokenIndex) {
-    return lexer.tokens[tokenIndex] == gn.element.number;
+    return lexer.getTokens()[tokenIndex] == gn.element.number;
   }
 
   boolean rdsobFunction(CFGNode lhs) {
@@ -24,9 +24,9 @@ public class RDSOBFunction extends AbstractParser {
       dn.gn = tmp;
       CFGNode gn = tmp.seq;
       while (true) {
-        switch (gn.element.kind) {
+        switch (gn.element.cfgKind) {
         case B, C, T, TI:
-          if (lexer.tokens[tokenIndex++] == gn.element.number) {
+          if (lexer.getTokens()[tokenIndex++] == gn.element.number) {
             gn = gn.seq;
             break;
           } else
@@ -58,7 +58,7 @@ public class RDSOBFunction extends AbstractParser {
     this.lexer = lexer;
     tokenIndex = 0;
     dnRoot = dn = new DerivationSingletonNode(cfgRules.endOfStringNode, null);
-    inLanguage = rdsobFunction(cfgRules.elementToNodeMap.get(cfgRules.startNonterminal)) && lexer.tokens[tokenIndex] == 0;
+    inLanguage = rdsobFunction(cfgRules.elementToNodeMap.get(cfgRules.startNonterminal)) && lexer.getTokens()[tokenIndex] == 0;
     if (!inLanguage) Util.echo("Syntax error at location " + tokenIndex, Util.lineNumber(tokenIndex, lexer.inputString), lexer.inputString);
   }
 

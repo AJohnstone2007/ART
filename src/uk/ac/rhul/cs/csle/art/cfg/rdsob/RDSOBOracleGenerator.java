@@ -20,9 +20,9 @@ public class RDSOBOracleGenerator {
   private final Set<String> printedInits = new HashSet<>();
 
   private void printAllInitsRec(CFGNode cfgNode) {
-    if (cfgNode == null || cfgNode.element.kind == CFGKind.END) return;
+    if (cfgNode == null || cfgNode.element.cfgKind == CFGKind.END) return;
 
-    if (cfgNode.element.kind == CFGKind.N && cfgNode.element.attributes.keySet().size() > 0) {
+    if (cfgNode.element.cfgKind == CFGKind.N && cfgNode.element.attributes.keySet().size() > 0) {
       String name = cfgNode.element.str + cfgNode.instanceNumber;
       if (!printedInits.contains(name)) text.println("  Attributes_" + cfgNode.element.str + " " + name + " = new Attributes_" + cfgNode.element.str + "(); ");
       printedInits.add(name);
@@ -53,7 +53,7 @@ public class RDSOBOracleGenerator {
 
     // Write parse functions
     for (var e : cfgRules.elements.keySet())
-      if (e.kind == CFGKind.N) {
+      if (e.cfgKind == CFGKind.N) {
         text.printf("boolean parse_%s() {\n  int iiAtEntry = inputIndex, oiAtEntry = oracleIndex;\n", e.str);
         int pCount = 0;
         boolean seenEpsilon = false;
@@ -63,8 +63,8 @@ public class RDSOBOracleGenerator {
           text.printf("\n  /* Nonterminal %s, alternate %d */\n  inputIndex = iiAtEntry; oracleIndex = oiAtEntry; oracleSet(%d);", e.str, pCount, pCount);
 
           int braceCount = 0;
-          for (var seq = alt.seq; seq.element.kind != CFGKind.END; seq = seq.seq) {
-            switch (seq.element.kind) {
+          for (var seq = alt.seq; seq.element.cfgKind != CFGKind.END; seq = seq.seq) {
+            switch (seq.element.cfgKind) {
             case N:
               text.printf("\n  if (parse_%s()) {", seq.element.str);
               braceCount++;
@@ -82,7 +82,7 @@ public class RDSOBOracleGenerator {
               seenEpsilon = true;
               break;
             default:
-              Util.fatal("Unexpected CFGKind in RDSOBV4Generator parse function " + seq.element.kind);
+              Util.fatal("Unexpected CFGKind in RDSOBV4Generator parse function " + seq.element.cfgKind);
             }
           }
           text.printf(" return true; ");
@@ -98,7 +98,7 @@ public class RDSOBOracleGenerator {
       }
     // Write semantics functions
     for (var e : cfgRules.elements.keySet())
-      if (e.kind == CFGKind.N) {
+      if (e.cfgKind == CFGKind.N) {
         if (e.attributes.keySet().size() > 0) {
           text.printf("class Attributes_%s {", e.str);
           boolean first = true;
@@ -122,7 +122,7 @@ public class RDSOBOracleGenerator {
           printActions(seq); // print initial actions which are held on the alt node
           do {
             seq = seq.seq;
-            switch (seq.element.kind) {
+            switch (seq.element.cfgKind) {
             case N:
               if (seq.element.attributes.keySet().size() > 0)
                 text.printf("    semantics_%s(%s%d);\n", seq.element.str, seq.element.str, seq.instanceNumber);
@@ -141,10 +141,10 @@ public class RDSOBOracleGenerator {
             case END: // nothing to do: just here to ensure that the final action is printed
               break;
             default:
-              Util.fatal("Unexpected CFGKind in RDSOBV4Generator semantics function " + seq.element.kind);
+              Util.fatal("Unexpected CFGKind in RDSOBV4Generator semantics function " + seq.element.cfgKind);
             }
             printActions(seq);
-          } while (seq.element.kind != CFGKind.END);
+          } while (seq.element.cfgKind != CFGKind.END);
           text.println("    break;");
         }
         text.printf("  }\n }\n\n");

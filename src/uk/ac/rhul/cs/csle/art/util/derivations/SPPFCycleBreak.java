@@ -296,7 +296,7 @@ class SPPFCycleBreak {
     sppf.visited.set(sppfn.number);
     updateCountReachable(sppfn);
 
-    if (sppfn.grammarNode.element.kind == CFGKind.EPS)
+    if (sppfn.grammarNode.element.cfgKind == CFGKind.EPS)
       countEps++;
     else if (sppfn.packNodes.size() == 0)
       countTerm++;

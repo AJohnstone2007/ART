@@ -6,7 +6,10 @@ import java.util.Map;
 public class CFGElement implements Comparable<Object> {
 
   public int number;
-  public final CFGKind kind;
+  public boolean isToken;
+  public boolean isWhitespace;
+  public boolean suppressWhitespace;
+  public final CFGKind cfgKind;
   public final String str;
 
   public final Map<String, String> attributes = new HashMap<>();
@@ -14,22 +17,33 @@ public class CFGElement implements Comparable<Object> {
 
   public CFGElement(CFGKind kind, String s) {
     super();
-    this.kind = kind;
+    this.cfgKind = kind;
     this.str = s;
+    switch (this.cfgKind) {
+    case C:
+      isToken = true;
+      suppressWhitespace = true;
+      break;
+    case T, TI, B:
+      isToken = true;
+      break;
+    }
   }
 
   public String toStringDetailed() {
-    return number + ": " + kind + " " + str;
+    return number + ": " + cfgKind + " " + str;
   }
 
   @Override
   public String toString() {
     String ret;
-    switch (kind) {
+    switch (cfgKind) {
     case EOS:
       return "$";
     case T:
       return "'" + str + "'";
+    case TI:
+      return "\"" + str + "\"";
     case C:
       return "`" + str;
     case B:
@@ -59,7 +73,7 @@ public class CFGElement implements Comparable<Object> {
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result = prime * result + ((kind == null) ? 0 : kind.hashCode());
+    result = prime * result + ((cfgKind == null) ? 0 : cfgKind.hashCode());
     result = prime * result + ((str == null) ? 0 : str.hashCode());
     return result;
   }
@@ -70,7 +84,7 @@ public class CFGElement implements Comparable<Object> {
     if (obj == null) return false;
     if (getClass() != obj.getClass()) return false;
     CFGElement other = (CFGElement) obj;
-    if (kind != other.kind) return false;
+    if (cfgKind != other.cfgKind) return false;
     if (str == null) {
       if (other.str != null) return false;
     } else if (!str.equals(other.str)) return false;
@@ -81,9 +95,9 @@ public class CFGElement implements Comparable<Object> {
   public int compareTo(Object o) {
     if (o == null) return 1;
     CFGElement other = (CFGElement) o;
-    if (kind.ordinal() > other.kind.ordinal())
+    if (cfgKind.ordinal() > other.cfgKind.ordinal())
       return 1;
-    else if (kind.ordinal() < other.kind.ordinal())
+    else if (cfgKind.ordinal() < other.cfgKind.ordinal())
       return -1;
     else
       return str.compareTo(other.str);

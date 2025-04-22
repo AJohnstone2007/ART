@@ -42,13 +42,13 @@ public class AttributeActionInterpreter extends AbstractInterpreter {
     var children = parser.cfgRules.iTerms.termChildren(attributes.term);
     int childNumber = 0;
 
-    for (var node = altNode.seq; node.element.kind != CFGKind.END; node = node.seq) // Skip alt node
+    for (var node = altNode.seq; node.element.cfgKind != CFGKind.END; node = node.seq) // Skip alt node
       attributes.initRHSAttributeBlock(node.num, children[childNumber++]);
 
     childNumber = -1;
-    for (var node = altNode; node.element.kind != CFGKind.END; node = node.seq) {
+    for (var node = altNode; node.element.cfgKind != CFGKind.END; node = node.seq) {
       // Util.info("node number " + node.num + " childNumber = " + childNumber + " previous token = " + previousToken);
-      switch (node.element.kind) {
+      switch (node.element.cfgKind) {
       case N:
         if (!node.delayed) interpret(attributes.getAttributes(node.num));
         break;

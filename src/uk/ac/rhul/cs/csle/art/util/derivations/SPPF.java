@@ -53,7 +53,7 @@ public class SPPF extends AbstractDerivations {
 
   @Override
   public AbstractDerivationNode extend(CFGNode gn, AbstractDerivationNode leftNode, AbstractDerivationNode rightNode) {
-    SPPFSymbolNode ret = (SPPFSymbolNode) find(gn.element.kind == CFGKind.END ? gn.seq : gn,
+    SPPFSymbolNode ret = (SPPFSymbolNode) find(gn.element.cfgKind == CFGKind.END ? gn.seq : gn,
         leftNode == null ? rightNode.getLeftExtent() : leftNode.getLeftExtent(), rightNode.getRightExtent());
     // Util.debug(
     // "Extending SPPF node with gn " + gn.toStringAsProduction() + " and extents " + (ln == null ? rn.li : ln.li) + "," + rn.ri + " retrieves node " + ret);
@@ -184,8 +184,8 @@ public class SPPF extends AbstractDerivations {
       if (derivationForInterpreter)
       constructor = firstAvailableSPPFPN == null ? "" + -sppfn.rightExtent : "" + firstAvailableSPPFPN.grammarNode.alt.num;
       else
-      constructor = (gn.element.kind == CFGKind.B)
-          ? parser.lexer.lexemeOfBuiltin(TokenKind.valueOf(gn.element.str), parser.lexer.leftIndices[sppfn.leftExtent])
+      constructor = (gn.element.cfgKind == CFGKind.B)
+          ? parser.lexer.lexemeOfBuiltin(TokenKind.valueOf(gn.element.str), parser.lexer.getLeftIndices()[sppfn.leftExtent])
           : gn.element.str;
 
     if (children != childrenFromParent) {
@@ -271,7 +271,7 @@ public class SPPF extends AbstractDerivations {
     int sppfEpsilonNodeCount = 0, sppfTerminalNodeCount = 0, sppfNonterminalNodeCount = 0, sppfIntermediateNodeCount = 0, sppfPackNodeCount = 0,
         sppfAmbiguityCount = 0, sppfEdgeCount = 0;
     for (SPPFSymbolNode s : nodes.keySet()) {
-      switch (s.grammarNode.element.kind) {
+      switch (s.grammarNode.element.cfgKind) {
       // Dodgy - how do we test the flavour of an SPPF node?
       case T, TI, C, B:
         sppfTerminalNodeCount++;

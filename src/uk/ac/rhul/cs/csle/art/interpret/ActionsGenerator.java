@@ -38,7 +38,7 @@ public class ActionsGenerator {
     text.println("  public String name() { return \"" + timeStamp + "\"; }");
 
     for (var e : cfgRules.elements.keySet())
-      if (e.kind == CFGKind.N) {
+      if (e.cfgKind == CFGKind.N) {
         text.println("\n  public class ART_C_" + e.str + " extends AbstractAttributeBlock {");
         text.print("    ART_C_" + e.str + " " + e.str + " = this;"); // LHS
 
@@ -76,22 +76,22 @@ public class ActionsGenerator {
   }
 
   private void printAllInitsRec(PrintWriter text, CFGNode cfgNode) {
-    if (cfgNode == null || cfgNode.element.kind == CFGKind.END) return;
-    if (cfgNode.element.kind == CFGKind.N) text.println("      case " + cfgNode.num + ": " + cfgNode.element.str + cfgNode.instanceNumber + " = new ART_C_"
+    if (cfgNode == null || cfgNode.element.cfgKind == CFGKind.END) return;
+    if (cfgNode.element.cfgKind == CFGKind.N) text.println("      case " + cfgNode.num + ": " + cfgNode.element.str + cfgNode.instanceNumber + " = new ART_C_"
         + cfgNode.element.str + "(); " + cfgNode.element.str + cfgNode.instanceNumber + ".term = term; break;");
     printAllInitsRec(text, cfgNode.seq);
     printAllInitsRec(text, cfgNode.alt);
   }
 
   private void printAllGetsRec(PrintWriter text, CFGNode cfgNode) {
-    if (cfgNode == null || cfgNode.element.kind == CFGKind.END) return;
-    if (cfgNode.element.kind == CFGKind.N) text.println("      case " + cfgNode.num + ": return " + cfgNode.element.str + cfgNode.instanceNumber + ";");
+    if (cfgNode == null || cfgNode.element.cfgKind == CFGKind.END) return;
+    if (cfgNode.element.cfgKind == CFGKind.N) text.println("      case " + cfgNode.num + ": return " + cfgNode.element.str + cfgNode.instanceNumber + ";");
     printAllGetsRec(text, cfgNode.seq);
     printAllGetsRec(text, cfgNode.alt);
   }
 
   private void printAllActionsRec(PrintWriter text, CFGElement lhs, CFGNode cfgNode) {
-    if (cfgNode == null || cfgNode.element.kind == CFGKind.END) return;
+    if (cfgNode == null || cfgNode.element.cfgKind == CFGKind.END) return;
     if (cfgNode.slotTerm != 0 && iTerms.termArity(cfgNode.slotTerm) != 0) {
       text.print("      case " + cfgNode.num + ":");
       printSlotTermRec(text, cfgNode.slotTerm);
@@ -113,7 +113,7 @@ public class ActionsGenerator {
   }
 
   private void printTermActionsRec(PrintWriter text, CFGNode cfgNode) {
-    if (cfgNode == null || cfgNode.element.kind == CFGKind.END) return;
+    if (cfgNode == null || cfgNode.element.cfgKind == CFGKind.END) return;
     // printSlotTerm(text, cfgNode.slotTerm);
     printTermActionsRec(text, cfgNode.seq);
     printTermActionsRec(text, cfgNode.alt);

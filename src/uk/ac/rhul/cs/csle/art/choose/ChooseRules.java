@@ -43,7 +43,7 @@ public class ChooseRules {
         anyNonStr = "__set(", anyLiteralStr = "__set(", anyStr = "__set(";
 
     for (CFGElement e1 : grammar.elements.keySet()) {
-      switch (e1.kind) {
+      switch (e1.cfgKind) {
       case B:
         anyBuiltinStr = extendStringList(anyBuiltinStr, "srBuiltinTerminal(" + ITerms.escapeMeta(e1.str) + ")");
         anyStr = extendStringList(anyStr, "srBuiltinTerminal(" + ITerms.escapeMeta(e1.str) + ")");

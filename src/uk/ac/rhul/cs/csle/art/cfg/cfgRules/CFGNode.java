@@ -73,12 +73,12 @@ public class CFGNode {
 
   public String toStringDot() {
     String ret = num + " ";
-    switch (element.kind) {
+    switch (element.cfgKind) {
     case EOS, ALT, DO, KLN, OPT, POS:
-      ret += element.kind;
+      ret += element.cfgKind;
       break;
     case T, C, B, N, EPS:
-      ret += element.kind + "\n" + element.str + giftToString();
+      ret += element.cfgKind + "\n" + element.str + giftToString();
       break;
     case END:
       ret += "END " + "\n(" + seq.num + "," + alt.num + ")";
@@ -97,7 +97,7 @@ public class CFGNode {
   }
 
   public String toString1() {
-    switch (element.kind) {
+    switch (element.cfgKind) {
     case EOS:
       return "EOS node";
     case T:
@@ -137,11 +137,11 @@ public class CFGNode {
 
     if (CFGRules.isLHS(this) || (seq == null && alt == null))
       sb.append(element.str);
-    else if (seq.element.kind == CFGKind.EOS)
+    else if (seq.element.cfgKind == CFGKind.EOS)
       sb.append(seq);
     else {
       CFGNode tmp;
-      for (tmp = this; !(tmp.element.kind == CFGKind.END && CFGRules.isLHS(tmp.seq)); tmp = tmp.seq) {// Locate the end of this production
+      for (tmp = this; !(tmp.element.cfgKind == CFGKind.END && CFGRules.isLHS(tmp.seq)); tmp = tmp.seq) {// Locate the end of this production
         // Util.info("toStringAsProduction at " + tmp + " with next-in-sequence element " + tmp.seq.elm);
       }
       sb.append(tmp.seq.element.str + rewritesDenotation); // Render LHS
@@ -153,17 +153,17 @@ public class CFGNode {
 
   private void toStringAsSequenceRec(StringBuilder sb, CFGNode alt, String slotDenotation, CFGNode targetNode) {
     // Util.info("toStringAsSequenceRec called on " + this.instanceNumber + ":" + this);
-    if (alt.element.kind != CFGKind.ALT) Util.fatal("toStringAsSequenceRec() called on node " + alt.num + " which is not not an ALT node");
+    if (alt.element.cfgKind != CFGKind.ALT) Util.fatal("toStringAsSequenceRec() called on node " + alt.num + " which is not not an ALT node");
     for (CFGNode tmpSeq = alt.seq;; tmpSeq = tmpSeq.seq) { // run down this sequence
       if (tmpSeq == targetNode) sb.append(slotDenotation);
-      if (tmpSeq.element.kind != CFGKind.END && tmpSeq.alt != null) { // If this element has an alt, then recursively process it first
+      if (tmpSeq.element.cfgKind != CFGKind.END && tmpSeq.alt != null) { // If this element has an alt, then recursively process it first
         sb.append(" (");
         for (CFGNode tmpAlt = tmpSeq.alt; tmpAlt != null; tmpAlt = tmpAlt.alt) {
           toStringAsSequenceRec(sb, tmpAlt, slotDenotation, targetNode);
           if (tmpAlt.alt != null) sb.append(" |"); // Closing parethesis supplied by next level up
         }
       }
-      if (tmpSeq.element.kind == CFGKind.END) return;
+      if (tmpSeq.element.cfgKind == CFGKind.END) return;
       sb.append(" " + tmpSeq);
     }
   }

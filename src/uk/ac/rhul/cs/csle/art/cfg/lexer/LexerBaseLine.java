@@ -1,459 +1,265 @@
 package uk.ac.rhul.cs.csle.art.cfg.lexer;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Set;
 
-import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGKind;
+import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGElement;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGRules;
 import uk.ac.rhul.cs.csle.art.util.Util;
 import uk.ac.rhul.cs.csle.art.util.statistics.Statistics;
 
-public class LexerSingletonLongestMatch extends AbstractLexer {
-  private int[] tokens; // Input as array of tokens
-  private int[] leftIndices;
-  private int[] rightIndices;
+public class LexerBaseLine extends AbstractLexer {
 
-  @Override
-  public int[] getTokens() {
-    return tokens;
-  }
-
-  @Override
-  public int[] getLeftIndices() {
-    return leftIndices;
-  }
+  public ArrayList<Set<TWESetElement>> tweSet;
+  private int inputIndex, inputLength, lexemeEnd;
 
   @Override
   public String lexeme(int l) {
-    return inputString.substring(leftIndices[l], rightIndices[l]);
+    // TODO Auto-generated method stub
+    return null;
   }
-
-  @Override
-  public void lex(String inputString, CFGRules cfgRules) {
-    this.inputString = inputString + "\0";
-    this.cfgRules = cfgRules;
-
-    // Util.info("Starting lexing with kinds/string arrays:");
-    // for (int i = 0; i < kinds.length; i++)
-    // Util.info(kinds[i] + "/" + strings[i]);
-
-    inputAsCharArray = inputString.toCharArray();
-    lexerInputIndex = 0;
-    inputLength = inputString.length();
-
-    tokenList = new ArrayList<>();
-    leftIndexList = new ArrayList<>();
-    rightIndexList = new ArrayList<>();
-    tokens = leftIndices = null;
-
-    longestMatchRightIndex = 0;
-    longestMatchToken = 0;
-    // Util.info("Input: " + inputString);
-
-    while (lexerInputIndex < inputAsCharArray.length) {
-      // Absorb a run of whitespace tokens
-      // Util.info("Absorbing WS at index " + inputIndex);
-      while (true) {
-        int wsStart = lexerInputIndex;
-
-        for (var w : cfgRules.whitespaces)
-          if (w.cfgKind == CFGKind.B) processBuiltin(TokenKind.valueOf(w.str), null);
-
-        if (lexerInputIndex == wsStart) break;
-      }
-
-      if (lexerInputIndex == inputLength) break;
-
-      leftIndex = lexerInputIndex;
-
-      // Util.info("Running recognisers at index " + inputIndex);
-      for (int token = 1; token < cfgRules.tokenKindsArray.length; token++) {
-        lexerInputIndex = leftIndex;
-        processBuiltin(cfgRules.tokenKindsArray[token], cfgRules.tokenStringsArray[token]);
-        checkLongestMatch(token);
-      }
-
-      if (longestMatchRightIndex == leftIndex) { // We matched nothing, which is an error
-        lexicalError("Unrecognised lexeme");
-        tokenList = null;
-        return;
-      }
-
-      tokenList.add(longestMatchToken);
-      leftIndexList.add(leftIndex);
-      rightIndexList.add(longestMatchRightIndex);
-      lexerInputIndex = longestMatchRightIndex;
-    }
-    if (deleteTokenCount > 0) {
-      Util.info("Deleting " + deleteTokenCount + " tokens - original size " + tokenList.size() + "\n");
-      int leftIndex = tokenList.size() / 2 - deleteTokenCount / 2;
-      tokenList.subList(leftIndex, leftIndex + deleteTokenCount).clear();
-      Util.info("Deleted " + deleteTokenCount + " tokens - final size " + tokenList.size() + "\n");
-    }
-    tokenList.add(0); // Terminating EOS
-    leftIndexList.add(inputString.length());
-    rightIndexList.add(inputString.length() + 1);
-    tokens = new int[tokenList.size()];
-    leftIndices = new int[tokenList.size()];
-    rightIndices = new int[tokenList.size()];
-    for (int i = 0; i < tokens.length; i++) {
-      getTokens()[i] = tokenList.get(i);
-      leftIndices[i] = leftIndexList.get(i);
-      rightIndices[i] = rightIndexList.get(i);
-    }
-    if (swapTokenCount > 0) {
-      Util.trace(2, 0, "Swapping " + swapTokenCount + " tokens\n");
-      int leftIndex = tokenList.size() / 2 - swapTokenCount / 2;
-      int rightIndex = tokenList.size() / 2 + swapTokenCount / 2;
-      while (leftIndex < rightIndex) {
-        int tmp = getTokens()[leftIndex];
-        getTokens()[leftIndex] = getTokens()[rightIndex];
-        getTokens()[rightIndex] = tmp;
-
-        tmp = leftIndices[leftIndex];
-        leftIndices[leftIndex] = leftIndices[rightIndex];
-        leftIndices[rightIndex] = tmp;
-
-        tmp = rightIndices[leftIndex];
-        rightIndices[leftIndex] = rightIndices[rightIndex];
-        rightIndices[rightIndex] = tmp;
-
-        leftIndex++;
-        rightIndex--;
-      }
-    }
-  }
-
-  private void checkLongestMatch(int token) {
-    if (lexerInputIndex > longestMatchRightIndex) {
-      longestMatchRightIndex = lexerInputIndex;
-      longestMatchToken = token;
-      lexerInputIndex = leftIndex;
-    }
-  }
-
-  @Override
-  public void statistics(Statistics statistics) {
-    {
-      statistics.put("tweNodeCount", (long) getTokens().length);
-      statistics.put("tweEdgeCount", getTokens().length - 1);
-      statistics.put("tweLexCount", 1);
-    }
-  }
-
-  public int[] oracle;
-  protected ArrayList<Integer> tokenList;
-  protected ArrayList<Integer> leftIndexList;
-  protected ArrayList<Integer> rightIndexList;
-
-  protected int inputLength, leftIndex, longestMatchToken, longestMatchRightIndex, firstBuiltin;
 
   @Override
   public void printLexicalisations(boolean raw) {
-    // Util.info("String: " + inputString);
-    // var lexemeKinds = LexemeKind.values();
-    // for (int i = 0; i < lexemeKinds.length; i++)
-    // Util.info(lexemeKinds[i]);
-    // int index = 0;
-    if (raw)
-      for (int i = 0; i < tokens.length; i++)
-        Util.info(cfgRules.tokenKindsArray()[tokenList.get(i)] == TokenKind.SINGLETON_CASE_SENSITIVE ? cfgRules.tokenStringsArray()[getTokens()[i]]
-            : cfgRules.tokenKindsArray()[tokenList.get(i)].toString());
-    else
-      for (int i = 0; i < tokens.length; i++)
-        Util.info(i + ":" + leftIndices[i] + "," + rightIndices[i] + " " + cfgRules.tokenKindsArray[tokenList.get(i)] + " "
-            + cfgRules.tokenStringsArray[getTokens()[i]]);
+    System.out.println("TWE set for input string " + inputString);
+    for (int i = 0; i < tweSet.size(); i++) {
+      var e = tweSet.get(i);
+      if (e != null) for (var s : e)
+        System.out.println(i + ": " + s + " lexeme " + inputString.substring(i, s.lexemeEnd));
+    }
   }
 
   @Override
   public String lexemeOfBuiltin(TokenKind kind, int startIndex) {
-    switch (kind) {
-    case ID: {
-      int right = startIndex;
-      while (right < inputString.length()
-          && (Character.isAlphabetic(inputString.charAt(right)) || Character.isDigit(inputString.charAt(right)) || inputString.charAt(right) == '_'))
-        right++;
-
-      return inputString.substring(startIndex, right);
-    }
-    case CHARACTER:
-      return inputString.substring(startIndex + 1, startIndex + 2);
-    case CHAR_BQ:
-      return inputString.substring(startIndex + 1, startIndex + 2);
-    case COMMENT_BLOCK_C:
-      break;
-    case COMMENT_LINE_C:
-      break;
-    case COMMENT_NEST_ART:
-      break;
-    case INTEGER: {
-      int right = startIndex;
-      while (right < inputString.length() && (Character.isDigit(inputString.charAt(right)) || inputString.charAt(right) == '_'))
-        right++;
-      return inputString.substring(startIndex, right);
-    }
-    case SIGNED_INTEGER: {
-      int right = startIndex;
-      if (inputString.charAt(right) == '-') right++;
-      while (right < inputString.length() && (Character.isDigit(inputString.charAt(right)) || inputString.charAt(right) == '_'))
-        right++;
-      return inputString.substring(startIndex, right);
-    }
-    case AP_INTEGER: {
-      int right = startIndex + 1; // skip £
-      if (inputString.charAt(right) == '-') right++;
-      while (right < inputString.length() && (Character.isDigit(inputString.charAt(right)) || inputString.charAt(right) == '_'))
-        right++;
-      return inputString.substring(startIndex + 1, right);
-    }
-    case REAL: {
-      int right = startIndex;
-      while (right < inputString.length() && Character.isDigit(inputString.charAt(right)))
-        right++;
-      right++; // skip decimal point
-      while (right < inputString.length() && Character.isDigit(inputString.charAt(right)))
-        right++;
-      return inputString.substring(startIndex, right);
-    }
-    case SIGNED_REAL: {
-      int right = startIndex;
-      if (inputString.charAt(right) == '-') right++;
-      while (right < inputString.length() && Character.isDigit(inputString.charAt(right)))
-        right++;
-      right++; // skip decimal point
-      while (right < inputString.length() && Character.isDigit(inputString.charAt(right)))
-        right++;
-      return inputString.substring(startIndex, right);
-    }
-    case AP_REAL: {
-      int right = startIndex + 1;
-      if (inputString.charAt(right) == '-') right++;
-      while (right < inputString.length() && Character.isDigit(inputString.charAt(right)))
-        right++;
-      right++; // skip decimal point
-      while (right < inputString.length() && Character.isDigit(inputString.charAt(right)))
-        right++;
-      return inputString.substring(startIndex + 1, right);
-    }
-    case SIMPLE_WHITESPACE:
-      break;
-    case SINGLETON_CASE_INSENSITIVE:
-      break;
-    case SINGLETON_CASE_SENSITIVE:
-      break;
-    case STRING_PLAIN_SQ: {
-      int right = startIndex + 1;
-      while (inputString.charAt(right) != '\'')
-        right++;
-      return inputString.substring(startIndex + 1, right);
-    }
-    case STRING_DQ: {
-      int right = startIndex + 1;
-      while (inputString.charAt(right) != '\"')
-        right++;
-      return inputString.substring(startIndex + 1, right);
-    }
-    case STRING_BRACE_NEST: {
-      int level = 1, right = startIndex + 1;
-      while (level != 0) {
-        if (inputString.charAt(right) == '{')
-          level++;
-        else if (inputString.charAt(right) == '}') level--;
-        right++;
-      }
-      return inputString.substring(startIndex + 1, right);
-    }
-    case STRING_BRACKET_NEST: {
-      int level = 1, right = startIndex + 1;
-      while (level != 0) {
-        if (inputString.charAt(right) == '<')
-          level++;
-        else if (inputString.charAt(right) == '>') level--;
-        right++;
-      }
-      return inputString.substring(startIndex + 1, right);
-    }
-    case STRING_DOLLAR: {
-      int right = startIndex + 1;
-      while (inputString.charAt(right) != '$')
-        right++;
-      return inputString.substring(startIndex + 1, right);
-    }
-    case STRING_SHRIEK_SHRIEK: {
-      int right = startIndex + 2;
-      while (!(inputString.charAt(right) == '!' && inputString.charAt(right + 1) == '!'))
-        right++;
-      return inputString.substring(startIndex + 2, right);
-    }
-    case STRING_SQ: {
-      int right = startIndex + 1;
-      while (inputString.charAt(right) != '\'')
-        right++;
-      return inputString.substring(startIndex + 1, right);
-    }
-    }
-    return "unprocessed lexeme";
+    // TODO Auto-generated method stub
+    return null;
   }
 
-  protected void processBuiltin(TokenKind b, String s) {
-    // System.out.print("Checking builtin " + b + "/" + s + " at inputIndex " + inputIndex);
-    switch (b) {
-    case CHARACTER:
-      match_CHARACTER(s);
-      break;
-    case SINGLETON_CASE_INSENSITIVE:
-      match_SINGLETON_CASE_INSENSITIVE(s);
-      break;
-    case SINGLETON_CASE_SENSITIVE:
-      match_SINGLETON_CASE_SENSITIVE(s);
-      break;
-    case ID:
-      match_ID();
-      break;
-    case INTEGER:
-      match_INTEGER();
-      break;
-    case SIGNED_INTEGER:
-      match_SIGNED_INTEGER();
-      break;
-    case AP_INTEGER:
-      match_AP_INTEGER();
-      break;
-    case REAL:
-      match_REAL();
-      break;
-    case AP_REAL:
-      match_AP_REAL();
-      break;
-    case SIGNED_REAL:
-      match_SIGNED_REAL();
-      break;
-    case CHAR_BQ:
-      match_CHAR_BQ();
-      break;
-    case STRING_DQ:
-      match_STRING_DQ();
-      break;
-    case STRING_SQ:
-      match_STRING_SQ();
-      break;
-    case STRING_PLAIN_SQ:
-      match_STRING_PLAIN_SQ();
-      break;
-    case STRING_BRACE_NEST:
-      match_STRING_BRACE_NEST();
-      break;
-    case STRING_BRACKET_NEST:
-      match_STRING_BRACKET_NEST();
-      break;
-    case STRING_DOLLAR:
-      match_STRING_DOLLAR();
-      break;
-    case STRING_SHRIEK_SHRIEK:
-      match_STRING_SHRIEK_SHREIK();
-      break;
-    case SIMPLE_WHITESPACE:
-      match_SIMPLE_WHITESPACE();
-      break;
-    case COMMENT_BLOCK_C:
-      match_COMMENT_BLOCK_C();
-      break;
-    case COMMENT_LINE_C:
-      match_COMMENT_LINE_C();
-      break;
-    case COMMENT_NEST_ART:
-      match_COMMENT_NEST_ART();
-      break;
+  @Override
+  public void statistics(Statistics currentstatistics) {
+    // TODO Auto-generated method stub
 
-    case SML_COMMENT:
-      match_SML_COMMENT();
-      break;
-    case SML_D:
-      match_SML_D();
-      break;
-    case SML_INT:
-      match_SML_INT();
-      break;
-    case SML_WORD:
-      match_SML_WORD();
-      break;
-    case SML_REAL:
-      match_SML_REAL();
-      break;
-    case SML_CHAR:
-      match_SML_CHAR();
-      break;
-    case SML_STRING:
-      match_SML_STRING();
-      break;
-    case SML_VID:
-      match_SML_VID();
-      break;
-    case SML_TYVAR:
-      match_SML_TYVAR();
-      break;
-    case SML_TYCON:
-      match_SML_TYCON();
-      break;
-    case SML_LAB:
-      match_SML_LAB();
-      break;
-    case SML_STRID:
-      match_SML_STRID();
-      break;
-    case SML_SYMID:
-      match_SML_SYMID();
-      break;
+  }
 
+  @Override
+  public int[] getTokens() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public int[] getLeftIndices() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public void lex(String userString, CFGRules cfgRules) {
+    inputString = userString + "\0";
+    inputAsCharArray = inputString.toCharArray();
+    inputIndex = 0;
+    inputLength = inputString.length();
+    tweSet = new ArrayList<>();
+    for (int i = 0; i < inputLength; i++)
+      tweSet.add(null);
+    tweSet.set(0, new HashSet<>());
+
+    for (int i = 0; i < inputString.length(); i++)
+      if (tweSet.get(i) != null) constructTWESlice(i, cfgRules);
+
+    var lastElement = tweSet.get(inputLength - 1);
+
+    if (lastElement != null) lastElement.add(new TWESetElement(cfgRules.endOfStringElement, inputLength, inputLength));
+  }
+
+  public void constructTWESlice(int lexemeStart, CFGRules cfgRules) {
+    for (var e : cfgRules.elements.keySet())
+      if (e.isToken) {
+        inputIndex = lexemeStart;
+        tryTokenMatch(e);
+        if (inputIndex != lexemeStart) {// Matched?
+          lexemeEnd = inputIndex;
+          int wsStart;
+          if (!e.suppressWhitespace) do {
+            wsStart = inputIndex;
+            for (var w : cfgRules.elements.keySet())
+              if (w.isWhitespace) tryTokenMatch(w);
+          } while (inputIndex != wsStart); // No more whitespace found
+
+          tweSet.get(lexemeStart).add(new TWESetElement(e, lexemeEnd, inputIndex));
+          if (tweSet.get(inputIndex) == null) tweSet.set(inputIndex, new HashSet<>()); // Mark for downstream processing
+        }
+      }
+  }
+
+  private void tryTokenMatch(CFGElement e) {
+    // System.out.println("tryTokenMatch(" + e + ") at inputIndex " + lexerInputIndex);
+
+    switch (e.cfgKind) {
     default:
-      Util.fatal("Unknown builtin " + b);
+      Util.fatal("tryTokenMatch() on cfgElement with unexpected cfgKind " + e);
       break;
+    case T:
+      match_SINGLETON_CASE_INSENSITIVE(e.str);
+      break;
+    case TI:
+      match_SINGLETON_CASE_INSENSITIVE(e.str);
+    case C:
+      match_CHARACTER(e.str);
+      break;
+    case N:
+      Util.fatal("tryTokenMatch() in class " + this.getClass().getSimpleName() + " does not support paraterminals");
+    case B:
+      switch (e.str) {
+      case "ID":
+        match_ID();
+        break;
+      case "INTEGER":
+        match_INTEGER();
+        break;
+      case "SIGNED_INTEGER":
+        match_SIGNED_INTEGER();
+        break;
+      case "AP_INTEGER":
+        match_AP_INTEGER();
+        break;
+      case "REAL":
+        match_REAL();
+        break;
+      case "AP_REAL":
+        match_AP_REAL();
+        break;
+      case "SIGNED_REAL":
+        match_SIGNED_REAL();
+        break;
+      case "CHAR_BQ":
+        match_CHAR_BQ();
+        break;
+      case "STRING_DQ":
+        match_STRING_DQ();
+        break;
+      case "STRING_SQ":
+        match_STRING_SQ();
+        break;
+      case "STRING_PLAIN_SQ":
+        match_STRING_PLAIN_SQ();
+        break;
+      case "STRING_BRACE_NEST":
+        match_STRING_BRACE_NEST();
+        break;
+      case "STRING_BRACKET_NEST":
+        match_STRING_BRACKET_NEST();
+        break;
+      case "STRING_DOLLAR":
+        match_STRING_DOLLAR();
+        break;
+      case "STRING_SHRIEK_SHRIEK":
+        match_STRING_SHRIEK_SHREIK();
+        break;
+      case "SIMPLE_WHITESPACE":
+        match_SIMPLE_WHITESPACE();
+        break;
+      case "COMMENT_BLOCK_C":
+        match_COMMENT_BLOCK_C();
+        break;
+      case "COMMENT_LINE_C":
+        match_COMMENT_LINE_C();
+        break;
+      case "COMMENT_NEST_ART":
+        match_COMMENT_NEST_ART();
+        break;
+
+      case "SML_COMMENT":
+        match_SML_COMMENT();
+        break;
+      case "SML_D":
+        match_SML_D();
+        break;
+      case "SML_INT":
+        match_SML_INT();
+        break;
+      case "SML_WORD":
+        match_SML_WORD();
+        break;
+      case "SML_REAL":
+        match_SML_REAL();
+        break;
+      case "SML_CHAR":
+        match_SML_CHAR();
+        break;
+      case "SML_STRING":
+        match_SML_STRING();
+        break;
+      case "SML_VID":
+        match_SML_VID();
+        break;
+      case "SML_TYVAR":
+        match_SML_TYVAR();
+        break;
+      case "SML_TYCON":
+        match_SML_TYCON();
+        break;
+      case "SML_LAB":
+        match_SML_LAB();
+        break;
+      case "SML_STRID":
+        match_SML_STRID();
+        break;
+      case "SML_SYMID":
+        match_SML_SYMID();
+        break;
+
+      default:
+        Util.fatal("Unknown builtin in lexer " + e);
+        break;
+      }
+
     }
-    // Util.info(" return " + inputIndex);
   }
 
   /******************************************************************************
    *
-   * Builtin recognisers and their support functions below this line
+   * Individual recognisers and their support functions below this line
    *
    ******************************************************************************/
   protected char peekCh() {
-    if (lexerInputIndex >= inputLength)
+    if (inputIndex >= inputLength)
       return '\0';
     else
-      return inputAsCharArray[lexerInputIndex];
+      return inputAsCharArray[inputIndex];
   }
 
   protected char peekChToLower() {
-    if (lexerInputIndex >= inputLength)
+    if (inputIndex >= inputLength)
       return '\0';
     else
-      return Character.toLowerCase(inputAsCharArray[lexerInputIndex]);
+      return Character.toLowerCase(inputAsCharArray[inputIndex]);
   }
 
   protected char peekOneCh() {
-    if (lexerInputIndex + 1 >= inputLength)
+    if (inputIndex + 1 >= inputLength)
       return '\0';
     else
-      return inputAsCharArray[lexerInputIndex + 1];
+      return inputAsCharArray[inputIndex + 1];
   }
 
   protected char peekCh(int offset) {
-    if (lexerInputIndex + offset >= inputLength)
+    if (inputIndex + offset >= inputLength)
       return '\0';
     else
-      return inputAsCharArray[lexerInputIndex + offset];
+      return inputAsCharArray[inputIndex + offset];
   }
 
   protected char getCh() {
-    if (lexerInputIndex >= inputLength)
+    if (inputIndex >= inputLength)
       return '\0';
     else
-      return inputAsCharArray[lexerInputIndex++];
+      return inputAsCharArray[inputIndex++];
   }
 
   protected void seekCh(int offset) {
-    lexerInputIndex = offset;
+    inputIndex = offset;
     getCh();
   }
 
@@ -478,17 +284,17 @@ public class LexerSingletonLongestMatch extends AbstractLexer {
   }
 
   protected void match_CHARACTER(String string) {
-    if (string.charAt(0) != peekCh()) {
-      lexerInputIndex = leftIndex;
+    if (string.charAt(0) != peekCh())
       return;
-    } else
+    else
       getCh();
   }
 
   protected void match_SINGLETON_CASE_SENSITIVE(String string) {
+    int lexemeStart = inputIndex;
     for (int i = 0; i < string.length(); i++)
       if (string.charAt(i) != peekCh()) {
-        lexerInputIndex = leftIndex;
+        inputIndex = lexemeStart;
         // Util.info(" reject");
         return;
       } else
@@ -496,9 +302,10 @@ public class LexerSingletonLongestMatch extends AbstractLexer {
   }
 
   protected void match_SINGLETON_CASE_INSENSITIVE(String string) {
+    int lexemeStart = inputIndex;
     for (int i = 0; i < string.length(); i++)
       if (string.charAt(i) != peekChToLower()) {
-        lexerInputIndex = leftIndex;
+        inputIndex = lexemeStart;
         return;
       } else
         getCh();
@@ -535,6 +342,8 @@ public class LexerSingletonLongestMatch extends AbstractLexer {
 
     if (!(isDigit(peekCh()) || (peekCh() == '~' && isDigit(peekOneCh())))) return;
 
+    int lexemeStart = inputIndex;
+
     if (peekCh() == '~') getCh();
 
     /* Check for hexadecimal introducer */
@@ -544,7 +353,7 @@ public class LexerSingletonLongestMatch extends AbstractLexer {
       getCh();
       getCh(); // Skip over hex introducer
       if (!isHexDigit(peekCh())) {
-        lexerInputIndex = leftIndex;
+        inputIndex = lexemeStart;
         return;
       }
       while (isHexDigit(peekCh()))
@@ -557,6 +366,8 @@ public class LexerSingletonLongestMatch extends AbstractLexer {
   protected void match_SML_WORD() {
     if (!(peekCh() == '0' && peekOneCh() == 'w')) return;
 
+    int lexemeStart = inputIndex;
+
     getCh(); // Skip leading 0w
     getCh();
 
@@ -566,7 +377,7 @@ public class LexerSingletonLongestMatch extends AbstractLexer {
     if (hex) {
       getCh(); // Skip over hex introducer
       if (!isHexDigit(peekCh())) {
-        lexerInputIndex = leftIndex;
+        inputIndex = lexemeStart;
         return;
       }
       while (isHexDigit(peekCh()))
@@ -579,6 +390,7 @@ public class LexerSingletonLongestMatch extends AbstractLexer {
   protected void match_SML_REAL() {
     if (!(isDigit(peekCh()) || (peekCh() == '~' && isDigit(peekOneCh())))) return;
 
+    int lexemeStart = inputIndex;
     boolean invalid = true;
 
     if (peekCh() == '~') getCh();
@@ -600,7 +412,7 @@ public class LexerSingletonLongestMatch extends AbstractLexer {
       getCh(); // skip e | E
 
       if (!(isDigit(peekCh()) || (peekCh() == '~' && isDigit(peekOneCh())))) {
-        lexerInputIndex = leftIndex;
+        inputIndex = lexemeStart;
         return;
       }
 
@@ -614,7 +426,7 @@ public class LexerSingletonLongestMatch extends AbstractLexer {
 
     // One or other or both of the optional parts must be present for this to be a float
     if (invalid) {
-      lexerInputIndex = leftIndex;
+      inputIndex = lexemeStart;
       return;
     }
   }
@@ -657,7 +469,6 @@ public class LexerSingletonLongestMatch extends AbstractLexer {
   }
 
   protected void match_SML_TYVAR() {
-    int lexemeStart = lexerInputIndex;
     if (peekCh() == '\'') {
       // if (isAlpha(peekOneCh()) || peekOneCh() == '_' || peekOneCh() == '\'') {
       getCh();
@@ -731,6 +542,8 @@ public class LexerSingletonLongestMatch extends AbstractLexer {
     if (!isDigit(peekCh())) // Integers must contain at least one leading digit
       return;
 
+    int lexemeStart = inputIndex;
+
     /* Check for hexadecimal introducer */
     boolean hex = (peekCh() == '0' && (peekOneCh() == 'x' || peekOneCh() == 'X'));
 
@@ -738,7 +551,7 @@ public class LexerSingletonLongestMatch extends AbstractLexer {
       getCh();
       getCh(); // Skip over hex introducer
       if (!isHexDigit(peekCh())) {
-        lexerInputIndex = leftIndex;
+        inputIndex = lexemeStart;
         return;
       }
       while (isHexDigit(getCh()))
@@ -761,6 +574,7 @@ public class LexerSingletonLongestMatch extends AbstractLexer {
   }
 
   protected void match_REAL() {
+    int lexemeStart = inputIndex;
     if (!isDigit(peekCh())) // Reals must contain at least one leading digit
       return;
 
@@ -769,7 +583,7 @@ public class LexerSingletonLongestMatch extends AbstractLexer {
 
     // Util.info("Testing for real at " + artCharacterStringInputIndex + ": current characters are " + peekCh() + " and " + peekOneCh());
     if (!(peekCh() == '.' && isDigit(peekOneCh()))) {
-      lexerInputIndex = leftIndex;
+      inputIndex = lexemeStart;
       return;
     }
 
@@ -804,10 +618,11 @@ public class LexerSingletonLongestMatch extends AbstractLexer {
 
   protected void match_CHAR_SQ() {
     if (peekCh() != '\'') return;
+    int lexemeStart = inputIndex;
     getCh(); // Skip delimiter
     if (getCh() == '\\') artSkipEscapeSequence();
     if (peekCh() != '\'') {
-      lexerInputIndex = leftIndex;
+      inputIndex = lexemeStart;
       return;
     } // Abort and return
     getCh(); // Skip delimiter
@@ -1011,5 +826,4 @@ public class LexerSingletonLongestMatch extends AbstractLexer {
     while (peekCh() != '\n' && peekCh() != '\0') // Quietly accept an input file with no \n at the end.
       getCh();
   }
-
 }

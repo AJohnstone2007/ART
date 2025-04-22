@@ -180,7 +180,7 @@ public class GLLHashPool extends HashPool {
       while (true) {
         switch (kindOf[gn]) {
         case T:
-          if (lexer.tokens[tokenIndex] == elementOf[gn]) {
+          if (lexer.getTokens()[tokenIndex] == elementOf[gn]) {
             d(1);
             tokenIndex++;
             gn++;
@@ -225,7 +225,7 @@ public class GLLHashPool extends HashPool {
 
   private void retrn() {
     if (poolGet(sn + gssNode_gn) == endOfStringNodeNi) {
-      if (cfgRules.acceptingNodeNumbers.contains(gn)) inLanguage |= (tokenIndex == lexer.tokens.length - 1); // Make gni to boolean array for acceptance testing
+      if (cfgRules.acceptingNodeNumbers.contains(gn)) inLanguage |= (tokenIndex == lexer.getTokens().length - 1); // Make gni to boolean array for acceptance testing
       return;
     }
     find(popElementBuckets, popElementBucketCount, popElement_SIZE, tokenIndex, sn, dn);
@@ -299,8 +299,8 @@ public class GLLHashPool extends HashPool {
 
   /* Statistics support ******************************************************/
   private void loadCounts() {
-    ScriptTermInterpreter.currentStatistics.put("tweNodeCount", lexer.tokens.length);
-    ScriptTermInterpreter.currentStatistics.put("tweEdgeCount", lexer.tokens.length - 1);
+    ScriptTermInterpreter.currentStatistics.put("tweNodeCount", lexer.getTokens().length);
+    ScriptTermInterpreter.currentStatistics.put("tweEdgeCount", lexer.getTokens().length - 1);
     ScriptTermInterpreter.currentStatistics.put("tweLexCount", 1);
     ScriptTermInterpreter.currentStatistics.put("descriptorCount", cardinality(descriptorBuckets));
     ScriptTermInterpreter.currentStatistics.put("gssNodeCount", cardinality(gssNodeBuckets));

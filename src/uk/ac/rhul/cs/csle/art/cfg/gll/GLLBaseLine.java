@@ -4,6 +4,7 @@ import uk.ac.rhul.cs.csle.art.cfg.AbstractParser;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGRules;
 import uk.ac.rhul.cs.csle.art.cfg.lexer.AbstractLexer;
+import uk.ac.rhul.cs.csle.art.cfg.lexer.LexerBaseLine;
 import uk.ac.rhul.cs.csle.art.util.Util;
 import uk.ac.rhul.cs.csle.art.util.derivations.AbstractDerivationNode;
 import uk.ac.rhul.cs.csle.art.util.derivations.SPPF;
@@ -27,8 +28,14 @@ public class GLLBaseLine extends AbstractParser {
     derivations = new SPPF(this);
 
     lexer.lex(input, cfgRules);
+    // !! Debug
+    AbstractLexer newLexer = new LexerBaseLine();
+    newLexer.lex(input, cfgRules);
+    newLexer.printLexicalisations(false);
+    // !! End or debug
+
     // lexer.report();
-    if (lexer.tokens == null) Util.error("Lexical error");
+    if (lexer.getTokens() == null) Util.error("Lexical error");
 
     tokenIndex = 0;
     cfgNode = cfgRules.elementToNodeMap.get(cfgRules.startNonterminal).alt;
@@ -38,12 +45,12 @@ public class GLLBaseLine extends AbstractParser {
 
     nextTask: while (nextTask())
       while (true) {
-        switch (cfgNode.element.kind) {
+        switch (cfgNode.element.cfgKind) {
         case ALT:
           queueProductionTasks();
           continue nextTask;
         case B, T, TI, C:
-          if (lexer.tokens[tokenIndex] == cfgNode.element.number) {
+          if (lexer.getTokens()[tokenIndex] == cfgNode.element.number) {
             matched(1);
             tokenIndex++;
             cfgNode = cfgNode.seq;
@@ -61,14 +68,14 @@ public class GLLBaseLine extends AbstractParser {
           retrn();
           continue nextTask;
         default:
-          Util.fatal("Unexpected CFGNode kind " + cfgNode.element.kind + " in " + getClass().getSimpleName());
+          Util.fatal("Unexpected CFGNode kind " + cfgNode.element.cfgKind + " in " + getClass().getSimpleName());
         }
       }
     derivations.numberNodes();
     if (inLanguage)
       Util.trace(1, "Parser accept");
     else
-      Util.error(Util.echo("GLLBL " + "syntax error", lexer.leftIndices[derivations.widestIndex()], lexer.inputString));
+      Util.error(Util.echo("GLLBL " + "syntax error", lexer.getLeftIndices()[derivations.widestIndex()], lexer.inputString));
   }
 
   private void matched(int size) {
@@ -100,8 +107,8 @@ public class GLLBaseLine extends AbstractParser {
 
   private void retrn() {
     if (stackNode.equals(stacks.getRoot())) {
-      if (cfgRules.acceptingNodeNumbers.contains(cfgNode.num) && (tokenIndex == lexer.tokens.length - 1)) {
-        derivations.setRoot(cfgRules.elementToNodeMap.get(cfgRules.startNonterminal), lexer.tokens.length - 1);
+      if (cfgRules.acceptingNodeNumbers.contains(cfgNode.num) && (tokenIndex == lexer.getTokens().length - 1)) {
+        derivations.setRoot(cfgRules.elementToNodeMap.get(cfgRules.startNonterminal), lexer.getTokens().length - 1);
         inLanguage = true;
       }
       return;

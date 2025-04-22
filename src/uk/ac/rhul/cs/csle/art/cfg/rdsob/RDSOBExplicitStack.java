@@ -28,12 +28,12 @@ public class RDSOBExplicitStack extends AbstractParser {
   CFGNode gn;
 
   public boolean match(CFGNode gn, int tokenIndex) {
-    return lexer.tokens[tokenIndex] == gn.element.number;
+    return lexer.getTokens()[tokenIndex] == gn.element.number;
   }
 
   boolean rdsobExplicitStack() {
     while (true)
-      switch (gn.element.kind) {
+      switch (gn.element.cfgKind) {
       case B, C, T, TI:
         if (match(gn, tokenIndex++))
           gn = gn.seq;
@@ -68,7 +68,7 @@ public class RDSOBExplicitStack extends AbstractParser {
 
   boolean backtrack() { // return true if no backtrack target found
     while (true) {
-      while (gn.element.kind != CFGKind.END)
+      while (gn.element.cfgKind != CFGKind.END)
         gn = gn.seq;
       if (gn.alt.alt == null) {
         gn = retrn();
@@ -94,7 +94,7 @@ public class RDSOBExplicitStack extends AbstractParser {
     tokenIndex = 0;
     dnRoot = dn = new DerivationSingletonNode(cfgRules.endOfStringNode, null);
     sn = new SNode(cfgRules.endOfStringNode, 0, null, dn);
-    inLanguage = rdsobExplicitStack() && lexer.tokens[tokenIndex] == 0;
+    inLanguage = rdsobExplicitStack() && lexer.getTokens()[tokenIndex] == 0;
   }
 
   protected DerivationSingletonNode dnRoot, dn;

@@ -17,7 +17,6 @@ import uk.ac.rhul.cs.csle.art.cfg.chart.CYK;
 import uk.ac.rhul.cs.csle.art.cfg.gll.GLLBaseLine;
 import uk.ac.rhul.cs.csle.art.cfg.gll.GLLHashPool;
 import uk.ac.rhul.cs.csle.art.cfg.lexer.AbstractLexer;
-import uk.ac.rhul.cs.csle.art.cfg.lexer.TokenKind;
 import uk.ac.rhul.cs.csle.art.cfg.lexer.LexerSingletonLongestMatch;
 import uk.ac.rhul.cs.csle.art.cfg.rdsob.RDSOBExplicitStack;
 import uk.ac.rhul.cs.csle.art.cfg.rdsob.RDSOBFunction;
@@ -175,22 +174,7 @@ public class ScriptTermInterpreter {
     case "whitespace":
       currentCFGRules.whitespaces.clear();
       for (int i = 0; i < iTerms.termArity(iTerms.subterm(term, 0)); i++)
-        if (iTerms.termSymbolString(iTerms.subterm(term, 0, i)).equals("cfgBuiltinTerminal")) switch (iTerms.termSymbolString(iTerms.subterm(term, 0, i, 0))) {
-        case "SIMPLE_WHITESPACE":
-          currentCFGRules.whitespaces.add(TokenKind.SIMPLE_WHITESPACE);
-          break;
-        case "COMMENT_NEST_ART":
-          currentCFGRules.whitespaces.add(TokenKind.COMMENT_NEST_ART);
-          break;
-        case "COMMENT_LINE_C":
-          currentCFGRules.whitespaces.add(TokenKind.COMMENT_LINE_C);
-          break;
-        case "COMMENT_BLOCK_C":
-          currentCFGRules.whitespaces.add(TokenKind.COMMENT_BLOCK_C);
-          break;
-        default:
-          Util.fatal("Unexpected !whitespace element " + iTerms.toString(iTerms.subterm(term, 0, i, 0)));
-        }
+        processWhitespace(iTerms.subterm(term, 0, i));
       break;
 
     case "deleteTokens":
@@ -410,6 +394,13 @@ public class ScriptTermInterpreter {
     default:
       Util.fatal("Unimplemented directive !" + iTerms.toString(iTerms.subterm(term, 0)));
     }
+  }
+
+  private void processWhitespace(int subterm) {
+    // !TODO: unpack term to appropriate element - this is a kludge
+    var e = currentCFGRules.findElement(CFGKind.B, "SIMPLE_WHITESPACE");
+    e.isWhitespace = true;
+    currentCFGRules.whitespaces.add(e); // default whitespace if non declared
   }
 
   private void printDisplayElement(int term, boolean raw, boolean latex, PrintStream ps) {

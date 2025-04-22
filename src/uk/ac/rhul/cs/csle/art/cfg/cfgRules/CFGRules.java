@@ -34,15 +34,14 @@ public class CFGRules {
   public CFGElement startNonterminal;
 
   public final Map<CFGElement, CFGElement> elements = new TreeMap<>();
-  // public final Map<Integer, CFGElement> numberToElementMap = new TreeMap<>();
+  public final Set<CFGElement> whitespaces = new HashSet<>();
+
   public final Map<Integer, CFGNode> numberToNodeMap = new TreeMap<>();
   public final Map<CFGElement, CFGNode> elementToNodeMap = new TreeMap<>(); // Map from nonterminals to list of productions represented by their LHS node
 
   public int lexSize;
-  public final Set<TokenKind> whitespaces = new HashSet<>(); // This should be a set of elements, with the builtins added to elements
-  public TokenKind[] lexicalKindsArray;
-  public String[] lexicalStringsArray;
-  public TokenKind[] whitespacesArray;
+  public TokenKind[] tokenKindsArray;
+  public String[] tokenStringsArray;
 
   public Set<String> paraterminalNames = new HashSet<>();
   public Set<CFGElement> paraterminalElements = new HashSet<>();
@@ -87,8 +86,6 @@ public class CFGRules {
 
     endOfStringNode = new CFGNode(this, CFGKind.EOS, "$", 0, GIFTKind.NONE, null, null);
     endOfStringNode.seq = endOfStringNode; // trick to ensure initial call collects rootNode
-
-    whitespaces.add(TokenKind.SIMPLE_WHITESPACE); // default whitespace if non declared
   }
 
   public CFGRules(CFGRules that, boolean binarise) {
@@ -109,11 +106,16 @@ public class CFGRules {
   }
 
   public void normalise() {
+    if (whitespaces.isEmpty()) {
+      var e = findElement(CFGKind.B, "SIMPLE_WHITESPACE");
+      e.isWhitespace = true;
+      whitespaces.add(e); // default whitespace if non declared
+    }
     derivesExactly = new Relation<>();
     // Add singleton grammar nodes for terminals, # and epsilon. These are used by the SPPF.
     for (CFGElement e : elements.keySet())
-      if (e.kind == CFGKind.B || e.kind == CFGKind.T || e.kind == CFGKind.TI || e.kind == CFGKind.C || e.kind == CFGKind.EPS)
-        elementToNodeMap.put(e, new CFGNode(this, e.kind, e.str, 0, GIFTKind.NONE, null, null));
+      if (e.cfgKind == CFGKind.B || e.cfgKind == CFGKind.T || e.cfgKind == CFGKind.TI || e.cfgKind == CFGKind.C || e.cfgKind == CFGKind.EPS)
+        elementToNodeMap.put(e, new CFGNode(this, e.cfgKind, e.str, 0, GIFTKind.NONE, null, null));
 
     // Element and node numbering
     nextFreeEnumerationElement = 0;
@@ -123,7 +125,7 @@ public class CFGRules {
     // Report nonterminals with no rules, and create paraterminal element set
     Set<CFGElement> tmp = new HashSet<>();
     for (CFGElement e : elements.keySet())
-      if (e.kind == CFGKind.N) {
+      if (e.cfgKind == CFGKind.N) {
         if (elementToNodeMap.get(e) == null) tmp.add(e);
 
         if (paraterminalNames.contains(e.str)) paraterminalElements.add(e);
@@ -138,33 +140,33 @@ public class CFGRules {
     }
 
     // Compute lexical data
-    lexicalKindsArray = new TokenKind[lexSize];
-    lexicalStringsArray = new String[lexSize];
+    tokenKindsArray = new TokenKind[lexSize];
+    tokenStringsArray = new String[lexSize];
 
     int token = 0;
-    lexicalStringsArray[0] = "EOS";
+    tokenStringsArray[0] = "EOS";
     for (CFGElement e1 : elements.keySet()) {
       // Util.info("Computing lexical arrays for " + e);
-      switch (e1.kind) {
+      switch (e1.cfgKind) {
       case B:
         try {
-          lexicalKindsArray[token] = TokenKind.valueOf(e1.str);
+          tokenKindsArray[token] = TokenKind.valueOf(e1.str);
         } catch (IllegalArgumentException ex) {
           Util.fatal("Unknown builtin &" + e1.str);
         }
-        lexicalStringsArray[token] = e1.str;
+        tokenStringsArray[token] = e1.str;
         break;
       case C:
-        lexicalKindsArray[token] = TokenKind.CHARACTER;
-        lexicalStringsArray[token] = e1.str;
+        tokenKindsArray[token] = TokenKind.CHARACTER;
+        tokenStringsArray[token] = e1.str;
         break;
       case T:
-        lexicalKindsArray[token] = TokenKind.SINGLETON_CASE_SENSITIVE;
-        lexicalStringsArray[token] = e1.str;
+        tokenKindsArray[token] = TokenKind.SINGLETON_CASE_SENSITIVE;
+        tokenStringsArray[token] = e1.str;
         break;
       case TI:
-        lexicalKindsArray[token] = TokenKind.SINGLETON_CASE_INSENSITIVE;
-        lexicalStringsArray[token] = e1.str;
+        tokenKindsArray[token] = TokenKind.SINGLETON_CASE_INSENSITIVE;
+        tokenStringsArray[token] = e1.str;
         break;
       default:
         break;
@@ -172,15 +174,13 @@ public class CFGRules {
       token++;
     }
 
-    whitespacesArray = whitespaces.toArray(new TokenKind[0]);
-
     // Set positional attributes and accepting slots, and seed nullablePrefixSlots and nullableSuffixSlots
     for (CFGElement ge : elements.keySet())
-      if (ge.kind == CFGKind.N) for (CFGNode gn = elementToNodeMap.get(ge).alt; gn != null; gn = gn.alt) {
+      if (ge.cfgKind == CFGKind.N) for (CFGNode gn = elementToNodeMap.get(ge).alt; gn != null; gn = gn.alt) {
         CFGNode gs = gn.seq;
         initialSlots.add(gs);
         nullablePrefixSlots.add(gs);
-        while (gs.seq.element.kind != CFGKind.END)
+        while (gs.seq.element.cfgKind != CFGKind.END)
           gs = gs.seq;
         penultimateSlots.add(gs);
         finalSlots.add(gs.seq);
@@ -193,7 +193,7 @@ public class CFGRules {
 
     // Seed first sets
     for (CFGElement ge : elements.keySet())
-      if (selfFirst.contains(ge.kind)) first.add(ge, ge);
+      if (selfFirst.contains(ge.cfgKind)) first.add(ge, ge);
 
     // Seed follow sets
     if (startNonterminal != null) follow.add(startNonterminal, endOfStringElement);
@@ -216,13 +216,13 @@ public class CFGRules {
     for (CFGElement e : elements.keySet()) {
       // Util.info("*** Collecting attributes for element " + e.toStringDetailed());
       Map<String, Integer> rhsNonterminalsInProduction = new HashMap<>();
-      if (e.kind == CFGKind.N) { // Only look at nonterminals
+      if (e.cfgKind == CFGKind.N) { // Only look at nonterminals
         String lhs = e.str;
         for (CFGNode gn = elementToNodeMap.get(e).alt; gn != null; gn = gn.alt) { // iterate over the productions
           rhsNonterminalsInProduction.clear();
-          for (CFGNode gs = gn.seq; gs.element.kind != CFGKind.END; gs = gs.seq) {
+          for (CFGNode gs = gn.seq; gs.element.cfgKind != CFGKind.END; gs = gs.seq) {
             // Util.info("Collecting RHS nonterminals at " + gs + " " + iTerms.toRawString(gs.slotTerm));
-            if (gs.element.kind == CFGKind.N) {
+            if (gs.element.cfgKind == CFGKind.N) {
               if (rhsNonterminalsInProduction.get(gs.element.str) == null)
                 rhsNonterminalsInProduction.put(gs.element.str, 1);
               else
@@ -242,7 +242,7 @@ public class CFGRules {
 
         // Now check each action to see if it is trying to access a RHS nonterminal which is not instances in this LHS
         for (CFGNode gn = elementToNodeMap.get(e).alt; gn != null; gn = gn.alt) {
-          for (CFGNode gs = gn.seq; gs.element.kind != CFGKind.END; gs = gs.seq) {
+          for (CFGNode gs = gn.seq; gs.element.cfgKind != CFGKind.END; gs = gs.seq) {
             for (int i = 0; i < iTerms.termArity(gs.slotTerm); i++) {
               int annotationRoot = iTerms.subterm(gs.slotTerm, i);
               // Util.info("Processing slot annotation " + iTerms.toString(annotationRoot));
@@ -277,7 +277,7 @@ public class CFGRules {
     while (changed) {
       changed = false;
       for (CFGElement lhs : elements.keySet())
-        if (lhs.kind == CFGKind.N) {
+        if (lhs.cfgKind == CFGKind.N) {
           CFGNode topNode = elementToNodeMap.get(lhs);
           // Util.info("Visiting top node " + topNode.num + ":" + topNode);
           for (CFGNode altNode = topNode.alt; altNode != null; altNode = altNode.alt) {
@@ -295,10 +295,10 @@ public class CFGRules {
                 changed |= nullablePrefixSlots.add(seqNode);
               }
 
-              if (seqNode.element.kind == CFGKind.END) break;
+              if (seqNode.element.cfgKind == CFGKind.END) break;
 
               // 2. Update instance first with the element itself for nonterminals only
-              if (seqNode.element.kind == CFGKind.N) changed |= instanceFirst.add(seqNode, seqNode.element);
+              if (seqNode.element.cfgKind == CFGKind.N) changed |= instanceFirst.add(seqNode, seqNode.element);
 
               // 3. Fold in the first set of this node's element after suppressing epsilon
               changed |= instanceFirst.addAll(seqNode, removeEpsilon(first.get(seqNode.element))); // Update instance first with element first
@@ -322,7 +322,7 @@ public class CFGRules {
 
   private void computeNullableSuffixAndCyclic() {
     for (CFGElement lhs : elements.keySet())
-      if (lhs.kind == CFGKind.N) {
+      if (lhs.cfgKind == CFGKind.N) {
         CFGNode topNode = elementToNodeMap.get(lhs);
         // Util.info("Compute nullable suffix visiting top node " + topNode.num + ":" + topNode);
         for (CFGNode altNode = topNode.alt; altNode != null; altNode = altNode.alt) {
@@ -338,7 +338,7 @@ public class CFGRules {
 
   private void ComputeCyclicSlots() {
     for (CFGElement lhs : elements.keySet())
-      if (lhs.kind == CFGKind.N) {
+      if (lhs.cfgKind == CFGKind.N) {
         CFGNode topNode = elementToNodeMap.get(lhs);
         // Util.info("Compute nullable suffix visiting top node " + topNode.num + ":" + topNode);
         for (CFGNode altNode = topNode.alt; altNode != null; altNode = altNode.alt) {
@@ -351,7 +351,7 @@ public class CFGRules {
 
             if (cyclicNonterminals.contains(seqNode.element) && derivesExactlyTransitiveClosure.get(seqNode.element).contains(lhs))
               cyclicSlots.add(seqNode.seq);
-            if (seqNode.element.kind == CFGKind.END) break;
+            if (seqNode.element.cfgKind == CFGKind.END) break;
           }
         }
       }
@@ -361,14 +361,14 @@ public class CFGRules {
     boolean nullableSuffix;
     // Util.info("Compute nullable suffix REC visiting seq node " + seqNode.num + ":" + seqNode + " under lhs " + lhs);
 
-    if (seqNode.element.kind == CFGKind.END)
+    if (seqNode.element.cfgKind == CFGKind.END)
       nullableSuffix = true;
     else
       nullableSuffix = computeNullableSuffixAndDerivesExactlyRec(lhs, seqNode.seq) && first.get(seqNode.element).contains(epsilonElement);
 
     if (nullableSuffix) nullableSuffixSlots.add(seqNode);
 
-    if (seqNode.element.kind == CFGKind.N && nullablePrefixSlots.contains(seqNode) && nullableSuffixSlots.contains(seqNode.seq))
+    if (seqNode.element.cfgKind == CFGKind.N && nullablePrefixSlots.contains(seqNode) && nullableSuffixSlots.contains(seqNode.seq))
       this.derivesExactly.add(lhs, seqNode.element);
 
     return nullableSuffix;
@@ -379,7 +379,7 @@ public class CFGRules {
     while (changed) {
       changed = false;
       for (CFGElement lhs : elements.keySet())
-        if (lhs.kind == CFGKind.N) {
+        if (lhs.cfgKind == CFGKind.N) {
           CFGNode topNode = elementToNodeMap.get(lhs);
           // Util.info("Visiting top node " + topNode.num + ":" + topNode);
           for (CFGNode altNode = topNode.alt; altNode != null; altNode = altNode.alt) {
@@ -387,9 +387,9 @@ public class CFGRules {
             CFGNode seqNode = altNode.seq;
             while (true) {
               changed |= instanceFollow.addAll(seqNode, removeEpsilon(instanceFirst.get(seqNode.seq)));
-              if (seqNode.element.kind == CFGKind.N) changed |= follow.addAll(seqNode.element, removeEpsilon(instanceFirst.get(seqNode.seq)));
+              if (seqNode.element.cfgKind == CFGKind.N) changed |= follow.addAll(seqNode.element, removeEpsilon(instanceFirst.get(seqNode.seq)));
               if (nullableSuffixSlots.contains(seqNode.seq)) changed |= follow.addAll(seqNode.element, follow.get(lhs));
-              if (seqNode.element.kind == CFGKind.END) break;
+              if (seqNode.element.cfgKind == CFGKind.END) break;
               seqNode = seqNode.seq;
             }
           }
@@ -490,7 +490,7 @@ public class CFGRules {
   private void numberElementsAndNodes() {
     for (CFGElement s : elements.keySet()) {
       s.number = nextFreeEnumerationElement++;
-      if (lexKinds.contains(s.kind)) lexSize = s.number;
+      if (lexKinds.contains(s.cfgKind)) lexSize = s.number;
       // Util.info("Enumerating grammar element " + s.ei + ": " + s.str);
     }
     lexSize++;
@@ -503,7 +503,7 @@ public class CFGRules {
   private void numberElementsAndNodesRec(CFGNode node) {
     if (node != null) {
       numberToNodeMap.put(node.num = nextFreeEnumerationElement++, node);
-      if (node.element.kind != CFGKind.END) {
+      if (node.element.cfgKind != CFGKind.END) {
         numberElementsAndNodesRec(node.seq);
         numberElementsAndNodesRec(node.alt);
       }
@@ -520,7 +520,7 @@ public class CFGRules {
 
   private void setEndNodeLinksRec(CFGNode parentNode, CFGNode altNode) {
     CFGNode gn;
-    for (gn = altNode.seq; gn.element.kind != CFGKind.END; gn = gn.seq) {
+    for (gn = altNode.seq; gn.element.cfgKind != CFGKind.END; gn = gn.seq) {
       // Util.info("processEndNodes at " + gn.ni + " " + gn);
       if (gn.alt != null) for (CFGNode alternate = gn.alt; alternate != null; alternate = alternate.alt)
         setEndNodeLinksRec(gn, alternate); // Recurse into brackets
@@ -533,16 +533,12 @@ public class CFGRules {
   }
 
   // Data access for lexers
-  public TokenKind[] lexicalKindsArray() {
-    return lexicalKindsArray;
+  public TokenKind[] tokenKindsArray() {
+    return tokenKindsArray;
   }
 
-  public String[] lexicalStringsArray() {
-    return lexicalStringsArray;
-  }
-
-  public TokenKind[] whitespacesArray() {
-    return whitespacesArray;
+  public String[] tokenStringsArray() {
+    return tokenStringsArray;
   }
 
   // Atttribute-action functions from ReferenceGrammarParser.art below this line
@@ -606,10 +602,10 @@ public class CFGRules {
 
   private void toStringDotRec(StringBuilder sb, CFGNode cs) {
     sb.append("\"" + cs.num + "\"[label=\"" + cs.toStringDot() + "\"]\n");
-    if (cs.element.kind == CFGKind.ALT) {
+    if (cs.element.cfgKind == CFGKind.ALT) {
       seqArrow(sb, cs);
       altArrow(sb, cs);
-    } else if (cs.element.kind != CFGKind.END) {
+    } else if (cs.element.cfgKind != CFGKind.END) {
       altArrow(sb, cs);
       seqArrow(sb, cs);
     }
@@ -666,7 +662,7 @@ public class CFGRules {
       sb.append(" (" + s.toStringDetailed() + ") " + s);
       if (cyclicNonterminals.contains(s)) sb.append(" cyclic");
       if (paraterminalElements.contains(s)) sb.append(" paraterminal");
-      if (!s.attributes.isEmpty()) sb.append(" attributes: " + s.attributes);
+      if (s.attributes != null && !s.attributes.isEmpty()) sb.append(" attributes: " + s.attributes);
       if (showProperties && first.get(s) != null) {
         sb.append(" first = {");
         appendElements(sb, first.get(s));
@@ -780,9 +776,9 @@ public class CFGRules {
   public int[] makeKindsArray() {
     int ret[] = new int[nextFreeEnumerationElement];
     for (CFGElement gs : elements.keySet())
-      ret[gs.number] = gs.kind.ordinal();
+      ret[gs.number] = gs.cfgKind.ordinal();
     for (int ni : numberToNodeMap.keySet())
-      ret[ni] = numberToNodeMap.get(ni).element.kind.ordinal();
+      ret[ni] = numberToNodeMap.get(ni).element.cfgKind.ordinal();
     return ret;
   }
 
@@ -833,7 +829,7 @@ public class CFGRules {
 
   public static boolean isLHS(CFGNode gn) {
     if (gn == null) return false;
-    return gn.element != null && gn.element.kind == CFGKind.N && gn.seq == null;
+    return gn.element != null && gn.element.cfgKind == CFGKind.N && gn.seq == null;
   }
 
   public void generate(int max, boolean sentencesOnly) {
@@ -848,7 +844,7 @@ public class CFGRules {
       sententialForm = sententialForms.removeFirst();
 
       for (leftmostNonterminalIndex = 0; leftmostNonterminalIndex < sententialForm.size(); leftmostNonterminalIndex++)
-        if (sententialForm.get(leftmostNonterminalIndex).kind == CFGKind.N) break;
+        if (sententialForm.get(leftmostNonterminalIndex).cfgKind == CFGKind.N) break;
 
       if (leftmostNonterminalIndex == sententialForm.size()) { // This is a sentence
         printSententialForm(count++, sententialForm);
@@ -865,15 +861,15 @@ public class CFGRules {
         for (int i = 0; i < leftmostNonterminalIndex; i++)
           newSententialForm.addLast(sententialForm.get(i));
 
-        for (var seqNode = altNode.seq; seqNode.element.kind != CFGKind.END; seqNode = seqNode.seq)
-          switch (seqNode.element.kind) {
+        for (var seqNode = altNode.seq; seqNode.element.cfgKind != CFGKind.END; seqNode = seqNode.seq)
+          switch (seqNode.element.cfgKind) {
           case T, TI, C, B, N:
             newSententialForm.add(seqNode.element);
             break;
           case EPS:
             break; // do nothing
           default:
-            Util.error("illegal kind of grammar element encountered during generation: " + seqNode.element.kind);
+            Util.error("illegal kind of grammar element encountered during generation: " + seqNode.element.cfgKind);
             break;
           }
 
@@ -889,7 +885,7 @@ public class CFGRules {
 
     System.out.print((isSentence(sententialForm) ? "\"" : " ") + i);
     for (var e : sententialForm)
-      if (e.kind == CFGKind.N)
+      if (e.cfgKind == CFGKind.N)
         System.out.print(" _" + e.str);
       else
         System.out.print(" " + e.str);
@@ -898,7 +894,7 @@ public class CFGRules {
 
   private boolean isSentence(LinkedList<CFGElement> sententialForm) {
     for (var e : sententialForm)
-      if (e.kind == CFGKind.N) return false;
+      if (e.cfgKind == CFGKind.N) return false;
     return true;
   }
 }
