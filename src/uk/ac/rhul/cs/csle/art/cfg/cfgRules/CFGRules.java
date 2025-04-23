@@ -14,7 +14,6 @@ import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import uk.ac.rhul.cs.csle.art.cfg.lexer.TokenKind;
 import uk.ac.rhul.cs.csle.art.term.ITerms;
 import uk.ac.rhul.cs.csle.art.util.Util;
 import uk.ac.rhul.cs.csle.art.util.relation.Relation;
@@ -40,8 +39,6 @@ public class CFGRules {
   public final Map<CFGElement, CFGNode> elementToNodeMap = new TreeMap<>(); // Map from nonterminals to list of productions represented by their LHS node
 
   public int lexSize;
-  public TokenKind[] tokenKindsArray;
-  public String[] tokenStringsArray;
 
   public Set<String> paraterminalNames = new HashSet<>();
   public Set<CFGElement> paraterminalElements = new HashSet<>();
@@ -137,41 +134,6 @@ public class CFGRules {
       for (CFGElement n : tmp)
         sb.append(n.str + " ");
       Util.fatal(sb.toString());
-    }
-
-    // Compute lexical data
-    tokenKindsArray = new TokenKind[lexSize];
-    tokenStringsArray = new String[lexSize];
-
-    int token = 0;
-    tokenStringsArray[0] = "EOS";
-    for (CFGElement e1 : elements.keySet()) {
-      // Util.info("Computing lexical arrays for " + e);
-      switch (e1.cfgKind) {
-      case B:
-        try {
-          tokenKindsArray[token] = TokenKind.valueOf(e1.str);
-        } catch (IllegalArgumentException ex) {
-          Util.fatal("Unknown builtin &" + e1.str);
-        }
-        tokenStringsArray[token] = e1.str;
-        break;
-      case C:
-        tokenKindsArray[token] = TokenKind.CHARACTER;
-        tokenStringsArray[token] = e1.str;
-        break;
-      case T:
-        tokenKindsArray[token] = TokenKind.SINGLETON_CASE_SENSITIVE;
-        tokenStringsArray[token] = e1.str;
-        break;
-      case TI:
-        tokenKindsArray[token] = TokenKind.SINGLETON_CASE_INSENSITIVE;
-        tokenStringsArray[token] = e1.str;
-        break;
-      default:
-        break;
-      }
-      token++;
     }
 
     // Set positional attributes and accepting slots, and seed nullablePrefixSlots and nullableSuffixSlots
@@ -530,15 +492,6 @@ public class CFGRules {
     gn.seq = parentNode;
     if (parentNode == elementToNodeMap.get(startNonterminal)) acceptingNodeNumbers.add(gn.num);
     // Util.info("processEndNodes updated alt and seq to " + gn.alt.ni + " " + gn.seq.ni);
-  }
-
-  // Data access for lexers
-  public TokenKind[] tokenKindsArray() {
-    return tokenKindsArray;
-  }
-
-  public String[] tokenStringsArray() {
-    return tokenStringsArray;
   }
 
   // Atttribute-action functions from ReferenceGrammarParser.art below this line

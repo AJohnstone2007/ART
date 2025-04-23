@@ -17,7 +17,9 @@ public abstract class AbstractLexer {
   public TWESet tweSet = new TWESet("dummy");
   public ArrayList<TWESetElement> firstLexicalisation;
 
-  public abstract void lex(String input, CFGRules cfgRules);
+  public void loadFirstLexicalisation() {
+    firstLexicalisation = tweSet.firstLexicalisation();
+  }
 
   public String lexeme(int i) {
     return lexeme(firstLexicalisation.get(i));
@@ -37,16 +39,15 @@ public abstract class AbstractLexer {
     return full;
   }
 
-  public abstract void loadFirstLexicalisation();
-
-  public abstract void printLexicalisations(boolean raw);
-
-  public abstract void statistics(Statistics currentstatistics);
+  public void printLexicalisations(boolean raw) {
+    System.out.println(tweSet);
+  }
 
   protected void lexicalError(String msg) {
     Util.fatal(Util.echo(msg, lexerInputIndex, inputString));
   }
 
-  // // This is only needed by SPPF.java and can probably be reworked as lexeme()
-  public abstract String lexemeOfBuiltin(TokenKind kind, int startIndex);
+  public abstract void lex(String input, CFGRules cfgRules);
+
+  public abstract void statistics(Statistics currentstatistics);
 }

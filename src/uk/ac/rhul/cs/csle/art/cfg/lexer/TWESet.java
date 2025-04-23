@@ -96,7 +96,7 @@ public class TWESet {
     }
   }
 
-  public ArrayList<TWESetElement> loadFirstLexicalisation() {
+  public ArrayList<TWESetElement> firstLexicalisation() {
     ArrayList<TWESetElement> ret = new ArrayList<>();
     for (int i = 0; i < slices.size();)
       for (var e : slices.get(i))
