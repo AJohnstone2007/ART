@@ -184,6 +184,7 @@ public class SPPF extends AbstractDerivations {
       if (derivationForInterpreter)
       constructor = firstAvailableSPPFPN == null ? "" + -sppfn.rightExtent : "" + firstAvailableSPPFPN.grammarNode.alt.num;
       else
+      // constructor = parser.lexer.lexeme(sppfn.leftExtent);
       constructor = (gn.element.cfgKind == CFGKind.B)
           ? parser.lexer.lexemeOfBuiltin(TokenKind.valueOf(gn.element.str), parser.lexer.getLeftIndex(sppfn.leftExtent))
           : gn.element.str;

@@ -4,11 +4,11 @@ import java.io.PrintStream;
 
 public interface OutputInterface {
   default void printHeader(PrintStream ps) {
-    Util.notImplemented("printDot()", getClass());
+    Util.notImplemented("printHead()", getClass());
   }
 
   default void print(PrintStream ps) {
-    Util.notImplemented("printDot()", getClass());
+    Util.notImplemented("print()", getClass());
   }
 
   public default void printDot(PrintStream ps) {

@@ -11,6 +11,7 @@ public abstract class AbstractLexer {
   public CFGRules cfgRules;
   public Integer deleteTokenCount = 0;
   public Integer swapTokenCount = 0;
+  public TWESet tweSet = new TWESet("dummy");
 
   public abstract void lex(String input, CFGRules cfgRules2);
 

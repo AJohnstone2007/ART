@@ -4,7 +4,6 @@ import uk.ac.rhul.cs.csle.art.cfg.AbstractParser;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGRules;
 import uk.ac.rhul.cs.csle.art.cfg.lexer.AbstractLexer;
-import uk.ac.rhul.cs.csle.art.cfg.lexer.LexerBaseLine;
 import uk.ac.rhul.cs.csle.art.util.Util;
 import uk.ac.rhul.cs.csle.art.util.derivations.AbstractDerivationNode;
 import uk.ac.rhul.cs.csle.art.util.derivations.SPPF;
@@ -28,13 +27,14 @@ public class GLLBaseLine extends AbstractParser {
     derivations = new SPPF(this);
 
     lexer.lex(input, cfgRules);
+    lexer.tweSet.chooseDefault();
     // !! Debug
-    AbstractLexer newLexer = new LexerBaseLine();
-    newLexer.lex(input, cfgRules);
-    newLexer.getTWESet().chooseDefault();
-    newLexer.printLexicalisations(false);
-
-    lexer = newLexer;
+    // AbstractLexer newLexer = new LexerBaseLine();
+    // newLexer.lex(input, cfgRules);
+    // newLexer.getTWESet().chooseDefault();
+    // newLexer.printLexicalisations(false);
+    //
+    // lexer = newLexer;
     // !! End of debug
 
     tokenIndex = 0;

@@ -42,6 +42,10 @@ public class TWESet {
   }
 
   public void chooseDefault() {
+    if (slices.get(0).isEmpty()) {
+      Util.error("Empty tweSet");
+      return;
+    }
     for (var slice : slices)
       if (slice != null) for (var e : slice)
         for (var f : slice)
@@ -109,6 +113,10 @@ public class TWESet {
 
   public int getLeftIndex(int i) {
     return firstLexicalisation.get(i).leftExtent;
+  }
+
+  public int getLexemeEnd(int i) {
+    return firstLexicalisation.get(i).lexemeEnd;
   }
 
   public int firstLexicalisationLength() {
