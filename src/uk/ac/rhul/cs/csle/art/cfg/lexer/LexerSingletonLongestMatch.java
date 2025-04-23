@@ -14,13 +14,24 @@ public class LexerSingletonLongestMatch extends AbstractLexer {
   private int[] rightIndices;
 
   @Override
-  public int[] getTokens() {
-    return tokens;
+  public int getToken(int i) {
+    return tokens[i];
   }
 
   @Override
-  public int[] getLeftIndices() {
-    return leftIndices;
+  public int getLeftIndex(int i) {
+    return leftIndices[i];
+  }
+
+  @Override
+  public TWESet getTWESet() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public int tokenStringLength() {
+    return tokens.length;
   }
 
   @Override
@@ -97,7 +108,7 @@ public class LexerSingletonLongestMatch extends AbstractLexer {
     leftIndices = new int[tokenList.size()];
     rightIndices = new int[tokenList.size()];
     for (int i = 0; i < tokens.length; i++) {
-      getTokens()[i] = tokenList.get(i);
+      tokens[i] = tokenList.get(i);
       leftIndices[i] = leftIndexList.get(i);
       rightIndices[i] = rightIndexList.get(i);
     }
@@ -106,9 +117,9 @@ public class LexerSingletonLongestMatch extends AbstractLexer {
       int leftIndex = tokenList.size() / 2 - swapTokenCount / 2;
       int rightIndex = tokenList.size() / 2 + swapTokenCount / 2;
       while (leftIndex < rightIndex) {
-        int tmp = getTokens()[leftIndex];
-        getTokens()[leftIndex] = getTokens()[rightIndex];
-        getTokens()[rightIndex] = tmp;
+        int tmp = tokens[leftIndex];
+        tokens[leftIndex] = tokens[rightIndex];
+        tokens[rightIndex] = tmp;
 
         tmp = leftIndices[leftIndex];
         leftIndices[leftIndex] = leftIndices[rightIndex];
@@ -135,8 +146,8 @@ public class LexerSingletonLongestMatch extends AbstractLexer {
   @Override
   public void statistics(Statistics statistics) {
     {
-      statistics.put("tweNodeCount", (long) getTokens().length);
-      statistics.put("tweEdgeCount", getTokens().length - 1);
+      statistics.put("tweNodeCount", (long) tokens.length);
+      statistics.put("tweEdgeCount", tokens.length - 1);
       statistics.put("tweLexCount", 1);
     }
   }
@@ -157,12 +168,12 @@ public class LexerSingletonLongestMatch extends AbstractLexer {
     // int index = 0;
     if (raw)
       for (int i = 0; i < tokens.length; i++)
-        Util.info(cfgRules.tokenKindsArray()[tokenList.get(i)] == TokenKind.SINGLETON_CASE_SENSITIVE ? cfgRules.tokenStringsArray()[getTokens()[i]]
+        Util.info(cfgRules.tokenKindsArray()[tokenList.get(i)] == TokenKind.SINGLETON_CASE_SENSITIVE ? cfgRules.tokenStringsArray()[tokens[i]]
             : cfgRules.tokenKindsArray()[tokenList.get(i)].toString());
     else
       for (int i = 0; i < tokens.length; i++)
-        Util.info(i + ":" + leftIndices[i] + "," + rightIndices[i] + " " + cfgRules.tokenKindsArray[tokenList.get(i)] + " "
-            + cfgRules.tokenStringsArray[getTokens()[i]]);
+        Util.info(
+            i + ":" + leftIndices[i] + "," + rightIndices[i] + " " + cfgRules.tokenKindsArray[tokenList.get(i)] + " " + cfgRules.tokenStringsArray[tokens[i]]);
   }
 
   @Override
@@ -1010,12 +1021,6 @@ public class LexerSingletonLongestMatch extends AbstractLexer {
 
     while (peekCh() != '\n' && peekCh() != '\0') // Quietly accept an input file with no \n at the end.
       getCh();
-  }
-
-  @Override
-  public TWESet getTWESet() {
-    // TODO Auto-generated method stub
-    return null;
   }
 
 }

@@ -9,7 +9,6 @@ import uk.ac.rhul.cs.csle.art.util.Util;
 import uk.ac.rhul.cs.csle.art.util.statistics.Statistics;
 
 public class LexerBaseLine extends AbstractLexer {
-
   private int inputIndex, inputLength, lexemeEnd;
   public TWESet tweSet;
 
@@ -42,15 +41,18 @@ public class LexerBaseLine extends AbstractLexer {
   }
 
   @Override
-  public int[] getTokens() {
-    // TODO Auto-generated method stub
-    return null;
+  public int getToken(int i) {
+    return tweSet.getToken(i);
   }
 
   @Override
-  public int[] getLeftIndices() {
-    // TODO Auto-generated method stub
-    return null;
+  public int getLeftIndex(int i) {
+    return tweSet.getLeftIndex(i);
+  }
+
+  @Override
+  public int tokenStringLength() {
+    return tweSet.firstLexicalisationLength();
   }
 
   @Override
@@ -69,7 +71,7 @@ public class LexerBaseLine extends AbstractLexer {
     if (lastElement == null)
       Util.fatal("No lexicalisations found");
     else
-      lastElement.add(new TWESetElement(cfgRules.endOfStringElement, inputLength - 1, inputLength - 1, inputLength - 1));
+      lastElement.add(new TWESetElement(cfgRules.endOfStringElement, inputLength - 1, inputLength - 1, inputLength));
   }
 
   public void constructTWESlice(int lexemeStart, CFGRules cfgRules) {
@@ -827,5 +829,4 @@ public class LexerBaseLine extends AbstractLexer {
     while (peekCh() != '\n' && peekCh() != '\0') // Quietly accept an input file with no \n at the end.
       getCh();
   }
-
 }

@@ -25,12 +25,14 @@ public abstract class AbstractLexer {
 
   public abstract void statistics(Statistics currentstatistics);
 
-  public abstract int[] getTokens();
+  public abstract int getToken(int i);
 
   // This is only needed for error echoing and SPPF - change to tokenIndexToStringIndex - in TWE set the indices are the string indices so notneeded
-  public abstract int[] getLeftIndices();
+  public abstract int getLeftIndex(int i);
 
   protected void lexicalError(String msg) {
     Util.fatal(Util.echo(msg, lexerInputIndex, inputString));
   }
+
+  public abstract int tokenStringLength();
 }
