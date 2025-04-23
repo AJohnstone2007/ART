@@ -12,11 +12,6 @@ public class LexerBaseLine extends AbstractLexer {
   private int inputIndex, inputLength, lexemeEnd;
 
   @Override
-  public String lexeme(int l) {
-    return inputString.substring(getLeftIndex(l), getLexemeEnd(l));
-  }
-
-  @Override
   public void printLexicalisations(boolean raw) {
     System.out.println(tweSet);
   }
@@ -28,27 +23,8 @@ public class LexerBaseLine extends AbstractLexer {
   }
 
   @Override
-  public TWESet getTWESet() {
-    return tweSet;
-  }
-
-  @Override
-  public int getToken(int i) {
-    return tweSet.getToken(i);
-  }
-
-  @Override
-  public int getLeftIndex(int i) {
-    return tweSet.getLeftIndex(i);
-  }
-
-  public int getLexemeEnd(int i) {
-    return tweSet.getLexemeEnd(i);
-  }
-
-  @Override
-  public int tokenStringLength() {
-    return tweSet.firstLexicalisationLength();
+  public void loadFirstLexicalisation() {
+    firstLexicalisation = tweSet.loadFirstLexicalisation();
   }
 
   @Override
@@ -825,8 +801,8 @@ public class LexerBaseLine extends AbstractLexer {
     while (peekCh() != '\n' && peekCh() != '\0') // Quietly accept an input file with no \n at the end.
       getCh();
   }
-  //// !!! Not needed whenlexer switch is made because elements know theirlexeme
 
+  // !!! Not needed whenlexer switch is made because elements know theirlexeme
   @Override
   public String lexemeOfBuiltin(TokenKind kind, int startIndex) {
     switch (kind) {

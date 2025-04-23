@@ -28,14 +28,7 @@ public class GLLBaseLine extends AbstractParser {
 
     lexer.lex(input, cfgRules);
     lexer.tweSet.chooseDefault();
-    // !! Debug
-    // AbstractLexer newLexer = new LexerBaseLine();
-    // newLexer.lex(input, cfgRules);
-    // newLexer.getTWESet().chooseDefault();
-    // newLexer.printLexicalisations(false);
-    //
-    // lexer = newLexer;
-    // !! End of debug
+    lexer.loadFirstLexicalisation();
 
     tokenIndex = 0;
     cfgNode = cfgRules.elementToNodeMap.get(cfgRules.startNonterminal).alt;
@@ -50,7 +43,7 @@ public class GLLBaseLine extends AbstractParser {
           queueProductionTasks();
           continue nextTask;
         case B, T, TI, C:
-          if (lexer.getToken(tokenIndex) == cfgNode.element.number) {
+          if (lexer.firstLexicalisation.get(tokenIndex).element.number == cfgNode.element.number) {
             matched(1);
             tokenIndex++;
             cfgNode = cfgNode.seq;
@@ -75,7 +68,7 @@ public class GLLBaseLine extends AbstractParser {
     if (inLanguage)
       Util.trace(1, "Parser accept");
     else
-      Util.error(Util.echo("GLLBL " + "syntax error", lexer.getLeftIndex(derivations.widestIndex()), lexer.inputString));
+      Util.error(Util.echo("GLLBL " + "syntax error", lexer.firstLexicalisation.get(derivations.widestIndex()).leftExtent, lexer.inputString));
   }
 
   private void matched(int size) {
@@ -107,8 +100,8 @@ public class GLLBaseLine extends AbstractParser {
 
   private void retrn() {
     if (stackNode.equals(stacks.getRoot())) {
-      if (cfgRules.acceptingNodeNumbers.contains(cfgNode.num) && (tokenIndex == lexer.tokenStringLength() - 1)) {
-        derivations.setRoot(cfgRules.elementToNodeMap.get(cfgRules.startNonterminal), lexer.tokenStringLength() - 1);
+      if (cfgRules.acceptingNodeNumbers.contains(cfgNode.num) && (tokenIndex == lexer.firstLexicalisation.size() - 1)) {
+        derivations.setRoot(cfgRules.elementToNodeMap.get(cfgRules.startNonterminal), lexer.firstLexicalisation.size() - 1);
         inLanguage = true;
       }
       return;

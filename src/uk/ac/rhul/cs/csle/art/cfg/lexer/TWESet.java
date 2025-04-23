@@ -12,7 +12,6 @@ import uk.ac.rhul.cs.csle.art.util.relation.Relation;
 public class TWESet {
   private final String inputString;
   private final ArrayList<Set<TWESetElement>> slices = new ArrayList<>();
-  private ArrayList<TWESetElement> firstLexicalisation;
 
   public TWESet(String inputString) {
     this.inputString = inputString;
@@ -52,16 +51,6 @@ public class TWESet {
           if ((e.rightExtent > f.rightExtent) || (e.rightExtent == f.rightExtent && e.element.cfgKind != CFGKind.B && f.element.cfgKind == CFGKind.B))
             f.suppressed = true;
     suppressDeadPaths();
-    firstLexicalisation = new ArrayList<>();
-    for (int i = 0; i < slices.size();) {
-      for (var e : slices.get(i))
-        if (!e.suppressed) {
-          firstLexicalisation.add(e);
-          i = e.rightExtent;
-          break;
-        }
-    }
-    Util.debug("First lexicalisation: " + firstLexicalisation);
   }
 
   public void choose(Relation<CFGElement, CFGElement> longer, Relation<CFGElement, CFGElement> shorter, Relation<CFGElement, CFGElement> higher) {
@@ -107,19 +96,33 @@ public class TWESet {
     }
   }
 
-  public int getToken(int i) {
-    return firstLexicalisation.get(i).element.number;
+  public ArrayList<TWESetElement> loadFirstLexicalisation() {
+    ArrayList<TWESetElement> ret = new ArrayList<>();
+    for (int i = 0; i < slices.size();)
+      for (var e : slices.get(i))
+        if (!e.suppressed) {
+          ret.add(e);
+          i = e.rightExtent;
+          break;
+        }
+    // Util.debug("First lexicalisation: " + firstLexicalisation);
+    return ret;
   }
 
-  public int getLeftIndex(int i) {
-    return firstLexicalisation.get(i).leftExtent;
-  }
-
-  public int getLexemeEnd(int i) {
-    return firstLexicalisation.get(i).lexemeEnd;
-  }
-
-  public int firstLexicalisationLength() {
-    return firstLexicalisation.size();
-  }
+  //
+  // public int getToken(int i) {
+  // return firstLexicalisation.get(i).element.number;
+  // }
+  //
+  // public int getLeftIndex(int i) {
+  // return firstLexicalisation.get(i).leftExtent;
+  // }
+  //
+  // public int getLexemeEnd(int i) {
+  // return firstLexicalisation.get(i).lexemeEnd;
+  // }
+  //
+  // public int firstLexicalisationLength() {
+  // return firstLexicalisation.size();
+  // }
 }

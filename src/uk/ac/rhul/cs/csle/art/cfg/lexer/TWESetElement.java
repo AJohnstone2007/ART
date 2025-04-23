@@ -3,11 +3,11 @@ package uk.ac.rhul.cs.csle.art.cfg.lexer;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGElement;
 
 public class TWESetElement {
-  final CFGElement element;
-  final int leftExtent;
-  final int lexemeEnd; // first non-whitespace character
-  final int rightExtent;
-  boolean suppressed;
+  public final CFGElement element;
+  public final int leftExtent;
+  public final int lexemeEnd; // first non-whitespace character
+  public final int rightExtent;
+  public boolean suppressed;
 
   public TWESetElement(CFGElement element, int leftExtent, int lexemeEnd, int rightExtent) {
     super();

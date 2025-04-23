@@ -12,7 +12,6 @@ import uk.ac.rhul.cs.csle.art.cfg.AbstractParser;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGKind;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.GIFTKind;
-import uk.ac.rhul.cs.csle.art.cfg.lexer.TokenKind;
 import uk.ac.rhul.cs.csle.art.script.ScriptTermInterpreter;
 import uk.ac.rhul.cs.csle.art.util.Util;
 import uk.ac.rhul.cs.csle.art.util.relation.RelationOverNaturals;
@@ -184,10 +183,7 @@ public class SPPF extends AbstractDerivations {
       if (derivationForInterpreter)
       constructor = firstAvailableSPPFPN == null ? "" + -sppfn.rightExtent : "" + firstAvailableSPPFPN.grammarNode.alt.num;
       else
-      // constructor = parser.lexer.lexeme(sppfn.leftExtent);
-      constructor = (gn.element.cfgKind == CFGKind.B)
-          ? parser.lexer.lexemeOfBuiltin(TokenKind.valueOf(gn.element.str), parser.lexer.getLeftIndex(sppfn.leftExtent))
-          : gn.element.str;
+      constructor = (gn.element.cfgKind == CFGKind.B) ? parser.lexer.lexeme(sppfn.leftExtent) : gn.element.str;
 
     if (children != childrenFromParent) {
       childrenFromParent.add(parser.cfgRules.iTerms.findTerm(constructor, children));
