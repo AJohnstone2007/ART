@@ -1012,4 +1012,10 @@ public class LexerSingletonLongestMatch extends AbstractLexer {
       getCh();
   }
 
+  @Override
+  public TWESet getTWESet() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
 }

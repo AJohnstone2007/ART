@@ -20,6 +20,10 @@ public class Relation<T1, T2> {
       map.put(t1, new HashSet<>(relation.get(t1)));
   }
 
+  public boolean isRelated(T1 t1, T2 t2) {
+    return get(t1).contains(t2);
+  }
+
   public Set<T1> getDomain() {
     return map.keySet();
   }

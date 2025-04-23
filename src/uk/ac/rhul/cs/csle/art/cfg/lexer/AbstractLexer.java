@@ -14,6 +14,8 @@ public abstract class AbstractLexer {
 
   public abstract void lex(String input, CFGRules cfgRules2);
 
+  public abstract TWESet getTWESet();
+
   public abstract String lexeme(int l);
 
   public abstract void printLexicalisations(boolean raw);
@@ -31,5 +33,4 @@ public abstract class AbstractLexer {
   protected void lexicalError(String msg) {
     Util.fatal(Util.echo(msg, lexerInputIndex, inputString));
   }
-
 }

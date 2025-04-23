@@ -1,6 +1,5 @@
 package uk.ac.rhul.cs.csle.art.cfg.lexer;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -11,8 +10,8 @@ import uk.ac.rhul.cs.csle.art.util.statistics.Statistics;
 
 public class LexerBaseLine extends AbstractLexer {
 
-  public ArrayList<Set<TWESetElement>> tweSet;
   private int inputIndex, inputLength, lexemeEnd;
+  public TWESet tweSet;
 
   @Override
   public String lexeme(int l) {
@@ -22,12 +21,7 @@ public class LexerBaseLine extends AbstractLexer {
 
   @Override
   public void printLexicalisations(boolean raw) {
-    System.out.println("TWE set for input string " + inputString);
-    for (int i = 0; i < tweSet.size(); i++) {
-      var e = tweSet.get(i);
-      if (e != null) for (var s : e)
-        System.out.println(i + ": " + s + " lexeme " + inputString.substring(i, s.lexemeEnd));
-    }
+    System.out.println(tweSet);
   }
 
   @Override
@@ -40,6 +34,11 @@ public class LexerBaseLine extends AbstractLexer {
   public void statistics(Statistics currentstatistics) {
     // TODO Auto-generated method stub
 
+  }
+
+  @Override
+  public TWESet getTWESet() {
+    return tweSet;
   }
 
   @Override
@@ -60,17 +59,17 @@ public class LexerBaseLine extends AbstractLexer {
     inputAsCharArray = inputString.toCharArray();
     inputIndex = 0;
     inputLength = inputString.length();
-    tweSet = new ArrayList<>();
-    for (int i = 0; i < inputLength; i++)
-      tweSet.add(null);
-    tweSet.set(0, new HashSet<>());
+    tweSet = new TWESet(inputString);
 
     for (int i = 0; i < inputString.length(); i++)
       if (tweSet.get(i) != null) constructTWESlice(i, cfgRules);
 
     var lastElement = tweSet.get(inputLength - 1);
 
-    if (lastElement != null) lastElement.add(new TWESetElement(cfgRules.endOfStringElement, inputLength, inputLength));
+    if (lastElement == null)
+      Util.fatal("No lexicalisations found");
+    else
+      lastElement.add(new TWESetElement(cfgRules.endOfStringElement, inputLength - 1, inputLength - 1, inputLength - 1));
   }
 
   public void constructTWESlice(int lexemeStart, CFGRules cfgRules) {
@@ -87,7 +86,7 @@ public class LexerBaseLine extends AbstractLexer {
               if (w.isWhitespace) tryTokenMatch(w);
           } while (inputIndex != wsStart); // No more whitespace found
 
-          tweSet.get(lexemeStart).add(new TWESetElement(e, lexemeEnd, inputIndex));
+          tweSet.get(lexemeStart).add(new TWESetElement(e, lexemeStart, lexemeEnd, inputIndex));
           if (tweSet.get(inputIndex) == null) tweSet.set(inputIndex, new HashSet<>()); // Mark for downstream processing
         }
       }
@@ -105,11 +104,13 @@ public class LexerBaseLine extends AbstractLexer {
       break;
     case TI:
       match_SINGLETON_CASE_INSENSITIVE(e.str);
+      break;
     case C:
       match_CHARACTER(e.str);
       break;
     case N:
       Util.fatal("tryTokenMatch() in class " + this.getClass().getSimpleName() + " does not support paraterminals");
+      break;
     case B:
       switch (e.str) {
       case "ID":
@@ -826,4 +827,5 @@ public class LexerBaseLine extends AbstractLexer {
     while (peekCh() != '\n' && peekCh() != '\0') // Quietly accept an input file with no \n at the end.
       getCh();
   }
+
 }

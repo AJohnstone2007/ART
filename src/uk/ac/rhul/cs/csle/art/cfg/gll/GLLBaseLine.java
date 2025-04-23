@@ -31,7 +31,9 @@ public class GLLBaseLine extends AbstractParser {
     // !! Debug
     AbstractLexer newLexer = new LexerBaseLine();
     newLexer.lex(input, cfgRules);
+    newLexer.getTWESet().chooseDefault();
     newLexer.printLexicalisations(false);
+    System.out.println("First lexicalisation: " + newLexer.getTWESet().firstLexicalisation());
     // !! End or debug
 
     // lexer.report();
