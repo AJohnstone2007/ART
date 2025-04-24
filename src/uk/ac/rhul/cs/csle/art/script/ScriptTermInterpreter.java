@@ -93,7 +93,8 @@ public class ScriptTermInterpreter {
     currentRewriter = new Rewriter(iTerms);
 
     currentCFGRules = new CFGRules("currentGrammar", iTerms);
-    Util.traceLevel = Util.errorLevel = 0;
+    Util.traceLevel = 0;
+    Util.errorLevel = 1;
     scriptParser.parse(scriptString, scriptCFGRules, scriptLexer);
     if (!scriptParser.inLanguage) Util.fatal("Script syntax error");
     scriptParser.derivations.numberNodes();

@@ -30,9 +30,13 @@ public class LexerBaseLine extends AbstractLexer {
 
     var lastElement = tweSet.get(inputLength - 1);
 
-    if (lastElement == null)
-      Util.fatal("No lexicalisations found");
-    else
+    if (lastElement == null) {
+      int rightmostActiveSlice;
+      for (rightmostActiveSlice = inputString.length() - 1; rightmostActiveSlice >= 0; rightmostActiveSlice--)
+        if (tweSet.get(rightmostActiveSlice) != null) break;
+
+      Util.error(Util.echo("Unknown lexeme ", rightmostActiveSlice, inputString));
+    } else
       lastElement.add(new TWESetElement(cfgRules.endOfStringElement, inputLength - 1, inputLength - 1, inputLength));
   }
 

@@ -122,23 +122,18 @@ public class GLLHashPool extends HashPool {
     if (END != CFGKind.END.ordinal()) Util.fatal("Enumeration mismatch for END - check ParserHashPool.java for consistency with Kind enumeration");
 
     // 1a. (Debug): print precomputed tables
-    // Util.info(grammar);
-    // for (int i = 0; i < kindOf.length; i++)
-    // System.out.print(i + ":" + kindOf[i] + " ");
-    // Util.info();
-    // for (int i = 0; i < altOf.length; i++) {
-    // System.out.print(i + ":");
-    // if (altOf[i] == null)
-    // System.out.print("null");
-    // else
-    // for (int j = 0; j < altOf[i].length; j++)
-    // System.out.print(altOf[i][j] + " ");
-    // Util.info();
-    // }
-    // for (int i = 0; i < targetOf.length; i++)
-    // Util.info(i + ":" + targetOf[i] + " ");
-    // for (int i = 0; i < elementOf.length; i++)
-    // Util.info(i + ":" + elementOf[i] + " ");
+    Util.debug("CFGRules:" + cfgRules);
+    for (int i = 0; i < kindOf.length; i++)
+      Util.debug("kindOf[" + i + "]=" + kindOf[i] + " ");
+    for (int i = 0; i < altOf.length; i++) {
+      Util.debug("altOf[" + i + "]=" + (altOf[i] == null ? "null" : ""));
+      if (altOf[i] != null) for (int j = 0; j < altOf[i].length; j++)
+        Util.debug(altOf[i][j] + " ");
+    }
+    for (int i = 0; i < targetOf.length; i++)
+      Util.debug("targetOf[" + i + "]=" + targetOf[i]);
+    for (int i = 0; i < elementOf.length; i++)
+      Util.debug("elementOf[" + i + "]=" + elementOf[i] + " ");
 
     // 2. Clean hash pool and tables
     initialisehashPool();
@@ -290,7 +285,7 @@ public class GLLHashPool extends HashPool {
   }
 
   private void enqueueDescriptor(int gn, int i, int sn, int dn) {
-    // Util.info("enqueueDescriptor(" + gni + "," + i + "," + sni + "," + dni + ")");
+    // Util.debug("enqueueDescriptor(" + gni + "," + i + "," + sni + "," + dni + ")");
     find(descriptorBuckets, descriptorBucketCount, descriptor_SIZE, gn, i, sn, dn);
     if (findMadeNew) {
       poolSet(findIndex + descriptor_queue, descriptorQueue);
@@ -360,7 +355,7 @@ public class GLLHashPool extends HashPool {
           count++; // Inedge
           if (poolGet(packNode + sppfPackNode_leftChild) != 0) count++;
           if (poolGet(packNode + sppfPackNode_rightChild) != 0) count++;
-          // Util.info("SPPF node " + toStringSPPFNode(chain) + " pack node " + toStringSPPFPackNode(packNode) + ": " + "["
+          // Util.debug("SPPF node " + toStringSPPFNode(chain) + " pack node " + toStringSPPFPackNode(packNode) + ": " + "["
           // + toStringSPPFNode(poolGet(packNode + sppfPackNode_leftChild)) + "] " + "[" + toStringSPPFNode(poolGet(packNode + sppfPackNode_rightChild))
           // + "]");
 

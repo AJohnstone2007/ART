@@ -178,9 +178,9 @@ paraterminalElements ::= paraterminalElement | paraterminalElement ','^ paraterm
 paraterminalElement  ::= cfgNonterminal^^
 
 displayElement  ::= 
-  'version'
+  file | 'latex' |'raw'
+| 'version'
 | 'term' trTerm
-| 'latex' | file 
 | 'script' | 'scriptDerivation' 
 | 'allRules' | 'cfgRules' | 'chooseRules' | 'trRules'
 | 'gdg'

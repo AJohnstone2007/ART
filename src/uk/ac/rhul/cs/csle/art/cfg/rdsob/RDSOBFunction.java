@@ -21,7 +21,7 @@ public class RDSOBFunction extends AbstractParser {
     altLoop: for (CFGNode tmp = lhs.alt; tmp != null; tmp = tmp.alt) {
       tokenIndex = i_entry;
       dn = dnAtEntry;
-      dn.gn = tmp;
+      dn.cfgNode = tmp;
       CFGNode gn = tmp.seq;
       while (true) {
         switch (gn.element.cfgKind) {
@@ -56,6 +56,11 @@ public class RDSOBFunction extends AbstractParser {
     this.input = input;
     this.cfgRules = cfgRules;
     this.lexer = lexer;
+
+    lexer.lex(input, cfgRules);
+    lexer.tweSet.chooseDefault();
+    lexer.loadFirstLexicalisation();
+
     tokenIndex = 0;
     dnRoot = dn = new DerivationSingletonNode(cfgRules.endOfStringNode, null);
     inLanguage = rdsobFunction(cfgRules.elementToNodeMap.get(cfgRules.startNonterminal)) && lexer.firstLexicalisation.get(tokenIndex).element.number == 0;
@@ -65,18 +70,18 @@ public class RDSOBFunction extends AbstractParser {
   protected DerivationSingletonNode dnRoot, dn;
 
   public class DerivationSingletonNode {
-    public CFGNode gn;
+    public CFGNode cfgNode;
     public DerivationSingletonNode next;
 
-    public DerivationSingletonNode(CFGNode gn, DerivationSingletonNode next) {
+    public DerivationSingletonNode(CFGNode cfgNode, DerivationSingletonNode next) {
       super();
-      this.gn = gn;
+      this.cfgNode = cfgNode;
       this.next = next;
     }
 
     @Override
     public String toString() {
-      return gn.toString();
+      return cfgNode.toString();
     }
   }
 }
