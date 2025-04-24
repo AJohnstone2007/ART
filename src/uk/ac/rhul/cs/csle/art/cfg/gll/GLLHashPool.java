@@ -175,12 +175,18 @@ public class GLLHashPool extends HashPool {
     this.input = input;
     this.cfgRules = cfgRules;
     this.lexer = lexer;
+
     initialise();
+
+    lexer.lex(input, cfgRules);
+    lexer.tweSet.chooseDefault();
+    lexer.loadFirstLexicalisation();
+
     nextDescriptor: while (dequeueDescriptor())
       while (true) {
         switch (kindOf[gn]) {
         case T:
-          if (lexer.getTokens()[tokenIndex] == elementOf[gn]) {
+          if (lexer.firstLexicalisation.get(tokenIndex).element.number == elementOf[gn]) {
             d(1);
             tokenIndex++;
             gn++;
@@ -225,7 +231,9 @@ public class GLLHashPool extends HashPool {
 
   private void retrn() {
     if (poolGet(sn + gssNode_gn) == endOfStringNodeNi) {
-      if (cfgRules.acceptingNodeNumbers.contains(gn)) inLanguage |= (tokenIndex == lexer.getTokens().length - 1); // Make gni to boolean array for acceptance testing
+      if (cfgRules.acceptingNodeNumbers.contains(gn)) inLanguage |= (tokenIndex == lexer.firstLexicalisation.size() - 1); // Make gni to boolean array for
+                                                                                                                          // acceptance
+      // testing
       return;
     }
     find(popElementBuckets, popElementBucketCount, popElement_SIZE, tokenIndex, sn, dn);
@@ -299,8 +307,8 @@ public class GLLHashPool extends HashPool {
 
   /* Statistics support ******************************************************/
   private void loadCounts() {
-    ScriptTermInterpreter.currentStatistics.put("tweNodeCount", lexer.getTokens().length);
-    ScriptTermInterpreter.currentStatistics.put("tweEdgeCount", lexer.getTokens().length - 1);
+    ScriptTermInterpreter.currentStatistics.put("tweNodeCount", lexer.firstLexicalisation.size());
+    ScriptTermInterpreter.currentStatistics.put("tweEdgeCount", lexer.firstLexicalisation.size() - 1);
     ScriptTermInterpreter.currentStatistics.put("tweLexCount", 1);
     ScriptTermInterpreter.currentStatistics.put("descriptorCount", cardinality(descriptorBuckets));
     ScriptTermInterpreter.currentStatistics.put("gssNodeCount", cardinality(gssNodeBuckets));

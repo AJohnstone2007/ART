@@ -43,7 +43,7 @@ public class GLLBaseLine extends AbstractParser {
           queueProductionTasks();
           continue nextTask;
         case B, T, TI, C:
-          if (lexer.firstLexicalisation.get(tokenIndex).element.number == cfgNode.element.number) {
+          if (lexer.firstLexicalisation.get(tokenIndex).element == cfgNode.element) {
             matched(1);
             tokenIndex++;
             cfgNode = cfgNode.seq;

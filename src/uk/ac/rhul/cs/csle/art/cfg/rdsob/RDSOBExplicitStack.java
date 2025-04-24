@@ -28,7 +28,7 @@ public class RDSOBExplicitStack extends AbstractParser {
   CFGNode gn;
 
   public boolean match(CFGNode gn, int tokenIndex) {
-    return lexer.getTokens()[tokenIndex] == gn.element.number;
+    return lexer.firstLexicalisation.get(tokenIndex).element == gn.element;
   }
 
   boolean rdsobExplicitStack() {
@@ -94,7 +94,7 @@ public class RDSOBExplicitStack extends AbstractParser {
     tokenIndex = 0;
     dnRoot = dn = new DerivationSingletonNode(cfgRules.endOfStringNode, null);
     sn = new SNode(cfgRules.endOfStringNode, 0, null, dn);
-    inLanguage = rdsobExplicitStack() && lexer.getTokens()[tokenIndex] == 0;
+    inLanguage = rdsobExplicitStack() && lexer.firstLexicalisation.get(tokenIndex).element.number == 0;
   }
 
   protected DerivationSingletonNode dnRoot, dn;

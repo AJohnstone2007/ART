@@ -75,7 +75,7 @@ class SPPFSentenceAnalyser {
     }
     Util.info("Parasentences");
     sppf.visited.clear();
-    parasentence = new SPPFSymbolNode[100 * sppf.parser.lexer.getTokens().length + 1];
+    parasentence = new SPPFSymbolNode[100 * sppf.parser.lexer.firstLexicalisation.size() + 1];
     psCall = 0;
     parasentences = new HashSet<>();
     // sppfCollectParasentencesRec(sppf.root, 0);
@@ -115,7 +115,7 @@ class SPPFSentenceAnalyser {
       if (!(node.packNodes.isEmpty() && node.grammarNode.element.cfgKind == CFGKind.EPS)) {
         Util.info("Extending with " + node.grammarNode.element.str);
         parasentence[parasentenceIndex++] = node;
-        if (node.rightExtent == sppf.parser.lexer.getTokens().length - 1) addParasentence(parasentenceIndex);
+        if (node.rightExtent == sppf.parser.lexer.firstLexicalisation.size() - 1) addParasentence(parasentenceIndex);
       }
     } else
       for (var p : node.packNodes) {
