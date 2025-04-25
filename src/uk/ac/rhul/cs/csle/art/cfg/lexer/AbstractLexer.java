@@ -16,6 +16,7 @@ public abstract class AbstractLexer {
   public Integer swapTokenCount = 0;
   public TWESet tweSet = new TWESet("dummy");
   public ArrayList<TWESetElement> firstLexicalisation;
+  public int whitespacePrefix; // The length of the whitespace prefix in that precedes elements of slice zero - very ugly
 
   public void loadFirstLexicalisation() {
     firstLexicalisation = tweSet.firstLexicalisation();
@@ -26,7 +27,7 @@ public abstract class AbstractLexer {
   }
 
   public String lexeme(TWESetElement element) {
-    String full = inputString.substring(element.leftExtent, element.lexemeEnd);
+    String full = inputString.substring(element.lexemeStart, element.lexemeEnd);
 
     if (element.element.cfgKind == CFGKind.B) {
       switch (element.element.str) {

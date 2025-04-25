@@ -33,7 +33,6 @@ public class CFGRules {
   public CFGElement startNonterminal;
 
   public final Map<CFGElement, CFGElement> elements = new TreeMap<>();
-  public final Set<CFGElement> whitespaces = new HashSet<>();
 
   public final Map<Integer, CFGNode> numberToNodeMap = new TreeMap<>();
   public final Map<CFGElement, CFGNode> elementToNodeMap = new TreeMap<>(); // Map from nonterminals to list of productions represented by their LHS node
@@ -75,6 +74,8 @@ public class CFGRules {
   public String filePrelude = null;
   public String classPrelude = null;
 
+  private boolean seenWhitespaceDirective = false;
+
   public CFGRules(String name, ITerms iTerms) {
     this.name = name;
     this.iTerms = iTerms;
@@ -93,8 +94,6 @@ public class CFGRules {
 
     endOfStringNode = new CFGNode(this, CFGKind.EOS, "$", 0, GIFTKind.NONE, null, null);
     endOfStringNode.seq = endOfStringNode; // trick to ensure initial call collects rootNode
-    for (var w : that.whitespaces) // TODO: This will need beefing up when whitespaces extends to nonterminals
-      whitespaces.add(w);
 
     for (var r : that.elementToNodeMap.keySet()) {
       lhsAction(r.str);
@@ -103,11 +102,8 @@ public class CFGRules {
   }
 
   public void normalise() {
-    if (whitespaces.isEmpty()) {
-      var e = findElement(CFGKind.B, "SIMPLE_WHITESPACE");
-      e.isWhitespace = true;
-      whitespaces.add(e); // default whitespace if non declared
-    }
+    if (!seenWhitespaceDirective) findElement(CFGKind.B, "SIMPLE_WHITESPACE").isWhitespace = true;
+
     derivesExactly = new Relation<>();
     // Add singleton grammar nodes for terminals, # and epsilon. These are used by the SPPF.
     for (CFGElement e : elements.keySet())
@@ -508,6 +504,13 @@ public class CFGRules {
     return elements.get(candidate);
   }
 
+  public CFGElement findWhitespaceElement(CFGKind kind, String s) {
+    var ret = findElement(kind, s);
+    ret.isWhitespace = true;
+    seenWhitespaceDirective = true;
+    return ret;
+  }
+
   LinkedList<CFGNode> stack = new LinkedList<>();
 
   public void lhsAction(String id) {
@@ -613,6 +616,7 @@ public class CFGRules {
     sb.append("Elements:\n");
     for (CFGElement s : elements.keySet()) {
       sb.append(" (" + s.toStringDetailed() + ") " + s);
+      if (s.isWhitespace) sb.append(" whitespace");
       if (cyclicNonterminals.contains(s)) sb.append(" cyclic");
       if (paraterminalElements.contains(s)) sb.append(" paraterminal");
       if (s.attributes != null && !s.attributes.isEmpty()) sb.append(" attributes: " + s.attributes);
@@ -657,8 +661,6 @@ public class CFGRules {
       sb.append(" " + gn);
 
     sb.append("\nParaterminals: " + paraterminalNames);
-
-    sb.append("\nWhitespaces: " + whitespaces);
 
     sb.append("\nCyclic nonterminals: " + cyclicNonterminals);
 

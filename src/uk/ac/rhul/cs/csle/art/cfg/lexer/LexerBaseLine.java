@@ -19,10 +19,15 @@ public class LexerBaseLine extends AbstractLexer {
 
   @Override
   public void lex(String userString, CFGRules cfgRules) {
+    this.cfgRules = cfgRules;
+    // Util.debug("Grammar" + cfgRules + "end of grammar");
     inputString = userString + "\0";
+    inputLength = inputString.length();
     inputAsCharArray = inputString.toCharArray();
     inputIndex = 0;
-    inputLength = inputString.length();
+    matchWhitespace();
+    whitespacePrefix = inputIndex;
+
     tweSet = new TWESet(inputString);
 
     for (int i = 0; i < inputString.length(); i++)
@@ -38,26 +43,35 @@ public class LexerBaseLine extends AbstractLexer {
       Util.error(Util.echo("Unknown lexeme ", rightmostActiveSlice, inputString));
     } else
       lastElement.add(new TWESetElement(cfgRules.endOfStringElement, inputLength - 1, inputLength - 1, inputLength));
+
+    // Util.debug(tweSet.toString());
   }
 
-  public void constructTWESlice(int lexemeStart, CFGRules cfgRules) {
+  public void constructTWESlice(int index, CFGRules cfgRules) {
+    int lexemeStart = index == 0 ? whitespacePrefix : index; // Index zero is special case because of leading whitespace
     for (var e : cfgRules.elements.keySet())
-      if (e.isToken) {
+      if (e.isToken && !e.isWhitespace) {
         inputIndex = lexemeStart;
         tryTokenMatch(e);
         if (inputIndex != lexemeStart) {// Matched?
           lexemeEnd = inputIndex;
-          int wsStart;
-          if (!e.suppressWhitespace) do {
-            wsStart = inputIndex;
-            for (var w : cfgRules.elements.keySet())
-              if (w.isWhitespace) tryTokenMatch(w);
-          } while (inputIndex != wsStart); // No more whitespace found
-
-          tweSet.get(lexemeStart).add(new TWESetElement(e, lexemeStart, lexemeEnd, inputIndex));
+          if (!e.suppressWhitespace) matchWhitespace();
+          tweSet.get(index).add(new TWESetElement(e, lexemeStart, lexemeEnd, inputIndex));
           if (tweSet.get(inputIndex) == null) tweSet.set(inputIndex, new HashSet<>()); // Mark for downstream processing
         }
       }
+  }
+
+  private void matchWhitespace() {
+    int wsStart;
+    do {
+      wsStart = inputIndex;
+      for (var w : cfgRules.elements.keySet())
+        if (w.isWhitespace) {
+          tryTokenMatch(w);
+        }
+    } while (inputIndex != wsStart); // No more whitespace found
+
   }
 
   private void tryTokenMatch(CFGElement e) {
