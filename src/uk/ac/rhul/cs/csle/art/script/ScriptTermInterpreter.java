@@ -575,7 +575,7 @@ public class ScriptTermInterpreter {
   }
 
   private void tryParse(String inputStringName, String inputString) {
-    // Util.info("tryParse on " + inputString);
+    Util.trace(8, "Parser trace using " + currentParser.getClass().getSimpleName());
 
     currentCFGRules.normalise();
     currentChooser.normalise(currentCFGRules);
@@ -583,12 +583,24 @@ public class ScriptTermInterpreter {
     currentParser.parse(inputString, currentCFGRules, currentLexer);
     currentStatistics.putTime("ParseTime");
     if (currentParser.inLanguage) {
-      if (!disableChoosers) currentParser.derivations.chooseLongestMatch();
-      currentStatistics.putTime("ChooseTime");
-      currentDerivationTerm = currentParser.derivations.derivationAsTerm();
-      currentStatistics.putTime("TermGenerateTime");
-    } else
+      Util.trace(1, "Parser accept");
+      if (currentParser.derivations == null)
+        Util.error("current parser does not produce API level derivations");
+      else {
+        if (!disableChoosers) currentParser.derivations.chooseLongestMatch();
+        currentStatistics.putTime("ChooseTime");
+        currentDerivationTerm = currentParser.derivations.derivationAsTerm();
+        currentStatistics.putTime("TermGenerateTime");
+      }
+    } else {
+      if (currentParser.derivations == null)
+        Util.error("Syntax error");
+      else
+        Util.error(Util.echo("Syntax error", currentParser.lexer.firstLexicalisation.get(currentParser.derivations.widestIndex()).lexemeStart,
+            currentParser.lexer.inputString));
+
       currentDerivationTerm = 0;
+    }
   }
 
   private TermTraverserText initialisePlainTextTraverser() {

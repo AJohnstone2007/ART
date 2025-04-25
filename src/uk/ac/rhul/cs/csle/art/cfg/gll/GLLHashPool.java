@@ -122,18 +122,18 @@ public class GLLHashPool extends HashPool {
     if (END != CFGKind.END.ordinal()) Util.fatal("Enumeration mismatch for END - check ParserHashPool.java for consistency with Kind enumeration");
 
     // 1a. (Debug): print precomputed tables
-    Util.debug("CFGRules:" + cfgRules);
-    for (int i = 0; i < kindOf.length; i++)
-      Util.debug("kindOf[" + i + "]=" + kindOf[i] + " ");
-    for (int i = 0; i < altOf.length; i++) {
-      Util.debug("altOf[" + i + "]=" + (altOf[i] == null ? "null" : ""));
-      if (altOf[i] != null) for (int j = 0; j < altOf[i].length; j++)
-        Util.debug(altOf[i][j] + " ");
-    }
-    for (int i = 0; i < targetOf.length; i++)
-      Util.debug("targetOf[" + i + "]=" + targetOf[i]);
-    for (int i = 0; i < elementOf.length; i++)
-      Util.debug("elementOf[" + i + "]=" + elementOf[i] + " ");
+    // Util.debug("CFGRules:" + cfgRules);
+    // for (int i = 0; i < kindOf.length; i++)
+    // Util.debug("kindOf[" + i + "]=" + kindOf[i] + " ");
+    // for (int i = 0; i < altOf.length; i++) {
+    // Util.debug("altOf[" + i + "]=" + (altOf[i] == null ? "null" : ""));
+    // if (altOf[i] != null) for (int j = 0; j < altOf[i].length; j++)
+    // Util.debug(altOf[i][j] + " ");
+    // }
+    // for (int i = 0; i < targetOf.length; i++)
+    // Util.debug("targetOf[" + i + "]=" + targetOf[i]);
+    // for (int i = 0; i < elementOf.length; i++)
+    // Util.debug("elementOf[" + i + "]=" + elementOf[i] + " ");
 
     // 2. Clean hash pool and tables
     initialisehashPool();
@@ -177,11 +177,14 @@ public class GLLHashPool extends HashPool {
     lexer.tweSet.chooseDefault();
     lexer.loadFirstLexicalisation();
 
+    // Util.debug(lexer.tweSet.toString());
+
     nextDescriptor: while (dequeueDescriptor())
       while (true) {
         switch (kindOf[gn]) {
         case T:
           if (lexer.firstLexicalisation.get(tokenIndex).element.number == elementOf[gn]) {
+            // Util.debug("Matched " + lexer.firstLexicalisation.get(tokenIndex).element);
             d(1);
             tokenIndex++;
             gn++;
@@ -202,11 +205,12 @@ public class GLLHashPool extends HashPool {
           Util.fatal("internal error - unexpected grammar node in gllHashPool");
         }
       }
-    loadCounts();
+    // loadCounts(); // This is very slow!
   }
 
   /* Stack handling **********************************************************/
   private void call(int nonterminalNi) {
+    // Util.debug("Calling nonterminal " + nonterminalNi);
     find(gssNodeBuckets, gssNodeBucketCount, gssNode_SIZE, gn + 1, tokenIndex);
     int parentGSSNode = findIndex;
 
@@ -225,10 +229,12 @@ public class GLLHashPool extends HashPool {
   }
 
   private void retrn() {
+    // Util.debug("Return");
     if (poolGet(sn + gssNode_gn) == endOfStringNodeNi) {
       if (cfgRules.acceptingNodeNumbers.contains(gn)) inLanguage |= (tokenIndex == lexer.firstLexicalisation.size() - 1); // Make gni to boolean array for
                                                                                                                           // acceptance
       // testing
+      // Util.debug("Acceptance test returns " + inLanguage);
       return;
     }
     find(popElementBuckets, popElementBucketCount, popElement_SIZE, tokenIndex, sn, dn);
@@ -281,6 +287,7 @@ public class GLLHashPool extends HashPool {
     dn = poolGet(descriptorQueue + descriptor_dn);
 
     descriptorQueue = poolGet(descriptorQueue + descriptor_queue);
+    // Util.debug("dequeued descriptor (" + gn + ", " + tokenIndex + ", " + sn + ", " + dn + ")");
     return true;
   }
 

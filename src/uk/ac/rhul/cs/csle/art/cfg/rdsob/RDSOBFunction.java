@@ -27,10 +27,12 @@ public class RDSOBFunction extends AbstractParser {
         switch (gn.element.cfgKind) {
         case B, C, T, TI:
           if (lexer.firstLexicalisation.get(tokenIndex++).element == gn.element) {
+            Util.trace(8, "Match " + gn);
             gn = gn.seq;
             break;
           } else
-            continue altLoop;
+            Util.trace(8, "Mismatch " + gn);
+          continue altLoop;
         case N:
           if (rdsobFunction(cfgRules.elementToNodeMap.get(gn.element))) {
             gn = gn.seq;

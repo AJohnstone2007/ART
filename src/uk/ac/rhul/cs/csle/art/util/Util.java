@@ -11,6 +11,7 @@ public class Util {
 
   public static void trace(int level, int indent, String msg) {
     if (traceLevel >= level) {
+      console.print(">> ");
       for (int i = 0; i < indent; i++)
         console.print("  ");
       console.println(msg);
@@ -26,7 +27,7 @@ public class Util {
   }
 
   public static void debug(PrintStream stream, String msg) {
-    stream.println("!!! " + msg);
+    stream.println("!! " + msg);
   }
 
   public static void info(String msg) {
@@ -34,7 +35,7 @@ public class Util {
   }
 
   public static void info(PrintStream stream, String msg) {
-    if (errorLevel >= 3) stream.println(msg);
+    if (errorLevel >= 3) stream.println("** " + msg);
   }
 
   public static void warning(String msg) {
@@ -42,7 +43,7 @@ public class Util {
   }
 
   public static void warning(PrintStream stream, String msg) {
-    if (errorLevel >= 2) stream.println("*** Warning: " + msg);
+    if (errorLevel >= 2) stream.println("** Warning: " + msg);
   }
 
   public static void error(String msg) {
@@ -50,7 +51,7 @@ public class Util {
   }
 
   public static void error(PrintStream stream, String msg) {
-    if (errorLevel >= 1) stream.println("*** Error: " + msg);
+    if (errorLevel >= 1) stream.println("** Error: " + msg);
   }
 
   public static void fatal(String msg) {
@@ -58,7 +59,7 @@ public class Util {
   }
 
   public static void fatal(PrintStream stream, String msg) {
-    stream.println("*** Fatal: " + msg);
+    stream.println("** Fatal: " + msg);
     System.exit(1);
   }
 

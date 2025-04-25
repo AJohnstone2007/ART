@@ -65,10 +65,6 @@ public class GLLBaseLine extends AbstractParser {
         }
       }
     derivations.numberNodes();
-    if (inLanguage)
-      Util.trace(1, "Parser accept");
-    else
-      Util.error(Util.echo("GLLBL " + "syntax error", lexer.firstLexicalisation.get(derivations.widestIndex()).lexemeStart, lexer.inputString));
   }
 
   private void matched(int size) {
