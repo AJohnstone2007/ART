@@ -2,6 +2,7 @@ package uk.ac.rhul.cs.csle.art.cfg;
 
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGRules;
 import uk.ac.rhul.cs.csle.art.cfg.lexer.AbstractLexer;
+import uk.ac.rhul.cs.csle.art.util.Util;
 import uk.ac.rhul.cs.csle.art.util.derivations.AbstractDerivations;
 import uk.ac.rhul.cs.csle.art.util.stacks.AbstractStacks;
 import uk.ac.rhul.cs.csle.art.util.statistics.Statistics;
@@ -18,6 +19,16 @@ public abstract class AbstractParser {
   public AbstractDerivations derivations;
 
   public abstract void parse(String input, CFGRules cfgRules, AbstractLexer lexer);
+
+  public void outcomeReport() {
+    if (inLanguage) {
+      Util.trace(1, "Parser accept");
+      if (derivations == null) Util.error("current parser does not produce API level derivations");
+    } else if (derivations == null)
+      Util.error("Syntax error");
+    else
+      Util.error(Util.echo("Syntax error", lexer.firstLexicalisation.get(derivations.widestIndex()).lexemeStart, lexer.inputString));
+  }
 
   public void statistics(Statistics currentStatistics) {
     tasks.statistics(currentStatistics);

@@ -144,35 +144,26 @@ public class ITerms {
     }
   }
 
-  /* Raw term rendering *************************************************************************************/
-  public String toRawString(int term) {
-    if (term == 0) return "null term";
-    return rawTextTraverser.toString(term);
-  }
-
-  public String toRawString(Integer term, Map<Integer, Integer> localAliases) {
-    if (term == 0) return "null term";
-    return rawTextTraverser.toString(term, false, -1, localAliases);
-  }
-
-  public String toRawString(Integer term, Boolean indent, Integer depthLimit, Map<Integer, Integer> localAliases) {
-    if (term == 0) return "null term";
-    return rawTextTraverser.toString(term, indent, depthLimit, localAliases);
-  }
-
+  /* Term rendering *************************************************************************************/
   public String toString(int term) {
-    if (term == 0) return "null term";
-    return plainTextTraverser.toString(term);
+    return toString(term, plainTextTraverser, false, -1, null);
+  }
+
+  public String toRawString(int term) {
+    return toString(term, rawTextTraverser, false, -1, null);
+  }
+
+  public String toString(int term, TermTraverserText traverser, boolean indent, int depthLimit) {
+    return toString(term, traverser, indent, depthLimit, null);
   }
 
   public String toString(Integer term, Map<Integer, Integer> localAliases) {
-    if (term == 0) return "null term";
-    return plainTextTraverser.toString(term, false, -1, localAliases);
+    return toString(term, plainTextTraverser, false, -1, localAliases);
   }
 
-  public String toString(Integer term, Boolean indent, Integer depthLimit, Map<Integer, Integer> localAliases) {
+  public String toString(int term, TermTraverserText traverser, boolean indent, int depthLimit, Map<Integer, Integer> localAliases) {
     if (term == 0) return "null term";
-    return plainTextTraverser.toString(term, indent, depthLimit, localAliases);
+    return traverser.toString(term, indent, depthLimit, localAliases);
   }
 
   /* Symbol categories **************************************************************************************/
@@ -1220,12 +1211,12 @@ public class ITerms {
   }
 
   public void mustHaveSymbol(int term, String symbol) {
-    if (!hasSymbol(term, symbol)) Util.fatal("Term " + toString(term) + " failed type check type against " + symbol);
+    if (!hasSymbol(term, symbol)) Util.fatal("Term " + toRawString(term) + " failed type check type against " + symbol);
   }
 
   public void mustHaveSymbol(int term, String symbol, int arity) {
     mustHaveSymbol(term, symbol);
-    if (termArity(term) != arity) Util.fatal("Term " + toString(term) + " failed type check type against" + symbol + " with arity " + arity);
+    if (termArity(term) != arity) Util.fatal("Term " + toRawString(term) + " failed type check type against" + symbol + " with arity " + arity);
   }
 
   /* Conversions between Java values and terms ************************************************************************************/
@@ -1237,7 +1228,7 @@ public class ITerms {
     case "false":
       return false;
     }
-    Util.fatal("Term " + toString(term) + " is not a valid __bool");
+    Util.fatal("Term " + toRawString(term) + " is not a valid __bool");
     return false;
   }
 

@@ -56,7 +56,7 @@ public class Rewriter {
       // Util.info("Variable map: ");
       // for (int i :rw.variableMap.keySet())
       // Util.info(i + ":" + iTerms.getString(variableMap.get(i)));
-      Util.trace(5, level, iTerms.toString(ruleIndex, false, -1, tr.variableMap)); // Announce the next rule we are going to try
+      Util.trace(5, level, iTerms.toString(ruleIndex, iTerms.plainTextTraverser, false, -1, tr.variableMap)); // Announce the next rule we are going to try
       int lhs = iTerms.subterm(ruleIndex, 1, 1, 0);
       int premises = iTerms.subterm(ruleIndex, 1, 0);
       int premiseCount = iTerms.termArity(premises);
@@ -118,7 +118,7 @@ public class Rewriter {
     while (true) {
       for (int i : cycleCheck.keySet())
         cycleCheck.get(i).clear();
-      Util.trace(3, 0, "Step " + ++rewriteStepCounter + " " + iTerms.toString(oldTerm, false, 4, null));
+      Util.trace(3, 0, "Step " + ++rewriteStepCounter + " " + iTerms.toString(oldTerm, iTerms.plainTextTraverser, false, 4, null));
       newTerm = rewriteAttempt(oldTerm, relation, 1);
       if (tr.isTerminatingConfiguration(newTerm, relation) || newTerm == oldTerm /* nothing changed */) break;
       oldTerm = newTerm;

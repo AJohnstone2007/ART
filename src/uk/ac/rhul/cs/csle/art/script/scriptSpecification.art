@@ -144,12 +144,8 @@ directiveElement ::=
 | 'clear'^^ 'allRules' | 'clear'^^ 'cfgRules' | 'clear'^^ 'chooseRules' | 'clear'^^ 'trRules'
 
 | 'trace'^^ __int32
-| 'print'^^ displayElement^
-| 'printraw'^^ displayElement^
-| 'printlatex'^^ displayElement^
-| 'write'^^ file displayElement^
-| 'writelatex'^^ file displayElement^
-| 'show'^^ displayElement^
+| 'print'^^ displayElements^
+| 'show'^^ displayElements^
 | 'prompt'^^ | 'prompt'^^ &STRING_DQ
 
 | 'try'^^ file              
@@ -177,6 +173,7 @@ configurationElement ::= ID ':'^ ID
 paraterminalElements ::= paraterminalElement | paraterminalElement ','^ paraterminalElements^
 paraterminalElement  ::= cfgNonterminal^^
 
+displayElements ::= displayElement^ | displayElement^ displayElements^
 displayElement  ::= 
   file | 'latex' |'raw'
 | 'version'
