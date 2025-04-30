@@ -4,6 +4,7 @@ import uk.ac.rhul.cs.csle.art.cfg.AbstractParser;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGRules;
 import uk.ac.rhul.cs.csle.art.cfg.lexer.AbstractLexer;
+import uk.ac.rhul.cs.csle.art.choose.ChooseRules;
 import uk.ac.rhul.cs.csle.art.util.Util;
 import uk.ac.rhul.cs.csle.art.util.derivations.AbstractDerivationNode;
 import uk.ac.rhul.cs.csle.art.util.derivations.SPPF;
@@ -17,7 +18,7 @@ public class GLLBaseLine extends AbstractParser {
   AbstractDerivationNode derivationNode;
 
   @Override
-  public void parse(String input, CFGRules cfgRules, AbstractLexer lexer) {
+  public void parse(String input, CFGRules cfgRules, AbstractLexer lexer, ChooseRules chooseRules) {
     inLanguage = false;
     this.input = input;
     this.cfgRules = cfgRules;
@@ -26,9 +27,7 @@ public class GLLBaseLine extends AbstractParser {
     stacks = new GSS(cfgRules);
     derivations = new SPPF(this);
 
-    lexer.lex(input, cfgRules);
-    lexer.tweSet.chooseDefault();
-    lexer.loadFirstLexicalisation();
+    lexer.lex(input, cfgRules, chooseRules);
 
     tokenIndex = 0;
     cfgNode = cfgRules.elementToNodeMap.get(cfgRules.startNonterminal).alt;
@@ -38,22 +37,23 @@ public class GLLBaseLine extends AbstractParser {
 
     nextTask: while (nextTask())
       while (true) {
-        switch (cfgNode.element.cfgKind) {
+        switch (cfgNode.cfgElement.cfgKind) {
         case ALT:
           queueProductionTasks();
           continue nextTask;
+        case EPS:
+          updateDerivation(0);
+          cfgNode = cfgNode.seq;
+          break; // continue with this sequence
         case B, T, TI, C:
-          if (lexer.firstLexicalisation.get(tokenIndex).element == cfgNode.element) {
-            matched(1);
+          var inputElement = lexer.tweSlices[tokenIndex][0].cfgElement;
+          if (inputElement == cfgNode.cfgElement) {
+            updateDerivation(1);
             tokenIndex++;
             cfgNode = cfgNode.seq;
             break; // continue with this sequence
-          } else
-            continue nextTask;
-        case EPS:
-          matched(0);
-          cfgNode = cfgNode.seq;
-          break; // continue with this sequence
+          }
+          continue nextTask;
         case N:
           call(cfgNode);
           continue nextTask;
@@ -61,15 +61,15 @@ public class GLLBaseLine extends AbstractParser {
           retrn();
           continue nextTask;
         default:
-          Util.fatal("Unexpected CFGNode kind " + cfgNode.element.cfgKind + " in " + getClass().getSimpleName());
+          Util.fatal("Unexpected CFGNode kind " + cfgNode.cfgElement.cfgKind + " in " + getClass().getSimpleName());
         }
       }
     derivations.numberNodes();
   }
 
-  private void matched(int size) {
-    Util.trace(8, 0, "Matched " + cfgNode.element);
-    var rightNode = derivations.find(cfgRules.elementToNodeMap.get(cfgNode.element), tokenIndex, tokenIndex + size);
+  private void updateDerivation(int size) {
+    Util.trace(8, 0, "Matched " + cfgNode.cfgElement);
+    var rightNode = derivations.find(cfgRules.elementToNodeMap.get(cfgNode.cfgElement), tokenIndex, tokenIndex + size);
     derivationNode = derivations.extend(cfgNode.seq, derivationNode, rightNode);
   }
 
@@ -90,14 +90,14 @@ public class GLLBaseLine extends AbstractParser {
 
   private void call(CFGNode cfgNode) {
     var newStackNode = stacks.push(derivations, tasks, tokenIndex, cfgNode, stackNode, derivationNode);
-    for (CFGNode p = cfgRules.elementToNodeMap.get(cfgNode.element).alt; p != null; p = p.alt)
+    for (CFGNode p = cfgRules.elementToNodeMap.get(cfgNode.cfgElement).alt; p != null; p = p.alt)
       tasks.queue(tokenIndex, p.seq, newStackNode, null);
   }
 
   private void retrn() {
     if (stackNode.equals(stacks.getRoot())) {
-      if (cfgRules.acceptingNodeNumbers.contains(cfgNode.num) && (tokenIndex == lexer.firstLexicalisation.size() - 1)) {
-        derivations.setRoot(cfgRules.elementToNodeMap.get(cfgRules.startNonterminal), lexer.firstLexicalisation.size() - 1);
+      if (cfgRules.acceptingNodeNumbers.contains(cfgNode.num) && (tokenIndex == lexer.tweSlices.length - 1)) {
+        derivations.setRoot(cfgRules.elementToNodeMap.get(cfgRules.startNonterminal), lexer.tweSlices.length - 1);
         inLanguage = true;
       }
       return;

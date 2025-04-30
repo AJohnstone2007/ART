@@ -156,7 +156,7 @@ public class AJDebug {
       // }
     }
     // Util.info();
-    if (v5.element.cfgKind == CFGKind.END) return good;
+    if (v5.cfgElement.cfgKind == CFGKind.END) return good;
 
     good &= v5v3RegressionCheckFirstAndFollowInstanceSetsRec(v5.seq, artV3);
     good &= v5v3RegressionCheckFirstAndFollowInstanceSetsRec(v5.alt, artV3);

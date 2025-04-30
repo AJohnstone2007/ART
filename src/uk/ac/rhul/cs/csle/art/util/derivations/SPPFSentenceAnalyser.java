@@ -36,7 +36,7 @@ class SPPFSentenceAnalyser {
     boolean overlapping = false;
     for (var i : paraterminalInstances.keySet()) {
       for (var s : paraterminalInstances.get(i))
-        Util.info(s.leftExtent + "," + s.rightExtent + "  " + s.grammarNode.element);
+        Util.info(s.leftExtent + "," + s.rightExtent + "  " + s.grammarNode.cfgElement);
     }
   }
 
@@ -45,14 +45,14 @@ class SPPFSentenceAnalyser {
     if (sppf.visited.get(sppfn.number)) return;
     sppf.visited.set(sppfn.number);
 
-    if (sppfn.isSymbol() && sppf.parser.cfgRules.paraterminalElements.contains(sppfn.grammarNode.element)) {
+    if (sppfn.isSymbol() && sppf.parser.cfgRules.paraterminalElements.contains(sppfn.grammarNode.cfgElement)) {
       paraterminalInstanceAdd(sppfn);
       paraterminalCount++;
       return;
     }
     if (sppfn.packNodes.size() == 0) {
       paraterminalInstanceAdd(sppfn);
-      if (sppfn.grammarNode.element.cfgKind != CFGKind.EPS) terminalCount++;
+      if (sppfn.grammarNode.cfgElement.cfgKind != CFGKind.EPS) terminalCount++;
     }
     for (var p : sppfn.packNodes) {
       if (p.leftChild != null) sppfCollectParaterminalsRec(p.leftChild);
@@ -75,7 +75,7 @@ class SPPFSentenceAnalyser {
     }
     Util.info("Parasentences");
     sppf.visited.clear();
-    parasentence = new SPPFSymbolNode[100 * sppf.parser.lexer.firstLexicalisation.size() + 1];
+    parasentence = new SPPFSymbolNode[100 * sppf.parser.lexer.tweSlices.length + 1];
     psCall = 0;
     parasentences = new HashSet<>();
     // sppfCollectParasentencesRec(sppf.root, 0);
@@ -83,7 +83,7 @@ class SPPFSentenceAnalyser {
     // Util.info(parasentences);
     for (var s : parasentences) {
       for (var n : s)
-        System.out.print(n.leftExtent + "," + n.rightExtent + ":" + n.grammarNode.element.str + "  ");
+        System.out.print(n.leftExtent + "," + n.rightExtent + ":" + n.grammarNode.cfgElement.str + "  ");
       System.out.println();
     }
   }
@@ -111,11 +111,11 @@ class SPPFSentenceAnalyser {
     }
     sppf.visited.set(node.number);
 
-    if (node.packNodes.isEmpty() || (node.isSymbol() && sppf.parser.cfgRules.paraterminalElements.contains(node.grammarNode.element))) {
-      if (!(node.packNodes.isEmpty() && node.grammarNode.element.cfgKind == CFGKind.EPS)) {
-        Util.info("Extending with " + node.grammarNode.element.str);
+    if (node.packNodes.isEmpty() || (node.isSymbol() && sppf.parser.cfgRules.paraterminalElements.contains(node.grammarNode.cfgElement))) {
+      if (!(node.packNodes.isEmpty() && node.grammarNode.cfgElement.cfgKind == CFGKind.EPS)) {
+        Util.info("Extending with " + node.grammarNode.cfgElement.str);
         parasentence[parasentenceIndex++] = node;
-        if (node.rightExtent == sppf.parser.lexer.firstLexicalisation.size() - 1) addParasentence(parasentenceIndex);
+        if (node.rightExtent == sppf.parser.lexer.tweSlices.length - 1) addParasentence(parasentenceIndex);
       }
     } else
       for (var p : node.packNodes) {

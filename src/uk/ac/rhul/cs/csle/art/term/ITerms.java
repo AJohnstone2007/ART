@@ -145,25 +145,25 @@ public class ITerms {
   }
 
   /* Term rendering *************************************************************************************/
+  public String toString(int term, TermTraverserText traverser, boolean indent, int depthLimit, Map<Integer, Integer> localAliases) {
+    if (term == 0) return "null term";
+    return traverser.toString(term, indent, depthLimit, localAliases);
+  }
+
   public String toString(int term) {
     return toString(term, plainTextTraverser, false, -1, null);
   }
 
-  public String toRawString(int term) {
+  public String toRawString(int term) { // Used for errors
     return toString(term, rawTextTraverser, false, -1, null);
   }
 
-  public String toString(int term, TermTraverserText traverser, boolean indent, int depthLimit) {
+  public String toString(int term, TermTraverserText traverser, boolean indent, int depthLimit) { // Used by script interpreter
     return toString(term, traverser, indent, depthLimit, null);
   }
 
-  public String toString(Integer term, Map<Integer, Integer> localAliases) {
+  public String toString(Integer term, Map<Integer, Integer> localAliases) { // Used by writer traces
     return toString(term, plainTextTraverser, false, -1, localAliases);
-  }
-
-  public String toString(int term, TermTraverserText traverser, boolean indent, int depthLimit, Map<Integer, Integer> localAliases) {
-    if (term == 0) return "null term";
-    return traverser.toString(term, indent, depthLimit, localAliases);
   }
 
   /* Symbol categories **************************************************************************************/

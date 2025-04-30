@@ -48,7 +48,7 @@ public class TWESet {
     for (var slice : slices)
       if (slice != null) for (var e : slice)
         for (var f : slice)
-          if ((e.rightExtent > f.rightExtent) || (e.rightExtent == f.rightExtent && e.element.cfgKind != CFGKind.B && f.element.cfgKind == CFGKind.B))
+          if ((e.rightExtent > f.rightExtent) || (e.rightExtent == f.rightExtent && e.cfgElement.cfgKind != CFGKind.B && f.cfgElement.cfgKind == CFGKind.B))
             f.suppressed = true;
     suppressDeadPaths();
   }
@@ -57,9 +57,9 @@ public class TWESet {
     for (var slice : slices)
       if (slice != null) for (var e : slice)
         for (var f : slice)
-          if ((e.rightExtent > f.rightExtent) && longer.isRelated(e.element, f.element)
-              || (e.rightExtent < f.rightExtent) && shorter.isRelated(e.element, f.element)
-              || (e.rightExtent == f.rightExtent) && higher.isRelated(e.element, f.element))
+          if ((e.rightExtent > f.rightExtent) && longer.isRelated(e.cfgElement, f.cfgElement)
+              || (e.rightExtent < f.rightExtent) && shorter.isRelated(e.cfgElement, f.cfgElement)
+              || (e.rightExtent == f.rightExtent) && higher.isRelated(e.cfgElement, f.cfgElement))
             f.suppressed = true;
   }
 

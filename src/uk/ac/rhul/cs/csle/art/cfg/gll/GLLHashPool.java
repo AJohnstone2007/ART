@@ -7,6 +7,7 @@ import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGKind;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGRules;
 import uk.ac.rhul.cs.csle.art.cfg.hashpool.HashPool;
 import uk.ac.rhul.cs.csle.art.cfg.lexer.AbstractLexer;
+import uk.ac.rhul.cs.csle.art.choose.ChooseRules;
 import uk.ac.rhul.cs.csle.art.script.ScriptTermInterpreter;
 import uk.ac.rhul.cs.csle.art.util.Util;
 
@@ -165,7 +166,7 @@ public class GLLHashPool extends HashPool {
   }
 
   @Override
-  public void parse(String input, CFGRules cfgRules, AbstractLexer lexer) {
+  public void parse(String input, CFGRules cfgRules, AbstractLexer lexer, ChooseRules chooseRules) {
     inLanguage = false;
     this.input = input;
     this.cfgRules = cfgRules;
@@ -173,9 +174,7 @@ public class GLLHashPool extends HashPool {
 
     initialise();
 
-    lexer.lex(input, cfgRules);
-    lexer.tweSet.chooseDefault();
-    lexer.loadFirstLexicalisation();
+    lexer.lex(input, cfgRules, chooseRules);
 
     // Util.debug(lexer.tweSet.toString());
 
@@ -183,7 +182,7 @@ public class GLLHashPool extends HashPool {
       while (true) {
         switch (kindOf[gn]) {
         case T:
-          if (lexer.firstLexicalisation.get(tokenIndex).element.number == elementOf[gn]) {
+          if (lexer.tweSlices[tokenIndex][0].cfgElement.number == elementOf[gn]) {
             // Util.debug("Matched " + lexer.firstLexicalisation.get(tokenIndex).element);
             d(1);
             tokenIndex++;
@@ -231,8 +230,8 @@ public class GLLHashPool extends HashPool {
   private void retrn() {
     // Util.debug("Return");
     if (poolGet(sn + gssNode_gn) == endOfStringNodeNi) {
-      if (cfgRules.acceptingNodeNumbers.contains(gn)) inLanguage |= (tokenIndex == lexer.firstLexicalisation.size() - 1); // Make gni to boolean array for
-                                                                                                                          // acceptance
+      if (cfgRules.acceptingNodeNumbers.contains(gn)) inLanguage |= (tokenIndex == lexer.tweSlices.length - 1); // Make gni to boolean array for
+                                                                                                                // acceptance
       // testing
       // Util.debug("Acceptance test returns " + inLanguage);
       return;
@@ -309,8 +308,8 @@ public class GLLHashPool extends HashPool {
 
   /* Statistics support ******************************************************/
   private void loadCounts() {
-    ScriptTermInterpreter.currentStatistics.put("tweNodeCount", lexer.firstLexicalisation.size());
-    ScriptTermInterpreter.currentStatistics.put("tweEdgeCount", lexer.firstLexicalisation.size() - 1);
+    ScriptTermInterpreter.currentStatistics.put("tweNodeCount", lexer.tweSlices.length);
+    ScriptTermInterpreter.currentStatistics.put("tweEdgeCount", lexer.tweSlices.length - 1);
     ScriptTermInterpreter.currentStatistics.put("tweLexCount", 1);
     ScriptTermInterpreter.currentStatistics.put("descriptorCount", cardinality(descriptorBuckets));
     ScriptTermInterpreter.currentStatistics.put("gssNodeCount", cardinality(gssNodeBuckets));

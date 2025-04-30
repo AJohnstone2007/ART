@@ -5,11 +5,14 @@ import java.util.Set;
 
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGElement;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGRules;
+import uk.ac.rhul.cs.csle.art.choose.ChooseRules;
 import uk.ac.rhul.cs.csle.art.util.Util;
 import uk.ac.rhul.cs.csle.art.util.statistics.Statistics;
 
 public class LexerBaseLine extends AbstractLexer {
-  private int inputIndex, inputLength, lexemeEnd;
+  private int inputIndex, inputLength, lexemeStart, lexemeEnd, whitespacePrefix;
+  private char[] inputAsCharArray;
+  private boolean[] hasSlice;
 
   @Override
   public void statistics(Statistics currentstatistics) {
@@ -18,36 +21,37 @@ public class LexerBaseLine extends AbstractLexer {
   }
 
   @Override
-  public void lex(String userString, CFGRules cfgRules) {
+  public void lex(String userString, CFGRules cfgRules, ChooseRules chooseRules) {
     this.cfgRules = cfgRules;
     // Util.debug("Grammar" + cfgRules + "end of grammar");
     inputString = userString + "\0";
     inputLength = inputString.length();
     inputAsCharArray = inputString.toCharArray();
     inputIndex = 0;
+    tweSlices = new TWESetElement[inputLength][];
+    hasSlice = new boolean[inputLength];
+    hasSlice[0] = true;
     matchWhitespace();
     whitespacePrefix = inputIndex;
-
-    tweSet = new TWESet(inputString);
+    Set<TWESetElement> slice;
 
     for (int i = 0; i < inputString.length(); i++)
-      if (tweSet.get(i) != null) constructTWESlice(i, cfgRules);
+      if (hasSlice[i]) tweSlices[i] = constructTWESlice(i);
 
-    var lastElement = tweSet.get(inputLength - 1);
-
-    if (lastElement == null) {
+    if (!hasSlice[inputLength - 1]) { // Lexical reject
       int rightmostActiveSlice;
       for (rightmostActiveSlice = inputString.length() - 1; rightmostActiveSlice >= 0; rightmostActiveSlice--)
-        if (tweSet.get(rightmostActiveSlice) != null) break;
+        if (hasSlice[rightmostActiveSlice]) break;
 
-      Util.error(Util.echo("Unknown lexeme ", rightmostActiveSlice, inputString));
-    } else
-      lastElement.add(new TWESetElement(cfgRules.endOfStringElement, inputLength - 1, inputLength - 1, inputLength));
-
-    // Util.debug(tweSet.toString());
+      lexicalError("Unknown lexeme ", rightmostActiveSlice);
+    } else { // Lexical accept
+      tweSlices[inputLength - 1] = new TWESetElement[1];
+      tweSlices[inputLength - 1][0] = new TWESetElement(cfgRules.endOfStringElement, inputLength - 1, inputLength - 1, inputLength);
+    }
   }
 
-  public void constructTWESlice(int index, CFGRules cfgRules) {
+  public TWESetElement[] constructTWESlice(int index) {
+    Set<TWESetElement> ret = new HashSet<>();
     int lexemeStart = index == 0 ? whitespacePrefix : index; // Index zero is special case because of leading whitespace
     for (var e : cfgRules.elements.keySet())
       if (e.isToken && !e.isWhitespace) {
@@ -56,10 +60,11 @@ public class LexerBaseLine extends AbstractLexer {
         if (inputIndex != lexemeStart) {// Matched?
           lexemeEnd = inputIndex;
           if (!e.suppressWhitespace) matchWhitespace();
-          tweSet.get(index).add(new TWESetElement(e, lexemeStart, lexemeEnd, inputIndex));
-          if (tweSet.get(inputIndex) == null) tweSet.set(inputIndex, new HashSet<>()); // Mark for downstream processing
+          ret.add(new TWESetElement(e, lexemeStart, lexemeEnd, inputIndex));
+          hasSlice[inputIndex] = true; // Mark for downstream processing
         }
       }
+    return (TWESetElement[]) ret.toArray();
   }
 
   private void matchWhitespace() {
@@ -76,7 +81,7 @@ public class LexerBaseLine extends AbstractLexer {
 
   private void tryTokenMatch(CFGElement e) {
     // System.out.println("tryTokenMatch(" + e + ") at inputIndex " + lexerInputIndex);
-
+    lexemeStart = inputIndex;
     switch (e.cfgKind) {
     default:
       Util.fatal("tryTokenMatch() on cfgElement with unexpected cfgKind " + e);
@@ -274,7 +279,6 @@ public class LexerBaseLine extends AbstractLexer {
   }
 
   protected void match_SINGLETON_CASE_SENSITIVE(String string) {
-    int lexemeStart = inputIndex;
     for (int i = 0; i < string.length(); i++)
       if (string.charAt(i) != peekCh()) {
         inputIndex = lexemeStart;
@@ -285,7 +289,6 @@ public class LexerBaseLine extends AbstractLexer {
   }
 
   protected void match_SINGLETON_CASE_INSENSITIVE(String string) {
-    int lexemeStart = inputIndex;
     for (int i = 0; i < string.length(); i++)
       if (string.charAt(i) != peekChToLower()) {
         inputIndex = lexemeStart;
@@ -300,7 +303,7 @@ public class LexerBaseLine extends AbstractLexer {
 
     do {
       if (peekCh() == '\0') {
-        lexicalError("Unterminated nestable SML comment");
+        lexicalError("Unterminated nestable SML comment", lexemeStart);
         return;
       }
 
@@ -325,8 +328,6 @@ public class LexerBaseLine extends AbstractLexer {
 
     if (!(isDigit(peekCh()) || (peekCh() == '~' && isDigit(peekOneCh())))) return;
 
-    int lexemeStart = inputIndex;
-
     if (peekCh() == '~') getCh();
 
     /* Check for hexadecimal introducer */
@@ -348,9 +349,6 @@ public class LexerBaseLine extends AbstractLexer {
 
   protected void match_SML_WORD() {
     if (!(peekCh() == '0' && peekOneCh() == 'w')) return;
-
-    int lexemeStart = inputIndex;
-
     getCh(); // Skip leading 0w
     getCh();
 
@@ -372,8 +370,6 @@ public class LexerBaseLine extends AbstractLexer {
 
   protected void match_SML_REAL() {
     if (!(isDigit(peekCh()) || (peekCh() == '~' && isDigit(peekOneCh())))) return;
-
-    int lexemeStart = inputIndex;
     boolean invalid = true;
 
     if (peekCh() == '~') getCh();
@@ -419,7 +415,7 @@ public class LexerBaseLine extends AbstractLexer {
     getCh(); // Skip #
     do {
       if (peekCh() == '\0') {
-        lexicalError("Unterminated SML character");
+        lexicalError("Unterminated SML character", lexemeStart);
         return;
       }
       if (getCh() == '\\') artSkipEscapeSequence();
@@ -431,7 +427,7 @@ public class LexerBaseLine extends AbstractLexer {
     if (peekCh() != '"') return;
     do {
       if (peekCh() == '\0') {
-        lexicalError("Unterminated SML string");
+        lexicalError("Unterminated SML string", lexemeStart);
         return;
       }
       if (getCh() == '\\') artSkipEscapeSequence();
@@ -525,8 +521,6 @@ public class LexerBaseLine extends AbstractLexer {
     if (!isDigit(peekCh())) // Integers must contain at least one leading digit
       return;
 
-    int lexemeStart = inputIndex;
-
     /* Check for hexadecimal introducer */
     boolean hex = (peekCh() == '0' && (peekOneCh() == 'x' || peekOneCh() == 'X'));
 
@@ -557,7 +551,6 @@ public class LexerBaseLine extends AbstractLexer {
   }
 
   protected void match_REAL() {
-    int lexemeStart = inputIndex;
     if (!isDigit(peekCh())) // Reals must contain at least one leading digit
       return;
 
@@ -601,7 +594,6 @@ public class LexerBaseLine extends AbstractLexer {
 
   protected void match_CHAR_SQ() {
     if (peekCh() != '\'') return;
-    int lexemeStart = inputIndex;
     getCh(); // Skip delimiter
     if (getCh() == '\\') artSkipEscapeSequence();
     if (peekCh() != '\'') {
@@ -621,7 +613,7 @@ public class LexerBaseLine extends AbstractLexer {
     if (peekCh() != '\'') return;
     do {
       if (peekCh() == '\0') {
-        lexicalError("Unterminated ' ... ' string");
+        lexicalError("Unterminated ' ... ' string", lexemeStart);
         return;
       }
       if (getCh() == '\\') artSkipEscapeSequence();
@@ -633,11 +625,11 @@ public class LexerBaseLine extends AbstractLexer {
     if (peekCh() != '\'') return;
     do {
       if (peekCh() == '\n') {
-        lexicalError("Newline character in ' ... ' string");
+        lexicalError("Newline character in ' ... ' string", lexemeStart);
         return;
       }
       if (peekCh() == '\0') {
-        lexicalError("Unterminated ' ... ' string");
+        lexicalError("Unterminated ' ... ' string", lexemeStart);
         return;
       }
       getCh();
@@ -649,7 +641,7 @@ public class LexerBaseLine extends AbstractLexer {
     if (peekCh() != '"') return;
     do {
       if (peekCh() == '\0') {
-        lexicalError("Unterminated \" ... \" string");
+        lexicalError("Unterminated \" ... \" string", lexemeStart);
         return;
       }
       if (getCh() == '\\') artSkipEscapeSequence();
@@ -661,7 +653,7 @@ public class LexerBaseLine extends AbstractLexer {
     if (peekCh() != '`') return;
     do {
       if (peekCh() == '\0') {
-        lexicalError("Unterminated ` ... ` string");
+        lexicalError("Unterminated ` ... ` string", lexemeStart);
         return;
       }
       if (getCh() == '\\') artSkipEscapeSequence();
@@ -673,7 +665,7 @@ public class LexerBaseLine extends AbstractLexer {
     if (peekCh() != '$') return;
     do {
       if (peekCh() == '\0') {
-        lexicalError("Unterminated $ ... $ string");
+        lexicalError("Unterminated $ ... $ string", lexemeStart);
         return;
       }
       if (getCh() == '\\') artSkipEscapeSequence();
@@ -685,7 +677,7 @@ public class LexerBaseLine extends AbstractLexer {
     if (!(peekCh() == '!' && peekOneCh() == '!')) return;
     do {
       if (peekCh() == '\0') {
-        lexicalError("Unterminated !! ... !! string");
+        lexicalError("Unterminated !! ... !! string", lexemeStart);
         return;
       }
       if (getCh() == '\\') artSkipEscapeSequence();
@@ -701,7 +693,7 @@ public class LexerBaseLine extends AbstractLexer {
       if (peekCh() == '[') nestLevel++;
       if (peekCh() == ']') nestLevel--;
       if (peekCh() == '\0') {
-        lexicalError("Unterminated nestable [ ... ] string");
+        lexicalError("Unterminated nestable [ ... ] string", lexemeStart);
         return;
       }
 
@@ -713,7 +705,7 @@ public class LexerBaseLine extends AbstractLexer {
     if (peekCh() != '[') return;
     do {
       if (peekCh() == '\0') {
-        lexicalError("Unterminated [ ... ] string");
+        lexicalError("Unterminated [ ... ] string", lexemeStart);
         return;
       }
       if (getCh() == '\\') artSkipEscapeSequence();
@@ -725,7 +717,7 @@ public class LexerBaseLine extends AbstractLexer {
     if (peekCh() != '{') return;
     do {
       if (peekCh() == '\0') {
-        lexicalError("Unterminated { ... } string");
+        lexicalError("Unterminated { ... } string", lexemeStart);
         return;
       }
       if (getCh() == '\\') artSkipEscapeSequence();
@@ -740,7 +732,7 @@ public class LexerBaseLine extends AbstractLexer {
       if (peekCh() == '{') nestLevel++;
       if (peekCh() == '}') nestLevel--;
       if (peekCh() == '\0') {
-        lexicalError("Unterminated nestable { ... } string");
+        lexicalError("Unterminated nestable { ... } string", lexemeStart);
         return;
       }
 
@@ -752,7 +744,7 @@ public class LexerBaseLine extends AbstractLexer {
     if (!((peekCh() == '[') && (peekOneCh() == '['))) return;
     do {
       if (peekCh() == '\0') {
-        lexicalError("Unterminated [[ ... ]] string");
+        lexicalError("Unterminated [[ ... ]] string", lexemeStart);
         return;
       }
       if (getCh() == '\\') artSkipEscapeSequence();
@@ -772,7 +764,7 @@ public class LexerBaseLine extends AbstractLexer {
 
     do {
       if (peekCh() == '\0') {
-        lexicalError("Unterminated nestable (* ... *) comment");
+        lexicalError("Unterminated nestable (* ... *) comment", lexemeStart);
         return;
       }
 
@@ -794,7 +786,7 @@ public class LexerBaseLine extends AbstractLexer {
 
     do {
       if (peekCh() == '\0') {
-        lexicalError("Unterminated /* ... */ comment");
+        lexicalError("Unterminated /* ... */ comment", lexemeStart);
         return;
       }
       getCh();

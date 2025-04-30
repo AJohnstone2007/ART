@@ -4,12 +4,13 @@ import uk.ac.rhul.cs.csle.art.cfg.AbstractParser;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGRules;
 import uk.ac.rhul.cs.csle.art.cfg.lexer.AbstractLexer;
+import uk.ac.rhul.cs.csle.art.choose.ChooseRules;
 import uk.ac.rhul.cs.csle.art.util.Util;
 
 public class RDSOBFunction extends AbstractParser {
 
   public boolean match(CFGNode gn, int tokenIndex) {
-    return lexer.firstLexicalisation.get(tokenIndex).element == gn.element;
+    return lexer.tweSlices[tokenIndex][0].cfgElement == gn.cfgElement;
   }
 
   boolean rdsobFunction(CFGNode lhs) {
@@ -24,17 +25,18 @@ public class RDSOBFunction extends AbstractParser {
       dn.cfgNode = tmp;
       CFGNode gn = tmp.seq;
       while (true) {
-        switch (gn.element.cfgKind) {
+        switch (gn.cfgElement.cfgKind) {
         case B, C, T, TI:
-          if (lexer.firstLexicalisation.get(tokenIndex++).element == gn.element) {
+          if (lexer.tweSlices[tokenIndex][0].cfgElement == gn.cfgElement) {
             Util.trace(8, "Match " + gn);
+            tokenIndex++;
             gn = gn.seq;
             break;
           } else
             Util.trace(8, "Mismatch " + gn);
           continue altLoop;
         case N:
-          if (rdsobFunction(cfgRules.elementToNodeMap.get(gn.element))) {
+          if (rdsobFunction(cfgRules.elementToNodeMap.get(gn.cfgElement))) {
             gn = gn.seq;
             break;
           } else
@@ -53,19 +55,17 @@ public class RDSOBFunction extends AbstractParser {
   }
 
   @Override
-  public void parse(String input, CFGRules cfgRules, AbstractLexer lexer) {
+  public void parse(String input, CFGRules cfgRules, AbstractLexer lexer, ChooseRules chooseRules) {
     inLanguage = false;
     this.input = input;
     this.cfgRules = cfgRules;
     this.lexer = lexer;
 
-    lexer.lex(input, cfgRules);
-    lexer.tweSet.chooseDefault();
-    lexer.loadFirstLexicalisation();
+    lexer.lex(input, cfgRules, chooseRules);
 
     tokenIndex = 0;
     dnRoot = dn = new DerivationSingletonNode(cfgRules.endOfStringNode, null);
-    inLanguage = rdsobFunction(cfgRules.elementToNodeMap.get(cfgRules.startNonterminal)) && lexer.firstLexicalisation.get(tokenIndex).element.number == 0;
+    inLanguage = rdsobFunction(cfgRules.elementToNodeMap.get(cfgRules.startNonterminal)) && lexer.tweSlices[tokenIndex][0].cfgElement.number == 0;
     if (!inLanguage) Util.echo("Syntax error at location " + tokenIndex, Util.lineNumber(tokenIndex, lexer.inputString), lexer.inputString);
   }
 

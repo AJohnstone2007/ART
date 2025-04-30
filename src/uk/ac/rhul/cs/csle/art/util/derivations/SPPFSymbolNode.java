@@ -21,7 +21,7 @@ public class SPPFSymbolNode extends AbstractSPPFNode {
   }
 
   public boolean isSymbol() {
-    return packNodes.size() == 0 /* terminal or epsilon */ || (grammarNode.element.cfgKind == CFGKind.N && grammarNode.seq == null /* LHS */);
+    return packNodes.size() == 0 /* terminal or epsilon */ || (grammarNode.cfgElement.cfgKind == CFGKind.N && grammarNode.seq == null /* LHS */);
   }
 
   @Override

@@ -138,7 +138,7 @@ public class CFGRules {
         CFGNode gs = gn.seq;
         initialSlots.add(gs);
         nullablePrefixSlots.add(gs);
-        while (gs.seq.element.cfgKind != CFGKind.END)
+        while (gs.seq.cfgElement.cfgKind != CFGKind.END)
           gs = gs.seq;
         penultimateSlots.add(gs);
         finalSlots.add(gs.seq);
@@ -178,14 +178,14 @@ public class CFGRules {
         String lhs = e.str;
         for (CFGNode gn = elementToNodeMap.get(e).alt; gn != null; gn = gn.alt) { // iterate over the productions
           rhsNonterminalsInProduction.clear();
-          for (CFGNode gs = gn.seq; gs.element.cfgKind != CFGKind.END; gs = gs.seq) {
+          for (CFGNode gs = gn.seq; gs.cfgElement.cfgKind != CFGKind.END; gs = gs.seq) {
             // Util.info("Collecting RHS nonterminals at " + gs + " " + iTerms.toRawString(gs.slotTerm));
-            if (gs.element.cfgKind == CFGKind.N) {
-              if (rhsNonterminalsInProduction.get(gs.element.str) == null)
-                rhsNonterminalsInProduction.put(gs.element.str, 1);
+            if (gs.cfgElement.cfgKind == CFGKind.N) {
+              if (rhsNonterminalsInProduction.get(gs.cfgElement.str) == null)
+                rhsNonterminalsInProduction.put(gs.cfgElement.str, 1);
               else
-                rhsNonterminalsInProduction.put(gs.element.str, rhsNonterminalsInProduction.get(gs.element.str) + 1);
-              gs.instanceNumber = rhsNonterminalsInProduction.get(gs.element.str);
+                rhsNonterminalsInProduction.put(gs.cfgElement.str, rhsNonterminalsInProduction.get(gs.cfgElement.str) + 1);
+              gs.instanceNumber = rhsNonterminalsInProduction.get(gs.cfgElement.str);
             }
           }
           // Now extend rhsNonterminalsAcrossAllProductions by the instances we have found for this production
@@ -200,7 +200,7 @@ public class CFGRules {
 
         // Now check each action to see if it is trying to access a RHS nonterminal which is not instances in this LHS
         for (CFGNode gn = elementToNodeMap.get(e).alt; gn != null; gn = gn.alt) {
-          for (CFGNode gs = gn.seq; gs.element.cfgKind != CFGKind.END; gs = gs.seq) {
+          for (CFGNode gs = gn.seq; gs.cfgElement.cfgKind != CFGKind.END; gs = gs.seq) {
             for (int i = 0; i < iTerms.termArity(gs.slotTerm); i++) {
               int annotationRoot = iTerms.subterm(gs.slotTerm, i);
               // Util.info("Processing slot annotation " + iTerms.toString(annotationRoot));
@@ -253,16 +253,16 @@ public class CFGRules {
                 changed |= nullablePrefixSlots.add(seqNode);
               }
 
-              if (seqNode.element.cfgKind == CFGKind.END) break;
+              if (seqNode.cfgElement.cfgKind == CFGKind.END) break;
 
               // 2. Update instance first with the element itself for nonterminals only
-              if (seqNode.element.cfgKind == CFGKind.N) changed |= instanceFirst.add(seqNode, seqNode.element);
+              if (seqNode.cfgElement.cfgKind == CFGKind.N) changed |= instanceFirst.add(seqNode, seqNode.cfgElement);
 
               // 3. Fold in the first set of this node's element after suppressing epsilon
-              changed |= instanceFirst.addAll(seqNode, removeEpsilon(first.get(seqNode.element))); // Update instance first with element first
+              changed |= instanceFirst.addAll(seqNode, removeEpsilon(first.get(seqNode.cfgElement))); // Update instance first with element first
 
               // 4. If epsilon is in this node's element's first set, fold the first set of our successor in
-              if (first.get(seqNode.element).contains(epsilonElement))
+              if (first.get(seqNode.cfgElement).contains(epsilonElement))
                 changed |= instanceFirst.addAll(seqNode, instanceFirst.get(seqNode.seq));
               else // otherwise reset seenOnlyNullable
                 seenOnlyNullable = false;
@@ -307,9 +307,9 @@ public class CFGRules {
             seqNode = seqNode.seq;
             // Util.info("Visiting seq node " + seqNode.num + ":" + seqNode + " with seenOnlyNullable " + seenOnlyNullable);
 
-            if (cyclicNonterminals.contains(seqNode.element) && derivesExactlyTransitiveClosure.get(seqNode.element).contains(lhs))
+            if (cyclicNonterminals.contains(seqNode.cfgElement) && derivesExactlyTransitiveClosure.get(seqNode.cfgElement).contains(lhs))
               cyclicSlots.add(seqNode.seq);
-            if (seqNode.element.cfgKind == CFGKind.END) break;
+            if (seqNode.cfgElement.cfgKind == CFGKind.END) break;
           }
         }
       }
@@ -319,15 +319,15 @@ public class CFGRules {
     boolean nullableSuffix;
     // Util.info("Compute nullable suffix REC visiting seq node " + seqNode.num + ":" + seqNode + " under lhs " + lhs);
 
-    if (seqNode.element.cfgKind == CFGKind.END)
+    if (seqNode.cfgElement.cfgKind == CFGKind.END)
       nullableSuffix = true;
     else
-      nullableSuffix = computeNullableSuffixAndDerivesExactlyRec(lhs, seqNode.seq) && first.get(seqNode.element).contains(epsilonElement);
+      nullableSuffix = computeNullableSuffixAndDerivesExactlyRec(lhs, seqNode.seq) && first.get(seqNode.cfgElement).contains(epsilonElement);
 
     if (nullableSuffix) nullableSuffixSlots.add(seqNode);
 
-    if (seqNode.element.cfgKind == CFGKind.N && nullablePrefixSlots.contains(seqNode) && nullableSuffixSlots.contains(seqNode.seq))
-      this.derivesExactly.add(lhs, seqNode.element);
+    if (seqNode.cfgElement.cfgKind == CFGKind.N && nullablePrefixSlots.contains(seqNode) && nullableSuffixSlots.contains(seqNode.seq))
+      this.derivesExactly.add(lhs, seqNode.cfgElement);
 
     return nullableSuffix;
   }
@@ -345,9 +345,9 @@ public class CFGRules {
             CFGNode seqNode = altNode.seq;
             while (true) {
               changed |= instanceFollow.addAll(seqNode, removeEpsilon(instanceFirst.get(seqNode.seq)));
-              if (seqNode.element.cfgKind == CFGKind.N) changed |= follow.addAll(seqNode.element, removeEpsilon(instanceFirst.get(seqNode.seq)));
-              if (nullableSuffixSlots.contains(seqNode.seq)) changed |= follow.addAll(seqNode.element, follow.get(lhs));
-              if (seqNode.element.cfgKind == CFGKind.END) break;
+              if (seqNode.cfgElement.cfgKind == CFGKind.N) changed |= follow.addAll(seqNode.cfgElement, removeEpsilon(instanceFirst.get(seqNode.seq)));
+              if (nullableSuffixSlots.contains(seqNode.seq)) changed |= follow.addAll(seqNode.cfgElement, follow.get(lhs));
+              if (seqNode.cfgElement.cfgKind == CFGKind.END) break;
               seqNode = seqNode.seq;
             }
           }
@@ -461,7 +461,7 @@ public class CFGRules {
   private void numberElementsAndNodesRec(CFGNode node) {
     if (node != null) {
       numberToNodeMap.put(node.num = nextFreeEnumerationElement++, node);
-      if (node.element.cfgKind != CFGKind.END) {
+      if (node.cfgElement.cfgKind != CFGKind.END) {
         numberElementsAndNodesRec(node.seq);
         numberElementsAndNodesRec(node.alt);
       }
@@ -478,7 +478,7 @@ public class CFGRules {
 
   private void setEndNodeLinksRec(CFGNode parentNode, CFGNode altNode) {
     CFGNode gn;
-    for (gn = altNode.seq; gn.element.cfgKind != CFGKind.END; gn = gn.seq) {
+    for (gn = altNode.seq; gn.cfgElement.cfgKind != CFGKind.END; gn = gn.seq) {
       // Util.info("processEndNodes at " + gn.ni + " " + gn);
       if (gn.alt != null) for (CFGNode alternate = gn.alt; alternate != null; alternate = alternate.alt)
         setEndNodeLinksRec(gn, alternate); // Recurse into brackets
@@ -541,7 +541,7 @@ public class CFGRules {
   }
 
   public void attributeAction(String name, String type) {
-    mostRecentLHS.element.attributes.put(name, type);
+    mostRecentLHS.cfgElement.attributes.put(name, type);
   }
 
   /* Visualisation rendering */
@@ -558,10 +558,10 @@ public class CFGRules {
 
   private void toStringDotRec(StringBuilder sb, CFGNode cs) {
     sb.append("\"" + cs.num + "\"[label=\"" + cs.toStringDot() + "\"]\n");
-    if (cs.element.cfgKind == CFGKind.ALT) {
+    if (cs.cfgElement.cfgKind == CFGKind.ALT) {
       seqArrow(sb, cs);
       altArrow(sb, cs);
-    } else if (cs.element.cfgKind != CFGKind.END) {
+    } else if (cs.cfgElement.cfgKind != CFGKind.END) {
       altArrow(sb, cs);
       seqArrow(sb, cs);
     }
@@ -733,7 +733,7 @@ public class CFGRules {
     for (CFGElement gs : elements.keySet())
       ret[gs.number] = gs.cfgKind.ordinal();
     for (int ni : numberToNodeMap.keySet())
-      ret[ni] = numberToNodeMap.get(ni).element.cfgKind.ordinal();
+      ret[ni] = numberToNodeMap.get(ni).cfgElement.cfgKind.ordinal();
     return ret;
   }
 
@@ -765,7 +765,7 @@ public class CFGRules {
   public int[] makeCallTargetsArray() {
     int[] ret = new int[nextFreeEnumerationElement];
     for (int ni : numberToNodeMap.keySet()) {
-      CFGNode lhs = elementToNodeMap.get(numberToNodeMap.get(ni).element);
+      CFGNode lhs = elementToNodeMap.get(numberToNodeMap.get(ni).cfgElement);
       ret[ni] = (lhs == null ? 0 : lhs.num);
     }
     return ret;
@@ -774,7 +774,7 @@ public class CFGRules {
   public int[] makeElementOfArray() {
     int[] ret = new int[nextFreeEnumerationElement];
     for (int ni : numberToNodeMap.keySet()) {
-      CFGElement el = numberToNodeMap.get(ni).element;
+      CFGElement el = numberToNodeMap.get(ni).cfgElement;
       ret[ni] = (el == null ? 0 : el.number);
     }
     return ret;
@@ -784,7 +784,7 @@ public class CFGRules {
 
   public static boolean isLHS(CFGNode gn) {
     if (gn == null) return false;
-    return gn.element != null && gn.element.cfgKind == CFGKind.N && gn.seq == null;
+    return gn.cfgElement != null && gn.cfgElement.cfgKind == CFGKind.N && gn.seq == null;
   }
 
   public void generate(int max, boolean sentencesOnly) {
@@ -816,15 +816,15 @@ public class CFGRules {
         for (int i = 0; i < leftmostNonterminalIndex; i++)
           newSententialForm.addLast(sententialForm.get(i));
 
-        for (var seqNode = altNode.seq; seqNode.element.cfgKind != CFGKind.END; seqNode = seqNode.seq)
-          switch (seqNode.element.cfgKind) {
+        for (var seqNode = altNode.seq; seqNode.cfgElement.cfgKind != CFGKind.END; seqNode = seqNode.seq)
+          switch (seqNode.cfgElement.cfgKind) {
           case T, TI, C, B, N:
-            newSententialForm.add(seqNode.element);
+            newSententialForm.add(seqNode.cfgElement);
             break;
           case EPS:
             break; // do nothing
           default:
-            Util.error("illegal kind of grammar element encountered during generation: " + seqNode.element.cfgKind);
+            Util.error("illegal kind of grammar element encountered during generation: " + seqNode.cfgElement.cfgKind);
             break;
           }
 

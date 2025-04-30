@@ -296,11 +296,11 @@ class SPPFCycleBreak {
     sppf.visited.set(sppfn.number);
     updateCountReachable(sppfn);
 
-    if (sppfn.grammarNode.element.cfgKind == CFGKind.EPS)
+    if (sppfn.grammarNode.cfgElement.cfgKind == CFGKind.EPS)
       countEps++;
     else if (sppfn.packNodes.size() == 0)
       countTerm++;
-    else if (sppf.parser.cfgRules.paraterminalElements.contains(sppfn.grammarNode.element)) {
+    else if (sppf.parser.cfgRules.paraterminalElements.contains(sppfn.grammarNode.cfgElement)) {
       countPara++;
       return;
     } else if (sppfn.isSymbol())

@@ -2,6 +2,7 @@ package uk.ac.rhul.cs.csle.art.cfg;
 
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGRules;
 import uk.ac.rhul.cs.csle.art.cfg.lexer.AbstractLexer;
+import uk.ac.rhul.cs.csle.art.choose.ChooseRules;
 import uk.ac.rhul.cs.csle.art.util.Util;
 import uk.ac.rhul.cs.csle.art.util.derivations.AbstractDerivations;
 import uk.ac.rhul.cs.csle.art.util.stacks.AbstractStacks;
@@ -18,7 +19,7 @@ public abstract class AbstractParser {
   public AbstractStacks stacks;
   public AbstractDerivations derivations;
 
-  public abstract void parse(String input, CFGRules cfgRules, AbstractLexer lexer);
+  public abstract void parse(String input, CFGRules cfgRules, AbstractLexer lexer, ChooseRules chooseRules);
 
   public void outcomeReport() {
     if (inLanguage) {
@@ -27,7 +28,7 @@ public abstract class AbstractParser {
     } else if (derivations == null)
       Util.error("Syntax error");
     else
-      Util.error(Util.echo("Syntax error", lexer.firstLexicalisation.get(derivations.widestIndex()).lexemeStart, lexer.inputString));
+      Util.error(Util.echo("Syntax error", lexer.tweSlices[derivations.widestIndex()][0].lexemeStart, lexer.inputString));
   }
 
   public void statistics(Statistics currentStatistics) {

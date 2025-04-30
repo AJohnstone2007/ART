@@ -52,7 +52,7 @@ public class SPPF extends AbstractDerivations {
 
   @Override
   public AbstractDerivationNode extend(CFGNode gn, AbstractDerivationNode leftNode, AbstractDerivationNode rightNode) {
-    SPPFSymbolNode ret = (SPPFSymbolNode) find(gn.element.cfgKind == CFGKind.END ? gn.seq : gn,
+    SPPFSymbolNode ret = (SPPFSymbolNode) find(gn.cfgElement.cfgKind == CFGKind.END ? gn.seq : gn,
         leftNode == null ? rightNode.getLeftExtent() : leftNode.getLeftExtent(), rightNode.getRightExtent());
     // Util.debug(
     // "Extending SPPF node with gn " + gn.toStringAsProduction() + " and extents " + (ln == null ? rn.li : ln.li) + "," + rn.ri + " retrieves node " + ret);
@@ -100,6 +100,10 @@ public class SPPF extends AbstractDerivations {
   @Override
   public void chooseLongestMatch() {
     visited.clear();
+    if (root == null) {
+      Util.warning("SPPF contains no derivations: skipping choosers");
+      return;
+    }
     chooseLongestMatchRec(root);
   }
 
@@ -183,7 +187,7 @@ public class SPPF extends AbstractDerivations {
       if (derivationForInterpreter)
       constructor = firstAvailableSPPFPN == null ? "" + -sppfn.rightExtent : "" + firstAvailableSPPFPN.grammarNode.alt.num;
       else
-      constructor = (gn.element.cfgKind == CFGKind.B) ? parser.lexer.lexeme(sppfn.leftExtent) : gn.element.str;
+      constructor = (gn.cfgElement.cfgKind == CFGKind.B) ? parser.lexer.lexeme(sppfn.leftExtent) : gn.cfgElement.str;
 
     if (children != childrenFromParent) {
       childrenFromParent.add(parser.cfgRules.iTerms.findTerm(constructor, children));
@@ -268,7 +272,7 @@ public class SPPF extends AbstractDerivations {
     int sppfEpsilonNodeCount = 0, sppfTerminalNodeCount = 0, sppfNonterminalNodeCount = 0, sppfIntermediateNodeCount = 0, sppfPackNodeCount = 0,
         sppfAmbiguityCount = 0, sppfEdgeCount = 0;
     for (SPPFSymbolNode s : nodes.keySet()) {
-      switch (s.grammarNode.element.cfgKind) {
+      switch (s.grammarNode.cfgElement.cfgKind) {
       // Dodgy - how do we test the flavour of an SPPF node?
       case T, TI, C, B:
         sppfTerminalNodeCount++;

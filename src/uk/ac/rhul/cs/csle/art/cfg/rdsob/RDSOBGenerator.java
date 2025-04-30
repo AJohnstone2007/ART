@@ -49,13 +49,13 @@ public class RDSOBGenerator {
         else
           text.print("\n i = eI; dn = eDN;");
         seqLoop: for (CFGNode seq = alt.seq;; seq = seq.seq) {
-          switch (seq.element.cfgKind) {
+          switch (seq.cfgElement.cfgKind) {
           case T:
-            text.print("\n if (input[i]==" + seq.element.number + "/*" + seq.element.str + "*/) {i++;");
+            text.print("\n if (input[i]==" + seq.cfgElement.number + "/*" + seq.cfgElement.str + "*/) {i++;");
             braceCount++;
             break;
           case N:
-            text.print("\n if (p_" + seq.element.str + "()) {");
+            text.print("\n if (p_" + seq.cfgElement.str + "()) {");
             braceCount++;
             break;
           case EPS:

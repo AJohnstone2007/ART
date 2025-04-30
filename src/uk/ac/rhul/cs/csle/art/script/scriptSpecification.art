@@ -2,7 +2,7 @@
 //!parser rdsobFunction // Uncomment this line to try bootstrapping with Recursive Descent Singleton Ordered Backtracking parser instead of default GLL parser
 !whitespace &SIMPLE_WHITESPACE, &COMMENT_NEST_ART, &COMMENT_LINE_C 
 rules ::= rule rules^ | rule
-rule  ::= cfgRule^^ | trRule^^ | chooseRule^^ | '!'^ directive^^   
+rule  ::= cfgRule^^ | trRule^^ | chooseRule^^ | directive^^   
 
 (* Context Free Grammar rules ************************************************)
 cfgRule  ::= cfgLHS cfgAttributeDeclarations '::='^ cfgAlts
@@ -120,47 +120,34 @@ chooseIntersection ::= '*'^
 chooseSymmetricDifference ::= '/'^
 
 (* Directives ****************************************************************)
-directive ::= directiveElement
+directive ::= directiveCarrier
 
-directiveElement ::=
-  'include' file
-| 'whitespace'^^ '#'^ | 'whitespace'^^ whiteSpaceElements^ | 'whitespace'^^ '('^ whiteSpaceElements^ ')'^
-| 'deleteTokens'^^ __int32 
-| 'swapTokens'^^ __int32 
-| 'paraterminal'^^ '#'^ | 'paraterminal'^^ paraterminalElements^
-| 'chooser'^^ '#'^ | 'chooser'^^ ID
+directiveCarrier ::=  
+  '!nop'^^
 
-| 'lexer'^^ '#'^ | 'lexer'^^ ID
-| 'parser'^^ '#'^ | 'parser'^^ ID
-| 'interpreter'^^ '#'^ | 'interpreter'^^ ID
-| 'support'^^ cfgNative cfgNative 
-| 'generate'^^ ID | 'generate'^^ __int32 ID
+| '!prompt'^^ | '!prompt'^^ &STRING_DQ
+| '!print'^^ displayElements^
+| '!show'^^ displayElements^
+| '!trace'^^ __int32
 
-| 'start'^^ cfgNonterminal | 'start'^^ trRelation // Set parser start nonterminal or rewriter start relation
-| 'configuration'^^ trRelation configurationElements
-| 'terminal'^^ trRelation trTerm
-| 'terminal'^^ trRelation trTerm trTermsTail^
+| '!clear'^^ ID | '!lexer'^^ ID | '!parser'^^ ID | '!chooser'^^ ID | '!interpreter'^^ ID 
 
-| 'clear'^^ 'allRules' | 'clear'^^ 'cfgRules' | 'clear'^^ 'chooseRules' | 'clear'^^ 'trRules'
+| '!whitespace'^^ whiteSpaceElements^
+| '!paraterminal'^^ paraterminalElements^
 
-| 'trace'^^ __int32
-| 'print'^^ displayElements^
-| 'show'^^ displayElements^
-| 'prompt'^^ | 'prompt'^^ &STRING_DQ
+| '!generate'^^ __int32 ID | '!support'^^ cfgNative cfgNative 
 
-| 'try'^^ file              
-| 'try'^^ file '='^ trTopTuple 
- 
-| 'try'^^ trTopTuple  
-| 'try'^^ trTopTuple '='^ trTopTuple
+| '!start'^^ cfgNonterminal | '!start'^^ trRelation // Set parser start nonterminal or rewriter start relation
+| '!configuration'^^ trRelation configurationElements
+| '!terminal'^^ trRelation trTerm
+| '!terminal'^^ trRelation trTerm trTermsTail^
 
-| 'sppfBreakCycles'^^ | 'sppfBreakCycles'^^ cycleModes^
-| 'sppfBreakCyclesRelation'^^
+| '!try'^^ file       | '!try'^^ file '='^ trTopTuple 
+| '!try'^^ trTopTuple | '!try'^^ trTopTuple '='^ trTopTuple
 
-| 'nop'^^
-
-cycleModes ::= cycleMode^ | cycleMode^ cycleModes^ 
-cycleMode  ::= 'trace' | 'statistics' | 'counts'
+(* Undocumented research features *)
+| '!deleteTokens'^^ __int32 | '!swapTokens'^^ __int32 
+| '!sppfBreakCycles'^^ | '!sppfBreakCyclesRelation'^^
 
 file ::= &STRING_PLAIN_SQ
 
@@ -173,21 +160,7 @@ configurationElement ::= ID ':'^ ID
 paraterminalElements ::= paraterminalElement | paraterminalElement ','^ paraterminalElements^
 paraterminalElement  ::= cfgNonterminal^^
 
-displayElements ::= displayElement^ | displayElement^ displayElements^
-displayElement  ::= 
-  file | 'latex' |'raw'
-| 'version'
-| 'term' trTerm
-| 'script' | 'scriptDerivation' 
-| 'allRules' | 'cfgRules' | 'chooseRules' | 'trRules'
-| 'gdg'
-| 'lexer' | 'parser' | 'interpreter'
-| 'input' | 'twe'    | 'lexicalisations' | 'paraterminals' | 'parasentences' 
-| 'gss'   | 'sppf'   | 'bsr' 
-| 'derivation' | 'derivationTerm' | 'derivationIndexedTerm' 
-| 'interpretation' 
-| 'statistics' | __string
-| 'sppfCyclicNodes' | 'sppfAmbiguousNodes'
+displayElements ::= ID | ID displayElements^ | file displayElements
 
 (* Lexical elements **********************************************************)
 __bool ::= 'true' | 'false'
