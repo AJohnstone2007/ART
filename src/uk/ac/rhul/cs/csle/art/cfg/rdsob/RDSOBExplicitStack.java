@@ -36,7 +36,7 @@ public class RDSOBExplicitStack extends AbstractParser {
     while (true)
       switch (gn.cfgElement.cfgKind) {
       case B, C, T, TI:
-        if (match(gn, tokenIndex++))
+        if (match(gn, inputIndex++))
           gn = gn.seq;
         else if (backtrack()) return false;
         break;
@@ -57,7 +57,7 @@ public class RDSOBExplicitStack extends AbstractParser {
   }
 
   void call(CFGNode caller) {
-    sn = new SNode(caller.seq, tokenIndex, sn, dn);
+    sn = new SNode(caller.seq, inputIndex, sn, dn);
     gn = cfgRules.elementToNodeMap.get(gn.cfgElement).alt.seq;
   }
 
@@ -75,7 +75,7 @@ public class RDSOBExplicitStack extends AbstractParser {
         gn = retrn();
         if (sn == null) return true;
       } else {
-        tokenIndex = sn.i_entry;
+        inputIndex = sn.i_entry;
         dn = sn.dnAtEntry;
         gn = gn.alt.alt.seq;
         dn.gn = gn;
@@ -95,10 +95,10 @@ public class RDSOBExplicitStack extends AbstractParser {
     lexer.lex(input, cfgRules, chooseRules);
 
     gn = cfgRules.elementToNodeMap.get(cfgRules.startNonterminal).alt.seq;
-    tokenIndex = 0;
+    inputIndex = 0;
     dnRoot = dn = new DerivationSingletonNode(cfgRules.endOfStringNode, null);
     sn = new SNode(cfgRules.endOfStringNode, 0, null, dn);
-    inLanguage = rdsobExplicitStack() && lexer.tweSlices[tokenIndex][0].cfgElement.number == 0;
+    inLanguage = rdsobExplicitStack() && lexer.tweSlices[inputIndex][0].cfgElement.number == 0;
   }
 
   protected DerivationSingletonNode dnRoot, dn;

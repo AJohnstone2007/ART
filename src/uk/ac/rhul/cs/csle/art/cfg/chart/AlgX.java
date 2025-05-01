@@ -15,7 +15,7 @@ public class AlgX extends ChartBase {
     initialiseFromStartSymbol();
     for (int j = 1; j <= n; j++) { // Scan j from left to right
       chartUnion(j, j - 1, sequenceNumber++);
-      initialiseFromPreviousColumn(tokenIndex, j);
+      initialiseFromPreviousColumn(inputIndex, j);
       for (int k = j - 2; k >= 0; k--) {
         chartUnion(j, k, sequenceNumber++);
         crossProduct(j, k);

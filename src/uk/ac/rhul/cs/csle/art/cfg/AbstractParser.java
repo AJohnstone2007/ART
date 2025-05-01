@@ -14,7 +14,7 @@ public abstract class AbstractParser {
   public String input;
   public CFGRules cfgRules;
   public AbstractLexer lexer;
-  protected int tokenIndex; // Current input index
+  protected int inputIndex; // Current input index
   protected AbstractTasks tasks;
   public AbstractStacks stacks;
   public AbstractDerivations derivations;

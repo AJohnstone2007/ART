@@ -28,9 +28,11 @@ public abstract class AbstractLexer {
 
   public void printTWESet(PrintStream outputStream, TermTraverserText outputTraverser) {
     for (int i = 0; i < tweSlices.length; i++) {
+      if (tweSlices[i] == null) continue;
       outputStream.print("Index " + i + ":");
       for (int j = 0; j < tweSlices[i].length; j++)
         outputStream.print("  " + tweSlices[i][j]);
+      outputStream.println();
     }
   }
 
@@ -54,5 +56,72 @@ public abstract class AbstractLexer {
       }
     }
     return full;
+  }
+
+  public void chooseDefault() {
+    if (tweSlices[0] == null) {
+      Util.error("Empty tweSet");
+      return;
+    }
+    for (int i = 0; i < tweSlices.length; i++) {
+      var slice = tweSlices[i];
+      if (slice != null) for (int ei = 0; ei < slice.length; ei++)
+        for (int fi = 0; fi < slice.length; fi++) {
+          var e = slice[ei];
+          var f = slice[fi];
+          if ((e.rightExtent > f.rightExtent) || (e.rightExtent == f.rightExtent && e.cfgElement.cfgKind != CFGKind.B && f.cfgElement.cfgKind == CFGKind.B))
+            f.suppressed = true;
+        }
+    }
+  }
+
+  public void suppressDeadPaths() {
+    // // Util.debug("TWE dead path suppression");
+    // int inDegree[] = new int[slices.size() + 1];
+    // int outDegree[] = new int[slices.size() + 1];
+    // for (int i = 0; i < slices.size(); i++)
+    // if (slices.get(i) != null) for (var e : slices.get(i))
+    // if (!e.suppressed) {
+    // outDegree[i]++;
+    // inDegree[e.rightExtent]++;
+    // }
+    //
+    // for (int i = slices.size() - 3; i >= 0; i--)
+    // if (outDegree[i] != 0) {
+    // for (var e : slices.get(i))
+    // if (!e.suppressed && outDegree[e.rightExtent] == 0) {
+    // e.suppressed = true;
+    // outDegree[i]--;
+    // inDegree[e.rightExtent]--;
+    // }
+    // }
+    //
+    // for (int i = 1; i < slices.size(); i++) {
+    // if (outDegree[i] != 0) {
+    // for (var e : slices.get(i))
+    // if (!e.suppressed && inDegree[i] == 0) {
+    // e.suppressed = true;
+    // outDegree[i]--;
+    // inDegree[e.rightExtent]--;
+    // }
+    // }
+    // }
+  }
+
+  public void removeSuppressedTWE() {
+    for (int i = 0; i < tweSlices.length; i++)
+      if (tweSlices[i] != null && tweSlices[i].length > 1) {
+        var oldSlice = tweSlices[i];
+        int suppressedCount = 0;
+        for (int ei = 0; ei < oldSlice.length; ei++)
+          if (oldSlice[ei].suppressed) suppressedCount++;
+        if (suppressedCount > 0) {
+          tweSlices[i] = new TWESetElement[oldSlice.length - suppressedCount];
+
+          int newSliceIndex = 0;
+          for (int ei = 0; ei < oldSlice.length; ei++)
+            if (!oldSlice[ei].suppressed) tweSlices[i][newSliceIndex++] = oldSlice[ei];
+        }
+      }
   }
 }

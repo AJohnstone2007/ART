@@ -28,8 +28,8 @@ public class GLLBaseLine extends AbstractParser {
     derivations = new SPPF(this);
 
     lexer.lex(input, cfgRules, chooseRules);
-
-    tokenIndex = 0;
+    // lexer.printTWESet(System.out, null);
+    inputIndex = 0;
     cfgNode = cfgRules.elementToNodeMap.get(cfgRules.startNonterminal).alt;
     stackNode = stacks.getRoot();
     derivationNode = null;
@@ -42,16 +42,19 @@ public class GLLBaseLine extends AbstractParser {
           queueProductionTasks();
           continue nextTask;
         case EPS:
-          updateDerivation(0);
+          updateDerivation(inputIndex);
           cfgNode = cfgNode.seq;
           break; // continue with this sequence
         case B, T, TI, C:
-          var inputElement = lexer.tweSlices[tokenIndex][0].cfgElement;
-          if (inputElement == cfgNode.cfgElement) {
-            updateDerivation(1);
-            tokenIndex++;
-            cfgNode = cfgNode.seq;
-            break; // continue with this sequence
+          if (lexer.tweSlices[inputIndex] != null) {
+            var inputElement = lexer.tweSlices[inputIndex][0];
+            if (inputElement.cfgElement == cfgNode.cfgElement) {
+              // Util.debug("Matched at " + inputIndex + " input element " + inputElement + " against " + cfgNode.cfgElement);
+              updateDerivation(inputElement.rightExtent);
+              inputIndex = inputElement.rightExtent;
+              cfgNode = cfgNode.seq;
+              break; // continue with this sequence
+            }
           }
           continue nextTask;
         case N:
@@ -67,21 +70,22 @@ public class GLLBaseLine extends AbstractParser {
     derivations.numberNodes();
   }
 
-  private void updateDerivation(int size) {
+  private void updateDerivation(int rightExtent) {
     Util.trace(8, 0, "Matched " + cfgNode.cfgElement);
-    var rightNode = derivations.find(cfgRules.elementToNodeMap.get(cfgNode.cfgElement), tokenIndex, tokenIndex + size);
+    var rightNode = derivations.find(cfgRules.elementToNodeMap.get(cfgNode.cfgElement), inputIndex, rightExtent);
     derivationNode = derivations.extend(cfgNode.seq, derivationNode, rightNode);
   }
 
   private void queueProductionTasks() {
     for (CFGNode production = cfgNode; production != null; production = production.alt)
-      tasks.queue(tokenIndex, production.seq, stackNode, derivationNode);
+      tasks.queue(inputIndex, production.seq, stackNode, derivationNode);
   }
 
   private boolean nextTask() {
     var task = tasks.next();
+    // Util.debug("Processing task " + task);
     if (task == null) return false;
-    tokenIndex = task.tokenIndex;
+    inputIndex = task.tokenIndex;
     cfgNode = task.cfgNode;
     stackNode = task.stackNode;
     derivationNode = task.derivationNode;
@@ -89,19 +93,19 @@ public class GLLBaseLine extends AbstractParser {
   }
 
   private void call(CFGNode cfgNode) {
-    var newStackNode = stacks.push(derivations, tasks, tokenIndex, cfgNode, stackNode, derivationNode);
+    var newStackNode = stacks.push(derivations, tasks, inputIndex, cfgNode, stackNode, derivationNode);
     for (CFGNode p = cfgRules.elementToNodeMap.get(cfgNode.cfgElement).alt; p != null; p = p.alt)
-      tasks.queue(tokenIndex, p.seq, newStackNode, null);
+      tasks.queue(inputIndex, p.seq, newStackNode, null);
   }
 
   private void retrn() {
     if (stackNode.equals(stacks.getRoot())) {
-      if (cfgRules.acceptingNodeNumbers.contains(cfgNode.num) && (tokenIndex == lexer.tweSlices.length - 1)) {
+      if (cfgRules.acceptingNodeNumbers.contains(cfgNode.num) && (inputIndex == lexer.tweSlices.length - 1)) {
         derivations.setRoot(cfgRules.elementToNodeMap.get(cfgRules.startNonterminal), lexer.tweSlices.length - 1);
         inLanguage = true;
       }
       return;
     }
-    stacks.pop(derivations, tasks, tokenIndex, stackNode, derivationNode);
+    stacks.pop(derivations, tasks, inputIndex, stackNode, derivationNode);
   }
 }

@@ -22,7 +22,10 @@ public class TasksGLL extends AbstractTasks {
   @Override
   public void queue(int tokenIndex, CFGNode cfgNode, AbstractStackNode stackNode, AbstractDerivationNode derivationNode) {
     DescriptorGLL tmp = new DescriptorGLL(tokenIndex, cfgNode, stackNode, derivationNode);
-    if (descriptors.add(tmp)) descriptorQueue.addFirst(tmp);
+    if (descriptors.add(tmp)) {
+      descriptorQueue.addFirst(tmp);
+      // Util.debug("Queued GLL descriptor " + tmp);
+    }
   }
 
   @Override

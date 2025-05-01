@@ -93,6 +93,7 @@ public class SPPF extends AbstractDerivations {
     int ret = 0;
     for (SPPFSymbolNode s : nodes.keySet())
       if (ret < s.rightExtent) ret = s.rightExtent;
+    // Util.debug("Returning widest derivation " + ret);
     return ret;
   }
 

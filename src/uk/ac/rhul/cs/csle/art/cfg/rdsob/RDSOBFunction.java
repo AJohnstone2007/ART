@@ -18,18 +18,18 @@ public class RDSOBFunction extends AbstractParser {
     dn = dn.next;
     DerivationSingletonNode dnAtEntry = dn;
 
-    int i_entry = tokenIndex;
+    int i_entry = inputIndex;
     altLoop: for (CFGNode tmp = lhs.alt; tmp != null; tmp = tmp.alt) {
-      tokenIndex = i_entry;
+      inputIndex = i_entry;
       dn = dnAtEntry;
       dn.cfgNode = tmp;
       CFGNode gn = tmp.seq;
       while (true) {
         switch (gn.cfgElement.cfgKind) {
         case B, C, T, TI:
-          if (lexer.tweSlices[tokenIndex][0].cfgElement == gn.cfgElement) {
+          if (lexer.tweSlices[inputIndex][0].cfgElement == gn.cfgElement) {
             Util.trace(8, "Match " + gn);
-            tokenIndex++;
+            inputIndex++;
             gn = gn.seq;
             break;
           } else
@@ -63,10 +63,10 @@ public class RDSOBFunction extends AbstractParser {
 
     lexer.lex(input, cfgRules, chooseRules);
 
-    tokenIndex = 0;
+    inputIndex = 0;
     dnRoot = dn = new DerivationSingletonNode(cfgRules.endOfStringNode, null);
-    inLanguage = rdsobFunction(cfgRules.elementToNodeMap.get(cfgRules.startNonterminal)) && lexer.tweSlices[tokenIndex][0].cfgElement.number == 0;
-    if (!inLanguage) Util.echo("Syntax error at location " + tokenIndex, Util.lineNumber(tokenIndex, lexer.inputString), lexer.inputString);
+    inLanguage = rdsobFunction(cfgRules.elementToNodeMap.get(cfgRules.startNonterminal)) && lexer.tweSlices[inputIndex][0].cfgElement.number == 0;
+    if (!inLanguage) Util.echo("Syntax error at location " + inputIndex, Util.lineNumber(inputIndex, lexer.inputString), lexer.inputString);
   }
 
   protected DerivationSingletonNode dnRoot, dn;

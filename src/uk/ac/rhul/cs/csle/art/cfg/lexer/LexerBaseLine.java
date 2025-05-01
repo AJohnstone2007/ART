@@ -44,10 +44,18 @@ public class LexerBaseLine extends AbstractLexer {
         if (hasSlice[rightmostActiveSlice]) break;
 
       lexicalError("Unknown lexeme ", rightmostActiveSlice);
-    } else { // Lexical accept
-      tweSlices[inputLength - 1] = new TWESetElement[1];
-      tweSlices[inputLength - 1][0] = new TWESetElement(cfgRules.endOfStringElement, inputLength - 1, inputLength - 1, inputLength);
+      return;
     }
+
+    // Add EOS
+    tweSlices[inputLength - 1] = new TWESetElement[1];
+    tweSlices[inputLength - 1][0] = new TWESetElement(cfgRules.endOfStringElement, inputLength - 1, inputLength - 1, inputLength);
+
+    // Choosers
+    suppressDeadPaths();
+    chooseDefault();
+    suppressDeadPaths();
+    removeSuppressedTWE();
   }
 
   public TWESetElement[] constructTWESlice(int index) {
@@ -64,7 +72,7 @@ public class LexerBaseLine extends AbstractLexer {
           hasSlice[inputIndex] = true; // Mark for downstream processing
         }
       }
-    return (TWESetElement[]) ret.toArray();
+    return ret.isEmpty() ? null : ret.toArray(new TWESetElement[0]);
   }
 
   private void matchWhitespace() {
