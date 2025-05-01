@@ -39,20 +39,19 @@ public class GLLBaseLine extends AbstractParser {
       while (true) {
         switch (cfgNode.cfgElement.cfgKind) {
         case ALT:
-          queueProductionTasks();
+          queueProductionTasks(); // Creat task descriptor for the start of each production
           continue nextTask;
         case EPS:
-          updateDerivation(inputIndex);
-          cfgNode = cfgNode.seq;
+          updateDerivation(inputIndex); // Mustmatch, but nothing consumed, so rightExtent = inputIndex
+          cfgNode = cfgNode.seq; // Next grammar node which will be an END node
           break; // continue with this sequence
         case B, T, TI, C:
-          if (lexer.tweSlices[inputIndex] != null) {
+          if (lexer.tweSlices[inputIndex] != null) { // Empty TWE slice
             var inputElement = lexer.tweSlices[inputIndex][0];
             if (inputElement.cfgElement == cfgNode.cfgElement) {
-              // Util.debug("Matched at " + inputIndex + " input element " + inputElement + " against " + cfgNode.cfgElement);
               updateDerivation(inputElement.rightExtent);
-              inputIndex = inputElement.rightExtent;
-              cfgNode = cfgNode.seq;
+              inputIndex = inputElement.rightExtent; // Step over the matched TWE
+              cfgNode = cfgNode.seq; // Next grammar node
               break; // continue with this sequence
             }
           }
