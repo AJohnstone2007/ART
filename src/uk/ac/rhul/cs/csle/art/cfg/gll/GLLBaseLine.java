@@ -42,15 +42,19 @@ public class GLLBaseLine extends AbstractParser {
           queueProductionTasks(); // Creat task descriptor for the start of each production
           continue nextTask;
         case EPS:
-          updateDerivation(inputIndex); // Mustmatch, but nothing consumed, so rightExtent = inputIndex
+          derivationNode = updateDerivation(inputIndex); // Must match, but nothing consumed, so rightExtent = inputIndex
           cfgNode = cfgNode.seq; // Next grammar node which will be an END node
           break; // continue with this sequence
         case B, T, TI, C:
-          if (lexer.tweSlices[inputIndex] != null) { // Empty TWE slice
-            var inputElement = lexer.tweSlices[inputIndex][0];
-            if (inputElement.cfgElement == cfgNode.cfgElement) {
-              updateDerivation(inputElement.rightExtent);
-              inputIndex = inputElement.rightExtent; // Step over the matched TWE
+          var slice = lexer.tweSlices[inputIndex];
+          if (slice != null) { // Ignore empty TWE slices
+            for (int sliceIndex = 1; sliceIndex < slice.length; sliceIndex++) // Queue second and subsequent TWE in slice
+              if (slice[sliceIndex].cfgElement == cfgNode.cfgElement) // Queue TWE set elements
+                tasks.queue(slice[sliceIndex].rightExtent, cfgNode.seq, stackNode, updateDerivation(slice[sliceIndex].rightExtent));
+
+            if (slice[0].cfgElement == cfgNode.cfgElement) { // Immediately process first TWE in slice
+              derivationNode = updateDerivation(slice[0].rightExtent);
+              inputIndex = slice[0].rightExtent; // Step over the matched TWE
               cfgNode = cfgNode.seq; // Next grammar node
               break; // continue with this sequence
             }
@@ -69,10 +73,10 @@ public class GLLBaseLine extends AbstractParser {
     derivations.numberNodes();
   }
 
-  private void updateDerivation(int rightExtent) {
+  private AbstractDerivationNode updateDerivation(int rightExtent) {
     Util.trace(8, 0, "Matched " + cfgNode.cfgElement);
     var rightNode = derivations.find(cfgRules.elementToNodeMap.get(cfgNode.cfgElement), inputIndex, rightExtent);
-    derivationNode = derivations.extend(cfgNode.seq, derivationNode, rightNode);
+    return derivations.extend(cfgNode.seq, derivationNode, rightNode);
   }
 
   private void queueProductionTasks() {
