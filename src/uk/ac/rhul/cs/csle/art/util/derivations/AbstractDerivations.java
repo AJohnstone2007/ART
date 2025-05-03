@@ -1,6 +1,7 @@
 package uk.ac.rhul.cs.csle.art.util.derivations;
 
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
+import uk.ac.rhul.cs.csle.art.choose.ChooseRules;
 import uk.ac.rhul.cs.csle.art.util.OutputInterface;
 import uk.ac.rhul.cs.csle.art.util.Util;
 import uk.ac.rhul.cs.csle.art.util.statistics.Statistics;
@@ -56,4 +57,6 @@ public abstract class AbstractDerivations implements OutputInterface {
   public abstract void numberNodes();
 
   public abstract void statistics(Statistics currentStatistics);
+
+  public abstract void choose(ChooseRules chooseRules);
 }

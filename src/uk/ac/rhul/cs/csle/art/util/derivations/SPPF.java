@@ -12,6 +12,7 @@ import uk.ac.rhul.cs.csle.art.cfg.AbstractParser;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGKind;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.GIFTKind;
+import uk.ac.rhul.cs.csle.art.choose.ChooseRules;
 import uk.ac.rhul.cs.csle.art.script.ScriptTermInterpreter;
 import uk.ac.rhul.cs.csle.art.util.Util;
 import uk.ac.rhul.cs.csle.art.util.relation.RelationOverNaturals;
@@ -301,5 +302,11 @@ public class SPPF extends AbstractDerivations {
     ScriptTermInterpreter.currentStatistics.put("sppfEdgeCount", sppfEdgeCount);
     // loadPoolAllocated(-1);
     // loadHashCounts(-20, -21, -22, -23, -24, -25, -26);
+  }
+
+  @Override
+  public void choose(ChooseRules chooseRules) {
+    // TODO Auto-generated method stub
+
   }
 }

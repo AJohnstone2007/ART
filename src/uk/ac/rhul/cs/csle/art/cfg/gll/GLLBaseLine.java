@@ -34,9 +34,8 @@ public class GLLBaseLine extends AbstractParser {
     stackNode = stacks.getRoot();
     derivationNode = null;
     queueProductionTasks();
-
     nextTask: while (nextTask())
-      while (true) {
+      nextCFGNode: while (true) {
         switch (cfgNode.cfgElement.cfgKind) {
         case ALT:
           queueProductionTasks(); // Creat task descriptor for the start of each production
@@ -44,20 +43,22 @@ public class GLLBaseLine extends AbstractParser {
         case EPS:
           derivationNode = updateDerivation(inputIndex); // Must match, but nothing consumed, so rightExtent = inputIndex
           cfgNode = cfgNode.seq; // Next grammar node which will be an END node
-          break; // continue with this sequence
+          continue nextCFGNode; // continue with this sequence
         case B, T, TI, C:
           var slice = lexer.tweSlices[inputIndex];
-          if (slice != null) { // Ignore empty TWE slices
-            for (int sliceIndex = 1; sliceIndex < slice.length; sliceIndex++) // Queue second and subsequent TWE in slice
-              if (slice[sliceIndex].cfgElement == cfgNode.cfgElement) // Queue TWE set elements
-                tasks.queue(slice[sliceIndex].rightExtent, cfgNode.seq, stackNode, updateDerivation(slice[sliceIndex].rightExtent));
+          if (slice != null) {// Ignore empty TWE slices
+            for (int firstIndex = 0; firstIndex < slice.length; firstIndex++)
+              if (slice[firstIndex].cfgElement == cfgNode.cfgElement) { // Does this TWE match the current grammar position
 
-            if (slice[0].cfgElement == cfgNode.cfgElement) { // Immediately process first TWE in slice
-              derivationNode = updateDerivation(slice[0].rightExtent);
-              inputIndex = slice[0].rightExtent; // Step over the matched TWE
-              cfgNode = cfgNode.seq; // Next grammar node
-              break; // continue with this sequence
-            }
+                for (int restOfIndex = firstIndex + 1; restOfIndex < slice.length; restOfIndex++) // Queue tasks for any subsequent matching TWEs in this slice
+                  if (slice[restOfIndex].cfgElement == cfgNode.cfgElement)
+                    tasks.queue(slice[restOfIndex].rightExtent, cfgNode.seq, stackNode, updateDerivation(slice[restOfIndex].rightExtent));
+
+                derivationNode = updateDerivation(slice[firstIndex].rightExtent);
+                inputIndex = slice[firstIndex].rightExtent; // Step over the matched TWE
+                cfgNode = cfgNode.seq; // Next grammar node
+                continue nextCFGNode; // continue with this sequence
+              }
           }
           continue nextTask;
         case N:
@@ -71,6 +72,7 @@ public class GLLBaseLine extends AbstractParser {
         }
       }
     derivations.numberNodes();
+    derivations.choose(chooseRules);
   }
 
   private AbstractDerivationNode updateDerivation(int rightExtent) {
