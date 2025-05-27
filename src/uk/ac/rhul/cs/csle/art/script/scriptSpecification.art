@@ -160,7 +160,7 @@ configurationElement ::= ID ':'^ ID
 paraterminalElements ::= paraterminalElement | paraterminalElement ','^ paraterminalElements^
 paraterminalElement  ::= cfgNonterminal^^
 
-displayElements ::= ID | ID displayElements^ | file displayElements
+displayElements ::= ID | ID displayElements^ | file displayElements^ | __string | __string displayElements^
 
 (* Lexical elements **********************************************************)
 __bool ::= 'true' | 'false'

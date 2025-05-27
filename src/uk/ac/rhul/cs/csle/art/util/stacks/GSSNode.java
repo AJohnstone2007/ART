@@ -7,14 +7,14 @@ import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
 import uk.ac.rhul.cs.csle.art.util.derivations.AbstractDerivationNode;
 
 public class GSSNode extends AbstractStackNode {
-  public final CFGNode grammarNode;
+  public final CFGNode cfgNode;
   final int inputIndex;
   public final Set<GSSEdge> edges = new HashSet<>();
   public final Set<AbstractDerivationNode> pops = new HashSet<>();
 
   @Override
   public CFGNode getGrammarNode() {
-    return grammarNode;
+    return cfgNode;
   }
 
   @Override
@@ -29,7 +29,7 @@ public class GSSNode extends AbstractStackNode {
 
   public GSSNode(CFGNode grammarNode, int inputIndex) {
     super();
-    this.grammarNode = grammarNode;
+    this.cfgNode = grammarNode;
     this.inputIndex = inputIndex;
   }
 
@@ -38,7 +38,7 @@ public class GSSNode extends AbstractStackNode {
     final int prime = 31;
     int result = 1;
     result = prime * result + inputIndex;
-    result = prime * result + ((grammarNode == null) ? 0 : grammarNode.hashCode());
+    result = prime * result + ((cfgNode == null) ? 0 : cfgNode.hashCode());
     return result;
   }
 
@@ -49,14 +49,14 @@ public class GSSNode extends AbstractStackNode {
     if (getClass() != obj.getClass()) return false;
     GSSNode other = (GSSNode) obj;
     if (inputIndex != other.inputIndex) return false;
-    if (grammarNode == null) {
-      if (other.grammarNode != null) return false;
-    } else if (!grammarNode.equals(other.grammarNode)) return false;
+    if (cfgNode == null) {
+      if (other.cfgNode != null) return false;
+    } else if (!cfgNode.equals(other.cfgNode)) return false;
     return true;
   }
 
   @Override
   public String toString() {
-    return "(" + grammarNode.toStringAsProduction() + ", " + inputIndex + ")";
+    return "(" + cfgNode.toStringAsProduction() + ", " + inputIndex + ")";
   }
 }

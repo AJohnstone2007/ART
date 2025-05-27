@@ -221,6 +221,6 @@ public class Util {
   }
 
   public static void notImplemented(String methodName, Class<?> classObject) {
-    error(methodName + " not implemented for class" + classObject.getSimpleName());
+    error(methodName + " not implemented for class " + classObject.getSimpleName());
   }
 }

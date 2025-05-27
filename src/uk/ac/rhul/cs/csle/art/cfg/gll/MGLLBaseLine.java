@@ -1,5 +1,7 @@
 package uk.ac.rhul.cs.csle.art.cfg.gll;
 
+/****** !!! This version is also test bedding the new SPPF form */
+
 import uk.ac.rhul.cs.csle.art.cfg.AbstractParser;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGRules;
@@ -12,7 +14,7 @@ import uk.ac.rhul.cs.csle.art.util.stacks.AbstractStackNode;
 import uk.ac.rhul.cs.csle.art.util.stacks.GSS;
 import uk.ac.rhul.cs.csle.art.util.tasks.TasksGLL;
 
-public class GLLBaseLine extends AbstractParser {
+public class MGLLBaseLine extends AbstractParser {
   CFGNode cfgNode;
   AbstractStackNode stackNode;
   AbstractDerivationNode derivationNode;
@@ -25,7 +27,7 @@ public class GLLBaseLine extends AbstractParser {
     this.lexer = lexer;
     tasks = new TasksGLL();
     stacks = new GSS(cfgRules);
-    derivations = new SPPF(this);
+    derivations = new SPPF(this, true);
 
     lexer.lex(input, cfgRules, chooseRules);
     // lexer.printTWESet(System.out, null);
@@ -76,7 +78,8 @@ public class GLLBaseLine extends AbstractParser {
   }
 
   private AbstractDerivationNode updateDerivation(int rightExtent) {
-    Util.trace(8, 0, "Matched " + cfgNode.cfgElement);
+    // Util.trace(8, 0, "Matched " + cfgNode.cfgElement);
+    // Util.debug("*** Update derivation " + rightExtent);
     var rightNode = derivations.find(cfgRules.elementToNodeMap.get(cfgNode.cfgElement), inputIndex, rightExtent);
     return derivations.extend(cfgNode.seq, derivationNode, rightNode);
   }

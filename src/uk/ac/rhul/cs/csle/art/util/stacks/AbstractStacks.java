@@ -19,4 +19,6 @@ public abstract class AbstractStacks implements OutputInterface {
 
   public abstract void pop(AbstractDerivations derivations, AbstractTasks tasks, int tokenIndex, AbstractStackNode stackNode,
       AbstractDerivationNode derivationNode);
+
+  public abstract void toDot();
 }

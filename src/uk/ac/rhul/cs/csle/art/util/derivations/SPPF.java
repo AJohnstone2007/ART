@@ -20,6 +20,7 @@ import uk.ac.rhul.cs.csle.art.util.statistics.Statistics;
 
 public class SPPF extends AbstractDerivations {
   public final AbstractParser parser;
+  private final boolean firstSuppressParent;
   public SPPFSymbolNode root;
   public String inputString; // Original input string
 
@@ -34,15 +35,20 @@ public class SPPF extends AbstractDerivations {
   public final Set<SPPFPackedNode> cbDPrime = new HashSet<>(); // Set of deleted cyclic nodes: D' in Elizabeth's note
 
   public SPPF(AbstractParser parser) {
+    this(parser, false);
+  }
+
+  public SPPF(AbstractParser parser, boolean firstSuppressParent) {
     super();
     this.parser = parser;
+    this.firstSuppressParent = firstSuppressParent;
   }
 
   @Override
-  public AbstractDerivationNode find(CFGNode dn, int li, int ri) {
-    // Util.debug("sppfFind with dn " + dn.toStringAsProduction() + " with extents " + li + "," + ri);
+  public AbstractDerivationNode find(CFGNode dn, int leftExtent, int rightExtent) {
+    // Util.debug("sppf.find with dn [" + dn.num + "] " + dn.toStringAsProduction() + " with extents " + leftExtent + "," + rightExtent);
 
-    AbstractDerivationNode tmp = new SPPFSymbolNode(dn, li, ri);
+    AbstractDerivationNode tmp = new SPPFSymbolNode(dn, leftExtent, rightExtent);
     if (!nodes.containsKey(tmp)) {
       nodes.put((SPPFSymbolNode) tmp, (SPPFSymbolNode) tmp);
       // Util.debug(" added " + tmp);
@@ -53,12 +59,24 @@ public class SPPF extends AbstractDerivations {
 
   @Override
   public AbstractDerivationNode extend(CFGNode gn, AbstractDerivationNode leftNode, AbstractDerivationNode rightNode) {
+    // Util.debug("sppf.extend grammar node " + gn.toStringAsProduction() + " with left node " + leftNode + " and right node " + rightNode);
+
+    if (gn == null) return rightNode;
+
+    if (parser.cfgRules.secondSlots.contains(gn)) {
+      // Util.debug("sppf.extend grammar node is second node - returning rightNode");
+      return rightNode;
+    }
+
     SPPFSymbolNode ret = (SPPFSymbolNode) find(gn.cfgElement.cfgKind == CFGKind.END ? gn.seq : gn,
         leftNode == null ? rightNode.getLeftExtent() : leftNode.getLeftExtent(), rightNode.getRightExtent());
-    // Util.debug(
-    // "Extending SPPF node with gn " + gn.toStringAsProduction() + " and extents " + (ln == null ? rn.li : ln.li) + "," + rn.ri + " retrieves node " + ret);
+
+    // Util.debug("Extending SPPF node with gn " + gn.toStringAsProduction() + " and extents "
+    // + (leftNode == null ? rightNode.getLeftExtent() : leftNode.getLeftExtent()) + "," + rightNode.getRightExtent() + " retrieves node " + ret);
+
     ret.packNodes.add(new SPPFPackedNode(gn, leftNode == null ? rightNode.getLeftExtent() : leftNode.getRightExtent(), (SPPFSymbolNode) leftNode,
         (SPPFSymbolNode) rightNode));
+
     return ret;
   }
 
@@ -308,5 +326,15 @@ public class SPPF extends AbstractDerivations {
   public void choose(ChooseRules chooseRules) {
     // TODO Auto-generated method stub
 
+  }
+
+  @Override
+  public void toDot() {
+    new SPPF2Dot(this);
+  }
+
+  @Override
+  public void dump(String filename) {
+    new SPPFDump(this, filename);
   }
 }

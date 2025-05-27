@@ -59,4 +59,8 @@ public abstract class AbstractDerivations implements OutputInterface {
   public abstract void statistics(Statistics currentStatistics);
 
   public abstract void choose(ChooseRules chooseRules);
+
+  public abstract void toDot();
+
+  public abstract void dump(String filename);
 }

@@ -18,7 +18,7 @@ import uk.ac.rhul.cs.csle.art.term.ITerms;
 import uk.ac.rhul.cs.csle.art.util.Util;
 import uk.ac.rhul.cs.csle.art.util.relation.Relation;
 
-public class CFGRules {
+public final class CFGRules { // final to avoid this-escape
   public final ITerms iTerms;
 
   // Constants
@@ -58,7 +58,8 @@ public class CFGRules {
   public final Relation<CFGNode, CFGElement> instanceFollow = new Relation<>(); // definition?
 
   public final Set<CFGNode> initialSlots = new HashSet<>(); // { X ::= \alpha . \beta} | \alpha = \epsilon }
-  public final Set<CFGNode> penultimateSlots = new HashSet<>(); // { X ::= \alpha . Y \beta} | \beta = \epsilon } (note: Y is not epsilon)
+  public final Set<CFGNode> secondSlots = new HashSet<>(); // { X ::= \alpha Y . \beta} | \alpha = \epsilon, Y \ne \epsilon }
+  public final Set<CFGNode> penultimateSlots = new HashSet<>(); // { X ::= \alpha . Y \beta} | \beta = \epsilon, Y \ne \epsilon }
   public final Set<CFGNode> finalSlots = new HashSet<>(); // { X ::= \alpha . \beta} | \beta = \epsilon }
 
   public final Set<CFGNode> nullablePrefixSlots = new HashSet<>(); // { X ::= \alpha . \beta} | \alpha =>* \epsilon }
@@ -138,6 +139,7 @@ public class CFGRules {
         CFGNode gs = gn.seq;
         initialSlots.add(gs);
         nullablePrefixSlots.add(gs);
+        if (gs.seq.cfgElement.cfgKind != CFGKind.END) secondSlots.add(gs.seq);
         while (gs.seq.cfgElement.cfgKind != CFGKind.END)
           gs = gs.seq;
         penultimateSlots.add(gs);
@@ -635,6 +637,7 @@ public class CFGRules {
       sb.append(" " + i + ": " + gn.toStringAsProduction());
       if (showProperties) {
         if (initialSlots.contains(gn)) sb.append(" initial");
+        if (secondSlots.contains(gn)) sb.append(" second");
         if (penultimateSlots.contains(gn)) sb.append(" penultimate");
         if (finalSlots.contains(gn)) sb.append(" final");
         if (nullableSuffixSlots.contains(gn)) sb.append(" nullableSuffix");

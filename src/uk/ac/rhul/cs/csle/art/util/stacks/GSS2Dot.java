@@ -17,7 +17,7 @@ public class GSS2Dot {
           + "graph[ordering=out ranksep=0.1]\n" + "edge[arrowsize = 0.3  color=gray]");
 
       if (gss != null) for (GSSNode s : gss.keySet()) {
-        gssOut.println("\"" + s + "\" [label=\"" + s.grammarNode.toStringAsProduction() + "\n" + s.inputIndex + "\"]");
+        gssOut.println("\"" + s + "\" [label=\"" + s.cfgNode.toStringAsProduction() + "\n" + s.inputIndex + "\"]");
         for (GSSEdge c : s.edges) // iterate over children
           gssOut.println("\"" + s + "\"->\"" + c.dst + "\"");
       }

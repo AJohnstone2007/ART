@@ -29,6 +29,7 @@ import uk.ac.rhul.cs.csle.art.old.v4.term.ITerms;
 import uk.ac.rhul.cs.csle.art.old.v4.term.ITermsLowLevelAPI;
 import uk.ac.rhul.cs.csle.art.old.v4.util.histogram.ARTHistogram;
 import uk.ac.rhul.cs.csle.art.old.v4.util.text.ARTText;
+import uk.ac.rhul.cs.csle.art.util.Util;
 
 public abstract class ARTGLLParserBase extends ARTParserBase {
   protected static boolean ARTTRACETWE = false;
@@ -391,6 +392,7 @@ public abstract class ARTGLLParserBase extends ARTParserBase {
   /**
    * GLL support functions
    */
+
   abstract protected int artLookupSPPF(int label, int leftExtent, int rightExtent);
 
   abstract protected int artFindSPPFInitial(int label, int leftExtent, int rightExtent);
@@ -577,7 +579,7 @@ public abstract class ARTGLLParserBase extends ARTParserBase {
   }
 
   public ARTHistogram artPackedFamilyArityHistogram;
-  int edgeCount, nonterminalNodeCount, intermediateNodeCount, packedNodeCount, terminalNodeCount, epsilonNodeCount, ambiguousPackedNodeCount;
+  long edgeCount, nonterminalNodeCount, intermediateNodeCount, packedNodeCount, terminalNodeCount, epsilonNodeCount, ambiguousPackedNodeCount;
 
   void coreStatisticsRec(int element, int parent) {
     // artText.printf("summaryStatisticsRec() at node %s%n", artRenderSPPFNodeTitle(element));
@@ -1212,6 +1214,25 @@ public abstract class ARTGLLParserBase extends ARTParserBase {
     }
   }
 
+  protected void artDumpSPPF(String filename) {
+    PrintStream dumpOut = null;
+
+    if (artRootSPPFNode == 0) Util.warning("Missing SPPF root node - continuing with dump");
+
+    try {
+      dumpOut = new PrintStream(new File(filename));
+      for (int element = artSPPFNodeFirst(); element != 0; element = artSPPFNodeNext()) {
+        dumpOut.println(getArtLabelInternalStrings()[artSPPFNodeLabel(element)] + " " + artSPPFNodeLeftExtent(element) + "," + artSPPFNodeRightExtent(element));
+
+        for (int tmp = artSPPFNodePackedNodeList(element); tmp != 0; tmp = artSPPFPackedNodePackedNodeList(tmp))
+          dumpOut.println(getArtLabelInternalStrings()[artSPPFNodeLabel(element)] + " " + artSPPFNodeLeftExtent(element) + "," + artSPPFNodeRightExtent(element)
+              + "  " + getArtLabelInternalStrings()[artSPPFPackedNodeLabel(tmp)] + "  " + artSPPFPackedNodePivot(tmp));
+      }
+    } catch (FileNotFoundException e) {
+      Util.error("Unable to write SPPF dump to " + filename);
+    }
+  }
+
   abstract protected void artInitialise();
 
   abstract protected void artParseBody(int nonterminalLabel);
@@ -1267,10 +1288,13 @@ public abstract class ARTGLLParserBase extends ARTParserBase {
       if (!artDirectives.b("actionSuppress")) artEvaluator(startAttributes);
     }
 
-    if (artDirectives.b("sppfShowFull")) artWriteSPPF("sppfFull.dot", artRenderKindSPPFFull);
-    if (artDirectives.b("sppfShow")) artWriteSPPF("sppf.dot", artRenderKindSPPF);
-    if (artDirectives.b("gssShow")) artWriteSPPF("gss.dot", artRenderKindGSS);
-    if (artDirectives.b("treeShow")) artWriteRDT("rdt.dot");
+    if (artDirectives.b("sppfShowFull")) artWriteSPPF("sppfFullV3.dot", artRenderKindSPPFFull);
+    if (artDirectives.b("sppfShow")) {
+      artWriteSPPF("sppfV3.dot", artRenderKindSPPF);
+      artDumpSPPF("sppfV3.txt");
+    }
+    if (artDirectives.b("gssShow")) artWriteSPPF("gssV3.dot", artRenderKindGSS);
+    if (artDirectives.b("treeShow")) artWriteRDT("rdtV3.dot");
     if (artDirectives.b("treePrint")) artPrintRDT();
     if (artDirectives.b("termWrite") || artDirectives.b("termPrint")) {
       // Use new term library to create an ITerm from a derivation

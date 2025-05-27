@@ -62,4 +62,9 @@ public class GSS extends AbstractStacks {
     statistics.put("popCount", popCount);
   }
 
+  @Override
+  public void toDot() {
+    new GSS2Dot(nodes, "gssV3.dot");
+  }
+
 }
