@@ -337,4 +337,15 @@ public class SPPF extends AbstractDerivations {
   public void dump(String filename) {
     new SPPFDump(this, filename);
   }
+
+  @Override
+  public void breakCycles(boolean trace, boolean counts, boolean statistics) {
+    new SPPFCycleBreak(this).sppfCycleBreak();
+  }
+
+  @Override
+  public void breakCyclesRelation() {
+    new SPPFCycleBreak(this).sppfBreakCyclesRelation();
+  }
+
 }

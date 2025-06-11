@@ -1,0 +1,41 @@
+(* gcdAttribute.art GCD in attribute-actions with native Java actions - 5 CFG phrase level rules and 3 CFG lexical rules*)
+(* Use ofplugin in expressions requires return result that can be cast to int *)
+//!interpreter attributeAction
+!support
+!! import java.util.Map; import java.util.HashMap; !!
+!! Map<String, Integer> variables = new HashMap<>(); 
+   Map<String, AbstractAttributeBlock> procedures = new HashMap<>(); !!
+
+statements ::= statement statements
+| statement !! System.out.println("Final variable map " + variables); !! 
+
+statement ::= 
+  ID ':=' e0 ';' !! variables.put(ID1.v, e01.v); !!     // assignment 
+| 'if' e0 'then' statement!< 'else' statement!<                // if statement 
+  !! if (e01.v != 0) interpret(statement1); else interpret(statement2); !! 
+| 'while' e0!< 'do' statement!<                         // while statement 
+  !! interpret(e01); while (e01.v != 0) { interpret(statement1); interpret(e01); } !! 
+| 'plugin' '(' STRING_SQ ')' ';' !! plugin(STRING_SQ1.v); !!
+| 'plugin' '(' STRING_SQ ',' e0 ')' ';'!! plugin(STRING_SQ1.v, e01.v); !!
+| 'plugin' '(' STRING_SQ ',' e0 ',' e0 ')' ';' !! plugin(STRING_SQ1.v, e01.v, e02.v); !!
+| 'plugin' '(' STRING_SQ  ',' e0 ',' e0 ',' e0 ')' ';' !! plugin(STRING_SQ1.v, e01.v, e02.v, e03.v); !!
+
+e0 ::= e1 !! e0.v = e11.v; !!
+| e1 '>'  e1 !! e0.v = e11.v >  e12.v ? 1 : 0; !!       // Greater than 
+| e1 '!=' e1 !! e0.v = e11.v != e12.v ? 1 : 0; !!       // Not equal to 
+
+e1 ::= e2 !! e1.v = e21.v; !!  
+| e1 '-' e2 !! e1.v = e11.v - e21.v; !!                 // Subtract 
+
+e2 ::= INTEGER !!e2.v = INTEGER1.v; !!                  // Integer literal 
+| ID !! e2.v = variables.get(ID1.v); !!                 // Variable access 
+| '(' e1 !! e2.v = e11.v; !! ')'                        // Parenthesised expression 
+| 'plugin' '(' STRING_SQ ',' e0 ')' !! e2.v = (int) plugin(STRING_SQ1.v, e01.v); !!
+
+// Lexical rules
+ID <v:String>        ::= &ID !! ID.v = lexeme(); !!  
+STRING_SQ <v:String> ::= &STRING_SQ !! STRING_SQ.v = lexemeCore().translateEscapes(); !!
+INTEGER              ::= &INTEGER   !! INTEGER.v = Integer.parseInt(lexeme()); !!
+
+//!generate actions 
+!try "a := 6; b := 9; while a != b do if a > b then a := a - b; else b := b - a; gcd := a; plugin('init'); x:= plugin('invert', 31);"
