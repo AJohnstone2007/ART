@@ -5,7 +5,7 @@ import java.io.PrintWriter;
 
 import uk.ac.rhul.cs.csle.art.old.v4.util.text.ARTText;
 
-public class ARTCompressWhiteSpaceSML {
+public final class ARTCompressWhiteSpaceSML {
   private final int idMax = Integer.MAX_VALUE;
   private final int stringMax = Integer.MAX_VALUE;
 

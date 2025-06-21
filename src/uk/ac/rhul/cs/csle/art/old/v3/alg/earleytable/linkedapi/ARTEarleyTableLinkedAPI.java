@@ -36,7 +36,7 @@ import uk.ac.rhul.cs.csle.art.old.v4.util.text.ARTText;
  *
  */
 
-public class ARTEarleyTableLinkedAPI extends ARTParserBase {
+public final class ARTEarleyTableLinkedAPI extends ARTParserBase {
   private ARTEarleyTableDataLinked nfa = null;
   private final ARTGrammarElementEpsilon epsilon;
   private final ARTGrammarElementEoS eos;

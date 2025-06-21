@@ -17,7 +17,7 @@ import uk.ac.rhul.cs.csle.art.old.v3.manager.parser.ARTV3Parser;
 import uk.ac.rhul.cs.csle.art.old.v3.value.ARTValueTerm;
 import uk.ac.rhul.cs.csle.art.old.v4.term.ITerms;
 
-public class ARTV3Module {
+public final class ARTV3Module {
   private final ARTManager artManager;
   private final String id;
 

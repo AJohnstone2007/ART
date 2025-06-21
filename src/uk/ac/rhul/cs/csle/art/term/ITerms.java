@@ -18,7 +18,7 @@ import java.util.Set;
 
 import uk.ac.rhul.cs.csle.art.util.Util;
 
-public class ITerms {
+public final class ITerms {
   private class ValueException extends RuntimeException {
     private static final long serialVersionUID = -8086174221866434606L;
 
@@ -142,6 +142,8 @@ public class ITerms {
     } catch (Exception e) {
       // Silently absorb exception - when the default is used
     }
+
+    rawTextTraverser = new TermTraverserText(this);
   }
 
   /* Term rendering *************************************************************************************/

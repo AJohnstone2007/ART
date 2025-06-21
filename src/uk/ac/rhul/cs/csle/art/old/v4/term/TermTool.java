@@ -17,7 +17,7 @@ import java.util.Map;
 //TODO: implement take command !@
 //TODO: finish value system
 
-public class TermTool {
+public final class TermTool {
   final int variableCount = 15;
   final int sequenceVariableCount = 7;
 

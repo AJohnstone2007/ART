@@ -4,7 +4,7 @@ import java.util.HashMap;
 
 import uk.ac.rhul.cs.csle.art.old.v4.core.ARTUncheckedException;
 
-public class __mapChain extends Value {
+public final class __mapChain extends Value {
 
   private final __mapChain parent;
   private HashMap<Value, Value> javaValue;

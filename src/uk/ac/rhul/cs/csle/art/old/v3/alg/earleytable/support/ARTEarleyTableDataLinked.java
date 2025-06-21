@@ -21,7 +21,7 @@ import uk.ac.rhul.cs.csle.art.old.v3.manager.grammar.instance.ARTGrammarInstance
 import uk.ac.rhul.cs.csle.art.old.v4.util.cache.ARTCache;
 import uk.ac.rhul.cs.csle.art.old.v4.util.text.ARTText;
 
-public class ARTEarleyTableDataLinked {
+public final class ARTEarleyTableDataLinked {
   /*
    * An Earley NFA is a graph whose nodes are labelled with a unique set of gramamr slots and whose edges are labbelled with grammar symbols Each edge has three
    * associated sets: EPN, EE and RED. These slots are stored in maps within the vertices

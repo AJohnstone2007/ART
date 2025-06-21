@@ -27,7 +27,7 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
-public class EditorWithConsoleWindow {
+public final class EditorWithConsoleWindow {
   public CodeArea codeArea = new CodeArea();
   public final TextArea console = new TextArea();
 

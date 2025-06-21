@@ -27,6 +27,10 @@ public abstract class AbstractLexer {
   public abstract void statistics(Statistics currentstatistics);
 
   public void printTWESet(PrintStream outputStream, TermTraverserText outputTraverser) {
+    if (tweSlices == null) {
+      Util.warning("Empty TWE set");
+      return;
+    }
     for (int i = 0; i < tweSlices.length; i++) {
       if (tweSlices[i] == null) continue;
       outputStream.print("Index " + i + ":");

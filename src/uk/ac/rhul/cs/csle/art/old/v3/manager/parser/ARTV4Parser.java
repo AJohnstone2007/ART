@@ -16,7 +16,7 @@ import uk.ac.rhul.cs.csle.art.old.v4.util.bitset.ARTBitSet;
  *
  *******************************************************************************/
 @SuppressWarnings("fallthrough")
-public class ARTV4Parser extends ARTGLLParserHashPool {
+public final class ARTV4Parser extends ARTGLLParserHashPool {
   private static boolean[] ARTSet1;
   private static boolean[] ARTSet2;
   private static boolean[] ARTSet3;

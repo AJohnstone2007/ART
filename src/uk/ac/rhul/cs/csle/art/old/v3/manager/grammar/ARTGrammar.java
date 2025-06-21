@@ -64,7 +64,7 @@ import uk.ac.rhul.cs.csle.art.old.v4.util.graph.ARTTree;
 import uk.ac.rhul.cs.csle.art.old.v4.util.text.ARTText;
 import uk.ac.rhul.cs.csle.art.old.v4.util.text.ARTTextHandlerFile;
 
-public class ARTGrammar {
+public final class ARTGrammar {
   private final ARTManager artManager;
   private final ARTV3Module ARTV3Module;
   private final String id;

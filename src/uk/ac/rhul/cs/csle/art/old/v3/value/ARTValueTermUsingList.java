@@ -15,7 +15,7 @@ import java.util.Map;
 
 import uk.ac.rhul.cs.csle.art.old.v4.core.ARTUncheckedException;
 
-public class ARTValueTermUsingList extends ARTValue {
+public final class ARTValueTermUsingList extends ARTValue {
   protected ARTValue payload; // this is the payload: typically a string or some other identifier signifying the constructor
   private final List<ARTValueTermUsingList> children = new ArrayList<ARTValueTermUsingList>();
 

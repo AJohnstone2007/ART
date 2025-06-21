@@ -130,13 +130,13 @@ public class ARTLexerV3 {
     // if (tweSet != null) tweSetUpdateExactMakeLeftSet(0, index, tweSet.length); // Add terminating EOS
   }
 
-  public void artSetParser(ARTParserBase artGeneratedParser) {
+  public final void artSetParser(ARTParserBase artGeneratedParser) {
     this.artParser = artGeneratedParser;
   }
 
-  public void artLoadInputArray(String inputString) {
+  public final void artLoadInputArray(String inputString) {
     // Build artInput as char[]
-    this.artInput = new char[inputString.length() + 2]; // Rightmost position contains $ (zero) and then we need an empty position for successor
+    artInput = new char[inputString.length() + 2]; // Rightmost position contains $ (zero) and then we need an empty position for successor
     for (int i = 0; i < inputString.length(); i++)
       artInput[i] = inputString.charAt(i);
 

@@ -1,6 +1,6 @@
 package uk.ac.rhul.cs.csle.art.old.v3.alg.earleytable.support;
 
-public class ARTChiBSR {
+public final class ARTChiBSR {
   private final int hashcode, chiSetIndex, i, k, j;
 
   @Override

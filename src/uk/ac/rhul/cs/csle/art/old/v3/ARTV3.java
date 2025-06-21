@@ -28,7 +28,7 @@ import uk.ac.rhul.cs.csle.art.old.v4.util.text.ARTText;
 import uk.ac.rhul.cs.csle.art.old.v4.util.text.ARTTextHandlerFile;
 import uk.ac.rhul.cs.csle.art.old.v4.util.text.ARTTextHandlerString;
 
-public class ARTV3 {
+public final class ARTV3 {
   public ARTManager artManager = new ARTManager();
 
   public ARTV3(String[] args) {

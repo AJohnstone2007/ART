@@ -16,7 +16,7 @@ import javafx.scene.shape.Box;
 import javafx.scene.transform.Translate;
 import javafx.stage.Stage;
 
-public class GraphicsWindow {
+public final class GraphicsWindow {
   final Group root = new Group();
   final Group axisGroup = new Group();
   public final Group meshGroup = new Group();

@@ -2,7 +2,7 @@ package uk.ac.rhul.cs.csle.art.old.v4.util.graph;
 
 import java.io.PrintWriter;
 
-public class ARTGraphEdge extends ARTAbstractEdge {
+public final class ARTGraphEdge extends ARTAbstractEdge {
   Object payload;
 
   public ARTGraphEdge(ARTGraphVertex parent, ARTGraphVertex child, Object payload) {

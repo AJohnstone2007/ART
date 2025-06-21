@@ -5,7 +5,7 @@ import java.util.Map;
 import uk.ac.rhul.cs.csle.art.old.v4.core.ARTUncheckedException;
 import uk.ac.rhul.cs.csle.art.old.v4.term.ValueException;
 
-public class ARTValueTerm extends ARTValue {
+public final class ARTValueTerm extends ARTValue {
   protected ARTValue payload; // this is the payload: typically a string or some other identifier signifying the constructor
   private ARTValueTerm child = null;
   private ARTValueTerm sibling = null;

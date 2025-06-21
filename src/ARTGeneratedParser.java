@@ -13,7 +13,7 @@ import uk.ac.rhul.cs.csle.art.old.v4.util.bitset.ARTBitSet;
 * ARTGeneratedParser.java
 *
 *******************************************************************************/
-@SuppressWarnings("fallthrough") public class ARTGeneratedParser extends ARTGLLParserHashPool {
+@SuppressWarnings("fallthrough") public final class ARTGeneratedParser extends ARTGLLParserHashPool {
 private static boolean[] ARTSet1;
 private static boolean[] ARTSet2;
 private static boolean[] ARTSet3;

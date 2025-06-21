@@ -6,7 +6,7 @@ import javafx.scene.transform.Scale;
 import javafx.scene.transform.Translate;
 import uk.ac.rhul.cs.csle.art.util.Util;
 
-public class Transformer3D extends Group {
+public final class Transformer3D extends Group {
 
   public enum RotateOrder {
     XYZ, XZY, YXZ, YZX, ZXY, ZYX

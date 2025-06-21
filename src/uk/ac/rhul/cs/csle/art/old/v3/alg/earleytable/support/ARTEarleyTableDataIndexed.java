@@ -13,7 +13,7 @@ import uk.ac.rhul.cs.csle.art.old.v3.manager.mode.ARTModeGrammarKind;
 import uk.ac.rhul.cs.csle.art.old.v4.util.slotarray.ARTSlotArray;
 import uk.ac.rhul.cs.csle.art.old.v4.util.text.ARTText;
 
-public class ARTEarleyTableDataIndexed {
+public final class ARTEarleyTableDataIndexed {
   public boolean[] acceptingProductions;
 
   public int[][] chiSetCache;

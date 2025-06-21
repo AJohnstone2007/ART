@@ -13,7 +13,7 @@ import uk.ac.rhul.cs.csle.art.old.v4.term.ITerms;
 import uk.ac.rhul.cs.csle.art.old.v4.term.RewriterESOS;
 import uk.ac.rhul.cs.csle.art.old.v4.term.TermTraverserText;
 
-public class PipelineParamaters {
+public final class PipelineParamaters {
   public final ITerms iTerms;
   public final Map<Integer, Module> modules = new LinkedHashMap<>();
 

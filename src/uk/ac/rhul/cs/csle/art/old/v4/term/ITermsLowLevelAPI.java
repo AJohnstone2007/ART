@@ -14,7 +14,7 @@ import java.util.Map;
  *  Each term has a number. In this implementation they are sequentially allocated, but in some applications the hashnumber would be the number.
  *
  */
-public class ITermsLowLevelAPI extends ITerms {
+public final class ITermsLowLevelAPI extends ITerms {
   /*
    * Constructors
    */

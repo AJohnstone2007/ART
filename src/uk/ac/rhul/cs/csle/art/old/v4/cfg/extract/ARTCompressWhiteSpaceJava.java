@@ -5,7 +5,7 @@ import java.io.PrintWriter;
 
 import uk.ac.rhul.cs.csle.art.old.v4.util.text.ARTText;
 
-public class ARTCompressWhiteSpaceJava {
+public final class ARTCompressWhiteSpaceJava {
   private final String input;
   private PrintWriter pw = null;
   private boolean seenNewline = false;

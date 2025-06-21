@@ -9,7 +9,7 @@ import uk.ac.rhul.cs.csle.art.old.v3.manager.parser.ARTV4Parser;
 import uk.ac.rhul.cs.csle.art.old.v4.term.ITermsLowLevelAPI;
 import uk.ac.rhul.cs.csle.art.old.v4.util.text.ARTText;
 
-public class ARTV4 {
+public final class ARTV4 {
   private final PipelineParamaters pp = new PipelineParamaters(new ITermsLowLevelAPI());
 
   private Module currentModule;

@@ -34,7 +34,7 @@ import uk.ac.rhul.cs.csle.art.script.ScriptTermInterpreter;
 import uk.ac.rhul.cs.csle.art.util.Util;
 
 /* This version of AJDebug is intended to perform regression testing between V5 and V3 first/follow set computations */
-public class AJDebug {
+public final class AJDebug {
   /* AJ debug material below this line */
   CFGRules grammarV5; // regression V5 grammar
   ARTGrammar grammarV3; // regression V3 grammar
