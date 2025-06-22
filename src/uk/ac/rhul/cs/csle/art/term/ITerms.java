@@ -142,8 +142,6 @@ public final class ITerms {
     } catch (Exception e) {
       // Silently absorb exception - when the default is used
     }
-
-    rawTextTraverser = new TermTraverserText(this);
   }
 
   /* Term rendering *************************************************************************************/

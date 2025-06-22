@@ -15,6 +15,8 @@ public class TermTraverser {
 
   public TermTraverser(ITerms iTerms) {
     this.iTerms = iTerms;
+    // Util.debug("After term traverser creation " + this);
+
     opsPreorder = new HashMap<>();
     opsInorder = new HashMap<>();
     opsPostorder = new HashMap<>();
@@ -90,8 +92,7 @@ public class TermTraverser {
   public String toString() {
     StringBuilder builder = new StringBuilder();
     builder.append("TermTraverser " + "[opsPreorder=");
-    for (int i : opsPreorder.keySet())
-      builder.append(iTerms.getString(i) + "\n");
+    builder.append(opsInorder.keySet());
     builder.append("\nopsInorder=");
     builder.append(opsInorder.keySet());
     builder.append("\nopsPostorder=");
