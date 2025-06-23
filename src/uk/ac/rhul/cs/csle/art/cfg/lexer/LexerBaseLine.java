@@ -88,7 +88,7 @@ public class LexerBaseLine extends AbstractLexer {
   }
 
   private void tryTokenMatch(CFGElement e) {
-    // System.out.println("tryTokenMatch(" + e + ") at inputIndex " + lexerInputIndex);
+    // System.out.println("tryTokenMatch(" + e + ") at inputIndex " + inputIndex);
     lexemeStart = inputIndex;
     switch (e.cfgKind) {
     default:

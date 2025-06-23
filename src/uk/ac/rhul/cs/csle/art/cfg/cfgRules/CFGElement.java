@@ -3,6 +3,8 @@ package uk.ac.rhul.cs.csle.art.cfg.cfgRules;
 import java.util.HashMap;
 import java.util.Map;
 
+import uk.ac.rhul.cs.csle.art.util.Util;
+
 public class CFGElement implements Comparable<Object> {
 
   public int number;
@@ -31,27 +33,26 @@ public class CFGElement implements Comparable<Object> {
   }
 
   public String toStringDetailed() {
-    return number + ": " + cfgKind + " " + str;
+    return number + ": " + cfgKind + " " + Util.escapeString(str);
   }
 
   @Override
   public String toString() {
-    String ret;
     switch (cfgKind) {
     case EOS:
       return "$";
     case T:
-      return "'" + str + "'";
+      return "'" + Util.escapeString(str) + "'";
     case TI:
-      return "\"" + str + "\"";
+      return "\"" + Util.escapeString(str) + "\"";
     case C:
-      return "`" + str;
+      return "`" + Util.escapeString(str);
     case B:
-      return "&" + str;
+      return "&" + Util.escapeString(str);
     case EPS:
       return "#";
     case N:
-      return str;
+      return Util.escapeString(str);
     case ALT:
       return "|";
     case END:

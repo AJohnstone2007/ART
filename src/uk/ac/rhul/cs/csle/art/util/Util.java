@@ -172,6 +172,10 @@ public class Util {
     return new String(ret, 0, retI);
   }
 
+  public static String escapeString(String str) {
+    return escapeString(str, false);
+  }
+
   public static String escapeString(String str, boolean escapeSpace) {
     StringBuilder sb = new StringBuilder();
     char[] chars = str.toCharArray();

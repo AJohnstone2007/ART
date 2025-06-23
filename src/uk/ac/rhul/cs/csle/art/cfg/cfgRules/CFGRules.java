@@ -75,7 +75,7 @@ public final class CFGRules { // final to avoid this-escape
   public String filePrelude = null;
   public String classPrelude = null;
 
-  private boolean seenWhitespaceDirective = false;
+  public boolean seenWhitespaceDirective = false;
 
   public CFGRules(String name, ITerms iTerms) {
     this.name = name;

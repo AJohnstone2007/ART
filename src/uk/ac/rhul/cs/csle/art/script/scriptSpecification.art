@@ -33,7 +33,7 @@ cfgKleene   ::= '('^ cfgAlts ')'^ '*'^ | cfgAltNoAction '*'^
 cfgName ::= cfgPrim^^ | cfgPrim ':'^ ID           // second child if present is a local name
 cfgPrim ::= cfgNonterminal^^ | cfgCaseSensitiveTerminal^^| cfgCaseInsensitiveTerminal^^ | cfgBuiltinTerminal^^ | cfgBuiltinNoWSTerminal^^ | cfgCharacterTerminal^^ | cfgCharacterRangeTerminal^^   
   cfgNonterminal ::= ID | STRING_DOLLAR
-  cfgCaseSensitiveTerminal ::= STRING_PLAIN_SQ
+  cfgCaseSensitiveTerminal ::= STRING_SQ
   cfgCaseInsensitiveTerminal ::= STRING_DQ
   cfgBuiltinTerminal ::= '&'^ ID
   cfgBuiltinNoWSTerminal ::= '&&'^ ID
@@ -135,7 +135,8 @@ directiveCarrier ::=
 | '!whitespace'^^ whiteSpaceElements^
 | '!paraterminal'^^ paraterminalElements^
 
-| '!generate'^^ __int32 ID | '!support'^^ cfgNative cfgNative 
+| '!generate'^^ __int32 ID | '!generate'^^ ID  
+| '!support'^^ cfgNative cfgNative 
 
 | '!start'^^ cfgNonterminal | '!start'^^ trRelation // Set parser start nonterminal or rewriter start relation
 | '!configuration'^^ trRelation configurationElements
@@ -149,7 +150,7 @@ directiveCarrier ::=
 | '!deleteTokens'^^ __int32 | '!swapTokens'^^ __int32 
 | '!sppfBreakCycles'^^ | '!sppfBreakCyclesRelation'^^
 
-file ::= &STRING_PLAIN_SQ
+file ::= &STRING_SQ
 
 (*
 whiteSpaceElements ::= whiteSpaceElement | whiteSpaceElement ','^ whiteSpaceElements^
@@ -178,8 +179,8 @@ __string ::= &STRING_DQ
 ID ::= &ID^^
 IDSTAR ::= ID '*'^
 ID_ATTRIBUTE ::= &ID '.'^ &ID
+STRING_SQ ::= &STRING_SQ^^ 
 STRING_DQ ::= &STRING_DQ^^ 
 STRING_DOLLAR ::= &STRING_DOLLAR^^
 STRING_SHRIEK_SHRIEK ::= &STRING_SHRIEK_SHRIEK^^
-STRING_PLAIN_SQ ::= &STRING_PLAIN_SQ^^
 CHAR_BQ ::= &CHAR_BQ^^

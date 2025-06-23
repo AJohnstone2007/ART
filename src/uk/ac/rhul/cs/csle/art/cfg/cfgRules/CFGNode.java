@@ -93,38 +93,7 @@ public class CFGNode {
 
   @Override
   public String toString() {
-    return /* num + " " + */toString1();
-  }
-
-  public String toString1() {
-    switch (cfgElement.cfgKind) {
-    case EOS:
-      return "EOS node";
-    case T:
-      return caseSensitiveTerminalStrop + cfgElement.str + caseSensitiveTerminalStrop + giftToString();
-    case C:
-      return characterTerminalStrop + cfgElement.str + giftToString();
-    case B:
-      return builtinTerminalStrop + cfgElement.str + giftToString();
-    case EPS:
-      return "#" + giftToString();
-    case N:
-      return cfgElement.str + giftToString() + delayedToString();
-    case ALT:
-      return "|";
-    case END:
-      return "";
-    case DO:
-      return ")";
-    case OPT:
-      return ")?";
-    case POS:
-      return ")+";
-    case KLN:
-      return ")*";
-    default:
-      return "???";
-    }
+    return /* num + " " + */ cfgElement + giftToString() + delayedToString();
   }
 
   public String toStringAsProduction() { // convenience method for common use case
@@ -136,7 +105,7 @@ public class CFGNode {
     StringBuilder sb = new StringBuilder();
 
     if (CFGRules.isLHS(this) || (seq == null && alt == null))
-      sb.append(cfgElement.str);
+      sb.append(cfgElement);
     else if (seq.cfgElement.cfgKind == CFGKind.EOS)
       sb.append(seq);
     else {
@@ -144,7 +113,7 @@ public class CFGNode {
       for (tmp = this; !(tmp.cfgElement.cfgKind == CFGKind.END && CFGRules.isLHS(tmp.seq)); tmp = tmp.seq) {// Locate the end of this production
         // Util.info("toStringAsProduction at " + tmp + " with next-in-sequence element " + tmp.seq.elm);
       }
-      sb.append(tmp.seq.cfgElement.str + rewritesDenotation); // Render LHS
+      sb.append(tmp.seq.cfgElement + rewritesDenotation); // Render LHS
 
       toStringAsSequenceRec(sb, tmp.alt, slotDenotation, this); // Render RHS
     }
