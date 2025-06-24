@@ -399,7 +399,7 @@ public final class ScriptTermInterpreter {
     boolean isShow = iTerms.hasSymbol(term, "!show");
     PrintStream outputStream = Util.console;
     TermTraverserText outputTraverser = iTerms.plainTextTraverser;
-    boolean indent = false;
+    boolean indented = false;
     int depthLimit = -1;
 
     for (int i = 0; i < iTerms.termArity(iTerms.subterm(term)); i++) {
@@ -422,8 +422,8 @@ public final class ScriptTermInterpreter {
         Util.info("ART version " + Version.version());
         break;
 
-      case "indent":
-        indent = true;
+      case "indented":
+        indented = true;
         break;
 
       case "depth":
@@ -431,11 +431,11 @@ public final class ScriptTermInterpreter {
         break;
 
       case "term":
-        outputStream.println(iTerms.toString(iTerms.subterm(term, 0, 1), outputTraverser, indent, depthLimit));
+        outputStream.println(iTerms.toString(iTerms.subterm(term, 0, 1), outputTraverser, indented, depthLimit));
         break;
 
       case "scriptDerivation":
-        Util.info("Script derivation term: [" + scriptDerivationTerm + "]\n" + iTerms.toString(scriptDerivationTerm, outputTraverser, indent, depthLimit));
+        Util.info("Script derivation term: [" + scriptDerivationTerm + "]\n" + iTerms.toString(scriptDerivationTerm, outputTraverser, indented, depthLimit));
         break;
 
       case "cfgRules":
@@ -449,7 +449,7 @@ public final class ScriptTermInterpreter {
         break;
 
       case "derivation":
-        Util.info("current derivation term: [" + currentDerivationTerm + "]\n" + iTerms.toString(currentDerivationTerm, outputTraverser, indent, depthLimit));
+        Util.info("current derivation term: [" + currentDerivationTerm + "]\n" + iTerms.toString(currentDerivationTerm, outputTraverser, indented, depthLimit));
         if (scriptParserTerm == currentDerivationTerm) Util.info("Bootstrap achieved: script parser term and current derivation term identical");
         break;
 
@@ -457,7 +457,7 @@ public final class ScriptTermInterpreter {
         // Switch comments if you wanted one line or indented derivations
         currentIndexedDerivationTerm = currentParser.derivations.derivationAsInterpeterTerm();
         Util.info("Current indexed derivation term = " + currentIndexedDerivationTerm + " "
-            + iTerms.toString(currentIndexedDerivationTerm, outputTraverser, indent, depthLimit));
+            + iTerms.toString(currentIndexedDerivationTerm, outputTraverser, indented, depthLimit));
         break;
 
       case "paraterminals":

@@ -19,7 +19,7 @@ public abstract class AbstractLexer {
   public Integer swapTokenCount = 0;
 
   protected void lexicalError(String msg, int inputIndex) {
-    Util.fatal(Util.echo(msg, inputIndex, inputString));
+    Util.error(Util.echo(msg, inputIndex, inputString));
   }
 
   public abstract void lex(String input, CFGRules cfgRules, ChooseRules chooseRules);

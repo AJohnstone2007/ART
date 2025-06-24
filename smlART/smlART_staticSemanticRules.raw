@@ -1,0 +1,500 @@
+// Atomic Expressions  C ⊢ atexp ⇒ τ
+
+(1)
+---
+C ⊢ scon ⇒ type(scon)
+
+(2)
+C(longvid) = (σ, is)   σ≻τ
+---
+C ⊢ longvid ⇒ τ
+
+(3)
+〈C ⊢ exprow ⇒ ϱ〉
+---
+C ⊢ { 〈exprow〉 } ⇒ {}〈+ ϱ〉 in Type
+
+(4)
+C ⊢ dec ⇒ E      C ⊕ E ⊢ exp ⇒ τ   tynames τ ⊆ T of C
+---
+C ⊢ let dec in exp end ⇒ τ
+
+(5)
+C ⊢ exp ⇒ τ
+---
+C ⊢ ( exp ) ⇒ τ
+
+// Expression Rows   C ⊢ exprow ⇒ ϱ
+
+(6)
+C ⊢ exp ⇒ τ   〈C ⊢ exprow ⇒ ϱ〉
+---
+C ⊢ lab = exp 〈 , exprow〉 ⇒ {lab → τ}〈+ ϱ〉
+
+// Expressions   C ⊢ exp ⇒ τ
+
+(7)
+C ⊢ atexp ⇒ τ
+---
+C ⊢ atexp ⇒ τ
+
+(8)
+C ⊢ exp ⇒ τ′ → τ   C ⊢ atexp ⇒ τ′
+---
+C ⊢ exp atexp ⇒ τ
+
+(9)
+C ⊢ exp ⇒ τ      C ⊢ ty ⇒ τ
+---
+C ⊢ exp : ty ⇒ τ
+
+(10)
+C ⊢ exp ⇒ τ      C ⊢ match ⇒ exn → τ
+---
+C ⊢ exp handle match ⇒ τ
+
+(11)
+C ⊢ exp ⇒ exn
+---
+C ⊢ raise exp ⇒ τ
+
+(12)
+C ⊢ match ⇒ τ
+---
+C ⊢ fn match ⇒ τ
+
+// Matches   C ⊢ match ⇒ τ
+
+(13)
+C ⊢ mrule ⇒ τ   〈C ⊢ match ⇒ τ〉
+---
+C ⊢ mrule 〈 | match〉 ⇒ τ
+
+// Match Rules   C ⊢ mrule ⇒ τ
+
+(14)
+C ⊢ pat ⇒ (VE,τ)   C + VE ⊢ exp ⇒ τ′   tynames VE ⊆ T of C
+---
+C ⊢ pat => exp ⇒ τ → τ′
+
+// Declarations   C ⊢ dec ⇒ E
+
+(15)
+U = tyvars(tyvarseq)   C + U ⊢ valbind ⇒ VE      VE′ = ClosC,valbindVE   U ∩ tyvarsVE′ = ∅
+---
+C ⊢ val tyvarseq valbind ⇒ VE′ in Env
+
+(16)
+C ⊢ typbind ⇒ TE
+---
+C ⊢ type typbind ⇒ TE in Env
+
+(17)
+C ⊕ TE ⊢ datbind ⇒ VE,TE   ∀(t, VE′) ∈ Ran TE, t ∈ (T of C) TE maximises equality
+---
+C ⊢ datatype datbind ⇒ (VE,TE) in Env
+
+(18)
+C(longtycon) = (θ, VE)   TE = {tycon → (θ, VE)}
+---
+C ⊢ datatypetycon -=- datatypelongtycon ⇒ (VE,TE) in Env
+
+(19)
+C ⊕ TE ⊢ datbind ⇒ VE,TE   ∀(t, VE′) ∈ Ran TE, t ∈ (T of C) C ⊕ (VE,TE) ⊢ dec ⇒ E      TE maximises equality
+---
+C ⊢ abstype datbind with dec end ⇒ Abs(TE,E)
+
+(20)
+C ⊢ exbind ⇒ VE
+---
+C ⊢ exception exbind ⇒ VE in Env
+
+(21)
+C ⊢ dec1 ⇒ E1          C ⊕ E1 ⊢ dec2 ⇒ E2
+---
+C ⊢ local dec1 in dec2 end ⇒ E2
+
+(22)
+C(longstrid1) = E1   ···   C(longstridn) = En
+---
+C ⊢ open longstrid1 ··· longstridn ⇒ E1 + ··· + En
+
+(23)
+
+---
+C ⊢   ⇒ {} in Env
+
+(24)
+C ⊢ dec1 ⇒ E1          C ⊕ E1 ⊢ dec2 ⇒ E2
+---
+C ⊢ dec1 〈;〉 dec2 ⇒ E1 + E2
+
+// Value Bindings   C ⊢ valbind ⇒ VE
+
+(25)
+C ⊢ pat ⇒ (VE,τ)   C ⊢ exp ⇒ τ   〈C ⊢ valbind ⇒ VE′〉
+---
+C ⊢ pat = exp 〈and valbind〉 ⇒ VE 〈+ VE′〉
+
+(26)
+C + VE ⊢ valbind ⇒ VE   tynames VE ⊆ T of C
+---
+C ⊢ rec valbind ⇒ VE
+
+// Type Bindings   C ⊢ typbind ⇒ TE
+
+(27)
+tyvarseq = α(k)   C ⊢ ty ⇒ τ   〈C ⊢ typbind ⇒ TE〉
+---
+C ⊢ tyvarseq tycon = ty 〈and typbind〉 ⇒ {tycon → (Λα(k).τ, {})} 〈+ TE〉
+
+// Constructor Bindings   C,τ ⊢ conbind ⇒ VE
+
+(29)
+〈C ⊢ ty ⇒ τ′〉   〈〈C, τ ⊢ conbind ⇒ VE〉〉
+---
+C,τ ⊢ vid 〈of ty〉 〈〈 | conbind〉〉 ⇒ {vid → (τ, c)} 〈+ {vid → (τ′ → τ, c)} 〉 〈〈+ VE〉〉
+
+// Exception Bindings   C ⊢ exbind ⇒ VE
+
+(30)
+〈C ⊢ ty ⇒ τ〉   〈〈C ⊢ exbind ⇒ VE〉〉
+---
+C ⊢ vid 〈of ty〉 〈〈and exbind〉〉 ⇒  {vid → (exn, e)} 〈+ {vid → (τ → exn, e)} 〉 〈〈+ VE〉〉
+
+(31)
+C(longvid) = (τ, e)   〈C ⊢ exbind ⇒ VE〉
+---
+C ⊢ vid = longvid 〈and exbind〉 ⇒ {vid → (τ,e)} 〈+ VE〉
+
+// Atomic Patterns   C ⊢ atpat ⇒ (VE,τ)
+(32)
+
+---
+C ⊢ _ ⇒ ({}, τ)
+
+(33)
+
+---
+C ⊢ scon ⇒ ({},type(scon))
+
+(34)
+vid ∈ Dom(C) or is of C(vid) = v
+---
+C ⊢ vid ⇒ ({vid → (τ,v)},τ)
+
+(35)
+C(longvid) = (σ, is)   is = v   σ≻τ(k)t
+---
+C ⊢ longvid ⇒ ({},τ(k)t)
+
+(36)
+〈C ⊢ patrow ⇒ (VE, ϱ)〉
+---
+C ⊢ { 〈patrow〉 } ⇒ ( {}〈+ VE〉, {}〈+ ϱ〉 in Type )
+
+(37)
+C ⊢ pat ⇒ (VE,τ)
+---
+C ⊢ ( pat ) ⇒ (VE,τ)
+
+// Pattern Rows   C ⊢ patrow ⇒ (VE,ϱ)
+(38)
+
+---
+C ⊢ ... ⇒ ({},ϱ)
+
+(39)
+C ⊢ pat ⇒ (VE,τ) 〈C ⊢ patrow ⇒ (VE′, ϱ)   Dom VE ∩ Dom VE′ = ∅〉
+---
+C ⊢ lab = pat 〈 , patrow〉 ⇒ (VE〈+ VE′〉, {lab → τ}〈+ ϱ〉)
+
+// Patterns   C ⊢ pat ⇒ (VE,τ)
+
+(40)
+C ⊢ atpat ⇒ (VE,τ)
+---
+C ⊢ atpat ⇒ (VE,τ)
+
+(41)
+C(longvid) = (σ, is)   is = v   σ≻τ′ →τ   C ⊢ atpat ⇒ (VE,τ′)
+---
+C ⊢ longvid atpat ⇒ (VE,τ)
+
+(42)
+C ⊢ pat ⇒ (VE,τ)   C ⊢ ty ⇒ τ
+---
+C ⊢ pat : ty ⇒ (VE,τ)
+
+(43)
+vid ∈ Dom(C) or is of C(vid) = v   〈C ⊢ ty ⇒ τ〉   C ⊢ pat ⇒ (VE,τ)   vid ∈ Dom VE
+---
+C ⊢ vid〈: ty〉 as pat ⇒ ({vid → (τ,v)} + VE,τ)
+
+// Type Expressions   C ⊢ ty ⇒ τ
+
+(44)
+tyvar = α
+---
+C ⊢ tyvar ⇒ α
+
+(45)
+〈C ⊢ tyrow ⇒ ϱ〉
+---
+C ⊢ { 〈tyrow〉 } ⇒ {}〈+ ϱ〉 in Type
+
+(46)
+tyseq = ty1···tyk   C ⊢ tyi ⇒ τi (1 ≤ i ≤ k)    C(longtycon) = (θ, VE)
+---
+C ⊢ tyseq longtycon ⇒ τ(k)θ
+
+(47)
+C ⊢ ty ⇒ τ      C ⊢ ty ′ ⇒ τ′
+---
+C ⊢ ty -> ty′ ⇒ τ → τ′
+
+(48)
+C ⊢ ty ⇒ τ
+---
+C ⊢ ( ty ) ⇒ τ
+
+// Type-expression Rows   C ⊢ tyrow ⇒ ϱ
+
+(49)
+C ⊢ ty ⇒ τ   〈C ⊢ tyrow ⇒ ϱ〉
+---
+C ⊢ lab : ty 〈 , tyrow〉 ⇒ {lab → τ}〈+ ϱ〉
+
+// Structure Expressions   B ⊢ strexp ⇒ E
+
+(50)
+B ⊢ strdec ⇒ E
+---
+B ⊢ struct strdec end ⇒ E
+
+(51)
+B(longstrid) = E
+---
+B ⊢ longstrid ⇒ E
+
+(52)
+B ⊢ strexp ⇒ E   B ⊢ sigexp ⇒ Σ  Σ ≥ E′ ≺ E
+---
+B ⊢ strexp:sigexp ⇒ E′
+
+(53)
+B ⊢ strexp ⇒ E   B ⊢ sigexp ⇒ (T′)E′   (T′)E′ ≥ E′′ ≺ E   T′ ∩ (T of B) = ∅
+---
+B ⊢ strexp:>sigexp ⇒ E′
+
+(54)
+B ⊢ strexp ⇒ E   B(funid)≥(E′′, (T′)E′) , E ≻ E′′   (tynames E  ∪  T of B) ∩ T′ = ∅
+---
+B ⊢ funid ( strexp ) ⇒E′
+
+(55)
+B ⊢ strdec ⇒ E1   B ⊕ E1 ⊢ strexp ⇒ E2
+---
+B ⊢ let strdec in strexp end ⇒ E2
+
+// Structure-level Declarations   B ⊢ strdec ⇒ E
+
+(56)
+C of B ⊢ dec ⇒ E
+---
+B ⊢ dec ⇒ E
+
+(57)
+B ⊢ strbind ⇒ SE
+---
+B ⊢ structure strbind ⇒ SE in Env
+
+(58)
+B ⊢ strdec1 ⇒ E1   B ⊕ E1 ⊢ strdec2 ⇒ E2
+---
+B ⊢ local strdec1 in strdec2 end ⇒ E2
+
+(59)
+
+---
+B⊢   ⇒ {} in Env
+
+(60)
+B ⊢ strdec1 ⇒ E1   B ⊕ E1 ⊢ strdec2 ⇒ E2
+---
+B ⊢ strdec1 〈;〉 strdec2 ⇒ E1 + E2
+
+// Structure Bindings   B ⊢ strbind ⇒ SE
+
+(61)
+B ⊢ strexp ⇒ E   〈B + tynames E ⊢ strbind ⇒ SE〉
+---
+B ⊢ strid = strexp 〈and  strbind〉 ⇒ {strid → E} 〈+ SE〉
+
+// Signature Expressions   B ⊢ sigexp ⇒ E
+
+(62)
+B ⊢ spec ⇒ E
+---
+B ⊢ sig spec end ⇒ E
+
+(63)
+B(sigid) = (T )E   T ∩ (T of B) = ∅
+---
+B ⊢ sigid ⇒ E
+
+(64)
+B ⊢ sigexp ⇒ E   tyvarseq = α(k)     C of B ⊢ ty ⇒ τ   E(longtycon) = (t, VE)   t ∈ T of B   ϕ = {t → Λα(k).τ}  Λα(k).τ admits equality, if t does  ϕ(E) well-formed
+---
+B ⊢ sigexp where type tyvarseq longtycon = ty ⇒ ϕ(E)
+
+//                         B ⊢ sigexp ⇒ Σ
+
+(65)
+B ⊢ sigexp ⇒ E   T = tynamesE \ (T of B)
+---
+B ⊢ sigexp ⇒ (T)E
+
+// Signature Declarations   B ⊢ sigdec ⇒ G
+
+(66)
+B ⊢ sigbind ⇒ G
+---
+B ⊢ signature sigbind ⇒ G
+
+// Signature Bindings   B ⊢ sigbind ⇒ G
+
+(67)
+B ⊢ sigexp ⇒ Σ   〈B ⊢ sigbind ⇒ G〉
+---
+B ⊢ sigid = sigexp 〈and sigbind〉 ⇒ {sigid → Σ} 〈+ G〉
+
+// Specifications   B ⊢ spec ⇒ E
+
+(68)
+C of B ⊢ valdesc ⇒ VE
+---
+B ⊢ val valdesc ⇒ ClosVE in Env
+
+(69)
+C of B ⊢ typdesc ⇒ TE   ∀(t, VE) ∈ Ran TE, t does not admit equality
+---
+B ⊢ type typdesc ⇒ TE in Env
+
+(70)
+C of B ⊢ typdesc ⇒ TE   ∀(t, VE) ∈ Ran TE, t admits equality
+---
+B ⊢ eqtype typdesc ⇒ TE in Env
+
+(71)
+C of B ⊕ TE ⊢ datdesc ⇒ VE, TE   ∀(t, VE′) ∈ Ran TE, t ∈ T of B   TE maximises equality
+---
+B ⊢ datatype datdesc ⇒ (VE,TE) in Env
+
+(72)
+B(longtycon) = (θ, VE)   TE = {tycon → (θ, VE)}
+---
+B ⊢ datatypetycon -=- datatypelongtycon ⇒ (VE,TE) in Env
+
+(73)
+C of B ⊢ exdesc ⇒ VE
+---
+B ⊢ exception exdesc ⇒ VE in Env
+
+(74)
+B ⊢ strdesc ⇒ SE
+---
+B ⊢ structure strdesc ⇒ SE in Env
+
+(75)
+B ⊢ sigexp ⇒ E
+---
+B ⊢ include sigexp ⇒ E
+
+(76)
+
+---
+B⊢   ⇒ {} in Env
+
+(77)
+B ⊢ spec1 ⇒ E1   B ⊕ E1 ⊢ spec2 ⇒ E2   Dom(E1) ∩ Dom(E2) = ∅
+---
+B ⊢ spec1 〈;〉 spec2 ⇒ E1 + E2
+
+(78)
+B ⊢ spec ⇒ E   E(longtyconi) = (ti,VEi), i = 1..n   t ∈ {t1,...,tn}  t admits equality, if some ti does   {t1, . . . , tn} ∩ T of B = ∅   ϕ = {t1 → t, . . . , tn → t}
+---
+B ⊢ spec sharing type longtycon1  = ··· = longtyconn ⇒ ϕ(E)
+
+// Value Descriptions   C ⊢ valdesc ⇒ VE
+
+(79)
+C ⊢ ty ⇒ τ   〈C ⊢ valdesc ⇒ VE〉
+---
+C ⊢ vid : ty 〈and valdesc〉 ⇒ {vid → (τ,v)} 〈+ VE〉
+
+// Type Descriptions   C ⊢ typdesc ⇒ TE
+
+(80)
+tyvarseq = α(k)     t ∈ T of C    arity t = k   〈C ⊢ typdesc ⇒ TE   t ∈ tynamesTE〉
+---
+C ⊢ tyvarseq tycon 〈and typdesc〉 ⇒ {tycon → (t,{})} 〈+ TE〉
+
+// Datatype Descriptions   C ⊢ datdesc ⇒ VE,TE
+
+(81)
+tyvarseq = α(k)   C,α(k)t ⊢ condesc ⇒ VE    arity t = k   〈C ⊢ datdesc′ ⇒ VE′, TE′   ∀(t′, VE′′) ∈ Ran TE′, t = t′〉
+---
+C ⊢ tyvarseq tycon = condesc 〈and datdesc′〉 ⇒ ClosVE〈+ VE′〉, {tycon → (t, ClosVE)} 〈+ TE′〉
+
+// Constructor Descriptions   C,τ ⊢ condesc ⇒ VE
+
+(82)
+〈C ⊢ ty ⇒ τ′〉   〈〈C, τ ⊢ condesc ⇒ VE〉〉
+---
+C,τ ⊢ vid 〈of ty〉 〈〈 | condesc〉〉 ⇒ {vid → (τ, c)} 〈+ {vid → (τ′ → τ, c)} 〉 〈〈+ VE〉〉
+
+// Exception Descriptions   C ⊢ exdesc ⇒ VE
+
+(83)
+〈C ⊢ ty ⇒ τ   tyvars(τ) = ∅〉   〈〈C ⊢ exdesc ⇒ VE〉〉
+---
+C ⊢ vid 〈of ty〉 〈〈and exdesc〉〉 ⇒ {vid → (exn, e)} 〈+ {vid → (τ → exn, e)}〉 〈〈+ VE〉〉
+
+// Structure Descriptions   B ⊢ strdesc ⇒ SE
+
+(84)
+B ⊢ sigexp ⇒ E   〈B + tynames E ⊢ strdesc ⇒ SE〉
+---
+B ⊢ strid : sigexp 〈and strdesc〉 ⇒ {strid → E} 〈+ SE〉
+
+// Functor Declarations   B ⊢ fundec ⇒ F
+
+(85)
+B ⊢ funbind ⇒ F
+---
+B ⊢ functor funbind ⇒ F
+
+// Functor Bindings   B ⊢ funbind ⇒ F
+
+(86)
+B ⊢ sigexp ⇒ (T)E   B ⊕ {strid → E} ⊢ strexp ⇒ E′   T ∩ (T of B) = ∅  T′ = tynamesE′ \ ((T of B) ∪ T)   〈B ⊢ funbind ⇒ F 〉
+---
+B ⊢ funid ( strid : sigexp ) = strexp 〈and  funbind〉 ⇒ {funid → (T )(E, (T′)E′)} 〈+ F 〉
+
+//  Top-level Declarations   B ⊢ topdec ⇒ B′
+
+(87)
+B ⊢ strdec ⇒ E   〈B ⊕ E ⊢ topdec ⇒ B′〉   B′′ = (tynamesE,E)in Basis 〈+B′〉    tyvarsB′′ = ∅
+---
+B ⊢ strdec 〈topdec〉 ⇒ B′′
+
+(88)
+B ⊢ sigdec ⇒ G   〈B ⊕ G ⊢ topdec ⇒ B′〉   B′′ = (tynamesG,G) in Basis 〈+B′〉
+---
+B ⊢ sigdec 〈topdec〉 ⇒ B′′
+
+(89)
+B ⊢ fundec ⇒ F   〈B ⊕ F ⊢ topdec ⇒ B′〉   B′′ = (tynamesF,F) in Basis 〈+B′〉    tyvarsB′′ = ∅
+---
+B ⊢ fundec 〈topdec〉 ⇒ B′′

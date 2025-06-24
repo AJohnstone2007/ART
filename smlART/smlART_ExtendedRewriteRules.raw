@@ -1,0 +1,152 @@
+A   Appendix: Derived Forms
+Several derived grammatical forms are provided in the Core; they are pre-
+sented in Figures 15, 16 and 17. Each derived form is given with its equivalent
+form. Thus, each row of the tables should be considered as a rewriting rule
+Derived form =⇒ Equivalent form
+and these rules may be applied repeatedly to a phrase until it is transformed
+into a phrase of the bare language. See Appendix B for the full Core gram-
+mar, including all the derived forms.
+In the derived forms for tuples, in terms of records, we use n to mean the
+ML numeral which stands for the natural number n.
+Note that a new phrase class   FvalBind   of function-value bindings is
+introduced, accompanied by a new declaration form  fun tyvarseq fvalbind .
+The mixed forms   val tyvarseq rec fvalbind ,   val tyvarseq fvalbind   and
+fun tyvarseq valbind  are not allowed - though the first form arises during
+translation into the bare language.
+The following notes refer to Figure 17:
+• There is a version of the derived form for function-value binding which
+allows the function identifier to be infixed; see Figure 21 in Appendix B.
+• In the two forms involving  withtype , the identifiers bound by  dat-
+bind  and by  typbind  must be distinct. Then the transformed binding
+datbind′   in the equivalent form is obtained from datbind  by expanding
+out all the definitions made by  typbind. More precisely, if  typbind  is
+tyvarseq1  tycon1  =ty1    and ··· and  tyvarseqn  tyconn  =tyn
+then datbind′  is the result of simultaneous replacement (in  datbind) of
+every type expression  tyseqi  tyconi (1 ≤ i ≤ n) by the corresponding
+defining expression
+tyi{tyseqi/tyvarseqi}
+Figure 18 shows derived forms for functors. They allow functors to take,
+say, a single type or value as a parameter, in cases where it would seem
+clumsy to “wrap up” the argument as a structure expression.
+Finally,  Figure 19 shows the derived forms for specifications and sig-
+nature expressions.  The last derived form for specifications allows sharing
+between structure identifiers as a shorthand for type sharing specifications.
+The phrase
+spec  sharing  longstrid1   =  ···  =  longstridk
+is a derived form whose equivalent form is
+spec
+sharing  type  longtycon1   =  longtycon′1
+···
+sharing  type  longtyconm   =  longtycon′m
+determined as follows. First, note that spec specifies a set of (possibly long)
+type constructors and structure identifiers, either directly or via signature
+identifiers and include specifications. Then the equivalent form contains all
+type-sharing constraints of the form
+sharing  type  longstridi.longtycon = longstridj .longtycon
+(1 ≤ i < j ≤ k), such that both sides of the equation are long type construc-
+tors specified by spec.
+The meaning of the derived form does not depend on the order of the
+type-sharing constraints in the equivalent form.
+
+Expressions exp
+()                              { }
+(exp1  , ··· , expn)            {1=exp1, ···, n=expn}                (n ≥ 2)
+# lab                           fn {lab=vid,...}  =>  vid            (vid new)
+case exp of match               (fn match)(exp)
+if exp1  then exp2  else exp3   case exp1  of true => exp2
+                                | false => exp3
+exp1  orelse exp2               if exp1  then true else exp2
+exp1  andalso exp2              if exp1  then exp2  else false
+(exp1  ; ··· ; expn  ; exp)     case exp1  of ( )  =>                (n ≥ 1)
+                                ···
+                                case expn  of ( )  => exp
+let dec in                      let dec in                           (n ≥ 2)
+exp1  ; ··· ; expn  end         (exp1  ; ··· ; expn) end
+while exp1  do exp2             let val rec vid = fn ()  =>          (vid new)
+                                if exp1  then (exp2;vid()) else ()
+                                in vid() end
+[exp1  , ··· , expn]            exp1  :: ··· :: expn  :: nil         (n ≥ 0)
+
+Figure 15: Derived forms of Expressions
+
+Patterns pat
+()                             { }
+(pat1  , ··· , patn)           {1=pat1, ··· , n=patn}                 (n ≥ 2)
+[pat1  , ··· , patn]           pat1  :: ··· :: patn  :: nil           (n ≥ 0)
+Pattern Rows patrow
+vid〈:ty〉 〈as pat〉 〈, patrow〉   vid  =  vid〈:ty〉 〈as pat〉 〈, patrow〉
+Type Expressions ty
+ty1  * ··· * tyn               {1:ty1, ··· , n:tyn}                   (n ≥ 2)
+
+Figure 16: Derived forms of Patterns and Type Expressions
+
+                                           〈op〉vid = fn vid1=> ··· fn vidn=>
+                                           case (vid1, ··· , vidn) of
+〈op〉vid atpat11···atpat1n〈:ty〉 = exp1      (atpat11,···,atpat1n  )=>exp1〈:ty〉
+|〈op〉vid atpat21···atpat2n〈:ty〉 = exp2     |(atpat21,···,atpat2n  )=>exp2〈:ty〉
+|   ···   ···                              |   ···   ···
+|〈op〉vid atpatm1···atpatmn〈:ty〉 = expm     |(atpatm1,···,atpatmn  )=>expm〈:ty〉
+〈and fvalbind〉                              〈and fvalbind〉
+
+(m, n ≥ 1; vid1, ···, vidn  distinct and new)
+
+Declarations dec
+fun tyvarseq fvalbind               val tyvarseq rec fvalbind
+datatype datbind withtype typbind   datatype datbind′  ; type typbind
+abstype datbind withtype typbind    abstype datbind′
+with dec end                        with type typbind ; dec end
+
+(see note in text concerning datbind′)
+
+Figure 17: Derived forms of Function-value Bindings and Declarations
+
+Structure Bindings strbind
+strid:sigexp=strexp 〈and  strbind〉    strid=strexp:sigexp 〈and  strbind〉
+strid:>sigexp=strexp 〈and  strbind〉   strid=strexp:>sigexp 〈and  strbind〉
+Structure Expressions strexp
+funid ( strdec )                      funid ( struct strdec end )
+Functor Bindings funbind
+funid (strid:sigexp): sigexp′  =      funid (strid : sigexp) =
+strexp 〈and funbind〉                  strexp:sigexp′  〈and funbind〉
+funid (strid:sigexp):>sigexp′  =      funid (strid : sigexp) =
+strexp 〈and funbind〉                  strexp:>sigexp′  〈and funbind〉
+funid ( spec ) 〈: sigexp〉 =           funid ( stridν  : sig spec end ) =
+strexp 〈and funbind〉                  let open stridν  in strexp〈: sigexp〉
+                                      end 〈and funbind〉
+funid ( spec ) 〈:> sigexp〉 =          funid ( stridν  : sig spec end ) =
+strexp 〈and funbind〉                  let open stridν  in strexp〈:>sigexp〉
+                                      end 〈and funbind〉
+                                      (stridν  new)
+Programs program
+exp;〈program〉                         val it  = exp;〈program〉
+
+Figure 18: Derived forms of Functors, Structure Bindings and Programs
+
+Specifications spec
+type tyvarseq tycon = ty                    include
+                                            sig  type tyvarseq tycon
+                                            end  where  type  tyvarseq tycon = ty
+type  tyvarseq1 tycon1   =   ty1            type  tyvarseq1 tycon1   =  ty1
+and  ···                                    type  ···
+···                                         ···
+and  tyvarseqn tyconn   =    tyn            type  tyvarseqn tyconn   =  tyn
+include sigid1  ··· sigidn                  include sigid1; ··· ; include sigidn
+spec  sharing  longstrid1    = ···          spec
+                             = longstridk   sharing  type  longtycon1   =
+                                            longtycon′1
+                                            ···
+                                            sharing  type  longtyconm   =
+                                            longtycon′m
+
+
+(see note in text concerning longtycon1, . . . , longtycon′m )
+
+
+Signature Expressions sigexp
+sigexp                                        sigexp
+where  type  tyvarseq1  longtycon1   =  ty1   where  type  tyvarseq1 longtycon1   =  ty1
+and  type  ···                                where  type  ···
+···                                           ···
+and  type  tyvarseqn  longtyconn   =  tyn     where  type  tyvarseqn longtyconn   =  tyn
+
+Figure 19: Derived forms of Specifications and Signature Expressions

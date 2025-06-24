@@ -1,0 +1,559 @@
+// Atomic Expressions   E ⊢ atexp ⇒ v/p
+
+(90)
+
+---
+E ⊢ scon ⇒ val(scon)
+
+(91)
+E(longvid) = (v, is)
+---
+E ⊢ longvid ⇒ v
+
+(92)
+〈E ⊢ exprow ⇒ r〉
+---
+E ⊢ { 〈exprow〉 } ⇒ {}〈+ r〉 in Val
+
+(93)
+E ⊢ dec ⇒ E′   E + E′ ⊢ exp ⇒ v
+---
+E ⊢ let dec in exp end ⇒ v
+
+(94)
+E ⊢ exp ⇒ v
+---
+E ⊢ ( exp ) ⇒ v
+
+// Expression Rows   E ⊢ exprow ⇒ r/p
+
+(95)
+E ⊢ exp ⇒ v   〈E ⊢ exprow ⇒ r〉
+---
+E ⊢ lab = exp 〈 , exprow〉 ⇒ {lab → v}〈+ r〉
+
+// Expressions   E ⊢ exp ⇒ v/p
+
+(96)
+E ⊢ atexp ⇒ v
+---
+E ⊢ atexp ⇒ v
+
+(97)
+E ⊢ exp ⇒ vid   vid = ref   E ⊢ atexp ⇒ v
+---
+E ⊢ exp atexp ⇒ (vid,v)
+
+(98)
+E ⊢ exp ⇒ en      E ⊢ atexp ⇒ v
+---
+E ⊢ exp atexp ⇒ (en,v)
+
+(99)
+s, E ⊢ exp ⇒  ref , s′   s′,E ⊢ atexp ⇒ v,s′′   a ∈ Dom(mem of s′′)
+---
+s, E ⊢ exp atexp ⇒ a, s′′ + {a → v}
+
+(100)
+s, E ⊢ exp ⇒  := , s′   s′,E ⊢ atexp ⇒ {1 → a, 2 → v},s′′
+---
+s, E ⊢ exp atexp ⇒ {} in Val, s′′ + {a → v}
+
+(101)
+E ⊢ exp ⇒ b      E ⊢ atexp ⇒ v      APPLY(b,v) = v′/p
+---
+E ⊢ exp atexp ⇒ v′/p
+
+(102)
+E ⊢ exp ⇒ (match,E′,VE)      E ⊢ atexp ⇒ v   E′ + RecVE, v ⊢ match ⇒ v′
+---
+E ⊢ exp atexp ⇒ v′
+
+(103)
+E ⊢ exp ⇒ (match,E′,VE)        E ⊢ atexp ⇒ v  E′ + RecVE, v ⊢ match ⇒ FAIL
+---
+E ⊢ exp atexp ⇒ [Match]
+
+(104)
+E ⊢ exp ⇒ v
+---
+E ⊢ exp handle match ⇒ v
+
+(105)
+E ⊢ exp ⇒ [e]   E,e ⊢ match ⇒ v
+---
+E ⊢ exp handle match ⇒ v
+
+(106)
+E ⊢ exp ⇒ [e]   E,e ⊢ match ⇒ FAIL
+---
+E ⊢ exp handle match ⇒ [e]
+
+(107)
+E ⊢ exp ⇒ e
+---
+E ⊢ raise exp ⇒ [e]
+
+(108)
+
+---
+E ⊢ fn match ⇒ (match,E,{})
+
+// Matches   E,v ⊢ match ⇒ v′/p/FAIL
+
+(109)
+E,v ⊢ mrule ⇒ v′
+---
+E,v ⊢ mrule 〈 | match〉 ⇒ v′
+
+(110)
+E,v ⊢ mrule ⇒ FAIL
+---
+E,v ⊢ mrule ⇒ FAIL
+
+(111)
+E,v ⊢ mrule ⇒ FAIL   E,v ⊢ match ⇒ v′/FAIL
+---
+E,v ⊢ mrule | match ⇒ v′/FAIL
+
+// Match Rules   E,v ⊢ mrule ⇒ v′/p/FAIL
+
+(112)
+E,v ⊢ pat ⇒ VE   E + VE ⊢ exp ⇒ v′
+---
+E,v ⊢ pat => exp  ⇒ v′
+
+(113)
+E,v ⊢ pat ⇒ FAIL
+---
+E,v ⊢ pat => exp  ⇒ FAIL
+
+// Declarations   E ⊢ dec ⇒ E′/p
+
+(114)
+E ⊢ valbind ⇒ VE
+---
+E ⊢ val tyvarseq valbind ⇒ VE in Env
+
+(115)
+⊢ typbind ⇒ TE
+---
+E ⊢ type typbind ⇒ TE in Env
+
+(116)
+⊢ datbind ⇒ VE, TE
+---
+E ⊢ datatype datbind ⇒ (VE,TE) in Env
+
+(117)
+E(longtycon) = VE
+---
+E ⊢ datatypetycon -=- datatypelongtycon ⇒ (VE,{tycon → VE}) in Env
+
+(118)
+⊢ datbind ⇒ VE, TE   E + VE ⊢ dec ⇒ E′
+---
+E ⊢ abstype datbind with dec end ⇒ E′
+
+(119)
+E ⊢ exbind ⇒ VE
+---
+E ⊢ exception exbind ⇒ VE in Env
+
+(120)
+E ⊢ dec1 ⇒ E1          E + E1 ⊢ dec2 ⇒ E2
+---
+E ⊢ local dec1 in dec2 end ⇒ E2
+
+(121)
+E(longstrid1) = E1   ···   E(longstridn) = En
+---
+E ⊢ open longstrid1 ··· longstridn ⇒ E1 + ··· + En
+
+(122)
+
+---
+E ⊢   ⇒ {} in Env
+
+(123)
+E ⊢ dec1 ⇒ E1          E + E1 ⊢ dec2 ⇒ E2
+---
+E ⊢dec1 〈;〉dec2 ⇒E1 +E2
+
+// Value Bindings   E ⊢ valbind ⇒ VE/p
+
+(124)
+E ⊢ exp ⇒ v      E,v ⊢ pat ⇒ VE   〈E ⊢ valbind ⇒ VE′〉
+---
+E ⊢ pat = exp 〈and valbind〉 ⇒ VE 〈+ VE′〉
+
+(125)
+E ⊢ exp ⇒ v      E,v ⊢ pat ⇒ FAIL
+---
+E ⊢ pat = exp 〈and valbind〉 ⇒ [Bind]
+
+(126)
+E ⊢ valbind ⇒ VE
+---
+E ⊢ rec valbind ⇒ RecVE
+
+// Type Bindings   ⊢ typbind ⇒ TE
+
+(127)
+〈⊢ typbind ⇒ TE〉
+---
+⊢ tyvarseq tycon = ty 〈and typbind〉 ⇒ {tycon → {}}〈+TE〉
+
+// Datatype Bindings   ⊢ datbind ⇒ VE, TE
+
+(128)
+⊢ conbind ⇒ VE   〈⊢ datbind′ ⇒ VE′, TE′〉
+---
+⊢ tyvarseq tycon=conbind 〈and datbind′〉 ⇒ VE〈+VE′〉, {tycon → VE}〈+TE′〉
+
+// Constructor Bindings   ⊢ conbind ⇒ VE
+
+(129)
+〈⊢ conbind ⇒ VE〉
+---
+⊢ vid〈| conbind〉 ⇒ {vid → (vid, c)} 〈+VE〉
+
+// Exception Bindings   E ⊢ exbind ⇒ VE
+
+(130)
+en ∈ ens of s   s′ = s + {en}   〈s′, E ⊢ exbind ⇒ VE, s′′〉
+---
+s, E ⊢ vid 〈and exbind〉 ⇒ {vid → (en, e)}〈+ VE〉, s′〈′〉
+
+(131)
+E(longvid) = (en, e)   〈E ⊢ exbind ⇒ VE〉
+---
+E ⊢ vid = longvid 〈and exbind〉 ⇒ {vid → (en,e)}〈+ VE〉
+
+// Atomic Patterns   E,v ⊢ atpat ⇒ VE/FAIL
+
+(132)
+
+---
+E,v ⊢ _ ⇒ {}
+
+(133)
+v = val(scon)
+---
+E,v ⊢ scon ⇒ {}
+
+(134)
+v = val(scon)
+---
+E,v ⊢ scon ⇒ FAIL
+
+(135)
+vid ∈ Dom(E) or is of E(vid) = v
+---
+E,v ⊢ vid ⇒ {vid → (v,v)}
+
+(136)
+E(longvid) = (v, is)   is = v
+---
+E,v ⊢ longvid ⇒ {}
+
+(137)
+E(longvid) = (v′, is)   is = v   v=v′
+---
+E,v ⊢ longvid ⇒ FAIL
+
+(138)
+v = {}〈+r〉 in Val   〈E, r ⊢ patrow ⇒ VE/FAIL〉
+---
+E,v ⊢ { 〈patrow〉 } ⇒ {}〈+VE/FAIL〉
+
+(139)
+E,v ⊢ pat ⇒ VE/FAIL
+---
+E,v ⊢ ( pat ) ⇒ VE/FAIL
+
+// Pattern Rows   E,r ⊢ patrow ⇒ VE/FAIL
+(140)
+
+---
+E,r ⊢ ... ⇒ {}
+
+(141)
+E,r(lab) ⊢ pat ⇒ FAIL
+---
+E,r ⊢ lab = pat 〈 , patrow〉 ⇒ FAIL
+
+(142)
+E,r(lab) ⊢ pat ⇒ VE   〈E, r ⊢ patrow ⇒ VE′/FAIL〉
+---
+E,r ⊢ lab = pat 〈 , patrow〉 ⇒ VE〈+ VE′/FAIL〉
+
+// Patterns   E,v ⊢ pat ⇒ VE/FAIL
+
+(143)
+E,v ⊢ atpat ⇒ VE/FAIL
+---
+E,v ⊢ atpat ⇒ VE/FAIL
+
+(144)
+E(longvid) = (vid, c)    vid = ref   v = (vid,v′)   E,v′ ⊢ atpat ⇒ VE/FAIL
+---
+E,v ⊢ longvid atpat ⇒ VE/FAIL
+
+(145)
+E(longvid) = (vid, c)   vid = ref   v ∈ {vid} × Val
+---
+E,v ⊢ longvid atpat ⇒ FAIL
+
+(146)
+E(longvid) = (en, e)     v = (en,v′)   E,v′ ⊢ atpat ⇒ VE/FAIL
+---
+E,v ⊢ longvid atpat ⇒ VE/FAIL
+
+(147)
+E(longvid) = (en, e)   v ∈ {en} × Val
+---
+E,v ⊢ longvid atpat ⇒ FAIL
+
+(148)
+s(a) = v   s, E, v ⊢ atpat ⇒ VE/FAIL, s
+---
+s, E, a ⊢ ref atpat ⇒ VE/FAIL, s
+
+(149)
+E,v ⊢ pat ⇒ VE/FAIL
+---
+E,v ⊢ vid as pat ⇒ {vid → (v,v)} + VE/FAIL
+
+// Structure Expressions   B ⊢ strexp ⇒ E/p
+
+(150)
+B ⊢ strdec ⇒ E
+---
+B ⊢ struct strdec end ⇒ E
+
+(151)
+B(longstrid) = E
+---
+B ⊢ longstrid ⇒ E
+
+(152)
+B ⊢ strexp ⇒ E   Inter B ⊢ sigexp ⇒ I
+---
+B ⊢ strexp:sigexp ⇒ E ↓ I
+
+(153)
+B ⊢ strexp ⇒ E   Inter B ⊢ sigexp ⇒ I
+---
+B ⊢ strexp:>sigexp ⇒ E ↓ I
+
+(154)
+B(funid) = (strid : I, strexp′, B′)   B ⊢ strexp ⇒ E   B′ + {strid → E ↓ I} ⊢ strexp′ ⇒ E′
+---
+B ⊢ funid ( strexp ) ⇒E′
+
+(155)
+B ⊢ strdec ⇒ E   B + E ⊢ strexp ⇒ E′
+---
+B ⊢ let strdec in strexp end ⇒ E′
+
+// Structure-level Declarations   B ⊢ strdec ⇒ E/p
+(156)
+E of B ⊢ dec ⇒ E′
+---
+B ⊢ dec ⇒ E′
+
+(157)
+B ⊢ strbind ⇒ SE
+---
+B ⊢ structure strbind ⇒ SE in Env
+
+(158)
+B ⊢ strdec1 ⇒ E1   B + E1 ⊢ strdec2 ⇒ E2
+---
+B ⊢ local strdec1 in strdec2 end ⇒ E2
+
+(159)
+
+---
+B⊢   ⇒ {} in Env
+
+(160)
+B ⊢ strdec1 ⇒ E1   B + E1 ⊢ strdec2 ⇒ E2
+---
+B⊢strdec1 〈;〉strdec2 ⇒E1 +E2
+
+// Structure Bindings   B ⊢ strbind ⇒ SE/p
+
+(161)
+B ⊢ strexp ⇒ E   〈B ⊢ strbind ⇒ SE〉
+---
+B ⊢ strid = strexp 〈and  strbind〉 ⇒ {strid → E} 〈+ SE〉
+
+// Signature Expressions   IB ⊢ sigexp ⇒ I
+
+(162)
+IB ⊢ spec ⇒ I
+---
+IB ⊢ sig spec end ⇒ I
+
+(163)
+IB(sigid) = I
+---
+IB ⊢ sigid ⇒ I
+
+// Signature Declarations   IB ⊢ sigdec ⇒ G
+
+(164)
+IB ⊢ sigbind ⇒ G
+---
+IB ⊢ signature sigbind ⇒ G
+
+// Signature Bindings   IB ⊢ sigbind ⇒ G
+
+(165)
+IB ⊢ sigexp ⇒ I   〈IB ⊢ sigbind ⇒ G〉
+---
+IB ⊢ sigid = sigexp 〈and sigbind〉 ⇒ {sigid → I} 〈+ G〉
+
+// Specifications   IB ⊢ spec ⇒ I
+
+(166)
+⊢ valdesc ⇒ VI
+---
+IB ⊢ val valdesc ⇒ VI in Int
+
+(167)
+⊢ typdesc ⇒ TI
+---
+IB ⊢ type typdesc ⇒ TI in Int
+
+(168)
+⊢ typdesc ⇒ TI
+---
+IB ⊢ eqtype typdesc ⇒ TI in Int
+
+(169)
+⊢ datdesc ⇒ VI, TI
+---
+IB ⊢ datatype datdesc ⇒ (VI, TI) in Int
+
+(170)
+IB(longtycon) = VI   TI = {tycon → VI}
+---
+IB ⊢ datatype tycon -=- datatype longtycon ⇒ (VI, TI) in Int
+
+(171)
+⊢ exdesc ⇒ VI
+---
+IB ⊢ exception exdesc ⇒ VI in Int
+
+(172)
+IB ⊢ strdesc ⇒ SI
+---
+IB ⊢ structure strdesc ⇒ SI in Int
+
+(173)
+IB ⊢ sigexp ⇒ I
+---
+IB ⊢ include sigexp ⇒ I
+
+(174)
+
+---
+IB ⊢   ⇒ {} in Int
+
+(175)
+IB ⊢ spec1 ⇒ I1   IB + I1 ⊢ spec2 ⇒ I2
+---
+IB ⊢ spec1  〈;〉 spec2 ⇒ I1 + I2
+
+// Value Descriptions   ⊢ valdesc ⇒ VI
+
+(176)
+〈⊢ valdesc ⇒ VI〉
+---
+⊢ vid 〈and valdesc〉 ⇒ {vid → v} 〈+ VI〉
+
+// Type Descriptions   ⊢ typdesc ⇒ TI
+
+(177)
+〈⊢ typdesc ⇒ TI〉
+---
+⊢ tyvarseq tycon 〈and typdesc〉 ⇒ {tycon → {}}〈+TI〉
+
+// Datatype Descriptions   ⊢ datdesc ⇒ VI, TI
+
+(178)
+⊢ condesc ⇒ VI   〈⊢ datdesc′ ⇒ VI′, TI′〉
+---
+⊢ tyvarseq tycon = condesc 〈and datdesc′〉 ⇒ VI 〈+ VI′〉, {tycon → VI}〈+TI′〉
+
+// Constructor Descriptions   ⊢ condesc ⇒ VI
+
+(179)
+〈⊢ condesc ⇒ VI〉
+---
+⊢ vid 〈 | condesc〉 ⇒ {vid → c} 〈+VI〉
+
+// Exception Descriptions   ⊢ exdesc ⇒ VI
+
+(180)
+〈⊢ exdesc ⇒ VI〉
+---
+⊢ vid 〈and  exdesc〉 ⇒ {vid → e} 〈+VI〉
+
+// Structure Descriptions   IB ⊢ strdesc ⇒ SI
+
+(181)
+IB ⊢ sigexp ⇒ I   〈IB ⊢ strdesc ⇒ SI〉
+---
+IB ⊢ strid : sigexp 〈and strdesc〉 ⇒ {strid → I} 〈+ SI〉
+
+// Functor Bindings   B ⊢ funbind ⇒ F
+
+(182)
+Inter B ⊢ sigexp ⇒ I   〈IB ⊢ funbind ⇒ F 〉
+---
+IB ⊢ funid ( strid : sigexp ) = strexp 〈and funbind〉 ⇒ {funid → (strid : I, strexp, B)} 〈+ F 〉
+
+// Functor Declarations   B ⊢ fundec ⇒ F
+
+(183)
+B ⊢ funbind ⇒ F
+---
+B ⊢ functor funbind ⇒ F
+
+// Top-level Declarations   B ⊢ topdec ⇒ B′/p
+
+(184)
+B ⊢ strdec ⇒ E   B′ = E in Basis   〈B + B′ ⊢ topdec ⇒ B′′〉
+---
+B ⊢ strdec 〈topdec〉 ⇒ B′〈′〉
+
+(185)
+Inter B ⊢ sigdec ⇒ G   B′ = G in Basis   〈B + B′ ⊢ topdec ⇒ B′′〉
+---
+B ⊢ sigdec 〈topdec〉 ⇒ B′〈′〉
+
+(186)
+B ⊢ fundec ⇒ F   B′ = F in Basis   〈B + B′ ⊢ topdec ⇒ B′′〉
+---
+B ⊢ fundec 〈topdec〉 ⇒ B′〈′〉
+
+// Programs   s, B ⊢ program ⇒ B′, s′
+
+(187)
+BSTAT of B ⊢STAT topdec ⇒   〈s, B ⊢ program ⇒ B′, s′〉
+---
+s, B ⊢ topdec ; 〈program〉 ⇒ B〈′〉, s〈′〉
+
+(188)
+BSTAT of B ⊢STAT topdec ⇒ B(1)STAT   s, BDYN of B ⊢DYN  topdec ⇒ p, s′    〈s′, B ⊢ program ⇒ B′, s′′〉
+---
+s, B ⊢ topdec ; 〈program〉 ⇒ B〈′〉, s′〈′〉
+
+(189)
+BSTAT of B ⊢STAT topdec ⇒ B(1)STAT   s, BDYN of B ⊢DYN topdec ⇒ B(1)DYN, s′   B′ = B ⊕ (B(1)STAT, B(1)DYN)   〈s′, B′ ⊢ program ⇒ B′′, s′′〉
+---
+s, B ⊢ topdec ; 〈program〉 ⇒ B′〈′〉, s′〈′〉

@@ -50,6 +50,8 @@ public class GLLBaseLine extends AbstractParser {
             for (int firstIndex = 0; firstIndex < slice.length; firstIndex++)
               if (slice[firstIndex].cfgElement == cfgNode.cfgElement) { // Does this TWE match the current grammar position
 
+                Util.trace(8, 0, "Matched " + cfgNode.toStringAsProduction());
+
                 for (int restOfIndex = firstIndex + 1; restOfIndex < slice.length; restOfIndex++) // Queue tasks for any subsequent matching TWEs in this slice
                   if (slice[restOfIndex].cfgElement == cfgNode.cfgElement)
                     tasks.queue(slice[restOfIndex].rightExtent, cfgNode.seq, stackNode, updateDerivation(slice[restOfIndex].rightExtent));
@@ -76,7 +78,6 @@ public class GLLBaseLine extends AbstractParser {
   }
 
   private AbstractDerivationNode updateDerivation(int rightExtent) {
-    Util.trace(8, 0, "Matched " + cfgNode.cfgElement);
     var rightNode = derivations.find(cfgRules.elementToNodeMap.get(cfgNode.cfgElement), inputIndex, rightExtent);
     return derivations.extend(cfgNode.seq, derivationNode, rightNode);
   }

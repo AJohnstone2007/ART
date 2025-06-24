@@ -43,7 +43,7 @@ public class LexerBaseLine extends AbstractLexer {
       for (rightmostActiveSlice = inputString.length() - 1; rightmostActiveSlice >= 0; rightmostActiveSlice--)
         if (hasSlice[rightmostActiveSlice]) break;
 
-      lexicalError("Unknown lexeme ", rightmostActiveSlice);
+      lexicalError("Unknown lexeme starting with character " + (int) inputAsCharArray[rightmostActiveSlice], rightmostActiveSlice);
       return;
     }
 

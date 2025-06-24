@@ -1,0 +1,86 @@
+(* smlART_ContextFreeRules.raw extracted from sml97-defn.pdf by select/^C (cut)/ ^V (paste) using Slim PDF reader V 2.0.14 *)
+
+atexp                                ::=   scon
+〈op〉longvid
+{ 〈exprow〉  }
+# lab
+()
+(exp1  , ··· , expn)
+[exp1  , ··· , expn]
+(exp1  ; ··· ; expn)
+let dec in exp1  ; ··· ; expn  end
+( exp )
+exprow                               ::=   lab = exp 〈 , exprow〉
+appexp                               ::=   atexp
+appexp atexp
+infexp                               ::=   appexp
+infexp1  vid infexp2
+exp                                  ::=   infexp
+exp : ty
+exp1  andalso exp2
+exp1  orelse exp2
+exp handle match
+raise exp
+if exp1  then exp2  else exp3
+while exp1  do exp2
+case exp of match
+fn match
+match                                ::=   mrule 〈 | match〉
+mrule                                ::=   pat => exp
+(* Figure 20: Grammar: Expressions and Matches *)
+
+dec                                     ::=   val tyvarseq valbind
+fun tyvarseq fvalbind
+type typbind
+datatype datbind 〈withtype typbind〉
+datatype tycon -=- datatype longtycon
+abstype datbind 〈withtype typbind〉
+with dec end
+exception exbind
+local dec1  in dec2  end
+open longstrid1  ··· longstridn
+dec1  〈;〉 dec2
+infix 〈d〉 vid1  ··· vidn
+infixr 〈d〉 vid1  ··· vidn
+nonfix vid1  ··· vidn
+valbind                                 ::=   pat = exp 〈and valbind〉
+rec valbind
+fvalbind                                ::=                             〈op〉vid atpat11···atpat1n〈:ty〉=exp1
+                                                                        |〈op〉vid atpat21···atpat2n〈:ty〉=exp2
+                                        |     ···                       ···
+                                                                        |〈op〉vid atpatm1···atpatmn〈:ty〉=expm
+                                                                        〈and fvalbind〉
+typbind                                 ::=                             tyvarseq tycon = ty 〈and typbind〉
+datbind                                 ::=                             tyvarseq tycon = conbind 〈and datbind〉
+conbind                                 ::=                             〈op〉vid 〈of ty〉 〈 | conbind〉
+exbind                                  ::=                             〈op〉vid 〈of ty〉 〈and exbind〉
+〈op〉vid = 〈op〉longvid 〈and exbind〉
+(* Figure 21: Grammar: Declarations and Bindings *)
+
+atpat                          ::= _
+scon
+〈op〉longvid
+{ 〈patrow〉  }
+()
+(pat1  , ··· , patn)
+[pat1  , ··· , patn]
+( pat )
+patrow                         ::=   ...
+lab = pat 〈 , patrow〉
+vid〈:ty〉 〈as pat〉 〈, patrow〉
+pat                            ::=   atpat
+〈op〉longvid atpat
+pat1  vid pat2
+pat : ty
+〈op〉vid〈: ty〉 as pat
+(* Figure 22: Grammar: Patterns *)
+
+ty                 ::=   tyvar
+{ 〈tyrow〉  }
+tyseq longtycon
+ty1  * ··· * tyn
+ty -> ty′
+( ty )
+tyrow   ::=   lab : ty 〈 , tyrow〉
+(* Figure 23: Grammar: Type expressions *)
+
