@@ -28,18 +28,6 @@ public class TWESet {
     return slices.get(i);
   }
 
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("** TWE set for input string " + inputString + "\n");
-    for (int i = 0; i < slices.size(); i++) {
-      var e = slices.get(i);
-      if (e != null) for (var s : e)
-        sb.append(i + ": " + s + " lexeme " + inputString.substring(i, s.lexemeEnd) + "\n");
-    }
-    return sb.toString();
-  }
-
   public void chooseDefault() {
     if (slices.get(0).isEmpty()) {
       Util.error("Empty tweSet");
@@ -108,21 +96,4 @@ public class TWESet {
     // Util.debug("First lexicalisation: " + firstLexicalisation);
     return ret;
   }
-
-  //
-  // public int getToken(int i) {
-  // return firstLexicalisation.get(i).element.number;
-  // }
-  //
-  // public int getLeftIndex(int i) {
-  // return firstLexicalisation.get(i).leftExtent;
-  // }
-  //
-  // public int getLexemeEnd(int i) {
-  // return firstLexicalisation.get(i).lexemeEnd;
-  // }
-  //
-  // public int firstLexicalisationLength() {
-  // return firstLexicalisation.size();
-  // }
 }

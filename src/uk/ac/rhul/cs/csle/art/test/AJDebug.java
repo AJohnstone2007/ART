@@ -93,9 +93,6 @@ public final class AJDebug {
     grammarV5 = regressionScriptInterpreter.currentCFGRules;
     Util.info("*** Working grammar normalisation starts here");
     grammarV5.normalise();
-    grammarV5.show("grammar.dot");
-
-    // Util.info("\n*** V5 grammar\n" + grammarV5.toStringBody(true));
 
     boolean good = true;
 

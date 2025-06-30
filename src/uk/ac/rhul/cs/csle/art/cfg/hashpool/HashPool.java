@@ -3,7 +3,6 @@ package uk.ac.rhul.cs.csle.art.cfg.hashpool;
 import java.util.Map;
 
 import uk.ac.rhul.cs.csle.art.cfg.AbstractParser;
-import uk.ac.rhul.cs.csle.art.util.statistics.Statistics;
 
 /**
  * An expandable pool of integers which supports sequential allocation of small blocks. There is no facility to free memory once it has been allocated.
@@ -493,11 +492,5 @@ public abstract class HashPool extends AbstractParser { // Uncomment this line f
     for (int i = 0; i < occupanciesMax; i++)
       res += occupancies[i] + ",";
     return res;
-  }
-
-  @Override
-  public void statistics(Statistics currentstatistics) {
-    // TODO Auto-generated method stub
-
   }
 }

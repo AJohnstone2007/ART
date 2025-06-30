@@ -1,5 +1,6 @@
 package uk.ac.rhul.cs.csle.art.choose;
 
+import java.io.PrintStream;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -9,8 +10,11 @@ import uk.ac.rhul.cs.csle.art.old.v3.manager.grammar.element.ARTGrammarElement;
 import uk.ac.rhul.cs.csle.art.old.v3.manager.module.ARTV3Module;
 import uk.ac.rhul.cs.csle.art.old.v4.util.bitset.ARTBitSet;
 import uk.ac.rhul.cs.csle.art.term.ITerms;
+import uk.ac.rhul.cs.csle.art.term.TermTraverserText;
+import uk.ac.rhul.cs.csle.art.util.DisplayInterface;
+import uk.ac.rhul.cs.csle.art.util.statistics.Statistics;
 
-public class ChooseRules {
+public class ChooseRules implements DisplayInterface {
   private final ITerms iTerms;
   // private final Relation higher = new Relation();
   // private final Relation longer = new Relation();
@@ -207,6 +211,25 @@ public class ChooseRules {
     // Util.info("Returning: " + ret);
 
     return ret;
+  }
+
+  @Override
+  public void print(PrintStream outputStream, TermTraverserText outputTraverser, boolean indexed, boolean full, boolean indented) {
+    // TODO Auto-generated method stub
+
+  }
+
+  @Override
+  public void show(PrintStream outputStream, TermTraverserText outputTraverser, boolean indexed, boolean full, boolean indented) {
+    // TODO Auto-generated method stub
+
+  }
+
+  @Override
+  public void statistics(Statistics currentstatistics, PrintStream outputStream, TermTraverserText outputTraverser, boolean indexed, boolean full,
+      boolean indented) {
+    // TODO Auto-generated method stub
+
   }
 
 }

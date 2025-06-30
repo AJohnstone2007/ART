@@ -4,10 +4,11 @@ import java.io.PrintStream;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import uk.ac.rhul.cs.csle.art.util.OutputInterface;
+import uk.ac.rhul.cs.csle.art.term.TermTraverserText;
+import uk.ac.rhul.cs.csle.art.util.DisplayInterface;
 import uk.ac.rhul.cs.csle.art.util.Util;
 
-public class Statistics implements OutputInterface {
+public class Statistics implements DisplayInterface {
   private final Map<String, Object> elements = new LinkedHashMap<>();
 
   public Statistics(String... elementKeys) {
@@ -36,15 +37,25 @@ public class Statistics implements OutputInterface {
   }
 
   @Override
-  public void printHeader(PrintStream ps) {
+  public void print(PrintStream outputStream, TermTraverserText outputTraverser, boolean indexed, boolean full, boolean indented) {
     for (var k : elements.keySet())
-      ps.print(k + ",");
+      outputStream.print(k + ",");
+
+    for (var k : elements.keySet())
+      outputStream.print(elements.get(k) + ",");
   }
 
   @Override
-  public void print(PrintStream ps) {
-    for (var k : elements.keySet())
-      ps.print(elements.get(k) + ",");
+  public void show(PrintStream outputStream, TermTraverserText outputTraverser, boolean indexed, boolean full, boolean indented) {
+    // TODO Auto-generated method stub
+
+  }
+
+  @Override
+  public void statistics(Statistics currentstatistics, PrintStream outputStream, TermTraverserText outputTraverser, boolean indexed, boolean full,
+      boolean indented) {
+    // TODO Auto-generated method stub
+
   }
 
 }

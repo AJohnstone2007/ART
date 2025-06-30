@@ -1,5 +1,6 @@
 package uk.ac.rhul.cs.csle.art.term;
 
+import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -8,9 +9,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import uk.ac.rhul.cs.csle.art.util.DisplayInterface;
 import uk.ac.rhul.cs.csle.art.util.Util;
+import uk.ac.rhul.cs.csle.art.util.statistics.Statistics;
 
-public class TRRules {
+public class TRRules implements DisplayInterface {
   private final ITerms iTerms;
   private final Map<Integer, Map<Integer, List<Integer>>> trScriptRules = new LinkedHashMap<>(); // Original rules loaded by user
   public Map<Integer, Map<Integer, List<Integer>>> trRules = new LinkedHashMap<>(); // Rewritten rules produced by normalise()
@@ -357,6 +360,25 @@ public class TRRules {
 
   int thetaLHSFromConfiguration(int term) {
     return iTerms.subterm(thetaFromConfiguration(term), 0);
+  }
+
+  @Override
+  public void print(PrintStream outputStream, TermTraverserText outputTraverser, boolean indexed, boolean full, boolean indented) {
+    // TODO Auto-generated method stub
+
+  }
+
+  @Override
+  public void show(PrintStream outputStream, TermTraverserText outputTraverser, boolean indexed, boolean full, boolean indented) {
+    // TODO Auto-generated method stub
+
+  }
+
+  @Override
+  public void statistics(Statistics currentstatistics, PrintStream outputStream, TermTraverserText outputTraverser, boolean indexed, boolean full,
+      boolean indented) {
+    // TODO Auto-generated method stub
+
   }
 
 }

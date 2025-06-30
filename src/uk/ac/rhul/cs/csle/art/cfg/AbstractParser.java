@@ -6,7 +6,6 @@ import uk.ac.rhul.cs.csle.art.choose.ChooseRules;
 import uk.ac.rhul.cs.csle.art.util.Util;
 import uk.ac.rhul.cs.csle.art.util.derivations.AbstractDerivations;
 import uk.ac.rhul.cs.csle.art.util.stacks.AbstractStacks;
-import uk.ac.rhul.cs.csle.art.util.statistics.Statistics;
 import uk.ac.rhul.cs.csle.art.util.tasks.AbstractTasks;
 
 public abstract class AbstractParser {
@@ -31,11 +30,5 @@ public abstract class AbstractParser {
       Util.error("Syntax error");
     else
       Util.error(Util.echo("Syntax error", lexer.tweSlices[derivations.widestIndex()][0].lexemeStart, lexer.inputString));
-  }
-
-  public void statistics(Statistics currentStatistics) {
-    tasks.statistics(currentStatistics);
-    stacks.statistics(currentStatistics);
-    derivations.statistics(currentStatistics);
   }
 }

@@ -14,6 +14,7 @@ import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.GIFTKind;
 import uk.ac.rhul.cs.csle.art.choose.ChooseRules;
 import uk.ac.rhul.cs.csle.art.script.ScriptTermInterpreter;
+import uk.ac.rhul.cs.csle.art.term.TermTraverserText;
 import uk.ac.rhul.cs.csle.art.util.Util;
 import uk.ac.rhul.cs.csle.art.util.relation.RelationOverNaturals;
 import uk.ac.rhul.cs.csle.art.util.statistics.Statistics;
@@ -78,19 +79,6 @@ public class SPPF extends AbstractDerivations {
         (SPPFSymbolNode) rightNode));
 
     return ret;
-  }
-
-  @Override
-  public void print(PrintStream ps) {
-    if (root == null) {
-      Util.warning("no SPPF root node - skipping printing");
-      return;
-    }
-    for (var n : nodes.keySet()) {
-      ps.println(n);
-      for (var pn : n.packNodes)
-        ps.println(pn);
-    }
   }
 
   @Override
@@ -287,8 +275,7 @@ public class SPPF extends AbstractDerivations {
     root = nodes.get(new SPPFSymbolNode(cfgNode, 0, n));
   }
 
-  @Override
-  public void statistics(Statistics currentStatistics) {
+  public void loadtatistics(Statistics currentStatistics) {
     int sppfEpsilonNodeCount = 0, sppfTerminalNodeCount = 0, sppfNonterminalNodeCount = 0, sppfIntermediateNodeCount = 0, sppfPackNodeCount = 0,
         sppfAmbiguityCount = 0, sppfEdgeCount = 0;
     for (SPPFSymbolNode s : nodes.keySet()) {
@@ -346,6 +333,32 @@ public class SPPF extends AbstractDerivations {
   @Override
   public void breakCyclesRelation() {
     new SPPFCycleBreak(this).sppfBreakCyclesRelation();
+  }
+
+  @Override
+  public void print(PrintStream outputStream, TermTraverserText outputTraverser, boolean indexed, boolean full, boolean indented) {
+    if (root == null) {
+      Util.warning("no SPPF root node - skipping printing");
+      return;
+    }
+    for (var n : nodes.keySet()) {
+      outputStream.println(n);
+      for (var pn : n.packNodes)
+        outputStream.println(pn);
+    }
+  }
+
+  @Override
+  public void show(PrintStream outputStream, TermTraverserText outputTraverser, boolean indexed, boolean full, boolean indented) {
+    // TODO Auto-generated method stub
+
+  }
+
+  @Override
+  public void statistics(Statistics currentstatistics, PrintStream outputStream, TermTraverserText outputTraverser, boolean indexed, boolean full,
+      boolean indented) {
+    // TODO Auto-generated method stub
+
   }
 
 }

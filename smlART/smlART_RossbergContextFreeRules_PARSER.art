@@ -34,4 +34,4 @@ printingCharacter ::= // ASCII first, then specific Unicode characters used by R
 | '≥' | '≠' | '⟨' | '⟩'
 
 !try 'smlART/smlART_RossbergContextFreeRules.raw'
-//!print tweSet
+!print tweSet

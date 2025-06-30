@@ -1,12 +1,14 @@
 package uk.ac.rhul.cs.csle.art.util.derivations;
 
+import java.io.PrintStream;
+
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
 import uk.ac.rhul.cs.csle.art.choose.ChooseRules;
-import uk.ac.rhul.cs.csle.art.util.OutputInterface;
+import uk.ac.rhul.cs.csle.art.term.TermTraverserText;
+import uk.ac.rhul.cs.csle.art.util.DisplayInterface;
 import uk.ac.rhul.cs.csle.art.util.Util;
-import uk.ac.rhul.cs.csle.art.util.statistics.Statistics;
 
-public abstract class AbstractDerivations implements OutputInterface {
+public abstract class AbstractDerivations implements DisplayInterface {
   public void chooseLongestMatch() {
     Util.notImplemented("chooseLongestMatch()", getClass());
   }
@@ -34,11 +36,11 @@ public abstract class AbstractDerivations implements OutputInterface {
     Util.notImplemented("breakCyclesRelation()", getClass());
   }
 
-  public void printParaterminals() {
+  public void printParaterminals(PrintStream outputStream, TermTraverserText outputTraverser, boolean indexed, boolean full, boolean indented) {
     Util.notImplemented("printParaterminals()", getClass());
   }
 
-  public void printParasentences() {
+  public void printParasentences(PrintStream outputStream, TermTraverserText outputTraverser, boolean indexed, boolean full, boolean indented) {
     Util.notImplemented("printParasentences()", getClass());
   }
 
@@ -55,8 +57,6 @@ public abstract class AbstractDerivations implements OutputInterface {
   public abstract void setRoot(CFGNode cfgNode, int i);
 
   public abstract void numberNodes();
-
-  public abstract void statistics(Statistics currentStatistics);
 
   public abstract void choose(ChooseRules chooseRules);
 

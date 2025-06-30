@@ -21,7 +21,6 @@ public class RDSOBGenerator {
     }
 
     Util.info(grammar.toString());
-    grammar.show("grammar.dot");
     text.print(
         "import java.io.IOException;\nimport java.nio.file.Files;\nimport java.nio.file.Paths;\nimport uk.ac.rhul.cs.csle.art.v5.DNode;\nimport uk.ac.rhul.cs.csle.art.v5.grammar.Kind;\n"
             + "import uk.ac.rhul.cs.csle.art.v5.lexer.LexerLM;\n\n" + "class RDSOB extends uk.ac.rhul.cs.csle.art.v5.rdsob.RDSOBParser {\n"

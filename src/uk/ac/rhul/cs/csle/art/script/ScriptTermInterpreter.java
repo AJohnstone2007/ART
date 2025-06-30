@@ -1,6 +1,5 @@
 package uk.ac.rhul.cs.csle.art.script;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -63,11 +62,11 @@ public final class ScriptTermInterpreter {
   private final AbstractLexer currentLexer = new LexerBaseLine();
   private AbstractParser currentParser = new GLLBaseLine();
   public CFGRules currentCFGRules; // scriptTraverser builds CFG rules into this grammar
-  private int currentDerivationTerm = 0;
-  private int currentIndexedDerivationTerm = 0;
+  private int currentTryTerm = 0;
+  private int currentIndexedTryTerm = 0;
   private int currentRewriteTerm = 0;
   private int currentConfiguration;
-  private ChooseRules currentChooser;
+  private ChooseRules currentChooseRules;
   private final boolean disableChoosers = false; // Can be replaced by currentChooser = null in due course;
   private TRRules currentTRRules;
   private final Rewriter currentRewriter;
@@ -92,8 +91,8 @@ public final class ScriptTermInterpreter {
     var scriptCFGRules = currentCFGRules; // Now we have a usable script parser
     // Util.debug("script grammar" + currentCFGRules.toString());
 
-    currentChooser = new ChooseRules(iTerms);
-    currentChooser.normalise(currentCFGRules);
+    currentChooseRules = new ChooseRules(iTerms);
+    currentChooseRules.normalise(currentCFGRules);
 
     // Initialise rewriter
     currentTRRules = new TRRules(iTerms);
@@ -147,7 +146,7 @@ public final class ScriptTermInterpreter {
                                                                                                       // primoitives
 
     ret.addAction("cfgSlot", (Integer t) -> currentCFGRules.workingNode.slotTerm = t, null, null);
-    ret.addAction("chooseRule", (Integer t) -> currentChooser.buildChooseRule(t), null, null);
+    ret.addAction("chooseRule", (Integer t) -> currentChooseRules.buildChooseRule(t), null, null);
 
     ret.addAction("trRule", (Integer t) -> currentTRRules.buildTRRule(t), null, null);
     return ret;
@@ -191,14 +190,14 @@ public final class ScriptTermInterpreter {
       switch (argument) {
       case "all":
         currentCFGRules = new CFGRules("", iTerms);
-        currentChooser = new ChooseRules(iTerms);
+        currentChooseRules = new ChooseRules(iTerms);
         currentTRRules = new TRRules(iTerms);
         break;
       case "cfgrules":
         currentCFGRules = new CFGRules("", iTerms);
         break;
       case "chooserules":
-        currentChooser = new ChooseRules(iTerms);
+        currentChooseRules = new ChooseRules(iTerms);
         break;
       case "trrules":
         currentTRRules = new TRRules(iTerms);
@@ -335,13 +334,13 @@ public final class ScriptTermInterpreter {
       else if (iTerms.termSymbolString(iTerms.subterm(term, 0, 0, 0)).equals("__string")) // Parse literal string
         tryParse("", iTerms.termSymbolString(iTerms.subterm(term, 0, 0, 0, 0)).translateEscapes());
       else
-        currentDerivationTerm = iTerms.subterm(term, 0, 0); // No parsing - process term directly
+        currentTryTerm = iTerms.subterm(term, 0, 0); // No parsing - process term directly
 
-      if (currentDerivationTerm != 0 && currentTRRules.defaultStartRelation != 0) {// if there is a term and some rules
+      if (currentTryTerm != 0 && currentTRRules.defaultStartRelation != 0) {// if there is a term and some rules
         // if (!iTerms.hasSymbol(currentDerivationTerm, "trTopTuple")) currentDerivationTerm = iTerms.findTerm("trTopTuple", currentDerivationTerm); // augment
-        currentDerivationTerm = currentTRRules.unelideConfiguration(currentDerivationTerm, currentTRRules.defaultStartRelation, true);
+        currentTryTerm = currentTRRules.unelideConfiguration(currentTryTerm, currentTRRules.defaultStartRelation, true);
 
-        currentRewriteTerm = currentRewriter.rewrite(currentDerivationTerm, currentTRRules); // Run the rewriter
+        currentRewriteTerm = currentRewriter.rewrite(currentTryTerm, currentTRRules); // Run the rewriter
         if (iTerms.termArity(iTerms.subterm(term, 0)) == 2) // There was a test term
           if (currentRewriteTerm == iTerms.subterm(term, 0, 1)) {
             Util.info("*** Successful test");
@@ -352,7 +351,7 @@ public final class ScriptTermInterpreter {
           }
       }
 
-      if (currentDerivationTerm != 0 && currentInterpreter != null) currentInterpreter.interpret(currentParser);
+      if (currentTryTerm != 0 && currentInterpreter != null) currentInterpreter.interpret(currentParser);
       break;
 
     case "!deletetokens":
@@ -399,17 +398,13 @@ public final class ScriptTermInterpreter {
     boolean isShow = iTerms.hasSymbol(term, "!show");
     PrintStream outputStream = Util.console;
     TermTraverserText outputTraverser = iTerms.plainTextTraverser;
-    boolean indented = false;
+    boolean full = false, indented = false, indexed = false;
     int depthLimit = -1;
 
     for (int i = 0; i < iTerms.termArity(iTerms.subterm(term)); i++) {
       String displayElement = iTerms.termSymbolString(iTerms.subterm(term, i));
 
       switch (displayElement) {
-      case "version":
-        outputStream.println("ART version " + Version.version());
-        break;
-
       case "file":
         String filename = iTerms.termSymbolString(iTerms.subterm(term, i, 0));
         Util.info("Redirecting output to file " + filename);
@@ -440,73 +435,109 @@ public final class ScriptTermInterpreter {
         // TODO: add argument processing
         break;
 
+      case "full":
+        full = true;
+        break;
+
+      case "indexed":
+        indexed = true;
+        break;
+
       case "term":
         outputStream.println(iTerms.toString(iTerms.subterm(term, 0, 1), outputTraverser, indented, depthLimit));
         break;
 
-      case "scriptDerivation":
+      case "scriptTerm":
         outputStream
             .println("Script derivation term: [" + scriptDerivationTerm + "]\n" + iTerms.toString(scriptDerivationTerm, outputTraverser, indented, depthLimit));
         break;
 
       case "cfgRules":
         currentCFGRules.normalise();
-        if (isShow) outputStream.println(isShow ? currentCFGRules.toStringDot() : currentCFGRules.toString());
+        if (isShow)
+          currentCFGRules.show(outputStream, outputTraverser, indexed, full, indented);
+        else
+          currentCFGRules.print(outputStream, outputTraverser, indexed, full, indented);
         break;
 
-      case "tweSet":
-        currentLexer.printTWESet(outputStream, outputTraverser);
+      case "chooseRules":
+        currentCFGRules.normalise();
+        if (isShow)
+          currentChooseRules.show(outputStream, outputTraverser, indexed, full, indented);
+        else
+          currentCFGRules.print(outputStream, outputTraverser, indexed, full, indented);
         break;
 
-      case "derivation":
-        Util.info("current derivation term: [" + currentDerivationTerm + "]\n" + iTerms.toString(currentDerivationTerm, outputTraverser, indented, depthLimit));
-        if (scriptParserTerm == currentDerivationTerm) Util.info("Bootstrap achieved: script parser term and current derivation term identical");
+      case "trRules":
+        if (isShow)
+          currentTRRules.show(outputStream, outputTraverser, indexed, full, indented);
+        else
+          currentTRRules.print(outputStream, outputTraverser, indexed, full, indented);
         break;
 
-      case "derivationIndexed":
-        // Switch comments if you wanted one line or indented derivations
-        currentIndexedDerivationTerm = currentParser.derivations.derivationAsInterpeterTerm();
-        Util.info("Current indexed derivation term = " + currentIndexedDerivationTerm + " "
-            + iTerms.toString(currentIndexedDerivationTerm, outputTraverser, indented, depthLimit));
+      case "lexicalisations":
+        if (isShow)
+          currentLexer.show(outputStream, outputTraverser, indexed, full, indented);
+        else
+          currentLexer.print(outputStream, outputTraverser, indexed, full, indented);
         break;
 
-      case "paraterminals":
-        currentParser.derivations.printParaterminals();
+      case "stacks":
+        if (isShow)
+          currentParser.stacks.show(outputStream, outputTraverser, indexed, full, indented);
+        else
+          currentParser.stacks.print(outputStream, outputTraverser, indexed, full, indented);
         break;
 
-      case "parasentences":
-        currentParser.derivations.printParasentences();
+      case "derivations":
+        if (isShow)
+          currentParser.derivations.show(outputStream, outputTraverser, indexed, full, indented);
+        else
+          currentParser.derivations.print(outputStream, outputTraverser, indexed, full, indented);
+        break;
+
+      case "tryTerm":
+        if (indexed) {
+          currentIndexedTryTerm = currentParser.derivations.derivationAsInterpeterTerm();
+          Util.info(
+              "Current indexed try term = " + currentIndexedTryTerm + " " + iTerms.toString(currentIndexedTryTerm, outputTraverser, indented, depthLimit));
+        } else {
+          Util.info("current try term: [" + currentTryTerm + "]\n" + iTerms.toString(currentTryTerm, outputTraverser, indented, depthLimit));
+          if (scriptParserTerm == currentTryTerm) Util.info("Bootstrap achieved: script parser term and current derivation term identical");
+        }
+        break;
+
+      case "version":
+        outputStream.println("ART version " + Version.version());
         break;
 
       case "statistics":
-        if (currentStatistics == null)
-          Util.warning("No statistics defined: skipping statistics output");
+        if (isShow)
+          currentStatistics.show(outputStream, outputTraverser, indexed, full, indented);
         else
-          currentStatistics.print(System.out);
+          currentStatistics.print(outputStream, outputTraverser, indexed, full, indented);
+        break;
+
+      case "paraterminals":
+        currentParser.derivations.printParaterminals(outputStream, outputTraverser, indexed, full, indented);
+        break;
+
+      case "parasentences":
+        currentParser.derivations.printParasentences(outputStream, outputTraverser, indexed, full, indented);
         break;
 
       case "__string":
-        Util.info(iTerms.termSymbolString(iTerms.subterm(term, i, 0)));
-        break;
-
-      case "gss":
         if (isShow)
-          currentParser.stacks.toDot();
+          ;
         else
-          currentParser.stacks.print(System.out);
-        break;
-
-      case "sppf":
-        if (isShow) {
-          currentParser.derivations.toDot();
-          currentParser.derivations.dump("sppf_dump.txt");
-        } else
-          currentParser.derivations.print(System.out);
+          outputStream.println(iTerms.termSymbolString(iTerms.subterm(term, i, 0)));
         break;
 
       default:
         Util.error("Ignoring " + (isShow ? "!show" : "!print") + " argument: " + displayElement
-            + "\nMust be a string or one of: version term cfgRules paraterminals parasentences tweSet sppf bsrSet gss derivation statistics raw plain indented depth <n>");
+            + "\n   Must be a double-quoted string, or one of (case insensitive):\n" + "     raw plain latex full indented depth <n>\n"
+            + "     cfgRules chooseRules trRules\n" + "     lexicalisations derivations stacks derivation term\n"
+            + "     version statistics paraterminals parasentences\n");
       }
     }
 
@@ -532,76 +563,21 @@ public final class ScriptTermInterpreter {
     }
   }
 
-  private void showDisplayElement(int term) {
-    String directive = iTerms.termSymbolString(iTerms.subterm(term, 0));
-    String displayElement = iTerms.termSymbolString(iTerms.subterm(term, 0, 0));
-    TermTraverserText rtt = iTerms.plainTextTraverser;
-    PrintStream ps = null;
-
-    switch (displayElement) {
-
-    case "cfgRules":
-      try {
-        PrintStream cfgRulesOut = new PrintStream(new File("cfgRules.dot"));
-        cfgRulesOut.println(currentCFGRules.toStringDot());
-        cfgRulesOut.close();
-      } catch (FileNotFoundException e) {
-        Util.info("Unable to write CFG rules visualisation to cfgRules.dot");
-      }
-
-      currentCFGRules.normalise();
-      break;
-
-    case "gdg":
-      try {
-        PrintStream gdgOut = new PrintStream(new File("gdg.dot"));
-        gdgOut.println(currentCFGRules.reach.toStringDot());
-        gdgOut.close();
-      } catch (FileNotFoundException e) {
-        Util.info("Unable to write Grammar Dependency Graph visualisation to gdg.dot");
-      }
-      break;
-
-    case "derivation":
-      currentParser.derivations.printDot(System.out);
-      break;
-
-    case "derivationTerm":
-      iTerms.toDot(currentDerivationTerm, "derivationTerm.dot");
-      break;
-
-    case "derivationIndexedTerm":
-      iTerms.toDot(currentIndexedDerivationTerm, "derivationIndexedTerm.dot");
-      break;
-
-    case "gss":
-      currentParser.stacks.printDot(System.out);
-      break;
-
-    case "sppf":
-      currentParser.derivations.printDot(System.out);
-      break;
-
-    default:
-      Util.fatal("No visualisation available for !" + directive + " " + displayElement);
-    }
-  }
-
   private void tryParse(String inputStringName, String inputString) {
     Util.trace(8, "Parser trace using " + currentParser.getClass().getSimpleName());
 
     currentCFGRules.normalise();
-    currentChooser.normalise(currentCFGRules);
+    currentChooseRules.normalise(currentCFGRules);
     currentStatistics.putTime("SetupTime");
-    currentParser.parse(inputString, currentCFGRules, currentLexer, currentChooser);
+    currentParser.parse(inputString, currentCFGRules, currentLexer, currentChooseRules);
     currentStatistics.putTime("ParseTime");
     currentParser.outcomeReport();
 
-    currentDerivationTerm = 0;
+    currentTryTerm = 0;
     if (currentParser.derivations != null) {
       if (!disableChoosers) currentParser.derivations.chooseLongestMatch();
       currentStatistics.putTime("ChooseTime");
-      currentDerivationTerm = currentParser.derivations.derivationAsTerm();
+      currentTryTerm = currentParser.derivations.derivationAsTerm();
       currentStatistics.putTime("TermGenerateTime");
     }
   }
@@ -897,10 +873,5 @@ public final class ScriptTermInterpreter {
 
     // Util.info(" to yield " + ret);
     return ret;
-  }
-
-  private void loadCounts() {
-    currentLexer.statistics(currentStatistics);
-    currentParser.statistics(currentStatistics);
   }
 }

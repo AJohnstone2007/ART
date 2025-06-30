@@ -1,8 +1,6 @@
 
 package uk.ac.rhul.cs.csle.art.cfg.cfgRules;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -15,10 +13,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import uk.ac.rhul.cs.csle.art.term.ITerms;
+import uk.ac.rhul.cs.csle.art.term.TermTraverserText;
+import uk.ac.rhul.cs.csle.art.util.DisplayInterface;
 import uk.ac.rhul.cs.csle.art.util.Util;
 import uk.ac.rhul.cs.csle.art.util.relation.Relation;
+import uk.ac.rhul.cs.csle.art.util.statistics.Statistics;
 
-public final class CFGRules { // final to avoid this-escape
+public final class CFGRules implements DisplayInterface { // final to avoid this-escape
   public final ITerms iTerms;
 
   // Constants
@@ -357,6 +358,10 @@ public final class CFGRules { // final to avoid this-escape
     }
   }
 
+  public boolean isEmpty() {
+    return elementToNodeMap.keySet().isEmpty();
+  }
+
   private class InstancePair {
     String nonterminalID;
     String attributeID;
@@ -546,189 +551,6 @@ public final class CFGRules { // final to avoid this-escape
     mostRecentLHS.cfgElement.attributes.put(name, type);
   }
 
-  /* Visualisation rendering */
-  public String toStringDot() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("digraph \"Reference grammar\"\n" + "{\n" + "graph[ordering=out ranksep=0.1]\n"
-        + "node[fontname=Helvetica fontsize=9 shape=box height = 0 width = 0 margin= 0.04 color=gray]\n"
-        + "edge[fontname=Helvetica fontsize=9 arrowsize = 0.3 color=gray]\n\n");
-    for (CFGElement n : elementToNodeMap.keySet())
-      toStringDotRec(sb, elementToNodeMap.get(n));
-    sb.append("}\n");
-    return sb.toString();
-  }
-
-  private void toStringDotRec(StringBuilder sb, CFGNode cs) {
-    sb.append("\"" + cs.num + "\"[label=\"" + cs.toStringDot() + "\"]\n");
-    if (cs.cfgElement.cfgKind == CFGKind.ALT) {
-      seqArrow(sb, cs);
-      altArrow(sb, cs);
-    } else if (cs.cfgElement.cfgKind != CFGKind.END) {
-      altArrow(sb, cs);
-      seqArrow(sb, cs);
-    }
-  }
-
-  private void altArrow(StringBuilder sb, CFGNode cs) {
-    if (cs.alt == null) return;
-    sb.append(
-        "\"" + cs.num + "\"->\"" + cs.alt.num + "\"" + "{rank = same; \"" + cs.num + "\"" + ";\"" + cs.alt.num + "\"" + ";" + "}" + "[label=\" a\"" + "]\n");
-    if (!isLHS(cs.alt)) toStringDotRec(sb, cs.alt);
-  }
-
-  private void seqArrow(StringBuilder sb, CFGNode cs) {
-    if (cs.seq == null) return;
-    sb.append("\"" + cs.num + "\"->\"" + cs.seq.num + "\"\n");
-    toStringDotRec(sb, cs.seq);
-  }
-
-  /* Text rendering */
-
-  public String toStringProperties() {
-    return toStringBody(true);
-  }
-
-  @Override
-  public String toString() {
-    return toStringBody(true);
-  }
-
-  public String toStringBody(boolean showProperties) {
-    StringBuilder sb = new StringBuilder();
-    if (startNonterminal != null)
-      sb.append("CFG rules with start nonterminal " + startNonterminal.str + "\n");
-    else
-      sb.append("CFG rules with empty start nonterminal\n");
-
-    if (isEmpty()) return "Grammar has no rules";
-
-    sb.append("Rules:\n");
-    for (CFGElement n : elementToNodeMap.keySet()) {
-      boolean first = true;
-      for (CFGNode production = elementToNodeMap.get(n).alt; production != null; production = production.alt) {
-        if (first) {
-          sb.append(" " + production.toStringAsProduction(" ::=\n ", null) + "\n");
-          first = false;
-        } else {
-          sb.append(" | " + production.toStringAsRHS(null) + "\n");
-        }
-      }
-    }
-
-    sb.append("Elements:\n");
-    for (CFGElement s : elements.keySet()) {
-      sb.append(" (" + s.toStringDetailed() + ") " + s);
-      if (s.isWhitespace) sb.append(" whitespace");
-      if (cyclicNonterminals.contains(s)) sb.append(" cyclic");
-      if (paraterminalElements.contains(s)) sb.append(" paraterminal");
-      if (s.attributes != null && !s.attributes.isEmpty()) sb.append(" attributes: " + s.attributes);
-      if (showProperties && first.get(s) != null) {
-        sb.append(" first = {");
-        appendElements(sb, first.get(s));
-        sb.append("} follow = {");
-        appendElements(sb, follow.get(s));
-        sb.append("}");
-      }
-      sb.append("\n");
-    }
-    sb.append("Nodes:\n");
-    for (int i : numberToNodeMap.keySet()) {
-      CFGNode gn = numberToNodeMap.get(i);
-      sb.append(" " + i + ": " + gn.toStringAsProduction());
-      if (showProperties) {
-        if (initialSlots.contains(gn)) sb.append(" initial");
-        if (secondSlots.contains(gn)) sb.append(" second");
-        if (penultimateSlots.contains(gn)) sb.append(" penultimate");
-        if (finalSlots.contains(gn)) sb.append(" final");
-        if (nullableSuffixSlots.contains(gn)) sb.append(" nullableSuffix");
-        if (nullablePrefixSlots.contains(gn)) sb.append(" nullablePrefix");
-
-        if (!instanceFirst.get(gn).isEmpty()) {
-          sb.append(" instfirst = {");
-          appendElements(sb, instanceFirst.get(gn));
-          sb.append("} instfollow = {");
-          appendElements(sb, instanceFollow.get(gn));
-          sb.append("}");
-        }
-      }
-      if (gn.slotTerm != 0) sb.append(" Action: " + gn.toStringActions());
-      sb.append("\n");
-    }
-
-    sb.append("Accepting slot" + (acceptingSlots.size() == 1 ? "" : "s") + ":\n");
-    for (var gn : acceptingSlots)
-      sb.append(" " + gn.toStringAsProduction() + "\n");
-
-    sb.append("Accepting node number" + (acceptingSlots.size() == 1 ? "" : "s") + ":");
-    for (var gn : acceptingNodeNumbers)
-      sb.append(" " + gn);
-
-    sb.append("\nParaterminals: " + paraterminalNames);
-
-    sb.append("\nCyclic nonterminals: " + cyclicNonterminals);
-
-    sb.append("\n\nderivesOnly(R):\n");
-    for (var n : derivesExactly.getDomain())
-      if (cyclicNonterminals.contains(n)) {
-        sb.append(n + ": {");
-        for (var nf : derivesExactly.get(n))
-          sb.append(" " + nf);
-        sb.append(" }\n");
-      }
-
-    sb.append("\n\nderivesOnlyClosed (R+):\n");
-    for (var n : derivesExactlyTransitiveClosure.getDomain())
-      if (cyclicNonterminals.contains(n)) {
-        sb.append(n + ": {");
-        for (var nf : derivesExactlyTransitiveClosure.get(n))
-          sb.append(" " + nf);
-        sb.append(" }\n");
-      }
-
-    sb.append("\n\nCocyclic nonterminals: \n");
-    for (var n : derivesExactlyTransitiveClosure.getDomain())
-      if (cyclicNonterminals.contains(n)) {
-        sb.append(n + ": {");
-        for (var nf : derivesExactlyTransitiveClosure.get(n))
-          if (derivesExactlyTransitiveClosure.get(nf).contains(n)) sb.append(" " + nf);
-        sb.append(" }\n");
-      }
-
-    sb.append("\nCyclic slots:\n");
-    for (var n : cyclicSlots)
-      sb.append(n.toStringAsProduction() + "\n");
-    sb.append("\n");
-
-    return sb.toString();
-  }
-
-  public boolean isEmpty() {
-    return elementToNodeMap.keySet().isEmpty();
-  }
-
-  private void appendElements(StringBuilder sb, Set<CFGElement> elements) {
-    if (elements == null) return;
-    boolean first = true;
-    for (CFGElement e : elements) {
-      if (first)
-        first = false;
-      else
-        sb.append(",");
-      sb.append(e.toString());
-    }
-  }
-
-  public void show(String filename) {
-    PrintStream ps;
-    try {
-      ps = new PrintStream(new File(filename));
-      ps.println(toStringDot());
-      ps.close();
-    } catch (FileNotFoundException e) {
-      Util.info("Unable to open visualisation file " + filename);
-    }
-  }
-
   /** Support for table driven parsers ***************************************/
 
   public int[] makeKindsArray() {
@@ -854,5 +676,165 @@ public final class CFGRules { // final to avoid this-escape
     for (var e : sententialForm)
       if (e.cfgKind == CFGKind.N) return false;
     return true;
+  }
+
+  @Override
+  public void print(PrintStream outputStream, TermTraverserText outputTraverser, boolean indexed, boolean full, boolean indented) {
+    if (startNonterminal != null)
+      outputStream.print("CFG rules with start nonterminal " + startNonterminal.str + "\n");
+    else
+      outputStream.print("CFG rules with empty start nonterminal\n");
+
+    if (isEmpty()) outputStream.println("Grammar has no rules");
+
+    outputStream.print("Rules:\n");
+    for (CFGElement n : elementToNodeMap.keySet()) {
+      boolean first = true;
+      for (CFGNode production = elementToNodeMap.get(n).alt; production != null; production = production.alt) {
+        if (first) {
+          outputStream.print(" " + production.toStringAsProduction(" ::=\n ", null) + "\n");
+          first = false;
+        } else {
+          outputStream.print(" | " + production.toStringAsRHS(null) + "\n");
+        }
+      }
+    }
+
+    outputStream.print("Elements:\n");
+    for (CFGElement s : elements.keySet()) {
+      outputStream.print(" (" + s.toStringDetailed() + ") " + s);
+      if (s.isWhitespace) outputStream.print(" whitespace");
+      if (cyclicNonterminals.contains(s)) outputStream.print(" cyclic");
+      if (paraterminalElements.contains(s)) outputStream.print(" paraterminal");
+      if (s.attributes != null && !s.attributes.isEmpty()) outputStream.print(" attributes: " + s.attributes);
+      if (full && first.get(s) != null) {
+        outputStream.print(" first = {");
+        printElements(outputStream, first.get(s));
+        outputStream.print("} follow = {");
+        printElements(outputStream, follow.get(s));
+        outputStream.print("}");
+      }
+      outputStream.print("\n");
+    }
+    outputStream.print("Nodes:\n");
+    for (int i : numberToNodeMap.keySet()) {
+      CFGNode gn = numberToNodeMap.get(i);
+      outputStream.print(" " + i + ": " + gn.toStringAsProduction());
+      if (full) {
+        if (initialSlots.contains(gn)) outputStream.print(" initial");
+        if (secondSlots.contains(gn)) outputStream.print(" second");
+        if (penultimateSlots.contains(gn)) outputStream.print(" penultimate");
+        if (finalSlots.contains(gn)) outputStream.print(" final");
+        if (nullableSuffixSlots.contains(gn)) outputStream.print(" nullableSuffix");
+        if (nullablePrefixSlots.contains(gn)) outputStream.print(" nullablePrefix");
+
+        if (!instanceFirst.get(gn).isEmpty()) {
+          outputStream.print(" instfirst = {");
+          printElements(outputStream, instanceFirst.get(gn));
+          outputStream.print("} instfollow = {");
+          printElements(outputStream, instanceFollow.get(gn));
+          outputStream.print("}");
+        }
+      }
+      if (gn.slotTerm != 0) outputStream.print(" Action: " + gn.toStringActions());
+      outputStream.print("\n");
+    }
+
+    outputStream.print("Accepting slot" + (acceptingSlots.size() == 1 ? "" : "s") + ":\n");
+    for (var gn : acceptingSlots)
+      outputStream.print(" " + gn.toStringAsProduction() + "\n");
+
+    outputStream.print("Accepting node number" + (acceptingSlots.size() == 1 ? "" : "s") + ":");
+    for (var gn : acceptingNodeNumbers)
+      outputStream.print(" " + gn);
+
+    outputStream.print("\nParaterminals: " + paraterminalNames);
+
+    outputStream.print("\nCyclic nonterminals: " + cyclicNonterminals);
+
+    outputStream.print("\n\nderivesOnly(R):\n");
+    for (var n : derivesExactly.getDomain())
+      if (cyclicNonterminals.contains(n)) {
+        outputStream.print(n + ": {");
+        for (var nf : derivesExactly.get(n))
+          outputStream.print(" " + nf);
+        outputStream.print(" }\n");
+      }
+
+    outputStream.print("\n\nderivesOnlyClosed (R+):\n");
+    for (var n : derivesExactlyTransitiveClosure.getDomain())
+      if (cyclicNonterminals.contains(n)) {
+        outputStream.print(n + ": {");
+        for (var nf : derivesExactlyTransitiveClosure.get(n))
+          outputStream.print(" " + nf);
+        outputStream.print(" }\n");
+      }
+
+    outputStream.print("\n\nCocyclic nonterminals: \n");
+    for (var n : derivesExactlyTransitiveClosure.getDomain())
+      if (cyclicNonterminals.contains(n)) {
+        outputStream.print(n + ": {");
+        for (var nf : derivesExactlyTransitiveClosure.get(n))
+          if (derivesExactlyTransitiveClosure.get(nf).contains(n)) outputStream.print(" " + nf);
+        outputStream.print(" }\n");
+      }
+
+    outputStream.print("\nCyclic slots:\n");
+    for (var n : cyclicSlots)
+      outputStream.print(n.toStringAsProduction() + "\n");
+    outputStream.print("\n");
+  }
+
+  private void printElements(PrintStream outputStream, Set<CFGElement> elements) {
+    if (elements == null) return;
+    boolean first = true;
+    for (CFGElement e : elements) {
+      if (first)
+        first = false;
+      else
+        outputStream.print(",");
+      outputStream.print(e.toString());
+    }
+  }
+
+  @Override
+  public void show(PrintStream outputStream, TermTraverserText outputTraverser, boolean indexed, boolean full, boolean indented) {
+    outputStream.print("digraph \"Reference grammar\"\n" + "{\n" + "graph[ordering=out ranksep=0.1]\n"
+        + "node[fontname=Helvetica fontsize=9 shape=box height = 0 width = 0 margin= 0.04 color=gray]\n"
+        + "edge[fontname=Helvetica fontsize=9 arrowsize = 0.3 color=gray]\n\n");
+    for (CFGElement n : elementToNodeMap.keySet())
+      toStringDotRec(outputStream, elementToNodeMap.get(n));
+    outputStream.print("}\n");
+  }
+
+  private void toStringDotRec(PrintStream outputStream, CFGNode cs) {
+    outputStream.print("\"" + cs.num + "\"[label=\"" + cs.toStringDot() + "\"]\n");
+    if (cs.cfgElement.cfgKind == CFGKind.ALT) {
+      seqArrow(outputStream, cs);
+      altArrow(outputStream, cs);
+    } else if (cs.cfgElement.cfgKind != CFGKind.END) {
+      altArrow(outputStream, cs);
+      seqArrow(outputStream, cs);
+    }
+  }
+
+  private void altArrow(PrintStream outputStream, CFGNode cs) {
+    if (cs.alt == null) return;
+    outputStream.print(
+        "\"" + cs.num + "\"->\"" + cs.alt.num + "\"" + "{rank = same; \"" + cs.num + "\"" + ";\"" + cs.alt.num + "\"" + ";" + "}" + "[label=\" a\"" + "]\n");
+    if (!isLHS(cs.alt)) toStringDotRec(outputStream, cs.alt);
+  }
+
+  private void seqArrow(PrintStream outputStream, CFGNode cs) {
+    if (cs.seq == null) return;
+    outputStream.print("\"" + cs.num + "\"->\"" + cs.seq.num + "\"\n");
+    toStringDotRec(outputStream, cs.seq);
+  }
+
+  @Override
+  public void statistics(Statistics currentstatistics, PrintStream outputStream, TermTraverserText outputTraverser, boolean indexed, boolean full,
+      boolean indented) {
+    // TODO Auto-generated method stub
+
   }
 }
