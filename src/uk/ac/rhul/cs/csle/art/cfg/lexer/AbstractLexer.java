@@ -22,15 +22,18 @@ public abstract class AbstractLexer {
     Util.error(Util.echo(msg, inputIndex, inputString));
   }
 
-  public abstract void lex(String input, CFGRules cfgRules, ChooseRules chooseRules);
+  public abstract boolean lex(String input, CFGRules cfgRules, ChooseRules chooseRules);
 
   public abstract void statistics(Statistics currentstatistics);
 
   public void printTWESet(PrintStream outputStream, TermTraverserText outputTraverser) {
     if (tweSlices == null) {
-      Util.warning("Empty TWE set");
+      Util.warning("TWE set is empty");
+      outputStream.println("Empty TWE set");
       return;
     }
+    outputStream.println("TWE Set");
+
     for (int i = 0; i < tweSlices.length; i++) {
       if (tweSlices[i] == null) continue;
       outputStream.print("Index " + i + ":");

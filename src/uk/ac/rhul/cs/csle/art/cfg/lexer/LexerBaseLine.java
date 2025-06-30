@@ -21,7 +21,7 @@ public class LexerBaseLine extends AbstractLexer {
   }
 
   @Override
-  public void lex(String userString, CFGRules cfgRules, ChooseRules chooseRules) {
+  public boolean lex(String userString, CFGRules cfgRules, ChooseRules chooseRules) {
     this.cfgRules = cfgRules;
     // Util.debug("Grammar" + cfgRules + "end of grammar");
     inputString = userString + "\0";
@@ -44,7 +44,9 @@ public class LexerBaseLine extends AbstractLexer {
         if (hasSlice[rightmostActiveSlice]) break;
 
       lexicalError("Unknown lexeme starting with character " + (int) inputAsCharArray[rightmostActiveSlice], rightmostActiveSlice);
-      return;
+
+      tweSlices = null;
+      return false;
     }
 
     // Add EOS
@@ -56,6 +58,8 @@ public class LexerBaseLine extends AbstractLexer {
     chooseDefault();
     suppressDeadPaths();
     removeSuppressedTWE();
+
+    return true;
   }
 
   public TWESetElement[] constructTWESlice(int index) {

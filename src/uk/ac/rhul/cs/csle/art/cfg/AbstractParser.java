@@ -22,6 +22,8 @@ public abstract class AbstractParser {
   public abstract void parse(String input, CFGRules cfgRules, AbstractLexer lexer, ChooseRules chooseRules);
 
   public void outcomeReport() {
+    if (lexer.tweSlices == null) return; // A lexical error will already have been reported
+
     if (inLanguage) {
       Util.trace(1, "Parser accept");
       if (derivations == null) Util.error("current parser does not produce API level derivations");

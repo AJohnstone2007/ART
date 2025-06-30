@@ -162,10 +162,10 @@ public final class CFGRules { // final to avoid this-escape
     // Util.info("Initial instance first sets: " + instanceFirst);
     // Util.info("Initial follow sets: " + follow);
     // Util.info("Initial instance follow sets: " + instanceFollow);
-    computeFirstSets();
-    computeNullableSuffixAndCyclic();
+    computeFirstSetsAndNullablePrefixes();
+    computeNullableSuffixesAndCyclic();
     computeFollowSets();
-    ComputeCyclicSlots();//
+    computeCyclicSlots();//
     // Util.info("Final first sets: " + first);
     // Util.info("Final instance first sets: " + instanceFirst);
     // Util.info("Final follow sets: " + follow);
@@ -231,7 +231,7 @@ public final class CFGRules { // final to avoid this-escape
     return tmp;
   }
 
-  private void computeFirstSets() {
+  private void computeFirstSetsAndNullablePrefixes() {
     // Closure loop
     boolean changed = true;
     while (changed) {
@@ -280,7 +280,7 @@ public final class CFGRules { // final to avoid this-escape
     }
   }
 
-  private void computeNullableSuffixAndCyclic() {
+  private void computeNullableSuffixesAndCyclic() {
     for (CFGElement lhs : elements.keySet())
       if (lhs.cfgKind == CFGKind.N) {
         CFGNode topNode = elementToNodeMap.get(lhs);
@@ -296,7 +296,7 @@ public final class CFGRules { // final to avoid this-escape
       if (derivesExactlyTransitiveClosure.get(n).contains(n)) cyclicNonterminals.add(n);
   }
 
-  private void ComputeCyclicSlots() {
+  private void computeCyclicSlots() {
     for (CFGElement lhs : elements.keySet())
       if (lhs.cfgKind == CFGKind.N) {
         CFGNode topNode = elementToNodeMap.get(lhs);
@@ -329,7 +329,7 @@ public final class CFGRules { // final to avoid this-escape
     if (nullableSuffix) nullableSuffixSlots.add(seqNode);
 
     if (seqNode.cfgElement.cfgKind == CFGKind.N && nullablePrefixSlots.contains(seqNode) && nullableSuffixSlots.contains(seqNode.seq))
-      this.derivesExactly.add(lhs, seqNode.cfgElement);
+      derivesExactly.add(lhs, seqNode.cfgElement);
 
     return nullableSuffix;
   }

@@ -61,7 +61,7 @@ public class RDSOBFunction extends AbstractParser {
     this.cfgRules = cfgRules;
     this.lexer = lexer;
 
-    lexer.lex(input, cfgRules, chooseRules);
+    if (!lexer.lex(input, cfgRules, chooseRules)) return;
 
     inputIndex = 0;
     dnRoot = dn = new DerivationSingletonNode(cfgRules.endOfStringNode, null);

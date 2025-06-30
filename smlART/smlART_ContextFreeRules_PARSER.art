@@ -14,10 +14,10 @@ element ::= '〈' elements '〉' | &ID | '···'                    // SML meta
 | '#' | '*' | '|' | '=' | '-=-' | '=>' | '->' | '′'           // SML terminals
 
 blankLinesOpt ::= # | lineEnd blankLinesOpt
-lineEnd ::= '\r' '\n' (* Windows *) | '\n' (* Unix *) | '\r' (* Macos *)
+lineEnd ::= '\r' '\n' (* Windows *) (*| '\n' (* Unix *) | '\r' (* Macos *) *)
 
 !generate actions
 !try 'smlART/smlART_ContextFreeRules.raw'
 //!print tweSet
 //!print indented derivation
-
+!show 'rules.dot' cfgRules

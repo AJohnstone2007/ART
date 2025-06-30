@@ -174,7 +174,7 @@ public class GLLHashPool extends HashPool {
 
     initialise();
 
-    lexer.lex(input, cfgRules, chooseRules);
+    if (!lexer.lex(input, cfgRules, chooseRules)) return;
 
     // Util.debug(lexer.tweSet.toString());
 

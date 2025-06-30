@@ -406,6 +406,20 @@ public final class ScriptTermInterpreter {
       String displayElement = iTerms.termSymbolString(iTerms.subterm(term, i));
 
       switch (displayElement) {
+      case "version":
+        outputStream.println("ART version " + Version.version());
+        break;
+
+      case "file":
+        String filename = iTerms.termSymbolString(iTerms.subterm(term, i, 0));
+        Util.info("Redirecting output to file " + filename);
+        try {
+          outputStream = new PrintStream(filename);
+        } catch (FileNotFoundException e) {
+          Util.error("Unable to open file " + filename + " for output");
+        }
+        break;
+
       case "raw":
         outputTraverser = iTerms.rawTextTraverser;
         break;
@@ -416,10 +430,6 @@ public final class ScriptTermInterpreter {
 
       case "latex":
         outputTraverser = iTerms.latexTraverser;
-        break;
-
-      case "version":
-        Util.info("ART version " + Version.version());
         break;
 
       case "indented":
@@ -435,16 +445,16 @@ public final class ScriptTermInterpreter {
         break;
 
       case "scriptDerivation":
-        Util.info("Script derivation term: [" + scriptDerivationTerm + "]\n" + iTerms.toString(scriptDerivationTerm, outputTraverser, indented, depthLimit));
+        outputStream
+            .println("Script derivation term: [" + scriptDerivationTerm + "]\n" + iTerms.toString(scriptDerivationTerm, outputTraverser, indented, depthLimit));
         break;
 
       case "cfgRules":
         currentCFGRules.normalise();
-        Util.info(currentCFGRules.toString());
+        if (isShow) outputStream.println(isShow ? currentCFGRules.toStringDot() : currentCFGRules.toString());
         break;
 
       case "tweSet":
-        Util.info("TWE Set");
         currentLexer.printTWESet(outputStream, outputTraverser);
         break;
 
@@ -494,12 +504,9 @@ public final class ScriptTermInterpreter {
           currentParser.derivations.print(System.out);
         break;
 
-      case "sppfCyclicNodes":
-        currentParser.derivations.printCyclicSPPFNodesFromReachability();
-        break;
-
       default:
-        Util.fatal("Unkown display element " + displayElement);
+        Util.error("Ignoring " + (isShow ? "!show" : "!print") + " argument: " + displayElement
+            + "\nMust be a string or one of: version term cfgRules paraterminals parasentences tweSet sppf bsrSet gss derivation statistics raw plain indented depth <n>");
       }
     }
 
@@ -601,13 +608,6 @@ public final class ScriptTermInterpreter {
 
   private TermTraverserText initialisePlainTextTraverser() {
     TermTraverserText ret = new TermTraverserText(iTerms);
-    // -1: uncomment these to have shorthand type renditions rather than plain terms
-    /*
-     * ret.addEmptyAction("__bool", "__int32", "__real64"); ret.addAction("__intAP", "£", "", ""); ret.addAction("__realAP", "£", "", "");
-     * ret.addAction("__char", "`", "", ""); ret.addAction("__string", "\"", "", "\""); ret.addAction("__array", "[", " | ", "]"); ret.addAction("__list", "[",
-     * null, "]"); ret.addAction("__set", "{", null, "}"); ret.addAction("__a", null, ", ", null); ret.addAction("__l", null, ", ", null); ret.addAction("__s",
-     * null, ", ", null);
-     */
 
     // __map and __m require special treatment because they don't fit neatly pre/in/post string model, so we shall directly program the underlying actions
     // For __map, the preorder action tests the arity of the term, and appends {= instead of {
@@ -629,10 +629,9 @@ public final class ScriptTermInterpreter {
     ret.addAction("cfgAlts", null, "|", null);
     ret.addAction("cfgSeq", null, " ", null);
     ret.addAction("cfgName", null, ":", null);
-    ret.addActionBreak("cfgNonterminal", (Integer t) -> ret.append(texEscape(iTerms.getString(iTerms.termSymbolStringIndex(iTerms.subterm(t, 0))))), null,
-        null);
+    ret.addActionBreak("cfgNonterminal", (Integer t) -> ret.append(iTerms.getString(iTerms.termSymbolStringIndex(iTerms.subterm(t, 0)))), null, null);
     ret.addActionBreak("cfgCaseInsensitiveTerminal",
-        (Integer t) -> ret.append("\"" + texEscape(iTerms.getString(iTerms.termSymbolStringIndex(iTerms.subterm(t, 0)))) + "\""), null, null);
+        (Integer t) -> ret.append("\"" + iTerms.getString(iTerms.termSymbolStringIndex(iTerms.subterm(t, 0))) + "\""), null, null);
     ret.addActionBreak("cfgCaseSensitiveTerminal", (Integer t) -> ret.appendAlias("'", iTerms.termSymbolStringIndex(iTerms.subterm(t, 0)), "'"), null, null);
     ret.addActionBreak("cfgCharacterTerminal", (Integer t) -> ret.appendAlias("`", iTerms.termSymbolStringIndex(iTerms.subterm(t, 0)), ""), null, null);
     ret.addActionBreak("cfgCharacterRangeTerminal",

@@ -29,7 +29,7 @@ public class MGLLBaseLine extends AbstractParser {
     stacks = new GSS(cfgRules);
     derivations = new SPPF(this, true);
 
-    lexer.lex(input, cfgRules, chooseRules);
+    if (!lexer.lex(input, cfgRules, chooseRules)) return;
     // lexer.printTWESet(System.out, null);
     inputIndex = 0;
     cfgNode = cfgRules.elementToNodeMap.get(cfgRules.startNonterminal).alt;

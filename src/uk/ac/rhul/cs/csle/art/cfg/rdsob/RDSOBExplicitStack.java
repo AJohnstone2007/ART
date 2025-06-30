@@ -92,7 +92,7 @@ public class RDSOBExplicitStack extends AbstractParser {
     this.cfgRules = cfgRules;
     this.lexer = lexer;
 
-    lexer.lex(input, cfgRules, chooseRules);
+    if (!lexer.lex(input, cfgRules, chooseRules)) return;
 
     gn = cfgRules.elementToNodeMap.get(cfgRules.startNonterminal).alt.seq;
     inputIndex = 0;

@@ -3,6 +3,8 @@ package uk.ac.rhul.cs.csle.art.term;
 import java.util.HashMap;
 import java.util.Map;
 
+import uk.ac.rhul.cs.csle.art.util.Util;
+
 /* This extension to TermTraverser adds text specific functions that allow a traverser to build a String rendering of a term, taking into account aliases
 */
 
@@ -61,7 +63,7 @@ public class TermTraverserText extends TermTraverser {
   }
 
   public void appendAlias(String prefix, int stringIndex, String postfix) {
-    sb.append(prefix + /* Util.escapeString( */iTerms.getString(aliasLookup(stringIndex))/* , false) */ + postfix);
+    sb.append(prefix + Util.escapeString(iTerms.getString(aliasLookup(stringIndex)), false) + postfix);
   }
 
   public Integer aliasLookup(int stringIndex) {
