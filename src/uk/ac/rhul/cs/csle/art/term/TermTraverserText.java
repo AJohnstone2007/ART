@@ -15,8 +15,8 @@ public class TermTraverserText extends TermTraverser {
   private int depthLimit;
   private boolean indent;
 
-  public TermTraverserText(ITerms iTerms) {
-    super(iTerms);
+  public TermTraverserText(ITerms iTerms, String name) {
+    super(iTerms, name);
     globalAliases = new HashMap<>();
     sb = new StringBuilder();
     depthLimit = -1;

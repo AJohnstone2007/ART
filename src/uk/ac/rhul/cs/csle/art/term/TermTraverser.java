@@ -8,13 +8,15 @@ import java.util.function.Consumer;
 
 public class TermTraverser {
   protected final ITerms iTerms;
+  protected final String name;
   protected final Map<Integer, Consumer<Integer>> opsPreorder;
   protected final Map<Integer, Consumer<Integer>> opsInorder;
   protected final Map<Integer, Consumer<Integer>> opsPostorder;
   protected final Set<Integer> breakSet;
 
-  public TermTraverser(ITerms iTerms) {
+  public TermTraverser(ITerms iTerms, String name) {
     this.iTerms = iTerms;
+    this.name = name;
     // Util.debug("After term traverser creation " + this);
 
     opsPreorder = new HashMap<>();

@@ -2,8 +2,8 @@ package uk.ac.rhul.cs.csle.art.term;
 
 public class TermTraverserLaTeX extends TermTraverserText {
 
-  public TermTraverserLaTeX(ITerms iTerms) {
-    super(iTerms);
+  public TermTraverserLaTeX(ITerms iTerms, String name) {
+    super(iTerms, name);
   }
 
   public String renderSymbolAsLatexString(String string) {

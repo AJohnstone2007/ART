@@ -680,14 +680,9 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
 
   @Override
   public void print(PrintStream outputStream, TermTraverserText outputTraverser, boolean indexed, boolean full, boolean indented) {
-    if (startNonterminal != null)
-      outputStream.print("CFG rules with start nonterminal " + startNonterminal.str + "\n");
-    else
-      outputStream.print("CFG rules with empty start nonterminal\n");
+    outputStream.print(
+        (isEmpty() ? "Empty" : "") + "Context Free Grammar rules with start symbol " + (startNonterminal == null ? "<empty>" : startNonterminal.str) + "\n");
 
-    if (isEmpty()) outputStream.println("Grammar has no rules");
-
-    outputStream.print("Rules:\n");
     for (CFGElement n : elementToNodeMap.keySet()) {
       boolean first = true;
       for (CFGNode production = elementToNodeMap.get(n).alt; production != null; production = production.alt) {
@@ -700,89 +695,96 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
       }
     }
 
-    outputStream.print("Elements:\n");
-    for (CFGElement s : elements.keySet()) {
-      outputStream.print(" (" + s.toStringDetailed() + ") " + s);
-      if (s.isWhitespace) outputStream.print(" whitespace");
-      if (cyclicNonterminals.contains(s)) outputStream.print(" cyclic");
-      if (paraterminalElements.contains(s)) outputStream.print(" paraterminal");
-      if (s.attributes != null && !s.attributes.isEmpty()) outputStream.print(" attributes: " + s.attributes);
-      if (full && first.get(s) != null) {
-        outputStream.print(" first = {");
-        printElements(outputStream, first.get(s));
-        outputStream.print("} follow = {");
-        printElements(outputStream, follow.get(s));
-        outputStream.print("}");
-      }
-      outputStream.print("\n");
-    }
-    outputStream.print("Nodes:\n");
-    for (int i : numberToNodeMap.keySet()) {
-      CFGNode gn = numberToNodeMap.get(i);
-      outputStream.print(" " + i + ": " + gn.toStringAsProduction());
-      if (full) {
-        if (initialSlots.contains(gn)) outputStream.print(" initial");
-        if (secondSlots.contains(gn)) outputStream.print(" second");
-        if (penultimateSlots.contains(gn)) outputStream.print(" penultimate");
-        if (finalSlots.contains(gn)) outputStream.print(" final");
-        if (nullableSuffixSlots.contains(gn)) outputStream.print(" nullableSuffix");
-        if (nullablePrefixSlots.contains(gn)) outputStream.print(" nullablePrefix");
-
-        if (!instanceFirst.get(gn).isEmpty()) {
-          outputStream.print(" instfirst = {");
-          printElements(outputStream, instanceFirst.get(gn));
-          outputStream.print("} instfollow = {");
-          printElements(outputStream, instanceFollow.get(gn));
+    if (full) {
+      outputStream.print("Elements:\n");
+      for (CFGElement s : elements.keySet()) {
+        outputStream.print(" (" + s.toStringDetailed() + ") " + s);
+        if (s.isWhitespace) outputStream.print(" whitespace");
+        if (cyclicNonterminals.contains(s)) outputStream.print(" cyclic");
+        if (paraterminalElements.contains(s)) outputStream.print(" paraterminal");
+        if (s.attributes != null && !s.attributes.isEmpty()) outputStream.print(" attributes: " + s.attributes);
+        if (full && first.get(s) != null) {
+          outputStream.print(" first = {");
+          printElements(outputStream, first.get(s));
+          outputStream.print("} follow = {");
+          printElements(outputStream, follow.get(s));
           outputStream.print("}");
         }
+        outputStream.print("\n");
       }
-      if (gn.slotTerm != 0) outputStream.print(" Action: " + gn.toStringActions());
-      outputStream.print("\n");
+      outputStream.print("Nodes:\n");
+      for (int i : numberToNodeMap.keySet()) {
+        CFGNode gn = numberToNodeMap.get(i);
+        outputStream.print(" " + i + ": " + gn.toStringAsProduction());
+        if (full) {
+          if (initialSlots.contains(gn)) outputStream.print(" initial");
+          if (secondSlots.contains(gn)) outputStream.print(" second");
+          if (penultimateSlots.contains(gn)) outputStream.print(" penultimate");
+          if (finalSlots.contains(gn)) outputStream.print(" final");
+          if (nullableSuffixSlots.contains(gn)) outputStream.print(" nullableSuffix");
+          if (nullablePrefixSlots.contains(gn)) outputStream.print(" nullablePrefix");
+
+          if (!instanceFirst.get(gn).isEmpty()) {
+            outputStream.print(" instfirst = {");
+            printElements(outputStream, instanceFirst.get(gn));
+            outputStream.print("} instfollow = {");
+            printElements(outputStream, instanceFollow.get(gn));
+            outputStream.print("}");
+          }
+        }
+        if (gn.slotTerm != 0) outputStream.print(" Action: " + gn.toStringActions());
+        outputStream.print("\n");
+      }
+
+      outputStream.print("Accepting slot" + (acceptingSlots.size() == 1 ? "" : "s") + ":\n");
+      for (var gn : acceptingSlots)
+        outputStream.print(" " + gn.toStringAsProduction() + "\n");
+
+      outputStream.print("Accepting node number" + (acceptingSlots.size() == 1 ? "" : "s") + ":");
+      for (var gn : acceptingNodeNumbers)
+        outputStream.print(" " + gn);
+      outputStream.println();
+
+      outputStream.print("Paraterminals: " + paraterminalNames);
+      outputStream.println();
+
+      outputStream.print("Cyclic nonterminals: " + cyclicNonterminals);
+      outputStream.println();
+
+      outputStream.print("derivesOnly(R):");
+      outputStream.println();
+      for (var n : derivesExactly.getDomain())
+        if (cyclicNonterminals.contains(n)) {
+          outputStream.print(n + ": {");
+          for (var nf : derivesExactly.get(n))
+            outputStream.print(" " + nf);
+          outputStream.println(" }");
+        }
+
+      outputStream.println("derivesOnlyClosed (R+):");
+      for (var n : derivesExactlyTransitiveClosure.getDomain())
+        if (cyclicNonterminals.contains(n)) {
+          outputStream.print(n + ": {");
+          for (var nf : derivesExactlyTransitiveClosure.get(n))
+            outputStream.print(" " + nf);
+          outputStream.println(" }");
+        }
+
+      outputStream.print("cocyclic nonterminals:\n");
+      for (var n : derivesExactlyTransitiveClosure.getDomain())
+        if (cyclicNonterminals.contains(n)) {
+          outputStream.print(n + ": {");
+          for (var nf : derivesExactlyTransitiveClosure.get(n))
+            if (derivesExactlyTransitiveClosure.get(nf).contains(n)) outputStream.print(" " + nf);
+          outputStream.println(" }");
+        }
+
+      outputStream.print("cyclic slots:\n");
+      for (var n : cyclicSlots) {
+        outputStream.print(n.toStringAsProduction());
+        outputStream.println();
+      }
     }
-
-    outputStream.print("Accepting slot" + (acceptingSlots.size() == 1 ? "" : "s") + ":\n");
-    for (var gn : acceptingSlots)
-      outputStream.print(" " + gn.toStringAsProduction() + "\n");
-
-    outputStream.print("Accepting node number" + (acceptingSlots.size() == 1 ? "" : "s") + ":");
-    for (var gn : acceptingNodeNumbers)
-      outputStream.print(" " + gn);
-
-    outputStream.print("\nParaterminals: " + paraterminalNames);
-
-    outputStream.print("\nCyclic nonterminals: " + cyclicNonterminals);
-
-    outputStream.print("\n\nderivesOnly(R):\n");
-    for (var n : derivesExactly.getDomain())
-      if (cyclicNonterminals.contains(n)) {
-        outputStream.print(n + ": {");
-        for (var nf : derivesExactly.get(n))
-          outputStream.print(" " + nf);
-        outputStream.print(" }\n");
-      }
-
-    outputStream.print("\n\nderivesOnlyClosed (R+):\n");
-    for (var n : derivesExactlyTransitiveClosure.getDomain())
-      if (cyclicNonterminals.contains(n)) {
-        outputStream.print(n + ": {");
-        for (var nf : derivesExactlyTransitiveClosure.get(n))
-          outputStream.print(" " + nf);
-        outputStream.print(" }\n");
-      }
-
-    outputStream.print("\n\nCocyclic nonterminals: \n");
-    for (var n : derivesExactlyTransitiveClosure.getDomain())
-      if (cyclicNonterminals.contains(n)) {
-        outputStream.print(n + ": {");
-        for (var nf : derivesExactlyTransitiveClosure.get(n))
-          if (derivesExactlyTransitiveClosure.get(nf).contains(n)) outputStream.print(" " + nf);
-        outputStream.print(" }\n");
-      }
-
-    outputStream.print("\nCyclic slots:\n");
-    for (var n : cyclicSlots)
-      outputStream.print(n.toStringAsProduction() + "\n");
-    outputStream.print("\n");
   }
 
   private void printElements(PrintStream outputStream, Set<CFGElement> elements) {

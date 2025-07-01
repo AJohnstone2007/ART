@@ -31,6 +31,7 @@ import uk.ac.rhul.cs.csle.art.term.ITerms;
 import uk.ac.rhul.cs.csle.art.term.Rewriter;
 import uk.ac.rhul.cs.csle.art.term.TRRules;
 import uk.ac.rhul.cs.csle.art.term.TermTraverser;
+import uk.ac.rhul.cs.csle.art.term.TermTraverserLaTeX;
 import uk.ac.rhul.cs.csle.art.term.TermTraverserText;
 import uk.ac.rhul.cs.csle.art.util.Util;
 import uk.ac.rhul.cs.csle.art.util.Version;
@@ -113,7 +114,7 @@ public final class ScriptTermInterpreter {
   }
 
   private TermTraverserText initialiseScriptTraverser() {
-    TermTraverserText ret = new TermTraverserText(iTerms);
+    TermTraverserText ret = new TermTraverserText(iTerms, "ART Script traverser");
 
     ret.addActionBreak("directive", (Integer t) -> directiveAction(t), null, null);
 
@@ -403,7 +404,7 @@ public final class ScriptTermInterpreter {
 
     for (int i = 0; i < iTerms.termArity(iTerms.subterm(term)); i++) {
       String displayElement = iTerms.termSymbolString(iTerms.subterm(term, i));
-
+      Util.debug("Processing display element " + displayElement);
       switch (displayElement) {
       case "file":
         String filename = iTerms.termSymbolString(iTerms.subterm(term, i, 0));
@@ -583,7 +584,7 @@ public final class ScriptTermInterpreter {
   }
 
   private TermTraverserText initialisePlainTextTraverser() {
-    TermTraverserText ret = new TermTraverserText(iTerms);
+    TermTraverserText ret = new TermTraverserText(iTerms, "iTerms default plain text traverser");
 
     // __map and __m require special treatment because they don't fit neatly pre/in/post string model, so we shall directly program the underlying actions
     // For __map, the preorder action tests the arity of the term, and appends {= instead of {
@@ -702,8 +703,8 @@ public final class ScriptTermInterpreter {
     return texEscape(label);
   }
 
-  private TermTraverserText initialiseLaTeXTraverser() {
-    TermTraverserText ret = new TermTraverserText(iTerms);
+  private TermTraverserLaTeX initialiseLaTeXTraverser() {
+    TermTraverserLaTeX ret = new TermTraverserLaTeX(iTerms, "iTerms default LaTeX traverser");
     // -1: uncomment these to have shorthand type renditions rather than plain terms
     ret.addActionBreak("__bool", (Integer t) -> ret.append(typesetConstant(t)), null, null);
     ret.addActionBreak("__char", (Integer t) -> ret.append(typesetConstant(t)), null, null);
@@ -800,7 +801,7 @@ public final class ScriptTermInterpreter {
 
     // 4. Directives
     ret.addActionBreak("directive", (Integer t) -> {
-      ret.append("\\artDirective{!" + iTerms.termSymbolString(iTerms.subterm(t, 0)));
+      ret.append("\\artDirective{" + iTerms.termSymbolString(iTerms.subterm(t, 0)));
       for (int i = 0; i < iTerms.termArity(iTerms.subterm(t, 0)); i++) {
         ret.append(" " + typesetConstant(iTerms.subterm(t, 0, 0)));
       }
