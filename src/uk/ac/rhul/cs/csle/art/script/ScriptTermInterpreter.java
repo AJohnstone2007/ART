@@ -404,7 +404,7 @@ public final class ScriptTermInterpreter {
 
     for (int i = 0; i < iTerms.termArity(iTerms.subterm(term)); i++) {
       String displayElement = iTerms.termSymbolString(iTerms.subterm(term, i));
-      Util.debug("Processing display element " + displayElement);
+      // Util.debug("Processing display element " + displayElement);
       switch (displayElement) {
       case "file":
         String filename = iTerms.termSymbolString(iTerms.subterm(term, i, 0));
@@ -711,18 +711,18 @@ public final class ScriptTermInterpreter {
     ret.addActionBreak("__int32", (Integer t) -> ret.append(typesetConstant(t)), null, null);
     ret.addActionBreak("__real64", (Integer t) -> ret.append(typesetConstant(t)), null, null);
     ret.addActionBreak("__string", (Integer t) -> ret.append(typesetConstant(t)), null, null);
-    ret.addAction("__map", "\\artMap{", ", ", "}");
-    ret.addAction("__list", "\\artList{", ", ", "}");
+    ret.addAction("__map", "\\artMap{", "}{", "}");
+    ret.addAction("__list", "\\artList{", "}{", "}");
 
     // -1B: load global aliases
-    ret.addGlobalAlias("->", "\\artRelation{\\rightarrow}");
-    ret.addGlobalAlias("=>", "\\artRelation{\\Rightarrow}");
-    ret.addGlobalAlias("-\\", "\\artRelation{\\rightharpoonup}");
-    ret.addGlobalAlias("-/", "\\artRelation{\\rightharpoondown}");
-    ret.addGlobalAlias("~>", "\\artRelation{\\leadsto}");
+    ret.addGlobalAlias("->", "\\artRelation{$\\rightarrow$}");
+    ret.addGlobalAlias("=>", "\\artRelation{$\\Rightarrow$}");
+    ret.addGlobalAlias("-\\", "\\artRelation{$\\rightharpoonup$}");
+    ret.addGlobalAlias("-/", "\\artRelation{$\\rightharpoondown$}");
+    ret.addGlobalAlias("~>", "\\artRelation{$\\leadsto$}");
 
     // 0. Top level pretty print controls
-    ret.addAction("rules", "%!TEX root = typeset.tex\n", "", "");
+    ret.addAction("rules", "%!TEX root = artRules.tex\n", "", "");
 
     // 1. Context Free Grammar pretty print controls
     ret.addEmptyAction("cfgSlot");
@@ -767,8 +767,10 @@ public final class ScriptTermInterpreter {
     ret.addAction("cfgTearNamed", "\\artFoldUnder{", "}{", "}");
     ret.addAction("cfgInsert", "\\artInsert{", null, "}");
 
+    ret.addAction("cfgAttributeDeclarations", "\\artAttributeDeclarations{", "}{", "}");
     ret.addAction("cfgAttribute", "\\artAttribute{", ".", "}");
     ret.addAction("cfgEquation", "\\artEquation{", "}{", "}");
+    ret.addAction("cfgNative", "\\artNative{", "}{", "}");
     ret.addAction("cfgAssignment", "\\artAssignment{", "}{", "}");
 
     // 2. Chooser pretty print controls
