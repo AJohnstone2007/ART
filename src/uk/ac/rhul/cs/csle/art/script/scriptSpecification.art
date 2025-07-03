@@ -5,10 +5,10 @@ rules ::= rule rules^ | rule
 rule  ::= cfgRule^^ | trRule^^ | chooseRule^^ | directive^^   
 
 (* Context Free Grammar rules ************************************************)
-cfgRule  ::= cfgLHS cfgAttributeDeclarations '::='^ cfgAlts
-  cfgLHS ::= ID  
-  cfgAttributeDeclarations ::= #^ | '<'^ cfgAttributeDeclaration^^ '>'^ 
-  cfgAttributeDeclaration  ::= ID ':'^ ID | ID ':'^ ID cfgAttributeDeclaration
+cfgRule  ::= cfgLHS '::='^ cfgAlts
+  cfgLHS ::= ID | ID '<'^ cfgAttributeDeclarations '>'^
+  cfgAttributeDeclarations ::=  cfgAttributeDeclaration | cfgAttributeDeclaration cfgAttributeDeclarations^  
+  cfgAttributeDeclaration  ::= ID ':'^ ID 
 
 cfgAlts ::= cfgAlt '|'^ cfgAlts^ | cfgAlt  
 cfgAlt  ::= cfgSeq^^ cfgActions cfgEpsilonCarrier | cfgSeq^^ cfgActions cfgEpsilon | cfgSeq^^ cfgElems^ cfgActions (* final actions in sequence *)  
