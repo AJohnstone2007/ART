@@ -34,7 +34,8 @@ public class LexerBaseLine extends AbstractLexer {
       for (rightmostActiveSlice = inputString.length() - 1; rightmostActiveSlice >= 0; rightmostActiveSlice--)
         if (hasSlice[rightmostActiveSlice]) break;
 
-      lexicalError("Unknown lexeme starting with character " + (int) inputAsCharArray[rightmostActiveSlice], rightmostActiveSlice);
+      lexicalError("Unknown lexeme starting with character " + (int) inputAsCharArray[rightmostActiveSlice] + " - " + inputAsCharArray[rightmostActiveSlice],
+          rightmostActiveSlice);
 
       tweSlices = null;
       return false;
@@ -83,7 +84,7 @@ public class LexerBaseLine extends AbstractLexer {
   }
 
   private void tryTokenMatch(CFGElement e) {
-    // System.out.println("tryTokenMatch(" + e + ") at inputIndex " + inputIndex);
+    System.out.println("tryTokenMatch(" + e.toStringDetailed() + ") at inputIndex " + inputIndex);
     lexemeStart = inputIndex;
     switch (e.cfgKind) {
     default:
@@ -205,8 +206,6 @@ public class LexerBaseLine extends AbstractLexer {
         Util.fatal("Unknown builtin in lexer " + e);
         break;
       }
-
     }
   }
-
 }

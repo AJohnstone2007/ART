@@ -790,7 +790,7 @@ public final class ScriptTermInterpreter {
     ret.addActionBreak("choosePredefinedSet", (Integer t) -> ret.append(ret.childSymbolString(t, 0)), null, null);
 
     // 3. Term rewrite pretty print controls
-    ret.addAction("trRule", "\\artTRRule{", "", "}\n");
+    ret.addAction("trRule", "\\artTRRule{", "}{", "}\n");
     ret.addAction("tr", "\\artTR{", "}{", "}");
     ret.addAction("trPremises", null, "\\artPremiseSpace", null);
     ret.addActionBreak("trLabel", (Integer t) -> {
@@ -801,7 +801,7 @@ public final class ScriptTermInterpreter {
       }
     }, null, null);
     ret.addAction("trMatch", " ", "\\triangleright ", " ");
-    ret.addAction("trTransition", "\\artTransition{", "", "}\n");
+    ret.addAction("trTransition", "\\artTransition{", "}{", "}\n");
     ret.addEmptyAction("trTopTuple");
     ret.addAction("trTuple", "\\artTuple{", ", ", "}\n");
 
@@ -856,7 +856,7 @@ public final class ScriptTermInterpreter {
     // Add suffix
     if (hasIndex) ret += "$_{" + index + "}$";
     for (int i = 0; i < primes; i++)
-      ret += "^\\prime";
+      ret += "$^\\prime$";
 
     // Classify
     switch (underscores) {

@@ -73,7 +73,7 @@ public abstract class AbstractLexer implements DisplayInterface {
       switch (element.cfgElement.str) {
       case "STRING_DQ", "STRING_SQ", "STRING_PLAIN_SQ", "STRING_DOLLAR":
         return full.substring(1, full.length() - 1);
-      case "CHAR":
+      case "CHAR_BQ":
         return full.substring(1);
       }
     }
