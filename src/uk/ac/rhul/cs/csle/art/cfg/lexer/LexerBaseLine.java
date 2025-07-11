@@ -19,11 +19,11 @@ public class LexerBaseLine extends AbstractLexer {
     inputLength = inputString.length();
     inputAsCharArray = inputString.toCharArray();
     inputIndex = 1;
+    matchWhitespace();
+    whitespacePrefix = inputIndex;
     tweSlices = new TWESetElement[inputLength][];
     hasSlice = new boolean[inputLength];
     hasSlice[1] = true;
-    matchWhitespace();
-    whitespacePrefix = inputIndex;
     Set<TWESetElement> slice;
 
     for (int i = 0; i < inputString.length(); i++)
@@ -56,7 +56,7 @@ public class LexerBaseLine extends AbstractLexer {
 
   public TWESetElement[] constructTWESlice(int index) {
     Set<TWESetElement> ret = new HashSet<>();
-    int lexemeStart = index == 0 ? whitespacePrefix : index; // Index zero is special case because of leading whitespace
+    int lexemeStart = index == 1 ? whitespacePrefix : index; // Index zero is special case because of leading whitespace
     for (var e : cfgRules.elements.keySet())
       if (e.isToken && !e.isWhitespace) {
         inputIndex = lexemeStart;
