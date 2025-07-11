@@ -15,7 +15,7 @@ public abstract class AbstractLexer implements DisplayInterface {
   protected CFGRules cfgRules;
   public String inputString = ""; // Original input string
   public TWESetElement[][] tweSlices;
-  protected int inputIndex, inputLength, lexemeStart, lexemeEnd;
+  protected int inputIndex, inputLength, lexemeStart, lexemeEnd, whitespacePrefix;
   protected char[] inputAsCharArray;
 
   // Internal research fields

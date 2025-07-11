@@ -15,23 +15,18 @@ public class LexerBaseLine extends AbstractLexer {
   public boolean lex(String userString, CFGRules cfgRules, ChooseRules chooseRules) {
     this.cfgRules = cfgRules;
     // Util.debug("Grammar" + cfgRules + "end of grammar");
-    /* This is very inefficient and should be rewritten */
-    inputString = "\0" + userString + "\0"; // Prepend SOS and Append EOS
+    inputString = userString + "\0";
     inputLength = inputString.length();
     inputAsCharArray = inputString.toCharArray();
+    inputIndex = 0;
     tweSlices = new TWESetElement[inputLength][];
-    inputIndex = 1; // Note: in the theory strings are index 1..n not 0..n-1: we have prepended SOS to make this work
-    matchWhitespace();
-    // Add Start-Of-String which also holds the (possibly empty) initial whitespace
-    tweSlices[0] = new TWESetElement[1];
-    tweSlices[0][0] = new TWESetElement(cfgRules.startOfStringElement, 0, 0, inputIndex);
-
     hasSlice = new boolean[inputLength];
-    hasSlice[inputIndex] = true;
-
+    hasSlice[0] = true;
+    matchWhitespace();
+    whitespacePrefix = inputIndex;
     Set<TWESetElement> slice;
 
-    for (int i = inputIndex; i < inputString.length(); i++)
+    for (int i = 0; i < inputString.length(); i++)
       if (hasSlice[i]) tweSlices[i] = constructTWESlice(i);
 
     if (!hasSlice[inputLength - 1]) { // Lexical reject
@@ -61,7 +56,7 @@ public class LexerBaseLine extends AbstractLexer {
 
   public TWESetElement[] constructTWESlice(int index) {
     Set<TWESetElement> ret = new HashSet<>();
-    int lexemeStart = index;
+    int lexemeStart = index == 0 ? whitespacePrefix : index; // Index zero is special case because of leading whitespace
     for (var e : cfgRules.elements.keySet())
       if (e.isToken && !e.isWhitespace) {
         inputIndex = lexemeStart;

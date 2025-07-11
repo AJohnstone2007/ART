@@ -105,13 +105,13 @@ public final class ScriptTermInterpreter {
     Util.traceLevel = 0;
     Util.errorLevel = 1;
     scriptParser.parse(scriptString, scriptCFGRules, scriptLexer, scriptChooser);
-    Util.debug("Script derivations:\n");
-    scriptParser.derivations.print(System.out, iTerms.rawTextTraverser, false, false, true);
+    // Util.debug("Script derivations:\n");
+    // scriptParser.derivations.print(System.out, iTerms.rawTextTraverser, false, false, true);
     scriptParser.outcomeReport();
     scriptParser.derivations.numberNodes();
     if (scriptParser.derivations.ambiguityCheck()) Util.fatal("Script ambiguity");
     scriptDerivationTerm = scriptParser.derivations.derivationAsTerm();
-    Util.debug("Script term:\n" + iTerms.toRawString(scriptDerivationTerm));
+    // Util.debug("Script term:\n" + iTerms.toRawString(scriptDerivationTerm));
     Util.traceLevel = Util.errorLevel = 3;
     scriptTraverser.traverse(scriptDerivationTerm);
     if (successfulTests != 0 || failedTests != 0) Util.info("Successful tests: " + successfulTests + "; failed tests " + failedTests);
