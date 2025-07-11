@@ -18,12 +18,18 @@ public class LexerBaseLine extends AbstractLexer {
     inputString = "\0" + userString + "\0";
     inputLength = inputString.length();
     inputAsCharArray = inputString.toCharArray();
-    inputIndex = 1;
-    matchWhitespace();
-    whitespacePrefix = inputIndex;
+
     tweSlices = new TWESetElement[inputLength][];
     hasSlice = new boolean[inputLength];
     hasSlice[1] = true;
+    inputIndex = 1;
+
+    matchWhitespace();
+    whitespacePrefix = inputIndex;// Old style
+    // New style: add Start-Of-String which also holds the (possibly empty) singleton initial whitespace
+    tweSlices[0] = new TWESetElement[1];
+    tweSlices[0][0] = new TWESetElement(cfgRules.startOfStringElement, 0, 0, inputIndex); // collectinputIndex which has been updated by whitespace matching
+
     Set<TWESetElement> slice;
 
     for (int i = 0; i < inputString.length(); i++)
@@ -56,7 +62,7 @@ public class LexerBaseLine extends AbstractLexer {
 
   public TWESetElement[] constructTWESlice(int index) {
     Set<TWESetElement> ret = new HashSet<>();
-    int lexemeStart = index == 1 ? whitespacePrefix : index; // Index zero is special case because of leading whitespace
+    int lexemeStart = index == 1 ? whitespacePrefix : index; // Index one is special case because of leading whitespace
     for (var e : cfgRules.elements.keySet())
       if (e.isToken && !e.isWhitespace) {
         inputIndex = lexemeStart;
