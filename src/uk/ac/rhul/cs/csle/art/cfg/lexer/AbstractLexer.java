@@ -81,7 +81,7 @@ public abstract class AbstractLexer implements DisplayInterface {
   }
 
   public void chooseDefault() {
-    if (tweSlices[0] == null) {
+    if (tweSlices[1] == null) {
       Util.error("Empty tweSet");
       return;
     }

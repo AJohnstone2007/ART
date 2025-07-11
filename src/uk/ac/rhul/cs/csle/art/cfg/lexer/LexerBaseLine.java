@@ -15,13 +15,13 @@ public class LexerBaseLine extends AbstractLexer {
   public boolean lex(String userString, CFGRules cfgRules, ChooseRules chooseRules) {
     this.cfgRules = cfgRules;
     // Util.debug("Grammar" + cfgRules + "end of grammar");
-    inputString = userString + "\0";
+    inputString = "\0" + userString + "\0";
     inputLength = inputString.length();
     inputAsCharArray = inputString.toCharArray();
-    inputIndex = 0;
+    inputIndex = 1;
     tweSlices = new TWESetElement[inputLength][];
     hasSlice = new boolean[inputLength];
-    hasSlice[0] = true;
+    hasSlice[1] = true;
     matchWhitespace();
     whitespacePrefix = inputIndex;
     Set<TWESetElement> slice;

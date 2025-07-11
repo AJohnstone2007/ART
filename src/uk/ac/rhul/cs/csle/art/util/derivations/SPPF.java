@@ -272,7 +272,7 @@ public class SPPF extends AbstractDerivations {
 
   @Override
   public void setRoot(CFGNode cfgNode, int n) {
-    root = nodes.get(new SPPFSymbolNode(cfgNode, 0, n));
+    root = nodes.get(new SPPFSymbolNode(cfgNode, 1, n));
   }
 
   public void loadtatistics(Statistics currentStatistics) {

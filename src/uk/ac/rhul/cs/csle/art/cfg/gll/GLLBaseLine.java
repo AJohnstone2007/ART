@@ -29,7 +29,7 @@ public class GLLBaseLine extends AbstractParser {
 
     if (!lexer.lex(input, cfgRules, chooseRules)) return;
     // lexer.printTWESet(System.out, null);
-    inputIndex = 0;
+    inputIndex = 1;
     cfgNode = cfgRules.elementToNodeMap.get(cfgRules.startNonterminal).alt;
     stackNode = stacks.getRoot();
     derivationNode = null;
@@ -38,7 +38,7 @@ public class GLLBaseLine extends AbstractParser {
       nextCFGNode: while (true) {
         switch (cfgNode.cfgElement.cfgKind) {
         case ALT:
-          queueAlternateTasks(); // Creat task descriptor for the start of each production
+          queueAlternateTasks(); // Create task descriptor for the start of each production
           continue nextTask;
         case EPS:
           derivationNode = updateDerivation(inputIndex); // Must match, but nothing consumed, so rightExtent = inputIndex
