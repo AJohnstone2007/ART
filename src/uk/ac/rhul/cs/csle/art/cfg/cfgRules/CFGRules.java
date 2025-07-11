@@ -27,6 +27,7 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
   private final Set<CFGKind> selfFirst = Set.of(CFGKind.B, CFGKind.C, CFGKind.EOS, CFGKind.T, CFGKind.TI, CFGKind.EPS);
   private int nextFreeEnumerationElement;
   public final CFGElement epsilonElement;
+  public final CFGElement startOfStringElement;
   public final CFGElement endOfStringElement;
   public final CFGNode endOfStringNode;
 
@@ -83,16 +84,19 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
     this.iTerms = iTerms;
     epsilonElement = findElement(CFGKind.EPS, "#");
     endOfStringElement = findElement(CFGKind.EOS, "$");
+    startOfStringElement = findElement(CFGKind.SOS, "$$");
 
     endOfStringNode = new CFGNode(this, CFGKind.EOS, "$", 0, GIFTKind.NONE, null, null);
     endOfStringNode.seq = endOfStringNode; // trick to ensure initial call collects rootNode
   }
 
+  // TODO: Whatis this for?
   public CFGRules(CFGRules that, boolean binarise) {
     this.name = that.name;
     this.iTerms = that.iTerms;
     epsilonElement = findElement(CFGKind.EPS, "#");
     endOfStringElement = findElement(CFGKind.EOS, "$");
+    startOfStringElement = findElement(CFGKind.SOS, "$$");
 
     endOfStringNode = new CFGNode(this, CFGKind.EOS, "$", 0, GIFTKind.NONE, null, null);
     endOfStringNode.seq = endOfStringNode; // trick to ensure initial call collects rootNode

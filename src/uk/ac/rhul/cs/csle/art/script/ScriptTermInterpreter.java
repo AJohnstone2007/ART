@@ -105,11 +105,13 @@ public final class ScriptTermInterpreter {
     Util.traceLevel = 0;
     Util.errorLevel = 1;
     scriptParser.parse(scriptString, scriptCFGRules, scriptLexer, scriptChooser);
+    Util.debug("Script derivations:\n");
+    scriptParser.derivations.print(System.out, iTerms.rawTextTraverser, false, false, true);
     scriptParser.outcomeReport();
     scriptParser.derivations.numberNodes();
     if (scriptParser.derivations.ambiguityCheck()) Util.fatal("Script ambiguity");
     scriptDerivationTerm = scriptParser.derivations.derivationAsTerm();
-    // Util.info("Script term:\n" + iTerms.toString(scriptDerivationTerm, true, -1, null));
+    Util.debug("Script term:\n" + iTerms.toRawString(scriptDerivationTerm));
     Util.traceLevel = Util.errorLevel = 3;
     scriptTraverser.traverse(scriptDerivationTerm);
     if (successfulTests != 0 || failedTests != 0) Util.info("Successful tests: " + successfulTests + "; failed tests " + failedTests);
@@ -156,11 +158,11 @@ public final class ScriptTermInterpreter {
   }
 
   private String childSymbolString(int t) {
-    return iTerms.termSymbolString(iTerms.subterm(t, 0)).translateEscapes();
+    return Util.unescapeString(iTerms.termSymbolString(iTerms.subterm(t, 0)));
   }
 
   private String childSymbolString1(int t) {
-    return iTerms.termSymbolString(iTerms.subterm(t, 1)).translateEscapes();
+    return Util.unescapeString(iTerms.termSymbolString(iTerms.subterm(t, 1)));
   }
 
   private void directiveAction(int term) {
@@ -335,7 +337,7 @@ public final class ScriptTermInterpreter {
           Util.fatal("Unable to open try file; skipping " + iTerms.toString(term));
         }
       else if (iTerms.termSymbolString(iTerms.subterm(term, 0, 0, 0)).equals("__string")) // Parse literal string
-        tryParse("", iTerms.termSymbolString(iTerms.subterm(term, 0, 0, 0, 0)).translateEscapes());
+        tryParse("", Util.unescapeString(iTerms.termSymbolString(iTerms.subterm(term, 0, 0, 0, 0))));
       else
         currentTryTerm = iTerms.subterm(term, 0, 0); // No parsing - process term directly
 

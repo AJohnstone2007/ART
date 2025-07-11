@@ -1,6 +1,7 @@
 package uk.ac.rhul.cs.csle.art.cfg.lexer;
 
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGElement;
+import uk.ac.rhul.cs.csle.art.util.Util;
 
 public class TWESetElement {
   public final CFGElement cfgElement;
@@ -16,7 +17,7 @@ public class TWESetElement {
     this.lexemeEnd = lexemeEnd;
     this.rightExtent = rightExtent;
     suppressed = false;
-    // Util.debug("Constructed TWESetElement " + this);
+    Util.debug("Constructed TWESetElement " + this);
   }
 
   @Override

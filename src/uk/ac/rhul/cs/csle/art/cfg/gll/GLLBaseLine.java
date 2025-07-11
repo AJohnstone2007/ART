@@ -34,23 +34,23 @@ public class GLLBaseLine extends AbstractParser {
     stackNode = stacks.getRoot();
     derivationNode = null;
     queueAlternateTasks();
-    nextTask: while (nextTask())
+    nextTask: while (nextTask()) {
       nextCFGNode: while (true) {
         switch (cfgNode.cfgElement.cfgKind) {
         case ALT:
-          queueAlternateTasks(); // Creat task descriptor for the start of each production
+          queueAlternateTasks(); // Create task descriptor for the start of each production
           continue nextTask;
         case EPS:
           derivationNode = updateDerivation(inputIndex); // Must match, but nothing consumed, so rightExtent = inputIndex
           cfgNode = cfgNode.seq; // Next grammar node which will be an END node
           continue nextCFGNode; // continue with this sequence
-        case B, T, TI, C:
+        case SOS, B, T, TI, C:
           var slice = lexer.tweSlices[inputIndex];
           if (slice != null) {// Ignore empty TWE slices
             for (int firstIndex = 0; firstIndex < slice.length; firstIndex++)
               if (slice[firstIndex].cfgElement == cfgNode.cfgElement) { // Does this TWE match the current grammar position
 
-                Util.trace(8, 0, "Matched " + cfgNode.toStringAsProduction());
+                Util.debug("Matched " + cfgNode.toStringAsProduction());
 
                 for (int restOfIndex = firstIndex + 1; restOfIndex < slice.length; restOfIndex++) // Queue tasks for any subsequent matching TWEs in this slice
                   if (slice[restOfIndex].cfgElement == cfgNode.cfgElement)
@@ -73,6 +73,7 @@ public class GLLBaseLine extends AbstractParser {
           Util.fatal("Unexpected CFGNode kind " + cfgNode.cfgElement.cfgKind + " in " + getClass().getSimpleName());
         }
       }
+    }
     derivations.numberNodes();
     derivations.choose(chooseRules);
   }
@@ -88,13 +89,13 @@ public class GLLBaseLine extends AbstractParser {
   }
 
   private boolean nextTask() {
-    var task = tasks.next();
-    // Util.debug("Processing task " + task);
-    if (task == null) return false;
-    inputIndex = task.tokenIndex;
-    cfgNode = task.cfgNode;
-    stackNode = task.stackNode;
-    derivationNode = task.derivationNode;
+    var currentTask = tasks.next();
+    // Util.debug("Processing task " + currentTask);
+    if (currentTask == null) return false;
+    inputIndex = currentTask.tokenIndex;
+    cfgNode = currentTask.cfgNode;
+    stackNode = currentTask.stackNode;
+    derivationNode = currentTask.derivationNode;
     return true;
   }
 
@@ -106,8 +107,9 @@ public class GLLBaseLine extends AbstractParser {
 
   private void retrn() {
     if (stackNode.equals(stacks.getRoot())) {
-      if (cfgRules.acceptingNodeNumbers.contains(cfgNode.num) && (inputIndex == lexer.tweSlices.length - 1)) {
-        derivations.setRoot(cfgRules.elementToNodeMap.get(cfgRules.startNonterminal), lexer.tweSlices.length - 1);
+      Util.debug("GLL Baseline acceptance test with " + lexer.tweSlices.length + " tweSlices and inputIndex " + inputIndex);
+      if (cfgRules.acceptingNodeNumbers.contains(cfgNode.num) && (inputIndex == lexer.tweSlices.length - 2)) {
+        derivations.setRoot(cfgRules.elementToNodeMap.get(cfgRules.startNonterminal), lexer.tweSlices.length - 2);
         inLanguage = true;
       }
       return;

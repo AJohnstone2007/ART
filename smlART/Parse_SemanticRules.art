@@ -1,0 +1,23 @@
+(* xyzSemanticRules.raw translator to ART format *)
+!whitespace ' ', &COMMENT_NEST_ART
+
+text ::= blankLinesOpt semanticRules
+
+semanticRules ::= semanticRule | semanticRule semanticRules 
+semanticRule ::= &ID '::=' productions blankLinesOpt
+
+productions ::= elements lineEnd | elements lineEnd productions
+
+elements ::= element  | element elements
+element ::= '〈' elements '〉' | &ID | '···'                    // SML metaterminals
+| '...' | ':' | ';' | ',' | '{' | '}' | '(' | ')' | '[' | ']' // SML terminals
+| '#' | '*' | '|' | '=' | '-=-' | '=>' | '->' | '′'           // SML terminals
+
+blankLinesOpt ::= # | lineEnd blankLinesOpt
+lineEnd ::= '\r' '\n' (* Windows *) (*| '\n' (* Unix *) | '\r' (* Macos *) *)
+
+!generate actions
+!try 'smlART/smlART_ContextFreeRules.raw'
+//!print tweSet
+//!print indented derivation
+!show 'rules.dot' semanticRules

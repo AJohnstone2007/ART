@@ -6,7 +6,7 @@ import java.util.Calendar;
 
 public class Util {
   public static PrintStream console = System.out;
-  public static int traceLevel = 3;
+  public static int traceLevel = 10;
   public static int errorLevel = 1;
 
   public static void trace(int level, int indent, String msg) {
@@ -148,6 +148,9 @@ public class Util {
     for (int i = leftDelimiterWidth; i < chars.length - rightDelimiterWidth; i++)
       if (chars[i] == '\\')
         switch (chars[++i]) {
+        case '\\':
+          ret[retI++] = '\\';
+          break;
         case 'b':
           ret[retI++] = '\b';
           break;
@@ -163,8 +166,11 @@ public class Util {
         case 't':
           ret[retI++] = '\t';
           break;
-        default:
+        default: // return the escaped character
+        {
           ret[retI++] = chars[i];
+          warning(" unrecognised escape sequence \\" + chars[i] + " - unescaping to " + chars[i]);
+        }
         }
       else
         ret[retI++] = chars[i];

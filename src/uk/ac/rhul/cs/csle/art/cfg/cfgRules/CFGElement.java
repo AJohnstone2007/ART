@@ -39,6 +39,8 @@ public class CFGElement implements Comparable<Object> {
   @Override
   public String toString() {
     switch (cfgKind) {
+    case SOS:
+      return "$$";
     case EOS:
       return "$";
     case T:
