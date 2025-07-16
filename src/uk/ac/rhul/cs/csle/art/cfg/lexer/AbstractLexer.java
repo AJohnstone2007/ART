@@ -15,9 +15,11 @@ public abstract class AbstractLexer implements DisplayInterface {
   protected CFGRules cfgRules;
   public String inputString = ""; // Original input string
   public TWESetElement[][] tweSlices;
-  protected int inputIndex, inputLength, lexemeStart, lexemeEnd, whitespacePrefix;
+  protected int inputIndex, lexemeStart, lexemeEnd, whitespacePrefix;
   protected char[] inputAsCharArray;
 
+  // public static boolean useWhitespacePrefix = true; // dirty tricks department: this is a static variable so after making the script term we can switch to th
+  // lexing regime for any !try directive
   // Internal research fields
   public Integer deleteTokenCount = 0;
   public Integer swapTokenCount = 0;
@@ -67,7 +69,7 @@ public abstract class AbstractLexer implements DisplayInterface {
   }
 
   public String lexeme(TWESetElement element) {
-    String full = inputString.substring(element.lexemeStart, element.lexemeEnd);
+    String full = inputString.substring(element.leftExtent, element.lexemeEnd);
 
     if (element.cfgElement.cfgKind == CFGKind.B) {
       switch (element.cfgElement.str) {
@@ -81,19 +83,19 @@ public abstract class AbstractLexer implements DisplayInterface {
   }
 
   public void chooseDefault() {
-    if (tweSlices[1] == null) {
+    if (tweSlices[0] == null) {
       Util.error("Empty tweSet");
       return;
     }
     for (int i = 0; i < tweSlices.length; i++) {
       var slice = tweSlices[i];
-      if (slice != null) for (int ei = 0; ei < slice.length; ei++)
-        for (int fi = 0; fi < slice.length; fi++) {
-          var e = slice[ei];
-          var f = slice[fi];
-          if ((e.rightExtent > f.rightExtent) || (e.rightExtent == f.rightExtent && e.cfgElement.cfgKind != CFGKind.B && f.cfgElement.cfgKind == CFGKind.B))
+      if (slice != null) for (var e : slice)
+        for (var f : slice)
+          if (f.cfgElement.cfgKind == CFGKind.SOS)
+            continue; // do not suppress the start of string token
+          else if ((e.rightExtent > f.rightExtent)
+              || (e.rightExtent == f.rightExtent && e.cfgElement.cfgKind != CFGKind.B && f.cfgElement.cfgKind == CFGKind.B))
             f.suppressed = true;
-        }
     }
   }
 
@@ -153,35 +155,35 @@ public abstract class AbstractLexer implements DisplayInterface {
    *
    ******************************************************************************/
   protected char peekCh() {
-    if (inputIndex >= inputLength)
+    if (inputIndex >= inputString.length())
       return '\0';
     else
       return inputAsCharArray[inputIndex];
   }
 
   protected char peekChToLower() {
-    if (inputIndex >= inputLength)
+    if (inputIndex >= inputString.length())
       return '\0';
     else
       return Character.toLowerCase(inputAsCharArray[inputIndex]);
   }
 
   protected char peekOneCh() {
-    if (inputIndex + 1 >= inputLength)
+    if (inputIndex + 1 >= inputString.length())
       return '\0';
     else
       return inputAsCharArray[inputIndex + 1];
   }
 
   protected char peekCh(int offset) {
-    if (inputIndex + offset >= inputLength)
+    if (inputIndex + offset >= inputString.length())
       return '\0';
     else
       return inputAsCharArray[inputIndex + offset];
   }
 
   protected char getCh() {
-    if (inputIndex >= inputLength)
+    if (inputIndex >= inputString.length())
       return '\0';
     else
       return inputAsCharArray[inputIndex++];

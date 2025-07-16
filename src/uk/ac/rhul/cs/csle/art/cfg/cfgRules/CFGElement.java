@@ -10,7 +10,6 @@ public class CFGElement implements Comparable<Object> {
   public int number;
   public boolean isToken;
   public boolean isWhitespace;
-  public boolean suppressWhitespace;
   public final CFGKind cfgKind;
   public final String str;
 
@@ -22,13 +21,8 @@ public class CFGElement implements Comparable<Object> {
     this.cfgKind = kind;
     this.str = s;
     switch (this.cfgKind) {
-    case C:
+    case C, T, TI, B:
       isToken = true;
-      suppressWhitespace = true;
-      break;
-    case T, TI, B:
-      isToken = true;
-      break;
     }
   }
 

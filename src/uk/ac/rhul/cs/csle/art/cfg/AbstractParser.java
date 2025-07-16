@@ -28,7 +28,9 @@ public abstract class AbstractParser {
       if (derivations == null) Util.error("current parser does not produce API level derivations");
     } else if (derivations == null)
       Util.error("Syntax error");
-    else
-      Util.error(Util.echo("Syntax error", lexer.tweSlices[derivations.widestIndex()][0].lexemeStart, lexer.inputString));
+    else {
+      int widestIndex = derivations.widestIndex();
+      Util.error(Util.echo("Syntax error ", lexer.tweSlices[widestIndex][0].leftExtent, lexer.inputString));
+    }
   }
 }

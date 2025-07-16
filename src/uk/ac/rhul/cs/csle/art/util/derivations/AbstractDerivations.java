@@ -59,8 +59,4 @@ public abstract class AbstractDerivations implements DisplayInterface {
   public abstract void numberNodes();
 
   public abstract void choose(ChooseRules chooseRules);
-
-  public abstract void toDot();
-
-  public abstract void dump(String filename);
 }

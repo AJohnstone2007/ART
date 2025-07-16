@@ -1,37 +1,47 @@
 package uk.ac.rhul.cs.csle.art.util.derivations;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.PrintStream;
 
 import uk.ac.rhul.cs.csle.art.util.Util;
 
 class SPPF2Dot {
-  final String rootNodeStyle = "[style=filled fillcolor=lightgreen]";
-  final String packNodeStyle = "[style=rounded]";
-  final String ambiguousStyle = "[color=orange]";
-  final String cycleStyle = "[color=red]";
-  final String intermediateNodeStyle = "[style=filled fillcolor=grey92]";
-  final String symbolNodeStyle = "";
-  final String unreachableSymbolNodeStyle = "[style=filled fillcolor=lightyellow]";
-  final String unreachablePackNodeStyle = "[style=\"filled,rounded\" fillcolor=lightyellow]";
-  final String deletedPackNodeStyle = "[style=\"filled,rounded\" fillcolor=cornflowerblue]";
-  final String deletedPrimePackNodeStyle = "[style=\"filled,rounded\" fillcolor=pink]";
-  final String deletedAndDeletedPrimePackNodeStyle = "[style=\"filled,rounded\" fillcolor=mediumpurple]";
-  PrintStream dotOut = null;
-  private boolean showIndicies;
+  private final String rootNodeStyle = "[style=filled fillcolor=lightgreen]";
+  private final String packNodeStyle = "[style=rounded]";
+  private final String ambiguousStyle = "[color=orange]";
+  private final String cycleStyle = "[color=red]";
+  private final String intermediateNodeStyle = "[style=filled fillcolor=grey92]";
+  private final String symbolNodeStyle = "";
+  private final String unreachableSymbolNodeStyle = "[style=filled fillcolor=lightyellow]";
+  private final String unreachablePackNodeStyle = "[style=\"filled,rounded\" fillcolor=lightyellow]";
+  private final String deletedPackNodeStyle = "[style=\"filled,rounded\" fillcolor=cornflowerblue]";
+  private final String deletedPrimePackNodeStyle = "[style=\"filled,rounded\" fillcolor=pink]";
+  private final String deletedAndDeletedPrimePackNodeStyle = "[style=\"filled,rounded\" fillcolor=mediumpurple]";
+  private PrintStream outputStream = null;
+  private boolean indexed;
   private boolean showIntermediates;
   private final SPPF sppf;
 
-  public SPPF2Dot(SPPF sppf) {
+  public SPPF2Dot(SPPF sppf, PrintStream outputStream, boolean indexed, boolean full, boolean showIntermediates) {
     this.sppf = sppf;
-    if (sppf.root == null) {
-      Util.warning("Missing SPPF root node - skipping SPPF visualisation");
-      return;
-    }
+    this.outputStream = outputStream;
+    this.indexed = indexed;
+    this.showIntermediates = showIntermediates;
 
-    sppf2Dot("sppf_full.dot", true, true, false); // full SPPF
-    sppf2Dot("sppf_core.dot", false, true, true); // core SPPF - only nodes reachable from (S,0,n)
+    outputStream.println("digraph \"SPPF\" {\n"
+        + "graph[ordering=out ranksep=0.1]\n node[fontname=Helvetica fontsize=9 shape=box height=0 width=0 margin=0.04 color=gray]\nedge[arrowsize=0.3 color=gray]");
+    if (full)
+      for (SPPFSymbolNode n : sppf.nodes.keySet())
+        sppfSubtreeToDot(n);
+    else {
+      if (sppf.root == null) {
+        Util.error("SPPF for rejected string can only be visualused in full");
+        return;
+      }
+      sppf.visited.clear();
+      coreSPPFToDotRec(sppf.root);
+    }
+    outputStream.println("}");
+    outputStream.close();
   }
 
   // public void derivation2Dot() {
@@ -85,28 +95,6 @@ class SPPF2Dot {
   // sppf.visited.clear(sppfn.number);
   // }
 
-  public void sppf2Dot(String filename, boolean full, boolean showIndicies, boolean showIntermediates) {
-    this.showIndicies = showIndicies;
-    this.showIntermediates = showIntermediates;
-
-    try {
-      dotOut = new PrintStream(new File(filename));
-      dotOut.println("digraph \"SPPF\" {\n"
-          + "graph[ordering=out ranksep=0.1]\n node[fontname=Helvetica fontsize=9 shape=box height=0 width=0 margin=0.04 color=gray]\nedge[arrowsize=0.3 color=gray]");
-      if (full)
-        for (SPPFSymbolNode n : sppf.nodes.keySet())
-          sppfSubtreeToDot(n);
-      else {
-        sppf.visited.clear();
-        coreSPPFToDotRec(sppf.root);
-      }
-      dotOut.println("}");
-      dotOut.close();
-    } catch (FileNotFoundException e) {
-      Util.error("Unable to write SPPF visualisation to " + filename);
-    }
-  }
-
   private void coreSPPFToDotRec(SPPFSymbolNode sppfn) {
     if (sppf.visited.get(sppfn.number)) return;
     sppf.visited.set(sppfn.number);
@@ -122,42 +110,43 @@ class SPPF2Dot {
   private void sppfSubtreeToDot(SPPFSymbolNode sppfn) {
     boolean isAmbiguous = sppfn.packNodes.size() > 1;
     if (sppfn.isSymbol())
-      dotOut.println("\"" + sppfn.number + "\"" + symbolNodeStyle + " [label=\"" + sppfn.number + " " + sppfn.grammarNode.toString() + " " + sppfn.leftExtent
-          + ", " + sppfn.rightExtent + "\"]");
-    else
-      dotOut.println("\"" + sppfn.number + "\"" + intermediateNodeStyle + " [label=\"" + sppfn.number + " " + sppfn.grammarNode.toStringAsProduction() + " "
+      outputStream.println("\"" + sppfn.number + "\"" + symbolNodeStyle + " [label=\"" + sppfn.number + " " + sppfn.grammarNode.toString() + " "
           + sppfn.leftExtent + ", " + sppfn.rightExtent + "\"]");
+    else
+      outputStream.println("\"" + sppfn.number + "\"" + intermediateNodeStyle + " [label=\"" + sppfn.number + " " + sppfn.grammarNode.toStringAsProduction()
+          + " " + sppfn.leftExtent + ", " + sppfn.rightExtent + "\"]");
 
-    if (isAmbiguous) dotOut.println(ambiguousStyle);
-    if (sppf.cyclic.get(sppfn.number)) dotOut.println(cycleStyle);
-    if (!sppf.rootReachable.get(sppfn.number)) dotOut.println(unreachableSymbolNodeStyle);
-    if (sppfn == sppf.root) dotOut.println(rootNodeStyle);
+    if (isAmbiguous) outputStream.println(ambiguousStyle);
+    if (sppf.cyclic.get(sppfn.number)) outputStream.println(cycleStyle);
+    if (!sppf.rootReachable.get(sppfn.number)) outputStream.println(unreachableSymbolNodeStyle);
+    if (sppfn == sppf.root) outputStream.println(rootNodeStyle);
 
     for (SPPFPackedNode p : sppfn.packNodes) {
       boolean isCyclicP = sppf.cyclic.get(p.number);
 
-      dotOut.println("\"" + p.number + "\"" + packNodeStyle + " [label=\"" + p.number + ": " + p.grammarNode.toStringAsProduction() + " , " + p.pivot + "\"]");
-      if (isCyclicP) dotOut.println(cycleStyle);
-      if (!sppf.rootReachable.get(p.number)) dotOut.println(unreachablePackNodeStyle);
+      outputStream
+          .println("\"" + p.number + "\"" + packNodeStyle + " [label=\"" + p.number + ": " + p.grammarNode.toStringAsProduction() + " , " + p.pivot + "\"]");
+      if (isCyclicP) outputStream.println(cycleStyle);
+      if (!sppf.rootReachable.get(p.number)) outputStream.println(unreachablePackNodeStyle);
 
       if (sppf.cbD.contains(p) && sppf.cbDPrime.contains(p))
-        dotOut.println(deletedAndDeletedPrimePackNodeStyle);
+        outputStream.println(deletedAndDeletedPrimePackNodeStyle);
       else if (sppf.cbD.contains(p))
-        dotOut.println(deletedPackNodeStyle);
-      else if (sppf.cbDPrime.contains(p)) dotOut.println(deletedPrimePackNodeStyle);
-      dotOut.println("\"" + sppfn.number + "\"" + "->" + "\"" + p.number + "\"");
+        outputStream.println(deletedPackNodeStyle);
+      else if (sppf.cbDPrime.contains(p)) outputStream.println(deletedPrimePackNodeStyle);
+      outputStream.println("\"" + sppfn.number + "\"" + "->" + "\"" + p.number + "\"");
 
       if (isCyclicP)
-        dotOut.println(cycleStyle);
-      else if (isAmbiguous) dotOut.println(ambiguousStyle);
+        outputStream.println(cycleStyle);
+      else if (isAmbiguous) outputStream.println(ambiguousStyle);
 
       if (p.leftChild != null) {
-        dotOut.println("\"" + p.number + "\"" + "->" + "\"" + p.leftChild.number + "\"");
-        if (isCyclicP && sppf.cyclic.get(p.leftChild.number)) dotOut.println(cycleStyle);
+        outputStream.println("\"" + p.number + "\"" + "->" + "\"" + p.leftChild.number + "\"");
+        if (isCyclicP && sppf.cyclic.get(p.leftChild.number)) outputStream.println(cycleStyle);
       }
 
-      dotOut.println("\"" + p.number + "\"" + "->" + "\"" + p.rightChild.number + "\"");
-      if (isCyclicP && sppf.cyclic.get(p.rightChild.number)) dotOut.println(cycleStyle);
+      outputStream.println("\"" + p.number + "\"" + "->" + "\"" + p.rightChild.number + "\"");
+      if (isCyclicP && sppf.cyclic.get(p.rightChild.number)) outputStream.println(cycleStyle);
     }
   }
 }

@@ -28,8 +28,8 @@ public class GLLBaseLine extends AbstractParser {
     derivations = new SPPF(this);
 
     if (!lexer.lex(input, cfgRules, chooseRules)) return;
-    // lexer.printTWESet(System.out, null);
-    inputIndex = 1;
+    lexer.chooseDefault();
+    inputIndex = 0;
     cfgNode = cfgRules.elementToNodeMap.get(cfgRules.startNonterminal).alt;
     stackNode = stacks.getRoot();
     derivationNode = null;
@@ -38,19 +38,19 @@ public class GLLBaseLine extends AbstractParser {
       nextCFGNode: while (true) {
         switch (cfgNode.cfgElement.cfgKind) {
         case ALT:
-          queueAlternateTasks(); // Create task descriptor for the start of each production
+          queueAlternateTasks(); // Create task descriptor for the start of each production - is this needed for BNF?
           continue nextTask;
         case EPS:
           derivationNode = updateDerivation(inputIndex); // Must match, but nothing consumed, so rightExtent = inputIndex
           cfgNode = cfgNode.seq; // Next grammar node which will be an END node
           continue nextCFGNode; // continue with this sequence
-        case B, T, TI, C:
+        case SOS, B, T, TI, C:
           var slice = lexer.tweSlices[inputIndex];
           if (slice != null) {// Ignore empty TWE slices
             for (int firstIndex = 0; firstIndex < slice.length; firstIndex++)
               if (slice[firstIndex].cfgElement == cfgNode.cfgElement) { // Does this TWE match the current grammar position
 
-                Util.trace(8, 0, "Matched " + cfgNode.toStringAsProduction());
+                // Util.debug("Matched " + cfgNode.toStringAsProduction());
 
                 for (int restOfIndex = firstIndex + 1; restOfIndex < slice.length; restOfIndex++) // Queue tasks for any subsequent matching TWEs in this slice
                   if (slice[restOfIndex].cfgElement == cfgNode.cfgElement)

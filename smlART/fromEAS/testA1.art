@@ -1,0 +1,190 @@
+
+(* start rule *)
+startSML ::= WT program
+
+program ::= topdec ';' | topdec ';' program |
+            exp ';' | exp ';'  program
+
+
+(* whitespace *)
+WS ::= ` | `\t | `\n | `\r |  ` WS | `\t WS | `\n WS | `\r WS
+WT ::= WS | #
+
+(* lexical grammar rules *)
+(* scon  tyvar  vid  funid  sigid tycon lab d strid *)
+
+scon  ::=  int WT  | word WT | real WT | (*string WT |*) char WT 
+
+int  ::= intdec | inthex 
+  
+word ::= `0`w decnum | `0`w`x hexnum
+
+real ::=  intdec`.intdec 
+        | intdec`.intdec `e intdec
+	| intdec`.intdec `E intdec
+	| intdec `e intdec
+	| intdec `E intdec 
+  
+string ::= `" stringbody `" 
+
+char ::= `# `" format ascii  format `" |
+         `# `" format ascii `" |
+         `# `" format escape format`" |
+	 `# `" format escape `" |
+	 `# `" ascii format `" |
+	 `# `" ascii `" |
+	 `# `" escape format `" |
+	 `# `" escape `" 
+
+
+(* support nonterminals for the lexical nonterminals *)
+
+intdec ::= decnum | `~ decnum 
+
+inthex ::= `0`x hexnum | `~ `0`x hexnum 
+
+digit ::= `0 | `1 | `2 | `3 | `4 | `5 | `6 | `7 | `8 | `9
+
+decnum  ::= digit | digit decnum
+  
+hexdigit ::= `0 | `1 | `2 | `3 | `4 | `5 | `6 | `7 | `8 | `9 |
+           `a | `b | `c | `d | `e | `f | `A | `B | `C | `D | `E | `F 
+
+hexnum  ::= hexdigit  |  hexdigit hexnum
+
+stringbody ::= ascii | escape | format |
+          ascii stringbody | escape stringbody | format stringbody 
+
+ascii ::=  letter | `_  | digit | `\\ | 
+           `= | `> | `? | ` | `^ | `! | `& | `% | `- | `< | `( | `) |
+           `* | `. | `[ | `] | `{ | `} | `: | `$ | `+ | `; | `# | 
+           `\| | `@ | `' | `  | `,
+	   (* eas: no pound sign can be in the script *)
+
+
+(* eas to check these they are hard coded ART individual notations *)
+escape ::= `\\`a | `\\`b | `\\`t | `\\`n | `\\`v | `\\`f | `\\`r |
+           `\\`A | `\\`B | `\\`T | `\\`N | `\\`V | `\\`F | `\\`R |	
+           `\\`^ letter | `\\ digit digit digit
+	   | `\\`u hexdigit hexdigit hexdigit hexdigit | 
+           `\\`U hexnum | `\\`"  | `\\`\\
+
+(* eas: `U hexnum missing \f...\f *)
+
+format ::= `\\ spaces `\\
+
+(* eas: missing formfeed? *)	
+
+spaces ::= # (* ` | `\t | `\n | `\r ` | 
+           ` spaces | `\t spaces | `\n spaces | `\r spaces *)
+
+letter ::= `a | `b | `c | `d | `e | `f | `g | `h | `i | `j | `k | `l | `m | 
+          `n | `o | `p | `q | `r | `s | `t | `u | `v | `w | `x | `y | `z | 
+          `A | `B | `C | `D | `E | `F | `G | `H | `I | `J | `K | `L | `M | 
+          `N | `O | `P | `Q | `R | `S | `T | `U | `V | `W | `X | `Y | `Z
+
+
+(* eas: in the Definition but not used in this grammar *)
+identifier ::= iden | `' idenBase
+
+
+iden ::= letter idenBase | symIden (* excludes reserved words except '=' *)
+
+symForIden ::= `! | `% | `& | `$ | `# | `+ | `- | `/ | `: | `< | `= | `> | 
+      `? | `@ | `\\ | `~ | `` | `^ | `| | `* 
+
+symIden ::= symForIden | symForIden symIden
+
+idenBase ::= letter idenBase | digit idenBase | `' idenBase | `_ idenBase | # 
+
+
+tyvar ::= `' idenBase WT
+
+(* etyvar ::= `'`'idenBase  *)  
+
+vid ::= iden WT
+
+tycon ::= iden WT (* but excludes * *)
+
+lab ::= iden WT | posDigit WT | posDigit decnum WT
+
+posDigit ::=  `1 | `2 | `3 | `4 | `5 | `6 | `7 | `8 | `9 
+
+d ::= digit WT (* eas: implicit in the 97 Defintion *)
+
+strid ::=  letter idenBase WT
+
+funid ::= letter idenBase WT
+
+sigid ::= letter idenBase WT
+
+
+(* Milner uses rules for the long ids, so perhaps these should be
+nonterminals *)   
+(*
+longvid ::= idBaseDot iden WT
+
+longtycon ::= idBaseDot iden WT
+
+longstrid ::= idBaseDot  letter idenBase WT
+
+idBaseDot ::= # |  letter idenBase `. idBaseDot
+*)
+
+
+longvid ::= idBaseDot vid
+
+longtycon ::= idBaseDot tycon
+
+longstrid ::= idBaseDot  strid
+
+idBaseDot ::= # |  strid '.' idBaseDot
+
+
+
+
+(* phrase level grammar rules*)
+(* the alternates are in decreasing priority
+L resp R associativity
+types bind more tightly than expressions
+longest match applies to iterated constructs such as match *)
+
+atpat ::=  scon | longvid 
+
+patrow ::=  lab '=' pat 
+
+pat ::= atpat             |
+        longvid atpat |
+        pat vid pat 
+
+ty ::= tyvar   |
+       tyvar longtycon |
+       longtycon  
+
+
+atexp ::= scon |
+          longvid  |
+          '#' lab  
+
+appexp ::= atexp |   (* Ax B OK *)
+           appexp atexp (* Ax B OK *)
+
+exp ::= appexp |         (* Ax B OK *)
+        exp ':' ty 
+
+
+dec ::= 'val' tyvar pat '=' exp  |
+        'val' pat '=' exp  |
+        # |
+        dec dec |
+        dec ';' dec 
+
+strdec ::= dec |
+            #  |
+           strdec strdec |
+           strdec ';' strdec 
+
+topdec ::= strdec | strdec topdec
+
+
+

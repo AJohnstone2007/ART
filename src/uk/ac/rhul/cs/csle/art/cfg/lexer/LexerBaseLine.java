@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGElement;
+import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGKind;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGRules;
 import uk.ac.rhul.cs.csle.art.choose.ChooseRules;
 import uk.ac.rhul.cs.csle.art.util.Util;
@@ -15,29 +16,24 @@ public class LexerBaseLine extends AbstractLexer {
   public boolean lex(String userString, CFGRules cfgRules, ChooseRules chooseRules) {
     this.cfgRules = cfgRules;
     // Util.debug("Grammar" + cfgRules + "end of grammar");
-    inputString = "\0" + userString + "\0";
-    inputLength = inputString.length();
+    inputString = userString + "\0";
     inputAsCharArray = inputString.toCharArray();
 
-    tweSlices = new TWESetElement[inputLength][];
-    hasSlice = new boolean[inputLength];
-    hasSlice[1] = true;
-    inputIndex = 1;
+    tweSlices = new TWESetElement[inputString.length()][];
+    hasSlice = new boolean[inputString.length()];
+    inputIndex = 0;
 
-    matchWhitespace();
-    whitespacePrefix = inputIndex;// Old style
-    // New style: add Start-Of-String which also holds the (possibly empty) singleton initial whitespace
-    tweSlices[0] = new TWESetElement[1];
-    tweSlices[0][0] = new TWESetElement(cfgRules.startOfStringElement, 0, 0, inputIndex); // collectinputIndex which has been updated by whitespace matching
+    whitespaceLongstMatch();
 
-    Set<TWESetElement> slice;
+    whitespacePrefix = inputIndex;// Old style - tells us the single longest whitespace prefix
+    hasSlice[0] = true;
 
     for (int i = 0; i < inputString.length(); i++)
       if (hasSlice[i]) tweSlices[i] = constructTWESlice(i);
 
-    if (!hasSlice[inputLength - 1]) { // Lexical reject
+    if (!hasSlice[inputString.length() - 1]) { // Lexical reject
       int rightmostActiveSlice;
-      for (rightmostActiveSlice = inputString.length() - 1; rightmostActiveSlice >= 0; rightmostActiveSlice--)
+      for (rightmostActiveSlice = inputString.length(); rightmostActiveSlice >= 0; rightmostActiveSlice--)
         if (hasSlice[rightmostActiveSlice]) break;
 
       lexicalError("Unknown lexeme starting with character " + (int) inputAsCharArray[rightmostActiveSlice] + " - " + inputAsCharArray[rightmostActiveSlice],
@@ -48,28 +44,25 @@ public class LexerBaseLine extends AbstractLexer {
     }
 
     // Add EOS
-    tweSlices[inputLength - 1] = new TWESetElement[1];
-    tweSlices[inputLength - 1][0] = new TWESetElement(cfgRules.endOfStringElement, inputLength - 1, inputLength - 1, inputLength);
-
-    // Choosers
-    suppressDeadPaths();
-    chooseDefault();
-    suppressDeadPaths();
-    removeSuppressedTWE();
+    tweSlices[inputString.length() - 1] = new TWESetElement[1];
+    tweSlices[inputString.length() - 1][0] = new TWESetElement(cfgRules.endOfStringElement, inputString.length() - 1, inputString.length() - 1,
+        inputString.length());
 
     return true;
   }
 
   public TWESetElement[] constructTWESlice(int index) {
     Set<TWESetElement> ret = new HashSet<>();
-    int lexemeStart = index == 1 ? whitespacePrefix : index; // Index one is special case because of leading whitespace
+    // if (index == 0) ret.add(new TWESetElement(cfgRules.startOfStringElement, 1, 1, inputIndex));
+
+    int lexemeStart = index == 0 ? whitespacePrefix : index; // Index zero is special case because of leading whitespace
     for (var e : cfgRules.elements.keySet())
-      if (e.isToken && !e.isWhitespace) {
+      if (e.isToken /* && !e.isWhitespace */) { // Collect ALL terminals, including WS ones
         inputIndex = lexemeStart;
         tryTokenMatch(e);
         if (inputIndex != lexemeStart) {// Matched?
           lexemeEnd = inputIndex;
-          if (!e.suppressWhitespace) matchWhitespace();
+          if (e.cfgKind != CFGKind.C) whitespaceLongstMatch(); // absorb trailing whitespace
           ret.add(new TWESetElement(e, lexemeStart, lexemeEnd, inputIndex));
           hasSlice[inputIndex] = true; // Mark for downstream processing
         }
@@ -77,7 +70,7 @@ public class LexerBaseLine extends AbstractLexer {
     return ret.isEmpty() ? null : ret.toArray(new TWESetElement[0]);
   }
 
-  private void matchWhitespace() {
+  private void whitespaceLongstMatch() {
     int wsStart;
     do {
       wsStart = inputIndex;
@@ -86,7 +79,6 @@ public class LexerBaseLine extends AbstractLexer {
           tryTokenMatch(w);
         }
     } while (inputIndex != wsStart); // No more whitespace found
-
   }
 
   private void tryTokenMatch(CFGElement e) {

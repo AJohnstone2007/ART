@@ -31,7 +31,7 @@ cfgPositive ::= '('^ cfgAlts ')'^ '+'^ | cfgAltNoAction '+'^
 cfgKleene   ::= '('^ cfgAlts ')'^ '*'^ | cfgAltNoAction '*'^  
 
 cfgName ::= cfgPrim^^ | cfgPrim ':'^ ID           // second child if present is a local name
-cfgPrim ::= cfgNonterminal^^ | cfgCaseSensitiveTerminal^^| cfgCaseInsensitiveTerminal^^ | cfgBuiltinTerminal^^ | cfgBuiltinNoWSTerminal^^ | cfgCharacterTerminal^^ | cfgCharacterRangeTerminal^^   
+cfgPrim ::= cfgNonterminal^^ | cfgCaseSensitiveTerminal^^| cfgCaseInsensitiveTerminal^^ | cfgBuiltinTerminal^^ | cfgBuiltinNoWSTerminal^^ | cfgCharacterTerminal^^ | cfgCharacterRangeTerminal^^ | cfgStartString^^
   cfgNonterminal ::= ID | STRING_DOLLAR
   cfgCaseSensitiveTerminal ::= STRING_SQ
   cfgCaseInsensitiveTerminal ::= STRING_DQ
@@ -40,6 +40,7 @@ cfgPrim ::= cfgNonterminal^^ | cfgCaseSensitiveTerminal^^| cfgCaseInsensitiveTer
   cfgCharacterTerminal ::= CHAR_BQ
   cfgCharacterRangeTerminal ::= cfgRange
     cfgRange ::= CHAR_BQ '..'^ CHAR_BQ
+  cfgStartString ::= '!$$'
 
 cfgActions ::= cfgSlot^^ cfgActionSeq^ | cfgSlot^^   
   cfgActionSeq ::= cfgAction cfgActionSeq^ | cfgAction  

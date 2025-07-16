@@ -97,7 +97,7 @@ public class SPPF extends AbstractDerivations {
 
   @Override
   public int widestIndex() {
-    int ret = 0;
+    int ret = 1;
     for (SPPFSymbolNode s : nodes.keySet())
       if (ret < s.rightExtent) ret = s.rightExtent;
     Util.debug("Returning widest derivation " + ret);
@@ -197,6 +197,10 @@ public class SPPF extends AbstractDerivations {
       else
       constructor = (gn.cfgElement.cfgKind == CFGKind.B) ? parser.lexer.lexeme(sppfn.leftExtent) : gn.cfgElement.str;
 
+    // Util.debug("New term with constructor: " + constructor);
+    // if (constructor.equals("")) {
+    // System.out.println("Bang!");
+    // }
     if (children != childrenFromParent) {
       childrenFromParent.add(parser.cfgRules.iTerms.findTerm(constructor, children));
       derivationNodeCount++;
@@ -272,10 +276,10 @@ public class SPPF extends AbstractDerivations {
 
   @Override
   public void setRoot(CFGNode cfgNode, int n) {
-    root = nodes.get(new SPPFSymbolNode(cfgNode, 1, n));
+    root = nodes.get(new SPPFSymbolNode(cfgNode, 0, n));
   }
 
-  public void loadtatistics(Statistics currentStatistics) {
+  public void loadStatistics(Statistics currentStatistics) {
     int sppfEpsilonNodeCount = 0, sppfTerminalNodeCount = 0, sppfNonterminalNodeCount = 0, sppfIntermediateNodeCount = 0, sppfPackNodeCount = 0,
         sppfAmbiguityCount = 0, sppfEdgeCount = 0;
     for (SPPFSymbolNode s : nodes.keySet()) {
@@ -311,18 +315,7 @@ public class SPPF extends AbstractDerivations {
 
   @Override
   public void choose(ChooseRules chooseRules) {
-    // TODO Auto-generated method stub
-
-  }
-
-  @Override
-  public void toDot() {
-    new SPPF2Dot(this);
-  }
-
-  @Override
-  public void dump(String filename) {
-    new SPPFDump(this, filename);
+    // TODO Auto-generated method stub - no choosers at present
   }
 
   @Override
@@ -337,10 +330,6 @@ public class SPPF extends AbstractDerivations {
 
   @Override
   public void print(PrintStream outputStream, TermTraverserText outputTraverser, boolean indexed, boolean full, boolean indented) {
-    if (root == null) {
-      Util.warning("no SPPF root node - skipping printing");
-      return;
-    }
     for (var n : nodes.keySet()) {
       outputStream.println(n);
       for (var pn : n.packNodes)
@@ -350,8 +339,7 @@ public class SPPF extends AbstractDerivations {
 
   @Override
   public void show(PrintStream outputStream, TermTraverserText outputTraverser, boolean indexed, boolean full, boolean indented) {
-    // TODO Auto-generated method stub
-
+    new SPPF2Dot(this, outputStream, indexed, full, true);
   }
 
   @Override
