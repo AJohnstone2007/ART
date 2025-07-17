@@ -153,11 +153,6 @@ directiveCarrier ::=
 
 file ::= &STRING_SQ
 
-(*
-whiteSpaceElements ::= whiteSpaceElement | whiteSpaceElement ','^ whiteSpaceElements^
-whiteSpaceElement  ::= cfgNonterminal^^ | cfgBuiltinTerminal^^
-*)
-
 whiteSpaceElements ::= cfgPrim | cfgPrim ','^ whiteSpaceElements^ 
 
 configurationElements ::= configurationElement | configurationElement ','^ configurationElements^

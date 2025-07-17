@@ -563,9 +563,11 @@ public final class ScriptTermInterpreter {
       return currentCFGRules.findElement(CFGKind.B, iTerms.termSymbolString(iTerms.termChildren(term)[0]));
     case "cfgNonterminal":
       return currentCFGRules.findElement(CFGKind.N, iTerms.termSymbolString(iTerms.termChildren(term)[0]));
+    case "cfgCharacterTerminal":
+      return currentCFGRules.findElement(CFGKind.C, iTerms.termSymbolString(iTerms.termChildren(term)[0]));
 
     default:
-      Util.fatal("Unkown CFG element term constuctor " + iTerms.termSymbolString(term));
+      Util.fatal("Unknown CFG element " + iTerms.termSymbolString(term));
       return null;
     }
   }
