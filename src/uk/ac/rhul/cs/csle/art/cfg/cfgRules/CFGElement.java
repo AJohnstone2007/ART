@@ -21,7 +21,7 @@ public class CFGElement implements Comparable<Object> {
     this.cfgKind = kind;
     this.str = s;
     switch (this.cfgKind) {
-    case C, T, TI, B:
+    case TRM_CHR, TRM_CS, TRM_CI, TRM_BI:
       isToken = true;
     }
   }
@@ -37,23 +37,23 @@ public class CFGElement implements Comparable<Object> {
       return "$$";
     case EOS:
       return "$";
-    case T:
+    case TRM_CS:
       return "'" + Util.escapeString(str) + "'";
-    case TI:
+    case TRM_CI:
       return "\"" + Util.escapeString(str) + "\"";
-    case C:
+    case TRM_CHR:
       return "`" + Util.escapeString(str);
-    case B:
+    case TRM_BI:
       return "&" + Util.escapeString(str);
     case EPS:
       return "#";
-    case N:
+    case NONTRM:
       return Util.escapeString(str);
     case ALT:
       return "|";
     case END:
       return "END";
-    case DO:
+    case DO_FIRST:
       return ")";
     case OPT:
       return ")?";

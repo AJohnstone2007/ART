@@ -195,7 +195,7 @@ public class SPPF extends AbstractDerivations {
       if (derivationForInterpreter)
       constructor = firstAvailableSPPFPN == null ? "" + -sppfn.rightExtent : "" + firstAvailableSPPFPN.grammarNode.alt.num;
       else
-      constructor = (gn.cfgElement.cfgKind == CFGKind.B) ? parser.lexer.lexeme(sppfn.leftExtent) : gn.cfgElement.str;
+      constructor = (gn.cfgElement.cfgKind == CFGKind.TRM_BI) ? parser.lexer.lexeme(sppfn.leftExtent) : gn.cfgElement.str;
 
     // Util.debug("New term with constructor: " + constructor);
     // if (constructor.equals("")) {
@@ -285,7 +285,7 @@ public class SPPF extends AbstractDerivations {
     for (SPPFSymbolNode s : nodes.keySet()) {
       switch (s.grammarNode.cfgElement.cfgKind) {
       // Dodgy - how do we test the flavour of an SPPF node?
-      case T, TI, C, B:
+      case TRM_CS, TRM_CI, TRM_CHR, TRM_BI:
         sppfTerminalNodeCount++;
         break;
       case EPS:

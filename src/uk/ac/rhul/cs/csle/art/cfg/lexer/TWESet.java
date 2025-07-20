@@ -36,7 +36,7 @@ public class TWESet {
     for (var slice : slices)
       if (slice != null) for (var e : slice)
         for (var f : slice)
-          if ((e.rightExtent > f.rightExtent) || (e.rightExtent == f.rightExtent && e.cfgElement.cfgKind != CFGKind.B && f.cfgElement.cfgKind == CFGKind.B))
+          if ((e.rightExtent > f.rightExtent) || (e.rightExtent == f.rightExtent && e.cfgElement.cfgKind != CFGKind.TRM_BI && f.cfgElement.cfgKind == CFGKind.TRM_BI))
             f.suppressed = true;
     suppressDeadPaths();
   }

@@ -117,9 +117,9 @@ public class GLLHashPool extends HashPool {
     targetOf = cfgRules.makeCallTargetsArray();
     elementOf = cfgRules.makeElementOfArray();
     // Defensive programming - make sure we've not messed up the enumeration value
-    if (T != CFGKind.T.ordinal()) Util.fatal("Enumeration mismatch for T - check ParserHashPool.java for consistency with Kind enumeration");
+    if (T != CFGKind.TRM_CS.ordinal()) Util.fatal("Enumeration mismatch for T - check ParserHashPool.java for consistency with Kind enumeration");
     if (EPS != CFGKind.EPS.ordinal()) Util.fatal("Enumeration mismatch for EPS - check ParserHashPool.java for consistency with Kind enumeration");
-    if (N != CFGKind.N.ordinal()) Util.fatal("Enumeration mismatch for N - check ParserHashPool.java for consistency with Kind enumeration");
+    if (N != CFGKind.NONTRM.ordinal()) Util.fatal("Enumeration mismatch for N - check ParserHashPool.java for consistency with Kind enumeration");
     if (END != CFGKind.END.ordinal()) Util.fatal("Enumeration mismatch for END - check ParserHashPool.java for consistency with Kind enumeration");
 
     // 1a. (Debug): print precomputed tables

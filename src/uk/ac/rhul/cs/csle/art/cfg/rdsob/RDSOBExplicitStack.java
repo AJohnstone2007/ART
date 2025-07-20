@@ -35,12 +35,12 @@ public class RDSOBExplicitStack extends AbstractParser {
   boolean rdsobExplicitStack() {
     while (true)
       switch (gn.cfgElement.cfgKind) {
-      case B, C, T, TI:
+      case TRM_BI, TRM_CHR, TRM_CS, TRM_CI:
         if (match(gn, inputIndex++))
           gn = gn.seq;
         else if (backtrack()) return false;
         break;
-      case N:
+      case NONTRM:
         call(gn);
         break;
       case EPS:
@@ -51,7 +51,7 @@ public class RDSOBExplicitStack extends AbstractParser {
         gn = retrn();
         if (sn == null) return true;
         break;
-      case ALT, DO, EOS, KLN, OPT, POS:
+      case ALT, DO_FIRST, EOS, KLN, OPT, POS:
         Util.fatal("internal error - unexpected grammar node in rdsobExplicitStack");
       }
   }

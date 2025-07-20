@@ -71,7 +71,7 @@ public abstract class AbstractLexer implements DisplayInterface {
   public String lexeme(TWESetElement element) {
     String full = inputString.substring(element.leftExtent, element.lexemeEnd);
 
-    if (element.cfgElement.cfgKind == CFGKind.B) {
+    if (element.cfgElement.cfgKind == CFGKind.TRM_BI) {
       switch (element.cfgElement.str) {
       case "STRING_DQ", "STRING_SQ", "STRING_PLAIN_SQ", "STRING_DOLLAR":
         return full.substring(1, full.length() - 1);
@@ -94,7 +94,7 @@ public abstract class AbstractLexer implements DisplayInterface {
           if (f.cfgElement.cfgKind == CFGKind.SOS)
             continue; // do not suppress the start of string token
           else if ((e.rightExtent > f.rightExtent)
-              || (e.rightExtent == f.rightExtent && e.cfgElement.cfgKind != CFGKind.B && f.cfgElement.cfgKind == CFGKind.B))
+              || (e.rightExtent == f.rightExtent && e.cfgElement.cfgKind != CFGKind.TRM_BI && f.cfgElement.cfgKind == CFGKind.TRM_BI))
             f.suppressed = true;
     }
   }

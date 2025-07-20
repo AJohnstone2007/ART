@@ -26,7 +26,7 @@ public class RDSOBFunction extends AbstractParser {
       CFGNode gn = tmp.seq;
       while (true) {
         switch (gn.cfgElement.cfgKind) {
-        case B, C, T, TI:
+        case TRM_BI, TRM_CHR, TRM_CS, TRM_CI:
           if (lexer.tweSlices[inputIndex][0].cfgElement == gn.cfgElement) {
             Util.trace(8, "Match " + gn);
             inputIndex++;
@@ -35,7 +35,7 @@ public class RDSOBFunction extends AbstractParser {
           } else
             Util.trace(8, "Mismatch " + gn);
           continue altLoop;
-        case N:
+        case NONTRM:
           if (rdsobFunction(cfgRules.elementToNodeMap.get(gn.cfgElement))) {
             gn = gn.seq;
             break;
@@ -46,7 +46,7 @@ public class RDSOBFunction extends AbstractParser {
           break;
         case END:
           return true;
-        case ALT, DO, EOS, KLN, OPT, POS:
+        case ALT, DO_FIRST, EOS, KLN, OPT, POS:
           Util.fatal("internal error - unexpected grammar node in rdsobFunction: " + gn);
         }
       }

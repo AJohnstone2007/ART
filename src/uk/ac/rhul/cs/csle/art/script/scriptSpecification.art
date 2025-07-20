@@ -31,16 +31,16 @@ cfgPositive ::= '('^ cfgAlts ')'^ '+'^ | cfgAltNoAction '+'^
 cfgKleene   ::= '('^ cfgAlts ')'^ '*'^ | cfgAltNoAction '*'^  
 
 cfgName ::= cfgPrim^^ | cfgPrim ':'^ ID           // second child if present is a local name
-cfgPrim ::= cfgNonterminal^^ | cfgCaseSensitiveTerminal^^| cfgCaseInsensitiveTerminal^^ | cfgBuiltinTerminal^^ | cfgBuiltinNoWSTerminal^^ | cfgCharacterTerminal^^ | cfgCharacterRangeTerminal^^ | cfgStartString^^
+cfgPrim ::= cfgNonterminal^^ | cfgCaseSensitiveTerminal^^| cfgCaseInsensitiveTerminal^^ | cfgBuiltinTerminal^^ | cfgBuiltinNoWSTerminal^^ | cfgCharacterTerminal^^ | cfgCharacterSetTerminal^^ | cfgStartString^^
   cfgNonterminal ::= ID | STRING_DOLLAR
   cfgCaseSensitiveTerminal ::= STRING_SQ
   cfgCaseInsensitiveTerminal ::= STRING_DQ
   cfgBuiltinTerminal ::= '&'^ ID
   cfgBuiltinNoWSTerminal ::= '&&'^ ID
   cfgCharacterTerminal ::= CHAR_BQ
-  cfgCharacterRangeTerminal ::= cfgRange
-    cfgRange ::= CHAR_BQ '..'^ CHAR_BQ
   cfgStartString ::= '!$$'
+
+  cfgCharacterSetTerminal ::= STRING_BRACE | '~' STRING_BRACE 
 
 cfgActions ::= cfgSlot^^ cfgActionSeq^ | cfgSlot^^   
   cfgActionSeq ::= cfgAction cfgActionSeq^ | cfgAction  
@@ -114,11 +114,10 @@ chooseLower ::= '<'^
 chooseLonger ::= '>>'^
 chooseShorter ::= '<<'^
 
-chooseSetOp ::= chooseUnion | chooseDifference| chooseIntersection  | chooseSymmetricDifference
+chooseSetOp ::= chooseUnion | chooseDifference| chooseIntersection 
 chooseUnion ::= '+'^
 chooseDifference ::= '-'^
 chooseIntersection ::= '*'^
-chooseSymmetricDifference ::= '/'^
 
 (* Directives ****************************************************************)
 directive ::= directiveCarrier
@@ -179,4 +178,5 @@ STRING_SQ ::= &STRING_SQ^^
 STRING_DQ ::= &STRING_DQ^^ 
 STRING_DOLLAR ::= &STRING_DOLLAR^^
 STRING_SHRIEK_SHRIEK ::= &STRING_SHRIEK_SHRIEK^^
+STRING_BRACE ::= &STRING_BRACE^^
 CHAR_BQ ::= &CHAR_BQ^^

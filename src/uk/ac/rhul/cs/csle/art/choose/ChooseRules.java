@@ -48,25 +48,25 @@ public class ChooseRules implements DisplayInterface {
 
     for (CFGElement e1 : grammar.elements.keySet()) {
       switch (e1.cfgKind) {
-      case B:
+      case TRM_BI:
         anyBuiltinStr = extendStringList(anyBuiltinStr, "srBuiltinTerminal(" + ITerms.escapeMeta(e1.str) + ")");
         anyStr = extendStringList(anyStr, "srBuiltinTerminal(" + ITerms.escapeMeta(e1.str) + ")");
         break;
-      case C:
+      case TRM_CHR:
         anyCharacterStr = extendStringList(anyCharacterStr, "srCharacterTerminal(" + ITerms.escapeMeta(e1.str) + ")");
         anyStr = extendStringList(anyStr, "srCharacterTerminal(" + ITerms.escapeMeta(e1.str) + ")");
         break;
-      case T:
+      case TRM_CS:
         anyCaseSensitiveStr = extendStringList(anyCaseSensitiveStr, "srCaseSensitiveTerminal(" + ITerms.escapeMeta(e1.str) + ")");
         anyLiteralStr = extendStringList(anyLiteralStr, "srCaseSensitiveTerminal(" + ITerms.escapeMeta(e1.str) + ")");
         anyStr = extendStringList(anyStr, "srCaseSensitiveTerminal(" + ITerms.escapeMeta(e1.str) + ")");
         break;
-      case TI:
+      case TRM_CI:
         anyCaseInsensitiveStr = extendStringList(anyCaseInsensitiveStr, "srCaseInsensitiveTerminal(" + ITerms.escapeMeta(e1.str) + ")");
         anyLiteralStr = extendStringList(anyLiteralStr, "srCaseInsensitiveTerminal(" + ITerms.escapeMeta(e1.str) + ")");
         anyStr = extendStringList(anyStr, "srCaseInsensitiveTerminal(" + ITerms.escapeMeta(e1.str) + ")");
         break;
-      case N:
+      case NONTRM:
         if (grammar.paraterminalNames.contains(e1))
           anyParaStr = extendStringList(anyParaStr, "srNonterminal(" + ITerms.escapeMeta(e1.str) + ")");
         else

@@ -28,7 +28,7 @@ public class RDSOBGenerator {
 
     boolean firstLexeme = true;
     for (CFGElement s : grammar.elements.keySet()) {
-      if (s.cfgKind != CFGKind.T) continue;
+      if (s.cfgKind != CFGKind.TRM_CS) continue;
       if (firstLexeme)
         firstLexeme = false;
       else
@@ -49,11 +49,11 @@ public class RDSOBGenerator {
           text.print("\n i = eI; dn = eDN;");
         seqLoop: for (CFGNode seq = alt.seq;; seq = seq.seq) {
           switch (seq.cfgElement.cfgKind) {
-          case T:
+          case TRM_CS:
             text.print("\n if (input[i]==" + seq.cfgElement.number + "/*" + seq.cfgElement.str + "*/) {i++;");
             braceCount++;
             break;
-          case N:
+          case NONTRM:
             text.print("\n if (p_" + seq.cfgElement.str + "()) {");
             braceCount++;
             break;
@@ -67,7 +67,7 @@ public class RDSOBGenerator {
               text.print("}");
             text.println();
             break seqLoop;
-          case ALT, B, C, DO, EOS, KLN, OPT, POS, TI:
+          case ALT, TRM_BI, TRM_CHR, DO_FIRST, EOS, KLN, OPT, POS, TRM_CI:
             Util.fatal("internal error - unexpected grammar node in rdsobFunction");
           }
         }
