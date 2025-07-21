@@ -78,7 +78,10 @@ public class MGLLBaseLine extends AbstractParser {
   }
 
   private AbstractDerivationNode updateDerivation(int rightExtent) {
-    return null;
+    // Util.trace(8, 0, "Matched " + cfgNode.cfgElement);
+    // Util.debug("*** Update derivation " + rightExtent);
+    var rightNode = derivations.find(cfgRules.elementToNodeMap.get(cfgNode.cfgElement), inputIndex, rightExtent);
+    return derivations.extend(cfgNode.seq, derivationNode, rightNode);
   }
 
   private void queueAlternateTasks() {

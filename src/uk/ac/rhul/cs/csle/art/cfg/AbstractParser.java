@@ -24,13 +24,11 @@ public abstract class AbstractParser {
     if (lexer.tweSlices == null) return; // A lexical error will already have been reported
 
     if (inLanguage) {
-      Util.trace(1, "Accept");
-      if (derivations == null) Util.error("current parser does not produce API level derivations");
-    } else if (derivations == null)
-      Util.error("Syntax error");
-    else {
+      Util.trace(1, getClass().getSimpleName() + " accept");
+      if (derivations == null) Util.error(getClass().getSimpleName() + " does not produce API level derivations");
+    } else {
       int widestIndex = derivations.widestIndex();
-      Util.error(Util.echo("Syntax error ", lexer.tweSlices[widestIndex][0].leftExtent, lexer.inputString));
+      Util.error(Util.echo(getClass().getSimpleName() + " syntax error ", lexer.tweSlices[widestIndex][0].leftExtent, lexer.inputString));
     }
   }
 }

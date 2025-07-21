@@ -77,8 +77,8 @@ WT ::= WS | #
 (* start rule *)
 startSML ::= WT program
 
-program ::= topdec ';' programOp |
-            exp ';'  programOp   (* Ax A OK *)
+program ::= topdec scolon programOp |
+            exp scolon  programOp   (* Ax A OK *)
 
 
 (* whitespace *)
@@ -213,11 +213,12 @@ longtycon ::= idBaseDot tycon
 
 longstrid ::= idBaseDot  strid
 
-idBaseDot ::= # |  strid '.' idBaseDot
+idBaseDot ::= # |  strid dot idBaseDot
 
 
 (* keywords *)
 
+dot ::= `. WT
 op ::= `o`p WT 
 comma ::= `, WT
 bar ::= `| WT 

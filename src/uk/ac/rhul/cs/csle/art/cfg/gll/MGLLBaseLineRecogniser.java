@@ -9,7 +9,7 @@ import uk.ac.rhul.cs.csle.art.cfg.lexer.AbstractLexer;
 import uk.ac.rhul.cs.csle.art.choose.ChooseRules;
 import uk.ac.rhul.cs.csle.art.util.Util;
 import uk.ac.rhul.cs.csle.art.util.derivations.AbstractDerivationNode;
-import uk.ac.rhul.cs.csle.art.util.derivations.SPPF;
+import uk.ac.rhul.cs.csle.art.util.derivations.SPPFDummyForRecognisers;
 import uk.ac.rhul.cs.csle.art.util.stacks.AbstractStackNode;
 import uk.ac.rhul.cs.csle.art.util.stacks.GSS;
 import uk.ac.rhul.cs.csle.art.util.tasks.TasksGLL;
@@ -27,7 +27,7 @@ public class MGLLBaseLineRecogniser extends AbstractParser {
     this.lexer = lexer;
     tasks = new TasksGLL();
     stacks = new GSS(cfgRules);
-    derivations = new SPPF(this, true);
+    derivations = new SPPFDummyForRecognisers(this, true);
 
     if (!lexer.lex(input, cfgRules, chooseRules)) return;
     // lexer.printTWESet(System.out, null);

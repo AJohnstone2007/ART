@@ -7,7 +7,7 @@ import uk.ac.rhul.cs.csle.art.cfg.lexer.AbstractLexer;
 import uk.ac.rhul.cs.csle.art.choose.ChooseRules;
 import uk.ac.rhul.cs.csle.art.util.Util;
 import uk.ac.rhul.cs.csle.art.util.derivations.AbstractDerivationNode;
-import uk.ac.rhul.cs.csle.art.util.derivations.SPPF;
+import uk.ac.rhul.cs.csle.art.util.derivations.SPPFDummyForRecognisers;
 import uk.ac.rhul.cs.csle.art.util.stacks.AbstractStackNode;
 import uk.ac.rhul.cs.csle.art.util.stacks.GSS;
 import uk.ac.rhul.cs.csle.art.util.tasks.TasksGLL;
@@ -25,7 +25,7 @@ public class GLLBaseLineRecogniser extends AbstractParser {
     this.lexer = lexer;
     tasks = new TasksGLL();
     stacks = new GSS(cfgRules);
-    derivations = new SPPF(this);
+    derivations = new SPPFDummyForRecognisers(this);
 
     if (!lexer.lex(input, cfgRules, chooseRules)) return;
     lexer.chooseDefault();
@@ -78,7 +78,8 @@ public class GLLBaseLineRecogniser extends AbstractParser {
   }
 
   private AbstractDerivationNode updateDerivation(int rightExtent) {
-    return null;
+    var rightNode = derivations.find(cfgRules.elementToNodeMap.get(cfgNode.cfgElement), inputIndex, rightExtent);
+    return derivations.extend(cfgNode.seq, derivationNode, rightNode);
   }
 
   private void queueAlternateTasks() {

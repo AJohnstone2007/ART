@@ -249,7 +249,8 @@ public class GLLHashPoolRecogniser extends HashPool {
 
   /* Derivation handling *****************************************************/
   private int derivationFindNode(int dni, int leftExt, int rightExt) {
-    return 0;
+    find(sppfNodeBuckets, sppfNodeBucketCount, sppfNode_SIZE, dni, leftExt, rightExt);
+    return findIndex;
   }
 
   private int derivationUpdate(int gni, int leftChild, int rightChild) {
