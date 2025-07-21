@@ -7,12 +7,13 @@ public enum CFGKind {
   TRM_CS, // Termial case sensitive
   TRM_CI, // Terminal case insenitive
   TRM_BI, // Terminal built in
-  TRM_CHR, // Terminal character
-  TRM_CHAR_SET, // Terminal character set
-  NONTRM, // Nonterminal
+  TRM_CH, // Terminal character
+  TRM_CH_SET, // Terminal character set: match anything in the contents
+  TRM_CH_ANTI_SET, // Terminal character anti set: match anything but the contents
+  NON, // Nonterminal
   ALT, // Alternate
   END, // End of rule
-  DO_FIRST, // Parenthesised sub-expression (FBNF)
+  PAR, // Parenthesised sub-expression (FBNF)
   OPT, // Optional sub-expression (EBNF)
   POS, // Positive closure over sub-expression (EBNF)
   KLN // Kleeene closure over sub-expression (EBNF)

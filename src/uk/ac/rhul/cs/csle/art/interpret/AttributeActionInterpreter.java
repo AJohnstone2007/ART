@@ -49,10 +49,10 @@ public class AttributeActionInterpreter extends AbstractInterpreter {
     for (var node = altNode; node.cfgElement.cfgKind != CFGKind.END; node = node.seq) {
       // Util.info("node number " + node.num + " childNumber = " + childNumber + " previous token = " + previousToken);
       switch (node.cfgElement.cfgKind) {
-      case NONTRM:
+      case NON:
         if (!node.delayed) interpret(attributes.getAttributes(node.num));
         break;
-      case TRM_CS, TRM_CI, TRM_CHR, TRM_BI:
+      case TRM_CS, TRM_CI, TRM_CH, TRM_BI:
         previousToken = -intFromTermSymbol(children[childNumber]) - 1; // Change this to get token index from the derivation tree
         break;
       }

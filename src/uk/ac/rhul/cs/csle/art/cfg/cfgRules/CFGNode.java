@@ -74,10 +74,10 @@ public class CFGNode {
   public String toStringDot() {
     String ret = num + " ";
     switch (cfgElement.cfgKind) {
-    case EOS, ALT, DO_FIRST, KLN, OPT, POS:
+    case EOS, ALT, PAR, KLN, OPT, POS:
       ret += cfgElement.cfgKind;
       break;
-    case TRM_CS, TRM_CHR, TRM_BI, NONTRM, EPS:
+    case TRM_CS, TRM_CH, TRM_BI, NON, EPS:
       ret += cfgElement.cfgKind + "\n" + cfgElement.str + giftToString();
       break;
     case END:

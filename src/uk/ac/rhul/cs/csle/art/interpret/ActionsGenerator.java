@@ -38,7 +38,7 @@ public class ActionsGenerator {
     text.println("  public String name() { return \"" + timeStamp + "\"; }");
 
     for (var e : cfgRules.elements.keySet())
-      if (e.cfgKind == CFGKind.NONTRM) {
+      if (e.cfgKind == CFGKind.NON) {
         text.println("\n  public class ART_C_" + e.str + " extends AbstractAttributeBlock {");
         text.print("    ART_C_" + e.str + " " + e.str + " = this;"); // LHS
 
@@ -77,7 +77,7 @@ public class ActionsGenerator {
 
   private void printAllInitsRec(PrintWriter text, CFGNode cfgNode) {
     if (cfgNode == null || cfgNode.cfgElement.cfgKind == CFGKind.END) return;
-    if (cfgNode.cfgElement.cfgKind == CFGKind.NONTRM) text.println("      case " + cfgNode.num + ": " + cfgNode.cfgElement.str + cfgNode.instanceNumber + " = new ART_C_"
+    if (cfgNode.cfgElement.cfgKind == CFGKind.NON) text.println("      case " + cfgNode.num + ": " + cfgNode.cfgElement.str + cfgNode.instanceNumber + " = new ART_C_"
         + cfgNode.cfgElement.str + "(); " + cfgNode.cfgElement.str + cfgNode.instanceNumber + ".term = term; break;");
     printAllInitsRec(text, cfgNode.seq);
     printAllInitsRec(text, cfgNode.alt);
@@ -85,7 +85,7 @@ public class ActionsGenerator {
 
   private void printAllGetsRec(PrintWriter text, CFGNode cfgNode) {
     if (cfgNode == null || cfgNode.cfgElement.cfgKind == CFGKind.END) return;
-    if (cfgNode.cfgElement.cfgKind == CFGKind.NONTRM) text.println("      case " + cfgNode.num + ": return " + cfgNode.cfgElement.str + cfgNode.instanceNumber + ";");
+    if (cfgNode.cfgElement.cfgKind == CFGKind.NON) text.println("      case " + cfgNode.num + ": return " + cfgNode.cfgElement.str + cfgNode.instanceNumber + ";");
     printAllGetsRec(text, cfgNode.seq);
     printAllGetsRec(text, cfgNode.alt);
   }

@@ -46,7 +46,7 @@ public class MGLLBaseLine extends AbstractParser {
           derivationNode = updateDerivation(inputIndex); // Must match, but nothing consumed, so rightExtent = inputIndex
           cfgNode = cfgNode.seq; // Next grammar node which will be an END node
           continue nextCFGNode; // continue with this sequence
-        case TRM_BI, TRM_CS, TRM_CI, TRM_CHR:
+        case TRM_BI, TRM_CS, TRM_CI, TRM_CH:
           var slice = lexer.tweSlices[inputIndex];
           if (slice != null) {// Ignore empty TWE slices
             for (int firstIndex = 0; firstIndex < slice.length; firstIndex++)
@@ -63,7 +63,7 @@ public class MGLLBaseLine extends AbstractParser {
               }
           }
           continue nextTask;
-        case NONTRM:
+        case NON:
           call(cfgNode);
           continue nextTask;
         case END:
@@ -78,10 +78,7 @@ public class MGLLBaseLine extends AbstractParser {
   }
 
   private AbstractDerivationNode updateDerivation(int rightExtent) {
-    // Util.trace(8, 0, "Matched " + cfgNode.cfgElement);
-    // Util.debug("*** Update derivation " + rightExtent);
-    var rightNode = derivations.find(cfgRules.elementToNodeMap.get(cfgNode.cfgElement), inputIndex, rightExtent);
-    return derivations.extend(cfgNode.seq, derivationNode, rightNode);
+    return null;
   }
 
   private void queueAlternateTasks() {

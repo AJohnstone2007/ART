@@ -98,7 +98,7 @@ public final class AJDebug {
 
     // First check the nonterminals
     for (ARTGrammarElementNonterminal v3Nonterminal : grammarV3.getNonterminals()) {
-      CFGElement v5Nonterminal = grammarV5.elements.get(new CFGElement(CFGKind.NONTRM, v3Nonterminal.getId()));
+      CFGElement v5Nonterminal = grammarV5.elements.get(new CFGElement(CFGKind.NON, v3Nonterminal.getId()));
 
       // Util.info(
       // "V3 nonterminal " + v3Nonterminal + " first " + new TreeSet<>(v3Nonterminal.getFirst()) + " follow " + new TreeSet<>(v3Nonterminal.getFollow()));
@@ -164,7 +164,7 @@ public final class AJDebug {
   private boolean v5v3RegressionCheckFirstAndFollowInstanceSets(CFGRules grammarV5, ARTV3 artV3) {
     boolean good = true;
     for (CFGElement e : grammarV5.elements.keySet())
-      if (e.cfgKind == CFGKind.NONTRM) good &= v5v3RegressionCheckFirstAndFollowInstanceSetsRec(grammarV5.elementToNodeMap.get(e).alt, artV3);
+      if (e.cfgKind == CFGKind.NON) good &= v5v3RegressionCheckFirstAndFollowInstanceSetsRec(grammarV5.elementToNodeMap.get(e).alt, artV3);
 
     return good;
   }
@@ -206,10 +206,10 @@ public final class AJDebug {
 
   CFGElement v3Element2v5Element(ARTGrammarElement elem) {
     if (elem instanceof ARTGrammarElementTerminalBuiltin) return new CFGElement(CFGKind.TRM_BI, ((ARTGrammarElementTerminal) elem).getId());
-    if (elem instanceof ARTGrammarElementTerminalCharacter) return new CFGElement(CFGKind.TRM_CHR, ((ARTGrammarElementTerminal) elem).getId());
+    if (elem instanceof ARTGrammarElementTerminalCharacter) return new CFGElement(CFGKind.TRM_CH, ((ARTGrammarElementTerminal) elem).getId());
     if (elem instanceof ARTGrammarElementEoS) return new CFGElement(CFGKind.EOS, "$");
     if (elem instanceof ARTGrammarElementEpsilon) return new CFGElement(CFGKind.EPS, "#");
-    if (elem instanceof ARTGrammarElementNonterminal) return new CFGElement(CFGKind.NONTRM, elem.toString());
+    if (elem instanceof ARTGrammarElementNonterminal) return new CFGElement(CFGKind.NON, elem.toString());
     if (elem instanceof ARTGrammarElementTerminalCaseSensitive) return new CFGElement(CFGKind.TRM_CS, ((ARTGrammarElementTerminal) elem).getId());
     if (elem instanceof ARTGrammarElementTerminalCaseInsensitive) return new CFGElement(CFGKind.TRM_CI, ((ARTGrammarElementTerminal) elem).getId());
 
@@ -218,18 +218,18 @@ public final class AJDebug {
 
   ARTGrammarElement v5Element2v3Element(CFGElement elem, ARTV3Module artV3Module) {
     switch (elem.cfgKind) {
-    case ALT, DO_FIRST, END, KLN, OPT, POS:
+    case ALT, PAR, END, KLN, OPT, POS:
       return null; // These should not appear
 
     case TRM_BI:
       return new ARTGrammarElementTerminalBuiltin(elem.str);
-    case TRM_CHR:
+    case TRM_CH:
       return new ARTGrammarElementTerminalCharacter(elem.str);
     case EOS:
       return new ARTGrammarElementEoS();
     case EPS:
       return new ARTGrammarElementEpsilon();
-    case NONTRM:
+    case NON:
       return new ARTGrammarElementNonterminal(artV3Module, elem.str);
     case TRM_CS:
       return new ARTGrammarElementTerminalCaseSensitive(elem.str);

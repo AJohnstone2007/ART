@@ -12,7 +12,7 @@ import uk.ac.rhul.cs.csle.art.util.stacks.AbstractStackNode;
 import uk.ac.rhul.cs.csle.art.util.stacks.GSS;
 import uk.ac.rhul.cs.csle.art.util.tasks.TasksGLL;
 
-public class GLLBaseLine extends AbstractParser {
+public class GLLBaseLineRecogniser extends AbstractParser {
   CFGNode cfgNode;
   AbstractStackNode stackNode;
   AbstractDerivationNode derivationNode;
@@ -78,8 +78,7 @@ public class GLLBaseLine extends AbstractParser {
   }
 
   private AbstractDerivationNode updateDerivation(int rightExtent) {
-    var rightNode = derivations.find(cfgRules.elementToNodeMap.get(cfgNode.cfgElement), inputIndex, rightExtent);
-    return derivations.extend(cfgNode.seq, derivationNode, rightNode);
+    return null;
   }
 
   private void queueAlternateTasks() {

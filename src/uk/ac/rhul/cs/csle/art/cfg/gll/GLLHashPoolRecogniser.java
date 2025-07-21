@@ -11,7 +11,7 @@ import uk.ac.rhul.cs.csle.art.choose.ChooseRules;
 import uk.ac.rhul.cs.csle.art.script.ScriptTermInterpreter;
 import uk.ac.rhul.cs.csle.art.util.Util;
 
-public class GLLHashPool extends HashPool {
+public class GLLHashPoolRecogniser extends HashPool {
   // Tabular copies of grammar information installed by setGrammar()
   int endOfStringNodeNi;
   int startNonterminalNodeNi;
@@ -249,8 +249,7 @@ public class GLLHashPool extends HashPool {
 
   /* Derivation handling *****************************************************/
   private int derivationFindNode(int dni, int leftExt, int rightExt) {
-    find(sppfNodeBuckets, sppfNodeBucketCount, sppfNode_SIZE, dni, leftExt, rightExt);
-    return findIndex;
+    return 0;
   }
 
   private int derivationUpdate(int gni, int leftChild, int rightChild) {

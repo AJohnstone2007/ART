@@ -62,7 +62,7 @@ public class LexerBaseLine extends AbstractLexer {
         tryTokenMatch(e);
         if (inputIndex != lexemeStart) {// Matched?
           lexemeEnd = inputIndex;
-          if (e.cfgKind != CFGKind.TRM_CHR) whitespaceLongstMatch(); // absorb trailing whitespace
+          if (e.cfgKind != CFGKind.TRM_CH) whitespaceLongstMatch(); // absorb trailing whitespace
           ret.add(new TWESetElement(e, lexemeStart, lexemeEnd, inputIndex));
           hasSlice[inputIndex] = true; // Mark for downstream processing
         }
@@ -94,10 +94,16 @@ public class LexerBaseLine extends AbstractLexer {
     case TRM_CI:
       match_SINGLETON_CASE_INSENSITIVE(e.str);
       break;
-    case TRM_CHR:
+    case TRM_CH:
       match_CHARACTER(e.str);
       break;
-    case NONTRM:
+    case TRM_CH_SET:
+      match_CHARACTER(e.str);
+      break;
+    case TRM_CH_ANTI_SET:
+      match_CHARACTER(e.str);
+      break;
+    case NON:
       Util.fatal("tryTokenMatch() in class " + this.getClass().getSimpleName() + " does not support paraterminals");
       break;
     case TRM_BI:

@@ -52,7 +52,7 @@ public class ChooseRules implements DisplayInterface {
         anyBuiltinStr = extendStringList(anyBuiltinStr, "srBuiltinTerminal(" + ITerms.escapeMeta(e1.str) + ")");
         anyStr = extendStringList(anyStr, "srBuiltinTerminal(" + ITerms.escapeMeta(e1.str) + ")");
         break;
-      case TRM_CHR:
+      case TRM_CH:
         anyCharacterStr = extendStringList(anyCharacterStr, "srCharacterTerminal(" + ITerms.escapeMeta(e1.str) + ")");
         anyStr = extendStringList(anyStr, "srCharacterTerminal(" + ITerms.escapeMeta(e1.str) + ")");
         break;
@@ -66,7 +66,7 @@ public class ChooseRules implements DisplayInterface {
         anyLiteralStr = extendStringList(anyLiteralStr, "srCaseInsensitiveTerminal(" + ITerms.escapeMeta(e1.str) + ")");
         anyStr = extendStringList(anyStr, "srCaseInsensitiveTerminal(" + ITerms.escapeMeta(e1.str) + ")");
         break;
-      case NONTRM:
+      case NON:
         if (grammar.paraterminalNames.contains(e1))
           anyParaStr = extendStringList(anyParaStr, "srNonterminal(" + ITerms.escapeMeta(e1.str) + ")");
         else

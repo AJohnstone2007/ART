@@ -41,10 +41,8 @@ public abstract class AbstractLexer implements DisplayInterface {
 
     for (int i = 0; i < tweSlices.length; i++) {
       if (tweSlices[i] == null) continue;
-      outputStream.print("Index " + i + ":");
       for (int j = 0; j < tweSlices[i].length; j++)
-        outputStream.print("  " + tweSlices[i][j]);
-      outputStream.println();
+        outputStream.println("Index " + i + ":  " + tweSlices[i][j] + "  " + lexeme(tweSlices[i][j]));
     }
   }
 
@@ -73,7 +71,7 @@ public abstract class AbstractLexer implements DisplayInterface {
 
     if (element.cfgElement.cfgKind == CFGKind.TRM_BI) {
       switch (element.cfgElement.str) {
-      case "STRING_DQ", "STRING_SQ", "STRING_PLAIN_SQ", "STRING_DOLLAR":
+      case "STRING_DQ", "STRING_SQ", "STRING_PLAIN_SQ", "STRING_DOLLAR", "STRING_BRACE":
         return full.substring(1, full.length() - 1);
       case "CHAR_BQ":
         return full.substring(1);

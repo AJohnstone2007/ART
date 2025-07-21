@@ -1,7 +1,9 @@
 package uk.ac.rhul.cs.csle.art.cfg.cfgRules;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import uk.ac.rhul.cs.csle.art.util.Util;
 
@@ -12,6 +14,7 @@ public class CFGElement implements Comparable<Object> {
   public boolean isWhitespace;
   public final CFGKind cfgKind;
   public final String str;
+  public Set<Character> set;
 
   public final Map<String, String> attributes = new HashMap<>();
   public final Map<String, Integer> rhsNonterminalsAcrossAllProductions = new HashMap<>();
@@ -21,8 +24,16 @@ public class CFGElement implements Comparable<Object> {
     this.cfgKind = kind;
     this.str = s;
     switch (this.cfgKind) {
-    case TRM_CHR, TRM_CS, TRM_CI, TRM_BI:
+    case TRM_CS, TRM_CI, TRM_BI, TRM_CH:
       isToken = true;
+      return;
+    case TRM_CH_SET, TRM_CH_ANTI_SET:
+      isToken = true;
+      set = new HashSet<>();
+      Util.debug("Processing to set: " + s);
+      for (var c : Util.unescapeString(s).toCharArray())
+        set.add(c);
+      return;
     }
   }
 
@@ -37,23 +48,27 @@ public class CFGElement implements Comparable<Object> {
       return "$$";
     case EOS:
       return "$";
+    case EPS:
+      return "#";
     case TRM_CS:
       return "'" + Util.escapeString(str) + "'";
     case TRM_CI:
       return "\"" + Util.escapeString(str) + "\"";
-    case TRM_CHR:
+    case TRM_CH:
       return "`" + Util.escapeString(str);
+    case TRM_CH_SET:
+      return "{" + set + "}";
+    case TRM_CH_ANTI_SET:
+      return "~{" + set + "}";
     case TRM_BI:
       return "&" + Util.escapeString(str);
-    case EPS:
-      return "#";
-    case NONTRM:
+    case NON:
       return Util.escapeString(str);
     case ALT:
       return "|";
     case END:
       return "END";
-    case DO_FIRST:
+    case PAR:
       return ")";
     case OPT:
       return ")?";

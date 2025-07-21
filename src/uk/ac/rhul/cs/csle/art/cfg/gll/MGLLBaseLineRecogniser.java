@@ -1,5 +1,7 @@
 package uk.ac.rhul.cs.csle.art.cfg.gll;
 
+/****** !!! This version is also test bedding the new SPPF form */
+
 import uk.ac.rhul.cs.csle.art.cfg.AbstractParser;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGRules;
@@ -12,7 +14,7 @@ import uk.ac.rhul.cs.csle.art.util.stacks.AbstractStackNode;
 import uk.ac.rhul.cs.csle.art.util.stacks.GSS;
 import uk.ac.rhul.cs.csle.art.util.tasks.TasksGLL;
 
-public class GLLBaseLine extends AbstractParser {
+public class MGLLBaseLineRecogniser extends AbstractParser {
   CFGNode cfgNode;
   AbstractStackNode stackNode;
   AbstractDerivationNode derivationNode;
@@ -25,10 +27,10 @@ public class GLLBaseLine extends AbstractParser {
     this.lexer = lexer;
     tasks = new TasksGLL();
     stacks = new GSS(cfgRules);
-    derivations = new SPPF(this);
+    derivations = new SPPF(this, true);
 
     if (!lexer.lex(input, cfgRules, chooseRules)) return;
-    lexer.chooseDefault();
+    // lexer.printTWESet(System.out, null);
     inputIndex = 0;
     cfgNode = cfgRules.elementToNodeMap.get(cfgRules.startNonterminal).alt;
     stackNode = stacks.getRoot();
@@ -38,19 +40,17 @@ public class GLLBaseLine extends AbstractParser {
       nextCFGNode: while (true) {
         switch (cfgNode.cfgElement.cfgKind) {
         case ALT:
-          queueAlternateTasks(); // Create task descriptor for the start of each production - is this needed for BNF?
+          queueAlternateTasks(); // Creat task descriptor for the start of each production
           continue nextTask;
         case EPS:
           derivationNode = updateDerivation(inputIndex); // Must match, but nothing consumed, so rightExtent = inputIndex
           cfgNode = cfgNode.seq; // Next grammar node which will be an END node
           continue nextCFGNode; // continue with this sequence
-        case SOS, TRM_BI, TRM_CS, TRM_CI, TRM_CH:
+        case TRM_BI, TRM_CS, TRM_CI, TRM_CH:
           var slice = lexer.tweSlices[inputIndex];
           if (slice != null) {// Ignore empty TWE slices
             for (int firstIndex = 0; firstIndex < slice.length; firstIndex++)
               if (slice[firstIndex].cfgElement == cfgNode.cfgElement) { // Does this TWE match the current grammar position
-
-                // Util.debug("Matched " + cfgNode.toStringAsProduction());
 
                 for (int restOfIndex = firstIndex + 1; restOfIndex < slice.length; restOfIndex++) // Queue tasks for any subsequent matching TWEs in this slice
                   if (slice[restOfIndex].cfgElement == cfgNode.cfgElement)
@@ -78,6 +78,8 @@ public class GLLBaseLine extends AbstractParser {
   }
 
   private AbstractDerivationNode updateDerivation(int rightExtent) {
+    // Util.trace(8, 0, "Matched " + cfgNode.cfgElement);
+    // Util.debug("*** Update derivation " + rightExtent);
     var rightNode = derivations.find(cfgRules.elementToNodeMap.get(cfgNode.cfgElement), inputIndex, rightExtent);
     return derivations.extend(cfgNode.seq, derivationNode, rightNode);
   }

@@ -31,7 +31,7 @@ cfgPositive ::= '('^ cfgAlts ')'^ '+'^ | cfgAltNoAction '+'^
 cfgKleene   ::= '('^ cfgAlts ')'^ '*'^ | cfgAltNoAction '*'^  
 
 cfgName ::= cfgPrim^^ | cfgPrim ':'^ ID           // second child if present is a local name
-cfgPrim ::= cfgNonterminal^^ | cfgCaseSensitiveTerminal^^| cfgCaseInsensitiveTerminal^^ | cfgBuiltinTerminal^^ | cfgBuiltinNoWSTerminal^^ | cfgCharacterTerminal^^ | cfgCharacterSetTerminal^^ | cfgStartString^^
+cfgPrim ::= cfgNonterminal^^ | cfgCaseSensitiveTerminal^^| cfgCaseInsensitiveTerminal^^ | cfgBuiltinTerminal^^ | cfgBuiltinNoWSTerminal^^ | cfgCharacterTerminal^^ | cfgCharacterSetTerminal^^| cfgCharacterAntiSetTerminal^^ | cfgStartString^^
   cfgNonterminal ::= ID | STRING_DOLLAR
   cfgCaseSensitiveTerminal ::= STRING_SQ
   cfgCaseInsensitiveTerminal ::= STRING_DQ
@@ -39,8 +39,8 @@ cfgPrim ::= cfgNonterminal^^ | cfgCaseSensitiveTerminal^^| cfgCaseInsensitiveTer
   cfgBuiltinNoWSTerminal ::= '&&'^ ID
   cfgCharacterTerminal ::= CHAR_BQ
   cfgStartString ::= '!$$'
-
-  cfgCharacterSetTerminal ::= STRING_BRACE | '~' STRING_BRACE 
+  cfgCharacterSetTerminal ::= STRING_BRACE
+  cfgCharacterAntiSetTerminal ::= '~'^ STRING_BRACE
 
 cfgActions ::= cfgSlot^^ cfgActionSeq^ | cfgSlot^^   
   cfgActionSeq ::= cfgAction cfgActionSeq^ | cfgAction  

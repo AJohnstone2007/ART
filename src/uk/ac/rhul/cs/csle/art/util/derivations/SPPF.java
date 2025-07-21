@@ -197,10 +197,10 @@ public class SPPF extends AbstractDerivations {
       else
       constructor = (gn.cfgElement.cfgKind == CFGKind.TRM_BI) ? parser.lexer.lexeme(sppfn.leftExtent) : gn.cfgElement.str;
 
-    // Util.debug("New term with constructor: " + constructor);
-    // if (constructor.equals("")) {
-    // System.out.println("Bang!");
-    // }
+    // Util.debug("At SPPF node " + sppfn + " and grammar node " + gn + " make new term with constructor: " + constructor);
+    if (constructor.equals("")) {
+      System.out.println("Bang!");
+    }
     if (children != childrenFromParent) {
       childrenFromParent.add(parser.cfgRules.iTerms.findTerm(constructor, children));
       derivationNodeCount++;
@@ -285,7 +285,7 @@ public class SPPF extends AbstractDerivations {
     for (SPPFSymbolNode s : nodes.keySet()) {
       switch (s.grammarNode.cfgElement.cfgKind) {
       // Dodgy - how do we test the flavour of an SPPF node?
-      case TRM_CS, TRM_CI, TRM_CHR, TRM_BI:
+      case TRM_CS, TRM_CI, TRM_CH, TRM_BI:
         sppfTerminalNodeCount++;
         break;
       case EPS:

@@ -53,7 +53,7 @@ public class RDSOBGenerator {
             text.print("\n if (input[i]==" + seq.cfgElement.number + "/*" + seq.cfgElement.str + "*/) {i++;");
             braceCount++;
             break;
-          case NONTRM:
+          case NON:
             text.print("\n if (p_" + seq.cfgElement.str + "()) {");
             braceCount++;
             break;
@@ -67,7 +67,7 @@ public class RDSOBGenerator {
               text.print("}");
             text.println();
             break seqLoop;
-          case ALT, TRM_BI, TRM_CHR, DO_FIRST, EOS, KLN, OPT, POS, TRM_CI:
+          case ALT, TRM_BI, TRM_CH, PAR, EOS, KLN, OPT, POS, TRM_CI:
             Util.fatal("internal error - unexpected grammar node in rdsobFunction");
           }
         }
