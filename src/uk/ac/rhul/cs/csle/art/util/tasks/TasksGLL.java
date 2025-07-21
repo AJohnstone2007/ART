@@ -8,6 +8,7 @@ import java.util.Set;
 
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
 import uk.ac.rhul.cs.csle.art.term.TermTraverserText;
+import uk.ac.rhul.cs.csle.art.util.Util;
 import uk.ac.rhul.cs.csle.art.util.derivations.AbstractDerivationNode;
 import uk.ac.rhul.cs.csle.art.util.stacks.AbstractStackNode;
 import uk.ac.rhul.cs.csle.art.util.statistics.Statistics;
@@ -41,8 +42,8 @@ public class TasksGLL extends AbstractTasks {
 
   @Override
   public void print(PrintStream outputStream, TermTraverserText outputTraverser, boolean indexed, boolean full, boolean indented) {
-    // TODO Auto-generated method stub
-
+    for (var d : descriptors)
+      Util.info(d.toString());
   }
 
   @Override

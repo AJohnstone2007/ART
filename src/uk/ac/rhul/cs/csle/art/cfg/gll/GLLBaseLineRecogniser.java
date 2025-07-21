@@ -26,6 +26,7 @@ public class GLLBaseLineRecogniser extends AbstractParser {
     tasks = new TasksGLL();
     stacks = new GSS(cfgRules);
     derivations = new SPPFDummyForRecognisers(this);
+    isRecogniser = true;
 
     if (!lexer.lex(input, cfgRules, chooseRules)) return;
     lexer.chooseDefault();

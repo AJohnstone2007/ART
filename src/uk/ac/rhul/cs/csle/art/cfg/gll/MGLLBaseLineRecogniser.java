@@ -28,6 +28,7 @@ public class MGLLBaseLineRecogniser extends AbstractParser {
     tasks = new TasksGLL();
     stacks = new GSS(cfgRules);
     derivations = new SPPFDummyForRecognisers(this, true);
+    isRecogniser = true;
 
     if (!lexer.lex(input, cfgRules, chooseRules)) return;
     // lexer.printTWESet(System.out, null);

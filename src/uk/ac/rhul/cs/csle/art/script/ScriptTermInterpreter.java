@@ -512,6 +512,15 @@ public final class ScriptTermInterpreter {
           scriptParser.lexer.print(outputStream, outputTraverser, indexed, full, indented);
         break;
 
+      case "tasks":
+        if (currentParser.tasks == null)
+          Util.error("no current tasks to print");
+        else if (isShow)
+          currentParser.tasks.show(outputStream, outputTraverser, indexed, full, indented);
+        else
+          currentParser.tasks.print(outputStream, outputTraverser, indexed, full, indented);
+        break;
+
       case "stacks":
         if (isShow)
           currentParser.stacks.show(outputStream, outputTraverser, indexed, full, indented);
@@ -573,7 +582,7 @@ public final class ScriptTermInterpreter {
       default:
         Util.error("Ignoring " + (isShow ? "!show" : "!print") + " argument: " + displayElement
             + "\n   Must be a double-quoted string, or one of (case insensitive):\n" + "     raw plain latex full indented depth <n>\n"
-            + "     cfgRules chooseRules trRules\n" + "     lexicalisations derivations stacks derivation term\n"
+            + "     cfgRules chooseRules trRules\n" + "     lexicalisations tasks stacks derivations derivationTerm\n"
             + "     scriptLexicalisations scriptDerivations scriptTerm\n" + "     version statistics paraterminals parasentences\n");
       }
     }

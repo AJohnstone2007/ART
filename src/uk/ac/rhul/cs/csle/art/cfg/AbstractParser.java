@@ -14,9 +14,10 @@ public abstract class AbstractParser {
   public CFGRules cfgRules;
   public AbstractLexer lexer;
   protected int inputIndex; // Current input index
-  protected AbstractTasks tasks;
+  public AbstractTasks tasks;
   public AbstractStacks stacks;
   public AbstractDerivations derivations;
+  protected boolean isRecogniser = false;
 
   public abstract void parse(String input, CFGRules cfgRules, AbstractLexer lexer, ChooseRules chooseRules);
 
