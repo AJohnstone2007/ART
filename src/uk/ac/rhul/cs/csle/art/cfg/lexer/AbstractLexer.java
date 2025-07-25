@@ -42,7 +42,12 @@ public abstract class AbstractLexer implements DisplayInterface {
       int unsuppressedElementCount = 0; // Could use boolean for speed but code looks tricksy so do this for perspicaciousness
       for (var te : ts) {
         if (!te.suppressed) unsuppressedElementCount++;
-        if (unsuppressedElementCount > 1) return false;
+        if (unsuppressedElementCount > 1) {
+          // Util.debug("nonDeterministic TWE slice: ");
+          // for (var pe : ts)
+          // System.out.println(pe);
+          return false;
+        }
       }
     }
     return true;
@@ -108,51 +113,58 @@ public abstract class AbstractLexer implements DisplayInterface {
     }
 
     if (!isDeterministic())
-      Util.warning("TWE set has multiple lexicalisations; picking one using default strategy of longest match with builtins having highest priority");
+      Util.warning("TWE set has multiple lexicalisations; picking one using default strategy of longest match with builtins having low priority");
 
     for (int i = 0; i < tweSlices.length; i++) {
       var slice = tweSlices[i];
-      if (slice != null) for (var e : slice)
-        for (var f : slice)
-          if (f.cfgElement.cfgKind == CFGKind.SOS)
-            continue; // do not suppress the start of string token
-          else if ((e.rightExtent > f.rightExtent)
-              || (e.rightExtent == f.rightExtent && e.cfgElement.cfgKind != CFGKind.TRM_BI && f.cfgElement.cfgKind == CFGKind.TRM_BI))
+      if (slice != null) for (int ee = 0; ee < tweSlices[i].length; ee++)
+        for (int ff = 0; ff < tweSlices[i].length; ff++) {
+          if (ee == ff) continue; // Do not self-compare
+          var f = tweSlices[i][ff];
+          if (f.cfgElement.cfgKind == CFGKind.SOS) continue; // do not suppress the start of string token
+
+          var e = tweSlices[i][ee];
+          if (e.rightExtent > f.rightExtent)
             f.suppressed = true;
+          else if (e.rightExtent == f.rightExtent && f.cfgElement.cfgKind == CFGKind.TRM_BI) {
+            // Util.debug("TWE pair " + e + " and " + f + " - suppressing " + f);
+            f.suppressed = true;
+          }
+        }
     }
   }
 
   public void suppressDeadPaths() {
-    // Util.debug("TWE dead path suppression");
-    int inDegree[] = new int[tweSlices.length + 1];
-    int outDegree[] = new int[tweSlices.length + 1];
-    for (int i = 0; i < tweSlices.length; i++)
-      if (tweSlices[i] != null) for (var e : tweSlices[i])
-        if (!e.suppressed) {
-          outDegree[i]++;
-          inDegree[e.rightExtent]++;
-        }
-
-    for (int i = tweSlices.length - 3; i >= 0; i--)
-      if (outDegree[i] != 0) {
-        for (var e : tweSlices[i])
-          if (!e.suppressed && outDegree[e.rightExtent] == 0) {
-            e.suppressed = true;
-            outDegree[i]--;
-            inDegree[e.rightExtent]--;
-          }
-      }
-
-    for (int i = 1; i < tweSlices.length; i++) {
-      if (outDegree[i] != 0) {
-        for (var e : tweSlices[i])
-          if (!e.suppressed && inDegree[i] == 0) {
-            e.suppressed = true;
-            outDegree[i]--;
-            inDegree[e.rightExtent]--;
-          }
-      }
-    }
+    // // Util.debug("TWE dead path suppression");
+    // int inDegree[] = new int[tweSlices.length + 1];
+    // int outDegree[] = new int[tweSlices.length + 1];
+    // for (int i = 0; i < tweSlices.length; i++)
+    // if (tweSlices[i] != null) for (var e : tweSlices[i])
+    // if (!e.suppressed) {
+    // outDegree[i]++;
+    // inDegree[e.rightExtent]++;
+    // }
+    //
+    // for (int i = tweSlices.length - 3; i >= 0; i--)
+    // if (outDegree[i] != 0) {
+    // for (var e : tweSlices[i])
+    // if (!e.suppressed && outDegree[e.rightExtent] == 0) {
+    // e.suppressed = true;
+    // outDegree[i]--;
+    // inDegree[e.rightExtent]--;
+    // }
+    // }
+    //
+    // for (int i = 1; i < tweSlices.length; i++) {
+    // if (outDegree[i] != 0) {
+    // for (var e : tweSlices[i])
+    // if (!e.suppressed && inDegree[i] == 0) {
+    // e.suppressed = true;
+    // outDegree[i]--;
+    // inDegree[e.rightExtent]--;
+    // }
+    // }
+    // }
   }
 
   /*

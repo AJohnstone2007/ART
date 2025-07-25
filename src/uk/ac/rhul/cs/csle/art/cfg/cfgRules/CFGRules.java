@@ -12,6 +12,7 @@ import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import uk.ac.rhul.cs.csle.art.cfg.lexer.WSKind;
 import uk.ac.rhul.cs.csle.art.term.ITerms;
 import uk.ac.rhul.cs.csle.art.term.TermTraverserText;
 import uk.ac.rhul.cs.csle.art.util.DisplayInterface;
@@ -107,8 +108,8 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
     }
   }
 
-  public void normalise() {
-    if (!seenWhitespaceDirective) findElement(CFGKind.TRM_BI, "SIMPLE_WHITESPACE").isWhitespace = true;
+  public void normalise(WSKind currentWSMode) {
+    if (currentWSMode == WSKind.DEFAULT) findElement(CFGKind.TRM_BI, "SIMPLE_WHITESPACE").isWhitespace = true;
 
     derivesExactly = new Relation<>();
     // Add singleton grammar nodes for terminals, # and epsilon. These are used by the SPPF.

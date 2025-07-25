@@ -1,4 +1,4 @@
-fr(* ART script grammar rules - suitable for RDSOB parsers: No left recursive rules; Alterates in decreasing length order;   directive at end of each rule *)
+(* ART script grammar rules - suitable for RDSOB parsers: No left recursive rules; Alterates in decreasing length order;   directive at end of each rule *)
 //!parser rdsobFunction // Uncomment this line to try bootstrapping with Recursive Descent Singleton Ordered Backtracking parser instead of default GLL parser
 !whitespace &SIMPLE_WHITESPACE, &COMMENT_NEST_ART, &COMMENT_LINE_C 
 rules ::= rule rules^ | rule
@@ -130,7 +130,7 @@ directiveCarrier ::=
 | '!show'^^ displayElements^
 | '!trace'^^ __int32
 
-| '!clear'^^ ID | '!lexer'^^ ID | '!parser'^^ ID | '!chooser'^^ ID | '!interpreter'^^ ID 
+| '!clear'^^ ID | '!lexer'^^ ID | '!parser'^^ ID | '!interpreter'^^ ID | '!mode'^^ ID 
 
 | '!whitespace'^^ whiteSpaceElements^
 | '!paraterminal'^^ paraterminalElements^
