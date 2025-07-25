@@ -5,10 +5,10 @@ import uk.ac.rhul.cs.csle.art.util.derivations.AbstractDerivationNode;
 import uk.ac.rhul.cs.csle.art.util.stacks.AbstractStackNode;
 
 public class DescriptorGLL {
-  public int tokenIndex;
-  public CFGNode cfgNode;
-  public AbstractStackNode stackNode;
-  public AbstractDerivationNode derivationNode;
+  public final int tokenIndex;
+  public final CFGNode cfgNode;
+  public final AbstractStackNode stackNode;
+  public final AbstractDerivationNode derivationNode;
 
   public DescriptorGLL(int tokenIndex, CFGNode grammarNode, AbstractStackNode stackNode, AbstractDerivationNode derivationNode) {
     super();

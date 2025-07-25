@@ -133,7 +133,7 @@ stringbody ::= ascii | escape | format |
 ascii ::=  letter | `_  | digit | `\\ | 
            `= | `> | `? | ` | `^ | `! | `& | `% | `- | `< | `( | `) |
            `* | `. | `[ | `] | `{ | `} | `: | `$ | `+ | `; | `# | 
-           `| | `@ | `' | `  | `,
+           `| | `@ | `' | `~ | `,
 	   (* eas: no pound sign can be in the script *)
 
 

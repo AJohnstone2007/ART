@@ -4,6 +4,7 @@ import java.io.PrintStream;
 import java.util.Set;
 
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGKind;
+import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGRules;
 import uk.ac.rhul.cs.csle.art.choose.ChooseRules;
 import uk.ac.rhul.cs.csle.art.term.TermTraverserText;
@@ -29,6 +30,23 @@ public abstract class AbstractLexer implements DisplayInterface {
   }
 
   public abstract boolean lex(String input, CFGRules cfgRules, ChooseRules chooseRules);
+
+  public boolean isDeterministic() {
+    if (tweSlices == null) {
+      Util.error("AbstractLexer.isDeterministic() called on null TWE set");
+      return false;
+    }
+
+    for (var ts : tweSlices) {
+      if (ts == null) continue;
+      int unsuppressedElementCount = 0; // Could use boolean for speed but code looks tricksy so do this for perspicaciousness
+      for (var te : ts) {
+        if (!te.suppressed) unsuppressedElementCount++;
+        if (unsuppressedElementCount > 1) return false;
+      }
+    }
+    return true;
+  }
 
   @Override
   public void print(PrintStream outputStream, TermTraverserText outputTraverser, boolean indexed, boolean full, boolean indented) {
@@ -58,12 +76,15 @@ public abstract class AbstractLexer implements DisplayInterface {
     // TODO Auto-generated method stub
   }
 
-  public String lexeme(int index) { // Used by deteministic parsers which only access the first element in a slice
-    return lexeme(index, 0);
-  }
+  /* Search tweSlices[leftExtent] for a TWE set elementthat matchs grammarNode */
+  public String lexeme(CFGNode grammarNode, int leftExtent) {
 
-  public String lexeme(int index, int offset) {
-    return lexeme(tweSlices[index][offset]);
+    if (tweSlices[leftExtent] == null) Util.fatal("internal error - SPPF has terminal with left extent referencing null TWE   slice " + leftExtent);
+    for (var te : tweSlices[leftExtent])
+      if (te.cfgElement.cfgKind == grammarNode.cfgElement.cfgKind) return lexeme(te);
+
+    Util.fatal("internal error - SPPF has terminal which is not present in TWE slice " + leftExtent);
+    return "??? Unmatched lexeme kind";
   }
 
   public String lexeme(TWESetElement element) {
@@ -82,9 +103,12 @@ public abstract class AbstractLexer implements DisplayInterface {
 
   public void chooseDefault() {
     if (tweSlices[0] == null) {
-      Util.error("Empty tweSet");
+      Util.error("lexer.chooseDefault() - empty tweSet");
       return;
     }
+
+    if (!isDeterministic()) Util.warning("Before disambiguation, TWE set has multiple lexicalisations; picking one nondeterminstically");
+
     for (int i = 0; i < tweSlices.length; i++) {
       var slice = tweSlices[i];
       if (slice != null) for (var e : slice)
@@ -98,38 +122,42 @@ public abstract class AbstractLexer implements DisplayInterface {
   }
 
   public void suppressDeadPaths() {
-    // // Util.debug("TWE dead path suppression");
-    // int inDegree[] = new int[slices.size() + 1];
-    // int outDegree[] = new int[slices.size() + 1];
-    // for (int i = 0; i < slices.size(); i++)
-    // if (slices.get(i) != null) for (var e : slices.get(i))
-    // if (!e.suppressed) {
-    // outDegree[i]++;
-    // inDegree[e.rightExtent]++;
-    // }
-    //
-    // for (int i = slices.size() - 3; i >= 0; i--)
-    // if (outDegree[i] != 0) {
-    // for (var e : slices.get(i))
-    // if (!e.suppressed && outDegree[e.rightExtent] == 0) {
-    // e.suppressed = true;
-    // outDegree[i]--;
-    // inDegree[e.rightExtent]--;
-    // }
-    // }
-    //
-    // for (int i = 1; i < slices.size(); i++) {
-    // if (outDegree[i] != 0) {
-    // for (var e : slices.get(i))
-    // if (!e.suppressed && inDegree[i] == 0) {
-    // e.suppressed = true;
-    // outDegree[i]--;
-    // inDegree[e.rightExtent]--;
-    // }
-    // }
-    // }
+    // Util.debug("TWE dead path suppression");
+    int inDegree[] = new int[tweSlices.length + 1];
+    int outDegree[] = new int[tweSlices.length + 1];
+    for (int i = 0; i < tweSlices.length; i++)
+      if (tweSlices[i] != null) for (var e : tweSlices[i])
+        if (!e.suppressed) {
+          outDegree[i]++;
+          inDegree[e.rightExtent]++;
+        }
+
+    for (int i = tweSlices.length - 3; i >= 0; i--)
+      if (outDegree[i] != 0) {
+        for (var e : tweSlices[i])
+          if (!e.suppressed && outDegree[e.rightExtent] == 0) {
+            e.suppressed = true;
+            outDegree[i]--;
+            inDegree[e.rightExtent]--;
+          }
+      }
+
+    for (int i = 1; i < tweSlices.length; i++) {
+      if (outDegree[i] != 0) {
+        for (var e : tweSlices[i])
+          if (!e.suppressed && inDegree[i] == 0) {
+            e.suppressed = true;
+            outDegree[i]--;
+            inDegree[e.rightExtent]--;
+          }
+      }
+    }
   }
 
+  /*
+   * Work through the current TWEset, counting thnumber of suppressed elements in each slice. If this is >0, make a new replacement slice and copy the
+   * unsuppressed elements into it.
+   */
   public void removeSuppressedTWE() {
     for (int i = 0; i < tweSlices.length; i++)
       if (tweSlices[i] != null && tweSlices[i].length > 1) {

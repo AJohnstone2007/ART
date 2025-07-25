@@ -195,7 +195,7 @@ public class SPPF extends AbstractDerivations {
       if (derivationForInterpreter)
       constructor = firstAvailableSPPFPN == null ? "" + -sppfn.rightExtent : "" + firstAvailableSPPFPN.grammarNode.alt.num;
       else
-      constructor = (gn.cfgElement.cfgKind == CFGKind.TRM_BI) ? parser.lexer.lexeme(sppfn.leftExtent) : gn.cfgElement.str;
+      constructor = (gn.cfgElement.cfgKind == CFGKind.TRM_BI) ? parser.lexer.lexeme(sppfn.grammarNode, sppfn.leftExtent) : gn.cfgElement.str;
 
     // Util.debug("At SPPF node " + sppfn + " and grammar node " + gn + " make new term with constructor: " + constructor);
     if (constructor.equals("")) {

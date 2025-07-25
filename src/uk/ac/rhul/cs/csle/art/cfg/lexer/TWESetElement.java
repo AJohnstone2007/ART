@@ -20,6 +20,32 @@ public class TWESetElement {
   }
 
   @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + ((cfgElement == null) ? 0 : cfgElement.hashCode());
+    result = prime * result + leftExtent;
+    result = prime * result + lexemeEnd;
+    result = prime * result + rightExtent;
+    return result;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) return true;
+    if (obj == null) return false;
+    if (getClass() != obj.getClass()) return false;
+    TWESetElement other = (TWESetElement) obj;
+    if (cfgElement == null) {
+      if (other.cfgElement != null) return false;
+    } else if (!cfgElement.equals(other.cfgElement)) return false;
+    if (leftExtent != other.leftExtent) return false;
+    if (lexemeEnd != other.lexemeEnd) return false;
+    if (rightExtent != other.rightExtent) return false;
+    return true;
+  }
+
+  @Override
   public String toString() {
     StringBuilder builder = new StringBuilder();
     if (suppressed) builder.append("*");

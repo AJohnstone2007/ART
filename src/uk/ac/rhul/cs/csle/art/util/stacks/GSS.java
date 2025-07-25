@@ -39,7 +39,7 @@ public class GSS extends AbstractStacks {
     GSSEdge gssEdge = new GSSEdge(stackNode, derivationNode);
     if (!gssNode.edges.contains(gssEdge)) {
       gssNode.edges.add(gssEdge);
-      for (AbstractDerivationNode rc : gssNode.pops)
+      for (AbstractDerivationNode rc : gssNode.pops) // Contingent pops
         tasks.queue(rc.getRightExtent(), gn.seq, stackNode, derivations.extend(gn.seq, derivationNode, rc));
     }
     return gssNode;

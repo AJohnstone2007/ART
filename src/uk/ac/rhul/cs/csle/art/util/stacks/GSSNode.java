@@ -37,8 +37,8 @@ public class GSSNode extends AbstractStackNode {
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result = prime * result + inputIndex;
     result = prime * result + ((cfgNode == null) ? 0 : cfgNode.hashCode());
+    result = prime * result + inputIndex;
     return result;
   }
 
@@ -48,10 +48,10 @@ public class GSSNode extends AbstractStackNode {
     if (obj == null) return false;
     if (getClass() != obj.getClass()) return false;
     GSSNode other = (GSSNode) obj;
-    if (inputIndex != other.inputIndex) return false;
     if (cfgNode == null) {
       if (other.cfgNode != null) return false;
     } else if (!cfgNode.equals(other.cfgNode)) return false;
+    if (inputIndex != other.inputIndex) return false;
     return true;
   }
 

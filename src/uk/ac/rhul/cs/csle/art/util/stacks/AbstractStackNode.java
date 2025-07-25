@@ -11,4 +11,11 @@ public abstract class AbstractStackNode {
   public abstract Set<AbstractDerivationNode> getPops();
 
   public abstract Set<GSSEdge> getEdges();
+
+  @Override
+  public abstract int hashCode();
+
+  @Override
+  public abstract boolean equals(Object obj);
+
 }
