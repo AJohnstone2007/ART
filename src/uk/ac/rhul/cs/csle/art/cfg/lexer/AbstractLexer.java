@@ -107,7 +107,8 @@ public abstract class AbstractLexer implements DisplayInterface {
       return;
     }
 
-    if (!isDeterministic()) Util.warning("Before disambiguation, TWE set has multiple lexicalisations; picking one nondeterminstically");
+    if (!isDeterministic())
+      Util.warning("TWE set has multiple lexicalisations; picking one using default strategy of longest match with builtins having highest priority");
 
     for (int i = 0; i < tweSlices.length; i++) {
       var slice = tweSlices[i];

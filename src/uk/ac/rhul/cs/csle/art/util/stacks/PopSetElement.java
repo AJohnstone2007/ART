@@ -1,10 +1,17 @@
 package uk.ac.rhul.cs.csle.art.util.stacks;
 
+import uk.ac.rhul.cs.csle.art.util.derivations.AbstractDerivationNode;
 import uk.ac.rhul.cs.csle.art.util.derivations.SPPFSymbolNode;
 
 public class PopSetElement {
-  SPPFSymbolNode derivationNode;
   int inputIndex;
+  AbstractDerivationNode derivationNode;
+
+  public PopSetElement(int inputIndex, AbstractDerivationNode derivationNode2) {
+    super();
+    this.inputIndex = inputIndex;
+    this.derivationNode = derivationNode2;
+  }
 
   public PopSetElement(SPPFSymbolNode derivationNode, int inputIndex) {
     super();

@@ -4,13 +4,12 @@ import java.util.HashSet;
 import java.util.Set;
 
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
-import uk.ac.rhul.cs.csle.art.util.derivations.AbstractDerivationNode;
 
 public class GSSNode extends AbstractStackNode {
   public final CFGNode cfgNode;
   final int inputIndex;
   public final Set<GSSEdge> edges = new HashSet<>();
-  public final Set<AbstractDerivationNode> pops = new HashSet<>();
+  public final Set<PopSetElement> pops = new HashSet<>();
 
   @Override
   public CFGNode getGrammarNode() {
@@ -18,7 +17,7 @@ public class GSSNode extends AbstractStackNode {
   }
 
   @Override
-  public Set<AbstractDerivationNode> getPops() {
+  public Set<PopSetElement> getPops() {
     return pops;
   }
 

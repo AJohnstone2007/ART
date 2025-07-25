@@ -39,15 +39,15 @@ public class GSS extends AbstractStacks {
     GSSEdge gssEdge = new GSSEdge(stackNode, derivationNode);
     if (!gssNode.edges.contains(gssEdge)) {
       gssNode.edges.add(gssEdge);
-      for (AbstractDerivationNode rc : gssNode.pops) // Contingent pops
-        tasks.queue(rc.getRightExtent(), gn.seq, stackNode, derivations.extend(gn.seq, derivationNode, rc));
+      for (PopSetElement rc : gssNode.pops) // Contingent pops
+        tasks.queue(rc.inputIndex, gn.seq, stackNode, derivations.extend(gn.seq, derivationNode, rc.derivationNode));
     }
     return gssNode;
   }
 
   @Override
   public void pop(AbstractDerivations derivations, AbstractTasks tasks, int tokenIndex, AbstractStackNode stackNode, AbstractDerivationNode derivationNode) {
-    stackNode.getPops().add(derivationNode);
+    stackNode.getPops().add(new PopSetElement(tokenIndex, derivationNode));
     for (GSSEdge e : stackNode.getEdges())
       tasks.queue(tokenIndex, stackNode.getGrammarNode(), e.dst, derivations.extend(stackNode.getGrammarNode(), e.derivationNode, derivationNode));
   }
