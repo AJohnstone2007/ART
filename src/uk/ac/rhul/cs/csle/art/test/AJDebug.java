@@ -16,6 +16,7 @@ import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGElement;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGKind;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGRules;
+import uk.ac.rhul.cs.csle.art.cfg.lexer.WSKind;
 import uk.ac.rhul.cs.csle.art.old.v3.ARTV3;
 import uk.ac.rhul.cs.csle.art.old.v3.manager.grammar.ARTGrammar;
 import uk.ac.rhul.cs.csle.art.old.v3.manager.grammar.element.ARTGrammarElement;
@@ -92,7 +93,7 @@ public final class AJDebug {
     // System.out.print("\n*** V3 grammar\n" + grammarV3.toString());
     grammarV5 = regressionScriptInterpreter.currentCFGRules;
     Util.info("*** Working grammar normalisation starts here");
-    grammarV5.normalise();
+    grammarV5.normalise(WSKind.DEFAULT);
 
     boolean good = true;
 
