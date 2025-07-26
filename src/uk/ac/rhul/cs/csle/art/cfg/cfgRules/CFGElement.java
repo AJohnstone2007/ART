@@ -57,9 +57,9 @@ public class CFGElement implements Comparable<Object> {
     case TRM_CH:
       return "`" + Util.escapeString(str);
     case TRM_CH_SET:
-      return "{" + set + "}";
+      return "{" + setToString() + "}";
     case TRM_CH_ANTI_SET:
-      return "~{" + set + "}";
+      return "~{" + setToString() + "}";
     case TRM_BI:
       return "&" + Util.escapeString(str);
     case NON:
@@ -79,6 +79,13 @@ public class CFGElement implements Comparable<Object> {
     default:
       return "???";
     }
+  }
+
+  String setToString() {
+    StringBuilder sb = new StringBuilder();
+    for (var s : set)
+      sb.append(Util.escapeString(s.toString()));
+    return sb.toString();
   }
 
   @Override

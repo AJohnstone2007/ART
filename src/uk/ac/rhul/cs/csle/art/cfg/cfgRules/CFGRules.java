@@ -713,7 +713,7 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
         if (cyclicNonterminals.contains(s)) outputStream.print(" cyclic");
         if (paraterminalElements.contains(s)) outputStream.print(" paraterminal");
         if (s.attributes != null && !s.attributes.isEmpty()) outputStream.print(" attributes: " + s.attributes);
-        if (full && first.get(s) != null) {
+        if (first.get(s) != null) {
           outputStream.print(" first = {");
           printElements(outputStream, first.get(s));
           outputStream.print("} follow = {");
