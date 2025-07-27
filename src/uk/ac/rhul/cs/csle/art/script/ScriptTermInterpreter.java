@@ -72,7 +72,7 @@ public final class ScriptTermInterpreter {
 
   public static WSMode currentWSMode = WSMode.DEFAULT;
   private final AbstractLexer currentLexer = new LexerBaseLine();
-  private AbstractParser currentParser = new GLLParameterised(false, false);
+  private AbstractParser currentParser = new GLLParameterised(true, false);
   public CFGRules currentCFGRules; // scriptTraverser builds CFG rules into this grammar
   private int currentTryTerm = 0;
   private int currentIndexedTryTerm = 0;
