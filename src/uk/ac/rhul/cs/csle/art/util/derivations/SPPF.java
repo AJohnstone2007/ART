@@ -21,7 +21,6 @@ import uk.ac.rhul.cs.csle.art.util.statistics.Statistics;
 
 public class SPPF extends AbstractDerivations {
   public final AbstractParser parser;
-  private final boolean firstSuppressParent;
   public SPPFSymbolNode root;
   public String inputString; // Original input string
 
@@ -36,13 +35,8 @@ public class SPPF extends AbstractDerivations {
   public final Set<SPPFPackedNode> cbDPrime = new HashSet<>(); // Set of deleted cyclic nodes: D' in Elizabeth's note
 
   public SPPF(AbstractParser parser) {
-    this(parser, false);
-  }
-
-  public SPPF(AbstractParser parser, boolean firstSuppressParent) {
     super();
     this.parser = parser;
-    this.firstSuppressParent = firstSuppressParent;
   }
 
   @Override

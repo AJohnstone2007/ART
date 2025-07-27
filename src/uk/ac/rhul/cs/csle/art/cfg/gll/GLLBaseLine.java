@@ -28,7 +28,6 @@ public class GLLBaseLine extends AbstractParser {
     derivations = new SPPF(this);
 
     if (!lexer.lex(input, cfgRules, chooseRules)) return;
-    lexer.chooseDefault();
     inputIndex = 0;
     cfgNode = cfgRules.elementToNodeMap.get(cfgRules.startNonterminal).alt;
     stackNode = stacks.getRoot();
@@ -48,14 +47,8 @@ public class GLLBaseLine extends AbstractParser {
           var slice = lexer.tweSlices[inputIndex];
           if (slice != null) {// Ignore empty TWE slices
             for (int firstIndex = 0; firstIndex < slice.length; firstIndex++)
-              if (slice[firstIndex].cfgElement == cfgNode.cfgElement) { // Does this TWE match the current grammar position
-
+              if (!slice[firstIndex].suppressed && slice[firstIndex].cfgElement == cfgNode.cfgElement) { // Does this TWE match the current grammar position
                 // Util.debug("Matched " + cfgNode.toStringAsProduction());
-
-                for (int restOfIndex = firstIndex + 1; restOfIndex < slice.length; restOfIndex++) // Queue tasks for any subsequent matching TWEs in this slice
-                  if (slice[restOfIndex].cfgElement == cfgNode.cfgElement)
-                    tasks.queue(slice[restOfIndex].rightExtent, cfgNode.seq, stackNode, updateDerivation(slice[restOfIndex].rightExtent));
-
                 derivationNode = updateDerivation(slice[firstIndex].rightExtent);
                 inputIndex = slice[firstIndex].rightExtent; // Step over the matched TWE
                 cfgNode = cfgNode.seq; // Next grammar node

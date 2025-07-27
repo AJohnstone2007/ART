@@ -1,7 +1,5 @@
 package uk.ac.rhul.cs.csle.art.cfg.gll;
 
-/****** !!! This version is also test bedding the new SPPF form */
-
 import uk.ac.rhul.cs.csle.art.cfg.AbstractParser;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGRules;
@@ -9,12 +7,31 @@ import uk.ac.rhul.cs.csle.art.cfg.lexer.AbstractLexer;
 import uk.ac.rhul.cs.csle.art.choose.ChooseRules;
 import uk.ac.rhul.cs.csle.art.util.Util;
 import uk.ac.rhul.cs.csle.art.util.derivations.AbstractDerivationNode;
+import uk.ac.rhul.cs.csle.art.util.derivations.SPPF;
 import uk.ac.rhul.cs.csle.art.util.derivations.SPPFDummyForRecognisers;
 import uk.ac.rhul.cs.csle.art.util.stacks.AbstractStackNode;
 import uk.ac.rhul.cs.csle.art.util.stacks.GSS;
 import uk.ac.rhul.cs.csle.art.util.tasks.TasksGLL;
 
-public class MGLLBaseLineRecogniser extends AbstractParser {
+/**
+ * This is the 'master' GLL/MGLL implementation which has selectable features based on final booleans, which we hope get compiled into macro-style code switches
+ * - to be evaluated!
+ */
+public class GLLParameterised extends AbstractParser {
+  final boolean isMGLL;
+  final boolean isRecogniser;
+
+  public GLLParameterised(boolean isMGLL, boolean isRecogniser) {
+    super();
+    this.isMGLL = isMGLL;
+    this.isRecogniser = isRecogniser;
+  }
+
+  @Override
+  protected String name() {
+    return (isMGLL ? "M" : "") + "GLL" + (isRecogniser ? "Recogniser" : "");
+  }
+
   CFGNode cfgNode;
   AbstractStackNode stackNode;
   AbstractDerivationNode derivationNode;
@@ -27,11 +44,12 @@ public class MGLLBaseLineRecogniser extends AbstractParser {
     this.lexer = lexer;
     tasks = new TasksGLL();
     stacks = new GSS(cfgRules);
-    derivations = new SPPFDummyForRecognisers(this, true);
-    isRecogniser = true;
+    if (isRecogniser)
+      derivations = new SPPFDummyForRecognisers(this);
+    else
+      derivations = new SPPF(this);
 
     if (!lexer.lex(input, cfgRules, chooseRules)) return;
-    // lexer.printTWESet(System.out, null);
     inputIndex = 0;
     cfgNode = cfgRules.elementToNodeMap.get(cfgRules.startNonterminal).alt;
     stackNode = stacks.getRoot();
@@ -41,24 +59,24 @@ public class MGLLBaseLineRecogniser extends AbstractParser {
       nextCFGNode: while (true) {
         switch (cfgNode.cfgElement.cfgKind) {
         case ALT:
-          queueAlternateTasks(); // Creat task descriptor for the start of each production
+          queueAlternateTasks(); // Create task descriptor for the start of each production
           continue nextTask;
         case EPS:
           derivationNode = updateDerivation(inputIndex); // Must match, but nothing consumed, so rightExtent = inputIndex
           cfgNode = cfgNode.seq; // Next grammar node which will be an END node
           continue nextCFGNode; // continue with this sequence
-        case TRM_BI, TRM_CS, TRM_CI, TRM_CH:
+        case SOS, TRM_BI, TRM_CS, TRM_CI, TRM_CH:
           var slice = lexer.tweSlices[inputIndex];
-          if (slice != null) {// Ignore empty TWE slices
-            for (int firstIndex = 0; firstIndex < slice.length; firstIndex++)
-              if (slice[firstIndex].cfgElement == cfgNode.cfgElement) { // Does this TWE match the current grammar position
-
-                for (int restOfIndex = firstIndex + 1; restOfIndex < slice.length; restOfIndex++) // Queue tasks for any subsequent matching TWEs in this slice
-                  if (slice[restOfIndex].cfgElement == cfgNode.cfgElement)
+          if (slice != null) {// Nothing todo for empty TWE slices
+            for (int sliceIndex = 0; sliceIndex < slice.length; sliceIndex++) // Iterate over the TWE set elements in this slice
+              if (!slice[sliceIndex].suppressed && slice[sliceIndex].cfgElement == cfgNode.cfgElement) { // Does this element match the current grammar position
+                // Util.debug("Matched " + cfgNode.toStringAsProduction());
+                if (isMGLL) for (int restOfIndex = sliceIndex + 1; restOfIndex < slice.length; restOfIndex++) // Queue tasks for any subsequent matching TWEs in
+                                                                                                              // this slice
+                  if (!slice[sliceIndex].suppressed && slice[restOfIndex].cfgElement == cfgNode.cfgElement)
                     tasks.queue(slice[restOfIndex].rightExtent, cfgNode.seq, stackNode, updateDerivation(slice[restOfIndex].rightExtent));
-
-                derivationNode = updateDerivation(slice[firstIndex].rightExtent);
-                inputIndex = slice[firstIndex].rightExtent; // Step over the matched TWE
+                derivationNode = updateDerivation(slice[sliceIndex].rightExtent);
+                inputIndex = slice[sliceIndex].rightExtent; // Step over the matched TWE
                 cfgNode = cfgNode.seq; // Next grammar node
                 continue nextCFGNode; // continue with this sequence
               }

@@ -24,12 +24,19 @@ public abstract class AbstractParser {
   public void outcomeReport() {
     if (lexer.tweSlices == null) return; // A lexical error will already have been reported
 
-    if (inLanguage) {
-      Util.trace(1, getClass().getSimpleName() + " accept");
-      if (derivations == null) Util.error(getClass().getSimpleName() + " does not produce API level derivations");
-    } else {
-      int widestIndex = derivations.widestIndex();
-      Util.error(Util.echo(getClass().getSimpleName() + " syntax error ", lexer.tweSlices[widestIndex][0].leftExtent, lexer.inputString));
+    if (inLanguage)
+      Util.trace(1, name() + " accept");
+    else {
+      if (derivations == null)
+        Util.trace(1, name() + " reject");
+      else {
+        int widestIndex = derivations.widestIndex();
+        Util.error(Util.echo(getClass().getSimpleName() + " syntax error ", lexer.tweSlices[widestIndex][0].leftExtent, lexer.inputString));
+      }
     }
+  }
+
+  protected String name() {
+    return getClass().getSimpleName();
   }
 }

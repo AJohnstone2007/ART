@@ -15,18 +15,16 @@ import uk.ac.rhul.cs.csle.art.cfg.cfgRules.GIFTKind;
 import uk.ac.rhul.cs.csle.art.cfg.chart.AlgX;
 import uk.ac.rhul.cs.csle.art.cfg.chart.CYK;
 import uk.ac.rhul.cs.csle.art.cfg.gll.GLLBaseLine;
-import uk.ac.rhul.cs.csle.art.cfg.gll.GLLBaseLineRecogniser;
 import uk.ac.rhul.cs.csle.art.cfg.gll.GLLHashPool;
-import uk.ac.rhul.cs.csle.art.cfg.gll.GLLHashPoolRecogniser;
-import uk.ac.rhul.cs.csle.art.cfg.gll.MGLLBaseLine;
-import uk.ac.rhul.cs.csle.art.cfg.gll.MGLLBaseLineRecogniser;
+import uk.ac.rhul.cs.csle.art.cfg.gll.GLLParameterised;
 import uk.ac.rhul.cs.csle.art.cfg.lexer.AbstractLexer;
 import uk.ac.rhul.cs.csle.art.cfg.lexer.LexerBaseLine;
-import uk.ac.rhul.cs.csle.art.cfg.lexer.WSKind;
+import uk.ac.rhul.cs.csle.art.cfg.lexer.WSMode;
 import uk.ac.rhul.cs.csle.art.cfg.rdsob.RDSOBExplicitStack;
 import uk.ac.rhul.cs.csle.art.cfg.rdsob.RDSOBFunction;
 import uk.ac.rhul.cs.csle.art.cfg.rdsob.RDSOBGenerator;
 import uk.ac.rhul.cs.csle.art.cfg.rdsob.RDSOBOracleGenerator;
+import uk.ac.rhul.cs.csle.art.choose.ChooseMode;
 import uk.ac.rhul.cs.csle.art.choose.ChooseRules;
 import uk.ac.rhul.cs.csle.art.interpret.AbstractInterpreter;
 import uk.ac.rhul.cs.csle.art.interpret.ActionsGenerator;
@@ -72,14 +70,15 @@ public final class ScriptTermInterpreter {
   private final int scriptDerivationTerm;
   private final TermTraverser scriptTraverser;
 
-  private WSKind currentWSMode = WSKind.DEFAULT;
+  public static WSMode currentWSMode = WSMode.DEFAULT;
   private final AbstractLexer currentLexer = new LexerBaseLine();
-  private AbstractParser currentParser = new MGLLBaseLine();
+  private AbstractParser currentParser = new GLLParameterised(false, false);
   public CFGRules currentCFGRules; // scriptTraverser builds CFG rules into this grammar
   private int currentTryTerm = 0;
   private int currentIndexedTryTerm = 0;
   private int currentRewriteTerm = 0;
   private int currentConfiguration;
+  public static ChooseMode currentChooseMode = ChooseMode.DEFAULT;
   private ChooseRules currentChooseRules;
   private TRRules currentTRRules;
   private final Rewriter currentRewriter;
@@ -99,7 +98,7 @@ public final class ScriptTermInterpreter {
     // Bootstrap in action: build the script parser's grammar by traversing the scriptParserTerm and normalising, then making the result the script parser
     currentCFGRules = new CFGRules("Script CFGrules", iTerms);
     scriptTraverser.traverse(scriptParserTerm); // Construct the script parser grammar by walking the script parser term from the last bootstrap
-    currentCFGRules.normalise(currentWSMode);
+    currentCFGRules.normalise();
     var scriptCFGRules = currentCFGRules; // Now we have a usable script parser
     // Util.debug("Script cfgRules");
     // scriptCFGRules.print(System.out, iTerms.plainTextTraverser, false, true, false);
@@ -242,20 +241,20 @@ public final class ScriptTermInterpreter {
         case "gllhashpool":
           currentParser = new GLLHashPool();
           break;
-        case "gllhashpoolrecogniser":
-          currentParser = new GLLHashPoolRecogniser();
-          break;
-        case "gllbaseline":
+        case "gllBaseline":
           currentParser = new GLLBaseLine();
           break;
-        case "gllbaselinerecogniser":
-          currentParser = new GLLBaseLineRecogniser();
+        case "gll":
+          currentParser = new GLLParameterised(false, false);
           break;
-        case "mgllbaseline":
-          currentParser = new MGLLBaseLine();
+        case "gllrecogniser":
+          currentParser = new GLLParameterised(false, true);
           break;
-        case "mgllbaselinerecogniser":
-          currentParser = new MGLLBaseLineRecogniser();
+        case "mgll":
+          currentParser = new GLLParameterised(true, false);
+          break;
+        case "mgllrecogniser":
+          currentParser = new GLLParameterised(true, true);
           break;
         case "rdsobfunction":
           currentParser = new RDSOBFunction();
@@ -265,7 +264,7 @@ public final class ScriptTermInterpreter {
           break;
         default:
           Util.fatal("Unexpected !parser argument " + iTerms.toString(iTerms.subterm(term, 0, i))
-              + "\nmust be one of (case insensitive):\nalgx  cyk\ngllHashpool  gllBaseline  mgllBaseline\ngllHashpoolRecogniser  gllBaselineRecogniser  mgllBaselineRecogniser\nrdsobfunction  rdsobexplicitstack");
+              + "\nmust be one of (case insensitive):\nalgx  cyk\ngllHashpool  gllBaseline  mgll\ngllHashpool  gllRecogniser  mgllRecogniser\nrdsobfunction  rdsobexplicitstack");
         }
       break;
 
@@ -282,18 +281,30 @@ public final class ScriptTermInterpreter {
 
     case "!mode":
       switch (iTerms.termSymbolString(iTerms.subterm(term, 0, 0)).toLowerCase()) {
-      case "wsnone":
-        currentWSMode = WSKind.NONE;
-        break;
       case "wsdefault":
-        currentWSMode = WSKind.DEFAULT;
+        currentWSMode = WSMode.DEFAULT;
+        break;
+      case "wsnone":
+        currentWSMode = WSMode.NONE;
         break;
       case "wsuser":
-        currentWSMode = WSKind.USER;
+        currentWSMode = WSMode.USER;
+        break;
+      case "choosedefault":
+        currentChooseMode = ChooseMode.DEFAULT;
+        break;
+      case "choosenone":
+        currentChooseMode = ChooseMode.NONE;
+        break;
+      case "chooseuser":
+        currentChooseMode = ChooseMode.USER;
+        break;
+      case "chooseeas":
+        currentChooseMode = ChooseMode.EAS;
         break;
       default:
-        Util.fatal(
-            "Unexpected !mode argument " + iTerms.toString(iTerms.subterm(term, 0, 0)) + "\nmust be one of (case insensitive)\nwsDefault wsNone  wsUser\n");
+        Util.fatal("Unexpected !mode argument " + iTerms.toString(iTerms.subterm(term, 0, 0))
+            + "\nmust be one of (case insensitive)\nwsDefault  wsNone  wsUser\nchooseDefault chooseNone  chooseUser  chooseEAS\n");
       }
       break;
 
@@ -315,11 +326,11 @@ public final class ScriptTermInterpreter {
         new RDSOBGenerator(currentCFGRules, "RDSOB");
         break;
       case "rdsoboracle":
-        currentCFGRules.normalise(currentWSMode);
+        currentCFGRules.normalise();
         new RDSOBOracleGenerator(currentCFGRules);
         break;
       case "actions":
-        currentCFGRules.normalise(currentWSMode);
+        currentCFGRules.normalise();
         if (iTerms.termArity(iTerms.subterm(term, 0)) == 1) new ActionsGenerator(currentCFGRules, currentCFGRules.filePrelude, currentCFGRules.classPrelude);
         break;
       case "__int32": { // sentence and sentential forms generator
@@ -493,7 +504,7 @@ public final class ScriptTermInterpreter {
         break;
 
       case "cfgRules":
-        currentCFGRules.normalise(currentWSMode);
+        currentCFGRules.normalise();
         if (isShow)
           currentCFGRules.show(outputStream, outputTraverser, indexed, full, indented);
         else
@@ -501,7 +512,7 @@ public final class ScriptTermInterpreter {
         break;
 
       case "chooseRules":
-        currentCFGRules.normalise(currentWSMode);
+        currentCFGRules.normalise();
         if (isShow)
           currentChooseRules.show(outputStream, outputTraverser, indexed, full, indented);
         else
@@ -635,7 +646,7 @@ public final class ScriptTermInterpreter {
   private void tryParse(String inputStringName, String inputString) {
     Util.trace(8, "Parser trace using " + currentParser.getClass().getSimpleName());
 
-    currentCFGRules.normalise(currentWSMode);
+    currentCFGRules.normalise();
     currentChooseRules.normalise(currentCFGRules);
     currentStatistics.putTime("SetupTime");
     currentParser.parse(inputString, currentCFGRules, currentLexer, currentChooseRules);
