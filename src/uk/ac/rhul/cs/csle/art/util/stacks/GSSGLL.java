@@ -53,14 +53,30 @@ public class GSSGLL extends AbstractStacks {
   }
 
   public void loadStatistics(Statistics statistics) {
-    int gssEdgeCount = 0, popCount = 0;
-    for (GSSNode g : nodes.keySet()) {
+    statistics.put("gssNodeCount", nodeCardinality());
+    statistics.put("gssEdgeCount", edgeCardinality());
+    statistics.put("popCount", popCardinality());
+  }
+
+  @Override
+  public int nodeCardinality() {
+    return nodes.keySet().size();
+  }
+
+  @Override
+  public int edgeCardinality() {
+    int gssEdgeCount = 0;
+    for (GSSNode g : nodes.keySet())
       gssEdgeCount += g.edges.size();
+    return gssEdgeCount;
+  }
+
+  @Override
+  public int popCardinality() {
+    int popCount = 0;
+    for (GSSNode g : nodes.keySet())
       popCount += g.pops.size();
-    }
-    statistics.put("gssNodeCount", nodes.keySet().size());
-    statistics.put("gssEdgeCount", gssEdgeCount);
-    statistics.put("popCount", popCount);
+    return popCount;
   }
 
   @Override

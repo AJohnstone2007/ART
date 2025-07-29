@@ -592,6 +592,10 @@ public final class ScriptTermInterpreter {
           currentStatistics.print(outputStream, outputTraverser, indexed, full, indented);
         break;
 
+      case "cardinalities":
+        currentParser.printCardinalities(outputStream);
+        break;
+
       case "paraterminals":
         currentParser.derivations.printParaterminals(outputStream, outputTraverser, indexed, full, indented);
         break;

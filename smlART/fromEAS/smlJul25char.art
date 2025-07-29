@@ -566,5 +566,4 @@ topdec ::= strdec topdecOp |
 
 (* eas: there are some rules for nexp and nexprow *)
 
-
-
+!mode wsnone

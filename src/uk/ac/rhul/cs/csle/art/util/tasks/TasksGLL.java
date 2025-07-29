@@ -56,6 +56,10 @@ public class TasksGLL extends AbstractTasks {
   public void statistics(Statistics currentstatistics, PrintStream outputStream, TermTraverserText outputTraverser, boolean indexed, boolean full,
       boolean indented) {
     // TODO Auto-generated method stub
+  }
 
+  @Override
+  public int cardinality() {
+    return descriptors.size();
   }
 }

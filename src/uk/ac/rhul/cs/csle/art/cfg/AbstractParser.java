@@ -1,5 +1,7 @@
 package uk.ac.rhul.cs.csle.art.cfg;
 
+import java.io.PrintStream;
+
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGRules;
 import uk.ac.rhul.cs.csle.art.cfg.lexer.AbstractLexer;
 import uk.ac.rhul.cs.csle.art.choose.ChooseRules;
@@ -37,5 +39,9 @@ public abstract class AbstractParser {
 
   protected String name() {
     return getClass().getSimpleName();
+  }
+
+  public void printCardinalities(PrintStream outputStream) {
+    outputStream.println("!print cardinalities not implmented for parser " + name());
   }
 }

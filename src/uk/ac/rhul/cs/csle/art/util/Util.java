@@ -172,6 +172,9 @@ public class Util {
         case '\'':
           ret[retI++] = '\'';
           break;
+        case '}':
+          ret[retI++] = '}';
+          break;
         default:
           warning(" unrecognised escape sequence \\" + chars[i] + " - unescaping to " + chars[i]);
           ret[retI++] = chars[i];

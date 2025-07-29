@@ -18,4 +18,16 @@ public abstract class AbstractStacks implements DisplayInterface {
       AbstractDerivationNode derivationNode);
 
   public abstract void toDot();
+
+  public int nodeCardinality() {
+    return 0;
+  }
+
+  public int edgeCardinality() {
+    return 0;
+  }
+
+  public int popCardinality() {
+    return 0;
+  }
 }

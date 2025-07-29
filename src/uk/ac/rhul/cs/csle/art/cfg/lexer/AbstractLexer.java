@@ -29,6 +29,14 @@ public abstract class AbstractLexer implements DisplayInterface {
     Util.error(Util.echo(msg, inputIndex, inputString));
   }
 
+  public int cardinality() {
+    if (tweSlices == null) return 0;
+    int ret = 0;
+    for (var i : tweSlices)
+      ret += i.length;
+    return ret;
+  }
+
   public abstract boolean lex(String input, CFGRules cfgRules, ChooseRules chooseRules);
 
   public boolean isDeterministic() {
@@ -815,5 +823,4 @@ public abstract class AbstractLexer implements DisplayInterface {
     while (peekCh() != '\n' && peekCh() != '\0') // Quietly accept an input file with no \n at the end.
       getCh();
   }
-
 }

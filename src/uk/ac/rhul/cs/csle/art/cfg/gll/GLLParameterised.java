@@ -1,5 +1,7 @@
 package uk.ac.rhul.cs.csle.art.cfg.gll;
 
+import java.io.PrintStream;
+
 import uk.ac.rhul.cs.csle.art.cfg.AbstractParser;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGElement;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGKind;
@@ -160,5 +162,15 @@ public class GLLParameterised extends AbstractParser {
       return;
     }
     stacks.pop(derivations, tasks, inputIndex, stackNode, derivationNode);
+  }
+
+  @Override
+  public void printCardinalities(PrintStream outputStream) {
+    outputStream.println(name() + ": |input|:" + fmt(input.length()) + " TWEs:" + fmt(lexer.cardinality()) + " tasks:" + fmt(tasks.cardinality())
+        + " stackNodes:" + fmt(stacks.nodeCardinality()) + " stackEdges:" + fmt(stacks.edgeCardinality()) + " pops=" + fmt(stacks.popCardinality()));
+  }
+
+  private String fmt(int n) {
+    return String.format("%,d", n);
   }
 }

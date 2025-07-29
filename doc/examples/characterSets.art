@@ -1,0 +1,27 @@
+(* Example character level patterns *)
+
+S ::= id | number| string | space
+
+id ::= alpha idTail
+idTail ::= # | alphaDigit idTail
+
+number ::= digit | digitTail
+digitTail ::= # | digit digitTail
+
+string ::= `" `" | `" stringBody `"
+stringBody ::= ~{"} | ~{"} stringBody
+
+
+space ::= { \t\n\r}
+digit ::= {0123456789}
+hexDigit ::= {01234567890abcdefABCDEF}
+alpha ::= {abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ}
+alphaDigit ::= {abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789}
+
+
+!mode wsNone // Disable default WS element
+
+!try "anIndentifier"
+!try "1234"
+!try "\"xyz\""
+!try " "
