@@ -22,7 +22,7 @@ public class RDSOBOracleGenerator {
   private void printAllInitsRec(CFGNode cfgNode) {
     if (cfgNode == null || cfgNode.cfgElement.cfgKind == CFGKind.END) return;
 
-    if (cfgNode.cfgElement.cfgKind == CFGKind.NON && cfgNode.cfgElement.attributes.keySet().size() > 0) {
+    if (cfgNode.cfgElement.cfgKind == CFGKind.NONTERMINAL && cfgNode.cfgElement.attributes.keySet().size() > 0) {
       String name = cfgNode.cfgElement.str + cfgNode.instanceNumber;
       if (!printedInits.contains(name)) text.println("  Attributes_" + cfgNode.cfgElement.str + " " + name + " = new Attributes_" + cfgNode.cfgElement.str + "(); ");
       printedInits.add(name);
@@ -53,7 +53,7 @@ public class RDSOBOracleGenerator {
 
     // Write parse functions
     for (var e : cfgRules.elements.keySet())
-      if (e.cfgKind == CFGKind.NON) {
+      if (e.cfgKind == CFGKind.NONTERMINAL) {
         text.printf("boolean parse_%s() {\n  int iiAtEntry = inputIndex, oiAtEntry = oracleIndex;\n", e.str);
         int pCount = 0;
         boolean seenEpsilon = false;
@@ -65,7 +65,7 @@ public class RDSOBOracleGenerator {
           int braceCount = 0;
           for (var seq = alt.seq; seq.cfgElement.cfgKind != CFGKind.END; seq = seq.seq) {
             switch (seq.cfgElement.cfgKind) {
-            case NON:
+            case NONTERMINAL:
               text.printf("\n  if (parse_%s()) {", seq.cfgElement.str);
               braceCount++;
               break;
@@ -77,7 +77,7 @@ public class RDSOBOracleGenerator {
               text.printf("\n  if (builtIn_%s()) {", seq.cfgElement.str);
               braceCount++;
               break;
-            case EPS:
+            case EPSILON:
               text.printf("\n  /* epsilon */ ");
               seenEpsilon = true;
               break;
@@ -98,7 +98,7 @@ public class RDSOBOracleGenerator {
       }
     // Write semantics functions
     for (var e : cfgRules.elements.keySet())
-      if (e.cfgKind == CFGKind.NON) {
+      if (e.cfgKind == CFGKind.NONTERMINAL) {
         if (e.attributes.keySet().size() > 0) {
           text.printf("class Attributes_%s {", e.str);
           boolean first = true;
@@ -123,7 +123,7 @@ public class RDSOBOracleGenerator {
           do {
             seq = seq.seq;
             switch (seq.cfgElement.cfgKind) {
-            case NON:
+            case NONTERMINAL:
               if (seq.cfgElement.attributes.keySet().size() > 0)
                 text.printf("    semantics_%s(%s%d);\n", seq.cfgElement.str, seq.cfgElement.str, seq.instanceNumber);
               else
@@ -135,7 +135,7 @@ public class RDSOBOracleGenerator {
             case TRM_BI:
               text.printf("    builtIn_%s();\n", seq.cfgElement.str);
               break;
-            case EPS:
+            case EPSILON:
               text.printf("    /* epsilon */\n");
               break;
             case END: // nothing to do: just here to ensure that the final action is printed

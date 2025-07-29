@@ -282,7 +282,7 @@ public class SPPF extends AbstractDerivations {
       case TRM_CS, TRM_CI, TRM_CH, TRM_BI:
         sppfTerminalNodeCount++;
         break;
-      case EPS:
+      case EPSILON:
         sppfEpsilonNodeCount++;
         break;
       }

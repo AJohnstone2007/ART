@@ -20,6 +20,7 @@ public class GLLHashPool extends HashPool {
   int seqOf[];
   int targetOf[];
   int elementOf[];
+  // !!! Alert - this must have changed because of SOS
   final int T = 1; // This is a bit weird - these constants must be compile time so that we can use them in a switch statement, and GKind.T.ordinal() is
                    // runtime, so we hardcode and check for agreement with the runtime values below
   final int EPS = 5;
@@ -69,7 +70,7 @@ public class GLLHashPool extends HashPool {
   private final int loadFactor = 2;
 
   // DescriptorMax data from ansi_c and gtb_src; primes set for load factor 2. This is the experimental setup for the SLE23 paper
-  int sizeKludge = 7; // Leave this at one for normal operations. Can be used to zoom up the bucket count, but probably loses coprime property
+  int sizeKludge = 1; // Leave this at one for normal operations. Can be used to zoom up the bucket count, but probably loses coprime property
   final int descriptorMax = 6_578_603;
   final int descriptorPrime = 13_157_231;
   final int descriptorBucketInitialCount = descriptorPrime * sizeKludge;
@@ -118,8 +119,8 @@ public class GLLHashPool extends HashPool {
     elementOf = cfgRules.makeElementOfArray();
     // Defensive programming - make sure we've not messed up the enumeration value
     if (T != CFGKind.TRM_CS.ordinal()) Util.fatal("Enumeration mismatch for T - check ParserHashPool.java for consistency with Kind enumeration");
-    if (EPS != CFGKind.EPS.ordinal()) Util.fatal("Enumeration mismatch for EPS - check ParserHashPool.java for consistency with Kind enumeration");
-    if (N != CFGKind.NON.ordinal()) Util.fatal("Enumeration mismatch for N - check ParserHashPool.java for consistency with Kind enumeration");
+    if (EPS != CFGKind.EPSILON.ordinal()) Util.fatal("Enumeration mismatch for EPS - check ParserHashPool.java for consistency with Kind enumeration");
+    if (N != CFGKind.NONTERMINAL.ordinal()) Util.fatal("Enumeration mismatch for N - check ParserHashPool.java for consistency with Kind enumeration");
     if (END != CFGKind.END.ordinal()) Util.fatal("Enumeration mismatch for END - check ParserHashPool.java for consistency with Kind enumeration");
 
     // 1a. (Debug): print precomputed tables

@@ -9,13 +9,13 @@ import uk.ac.rhul.cs.csle.art.util.Util;
 import uk.ac.rhul.cs.csle.art.util.derivations.AbstractDerivationNode;
 import uk.ac.rhul.cs.csle.art.util.derivations.SPPF;
 import uk.ac.rhul.cs.csle.art.util.stacks.AbstractStackNode;
-import uk.ac.rhul.cs.csle.art.util.stacks.GSS;
+import uk.ac.rhul.cs.csle.art.util.stacks.GSSGLL;
 import uk.ac.rhul.cs.csle.art.util.tasks.TasksGLL;
 
 public class GLLBaseLine extends AbstractParser {
-  CFGNode cfgNode;
-  AbstractStackNode stackNode;
-  AbstractDerivationNode derivationNode;
+  private CFGNode cfgNode;
+  private AbstractStackNode stackNode;
+  private AbstractDerivationNode derivationNode;
 
   @Override
   public void parse(String input, CFGRules cfgRules, AbstractLexer lexer, ChooseRules chooseRules) {
@@ -24,7 +24,7 @@ public class GLLBaseLine extends AbstractParser {
     this.cfgRules = cfgRules;
     this.lexer = lexer;
     tasks = new TasksGLL();
-    stacks = new GSS(cfgRules);
+    stacks = new GSSGLL(cfgRules);
     derivations = new SPPF(this);
 
     if (!lexer.lex(input, cfgRules, chooseRules)) return;
@@ -39,7 +39,7 @@ public class GLLBaseLine extends AbstractParser {
         case ALT:
           queueAlternateTasks(); // Create task descriptor for the start of each production - is this needed for BNF?
           continue nextTask;
-        case EPS:
+        case EPSILON:
           derivationNode = updateDerivation(inputIndex); // Must match, but nothing consumed, so rightExtent = inputIndex
           cfgNode = cfgNode.seq; // Next grammar node which will be an END node
           continue nextCFGNode; // continue with this sequence
@@ -56,7 +56,7 @@ public class GLLBaseLine extends AbstractParser {
               }
           }
           continue nextTask;
-        case NON:
+        case NONTERMINAL:
           call(cfgNode);
           continue nextTask;
         case END:
@@ -84,7 +84,7 @@ public class GLLBaseLine extends AbstractParser {
     var task = tasks.next();
     // Util.debug("Processing task " + task);
     if (task == null) return false;
-    inputIndex = task.tokenIndex;
+    inputIndex = task.inputIndex;
     cfgNode = task.cfgNode;
     stackNode = task.stackNode;
     derivationNode = task.derivationNode;

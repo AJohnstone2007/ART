@@ -12,11 +12,11 @@ import uk.ac.rhul.cs.csle.art.util.derivations.AbstractDerivations;
 import uk.ac.rhul.cs.csle.art.util.statistics.Statistics;
 import uk.ac.rhul.cs.csle.art.util.tasks.AbstractTasks;
 
-public class GSS extends AbstractStacks {
+public class GSSGLL extends AbstractStacks {
   public Map<GSSNode, GSSNode> nodes = new HashMap<>();
   public GSSNode root;
 
-  public GSS(CFGRules cfgRules) {
+  public GSSGLL(CFGRules cfgRules) {
     root = new GSSNode(cfgRules.endOfStringNode, 0);
     nodes.put(root, root);
   }

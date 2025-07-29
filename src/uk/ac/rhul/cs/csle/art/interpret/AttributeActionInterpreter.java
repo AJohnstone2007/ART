@@ -49,7 +49,7 @@ public class AttributeActionInterpreter extends AbstractInterpreter {
     for (var node = altNode; node.cfgElement.cfgKind != CFGKind.END; node = node.seq) {
       // Util.info("node number " + node.num + " childNumber = " + childNumber + " previous token = " + previousToken);
       switch (node.cfgElement.cfgKind) {
-      case NON:
+      case NONTERMINAL:
         if (!node.delayed) interpret(attributes.getAttributes(node.num));
         break;
       case TRM_CS, TRM_CI, TRM_CH, TRM_BI:

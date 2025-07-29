@@ -77,7 +77,7 @@ public class CFGNode {
     case EOS, ALT, PAR, KLN, OPT, POS:
       ret += cfgElement.cfgKind;
       break;
-    case TRM_CS, TRM_CH, TRM_BI, NON, EPS:
+    case TRM_CS, TRM_CH, TRM_BI, NONTERMINAL, EPSILON:
       ret += cfgElement.cfgKind + "\n" + cfgElement.str + giftToString();
       break;
     case END:

@@ -70,10 +70,11 @@ public class LexerBaseLine extends AbstractLexer {
 
     int lexemeStart = index == 0 ? whitespacePrefix : index; // Index zero is special case because of leading whitespace
     for (var e : cfgRules.elements.keySet())
-      if (e.isToken /* && !e.isWhitespace */) { // Collect ALL terminals, including WS ones
+      if (e.isToken) {
         inputIndex = lexemeStart;
         tryTokenMatch(e);
         if (inputIndex != lexemeStart) {// Matched?
+          // Util.debug("constructTWESlice() matched " + e + " with right extent " + inputIndex);
           lexemeEnd = inputIndex;
           if (e.cfgKind != CFGKind.TRM_CH) whitespaceLongstMatch(); // absorb trailing whitespace
           ret.add(new TWESetElement(e, lexemeStart, lexemeEnd, inputIndex));
@@ -111,12 +112,12 @@ public class LexerBaseLine extends AbstractLexer {
       match_CHARACTER(e.str);
       break;
     case TRM_CH_SET:
-      match_CHARACTER(e.str);
+      match_CHARACTER_SET(e.set);
       break;
     case TRM_CH_ANTI_SET:
-      match_CHARACTER(e.str);
+      match_CHARACTER_SET(e.set); // care:note that anti-sets look for characters in the set
       break;
-    case NON:
+    case NONTERMINAL:
       Util.fatal("tryTokenMatch() in class " + this.getClass().getSimpleName() + " does not support paraterminals");
       break;
     case TRM_BI:

@@ -166,11 +166,15 @@ public class Util {
         case 't':
           ret[retI++] = '\t';
           break;
-        default: // return the escaped character
-        {
-          ret[retI++] = chars[i];
+        case '"':
+          ret[retI++] = '"';
+          break;
+        case '\'':
+          ret[retI++] = '\'';
+          break;
+        default:
           warning(" unrecognised escape sequence \\" + chars[i] + " - unescaping to " + chars[i]);
-        }
+          ret[retI++] = chars[i];
         }
       else
         ret[retI++] = chars[i];

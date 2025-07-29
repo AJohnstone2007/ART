@@ -285,6 +285,13 @@ public abstract class AbstractLexer implements DisplayInterface {
       getCh();
   }
 
+  protected void match_CHARACTER_SET(Set<Character> set) {
+    if (!set.contains(peekCh()))
+      return;
+    else
+      getCh();
+  }
+
   protected void match_SINGLETON_CASE_SENSITIVE(String string) {
     for (int i = 0; i < string.length(); i++)
       if (string.charAt(i) != peekCh()) {

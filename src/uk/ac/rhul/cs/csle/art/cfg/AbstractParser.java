@@ -12,12 +12,11 @@ public abstract class AbstractParser {
   public boolean inLanguage;
   public String input;
   public CFGRules cfgRules;
-  public AbstractLexer lexer;
-  protected int inputIndex; // Current input index
   public AbstractTasks tasks;
   public AbstractStacks stacks;
+  public AbstractLexer lexer;
+  protected int inputIndex; // Current input index
   public AbstractDerivations derivations;
-  protected boolean isRecogniser = false;
 
   public abstract void parse(String input, CFGRules cfgRules, AbstractLexer lexer, ChooseRules chooseRules);
 
@@ -31,7 +30,7 @@ public abstract class AbstractParser {
         Util.trace(1, name() + " reject");
       else {
         int widestIndex = derivations.widestIndex();
-        Util.error(Util.echo(getClass().getSimpleName() + " syntax error ", lexer.tweSlices[widestIndex][0].leftExtent, lexer.inputString));
+        Util.error(Util.echo(name() + " syntax error ", lexer.tweSlices[widestIndex][0].leftExtent, lexer.inputString));
       }
     }
   }

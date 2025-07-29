@@ -53,11 +53,11 @@ public class RDSOBGenerator {
             text.print("\n if (input[i]==" + seq.cfgElement.number + "/*" + seq.cfgElement.str + "*/) {i++;");
             braceCount++;
             break;
-          case NON:
+          case NONTERMINAL:
             text.print("\n if (p_" + seq.cfgElement.str + "()) {");
             braceCount++;
             break;
-          case EPS:
+          case EPSILON:
             text.print("\n /* epsilon */");
             seenEpsilon = true;
             break;

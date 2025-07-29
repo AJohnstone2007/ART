@@ -40,10 +40,10 @@ public class RDSOBExplicitStack extends AbstractParser {
           gn = gn.seq;
         else if (backtrack()) return false;
         break;
-      case NON:
+      case NONTERMINAL:
         call(gn);
         break;
-      case EPS:
+      case EPSILON:
         gn = gn.seq;
         break;
       case END:

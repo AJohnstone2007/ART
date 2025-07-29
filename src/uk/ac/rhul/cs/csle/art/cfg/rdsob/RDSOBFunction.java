@@ -35,13 +35,13 @@ public class RDSOBFunction extends AbstractParser {
           } else
             Util.trace(8, "Mismatch " + gn);
           continue altLoop;
-        case NON:
+        case NONTERMINAL:
           if (rdsobFunction(cfgRules.elementToNodeMap.get(gn.cfgElement))) {
             gn = gn.seq;
             break;
           } else
             continue altLoop;
-        case EPS:
+        case EPSILON:
           gn = gn.seq;
           break;
         case END:

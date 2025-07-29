@@ -28,9 +28,8 @@ public class CFGElement implements Comparable<Object> {
       isToken = true;
       return;
     case TRM_CH_SET, TRM_CH_ANTI_SET:
-      isToken = true;
       set = new HashSet<>();
-      Util.debug("Processing to set: " + s);
+      // Util.debug("Processing to set: " + s);
       for (var c : Util.unescapeString(s).toCharArray())
         set.add(c);
       return;
@@ -48,7 +47,7 @@ public class CFGElement implements Comparable<Object> {
       return "$$";
     case EOS:
       return "$";
-    case EPS:
+    case EPSILON:
       return "#";
     case TRM_CS:
       return "'" + Util.escapeString(str) + "'";
@@ -62,7 +61,7 @@ public class CFGElement implements Comparable<Object> {
       return "~{" + setToString() + "}";
     case TRM_BI:
       return "&" + Util.escapeString(str);
-    case NON:
+    case NONTERMINAL:
       return Util.escapeString(str);
     case ALT:
       return "|";

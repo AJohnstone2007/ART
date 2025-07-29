@@ -136,8 +136,8 @@ public final class ScriptTermInterpreter {
     ret.addAction("cfgAttributeDeclaration", (Integer t) -> currentCFGRules.attributeAction(childSymbolString(t), childSymbolString1(t)), null, null);
     ret.addAction("cfgSeq", (Integer t) -> currentCFGRules.altAction(), null, (Integer t) -> currentCFGRules.endAction(""));
 
-    ret.addAction("cfgEpsilon", (Integer t) -> currentCFGRules.updateWorkingNode(CFGKind.EPS, "#", t), null, null);
-    ret.addActionBreak("cfgNonterminal", (Integer t) -> currentCFGRules.updateWorkingNode(CFGKind.NON, childSymbolString(t), t), null, null);
+    ret.addAction("cfgEpsilon", (Integer t) -> currentCFGRules.updateWorkingNode(CFGKind.EPSILON, "#", t), null, null);
+    ret.addActionBreak("cfgNonterminal", (Integer t) -> currentCFGRules.updateWorkingNode(CFGKind.NONTERMINAL, childSymbolString(t), t), null, null);
     ret.addActionBreak("cfgCaseSensitiveTerminal", (Integer t) -> currentCFGRules.updateWorkingNode(CFGKind.TRM_CS, childSymbolString(t), t), null, null);
     ret.addActionBreak("cfgBuiltinTerminal", (Integer t) -> currentCFGRules.updateWorkingNode(CFGKind.TRM_BI, childSymbolString(t), t), null, null);
 
@@ -621,7 +621,7 @@ public final class ScriptTermInterpreter {
     // Util.debug("findCFGElement on " + iTerms.toRawString(term));
     switch (iTerms.termSymbolString(term)) {
     case "cfgEpsilon":
-      return currentCFGRules.findElement(CFGKind.EPS, "#");
+      return currentCFGRules.findElement(CFGKind.EPSILON, "#");
     case "cfgCaseSensitiveTerminal":
       return currentCFGRules.findElement(CFGKind.TRM_CS, iTerms.termSymbolString(iTerms.termChildren(term)[0]));
     case "cfgCaseInsensitiveTerminal":
@@ -629,7 +629,7 @@ public final class ScriptTermInterpreter {
     case "cfgBuiltinTerminal":
       return currentCFGRules.findElement(CFGKind.TRM_BI, iTerms.termSymbolString(iTerms.termChildren(term)[0]));
     case "cfgNonterminal":
-      return currentCFGRules.findElement(CFGKind.NON, iTerms.termSymbolString(iTerms.termChildren(term)[0]));
+      return currentCFGRules.findElement(CFGKind.NONTERMINAL, iTerms.termSymbolString(iTerms.termChildren(term)[0]));
     case "cfgCharacterTerminal":
       return currentCFGRules.findElement(CFGKind.TRM_CH, iTerms.termSymbolString(iTerms.termChildren(term)[0]));
     case "cfgCharacterSetTerminal":

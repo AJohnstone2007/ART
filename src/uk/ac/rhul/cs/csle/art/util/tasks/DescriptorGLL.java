@@ -5,14 +5,14 @@ import uk.ac.rhul.cs.csle.art.util.derivations.AbstractDerivationNode;
 import uk.ac.rhul.cs.csle.art.util.stacks.AbstractStackNode;
 
 public class DescriptorGLL {
-  public final int tokenIndex;
+  public final int inputIndex;
   public final CFGNode cfgNode;
   public final AbstractStackNode stackNode;
   public final AbstractDerivationNode derivationNode;
 
   public DescriptorGLL(int tokenIndex, CFGNode grammarNode, AbstractStackNode stackNode, AbstractDerivationNode derivationNode) {
     super();
-    this.tokenIndex = tokenIndex;
+    this.inputIndex = tokenIndex;
     this.cfgNode = grammarNode;
     this.stackNode = stackNode;
     this.derivationNode = derivationNode;
@@ -22,7 +22,7 @@ public class DescriptorGLL {
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("(");
-    sb.append(tokenIndex);
+    sb.append(inputIndex);
     sb.append(", ");
     sb.append(cfgNode.toStringAsProduction());
     sb.append(", ");
@@ -38,7 +38,7 @@ public class DescriptorGLL {
     final int prime = 31;
     int result = 1;
     result = prime * result + ((stackNode == null) ? 0 : stackNode.hashCode());
-    result = prime * result + tokenIndex;
+    result = prime * result + inputIndex;
     result = prime * result + ((cfgNode == null) ? 0 : cfgNode.hashCode());
     result = prime * result + ((derivationNode == null) ? 0 : derivationNode.hashCode());
     return result;
@@ -53,7 +53,7 @@ public class DescriptorGLL {
     if (stackNode == null) {
       if (other.stackNode != null) return false;
     } else if (!stackNode.equals(other.stackNode)) return false;
-    if (tokenIndex != other.tokenIndex) return false;
+    if (inputIndex != other.inputIndex) return false;
     if (cfgNode == null) {
       if (other.cfgNode != null) return false;
     } else if (!cfgNode.equals(other.cfgNode)) return false;
