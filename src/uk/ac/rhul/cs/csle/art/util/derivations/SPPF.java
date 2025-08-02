@@ -192,9 +192,6 @@ public class SPPF extends AbstractDerivations {
       constructor = (gn.cfgElement.cfgKind == CFGKind.TRM_BI) ? parser.lexer.lexeme(sppfn.grammarNode, sppfn.leftExtent) : gn.cfgElement.str;
 
     // Util.debug("At SPPF node " + sppfn + " and grammar node " + gn + " make new term with constructor: " + constructor);
-    if (constructor.equals("")) {
-      System.out.println("Bang!");
-    }
     if (children != childrenFromParent) {
       childrenFromParent.add(parser.cfgRules.iTerms.findTerm(constructor, children));
       derivationNodeCount++;

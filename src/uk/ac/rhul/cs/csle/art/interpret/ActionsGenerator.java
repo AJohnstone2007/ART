@@ -92,9 +92,9 @@ public class ActionsGenerator {
 
   private void printAllActionsRec(PrintWriter text, CFGElement lhs, CFGNode cfgNode) {
     if (cfgNode == null || cfgNode.cfgElement.cfgKind == CFGKind.END) return;
-    if (cfgNode.slotTerm != 0 && iTerms.termArity(cfgNode.slotTerm) != 0) {
+    if (cfgNode.actionAsTerm != 0 && iTerms.termArity(cfgNode.actionAsTerm) != 0) {
       text.print("      case " + cfgNode.num + ":");
-      printSlotTermRec(text, cfgNode.slotTerm);
+      printSlotTermRec(text, cfgNode.actionAsTerm);
       text.println(" break;");
     }
     printAllActionsRec(text, lhs, cfgNode.seq);

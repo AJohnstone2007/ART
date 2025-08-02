@@ -83,6 +83,6 @@ public class RDSOBGenerator {
         + " System.out.println((parser.accepted ? \"Accept\" : \"Reject\")\n    + \" with derivation: \" + parser.dn);\n }\n}");
 
     text.close();
-    Util.info("SOBRD generated parser for grammar '" + grammar.name + "' written to " + className + ".java");
+    Util.info("SOBRD generated parser written to " + className + ".java");
   }
 }

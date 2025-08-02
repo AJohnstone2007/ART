@@ -509,9 +509,6 @@ class SPPFCycleBreak {
   }
 
   public void newState(Configuration c, Configuration cp) {
-    if (c.equals(cp)) {
-      Util.info("\n!Bang!");
-    }
     breakRelation.add(c, cp);
     breakRelation.add(cp);
     if (breakCyclesRelationTrace) Util.info("Added (" + c + ", " + cp + ")");

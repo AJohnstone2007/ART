@@ -15,16 +15,16 @@ public class CFGNode {
   public CFGNode alt; // alternate link
   public final GIFTKind giftKind;
   public boolean delayed;
-  public int slotTerm; // Holds the slot term as parent to slot decorations
+  public int actionAsTerm; // Holds the slot term as parent to slot decorations
   public int instanceNumber = -1;
 
   private static int nextUniqueNumericLabel = 1;
 
-  public CFGNode(CFGRules grammar, CFGKind kind, String str, int slotTerm, GIFTKind giftKind, CFGNode previous, CFGNode parent) {
+  public CFGNode(CFGRules grammar, CFGKind kind, String str, int actionAsTerm, GIFTKind giftKind, CFGNode previous, CFGNode parent) {
     super();
     if (str == null) str = "" + nextUniqueNumericLabel++; // EBNF and ALT nodes have null string - uniquify
     this.cfgElement = grammar.findElement(kind, str);
-    this.slotTerm = slotTerm;
+    this.actionAsTerm = actionAsTerm;
     this.giftKind = giftKind;
     if (previous != null) previous.seq = this;
     if (parent != null) parent.alt = this;
@@ -87,7 +87,7 @@ public class CFGNode {
       ret = "???";
       break;
     }
-    if (slotTerm != 0) ret += Util.escapeString(ScriptTermInterpreter.iTerms.toString(slotTerm), false);
+    if (actionAsTerm != 0) ret += Util.escapeString(ScriptTermInterpreter.iTerms.toString(actionAsTerm), false);
     return ret;
   }
 
@@ -145,18 +145,18 @@ public class CFGNode {
 
   public String toStringActions() {
     StringBuilder sb = new StringBuilder();
-    toStringActionsRec(sb, slotTerm);
+    toStringActionsRec(sb, actionAsTerm);
     return sb.toString();
   }
 
-  private void toStringActionsRec(StringBuilder sb, int slotTerm) {
-    if (slotTerm == 0) return;
-    if (ScriptTermInterpreter.iTerms.hasSymbol(slotTerm, "cfgNative")) {
-      sb.append(ScriptTermInterpreter.iTerms.toString(ScriptTermInterpreter.iTerms.subterm(slotTerm, 0)));
+  private void toStringActionsRec(StringBuilder sb, int actionAsTerm) {
+    if (actionAsTerm == 0) return;
+    if (ScriptTermInterpreter.iTerms.hasSymbol(actionAsTerm, "cfgNative")) {
+      sb.append(ScriptTermInterpreter.iTerms.toString(ScriptTermInterpreter.iTerms.subterm(actionAsTerm, 0)));
       return;
     }
-    for (int i = 0; i < ScriptTermInterpreter.iTerms.termArity(slotTerm); i++)
-      toStringActionsRec(sb, ScriptTermInterpreter.iTerms.termChildren(slotTerm)[i]);
+    for (int i = 0; i < ScriptTermInterpreter.iTerms.termArity(actionAsTerm); i++)
+      toStringActionsRec(sb, ScriptTermInterpreter.iTerms.termChildren(actionAsTerm)[i]);
   }
 
 }

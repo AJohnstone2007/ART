@@ -23,6 +23,7 @@ import uk.ac.rhul.cs.csle.art.util.statistics.Statistics;
 
 public final class CFGRules implements DisplayInterface { // final to avoid this-escape
   public final ITerms iTerms;
+  public final CFGRulesKind cfgRulesKind;
 
   // Constants
   private final Set<CFGKind> lexKinds = Set.of(CFGKind.TRM_BI, CFGKind.TRM_CH, CFGKind.TRM_CS, CFGKind.TRM_CI);
@@ -33,8 +34,7 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
   public final CFGElement endOfStringElement;
   public final CFGNode endOfStringNode;
 
-  public String name = "";
-  public CFGElement startNonterminal;
+  public CFGElement startNonterminal = null;
 
   public final Map<CFGElement, CFGElement> elements = new TreeMap<>();
 
@@ -81,32 +81,22 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
 
   public boolean seenWhitespaceDirective = false;
 
-  public CFGRules(String name, ITerms iTerms) {
-    this.name = name;
-    this.iTerms = iTerms;
-    epsilonElement = findElement(CFGKind.EPSILON, "#");
-    endOfStringElement = findElement(CFGKind.EOS, "$");
-    startOfStringElement = findElement(CFGKind.SOS, "$$");
+  public CFGRules cfgRulesLexer;
+  public CFGRules cfgRulesParser;
 
-    endOfStringNode = new CFGNode(this, CFGKind.EOS, "$", 0, GIFTKind.NONE, null, null);
-    endOfStringNode.seq = endOfStringNode; // trick to ensure initial call collects rootNode
+  public CFGRules(ITerms iTerms) {
+    this(iTerms, CFGRulesKind.USER);
   }
 
-  // TODO: Whatis this for?
-  public CFGRules(CFGRules that, boolean binarise) {
-    this.name = that.name;
-    this.iTerms = that.iTerms;
+  public CFGRules(ITerms iTerms, CFGRulesKind cfgRulesKind) {
+    this.iTerms = iTerms;
+    this.cfgRulesKind = cfgRulesKind;
     epsilonElement = findElement(CFGKind.EPSILON, "#");
     endOfStringElement = findElement(CFGKind.EOS, "$");
     startOfStringElement = findElement(CFGKind.SOS, "$$");
 
     endOfStringNode = new CFGNode(this, CFGKind.EOS, "$", 0, GIFTKind.NONE, null, null);
     endOfStringNode.seq = endOfStringNode; // trick to ensure initial call collects rootNode
-
-    for (var r : that.elementToNodeMap.keySet()) {
-      lhsAction(r.str);
-      // TODO: recursive traversal of rules required because of EBNF
-    }
   }
 
   public void normalise() {
@@ -211,8 +201,8 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
         // Now check each action to see if it is trying to access a RHS nonterminal which is not instances in this LHS
         for (CFGNode gn = elementToNodeMap.get(e).alt; gn != null; gn = gn.alt) {
           for (CFGNode gs = gn.seq; gs.cfgElement.cfgKind != CFGKind.END; gs = gs.seq) {
-            for (int i = 0; i < iTerms.termArity(gs.slotTerm); i++) {
-              int annotationRoot = iTerms.subterm(gs.slotTerm, i);
+            for (int i = 0; i < iTerms.termArity(gs.actionAsTerm); i++) {
+              int annotationRoot = iTerms.subterm(gs.actionAsTerm, i);
               // Util.info("Processing slot annotation " + iTerms.toString(annotationRoot));
               switch (iTerms.termSymbolString(annotationRoot)) {
               case "cfgEquation", "cfgAssignment":
@@ -231,6 +221,7 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
         }
       }
     }
+    if (cfgRulesKind == CFGRulesKind.USER) buildSubGrammars();
   }
 
   Set<CFGElement> removeEpsilon(Set<CFGElement> set) {
@@ -537,15 +528,15 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
 
   LinkedList<CFGNode> stack = new LinkedList<>();
 
-  public void lhsAction(String id) {
+  public void actionLHS(String id) {
     CFGElement element = findElement(CFGKind.NONTERMINAL, id);
     if (startNonterminal == null) startNonterminal = element;
     workingNode = elementToNodeMap.get(element);
-    if (workingNode == null) elementToNodeMap.put(element, updateWorkingNode(CFGKind.NONTERMINAL, id, 0));
+    if (workingNode == null) elementToNodeMap.put(element, actionSEQ(CFGKind.NONTERMINAL, id, 0));
     mostRecentLHS = elementToNodeMap.get(element);
   }
 
-  public void altAction() {
+  public void actionALT() {
     stack.push(workingNode);
     while (workingNode.alt != null) // Maintain specification order by adding new alternate at the end
       workingNode = workingNode.alt;
@@ -553,20 +544,20 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
     workingFold = GIFTKind.NONE;
   }
 
-  public void endAction(String actions) {
-    updateWorkingNode(CFGKind.END, "", 0);
-    workingNode = stack.pop();
-  }
-
-  public CFGNode updateWorkingNode(CFGKind kind, String str, Integer slotTerm) {
+  public CFGNode actionSEQ(CFGKind kind, String str, Integer actionAsTerm) {
     // Util.debug("Update working node with kind " + kind + " string " + str + " and slot term " + slotTerm);
-    workingNode = new CFGNode(this, kind, str, slotTerm, workingFold, workingNode, null);
+    workingNode = new CFGNode(this, kind, str, actionAsTerm, workingFold, workingNode, null);
     workingFold = GIFTKind.NONE;
     return workingNode;
   }
 
-  public void attributeAction(String name, String type) {
+  public void actionAttribute(String name, String type) {
     mostRecentLHS.cfgElement.attributes.put(name, type);
+  }
+
+  public void actionEND(String actions) {
+    actionSEQ(CFGKind.END, "", 0);
+    workingNode = stack.pop();
   }
 
   /** Support for table driven parsers ***************************************/
@@ -698,17 +689,17 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
 
   @Override
   public void print(PrintStream outputStream, TermTraverserText outputTraverser, boolean indexed, boolean full, boolean indented) {
-    outputStream.print(
-        (isEmpty() ? "Empty" : "") + "Context Free Grammar rules with start symbol " + (startNonterminal == null ? "<empty>" : startNonterminal.str) + "\n");
+    outputStream.print((isEmpty() ? "Empty " : "") + cfgRulesKind + " Context Free Grammar rules with start symbol "
+        + (startNonterminal == null ? "<empty>" : startNonterminal.str) + "\n");
 
     for (CFGElement n : elementToNodeMap.keySet()) {
       boolean first = true;
       for (CFGNode production = elementToNodeMap.get(n).alt; production != null; production = production.alt) {
         if (first) {
-          outputStream.print(" " + production.toStringAsProduction(" ::=\n ", null) + "\n");
+          outputStream.print(production.toStringAsProduction(" ::=\n ", null) + "\n");
           first = false;
         } else {
-          outputStream.print(" | " + production.toStringAsRHS(null) + "\n");
+          outputStream.print("|" + production.toStringAsRHS(null) + "\n");
         }
       }
     }
@@ -750,7 +741,7 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
             outputStream.print("}");
           }
         }
-        if (gn.slotTerm != 0) outputStream.print(" Action: " + gn.toStringActions());
+        if (gn.actionAsTerm != 0) outputStream.print(" Action: " + gn.toStringActions());
         outputStream.print("\n");
       }
 
@@ -763,15 +754,19 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
         outputStream.print(" " + gn);
       outputStream.println();
 
-      outputStream.print("Paraterminals: " + paraterminalNames);
-      outputStream.println();
+      outputStream.print("Paraterminals: {");
+      for (var s : paraterminalNames)
+        outputStream.print(" " + s);
+      outputStream.println(" }");
 
-      outputStream.print("Cyclic nonterminals: " + cyclicNonterminals);
-      outputStream.println();
+      outputStream.print("Cyclic nonterminals: {");
+      for (var s : cyclicNonterminals)
+        outputStream.print(" " + s);
+      outputStream.println(" }");
 
-      outputStream.print("derivesOnly(R):");
+      outputStream.print("derivesExactly(R):");
       outputStream.println();
-      for (var n : derivesExactly.getDomain())
+      if (derivesExactly != null) for (var n : derivesExactly.getDomain())
         if (cyclicNonterminals.contains(n)) {
           outputStream.print(n + ": {");
           for (var nf : derivesExactly.get(n))
@@ -779,8 +774,8 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
           outputStream.println(" }");
         }
 
-      outputStream.println("derivesOnlyClosed (R+):");
-      for (var n : derivesExactlyTransitiveClosure.getDomain())
+      outputStream.println("derivesExactlyTrasitiveClosure (R+):");
+      if (derivesExactlyTransitiveClosure != null) for (var n : derivesExactlyTransitiveClosure.getDomain())
         if (cyclicNonterminals.contains(n)) {
           outputStream.print(n + ": {");
           for (var nf : derivesExactlyTransitiveClosure.get(n))
@@ -789,7 +784,7 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
         }
 
       outputStream.print("cocyclic nonterminals:\n");
-      for (var n : derivesExactlyTransitiveClosure.getDomain())
+      if (derivesExactlyTransitiveClosure != null) for (var n : derivesExactlyTransitiveClosure.getDomain())
         if (cyclicNonterminals.contains(n)) {
           outputStream.print(n + ": {");
           for (var nf : derivesExactlyTransitiveClosure.get(n))
@@ -798,7 +793,7 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
         }
 
       outputStream.print("cyclic slots:\n");
-      for (var n : cyclicSlots) {
+      if (cyclicSlots != null) for (var n : cyclicSlots) {
         outputStream.print(n.toStringAsProduction());
         outputStream.println();
       }
@@ -830,22 +825,22 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
   private void toStringDotRec(PrintStream outputStream, CFGNode cs) {
     outputStream.print("\"" + cs.num + "\"[label=\"" + cs.toStringDot() + "\"]\n");
     if (cs.cfgElement.cfgKind == CFGKind.ALT) {
-      seqArrow(outputStream, cs);
-      altArrow(outputStream, cs);
+      toStringDotSeqArrow(outputStream, cs);
+      toStringDotAltArrow(outputStream, cs);
     } else if (cs.cfgElement.cfgKind != CFGKind.END) {
-      altArrow(outputStream, cs);
-      seqArrow(outputStream, cs);
+      toStringDotAltArrow(outputStream, cs);
+      toStringDotSeqArrow(outputStream, cs);
     }
   }
 
-  private void altArrow(PrintStream outputStream, CFGNode cs) {
+  private void toStringDotAltArrow(PrintStream outputStream, CFGNode cs) {
     if (cs.alt == null) return;
     outputStream.print(
         "\"" + cs.num + "\"->\"" + cs.alt.num + "\"" + "{rank = same; \"" + cs.num + "\"" + ";\"" + cs.alt.num + "\"" + ";" + "}" + "[label=\" a\"" + "]\n");
     if (!isLHS(cs.alt)) toStringDotRec(outputStream, cs.alt);
   }
 
-  private void seqArrow(PrintStream outputStream, CFGNode cs) {
+  private void toStringDotSeqArrow(PrintStream outputStream, CFGNode cs) {
     if (cs.seq == null) return;
     outputStream.print("\"" + cs.num + "\"->\"" + cs.seq.num + "\"\n");
     toStringDotRec(outputStream, cs.seq);
@@ -855,6 +850,45 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
   public void statistics(Statistics currentstatistics, PrintStream outputStream, TermTraverserText outputTraverser, boolean indexed, boolean full,
       boolean indented) {
     // TODO Auto-generated method stub
+  }
 
+  private void buildSubGrammars() {
+    cfgRulesLexer = new CFGRules(iTerms, CFGRulesKind.LEXER);
+    cfgRulesParser = new CFGRules(iTerms, CFGRulesKind.PARSER);
+    for (var n : elementToNodeMap.keySet()) {
+      if (n.cfgKind == CFGKind.NONTERMINAL) {
+        if (paraterminalElements.contains(n)) {
+          cfgRulesLexer.paraterminalNames.add(n.str);
+          cfgRulesParser.paraterminalNames.add(n.str);
+        }
+        cfgRulesLexer.actionLHS(n.str);
+        // Util.debug(n.str + " ::= ");
+        buildSubGrammarsRec(elementToNodeMap.get(n).alt);
+      }
+    }
+    cfgRulesLexer.normalise();
+    cfgRulesParser.normalise();
+  }
+
+  // Generic traversal as basis for grammar conversions
+  private void buildSubGrammarsRec(CFGNode cfgNode) {
+    if (cfgNode == null) return;
+    // Util.debug("** buildSubGrammarsRec at cfgNode " + cfgNode.toStringDot());
+    switch (cfgNode.cfgElement.cfgKind) {
+    case ALT:
+      cfgRulesLexer.actionALT();
+      buildSubGrammarsRec(cfgNode.seq);
+      buildSubGrammarsRec(cfgNode.alt);
+      return;
+    case END:
+      cfgRulesLexer.actionEND(cfgNode.cfgElement.str);
+      // Util.debug("" + cfgNode.toStringAsProduction());
+      // Util.debug("END");
+      return;
+    default:
+      cfgRulesLexer.actionSEQ(cfgNode.cfgElement.cfgKind, cfgNode.cfgElement.str, cfgNode.actionAsTerm);
+      // Util.debug("" + cfgNode.toStringAsProduction());
+      buildSubGrammarsRec(cfgNode.seq);
+    }
   }
 }
