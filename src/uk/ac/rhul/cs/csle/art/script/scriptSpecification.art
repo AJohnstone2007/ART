@@ -42,6 +42,8 @@ cfgPrim ::= cfgNonterminal^^ | cfgCaseSensitiveTerminal^^| cfgCaseInsensitiveTer
   cfgStartString ::= '!$$'
   cfgCharacterSetTerminal ::= STRING_BRACE
   cfgCharacterAntiSetTerminal ::= '~'^ STRING_BRACE
+cfgPrims ::= cfgPrim | cfgPrim ','^ cfgPrims^ 
+
 
 cfgActions ::= cfgSlot^^ cfgActionSeq^ | cfgSlot^^   
   cfgActionSeq ::= cfgAction cfgActionSeq^ | cfgAction  
@@ -133,9 +135,9 @@ directiveCarrier ::=
 
 | '!clear'^^ ID | '!lexer'^^ ID | '!parser'^^ ID | '!interpreter'^^ ID | '!mode'^^ ID 
 
-| '!whitespace'^^ whiteSpaceElements^
+| '!whitespace'^^ cfgPrims^
 | '!paraterminal'^^ paraterminalElements^
-| '!token'^^ cfgPrim
+| '!token'^^ cfgPrims^
 
 | '!generate'^^ __int32 ID | '!generate'^^ ID  
 | '!support'^^ cfgNative cfgNative 
@@ -154,7 +156,6 @@ directiveCarrier ::=
 
 file ::= &STRING_SQ
 
-whiteSpaceElements ::= cfgPrim | cfgPrim ','^ whiteSpaceElements^ 
 
 configurationElements ::= configurationElement | configurationElement ','^ configurationElements^
 configurationElement ::= ID ':'^ ID

@@ -70,7 +70,8 @@ public class LexerBaseLine extends AbstractLexer {
 
     int lexemeStart = index == 0 ? whitespacePrefix : index; // Index zero is special case because of leading whitespace
     for (var e : cfgRules.elements.keySet())
-      if (e.isToken) {
+      switch (e.cfgKind) {
+      case TRM_CS, TRM_CI, TRM_BI, TRM_CH:
         inputIndex = lexemeStart;
         tryTokenMatch(e);
         if (inputIndex != lexemeStart) {// Matched?

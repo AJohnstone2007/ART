@@ -45,6 +45,7 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
 
   public Set<String> paraterminalNames = new HashSet<>();
   public Set<CFGElement> paraterminalElements = new HashSet<>();
+  public Set<CFGElement> declaredAsTokens = new TreeSet<>();
 
   // Grammar analysis data
   public final Relation<CFGElement, CFGElement> first = new Relation<>();
@@ -114,7 +115,7 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
     numberElementsAndNodes();
     setEndNodeLinks();
 
-    // Report nonterminals with no rules, and create paraterminal element set
+    // Report nonterminals with no rules, and create paraterminal element set from paraterminal elements defined only as names
     Set<CFGElement> tmp = new HashSet<>();
     for (CFGElement e : elements.keySet())
       if (e.cfgKind == CFGKind.NONTERMINAL) {
@@ -689,9 +690,21 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
 
   @Override
   public void print(PrintStream outputStream, TermTraverserText outputTraverser, boolean indexed, boolean full, boolean indented) {
-    outputStream.print((isEmpty() ? "Empty " : "") + cfgRulesKind + " Context Free Grammar rules with start symbol "
-        + (startNonterminal == null ? "<empty>" : startNonterminal.str) + "\n");
+    outputStream.print("(* " + (isEmpty() ? "Empty " : "") + cfgRulesKind + " Context Free Grammar rules *)\n");
 
+    if (!declaredAsTokens.isEmpty()) {
+      outputStream.print("!token ");
+      printElements(outputStream, declaredAsTokens);
+      outputStream.println();
+    }
+
+    if (!paraterminalNames.isEmpty()) {
+      outputStream.print("!paraterminal ");
+      printStringElements(outputStream, paraterminalNames);
+      outputStream.println();
+    }
+
+    outputStream.println("!start " + startNonterminal);
     for (CFGElement n : elementToNodeMap.keySet()) {
       boolean first = true;
       for (CFGNode production = elementToNodeMap.get(n).alt; production != null; production = production.alt) {
@@ -754,6 +767,11 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
         outputStream.print(" " + gn);
       outputStream.println();
 
+      outputStream.print("Declared as terminal: {");
+      for (var s : declaredAsTokens)
+        outputStream.print(" " + s);
+      outputStream.println(" }");
+
       outputStream.print("Paraterminals: {");
       for (var s : paraterminalNames)
         outputStream.print(" " + s);
@@ -807,7 +825,19 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
       if (first)
         first = false;
       else
-        outputStream.print(",");
+        outputStream.print(", ");
+      outputStream.print(e.toString());
+    }
+  }
+
+  private void printStringElements(PrintStream outputStream, Set<String> elements) {
+    if (elements == null) return;
+    boolean first = true;
+    for (String e : elements) {
+      if (first)
+        first = false;
+      else
+        outputStream.print(", ");
       outputStream.print(e.toString());
     }
   }
@@ -854,16 +884,23 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
 
   private void buildSubGrammars() {
     cfgRulesLexer = new CFGRules(iTerms, CFGRulesKind.LEXER);
+    cfgRulesLexer.declaredAsTokens.addAll(elementToNodeMap.keySet());
+    cfgRulesLexer.paraterminalElements.addAll(paraterminalElements);
+    cfgRulesLexer.paraterminalNames.addAll(paraterminalNames);
     cfgRulesParser = new CFGRules(iTerms, CFGRulesKind.PARSER);
+    cfgRulesParser.declaredAsTokens.addAll(elementToNodeMap.keySet());
+    cfgRulesParser.paraterminalElements.addAll(paraterminalElements);
+    cfgRulesParser.paraterminalNames.addAll(paraterminalNames);
     for (var n : elementToNodeMap.keySet()) {
+      cfgRulesLexer.declaredAsTokens.addAll(elementToNodeMap.keySet());
       if (n.cfgKind == CFGKind.NONTERMINAL) {
         if (paraterminalElements.contains(n)) {
-          cfgRulesLexer.paraterminalNames.add(n.str);
-          cfgRulesParser.paraterminalNames.add(n.str);
+          cfgRulesLexer.actionLHS(n.str);
+          buildSubGrammarsRec(cfgRulesLexer, elementToNodeMap.get(n).alt);
+        } else {
+          cfgRulesParser.actionLHS(n.str);
+          buildSubGrammarsRec(cfgRulesParser, elementToNodeMap.get(n).alt);
         }
-        cfgRulesLexer.actionLHS(n.str);
-        // Util.debug(n.str + " ::= ");
-        buildSubGrammarsRec(elementToNodeMap.get(n).alt);
       }
     }
     cfgRulesLexer.normalise();
@@ -871,24 +908,24 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
   }
 
   // Generic traversal as basis for grammar conversions
-  private void buildSubGrammarsRec(CFGNode cfgNode) {
+  private void buildSubGrammarsRec(CFGRules cfgRules, CFGNode cfgNode) {
     if (cfgNode == null) return;
     // Util.debug("** buildSubGrammarsRec at cfgNode " + cfgNode.toStringDot());
     switch (cfgNode.cfgElement.cfgKind) {
     case ALT:
-      cfgRulesLexer.actionALT();
-      buildSubGrammarsRec(cfgNode.seq);
-      buildSubGrammarsRec(cfgNode.alt);
+      cfgRules.actionALT();
+      buildSubGrammarsRec(cfgRules, cfgNode.seq);
+      buildSubGrammarsRec(cfgRules, cfgNode.alt);
       return;
     case END:
-      cfgRulesLexer.actionEND(cfgNode.cfgElement.str);
+      cfgRules.actionEND(cfgNode.cfgElement.str);
       // Util.debug("" + cfgNode.toStringAsProduction());
       // Util.debug("END");
       return;
     default:
-      cfgRulesLexer.actionSEQ(cfgNode.cfgElement.cfgKind, cfgNode.cfgElement.str, cfgNode.actionAsTerm);
+      cfgRules.actionSEQ(cfgNode.cfgElement.cfgKind, cfgNode.cfgElement.str, cfgNode.actionAsTerm);
       // Util.debug("" + cfgNode.toStringAsProduction());
-      buildSubGrammarsRec(cfgNode.seq);
+      buildSubGrammarsRec(cfgRules, cfgNode.seq);
     }
   }
 }

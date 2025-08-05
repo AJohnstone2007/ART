@@ -10,7 +10,6 @@ import uk.ac.rhul.cs.csle.art.util.Util;
 public class CFGElement implements Comparable<Object> {
 
   public int number;
-  public boolean isToken;
   public boolean isWhitespace;
   public final CFGKind cfgKind;
   public final String str;
@@ -24,9 +23,6 @@ public class CFGElement implements Comparable<Object> {
     this.cfgKind = kind;
     this.str = s;
     switch (this.cfgKind) {
-    case TRM_CS, TRM_CI, TRM_BI, TRM_CH:
-      isToken = true;
-      return;
     case TRM_CH_SET, TRM_CH_ANTI_SET:
       set = new HashSet<>();
       // Util.debug("Processing to set: " + s);
