@@ -43,9 +43,12 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
 
   public int lexSize;
 
-  public Set<String> paraterminalNames = new HashSet<>();
-  public Set<CFGElement> paraterminalElements = new HashSet<>();
+  public Set<String> ZparaterminalNames = new HashSet<>();
+  public Set<CFGElement> paraterminals = new HashSet<>();
   public Set<CFGElement> declaredAsTokens = new TreeSet<>();
+  public Set<CFGElement> whitespaces = new HashSet<>();
+  public Set<CFGElement> defined = new HashSet<>();
+  public Set<CFGElement> used = new HashSet<>();
 
   // Grammar analysis data
   public final Relation<CFGElement, CFGElement> first = new Relation<>();
@@ -118,11 +121,7 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
     // Report nonterminals with no rules, and create paraterminal element set from paraterminal elements defined only as names
     Set<CFGElement> tmp = new HashSet<>();
     for (CFGElement e : elements.keySet())
-      if (e.cfgKind == CFGKind.NONTERMINAL) {
-        if (elementToNodeMap.get(e) == null) tmp.add(e);
-
-        if (paraterminalNames.contains(e.str)) paraterminalElements.add(e);
-      }
+      if (e.cfgKind == CFGKind.NONTERMINAL) if (elementToNodeMap.get(e) == null) tmp.add(e);
 
     if (tmp.size() > 0) {
       StringBuilder sb = new StringBuilder();
@@ -698,9 +697,9 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
       outputStream.println();
     }
 
-    if (!paraterminalNames.isEmpty()) {
+    if (!paraterminals.isEmpty()) {
       outputStream.print("!paraterminal ");
-      printStringElements(outputStream, paraterminalNames);
+      printElements(outputStream, paraterminals);
       outputStream.println();
     }
 
@@ -723,7 +722,7 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
         outputStream.print(" (" + s.toStringDetailed() + ") " + s);
         if (s.isWhitespace) outputStream.print(" whitespace");
         if (cyclicNonterminals.contains(s)) outputStream.print(" cyclic");
-        if (paraterminalElements.contains(s)) outputStream.print(" paraterminal");
+        if (paraterminals.contains(s)) outputStream.print(" paraterminal");
         if (s.attributes != null && !s.attributes.isEmpty()) outputStream.print(" attributes: " + s.attributes);
         if (first.get(s) != null) {
           outputStream.print(" first = {");
@@ -773,7 +772,7 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
       outputStream.println(" }");
 
       outputStream.print("Paraterminals: {");
-      for (var s : paraterminalNames)
+      for (var s : paraterminals)
         outputStream.print(" " + s);
       outputStream.println(" }");
 
@@ -884,17 +883,16 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
 
   private void buildSubGrammars() {
     cfgRulesLexer = new CFGRules(iTerms, CFGRulesKind.LEXER);
-    cfgRulesLexer.declaredAsTokens.addAll(elementToNodeMap.keySet());
-    cfgRulesLexer.paraterminalElements.addAll(paraterminalElements);
-    cfgRulesLexer.paraterminalNames.addAll(paraterminalNames);
+    cfgRulesLexer.declaredAsTokens.addAll(declaredAsTokens); // !!! Problem: make new elements!
+    cfgRulesLexer.paraterminals.addAll(paraterminals);
+
     cfgRulesParser = new CFGRules(iTerms, CFGRulesKind.PARSER);
     cfgRulesParser.declaredAsTokens.addAll(elementToNodeMap.keySet());
-    cfgRulesParser.paraterminalElements.addAll(paraterminalElements);
-    cfgRulesParser.paraterminalNames.addAll(paraterminalNames);
+    cfgRulesParser.paraterminals.addAll(paraterminals);
     for (var n : elementToNodeMap.keySet()) {
       cfgRulesLexer.declaredAsTokens.addAll(elementToNodeMap.keySet());
       if (n.cfgKind == CFGKind.NONTERMINAL) {
-        if (paraterminalElements.contains(n)) {
+        if (paraterminals.contains(n)) {
           cfgRulesLexer.actionLHS(n.str);
           buildSubGrammarsRec(cfgRulesLexer, elementToNodeMap.get(n).alt);
         } else {

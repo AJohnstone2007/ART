@@ -45,7 +45,7 @@ class SPPFSentenceAnalyser {
     if (sppf.visited.get(sppfn.number)) return;
     sppf.visited.set(sppfn.number);
 
-    if (sppfn.isSymbol() && sppf.parser.cfgRules.paraterminalElements.contains(sppfn.grammarNode.cfgElement)) {
+    if (sppfn.isSymbol() && sppf.parser.cfgRules.paraterminals.contains(sppfn.grammarNode.cfgElement)) {
       paraterminalInstanceAdd(sppfn);
       paraterminalCount++;
       return;
@@ -111,7 +111,7 @@ class SPPFSentenceAnalyser {
     }
     sppf.visited.set(node.number);
 
-    if (node.packNodes.isEmpty() || (node.isSymbol() && sppf.parser.cfgRules.paraterminalElements.contains(node.grammarNode.cfgElement))) {
+    if (node.packNodes.isEmpty() || (node.isSymbol() && sppf.parser.cfgRules.paraterminals.contains(node.grammarNode.cfgElement))) {
       if (!(node.packNodes.isEmpty() && node.grammarNode.cfgElement.cfgKind == CFGKind.EPSILON)) {
         Util.info("Extending with " + node.grammarNode.cfgElement.str);
         parasentence[parasentenceIndex++] = node;

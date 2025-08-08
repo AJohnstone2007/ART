@@ -67,7 +67,7 @@ public class ChooseRules implements DisplayInterface {
         anyStr = extendStringList(anyStr, "srCaseInsensitiveTerminal(" + ITerms.escapeMeta(e1.str) + ")");
         break;
       case NONTERMINAL:
-        if (grammar.paraterminalNames.contains(e1))
+        if (grammar.paraterminals.contains(e1))
           anyParaStr = extendStringList(anyParaStr, "srNonterminal(" + ITerms.escapeMeta(e1.str) + ")");
         else
           anyNonStr = extendStringList(anyNonStr, "srNonterminal(" + ITerms.escapeMeta(e1.str) + ")");

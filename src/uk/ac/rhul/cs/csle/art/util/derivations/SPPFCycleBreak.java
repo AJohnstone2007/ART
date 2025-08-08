@@ -300,7 +300,7 @@ class SPPFCycleBreak {
       countEps++;
     else if (sppfn.packNodes.size() == 0)
       countTerm++;
-    else if (sppf.parser.cfgRules.paraterminalElements.contains(sppfn.grammarNode.cfgElement)) {
+    else if (sppf.parser.cfgRules.paraterminals.contains(sppfn.grammarNode.cfgElement)) {
       countPara++;
       return;
     } else if (sppfn.isSymbol())

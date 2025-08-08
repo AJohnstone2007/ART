@@ -311,7 +311,7 @@ public final class ScriptTermInterpreter {
 
     case "!paraterminal":
       for (int i = 0; i < iTerms.termArity(iTerms.subterm(term, 0)); i++)
-        currentCFGRules.paraterminalNames.add(iTerms.termSymbolString(iTerms.subterm(term, 0, i, 0)));
+        currentCFGRules.paraterminals.add(findCFGElement(iTerms.subterm(term, 0, i)));
       break;
 
     case "!generate":
