@@ -43,11 +43,11 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
 
   public int lexSize;
 
-  public Set<CFGElement> paraterminals = new HashSet<>();
+  public Set<CFGElement> paraterminals = new TreeSet<>();
   public Set<CFGElement> declaredAsTokens = new TreeSet<>();
-  public Set<CFGElement> whitespaces = new HashSet<>();
-  public Set<CFGElement> defined = new HashSet<>();
-  public Set<CFGElement> used = new HashSet<>();
+  public Set<CFGElement> whitespaces = new TreeSet<>();
+  public Set<CFGElement> defined = new TreeSet<>();
+  public Set<CFGElement> used = new TreeSet<>();
 
   // Grammar analysis data
   public final Relation<CFGElement, CFGElement> first = new Relation<>();
@@ -118,17 +118,17 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
     setEndNodeLinks();
 
     // Report nonterminals with no rules, and create paraterminal element set from paraterminal elements defined only as names
-    Set<CFGElement> tmp = new HashSet<>();
-    for (CFGElement e : elements.keySet())
-      if (e.cfgKind == CFGKind.NONTERMINAL) if (elementToNodeMap.get(e) == null) tmp.add(e);
-
-    if (tmp.size() > 0) {
-      StringBuilder sb = new StringBuilder();
-      sb.append("Nonterminal" + (tmp.size() == 1 ? " " : "s ") + "used but not defined: ");
-      for (CFGElement n : tmp)
-        sb.append(n.str + " ");
-      Util.error(sb.toString());
-    }
+    // Set<CFGElement> tmp = new HashSet<>();
+    // for (CFGElement e : elements.keySet())
+    // if (e.cfgKind == CFGKind.NONTERMINAL) if (elementToNodeMap.get(e) == null) tmp.add(e);
+    //
+    // if (tmp.size() > 0) {
+    // StringBuilder sb = new StringBuilder();
+    // sb.append("Nonterminal" + (tmp.size() == 1 ? " " : "s ") + "used but not defined: ");
+    // for (CFGElement n : tmp)
+    // sb.append(n.str + " ");
+    // Util.error(sb.toString());
+    // }
 
     // Set positional attributes and accepting slots, and seed nullablePrefixSlots and nullableSuffixSlots
     for (CFGElement ge : elements.keySet())
@@ -544,7 +544,7 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
   public CFGNode actionSEQ(CFGKind kind, String str, Integer actionAsTerm) {
     // Util.debug("Update working node with kind " + kind + " string " + str + " and slot term " + slotTerm);
     workingNode = new CFGNode(this, kind, str, actionAsTerm, workingFold, workingNode, null);
-    used.add(workingNode.cfgElement);
+    if (kind != CFGKind.END) used.add(workingNode.cfgElement);
     workingFold = GIFTKind.NONE;
     return workingNode;
   }
@@ -767,6 +767,9 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
       printSet(outputStream, declaredAsTokens, "Declared as tokens");
       printSet(outputStream, paraterminals, "Paraterminals");
       printSet(outputStream, cyclicNonterminals, "Cyclic nonterminals");
+
+      printSet(outputStream, defined, "Defined nonterminals");
+      printSet(outputStream, used, "Used elements");
 
       outputStream.print("derivesExactly(R):");
       outputStream.println();
