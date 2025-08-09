@@ -43,7 +43,6 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
 
   public int lexSize;
 
-  public Set<String> ZparaterminalNames = new HashSet<>();
   public Set<CFGElement> paraterminals = new HashSet<>();
   public Set<CFGElement> declaredAsTokens = new TreeSet<>();
   public Set<CFGElement> whitespaces = new HashSet<>();
@@ -527,6 +526,7 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
 
   public void actionLHS(String id) {
     CFGElement element = findElement(CFGKind.NONTERMINAL, id);
+    defined.add(element);
     if (startNonterminal == null) startNonterminal = element;
     workingNode = elementToNodeMap.get(element);
     if (workingNode == null) elementToNodeMap.put(element, actionSEQ(CFGKind.NONTERMINAL, id, 0));
@@ -544,6 +544,7 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
   public CFGNode actionSEQ(CFGKind kind, String str, Integer actionAsTerm) {
     // Util.debug("Update working node with kind " + kind + " string " + str + " and slot term " + slotTerm);
     workingNode = new CFGNode(this, kind, str, actionAsTerm, workingFold, workingNode, null);
+    used.add(workingNode.cfgElement);
     workingFold = GIFTKind.NONE;
     return workingNode;
   }
@@ -763,20 +764,9 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
         outputStream.print(" " + gn);
       outputStream.println();
 
-      outputStream.print("Declared as terminal: {");
-      for (var s : declaredAsTokens)
-        outputStream.print(" " + s);
-      outputStream.println(" }");
-
-      outputStream.print("Paraterminals: {");
-      for (var s : paraterminals)
-        outputStream.print(" " + s);
-      outputStream.println(" }");
-
-      outputStream.print("Cyclic nonterminals: {");
-      for (var s : cyclicNonterminals)
-        outputStream.print(" " + s);
-      outputStream.println(" }");
+      printSet(outputStream, declaredAsTokens, "Declared as tokens");
+      printSet(outputStream, paraterminals, "Paraterminals");
+      printSet(outputStream, cyclicNonterminals, "Cyclic nonterminals");
 
       outputStream.print("derivesExactly(R):");
       outputStream.println();
@@ -814,22 +804,16 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
     }
   }
 
+  private void printSet(PrintStream outputStream, Set<CFGElement> elements, String title) {
+    outputStream.print(title + ": {");
+    printElements(outputStream, elements);
+    outputStream.println("}");
+  }
+
   private void printElements(PrintStream outputStream, Set<CFGElement> elements) {
     if (elements == null) return;
     boolean first = true;
     for (CFGElement e : elements) {
-      if (first)
-        first = false;
-      else
-        outputStream.print(", ");
-      outputStream.print(e.toString());
-    }
-  }
-
-  private void printStringElements(PrintStream outputStream, Set<String> elements) {
-    if (elements == null) return;
-    boolean first = true;
-    for (String e : elements) {
       if (first)
         first = false;
       else
