@@ -89,10 +89,8 @@ public class LexerBaseLine extends AbstractLexer {
     int wsStart;
     do {
       wsStart = inputIndex;
-      for (var w : cfgRules.elements.keySet())
-        if (w.isWhitespace) {
-          tryTokenMatch(w);
-        }
+      for (var w : cfgRules.whitespaces)
+        tryTokenMatch(w);
     } while (inputIndex != wsStart); // No more whitespace found
   }
 

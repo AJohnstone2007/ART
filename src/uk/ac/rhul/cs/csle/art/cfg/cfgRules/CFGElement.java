@@ -10,7 +10,6 @@ import uk.ac.rhul.cs.csle.art.util.Util;
 public class CFGElement implements Comparable<Object> {
 
   public int number;
-  public boolean isWhitespace;
   public final CFGKind cfgKind;
   public final String str;
   public Set<Character> set;

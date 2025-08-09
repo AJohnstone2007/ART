@@ -301,7 +301,7 @@ public final class ScriptTermInterpreter {
       // Util.debug("Whitespace processing " + iTerms.toRawString(term));
       currentCFGRules.seenWhitespaceDirective = true;
       for (int i = 0; i < iTerms.termArity(iTerms.subterm(term, 0)); i++)
-        findCFGElement(iTerms.subterm(term, 0, i)).isWhitespace = true;
+        currentCFGRules.whitespaces.add(findCFGElement(iTerms.subterm(term, 0, i)));
       break;
 
     case "!token":

@@ -104,7 +104,7 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
   }
 
   public void normalise() {
-    if (ScriptTermInterpreter.currentWSMode == WSMode.DEFAULT) findElement(CFGKind.TRM_BI, "SIMPLE_WHITESPACE").isWhitespace = true;
+    if (ScriptTermInterpreter.currentWSMode == WSMode.DEFAULT) whitespaces.add(findElement(CFGKind.TRM_BI, "SIMPLE_WHITESPACE"));
 
     derivesExactly = new Relation<>();
     // Add singleton grammar nodes for terminals, # and epsilon. These are used by the SPPF.
@@ -128,12 +128,12 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
       sb.append("Nonterminal" + (tmp.size() == 1 ? " " : "s ") + "used but not defined: ");
       for (CFGElement n : tmp)
         sb.append(n.str + " ");
-      Util.fatal(sb.toString());
+      Util.error(sb.toString());
     }
 
     // Set positional attributes and accepting slots, and seed nullablePrefixSlots and nullableSuffixSlots
     for (CFGElement ge : elements.keySet())
-      if (ge.cfgKind == CFGKind.NONTERMINAL) for (CFGNode gn = elementToNodeMap.get(ge).alt; gn != null; gn = gn.alt) {
+      if (ge.cfgKind == CFGKind.NONTERMINAL && elementToNodeMap.get(ge) != null) for (CFGNode gn = elementToNodeMap.get(ge).alt; gn != null; gn = gn.alt) {
         CFGNode gs = gn.seq;
         initialSlots.add(gs);
         nullablePrefixSlots.add(gs);
@@ -174,7 +174,7 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
     for (CFGElement e : elements.keySet()) {
       // Util.info("*** Collecting attributes for element " + e.toStringDetailed());
       Map<String, Integer> rhsNonterminalsInProduction = new HashMap<>();
-      if (e.cfgKind == CFGKind.NONTERMINAL) { // Only look at nonterminals
+      if (e.cfgKind == CFGKind.NONTERMINAL && elementToNodeMap.get(e) != null) { // Only look at nonterminals
         String lhs = e.str;
         for (CFGNode gn = elementToNodeMap.get(e).alt; gn != null; gn = gn.alt) { // iterate over the productions
           rhsNonterminalsInProduction.clear();
@@ -238,6 +238,7 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
       for (CFGElement lhs : elements.keySet())
         if (lhs.cfgKind == CFGKind.NONTERMINAL) {
           CFGNode topNode = elementToNodeMap.get(lhs);
+          if (topNode == null) continue;
           // Util.info("Visiting top node " + topNode.num + ":" + topNode);
           for (CFGNode altNode = topNode.alt; altNode != null; altNode = altNode.alt) {
             // Util.info("Visiting alt node " + altNode.num + ":" + altNode);
@@ -283,6 +284,7 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
     for (CFGElement lhs : elements.keySet())
       if (lhs.cfgKind == CFGKind.NONTERMINAL) {
         CFGNode topNode = elementToNodeMap.get(lhs);
+        if (topNode == null) continue;
         // Util.info("Compute nullable suffix visiting top node " + topNode.num + ":" + topNode);
         for (CFGNode altNode = topNode.alt; altNode != null; altNode = altNode.alt) {
           // Util.info("Compute nullable suffix visiting alt node " + altNode.num + ":" + altNode);
@@ -299,6 +301,7 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
     for (CFGElement lhs : elements.keySet())
       if (lhs.cfgKind == CFGKind.NONTERMINAL) {
         CFGNode topNode = elementToNodeMap.get(lhs);
+        if (topNode == null) continue;
         // Util.info("Compute nullable suffix visiting top node " + topNode.num + ":" + topNode);
         for (CFGNode altNode = topNode.alt; altNode != null; altNode = altNode.alt) {
           CFGNode seqNode = altNode;
@@ -340,6 +343,7 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
       for (CFGElement lhs : elements.keySet())
         if (lhs.cfgKind == CFGKind.NONTERMINAL) {
           CFGNode topNode = elementToNodeMap.get(lhs);
+          if (topNode == null) continue;
           // Util.info("Visiting top node " + topNode.num + ":" + topNode);
           for (CFGNode altNode = topNode.alt; altNode != null; altNode = altNode.alt) {
             // Util.info("Visiting alt node " + altNode.num + ":" + altNode);
@@ -516,13 +520,6 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
         findElement(CFGKind.TRM_CH, "" + c);
       break;
     }
-    return ret;
-  }
-
-  public CFGElement findWhitespaceElement(CFGKind kind, String s) {
-    var ret = findElement(kind, s);
-    ret.isWhitespace = true;
-    seenWhitespaceDirective = true;
     return ret;
   }
 
@@ -720,7 +717,7 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
       outputStream.print("Elements:\n");
       for (CFGElement s : elements.keySet()) {
         outputStream.print(" (" + s.toStringDetailed() + ") " + s);
-        if (s.isWhitespace) outputStream.print(" whitespace");
+        if (whitespaces.contains(s)) outputStream.print(" whitespace");
         if (cyclicNonterminals.contains(s)) outputStream.print(" cyclic");
         if (paraterminals.contains(s)) outputStream.print(" paraterminal");
         if (s.attributes != null && !s.attributes.isEmpty()) outputStream.print(" attributes: " + s.attributes);
@@ -881,16 +878,21 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
     // TODO Auto-generated method stub
   }
 
+  private void cloneSetElements(CFGRules dstCFGRules, Set<CFGElement> dstSet, Set<CFGElement> srcSet) {
+    for (var e : srcSet)
+      dstSet.add(dstCFGRules.findElement(e.cfgKind, e.str));
+  }
+
   private void buildSubGrammars() {
     cfgRulesLexer = new CFGRules(iTerms, CFGRulesKind.LEXER);
-    cfgRulesLexer.declaredAsTokens.addAll(declaredAsTokens); // !!! Problem: make new elements!
-    cfgRulesLexer.paraterminals.addAll(paraterminals);
+    cloneSetElements(cfgRulesLexer, cfgRulesLexer.declaredAsTokens, declaredAsTokens);
+    cloneSetElements(cfgRulesLexer, cfgRulesLexer.paraterminals, paraterminals);
 
     cfgRulesParser = new CFGRules(iTerms, CFGRulesKind.PARSER);
-    cfgRulesParser.declaredAsTokens.addAll(elementToNodeMap.keySet());
-    cfgRulesParser.paraterminals.addAll(paraterminals);
+    cloneSetElements(cfgRulesParser, cfgRulesParser.declaredAsTokens, declaredAsTokens);
+    cloneSetElements(cfgRulesParser, cfgRulesParser.paraterminals, paraterminals);
+
     for (var n : elementToNodeMap.keySet()) {
-      cfgRulesLexer.declaredAsTokens.addAll(elementToNodeMap.keySet());
       if (n.cfgKind == CFGKind.NONTERMINAL) {
         if (paraterminals.contains(n)) {
           cfgRulesLexer.actionLHS(n.str);
