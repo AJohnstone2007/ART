@@ -168,7 +168,7 @@ public class GLLParameterised extends AbstractParser {
   @Override
   public void printCardinalities(PrintStream outputStream) {
     outputStream.println(name() + ": characters:" + fmt(input.length()) + " TWEs:" + fmt(lexer.cardinality()) + " tasks:" + fmt(tasks.cardinality())
-        + " stackNodes:" + fmt(stacks.nodeCardinality()) + " stackEdges:" + fmt(stacks.edgeCardinality()) + " pops:" + fmt(stacks.popCardinality()) + " bsrs:"
+        + " stackNodes:" + fmt(stacks.nodeCardinality()) + " stackEdges:" + fmt(stacks.edgeCardinality()) + " pops:" + fmt(stacks.popCardinality()) + " BSRs:"
         + fmt(derivations.bsrCardinality()));
   }
 
