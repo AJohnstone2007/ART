@@ -38,8 +38,8 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
 
   public final Map<CFGElement, CFGElement> elements = new TreeMap<>();
 
-  public final Map<Integer, CFGNode> numberToNodeMap = new TreeMap<>();
-  public final Map<CFGElement, CFGNode> elementToNodeMap = new TreeMap<>(); // Map from nonterminals to list of productions represented by their LHS node
+  public final Map<Integer, CFGNode> numberToRulesNodeMap = new TreeMap<>();
+  public final Map<CFGElement, CFGNode> elementToRulesNodeMap = new TreeMap<>(); // Map from nonterminals to list of productions represented by their LHS node
 
   public int lexSize;
 
@@ -109,8 +109,8 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
     // Add singleton grammar nodes for terminals, # and epsilon. These are used by the SPPF.
     for (CFGElement e : elements.keySet())
       if (e.cfgKind == CFGKind.TRM_BI || e.cfgKind == CFGKind.TRM_CS || e.cfgKind == CFGKind.TRM_CI || e.cfgKind == CFGKind.TRM_CH
-          || e.cfgKind == CFGKind.EPSILON)
-        elementToNodeMap.put(e, new CFGNode(this, e.cfgKind, e.str, 0, GIFTKind.NONE, null, null));
+          || e.cfgKind == CFGKind.TRM_CH_SET || e.cfgKind == CFGKind.TRM_CH_ANTI_SET || e.cfgKind == CFGKind.EPSILON)
+        elementToRulesNodeMap.put(e, new CFGNode(this, e.cfgKind, e.str, 0, GIFTKind.NONE, null, null));
 
     // Element and node numbering
     nextFreeEnumerationElement = 0;
@@ -132,21 +132,22 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
 
     // Set positional attributes and accepting slots, and seed nullablePrefixSlots and nullableSuffixSlots
     for (CFGElement ge : elements.keySet())
-      if (ge.cfgKind == CFGKind.NONTERMINAL && elementToNodeMap.get(ge) != null) for (CFGNode gn = elementToNodeMap.get(ge).alt; gn != null; gn = gn.alt) {
-        CFGNode gs = gn.seq;
-        initialSlots.add(gs);
-        nullablePrefixSlots.add(gs);
-        if (gs.seq.cfgElement.cfgKind != CFGKind.END) secondSlots.add(gs.seq);
-        while (gs.seq.cfgElement.cfgKind != CFGKind.END)
-          gs = gs.seq;
-        penultimateSlots.add(gs);
-        finalSlots.add(gs.seq);
-        nullableSuffixSlots.add(gs.seq);
-        if (ge == startNonterminal) {
-          acceptingSlots.add(gs.seq);
-          acceptingNodeNumbers.add(gs.seq.num);
+      if (ge.cfgKind == CFGKind.NONTERMINAL && elementToRulesNodeMap.get(ge) != null)
+        for (CFGNode gn = elementToRulesNodeMap.get(ge).alt; gn != null; gn = gn.alt) {
+          CFGNode gs = gn.seq;
+          initialSlots.add(gs);
+          nullablePrefixSlots.add(gs);
+          if (gs.seq.cfgElement.cfgKind != CFGKind.END) secondSlots.add(gs.seq);
+          while (gs.seq.cfgElement.cfgKind != CFGKind.END)
+            gs = gs.seq;
+          penultimateSlots.add(gs);
+          finalSlots.add(gs.seq);
+          nullableSuffixSlots.add(gs.seq);
+          if (ge == startNonterminal) {
+            acceptingSlots.add(gs.seq);
+            acceptingNodeNumbers.add(gs.seq.num);
+          }
         }
-      }
 
     // Seed first sets
     for (CFGElement ge : elements.keySet())
@@ -173,9 +174,9 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
     for (CFGElement e : elements.keySet()) {
       // Util.info("*** Collecting attributes for element " + e.toStringDetailed());
       Map<String, Integer> rhsNonterminalsInProduction = new HashMap<>();
-      if (e.cfgKind == CFGKind.NONTERMINAL && elementToNodeMap.get(e) != null) { // Only look at nonterminals
+      if (e.cfgKind == CFGKind.NONTERMINAL && elementToRulesNodeMap.get(e) != null) { // Only look at nonterminals
         String lhs = e.str;
-        for (CFGNode gn = elementToNodeMap.get(e).alt; gn != null; gn = gn.alt) { // iterate over the productions
+        for (CFGNode gn = elementToRulesNodeMap.get(e).alt; gn != null; gn = gn.alt) { // iterate over the productions
           rhsNonterminalsInProduction.clear();
           for (CFGNode gs = gn.seq; gs.cfgElement.cfgKind != CFGKind.END; gs = gs.seq) {
             // Util.info("Collecting RHS nonterminals at " + gs + " " + iTerms.toRawString(gs.slotTerm));
@@ -198,7 +199,7 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
         // Util.info("LHS: " + lhs + " with valid nonterminals=instances: " + rhsNonterminalsInProduction);
 
         // Now check each action to see if it is trying to access a RHS nonterminal which is not instances in this LHS
-        for (CFGNode gn = elementToNodeMap.get(e).alt; gn != null; gn = gn.alt) {
+        for (CFGNode gn = elementToRulesNodeMap.get(e).alt; gn != null; gn = gn.alt) {
           for (CFGNode gs = gn.seq; gs.cfgElement.cfgKind != CFGKind.END; gs = gs.seq) {
             for (int i = 0; i < iTerms.termArity(gs.actionAsTerm); i++) {
               int annotationRoot = iTerms.subterm(gs.actionAsTerm, i);
@@ -236,7 +237,7 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
       changed = false;
       for (CFGElement lhs : elements.keySet())
         if (lhs.cfgKind == CFGKind.NONTERMINAL) {
-          CFGNode topNode = elementToNodeMap.get(lhs);
+          CFGNode topNode = elementToRulesNodeMap.get(lhs);
           if (topNode == null) continue;
           // Util.info("Visiting top node " + topNode.num + ":" + topNode);
           for (CFGNode altNode = topNode.alt; altNode != null; altNode = altNode.alt) {
@@ -282,7 +283,7 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
   private void computeNullableSuffixesAndCyclic() {
     for (CFGElement lhs : elements.keySet())
       if (lhs.cfgKind == CFGKind.NONTERMINAL) {
-        CFGNode topNode = elementToNodeMap.get(lhs);
+        CFGNode topNode = elementToRulesNodeMap.get(lhs);
         if (topNode == null) continue;
         // Util.info("Compute nullable suffix visiting top node " + topNode.num + ":" + topNode);
         for (CFGNode altNode = topNode.alt; altNode != null; altNode = altNode.alt) {
@@ -299,7 +300,7 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
   private void computeCyclicSlots() {
     for (CFGElement lhs : elements.keySet())
       if (lhs.cfgKind == CFGKind.NONTERMINAL) {
-        CFGNode topNode = elementToNodeMap.get(lhs);
+        CFGNode topNode = elementToRulesNodeMap.get(lhs);
         if (topNode == null) continue;
         // Util.info("Compute nullable suffix visiting top node " + topNode.num + ":" + topNode);
         for (CFGNode altNode = topNode.alt; altNode != null; altNode = altNode.alt) {
@@ -341,7 +342,7 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
       changed = false;
       for (CFGElement lhs : elements.keySet())
         if (lhs.cfgKind == CFGKind.NONTERMINAL) {
-          CFGNode topNode = elementToNodeMap.get(lhs);
+          CFGNode topNode = elementToRulesNodeMap.get(lhs);
           if (topNode == null) continue;
           // Util.info("Visiting top node " + topNode.num + ":" + topNode);
           for (CFGNode altNode = topNode.alt; altNode != null; altNode = altNode.alt) {
@@ -361,7 +362,7 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
   }
 
   public boolean isEmpty() {
-    return elementToNodeMap.keySet().isEmpty();
+    return elementToRulesNodeMap.keySet().isEmpty();
   }
 
   private class InstancePair {
@@ -463,14 +464,14 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
     }
     lexSize++;
 
-    numberToNodeMap.put(endOfStringNode.num = nextFreeEnumerationElement++, endOfStringNode);
-    for (CFGElement n : elementToNodeMap.keySet())
-      numberElementsAndNodesRec(elementToNodeMap.get(n));
+    numberToRulesNodeMap.put(endOfStringNode.num = nextFreeEnumerationElement++, endOfStringNode);
+    for (CFGElement n : elementToRulesNodeMap.keySet())
+      numberElementsAndNodesRec(elementToRulesNodeMap.get(n));
   }
 
   private void numberElementsAndNodesRec(CFGNode node) {
     if (node != null) {
-      numberToNodeMap.put(node.num = nextFreeEnumerationElement++, node);
+      numberToRulesNodeMap.put(node.num = nextFreeEnumerationElement++, node);
       if (node.cfgElement.cfgKind != CFGKind.END) {
         numberElementsAndNodesRec(node.seq);
         numberElementsAndNodesRec(node.alt);
@@ -479,8 +480,8 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
   }
 
   private void setEndNodeLinks() {
-    for (CFGElement n : elementToNodeMap.keySet()) {
-      CFGNode lhs = elementToNodeMap.get(n);
+    for (CFGElement n : elementToRulesNodeMap.keySet()) {
+      CFGNode lhs = elementToRulesNodeMap.get(n);
       for (CFGNode production = lhs.alt; production != null; production = production.alt)
         setEndNodeLinksRec(lhs, production);
     }
@@ -496,7 +497,7 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
     // Util.info("processEndNodes processing " + gn.ni + " " + gn);
     gn.alt = altNode; // We are now at the end of a production or of a bracketed alternate
     gn.seq = parentNode;
-    if (parentNode == elementToNodeMap.get(startNonterminal)) acceptingNodeNumbers.add(gn.num);
+    if (parentNode == elementToRulesNodeMap.get(startNonterminal)) acceptingNodeNumbers.add(gn.num);
     // Util.info("processEndNodes updated alt and seq to " + gn.alt.ni + " " + gn.seq.ni);
   }
 
@@ -528,9 +529,9 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
     CFGElement element = findElement(CFGKind.NONTERMINAL, id);
     defined.add(element);
     if (startNonterminal == null) startNonterminal = element;
-    workingNode = elementToNodeMap.get(element);
-    if (workingNode == null) elementToNodeMap.put(element, actionSEQ(CFGKind.NONTERMINAL, id, 0));
-    mostRecentLHS = elementToNodeMap.get(element);
+    workingNode = elementToRulesNodeMap.get(element);
+    if (workingNode == null) elementToRulesNodeMap.put(element, actionSEQ(CFGKind.NONTERMINAL, id, 0));
+    mostRecentLHS = elementToRulesNodeMap.get(element);
   }
 
   public void actionALT() {
@@ -564,15 +565,15 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
     int ret[] = new int[nextFreeEnumerationElement];
     for (CFGElement gs : elements.keySet())
       ret[gs.number] = gs.cfgKind.ordinal();
-    for (int ni : numberToNodeMap.keySet())
-      ret[ni] = numberToNodeMap.get(ni).cfgElement.cfgKind.ordinal();
+    for (int ni : numberToRulesNodeMap.keySet())
+      ret[ni] = numberToRulesNodeMap.get(ni).cfgElement.cfgKind.ordinal();
     return ret;
   }
 
   public int[][] makeAltsArray() {
     int ret[][] = new int[nextFreeEnumerationElement][];
-    for (int ni : numberToNodeMap.keySet()) {
-      CFGNode gn = numberToNodeMap.get(ni);
+    for (int ni : numberToRulesNodeMap.keySet()) {
+      CFGNode gn = numberToRulesNodeMap.get(ni);
       int altCount = 0;
       for (CFGNode alt = gn.alt; alt != null; alt = alt.alt)
         altCount++;
@@ -587,8 +588,8 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
 
   public int[] makeSeqsArray() {
     int ret[] = new int[nextFreeEnumerationElement];
-    for (int ni : numberToNodeMap.keySet()) {
-      CFGNode sn = numberToNodeMap.get(ni).seq;
+    for (int ni : numberToRulesNodeMap.keySet()) {
+      CFGNode sn = numberToRulesNodeMap.get(ni).seq;
       ret[ni] = sn == null ? 0 : sn.num;
     }
     return ret;
@@ -596,8 +597,8 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
 
   public int[] makeCallTargetsArray() {
     int[] ret = new int[nextFreeEnumerationElement];
-    for (int ni : numberToNodeMap.keySet()) {
-      CFGNode lhs = elementToNodeMap.get(numberToNodeMap.get(ni).cfgElement);
+    for (int ni : numberToRulesNodeMap.keySet()) {
+      CFGNode lhs = elementToRulesNodeMap.get(numberToRulesNodeMap.get(ni).cfgElement);
       ret[ni] = (lhs == null ? 0 : lhs.num);
     }
     return ret;
@@ -605,8 +606,8 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
 
   public int[] makeElementOfArray() {
     int[] ret = new int[nextFreeEnumerationElement];
-    for (int ni : numberToNodeMap.keySet()) {
-      CFGElement el = numberToNodeMap.get(ni).cfgElement;
+    for (int ni : numberToRulesNodeMap.keySet()) {
+      CFGElement el = numberToRulesNodeMap.get(ni).cfgElement;
       ret[ni] = (el == null ? 0 : el.number);
     }
     return ret;
@@ -642,7 +643,7 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
 
       CFGElement expansionNonterminal = sententialForm.get(leftmostNonterminalIndex);
 
-      for (var altNode = elementToNodeMap.get(expansionNonterminal).alt; altNode != null; altNode = altNode.alt) {
+      for (var altNode = elementToRulesNodeMap.get(expansionNonterminal).alt; altNode != null; altNode = altNode.alt) {
         LinkedList<CFGElement> newSententialForm = new LinkedList<>();
 
         for (int i = 0; i < leftmostNonterminalIndex; i++)
@@ -702,9 +703,9 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
     }
 
     outputStream.println("!start " + startNonterminal);
-    for (CFGElement n : elementToNodeMap.keySet()) {
+    for (CFGElement n : elementToRulesNodeMap.keySet()) {
       boolean first = true;
-      for (CFGNode production = elementToNodeMap.get(n).alt; production != null; production = production.alt) {
+      for (CFGNode production = elementToRulesNodeMap.get(n).alt; production != null; production = production.alt) {
         if (first) {
           outputStream.print(production.toStringAsProduction(" ::=\n ", null) + "\n");
           first = false;
@@ -732,8 +733,8 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
         outputStream.print("\n");
       }
       outputStream.print("Nodes:\n");
-      for (int i : numberToNodeMap.keySet()) {
-        CFGNode gn = numberToNodeMap.get(i);
+      for (int i : numberToRulesNodeMap.keySet()) {
+        CFGNode gn = numberToRulesNodeMap.get(i);
         outputStream.print(" " + i + ": " + gn.toStringAsProduction());
         if (full) {
           if (initialSlots.contains(gn)) outputStream.print(" initial");
@@ -830,8 +831,8 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
     outputStream.print("digraph \"Reference grammar\"\n" + "{\n" + "graph[ordering=out ranksep=0.1]\n"
         + "node[fontname=Helvetica fontsize=9 shape=box height = 0 width = 0 margin= 0.04 color=gray]\n"
         + "edge[fontname=Helvetica fontsize=9 arrowsize = 0.3 color=gray]\n\n");
-    for (CFGElement n : elementToNodeMap.keySet())
-      toStringDotRec(outputStream, elementToNodeMap.get(n));
+    for (CFGElement n : elementToRulesNodeMap.keySet())
+      toStringDotRec(outputStream, elementToRulesNodeMap.get(n));
     outputStream.print("}\n");
   }
 
@@ -879,19 +880,42 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
     cloneSetElements(cfgRulesParser, cfgRulesParser.declaredAsTokens, declaredAsTokens);
     cloneSetElements(cfgRulesParser, cfgRulesParser.paraterminals, paraterminals);
 
-    for (var n : elementToNodeMap.keySet()) {
+    for (var n : elementToRulesNodeMap.keySet()) {
       if (n.cfgKind == CFGKind.NONTERMINAL) {
         if (paraterminals.contains(n)) {
           cfgRulesLexer.actionLHS(n.str);
-          buildSubGrammarsRec(cfgRulesLexer, elementToNodeMap.get(n).alt);
+          buildSubGrammarsRec(cfgRulesLexer, elementToRulesNodeMap.get(n).alt);
         } else {
           cfgRulesParser.actionLHS(n.str);
-          buildSubGrammarsRec(cfgRulesParser, elementToNodeMap.get(n).alt);
+          buildSubGrammarsRec(cfgRulesParser, elementToRulesNodeMap.get(n).alt);
         }
       }
     }
     cfgRulesLexer.normalise();
     cfgRulesParser.normalise();
+
+    // Sub grammar sanity checks below this line
+    // for (var n : elementToRulesNodeMap.keySet()) {
+    // var mainElement = elementToRulesNodeMap.get(n);
+    // var lexerElement = cfgRulesLexer.elementToRulesNodeMap.get(n);
+    // var parserElement = cfgRulesParser.elementToRulesNodeMap.get(n);
+    //
+    // if (lexerElement == null)
+    // Util.error("Main element missing in lexer grammar: " + mainElement);
+    // else {
+    // if (lexerElement == mainElement) Util.error("Main and lexer cfgRules share element " + mainElement);
+    // if (lexerElement.num != mainElement.num)
+    // Util.error("Main and lexer element has number mismatch " + mainElement + ": " + mainElement.num + " -> " + lexerElement.num);
+    // }
+    //
+    // if (parserElement == null)
+    // Util.error("Main and parser cfgRules share element " + mainElement);
+    // else {
+    // if (parserElement == mainElement) Util.error("Main and parser cfgRules share element " + mainElement);
+    // if (parserElement.num != mainElement.num)
+    // Util.error("Main and parser element has number mismatch " + mainElement + ": " + mainElement.num + " -> " + parserElement.num);
+    // }
+    // }
   }
 
   // Generic traversal as basis for grammar conversions

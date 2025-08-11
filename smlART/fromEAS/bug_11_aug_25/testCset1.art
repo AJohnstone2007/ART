@@ -1,0 +1,6 @@
+!mode wsNone
+S ::= T | `a | `b | `c | `d
+T ::= A | A T
+A ::= # |  {abcd}
+WS ::= ` | `\t | `\r | `\n | ` WS | `\t WS | `\r WS | `\n WS
+WT ::= # | WS

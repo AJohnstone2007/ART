@@ -58,7 +58,7 @@ public class RDSOBOracleGenerator {
         int pCount = 0;
         boolean seenEpsilon = false;
 
-        for (var alt = cfgRules.elementToNodeMap.get(e).alt; alt != null; alt = alt.alt) {
+        for (var alt = cfgRules.elementToRulesNodeMap.get(e).alt; alt != null; alt = alt.alt) {
           pCount++;
           text.printf("\n  /* Nonterminal %s, alternate %d */\n  inputIndex = iiAtEntry; oracleIndex = oiAtEntry; oracleSet(%d);", e.str, pCount, pCount);
 
@@ -109,7 +109,7 @@ public class RDSOBOracleGenerator {
 
         text.println("void semantics_" + e.str + "(" + (e.attributes.keySet().size() > 0 ? "Attributes_" + e.str + " " + e.str : "") + ") {");
         // Create attribute blocks for this rule
-        CFGNode lhsRoot = cfgRules.elementToNodeMap.get(e).alt;
+        CFGNode lhsRoot = cfgRules.elementToRulesNodeMap.get(e).alt;
         printedInits.clear();
         printAllInitsRec(lhsRoot);
         text.print("  switch(oracle[oracleIndex++]) {");

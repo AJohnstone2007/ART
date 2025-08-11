@@ -29,7 +29,7 @@ public class GLLBaseLine extends AbstractParser {
 
     if (!lexer.lex(input, cfgRules, chooseRules)) return;
     inputIndex = 0;
-    cfgNode = cfgRules.elementToNodeMap.get(cfgRules.startNonterminal).alt;
+    cfgNode = cfgRules.elementToRulesNodeMap.get(cfgRules.startNonterminal).alt;
     stackNode = stacks.getRoot();
     derivationNode = null;
     queueAlternateTasks();
@@ -71,7 +71,7 @@ public class GLLBaseLine extends AbstractParser {
   }
 
   private AbstractDerivationNode updateDerivation(int rightExtent) {
-    var rightNode = derivations.find(cfgRules.elementToNodeMap.get(cfgNode.cfgElement), inputIndex, rightExtent);
+    var rightNode = derivations.find(cfgRules.elementToRulesNodeMap.get(cfgNode.cfgElement), inputIndex, rightExtent);
     return derivations.extend(cfgNode.seq, derivationNode, rightNode);
   }
 
@@ -93,14 +93,14 @@ public class GLLBaseLine extends AbstractParser {
 
   private void call(CFGNode cfgNode) {
     var newStackNode = stacks.push(derivations, tasks, inputIndex, cfgNode, stackNode, derivationNode);
-    for (CFGNode p = cfgRules.elementToNodeMap.get(cfgNode.cfgElement).alt; p != null; p = p.alt)
+    for (CFGNode p = cfgRules.elementToRulesNodeMap.get(cfgNode.cfgElement).alt; p != null; p = p.alt)
       tasks.queue(inputIndex, p.seq, newStackNode, null);
   }
 
   private void retrn() {
     if (stackNode.equals(stacks.getRoot())) {
       if (cfgRules.acceptingNodeNumbers.contains(cfgNode.num) && (inputIndex == lexer.tweSlices.length - 1)) {
-        derivations.setRoot(cfgRules.elementToNodeMap.get(cfgRules.startNonterminal), lexer.tweSlices.length - 1);
+        derivations.setRoot(cfgRules.elementToRulesNodeMap.get(cfgRules.startNonterminal), lexer.tweSlices.length - 1);
         inLanguage = true;
       }
       return;

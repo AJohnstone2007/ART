@@ -36,7 +36,7 @@ public class RDSOBFunction extends AbstractParser {
             Util.trace(8, "Mismatch " + gn);
           continue altLoop;
         case NONTERMINAL:
-          if (rdsobFunction(cfgRules.elementToNodeMap.get(gn.cfgElement))) {
+          if (rdsobFunction(cfgRules.elementToRulesNodeMap.get(gn.cfgElement))) {
             gn = gn.seq;
             break;
           } else
@@ -65,7 +65,7 @@ public class RDSOBFunction extends AbstractParser {
 
     inputIndex = 0;
     dnRoot = dn = new DerivationSingletonNode(cfgRules.endOfStringNode, null);
-    inLanguage = rdsobFunction(cfgRules.elementToNodeMap.get(cfgRules.startNonterminal)) && lexer.tweSlices[inputIndex][0].cfgElement.number == 0;
+    inLanguage = rdsobFunction(cfgRules.elementToRulesNodeMap.get(cfgRules.startNonterminal)) && lexer.tweSlices[inputIndex][0].cfgElement.number == 0;
     if (!inLanguage) Util.echo("Syntax error at location " + inputIndex, Util.lineNumber(inputIndex, lexer.inputString), lexer.inputString);
   }
 

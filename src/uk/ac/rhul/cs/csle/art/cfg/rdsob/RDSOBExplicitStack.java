@@ -58,7 +58,7 @@ public class RDSOBExplicitStack extends AbstractParser {
 
   void call(CFGNode caller) {
     sn = new SNode(caller.seq, inputIndex, sn, dn);
-    gn = cfgRules.elementToNodeMap.get(gn.cfgElement).alt.seq;
+    gn = cfgRules.elementToRulesNodeMap.get(gn.cfgElement).alt.seq;
   }
 
   CFGNode retrn() {
@@ -94,7 +94,7 @@ public class RDSOBExplicitStack extends AbstractParser {
 
     if (!lexer.lex(input, cfgRules, chooseRules)) return;
 
-    gn = cfgRules.elementToNodeMap.get(cfgRules.startNonterminal).alt.seq;
+    gn = cfgRules.elementToRulesNodeMap.get(cfgRules.startNonterminal).alt.seq;
     inputIndex = 0;
     dnRoot = dn = new DerivationSingletonNode(cfgRules.endOfStringNode, null);
     sn = new SNode(cfgRules.endOfStringNode, 0, null, dn);

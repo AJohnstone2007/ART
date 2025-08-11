@@ -122,4 +122,9 @@ public class SPPFDummyForRecognisers extends AbstractDerivations {
       boolean indented) {
   }
 
+  @Override
+  public int bsrCardinality() {
+    return -1;
+  }
+
 }

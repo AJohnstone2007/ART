@@ -340,4 +340,13 @@ public class SPPF extends AbstractDerivations {
 
   }
 
+  @Override
+  public int bsrCardinality() {
+    int ret = 0;
+    for (var n : nodes.keySet())
+      for (var pn : n.packNodes)
+        ret++;
+    return ret;
+  }
+
 }

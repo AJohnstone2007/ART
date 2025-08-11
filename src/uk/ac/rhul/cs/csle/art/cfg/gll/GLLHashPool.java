@@ -111,7 +111,7 @@ public class GLLHashPool extends HashPool {
   private void initialise() {
     // 1. Make local references to grammar tables
     endOfStringNodeNi = cfgRules.endOfStringNode.num;
-    startNonterminalNodeNi = cfgRules.elementToNodeMap.get(cfgRules.startNonterminal).num;
+    startNonterminalNodeNi = cfgRules.elementToRulesNodeMap.get(cfgRules.startNonterminal).num;
     kindOf = cfgRules.makeKindsArray();
     altOf = cfgRules.makeAltsArray();
     seqOf = cfgRules.makeSeqsArray();
@@ -377,7 +377,7 @@ public class GLLHashPool extends HashPool {
     int leftExtent = poolGet(n + sppfNode_leftExt);
     int rightExtent = poolGet(n + sppfNode_rightExt);
 
-    return cfgRules.numberToNodeMap.get(gn).toStringAsProduction() + ", " + leftExtent + ", " + rightExtent;
+    return cfgRules.numberToRulesNodeMap.get(gn).toStringAsProduction() + ", " + leftExtent + ", " + rightExtent;
   }
 
   String toStringSPPFPackNode(int n) {
@@ -385,6 +385,6 @@ public class GLLHashPool extends HashPool {
     int gn = poolGet(n + sppfPackNode_gn);
     int pivot = poolGet(n + sppfPackNode_pivot);
 
-    return cfgRules.numberToNodeMap.get(gn).toStringAsProduction() + ", " + pivot;
+    return cfgRules.numberToRulesNodeMap.get(gn).toStringAsProduction() + ", " + pivot;
   }
 }

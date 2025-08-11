@@ -52,19 +52,19 @@ public class ActionsGenerator {
         // INIT
         text.println("\n\n    public void initRHSAttributeBlock(int nodeNumber, int term) {");
         text.println("      switch(nodeNumber){");
-        printAllInitsRec(text, cfgRules.elementToNodeMap.get(e).alt);
+        printAllInitsRec(text, cfgRules.elementToRulesNodeMap.get(e).alt);
         text.println("      }\n    }");
 
         // GET
         text.println("\n    public AbstractAttributeBlock getAttributes(int nodeNumber) {\n      switch(nodeNumber){");
-        printAllGetsRec(text, cfgRules.elementToNodeMap.get(e).alt);
+        printAllGetsRec(text, cfgRules.elementToRulesNodeMap.get(e).alt);
         text.println(
             "      default: Util.fatal(\"getAttributes: unknown node \" + nodeNumber + \". Probable out-of-date ARTGeneratedActions - regenerate and recompile\"); return null;\n      }\n    }");
 
         // ACTION
         text.println("\n    public void action(int nodeNumber) {\n      switch(nodeNumber){");
-        printAllActionsRec(text, e, cfgRules.elementToNodeMap.get(e));
-        printTermActionsRec(text, cfgRules.elementToNodeMap.get(e));
+        printAllActionsRec(text, e, cfgRules.elementToRulesNodeMap.get(e));
+        printTermActionsRec(text, cfgRules.elementToRulesNodeMap.get(e));
         text.println("      }\n    }\n  }");
       }
 

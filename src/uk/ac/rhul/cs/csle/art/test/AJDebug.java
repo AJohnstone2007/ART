@@ -164,7 +164,7 @@ public final class AJDebug {
   private boolean v5v3RegressionCheckFirstAndFollowInstanceSets(CFGRules grammarV5, ARTV3 artV3) {
     boolean good = true;
     for (CFGElement e : grammarV5.elements.keySet())
-      if (e.cfgKind == CFGKind.NONTERMINAL) good &= v5v3RegressionCheckFirstAndFollowInstanceSetsRec(grammarV5.elementToNodeMap.get(e).alt, artV3);
+      if (e.cfgKind == CFGKind.NONTERMINAL) good &= v5v3RegressionCheckFirstAndFollowInstanceSetsRec(grammarV5.elementToRulesNodeMap.get(e).alt, artV3);
 
     return good;
   }
