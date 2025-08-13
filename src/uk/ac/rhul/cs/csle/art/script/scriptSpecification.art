@@ -151,7 +151,7 @@ directiveCarrier ::=
 | '!try'^^ file       | '!try'^^ file '='^ trTopTuple 
 | '!try'^^ trTopTuple | '!try'^^ trTopTuple '='^ trTopTuple
 
-| '!save' ID ID | '!restore' ID
+| '!save' ID ID | '!recall' ID
 
 (* Undocumented research features *)
 | '!deleteTokens'^^ __int32 | '!swapTokens'^^ __int32 
