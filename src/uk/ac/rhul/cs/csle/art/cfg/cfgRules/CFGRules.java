@@ -26,7 +26,7 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
   public final CFGRulesKind cfgRulesKind;
 
   // Constants
-  private final Set<CFGKind> lexKinds = Set.of(CFGKind.TRM_BI, CFGKind.TRM_CH, CFGKind.TRM_CS, CFGKind.TRM_CI);
+  private final Set<CFGKind> terminalKinds = Set.of(CFGKind.TRM_BI, CFGKind.TRM_CH, CFGKind.TRM_CS, CFGKind.TRM_CI);
   private final Set<CFGKind> selfFirst = Set.of(CFGKind.TRM_BI, CFGKind.TRM_CH, CFGKind.EOS, CFGKind.TRM_CS, CFGKind.TRM_CI, CFGKind.EPSILON);
   private int nextFreeEnumerationElement;
   public final CFGElement epsilonElement;
@@ -459,7 +459,7 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
   private void numberElementsAndNodes() {
     for (CFGElement s : elements.keySet()) {
       s.number = nextFreeEnumerationElement++;
-      if (lexKinds.contains(s.cfgKind)) lexSize = s.number;
+      if (terminalKinds.contains(s.cfgKind)) lexSize = s.number;
       // Util.info("Enumerating grammar element " + s.ei + ": " + s.str);
     }
     lexSize++;
@@ -873,11 +873,11 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
 
   private void buildSubGrammars() {
     cfgRulesLexer = new CFGRules(iTerms, CFGRulesKind.LEXER);
-    cloneSetElements(cfgRulesLexer, cfgRulesLexer.declaredAsTokens, declaredAsTokens);
+    cloneSetElements(cfgRulesLexer, cfgRulesLexer.declaredAsTokens, elementToRulesNodeMap.keySet());
     cloneSetElements(cfgRulesLexer, cfgRulesLexer.paraterminals, paraterminals);
 
     cfgRulesParser = new CFGRules(iTerms, CFGRulesKind.PARSER);
-    cloneSetElements(cfgRulesParser, cfgRulesParser.declaredAsTokens, declaredAsTokens);
+    cloneSetElements(cfgRulesParser, cfgRulesParser.declaredAsTokens, elementToRulesNodeMap.keySet());
     cloneSetElements(cfgRulesParser, cfgRulesParser.paraterminals, paraterminals);
 
     for (var n : elementToRulesNodeMap.keySet()) {
@@ -895,27 +895,28 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
     cfgRulesParser.normalise();
 
     // Sub grammar sanity checks below this line
-    // for (var n : elementToRulesNodeMap.keySet()) {
-    // var mainElement = elementToRulesNodeMap.get(n);
-    // var lexerElement = cfgRulesLexer.elementToRulesNodeMap.get(n);
-    // var parserElement = cfgRulesParser.elementToRulesNodeMap.get(n);
-    //
-    // if (lexerElement == null)
-    // Util.error("Main element missing in lexer grammar: " + mainElement);
-    // else {
-    // if (lexerElement == mainElement) Util.error("Main and lexer cfgRules share element " + mainElement);
-    // if (lexerElement.num != mainElement.num)
-    // Util.error("Main and lexer element has number mismatch " + mainElement + ": " + mainElement.num + " -> " + lexerElement.num);
-    // }
-    //
-    // if (parserElement == null)
-    // Util.error("Main and parser cfgRules share element " + mainElement);
-    // else {
-    // if (parserElement == mainElement) Util.error("Main and parser cfgRules share element " + mainElement);
-    // if (parserElement.num != mainElement.num)
-    // Util.error("Main and parser element has number mismatch " + mainElement + ": " + mainElement.num + " -> " + parserElement.num);
-    // }
-    // }
+    for (var n : elementToRulesNodeMap.keySet())
+      if (terminalKinds.contains(n)) {
+        var mainElement = elementToRulesNodeMap.get(n);
+        var lexerElement = cfgRulesLexer.elementToRulesNodeMap.get(n);
+        var parserElement = cfgRulesParser.elementToRulesNodeMap.get(n);
+
+        if (lexerElement == null)
+          Util.error("Main element missing in lexer grammar: " + mainElement);
+        else {
+          if (lexerElement == mainElement) Util.error("Main and lexer cfgRules share element " + mainElement);
+          if (lexerElement.num != mainElement.num)
+            Util.error("Main and lexer element has number mismatch " + mainElement + ": " + mainElement.num + " -> " + lexerElement.num);
+        }
+
+        if (parserElement == null)
+          Util.error("Main and parser cfgRules share element " + mainElement);
+        else {
+          if (parserElement == mainElement) Util.error("Main and parser cfgRules share element " + mainElement);
+          if (parserElement.num != mainElement.num)
+            Util.error("Main and parser element has number mismatch " + mainElement + ": " + mainElement.num + " -> " + parserElement.num);
+        }
+      }
   }
 
   // Generic traversal as basis for grammar conversions
