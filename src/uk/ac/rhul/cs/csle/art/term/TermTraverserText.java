@@ -3,6 +3,7 @@ package uk.ac.rhul.cs.csle.art.term;
 import java.util.HashMap;
 import java.util.Map;
 
+import uk.ac.rhul.cs.csle.art.script.ScriptTermInterpreter;
 import uk.ac.rhul.cs.csle.art.util.Util;
 
 /* This extension to TermTraverser adds text specific functions that allow a traverser to build a String rendering of a term, taking into account aliases
@@ -16,7 +17,7 @@ public class TermTraverserText extends TermTraverser {
   private boolean indent;
 
   public TermTraverserText(ITerms iTerms, String name) {
-    super(iTerms, name);
+    super(name);
     globalAliases = new HashMap<>();
     sb = new StringBuilder();
     depthLimit = -1;
@@ -42,15 +43,15 @@ public class TermTraverserText extends TermTraverser {
   }
 
   public void addGlobalAlias(String key, String value) {
-    addGlobalAlias(iTerms.findString(key), iTerms.findString(value));
+    addGlobalAlias(ScriptTermInterpreter.iTerms.findString(key), ScriptTermInterpreter.iTerms.findString(value));
   }
 
   public int childSymbolIndex(int root, int childNumber) {
-    return iTerms.termChildren(root)[childNumber];
+    return ScriptTermInterpreter.iTerms.termChildren(root)[childNumber];
   }
 
   public String childSymbolString(int root, int childNumber) {
-    return iTerms.termSymbolString(childSymbolIndex(root, childNumber));
+    return ScriptTermInterpreter.iTerms.termSymbolString(childSymbolIndex(root, childNumber));
   }
 
   // public String childStrippedSymbolString(int root, int childNumber) {
@@ -63,7 +64,7 @@ public class TermTraverserText extends TermTraverser {
   }
 
   public void appendAlias(String prefix, int stringIndex, String postfix) {
-    sb.append(prefix + Util.escapeString(iTerms.getString(aliasLookup(stringIndex)), false) + postfix);
+    sb.append(prefix + Util.escapeString(ScriptTermInterpreter.iTerms.getString(aliasLookup(stringIndex)), false) + postfix);
   }
 
   public Integer aliasLookup(int stringIndex) {
@@ -88,7 +89,8 @@ public class TermTraverserText extends TermTraverser {
   }
 
   public void traverse(int termIndex, int depth) {
-    // Util.info("Text traverser at term " + termIndex + " labeled " + iTerms.termSymbolStringIndex(termIndex) + ":" + iTerms.termSymbolString(termIndex) + "$"
+    // Util.info("Text traverser at term " + termIndex + " labeled " + ScriptTermInterpreter.iTerms.termSymbolStringIndex(termIndex) + ":" +
+    // ScriptTermInterpreter.iTerms.termSymbolString(termIndex) + "$"
     // + " and string " + sb);
     if (indent) {
       sb.append("\n");
@@ -96,9 +98,9 @@ public class TermTraverserText extends TermTraverser {
         sb.append(" ");
     }
     perform(opsPreorder, termIndex);
-    int[] children = iTerms.termChildren(termIndex);
+    int[] children = ScriptTermInterpreter.iTerms.termChildren(termIndex);
     int length = children.length;
-    if (!breakSet.contains(iTerms.termSymbolStringIndex(termIndex))) {
+    if (!breakSet.contains(ScriptTermInterpreter.iTerms.termSymbolStringIndex(termIndex))) {
       for (int childNumber = 0; childNumber < length; childNumber++) {
 
         if (depthLimit >= 0 && depth >= depthLimit)

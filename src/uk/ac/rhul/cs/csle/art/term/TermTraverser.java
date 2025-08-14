@@ -6,16 +6,16 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
+import uk.ac.rhul.cs.csle.art.script.ScriptTermInterpreter;
+
 public class TermTraverser {
-  protected final ITerms iTerms;
   protected final String name;
   protected final Map<Integer, Consumer<Integer>> opsPreorder;
   protected final Map<Integer, Consumer<Integer>> opsInorder;
   protected final Map<Integer, Consumer<Integer>> opsPostorder;
   protected final Set<Integer> breakSet;
 
-  public TermTraverser(ITerms iTerms, String name) {
-    this.iTerms = iTerms;
+  public TermTraverser(String name) {
     this.name = name;
     // Util.debug("After term traverser creation " + this);
 
@@ -32,15 +32,15 @@ public class TermTraverser {
 
   public void addBreak(String... termRootSymbol) {
     for (String s : termRootSymbol)
-      addBreak(iTerms.findString(s));
+      addBreak(ScriptTermInterpreter.iTerms.findString(s));
   }
 
   public void addAction(String symbol, Consumer<Integer> preorder, Consumer<Integer> inorder, Consumer<Integer> postorder) {
-    addAction(iTerms.findString(symbol), preorder, inorder, postorder);
+    addAction(ScriptTermInterpreter.iTerms.findString(symbol), preorder, inorder, postorder);
   }
 
   public void addActionBreak(String symbol, Consumer<Integer> preorder, Consumer<Integer> inorder, Consumer<Integer> postorder) {
-    addAction(iTerms.findString(symbol), preorder, inorder, postorder);
+    addAction(ScriptTermInterpreter.iTerms.findString(symbol), preorder, inorder, postorder);
     addBreak(symbol);
   }
 
@@ -67,23 +67,23 @@ public class TermTraverser {
     if (termIndex == 0)
       action = map.get(-1); // if we are passed a null term, then get default action: trick for __m
     else
-      action = map.get(iTerms.termSymbolStringIndex(termIndex));
+      action = map.get(ScriptTermInterpreter.iTerms.termSymbolStringIndex(termIndex));
     // if (action == null) {
-    // Util.info("no action for " + iTerms.getTermSymbolString(termIndex));
+    // Util.info("no action for " + ScriptTermInterpreter.iTerms.getTermSymbolString(termIndex));
     // } else {
-    // Util.info("found action for " + iTerms.getTermSymbolString(termIndex));
+    // Util.info("found action for " + ScriptTermInterpreter.iTerms.getTermSymbolString(termIndex));
     // }
     if (action == null) action = map.get(-1); // get default action
     if (action != null) action.accept(termIndex);
   }
 
   public void traverse(int termIndex) {
-    // Util.info("traverse() at term " + iTerms.toRawString(termIndex));
+    // Util.info("traverse() at term " + ScriptTermInterpreter.iTerms.toRawString(termIndex));
     perform(opsPreorder, termIndex);
-    int[] children = iTerms.termChildren(termIndex);
+    int[] children = ScriptTermInterpreter.iTerms.termChildren(termIndex);
     int length = children.length;
     int lengthLessOne = length - 1;
-    if (!breakSet.contains(iTerms.termSymbolStringIndex(termIndex))) for (int i = 0; i < length; i++) {
+    if (!breakSet.contains(ScriptTermInterpreter.iTerms.termSymbolStringIndex(termIndex))) for (int i = 0; i < length; i++) {
       traverse(children[i]);
       if (i < lengthLessOne) perform(opsInorder, termIndex);
     }

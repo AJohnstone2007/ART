@@ -10,7 +10,7 @@ import uk.ac.rhul.cs.csle.art.choose.ChooseRules;
 import uk.ac.rhul.cs.csle.art.script.ScriptTermInterpreter;
 import uk.ac.rhul.cs.csle.art.util.Util;
 
-public class LexerBaseLine extends AbstractLexer {
+public class LexerGLLRecogniser extends AbstractLexer {
   private boolean[] hasSlice;
 
   @Override

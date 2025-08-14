@@ -193,7 +193,7 @@ public class SPPF extends AbstractDerivations {
 
     // Util.debug("At SPPF node " + sppfn + " and grammar node " + gn + " make new term with constructor: " + constructor);
     if (children != childrenFromParent) {
-      childrenFromParent.add(parser.cfgRules.iTerms.findTerm(constructor, children));
+      childrenFromParent.add(ScriptTermInterpreter.iTerms.findTerm(constructor, children));
       derivationNodeCount++;
     }
 

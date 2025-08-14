@@ -1,12 +1,11 @@
 package uk.ac.rhul.cs.csle.art.cfg.chart;
 
-import uk.ac.rhul.cs.csle.art.term.ITerms;
 import uk.ac.rhul.cs.csle.art.util.Util;
 
 public final class AlgX extends ChartBase {
 
-  public AlgX(ITerms iTerms) {
-    super(iTerms);
+  public AlgX() {
+    super();
     int n = 10;
     chartInit(n + 1);
     Util.info("Operation key: -1:initFromStart  -2:initFromPreviousColumb  -3:crossProduct  -4:completeColumn");

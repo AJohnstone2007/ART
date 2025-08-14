@@ -210,6 +210,9 @@ public class Util {
       case '\t':
         sb.append("\\t");
         break;
+      case '\\':
+        sb.append("\\\\");
+        break;
       case '\'':
         sb.append("\\'");
         break;

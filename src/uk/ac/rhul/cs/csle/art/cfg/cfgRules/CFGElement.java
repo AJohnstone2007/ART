@@ -1,9 +1,9 @@
 package uk.ac.rhul.cs.csle.art.cfg.cfgRules;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 import uk.ac.rhul.cs.csle.art.util.Util;
 
@@ -23,7 +23,7 @@ public class CFGElement implements Comparable<Object> {
     this.str = s;
     switch (this.cfgKind) {
     case TRM_CH_SET, TRM_CH_ANTI_SET:
-      set = new HashSet<>();
+      set = new TreeSet<>();
       // Util.debug("Processing to set: " + s);
       for (var c : Util.unescapeString(s).toCharArray())
         set.add(c);

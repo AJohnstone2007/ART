@@ -12,9 +12,7 @@ import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import uk.ac.rhul.cs.csle.art.cfg.lexer.WSMode;
 import uk.ac.rhul.cs.csle.art.script.ScriptTermInterpreter;
-import uk.ac.rhul.cs.csle.art.term.ITerms;
 import uk.ac.rhul.cs.csle.art.term.TermTraverserText;
 import uk.ac.rhul.cs.csle.art.util.DisplayInterface;
 import uk.ac.rhul.cs.csle.art.util.Util;
@@ -22,34 +20,35 @@ import uk.ac.rhul.cs.csle.art.util.relation.Relation;
 import uk.ac.rhul.cs.csle.art.util.statistics.Statistics;
 
 public final class CFGRules implements DisplayInterface { // final to avoid this-escape
-  public final ITerms iTerms;
+  // Fields set by the script interpreter that must be cloned
   public final CFGRulesKind cfgRulesKind;
+  public CFGElement characters = new CFGElement(CFGKind.TRM_CH_SET, defaultCharacterSet);
+  public final Map<CFGElement, CFGElement> elements = new TreeMap<>();
+  public final Set<CFGElement> paraterminals = new TreeSet<>();
+  public final Set<CFGElement> declaredAsTokens = new TreeSet<>();
+  public final Set<CFGElement> whitespaces = new TreeSet<>();
+  public CFGElement startNonterminal = null;
+  public String filePrelude = null;
+  public String classPrelude = null;
 
-  // Constants
-  private final Set<CFGKind> terminalKinds = Set.of(CFGKind.TRM_BI, CFGKind.TRM_CH, CFGKind.TRM_CS, CFGKind.TRM_CI);
-  private final Set<CFGKind> selfFirst = Set.of(CFGKind.TRM_BI, CFGKind.TRM_CH, CFGKind.EOS, CFGKind.TRM_CS, CFGKind.TRM_CI, CFGKind.EPSILON);
+  // Static fields that are constant across all instances and thus do not need to be cloned
+  private final static Set<CFGKind> terminalKinds = Set.of(CFGKind.TRM_BI, CFGKind.TRM_CH, CFGKind.TRM_CS, CFGKind.TRM_CI);
+  private final static Set<CFGKind> selfFirst = Set.of(CFGKind.TRM_BI, CFGKind.TRM_CH, CFGKind.EOS, CFGKind.TRM_CS, CFGKind.TRM_CI, CFGKind.EPSILON);
+  private final static String printableASCII = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
+  private final static String defaultCharacterSet = "\r\n\t£" + printableASCII;
+
+  // Fields that are computed by !try or normalise() and thus do not need to be cloned
   private int nextFreeEnumerationElement;
   public final CFGElement epsilonElement;
   public final CFGElement startOfStringElement;
   public final CFGElement endOfStringElement;
   public final CFGNode endOfStringNode;
-
-  public CFGElement startNonterminal = null;
-
-  public final Map<CFGElement, CFGElement> elements = new TreeMap<>();
-
   public final Map<Integer, CFGNode> numberToRulesNodeMap = new TreeMap<>();
   public final Map<CFGElement, CFGNode> elementToRulesNodeMap = new TreeMap<>(); // Map from nonterminals to list of productions represented by their LHS node
-
   public int lexSize;
-
-  public Set<CFGElement> paraterminals = new TreeSet<>();
-  public Set<CFGElement> declaredAsTokens = new TreeSet<>();
-  public Set<CFGElement> whitespaces = new TreeSet<>();
   public Set<CFGElement> defined = new TreeSet<>();
   public Set<CFGElement> used = new TreeSet<>();
 
-  // Grammar analysis data
   public final Relation<CFGElement, CFGElement> first = new Relation<>();
   public final Relation<CFGElement, CFGElement> follow = new Relation<>();
 
@@ -79,22 +78,12 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
   public final Set<CFGNode> acceptingSlots = new HashSet<>(); // Set of slots which are END nodes of the start production
   public final Set<Integer> acceptingNodeNumbers = new TreeSet<>(); // Set of node number for the slots on accepting slots
 
-  public String filePrelude = null;
-  public String classPrelude = null;
-
-  public boolean seenWhitespaceDirective = false;
-
   public CFGRules cfgRulesLexer;
   public CFGRules cfgRulesParser;
 
-  public CFGRules(ITerms iTerms) {
-    this(iTerms, CFGRulesKind.USER);
-  }
-
-  public CFGRules(ITerms iTerms, CFGRulesKind cfgRulesKind) {
-    this.iTerms = iTerms;
+  public CFGRules(CFGRulesKind cfgRulesKind) { // Ab initio constructor
     this.cfgRulesKind = cfgRulesKind;
-    epsilonElement = findElement(CFGKind.EPSILON, "#");
+    epsilonElement = findElement(CFGKind.EPSILON, "#"); // We are not using an initialiser block because elements must be initialised first
     endOfStringElement = findElement(CFGKind.EOS, "$");
     startOfStringElement = findElement(CFGKind.SOS, "$$");
 
@@ -102,8 +91,31 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
     endOfStringNode.seq = endOfStringNode; // trick to ensure initial call collects rootNode
   }
 
-  public void normalise() {
-    if (ScriptTermInterpreter.currentWSMode == WSMode.DEFAULT) whitespaces.add(findElement(CFGKind.TRM_BI, "SIMPLE_WHITESPACE"));
+  /*
+   * This is a copy constuctor which makes a fresh set of elements and optionally modifies the rules as they are copied It is important that the terminal and
+   * paraterminal numberings match the source element numberings because this constructor is used to create the lexer and parser sub-grammars which need to be
+   * in sync
+   */
+
+  public CFGRules(CFGRules payload, CFGRulesKind cfgRulesKind, boolean expandCharacters, boolean multiplyOut, boolean closureLeft, boolean closureRight) {
+    this.cfgRulesKind = cfgRulesKind; // Do not preserve the original kind
+    epsilonElement = findElement(CFGKind.EPSILON, "#"); // We are not using an initialiser block because elements must be initialised first
+    endOfStringElement = findElement(CFGKind.EOS, "$");
+    startOfStringElement = findElement(CFGKind.SOS, "$$");
+
+    endOfStringNode = new CFGNode(this, CFGKind.EOS, "$", 0, GIFTKind.NONE, null, null);
+    endOfStringNode.seq = endOfStringNode; // trick to ensure initial call collects rootNode
+
+    // paraterminals = new TreeSet<>(payload.paraterminals);
+    // declaredAsTokens = new TreeSet<>(payload.declaredAsTokens);
+    // whitespaces = new TreeSet<>(payload.whitespaces);
+    startNonterminal = payload.startNonterminal;
+    filePrelude = payload.filePrelude;
+    classPrelude = payload.classPrelude;
+  }
+
+  public void normalise() { // Compute the fields that are not directly set by the script interpeter
+    if (whitespaces.isEmpty()) whitespaces.add(findElement(CFGKind.TRM_BI, "SIMPLE_WHITESPACE"));
 
     derivesExactly = new Relation<>();
     // Add singleton grammar nodes for terminals, # and epsilon. These are used by the SPPF.
@@ -179,7 +191,7 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
         for (CFGNode gn = elementToRulesNodeMap.get(e).alt; gn != null; gn = gn.alt) { // iterate over the productions
           rhsNonterminalsInProduction.clear();
           for (CFGNode gs = gn.seq; gs.cfgElement.cfgKind != CFGKind.END; gs = gs.seq) {
-            // Util.info("Collecting RHS nonterminals at " + gs + " " + iTerms.toRawString(gs.slotTerm));
+            // Util.info("Collecting RHS nonterminals at " + gs + " " + ScriptTermInterpreter.iTerms.toRawString(gs.slotTerm));
             if (gs.cfgElement.cfgKind == CFGKind.NONTERMINAL) {
               if (rhsNonterminalsInProduction.get(gs.cfgElement.str) == null)
                 rhsNonterminalsInProduction.put(gs.cfgElement.str, 1);
@@ -201,22 +213,22 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
         // Now check each action to see if it is trying to access a RHS nonterminal which is not instances in this LHS
         for (CFGNode gn = elementToRulesNodeMap.get(e).alt; gn != null; gn = gn.alt) {
           for (CFGNode gs = gn.seq; gs.cfgElement.cfgKind != CFGKind.END; gs = gs.seq) {
-            for (int i = 0; i < iTerms.termArity(gs.actionAsTerm); i++) {
-              int annotationRoot = iTerms.subterm(gs.actionAsTerm, i);
-              // Util.info("Processing slot annotation " + iTerms.toString(annotationRoot));
-              switch (iTerms.termSymbolString(annotationRoot)) {
+            for (int i = 0; i < ScriptTermInterpreter.iTerms.termArity(gs.actionAsTerm); i++) {
+              int annotationRoot = ScriptTermInterpreter.iTerms.subterm(gs.actionAsTerm, i);
+              // Util.info("Processing slot annotation " + ScriptTermInterpreter.iTerms.toString(annotationRoot));
+              switch (ScriptTermInterpreter.iTerms.termSymbolString(annotationRoot)) {
               case "cfgEquation", "cfgAssignment":
                 checkTermActionsRec(annotationRoot, lhs, e.rhsNonterminalsAcrossAllProductions);
                 break;
 
               case "cfgNative":
-                checkNativeActions(iTerms.toString(annotationRoot), lhs, e.rhsNonterminalsAcrossAllProductions, true);
+                checkNativeActions(ScriptTermInterpreter.iTerms.toString(annotationRoot), lhs, e.rhsNonterminalsAcrossAllProductions, true);
                 break;
               case "cfgInsert":
                 break;
               }
             }
-            // Util.info("Collecting attributes at " + gs + " " + iTerms.toRawString(gs.slotTerm));
+            // Util.info("Collecting attributes at " + gs + " " + ScriptTermInterpreter.iTerms.toRawString(gs.slotTerm));
           }
         }
       }
@@ -411,13 +423,13 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
   }
 
   private void checkTermActionsRec(int annotationRoot, String lhs, Map<String, Integer> rhsNonterminals) {
-    if (iTerms.termSymbolString(annotationRoot).equals("cfgAttribute")) {
-      String nonterminalID = iTerms.termSymbolString(iTerms.subterm(annotationRoot, 0));
-      String attributeID = iTerms.termSymbolString(iTerms.subterm(annotationRoot, 1));
+    if (ScriptTermInterpreter.iTerms.termSymbolString(annotationRoot).equals("cfgAttribute")) {
+      String nonterminalID = ScriptTermInterpreter.iTerms.termSymbolString(ScriptTermInterpreter.iTerms.subterm(annotationRoot, 0));
+      String attributeID = ScriptTermInterpreter.iTerms.termSymbolString(ScriptTermInterpreter.iTerms.subterm(annotationRoot, 1));
       validateAttribute(nonterminalID, attributeID, lhs, rhsNonterminals, false); // int is default attribute type - overriden by <> declaration on rhs
     } else
-      for (int i = 0; i < iTerms.termArity(annotationRoot); i++)
-        checkTermActionsRec(iTerms.subterm(annotationRoot, i), lhs, rhsNonterminals);
+      for (int i = 0; i < ScriptTermInterpreter.iTerms.termArity(annotationRoot); i++)
+        checkTermActionsRec(ScriptTermInterpreter.iTerms.subterm(annotationRoot, i), lhs, rhsNonterminals);
   }
 
   private void validateAttribute(String nonterminalID, String attributeID, String lhs, Map<String, Integer> rhsNonterminals, boolean isNative) {
@@ -690,6 +702,8 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
   public void print(PrintStream outputStream, TermTraverserText outputTraverser, boolean indexed, boolean full, boolean indented) {
     outputStream.print("(* " + (isEmpty() ? "Empty " : "") + cfgRulesKind + " Context Free Grammar rules *)\n");
 
+    if (!characters.set.isEmpty()) outputStream.println("!characters " + characters);
+
     if (!declaredAsTokens.isEmpty()) {
       outputStream.print("!token ");
       printElements(outputStream, declaredAsTokens);
@@ -701,6 +715,10 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
       printElements(outputStream, paraterminals);
       outputStream.println();
     }
+
+    outputStream.print("!whitespace ");
+    printElements(outputStream, whitespaces);
+    outputStream.println();
 
     outputStream.println("!start " + startNonterminal);
     for (CFGElement n : elementToRulesNodeMap.keySet()) {
@@ -872,11 +890,11 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
   }
 
   private void buildSubGrammars() {
-    cfgRulesLexer = new CFGRules(iTerms, CFGRulesKind.LEXER);
+    cfgRulesLexer = new CFGRules(CFGRulesKind.LEXER);
     cloneSetElements(cfgRulesLexer, cfgRulesLexer.declaredAsTokens, elementToRulesNodeMap.keySet());
     cloneSetElements(cfgRulesLexer, cfgRulesLexer.paraterminals, paraterminals);
 
-    cfgRulesParser = new CFGRules(iTerms, CFGRulesKind.PARSER);
+    cfgRulesParser = new CFGRules(CFGRulesKind.PARSER);
     cloneSetElements(cfgRulesParser, cfgRulesParser.declaredAsTokens, elementToRulesNodeMap.keySet());
     cloneSetElements(cfgRulesParser, cfgRulesParser.paraterminals, paraterminals);
 
@@ -884,10 +902,10 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
       if (n.cfgKind == CFGKind.NONTERMINAL) {
         if (paraterminals.contains(n)) {
           cfgRulesLexer.actionLHS(n.str);
-          buildSubGrammarsRec(cfgRulesLexer, elementToRulesNodeMap.get(n).alt);
+          buildGrammarRulesRec(cfgRulesLexer, elementToRulesNodeMap.get(n).alt);
         } else {
           cfgRulesParser.actionLHS(n.str);
-          buildSubGrammarsRec(cfgRulesParser, elementToRulesNodeMap.get(n).alt);
+          buildGrammarRulesRec(cfgRulesParser, elementToRulesNodeMap.get(n).alt);
         }
       }
     }
@@ -919,15 +937,18 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
       }
   }
 
+  // Control flags for rule copying
+  private boolean expandToCharacterTerminals, multiplyOut, closureLeft, closureRight;
+
   // Generic traversal as basis for grammar conversions
-  private void buildSubGrammarsRec(CFGRules cfgRules, CFGNode cfgNode) {
+  private void buildGrammarRulesRec(CFGRules cfgRules, CFGNode cfgNode) {
     if (cfgNode == null) return;
     // Util.debug("** buildSubGrammarsRec at cfgNode " + cfgNode.toStringDot());
     switch (cfgNode.cfgElement.cfgKind) {
     case ALT:
       cfgRules.actionALT();
-      buildSubGrammarsRec(cfgRules, cfgNode.seq);
-      buildSubGrammarsRec(cfgRules, cfgNode.alt);
+      buildGrammarRulesRec(cfgRules, cfgNode.seq);
+      buildGrammarRulesRec(cfgRules, cfgNode.alt);
       return;
     case END:
       cfgRules.actionEND(cfgNode.cfgElement.str);
@@ -937,7 +958,7 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
     default:
       cfgRules.actionSEQ(cfgNode.cfgElement.cfgKind, cfgNode.cfgElement.str, cfgNode.actionAsTerm);
       // Util.debug("" + cfgNode.toStringAsProduction());
-      buildSubGrammarsRec(cfgRules, cfgNode.seq);
+      buildGrammarRulesRec(cfgRules, cfgNode.seq);
     }
   }
 }

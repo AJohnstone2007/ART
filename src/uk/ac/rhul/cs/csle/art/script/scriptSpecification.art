@@ -135,7 +135,7 @@ directiveCarrier ::=
 
 | '!clear'^^ ID | '!lexer'^^ ID | '!parser'^^ ID | '!interpreter'^^ ID | '!mode'^^ ID | '!convert'^^ ID 
 
-| '!character'^^ cfgCharacterSetTerminal
+| '!characters'^^ cfgCharacterSetTerminal
 | '!whitespace'^^ cfgPrims^
 | '!paraterminal'^^ paraterminalElements^
 | '!token'^^ cfgPrims^
@@ -151,7 +151,7 @@ directiveCarrier ::=
 | '!try'^^ file       | '!try'^^ file '='^ trTopTuple 
 | '!try'^^ trTopTuple | '!try'^^ trTopTuple '='^ trTopTuple
 
-| '!save' ID ID | '!recall' ID
+| '!save'^^ ID ID | '!recall'^^ ID
 
 (* Undocumented research features *)
 | '!deleteTokens'^^ __int32 | '!swapTokens'^^ __int32 

@@ -9,20 +9,24 @@ import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGRules;
 import uk.ac.rhul.cs.csle.art.old.v3.manager.grammar.element.ARTGrammarElement;
 import uk.ac.rhul.cs.csle.art.old.v3.manager.module.ARTV3Module;
 import uk.ac.rhul.cs.csle.art.old.v4.util.bitset.ARTBitSet;
+import uk.ac.rhul.cs.csle.art.script.ScriptTermInterpreter;
 import uk.ac.rhul.cs.csle.art.term.ITerms;
 import uk.ac.rhul.cs.csle.art.term.TermTraverserText;
 import uk.ac.rhul.cs.csle.art.util.DisplayInterface;
+import uk.ac.rhul.cs.csle.art.util.relation.Relation;
 import uk.ac.rhul.cs.csle.art.util.statistics.Statistics;
 
 public class ChooseRules implements DisplayInterface {
-  private final ITerms iTerms;
-  // private final Relation higher = new Relation();
-  // private final Relation longer = new Relation();
-  // private final Relation shorter = new Relation();
+  private final Relation higher = new Relation();
+  private final Relation longer = new Relation();
+  private final Relation shorter = new Relation();
   private final Set<Integer> chooseTerms = new LinkedHashSet<>();
 
-  public ChooseRules(ITerms iTerms) {
-    this.iTerms = iTerms;
+  public ChooseRules(ChooseRules payload) { // Copy constructor
+  }
+
+  public ChooseRules() {
+    super();
   }
 
   public void buildChooseRule(int term) {
@@ -88,24 +92,24 @@ public class ChooseRules implements DisplayInterface {
     anyStr += ")";
 
     // Now make the terms, and assign to the bindings array
-    bindings[anyCharacterTerminal] = iTerms.findTerm(anyCharacterStr);
-    bindings[anyBuiltinTerminal] = iTerms.findTerm(anyBuiltinStr);
-    bindings[anyCaseSensitiveTerminal] = iTerms.findTerm(anyCaseSensitiveStr);
-    bindings[anyCaseInsensitiveTerminal] = iTerms.findTerm(anyCaseInsensitiveStr);
-    bindings[anyParaterminal] = iTerms.findTerm(anyParaStr);
-    bindings[anyNonterminal] = iTerms.findTerm(anyNonStr);
-    bindings[anyLiteralTerminal] = iTerms.findTerm(anyLiteralStr);
-    bindings[anyTerminal] = iTerms.findTerm(anyStr);
+    bindings[anyCharacterTerminal] = ScriptTermInterpreter.iTerms.findTerm(anyCharacterStr);
+    bindings[anyBuiltinTerminal] = ScriptTermInterpreter.iTerms.findTerm(anyBuiltinStr);
+    bindings[anyCaseSensitiveTerminal] = ScriptTermInterpreter.iTerms.findTerm(anyCaseSensitiveStr);
+    bindings[anyCaseInsensitiveTerminal] = ScriptTermInterpreter.iTerms.findTerm(anyCaseInsensitiveStr);
+    bindings[anyParaterminal] = ScriptTermInterpreter.iTerms.findTerm(anyParaStr);
+    bindings[anyNonterminal] = ScriptTermInterpreter.iTerms.findTerm(anyNonStr);
+    bindings[anyLiteralTerminal] = ScriptTermInterpreter.iTerms.findTerm(anyLiteralStr);
+    bindings[anyTerminal] = ScriptTermInterpreter.iTerms.findTerm(anyStr);
 
     // Debug: announce what we have just constructed
-    // Util.info("Characters: " + iTerms.toString(bindings[1]));
-    // Util.info("Builtins: " + iTerms.toString(bindings[2]));
-    // Util.info("CaseSensitives: " + iTerms.toString(bindings[3]));
-    // Util.info("CaseInsensitives: " + iTerms.toString(bindings[4]));
-    // Util.info("Paras: " + iTerms.toString(bindings[5]));
-    // Util.info("Nons: " + iTerms.toString(bindings[6]));
-    // Util.info("Literals: " + iTerms.toString(bindings[7]));
-    // Util.info("Any: " + iTerms.toString(bindings[8]));
+    // Util.info("Characters: " + ScriptTermInterpreter.iTerms.toString(bindings[1]));
+    // Util.info("Builtins: " + ScriptTermInterpreter.iTerms.toString(bindings[2]));
+    // Util.info("CaseSensitives: " + ScriptTermInterpreter.iTerms.toString(bindings[3]));
+    // Util.info("CaseInsensitives: " + ScriptTermInterpreter.iTerms.toString(bindings[4]));
+    // Util.info("Paras: " + ScriptTermInterpreter.iTerms.toString(bindings[5]));
+    // Util.info("Nons: " + ScriptTermInterpreter.iTerms.toString(bindings[6]));
+    // Util.info("Literals: " + ScriptTermInterpreter.iTerms.toString(bindings[7]));
+    // Util.info("Any: " + ScriptTermInterpreter.iTerms.toString(bindings[8]));
 
     // for (String chooserSetID : ARTV3Module.getChoosers().keySet()) {
     // List<String> chooseExpressionList = ARTV3Module.getChoosers().get(chooserSetID);
@@ -114,28 +118,31 @@ public class ChooseRules implements DisplayInterface {
     // for (String expression : chooseExpressionList) {
     // // Util.info("Evaluating chooser expression:" + expression);
     //
-    // int root = iTerms.findTerm(expression);
+    // int root = ScriptTermInterpreter.iTerms.findTerm(expression);
     //
-    // if (iTerms.getTermSymbolString(iTerms.getSubterm(root, 0)).equals("chooseSPPF")
-    // || iTerms.getTermSymbolString(iTerms.getSubterm(root, 1)).equals("chooseSPPF"))
-    // if (!(iTerms.getTermSymbolString(iTerms.getSubterm(root, 0)).equals("chooseSPPF")
-    // && iTerms.getTermSymbolString(iTerms.getSubterm(root, 1)).equals("chooseSPPF"))) {
+    // if (ScriptTermInterpreter.iTerms.getTermSymbolString(ScriptTermInterpreter.iTerms.getSubterm(root, 0)).equals("chooseSPPF")
+    // || ScriptTermInterpreter.iTerms.getTermSymbolString(ScriptTermInterpreter.iTerms.getSubterm(root, 1)).equals("chooseSPPF"))
+    // if (!(ScriptTermInterpreter.iTerms.getTermSymbolString(ScriptTermInterpreter.iTerms.getSubterm(root, 0)).equals("chooseSPPF")
+    // && ScriptTermInterpreter.iTerms.getTermSymbolString(ScriptTermInterpreter.iTerms.getSubterm(root, 1)).equals("chooseSPPF"))) {
     // Util.info("SPPF choosers can only use productions: skipping");
     // continue;
     // }
     //
     // int evaluated;
-    // evaluated = iTerms.substitute(bindings, root, 0);
+    // evaluated = ScriptTermInterpreter.iTerms.substitute(bindings, root, 0);
     //
-    // switch (iTerms.getTermSymbolString(evaluated)) {
+    // switch (ScriptTermInterpreter.iTerms.getTermSymbolString(evaluated)) {
     // case "chooseHigher":
-    // updateChooser(ARTV3Module, chooserSet.higher, iTerms.getSubterm(evaluated, 0), iTerms.getSubterm(evaluated, 1));
+    // updateChooser(ARTV3Module, chooserSet.higher, ScriptTermInterpreter.iTerms.getSubterm(evaluated, 0), ScriptTermInterpreter.iTerms.getSubterm(evaluated,
+    // 1));
     // break;
     // case "chooseLonger":
-    // updateChooser(ARTV3Module, chooserSet.longer, iTerms.getSubterm(evaluated, 0), iTerms.getSubterm(evaluated, 1));
+    // updateChooser(ARTV3Module, chooserSet.longer, ScriptTermInterpreter.iTerms.getSubterm(evaluated, 0), ScriptTermInterpreter.iTerms.getSubterm(evaluated,
+    // 1));
     // break;
     // case "chooseShorter":
-    // updateChooser(ARTV3Module, chooserSet.shorter, iTerms.getSubterm(evaluated, 0), iTerms.getSubterm(evaluated, 1));
+    // updateChooser(ARTV3Module, chooserSet.shorter, ScriptTermInterpreter.iTerms.getSubterm(evaluated, 0), ScriptTermInterpreter.iTerms.getSubterm(evaluated,
+    // 1));
     // break;
     // }
     // }
@@ -156,11 +163,11 @@ public class ChooseRules implements DisplayInterface {
   }
 
   private void updateChooser(ARTV3Module ARTV3Module, ARTBitSet[] bits, int lhsTerm, int rhsTerm) {
-    for (int l = 0; l < iTerms.termArity(lhsTerm); l++) {
-      // Util.info("Updating chooser with: " + iTerms.toString(lhsTerm) + " relation " + iTerms.toString(rhsTerm));
-      int lTerm = iTerms.subterm(lhsTerm, l);
-      for (int r = 0; r < iTerms.termArity(rhsTerm); r++) {
-        int rTerm = iTerms.subterm(rhsTerm, r);
+    for (int l = 0; l < ScriptTermInterpreter.iTerms.termArity(lhsTerm); l++) {
+      // Util.info("Updating chooser with: " + ScriptTermInterpreter.iTerms.toString(lhsTerm) + " relation " + ScriptTermInterpreter.iTerms.toString(rhsTerm));
+      int lTerm = ScriptTermInterpreter.iTerms.subterm(lhsTerm, l);
+      for (int r = 0; r < ScriptTermInterpreter.iTerms.termArity(rhsTerm); r++) {
+        int rTerm = ScriptTermInterpreter.iTerms.subterm(rhsTerm, r);
         setChooserBit(ARTV3Module, bits, lTerm, rTerm);
       }
     }
@@ -175,12 +182,12 @@ public class ChooseRules implements DisplayInterface {
   }
 
   private int convertTermToEnumerationElement(ARTV3Module module, int term) {
-    String child = ITerms.unescapeMeta(iTerms.termSymbolString(iTerms.subterm(term, 0)));
+    String child = ITerms.unescapeMeta(ScriptTermInterpreter.iTerms.termSymbolString(ScriptTermInterpreter.iTerms.subterm(term, 0)));
     // Util.info("Converting: " + child);
 
     ARTGrammarElement element = null;
 
-    // switch (iTerms.getTermSymbolString(term)) {
+    // switch (ScriptTermInterpreter.iTerms.getTermSymbolString(term)) {
     // case "srNonterminal":
     // element = nonterminalNameMap.get(new ARTName(module, child));
     // break;
@@ -198,7 +205,7 @@ public class ChooseRules implements DisplayInterface {
     // break;
     //
     // default:
-    // throw new ARTUncheckedException("Unrecognised chooser term " + iTerms.toString(term));
+    // throw new ARTUncheckedException("Unrecognised chooser term " + ScriptTermInterpreter.iTerms.toString(term));
     // }
 
     // if (element == null) {
