@@ -15,12 +15,12 @@ public class Relation<T1, T2> extends AbstractRelation<T1, T2> {
   }
 
   @Override
-  protected Set makeSet() {
+  protected Set<T2> makeSet() {
     return new HashSet<T2>();
   }
 
   @Override
-  protected Map makeMap() {
-    return new HashMap<T1, T2>();
+  protected Map<T1, Set<T2>> makeMap() {
+    return new HashMap<T1, Set<T2>>();
   }
 }

@@ -8,9 +8,9 @@ public abstract class AbstractRelation<T1, T2> {
   final protected Map<T1, Set<T2>> map = makeMap();
   final protected Set<T2> empty = makeSet();
 
-  abstract protected Set makeSet();
+  abstract protected Set<T2> makeSet();
 
-  abstract protected Map makeMap();
+  abstract protected Map<T1, Set<T2>> makeMap();
 
   public boolean isRelated(T1 t1, T2 t2) {
     return get(t1).contains(t2);
