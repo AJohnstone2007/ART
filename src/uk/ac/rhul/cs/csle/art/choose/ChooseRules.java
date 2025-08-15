@@ -5,6 +5,7 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGElement;
+import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGRules;
 import uk.ac.rhul.cs.csle.art.old.v3.manager.grammar.element.ARTGrammarElement;
 import uk.ac.rhul.cs.csle.art.old.v3.manager.module.ARTV3Module;
@@ -17,9 +18,9 @@ import uk.ac.rhul.cs.csle.art.util.relation.Relation;
 import uk.ac.rhul.cs.csle.art.util.statistics.Statistics;
 
 public class ChooseRules implements DisplayInterface {
-  private final Relation higher = new Relation();
-  private final Relation longer = new Relation();
-  private final Relation shorter = new Relation();
+  private final Relation<CFGNode, CFGNode> higher = new Relation<>();
+  private final Relation<CFGNode, CFGNode> longer = new Relation<>();
+  private final Relation<CFGNode, CFGNode> shorter = new Relation<>();
   private final Set<Integer> chooseTerms = new LinkedHashSet<>();
 
   public ChooseRules(ChooseRules payload) { // Copy constructor
