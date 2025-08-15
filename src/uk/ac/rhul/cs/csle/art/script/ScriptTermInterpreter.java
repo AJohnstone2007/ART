@@ -313,12 +313,16 @@ public final class ScriptTermInterpreter {
     case "!convert":
       switch (iTerms.termSymbolString(iTerms.subterm(term, 0, 0)).toLowerCase()) {
       case "cfgcharacter":
-        break;
-      case "cfgclosureleft":
-        break;
-      case "cfclosureright":
+        currentCFGRules = new CFGRules(currentCFGRules, CFGRulesKind.USER, true, false, false, false);
         break;
       case "cfgmultiplyout":
+        currentCFGRules = new CFGRules(currentCFGRules, CFGRulesKind.USER, false, true, false, false);
+        break;
+      case "cfgclosureleft":
+        currentCFGRules = new CFGRules(currentCFGRules, CFGRulesKind.USER, false, false, true, false);
+        break;
+      case "cfclosureright":
+        currentCFGRules = new CFGRules(currentCFGRules, CFGRulesKind.USER, false, false, false, true);
         break;
       default:
         Util.fatal("Unexpected !convert argument " + iTerms.toString(iTerms.subterm(term, 0, 0))
