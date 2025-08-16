@@ -51,7 +51,10 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
   public Set<CFGElement> defined = new TreeSet<>();
   public Set<CFGElement> used = new TreeSet<>();
 
+  public final AbstractRelation<CFGElement, CFGElement> reachable = new RelationOrdered<>();
   public final AbstractRelation<CFGElement, CFGElement> reachableNonterminals = new RelationOrdered<>();
+  public final AbstractRelation<CFGElement, CFGElement> reachablePara = new RelationOrdered<>();
+  public final AbstractRelation<CFGElement, CFGElement> reachableNonterminalsPara = new RelationOrdered<>();
   public final AbstractRelation<CFGElement, CFGElement> first = new Relation<>();
   public final AbstractRelation<CFGElement, CFGElement> follow = new Relation<>();
 
@@ -237,7 +240,7 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
         }
 
     // Compute reachability relation
-    computeReachability();
+    computeReachabilities();
 
     // First and follow sets
     if (startNonterminal != null) follow.add(startNonterminal, endOfStringElement);
@@ -308,17 +311,47 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
     }
   }
 
-  private void computeReachability() {
+  /*
+   * Compute reachabilities
+   *
+   * reachable is all elements reachable from all nonterminals irrespective of paraterminals reachableNonterminals is all nonterminals reachable from all
+   * nonterminals irrespective of paraterminals
+   *
+   * reachablePara is all elements reachable from all nonterminals with recursion stopping at paraterminals reachableNonterminalsPara is all nonterminals
+   * reachable from all nonterminals with recursion stopping at paraterminals
+   *
+   *
+   */
+  private void computeReachabilities() {
     for (var lhs : elements.keySet()) {
       var topNode = elementToRulesNodeMap.get(lhs);
       if (topNode != null) { // avoid nonterminals that have no rules in this grammar, and non-nonterminals
         for (var altNode = topNode.alt; altNode != null; altNode = altNode.alt)
-          for (var seqNode = altNode.seq; seqNode.cfgElement.cfgKind != CFGKind.END; seqNode = seqNode.seq)
-            // if (seqNode.cfgElement.cfgKind == CFGKind.NONTERMINAL)
-            reachableNonterminals.add(lhs, seqNode.cfgElement);
+          for (var seqNode = altNode.seq; seqNode.cfgElement.cfgKind != CFGKind.END; seqNode = seqNode.seq) {
+            reachable.add(lhs, seqNode.cfgElement);
+            if (seqNode.cfgElement.cfgKind == CFGKind.NONTERMINAL) reachableNonterminals.add(lhs, seqNode.cfgElement);
+          }
+        computeReachabilityParaRec(lhs, lhs);
       }
     }
+    reachable.transitiveClosure();
     reachableNonterminals.transitiveClosure();
+  }
+
+  private void computeReachabilityParaRec(CFGElement lhs, CFGElement element) {
+    if (reachablePara.get(lhs).contains(element)) return;
+    if (paraterminals.contains(lhs)) return;
+    var topNode = elementToRulesNodeMap.get(lhs);
+    if (topNode == null) return;
+
+    for (var altNode = topNode.alt; altNode != null; altNode = altNode.alt)
+      for (var seqNode = altNode.seq; seqNode.cfgElement.cfgKind != CFGKind.END; seqNode = seqNode.seq) {
+        var seqElement = seqNode.cfgElement;
+        reachablePara.add(lhs, seqElement);
+        if (seqElement.cfgKind == CFGKind.NONTERMINAL) reachableNonterminalsPara.add(lhs, seqNode.cfgElement);
+        computeReachabilityParaRec(lhs, seqElement);
+      }
+
   }
 
   Set<CFGElement> removeEpsilon(Set<CFGElement> set) {
@@ -871,7 +904,10 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
       printSet(outputStream, declaredAsTokens, "Declared as tokens");
       printSet(outputStream, paraterminals, "Paraterminals");
 
-      outputStream.print("Reachable:\n" + reachableNonterminals);
+      outputStream.print("Reachable:\n" + reachable);
+      outputStream.print("Reachable nonterminals:\n" + reachableNonterminals);
+      outputStream.print("Reachable stop at paraterminals:\n" + reachablePara);
+      outputStream.print("Reachable nonterminal stop at paraterminalss:\n" + reachableNonterminalsPara);
 
       printSet(outputStream, cyclicNonterminals, "Cyclic nonterminals");
 
