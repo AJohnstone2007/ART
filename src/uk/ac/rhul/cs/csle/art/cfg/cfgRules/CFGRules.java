@@ -37,6 +37,7 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
   private final static String printableASCII = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
   private final static String defaultCharacterSet = "\r\n\t£" + printableASCII;
   private final static Set<CFGKind> terminalKinds = Set.of(CFGKind.TRM_BI, CFGKind.TRM_CH, CFGKind.TRM_CS, CFGKind.TRM_CI);
+  private final static Set<CFGKind> bracketKinds = Set.of(CFGKind.PAR, CFGKind.OPT, CFGKind.KLN, CFGKind.POS);
   private final static Set<CFGKind> selfFirst = Set.of(CFGKind.TRM_BI, CFGKind.TRM_CH, CFGKind.EOS, CFGKind.TRM_CS, CFGKind.TRM_CI, CFGKind.EPSILON);
   private final static Set<CFGKind> scaffoldingKinds = Set.of(CFGKind.SOS, CFGKind.EOS, CFGKind.EPSILON, CFGKind.ALT, CFGKind.END, CFGKind.PAR, CFGKind.OPT,
       CFGKind.POS, CFGKind.KLN);
@@ -117,32 +118,6 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
     startNonterminal = findElement(src.startNonterminal.cfgKind, src.startNonterminal.str);
     filePrelude = src.filePrelude; // Strings are immutable so we can just assign reference
     classPrelude = src.classPrelude; // Strings are immutable so we can just assign reference
-
-    // Now build the rules that we need to copy over
-    Set<CFGElement> roots = new HashSet<>();
-    switch (cfgRulesKind) {
-    case USER, PARSER: // All
-      roots.add(src.startNonterminal);
-      break;
-    case LEXER: // Just paraterminals and what they reach
-      roots.addAll(paraterminals);
-      break;
-    default:
-      Util.fatal("internal error: attempt to copy unknown grammar kind");
-    }
-
-    // Util.debug("To be copied: " + roots);
-    Set<CFGElement> tmp1 = new HashSet<>();
-    // Close tmp under reachability
-    tmp1 = roots; // debug kludge
-
-    for (var n : tmp1) {
-      // Util.debug("Copying " + n);
-      actionLHS(n.str);
-      buildGrammarRulesRec(src, src.elementToRulesNodeMap.get(n).alt, character, multiplyOut, closureLeft, closureRight);
-    }
-
-    normalise();
   }
 
   private void cloneSetElements(Set<CFGElement> dstSet, Set<CFGElement> srcSet) {
@@ -178,7 +153,7 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
   private void buildGrammarRulesRec(CFGRules cfgRules, CFGNode cfgNode, boolean expandToCharacterTerminals, boolean multiplyOut, boolean closureLeft,
       boolean closureRight) {
     if (cfgNode == null) return;
-    // Util.debug("** buildSubGrammarsRec at cfgNode " + cfgNode.toStringDot());
+    Util.debug("** buildSubGrammarsRec at cfgNode " + cfgNode.toStringDot());
     switch (cfgNode.cfgElement.cfgKind) {
     case ALT:
       cfgRules.actionALT();
@@ -194,6 +169,7 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
       cfgRules.actionSEQ(cfgNode.cfgElement.cfgKind, cfgNode.cfgElement.str, cfgNode.actionAsTerm);
       // Util.debug("" + cfgNode.toStringAsProduction());
       buildGrammarRulesRec(cfgRules, cfgNode.seq, expandToCharacterTerminals, multiplyOut, closureLeft, closureRight);
+      break;
     }
   }
 
@@ -212,19 +188,6 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
     nextFreeEnumerationElement = 0;
     numberElementsAndNodes();
     setEndNodeLinks();
-
-    // Report nonterminals with no rules, and create paraterminal element set from paraterminal elements defined only as names
-    // Set<CFGElement> tmp = new HashSet<>();
-    // for (CFGElement e : elements.keySet())
-    // if (e.cfgKind == CFGKind.NONTERMINAL) if (elementToNodeMap.get(e) == null) tmp.add(e);
-    //
-    // if (tmp.size() > 0) {
-    // StringBuilder sb = new StringBuilder();
-    // sb.append("Nonterminal" + (tmp.size() == 1 ? " " : "s ") + "used but not defined: ");
-    // for (CFGElement n : tmp)
-    // sb.append(n.str + " ");
-    // Util.error(sb.toString());
-    // }
 
     // Set positional attributes and accepting slots, and seed nullablePrefixSlots and nullableSuffixSlots
     for (CFGElement ge : elements.keySet())
@@ -332,40 +295,44 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
    *
    */
   private void computeReachabilities() {
-    for (var lhs : elements.keySet()) {
-      var topNode = elementToRulesNodeMap.get(lhs);
-      if (topNode != null) { // avoid nonterminals that have no rules in this grammar, and non-nonterminals
-        for (var altNode = topNode.alt; altNode != null; altNode = altNode.alt)
-          for (var seqNode = altNode.seq; seqNode.cfgElement.cfgKind != CFGKind.END; seqNode = seqNode.seq) {
-            addElements(reachable, lhs, seqNode);
-            if (seqNode.cfgElement.cfgKind == CFGKind.NONTERMINAL) addElements(reachableNonterminals, lhs, seqNode);
-          }
-        computeReachabilityParaRec(lhs, lhs);
+    for (var lhs : elements.keySet())
+      if (lhs.cfgKind == CFGKind.NONTERMINAL && elementToRulesNodeMap.get(lhs) != null) { // avoid nonterminals that have no rules in this grammar
+        reachable.add(lhs); // Make empty relation codomains
+        reachableNonterminals.add(lhs);
+        reachablePara.add(lhs);
+        reachableNonterminalsPara.add(lhs);
+        computeReachabilityRec(lhs, elementToRulesNodeMap.get(lhs), reachable, reachableNonterminals, false);
+        computeReachabilityRec(lhs, elementToRulesNodeMap.get(lhs), reachablePara, reachableNonterminalsPara, true);
       }
-    }
-    reachable.transitiveClosure();
-    reachableNonterminals.transitiveClosure();
+  }
+
+  private void computeReachabilityRec(CFGElement lhs, CFGNode topNode, AbstractRelation<CFGElement, CFGElement> allRel,
+      AbstractRelation<CFGElement, CFGElement> nonterminalRel, boolean stopOnParaterminal) {
+    // if (cfgRulesKind == CFGRulesKind.USER) Util.debug("computeReachabilityRec with LHS " + lhs + " and topNode " + topNode);
+    if (topNode == null) return;
+    if (allRel.get(lhs).contains(topNode.cfgElement)) return; // Don't cycle
+    if (stopOnParaterminal && paraterminals.contains(lhs)) return;
+
+    for (var altNode = topNode.alt; altNode != null; altNode = altNode.alt)
+      for (var seqNode = altNode.seq; seqNode.cfgElement.cfgKind != CFGKind.END; seqNode = seqNode.seq) {
+        if (bracketKinds.contains(seqNode.cfgElement.cfgKind))
+          computeReachabilityRec(lhs, seqNode, allRel, nonterminalRel, stopOnParaterminal);
+        else {
+          addElements(allRel, lhs, seqNode);
+          if (seqNode.cfgElement.cfgKind == CFGKind.NONTERMINAL) {
+            addElements(nonterminalRel, lhs, seqNode);
+            computeReachabilityRec(lhs, seqNode, allRel, nonterminalRel, stopOnParaterminal);
+          }
+        }
+      }
   }
 
   // convenience method to bind all of the elements represented by a node: either just the element, or unpack the set of CH_SET and CH_ANTI_SET
   private void addElements(AbstractRelation<CFGElement, CFGElement> relation, CFGElement key, CFGNode node) {
+    // if (cfgRulesKind == CFGRulesKind.USER) Util.debug("Binding " + node.cfgElement + " to key " + key + " in " + relation);
     relation.add(key, node.cfgElement);
     if (node.cfgElement.cfgKind == CFGKind.TRM_CH_SET || node.cfgElement.cfgKind == CFGKind.TRM_CH_ANTI_SET) for (var c : node.cfgElement.set)
       relation.add(key, findElement(CFGKind.TRM_CH, c.toString()));
-  }
-
-  private void computeReachabilityParaRec(CFGElement lhs, CFGElement element) {
-    if (reachablePara.get(lhs).contains(element)) return;
-    if (paraterminals.contains(lhs)) return;
-    var topNode = elementToRulesNodeMap.get(lhs);
-    if (topNode == null) return;
-
-    for (var altNode = topNode.alt; altNode != null; altNode = altNode.alt)
-      for (var seqNode = altNode.seq; seqNode.cfgElement.cfgKind != CFGKind.END; seqNode = seqNode.seq) {
-        addElements(reachablePara, lhs, seqNode);
-        if (seqNode.cfgElement.cfgKind == CFGKind.NONTERMINAL) addElements(reachableNonterminalsPara, lhs, seqNode);
-        computeReachabilityParaRec(lhs, seqNode.cfgElement);
-      }
   }
 
   /*
@@ -380,6 +347,7 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
 
   private void computeAndCheckNonterminalSets() {
     parserNonterminals.addAll(reachableNonterminalsPara.get(startNonterminal));
+    parserNonterminals.add(startNonterminal);
     reachableParaterminals = new TreeSet(parserNonterminals);
 
     parserNonterminals.removeAll(paraterminals);
@@ -399,20 +367,40 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
       tmp.remove(startNonterminal);
       for (var e : elements.keySet())
         if (scaffoldingKinds.contains(e.cfgKind)) tmp.remove(e);
-      if (!tmp.isEmpty()) Util.warning("These grammar elements are not used: " + tmp);
+      if (!tmp.isEmpty()) {
+        Util.warning("unused grammar element" + plural(tmp) + ": " + tmp);
+      }
 
       tmp = new TreeSet<>(paraterminals);
       tmp.removeAll(reachable.get(startNonterminal));
-      if (!tmp.isEmpty()) Util.warning("These paraterminals are not used: " + tmp);
+      if (!tmp.isEmpty()) {
+        Util.warning("unused paraterminal" + plural(tmp) + ": " + tmp);
+      }
 
       tmp = new TreeSet<>(parserNonterminals);
       tmp.retainAll(lexerNonterminals);
-      if (!tmp.isEmpty()) Util.warning("These nonterminals are used by both the parser and the lexer: " + tmp);
+      if (!tmp.isEmpty()) {
+        Util.warning("nonterminal" + plural(tmp) + " used by both the parser and the lexer: " + tmp);
+      }
 
       tmp = new TreeSet<>(paraterminals);
       tmp.retainAll(lexerNonterminals);
-      if (!tmp.isEmpty()) Util.warning("These paraterminals should not be used by paraterminals: " + tmp);
+      if (!tmp.isEmpty()) {
+        Util.warning("paraterminal" + plural(tmp) + " used by paraterminals: " + tmp);
+      }
+
+      tmp = new TreeSet<>(parserNonterminals);
+      tmp.addAll(lexerNonterminals);
+      tmp.removeAll(defined);
+      if (!tmp.isEmpty()) {
+        Util.error("undefined nonterminal" + plural(tmp) + ": " + tmp);
+      }
     }
+
+  }
+
+  private String plural(TreeSet<CFGElement> tmp) {
+    return tmp.size() == 1 ? "" : "s";
   }
 
   Set<CFGElement> removeEpsilon(Set<CFGElement> set) {
@@ -965,10 +953,10 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
       printSet(outputStream, declaredAsTokens, "Declared as tokens");
       printSet(outputStream, paraterminals, "Paraterminals");
 
-      outputStream.print("Reachable:\n" + reachable);
+      outputStream.print("Reachable all elements:\n" + reachable);
       outputStream.print("Reachable nonterminals:\n" + reachableNonterminals);
-      outputStream.print("Reachable stop at paraterminals:\n" + reachablePara);
-      outputStream.print("Reachable nonterminal stop at paraterminalss:\n" + reachableNonterminalsPara);
+      outputStream.print("Reachable all elements stop at paraterminals:\n" + reachablePara);
+      outputStream.print("Reachable nonterminal stop at paraterminals:\n" + reachableNonterminalsPara);
 
       printSet(outputStream, cyclicNonterminals, "Cyclic nonterminals");
 
