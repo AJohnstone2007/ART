@@ -38,6 +38,8 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
   private final static String defaultCharacterSet = "\r\n\t£" + printableASCII;
   private final static Set<CFGKind> terminalKinds = Set.of(CFGKind.TRM_BI, CFGKind.TRM_CH, CFGKind.TRM_CS, CFGKind.TRM_CI);
   private final static Set<CFGKind> selfFirst = Set.of(CFGKind.TRM_BI, CFGKind.TRM_CH, CFGKind.EOS, CFGKind.TRM_CS, CFGKind.TRM_CI, CFGKind.EPSILON);
+  private final static Set<CFGKind> scaffoldingKinds = Set.of(CFGKind.SOS, CFGKind.EOS, CFGKind.EPSILON, CFGKind.ALT, CFGKind.END, CFGKind.PAR, CFGKind.OPT,
+      CFGKind.POS, CFGKind.KLN);
 
   // Fields that are computed by !try or normalise() and thus do not need to be cloned
   private int nextFreeEnumerationElement;
@@ -55,6 +57,10 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
   public final AbstractRelation<CFGElement, CFGElement> reachableNonterminals = new RelationOrdered<>();
   public final AbstractRelation<CFGElement, CFGElement> reachablePara = new RelationOrdered<>();
   public final AbstractRelation<CFGElement, CFGElement> reachableNonterminalsPara = new RelationOrdered<>();
+  public final Set<CFGElement> parserNonterminals = new TreeSet<>(); // Nonterminals reachable from start symbol, stopping at (and not including) paraterminals
+  public Set<CFGElement> reachableParaterminals; // Paraterminals reachable from start symbol
+  public final Set<CFGElement> lexerNonterminals = new TreeSet<>(); // Nonterminals reachable from every reachable paraterminal, including paraterminals
+
   public final AbstractRelation<CFGElement, CFGElement> first = new Relation<>();
   public final AbstractRelation<CFGElement, CFGElement> follow = new Relation<>();
 
@@ -125,13 +131,13 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
       Util.fatal("internal error: attempt to copy unknown grammar kind");
     }
 
-    Util.debug("To be copied: " + roots);
+    // Util.debug("To be copied: " + roots);
     Set<CFGElement> tmp1 = new HashSet<>();
     // Close tmp under reachability
     tmp1 = roots; // debug kludge
 
     for (var n : tmp1) {
-      Util.debug("Copying " + n);
+      // Util.debug("Copying " + n);
       actionLHS(n.str);
       buildGrammarRulesRec(src, src.elementToRulesNodeMap.get(n).alt, character, multiplyOut, closureLeft, closureRight);
     }
@@ -242,6 +248,9 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
     // Compute reachability relation
     computeReachabilities();
 
+    // Check kindof nonterminals
+    computeAndCheckNonterminalSets();
+
     // First and follow sets
     if (startNonterminal != null) follow.add(startNonterminal, endOfStringElement);
     for (CFGElement ge : elements.keySet())
@@ -328,14 +337,21 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
       if (topNode != null) { // avoid nonterminals that have no rules in this grammar, and non-nonterminals
         for (var altNode = topNode.alt; altNode != null; altNode = altNode.alt)
           for (var seqNode = altNode.seq; seqNode.cfgElement.cfgKind != CFGKind.END; seqNode = seqNode.seq) {
-            reachable.add(lhs, seqNode.cfgElement);
-            if (seqNode.cfgElement.cfgKind == CFGKind.NONTERMINAL) reachableNonterminals.add(lhs, seqNode.cfgElement);
+            addElements(reachable, lhs, seqNode);
+            if (seqNode.cfgElement.cfgKind == CFGKind.NONTERMINAL) addElements(reachableNonterminals, lhs, seqNode);
           }
         computeReachabilityParaRec(lhs, lhs);
       }
     }
     reachable.transitiveClosure();
     reachableNonterminals.transitiveClosure();
+  }
+
+  // convenience method to bind all of the elements represented by a node: either just the element, or unpack the set of CH_SET and CH_ANTI_SET
+  private void addElements(AbstractRelation<CFGElement, CFGElement> relation, CFGElement key, CFGNode node) {
+    relation.add(key, node.cfgElement);
+    if (node.cfgElement.cfgKind == CFGKind.TRM_CH_SET || node.cfgElement.cfgKind == CFGKind.TRM_CH_ANTI_SET) for (var c : node.cfgElement.set)
+      relation.add(key, findElement(CFGKind.TRM_CH, c.toString()));
   }
 
   private void computeReachabilityParaRec(CFGElement lhs, CFGElement element) {
@@ -346,12 +362,57 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
 
     for (var altNode = topNode.alt; altNode != null; altNode = altNode.alt)
       for (var seqNode = altNode.seq; seqNode.cfgElement.cfgKind != CFGKind.END; seqNode = seqNode.seq) {
-        var seqElement = seqNode.cfgElement;
-        reachablePara.add(lhs, seqElement);
-        if (seqElement.cfgKind == CFGKind.NONTERMINAL) reachableNonterminalsPara.add(lhs, seqNode.cfgElement);
-        computeReachabilityParaRec(lhs, seqElement);
+        addElements(reachablePara, lhs, seqNode);
+        if (seqNode.cfgElement.cfgKind == CFGKind.NONTERMINAL) addElements(reachableNonterminalsPara, lhs, seqNode);
+        computeReachabilityParaRec(lhs, seqNode.cfgElement);
       }
+  }
 
+  /*
+   * Having built reachbility sets, compute nonterminals kind sets and ensure they form a partition of the nonterminal elements
+   *
+   * parserNonterminals are nonterminals reachable from start symbol, stopping at (and not including) paraterminals
+   *
+   * reachableParaterminals are paraterminals reachable from start symbol
+   *
+   * lexerNonterminals are nonterminals reachable from every reachable paraterminal, including paraterminals
+   */
+
+  private void computeAndCheckNonterminalSets() {
+    parserNonterminals.addAll(reachableNonterminalsPara.get(startNonterminal));
+    reachableParaterminals = new TreeSet(parserNonterminals);
+
+    parserNonterminals.removeAll(paraterminals);
+    reachableParaterminals.retainAll(paraterminals);
+
+    for (var n : reachableParaterminals)
+      lexerNonterminals.addAll(reachableNonterminals.get(n)); // Note we want all reachable nonterminals including paraterminals
+
+    if (cfgRulesKind == CFGRulesKind.USER) {
+      // Warnings here; diagnostics to be moved later to !print
+      Util.debug("Parser nonterminals" + parserNonterminals);
+      Util.debug("Paraterminals" + paraterminals);
+      Util.debug("Lexer nonterminals" + lexerNonterminals);
+
+      TreeSet<CFGElement> tmp = new TreeSet<>(elements.keySet());
+      tmp.removeAll(reachable.get(startNonterminal));
+      tmp.remove(startNonterminal);
+      for (var e : elements.keySet())
+        if (scaffoldingKinds.contains(e.cfgKind)) tmp.remove(e);
+      if (!tmp.isEmpty()) Util.warning("These grammar elements are not used: " + tmp);
+
+      tmp = new TreeSet<>(paraterminals);
+      tmp.removeAll(reachable.get(startNonterminal));
+      if (!tmp.isEmpty()) Util.warning("These paraterminals are not used: " + tmp);
+
+      tmp = new TreeSet<>(parserNonterminals);
+      tmp.retainAll(lexerNonterminals);
+      if (!tmp.isEmpty()) Util.warning("These nonterminals are used by both the parser and the lexer: " + tmp);
+
+      tmp = new TreeSet<>(paraterminals);
+      tmp.retainAll(lexerNonterminals);
+      if (!tmp.isEmpty()) Util.warning("These paraterminals should not be used by paraterminals: " + tmp);
+    }
   }
 
   Set<CFGElement> removeEpsilon(Set<CFGElement> set) {
