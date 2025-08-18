@@ -136,7 +136,7 @@ directiveCarrier ::=
 | '!clear'^^ ID | '!lexer'^^ ID | '!parser'^^ ID | '!interpreter'^^ ID | '!mode'^^ ID | '!convert'^^ ID 
 
 | '!characters'^^ cfgCharacterSetTerminal
-| '!whitespace'^^ cfgPrims^
+| '!whitespace'^^ '#'^ | '!whitespace'^^ cfgPrims^
 | '!paraterminal'^^ paraterminalElements^
 | '!token'^^ cfgPrims^
 

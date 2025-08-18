@@ -28,6 +28,7 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
   public final Map<CFGElement, CFGElement> elements = new TreeMap<>(); // We use a map for elements because we need there to be one canonical instance
   public final Set<CFGElement> paraterminals = new TreeSet<>();
   public final Set<CFGElement> declaredAsTokens = new TreeSet<>();
+  public boolean seenWhitespaceDirective;
   public final Set<CFGElement> whitespaces = new TreeSet<>();
   public String filePrelude = null;
   public String classPrelude = null;
@@ -174,7 +175,7 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
   }
 
   public void normalise() { // Compute the fields that are not directly set by the script interpeter
-    if (whitespaces.isEmpty()) whitespaces.add(findElement(CFGKind.TRM_BI, "SIMPLE_WHITESPACE"));
+    if (!seenWhitespaceDirective) whitespaces.add(findElement(CFGKind.TRM_BI, "SIMPLE_WHITESPACE"));
 
     derivesExactly = new Relation<CFGElement, CFGElement>();
 
@@ -304,6 +305,10 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
         computeReachabilityRec(lhs, elementToRulesNodeMap.get(lhs), reachable, reachableNonterminals, false);
         computeReachabilityRec(lhs, elementToRulesNodeMap.get(lhs), reachablePara, reachableNonterminalsPara, true);
       }
+    reachable.transitiveClosure();
+    reachableNonterminals.transitiveClosure();
+    reachablePara.transitiveClosure();
+    reachableNonterminalsPara.transitiveClosure();
   }
 
   private void computeReachabilityRec(CFGElement lhs, CFGNode topNode, AbstractRelation<CFGElement, CFGElement> allRel,
@@ -321,7 +326,7 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
           addElements(allRel, lhs, seqNode);
           if (seqNode.cfgElement.cfgKind == CFGKind.NONTERMINAL) {
             addElements(nonterminalRel, lhs, seqNode);
-            computeReachabilityRec(lhs, seqNode, allRel, nonterminalRel, stopOnParaterminal);
+            computeReachabilityRec(lhs, elementToRulesNodeMap.get(seqNode.cfgElement), allRel, nonterminalRel, stopOnParaterminal);
           }
         }
       }
