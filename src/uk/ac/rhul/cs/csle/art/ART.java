@@ -63,6 +63,7 @@ public class ART {
 
   }
 
+  /* This is used by GitHub push scripts to increment the version number: accessed via the undocumented mode 'incver' */
   private static void incVersion() {
     try {
       int newBuild = Version.build() + 1;

@@ -94,7 +94,7 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
   public CFGRules(CFGRulesKind cfgRulesKind) { // Ab initio constructor for an empty rules set
     cfgRulesNumber = nextFreeCFGRulesNumber++;
     this.cfgRulesKind = cfgRulesKind;
-    Util.debug("Constructing cfgRulesNumber " + cfgRulesNumber + " " + cfgRulesKind);
+    // Util.debug("Constructing cfgRulesNumber " + cfgRulesNumber + " " + cfgRulesKind);
     epsilonElement = findElement(CFGKind.EPSILON, "#"); // We are not using an initialiser block because elements must be initialised first
     endOfStringElement = findElement(CFGKind.EOS, "$");
     startOfStringElement = findElement(CFGKind.SOS, "$$");
@@ -112,7 +112,7 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
       boolean closureRight) {
     cfgRulesNumber = nextFreeCFGRulesNumber++;
     this.cfgRulesKind = cfgRulesKind; // Do not preserve the original kind
-    Util.debug("Copy constructing cfgRulesNumber " + cfgRulesNumber + "  " + cfgRulesKind + " with parentnumber " + src.cfgRulesNumber);
+    // Util.debug("Copy constructing cfgRulesNumber " + cfgRulesNumber + " " + cfgRulesKind + " with parentnumber " + src.cfgRulesNumber);
     epsilonElement = findElement(CFGKind.EPSILON, "#"); // We are not using an initialiser block because elements must be initialised first
     endOfStringElement = findElement(CFGKind.EOS, "$");
     startOfStringElement = findElement(CFGKind.SOS, "$$");
@@ -134,6 +134,11 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
     filePrelude = src.filePrelude; // Strings are immutable so we can just assign reference
     classPrelude = src.classPrelude; // Strings are immutable so we can just assign reference
     // Now build the rules
+    for (var n : src.elementToRulesNodeMap.keySet())
+      if (n.cfgKind == CFGKind.NONTERMINAL) {
+        actionLHS(n.str);
+        cloneGrammarRulesRec(src, src.elementToRulesNodeMap.get(n).alt, character, createParaterminals, multiplyOut, closureLeft, closureRight);
+      }
   }
 
   private void cloneSetElements(Set<CFGElement> dstSet, Set<CFGElement> srcSet) {
@@ -141,31 +146,36 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
       dstSet.add(findElement(e.cfgKind, e.str));
   }
 
-  private void buildGrammarRulesRec(CFGRules cfgRules, CFGNode cfgNode, boolean expandToCharacterTerminals, boolean multiplyOut, boolean closureLeft,
+  private void cloneGrammarRulesRec(CFGRules src, CFGNode cfgNode, boolean character, boolean createParaterminals, boolean multiplyOut, boolean closureLeft,
       boolean closureRight) {
     if (cfgNode == null) return;
-    Util.debug("** buildSubGrammarsRec at cfgNode " + cfgNode.toStringDot());
+    Util.debug("cloneGrammarsRulesRec at cfgNode " + cfgNode.toStringDot());
     switch (cfgNode.cfgElement.cfgKind) {
     case ALT:
-      cfgRules.actionALT();
-      buildGrammarRulesRec(cfgRules, cfgNode.seq, expandToCharacterTerminals, multiplyOut, closureLeft, closureRight);
-      buildGrammarRulesRec(cfgRules, cfgNode.alt, expandToCharacterTerminals, multiplyOut, closureLeft, closureRight);
+      actionALT();
+      cloneGrammarRulesRec(src, cfgNode.seq, character, createParaterminals, multiplyOut, closureLeft, closureRight);
+      cloneGrammarRulesRec(src, cfgNode.alt, character, createParaterminals, multiplyOut, closureLeft, closureRight);
       return;
     case END:
-      cfgRules.actionEND(cfgNode.cfgElement.str);
+      actionEND(cfgNode.cfgElement.str);
       // Util.debug("" + cfgNode.toStringAsProduction());
       // Util.debug("END");
       return;
+    case CFGKind.PAR, CFGKind.OPT, CFGKind.KLN, CFGKind.POS:
+      actionSEQ(cfgNode.cfgElement.cfgKind, cfgNode.cfgElement.str, cfgNode.actionAsTerm);
+      cloneGrammarRulesRec(src, cfgNode.alt, character, createParaterminals, multiplyOut, closureLeft, closureRight);
+      cloneGrammarRulesRec(src, cfgNode.seq, character, createParaterminals, multiplyOut, closureLeft, closureRight);
+      break;
     default:
-      cfgRules.actionSEQ(cfgNode.cfgElement.cfgKind, cfgNode.cfgElement.str, cfgNode.actionAsTerm);
+      actionSEQ(cfgNode.cfgElement.cfgKind, cfgNode.cfgElement.str, cfgNode.actionAsTerm);
       // Util.debug("" + cfgNode.toStringAsProduction());
-      buildGrammarRulesRec(cfgRules, cfgNode.seq, expandToCharacterTerminals, multiplyOut, closureLeft, closureRight);
+      cloneGrammarRulesRec(src, cfgNode.seq, character, createParaterminals, multiplyOut, closureLeft, closureRight);
       break;
     }
   }
 
   public void normalise() { // Compute the fields that are not directly set by the script interpeter
-    Util.debug("Normalising cfgRulesNumber " + nextFreeCFGRulesNumber + " " + cfgRulesKind);
+    // Util.debug("Normalising cfgRulesNumber " + nextFreeCFGRulesNumber + " " + cfgRulesKind);
     if (!seenWhitespaceDirective) whitespaces.add(findElement(CFGKind.TRM_BI, "SIMPLE_WHITESPACE"));
 
     derivesExactly = new Relation<CFGElement, CFGElement>();
@@ -268,11 +278,12 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
 
     // Construct lexer and parser subgrammars in we are a USER grammar
     // Note, by the time we get here, we are fully normalised so the subgrammars can use our reachability information
-    if (cfgRulesKind == CFGRulesKind.USER) {
-      cfgRulesLexer = new CFGRules(this, CFGRulesKind.LEXER, false, false, false, false, false);
-      cfgRulesParser = new CFGRules(this, CFGRulesKind.PARSER, false, false, false, false, false);
-      subGrammarConsistencyCheck();
-    }
+    Util.debug("SUBGRAMMARS DISABLED!");
+    // if (cfgRulesKind == CFGRulesKind.USER) {
+    // cfgRulesLexer = new CFGRules(this, CFGRulesKind.LEXER, false, false, false, false, false);
+    // cfgRulesParser = new CFGRules(this, CFGRulesKind.PARSER, false, false, false, false, false);
+    // subGrammarConsistencyCheck();
+    // }
   }
 
   /*
@@ -756,6 +767,7 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
   }
 
   public void actionEND(String actions) {
+    // TODO: actions are omitted
     actionSEQ(CFGKind.END, "", 0);
     workingNode = stack.pop();
   }
