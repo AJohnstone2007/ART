@@ -23,12 +23,14 @@ import uk.ac.rhul.cs.csle.art.util.statistics.Statistics;
 
 public final class CFGRules implements DisplayInterface { // final to avoid this-escape
   // Fields set by the script interpreter that must be cloned
+  public static int nextFreeCFGRulesNumber = 1;
+  public final int cfgRulesNumber;
   public final CFGRulesKind cfgRulesKind;
   public CFGElement characters = new CFGElement(CFGKind.TRM_CH_SET, defaultCharacterSet);
   public final Map<CFGElement, CFGElement> elements = new TreeMap<>(); // We use a map for elements because we need there to be one canonical instance
   public final Set<CFGElement> paraterminals = new TreeSet<>();
   public final Set<CFGElement> declaredAsTokens = new TreeSet<>();
-  public boolean seenWhitespaceDirective;
+  public boolean seenWhitespaceDirective = false;
   public final Set<CFGElement> whitespaces = new TreeSet<>();
   public String filePrelude = null;
   public String classPrelude = null;
@@ -37,11 +39,13 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
   // Static fields that are constant across all instances and thus do not need to be cloned
   private final static String printableASCII = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
   private final static String defaultCharacterSet = "\r\n\t£" + printableASCII;
-  private final static Set<CFGKind> terminalKinds = Set.of(CFGKind.TRM_BI, CFGKind.TRM_CH, CFGKind.TRM_CS, CFGKind.TRM_CI);
+  private final static Set<CFGKind> terminalKinds = Set.of(CFGKind.TRM_BI, CFGKind.TRM_CH, CFGKind.TRM_CS, CFGKind.TRM_CI, CFGKind.TRM_CH_SET,
+      CFGKind.TRM_CH_ANTI_SET);
   private final static Set<CFGKind> bracketKinds = Set.of(CFGKind.PAR, CFGKind.OPT, CFGKind.KLN, CFGKind.POS);
   private final static Set<CFGKind> selfFirst = Set.of(CFGKind.TRM_BI, CFGKind.TRM_CH, CFGKind.EOS, CFGKind.TRM_CS, CFGKind.TRM_CI, CFGKind.EPSILON);
   private final static Set<CFGKind> scaffoldingKinds = Set.of(CFGKind.SOS, CFGKind.EOS, CFGKind.EPSILON, CFGKind.ALT, CFGKind.END, CFGKind.PAR, CFGKind.OPT,
       CFGKind.POS, CFGKind.KLN);
+  private final static Set<CFGKind> doNotCloneKinds = Set.of(CFGKind.ALT, CFGKind.END, CFGKind.PAR, CFGKind.OPT, CFGKind.POS, CFGKind.KLN);
 
   // Fields that are computed by !try or normalise() and thus do not need to be cloned
   private int nextFreeEnumerationElement;
@@ -88,7 +92,9 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
   public CFGRules cfgRulesParser; // Subgrammar for parsing - rules above paraterminals
 
   public CFGRules(CFGRulesKind cfgRulesKind) { // Ab initio constructor for an empty rules set
+    cfgRulesNumber = nextFreeCFGRulesNumber++;
     this.cfgRulesKind = cfgRulesKind;
+    Util.debug("Constructing cfgRulesNumber " + cfgRulesNumber + " " + cfgRulesKind);
     epsilonElement = findElement(CFGKind.EPSILON, "#"); // We are not using an initialiser block because elements must be initialised first
     endOfStringElement = findElement(CFGKind.EOS, "$");
     startOfStringElement = findElement(CFGKind.SOS, "$$");
@@ -102,8 +108,11 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
    * paraterminal numberings match the source element numberings because this constructor is used to create the lexer and parser sub-grammars which need to be
    * in sync
    */
-  public CFGRules(CFGRules src, CFGRulesKind cfgRulesKind, boolean character, boolean multiplyOut, boolean closureLeft, boolean closureRight) {
+  public CFGRules(CFGRules src, CFGRulesKind cfgRulesKind, boolean character, boolean createParaterminals, boolean multiplyOut, boolean closureLeft,
+      boolean closureRight) {
+    cfgRulesNumber = nextFreeCFGRulesNumber++;
     this.cfgRulesKind = cfgRulesKind; // Do not preserve the original kind
+    Util.debug("Copy constructing cfgRulesNumber " + cfgRulesNumber + "  " + cfgRulesKind + " with parentnumber " + src.cfgRulesNumber);
     epsilonElement = findElement(CFGKind.EPSILON, "#"); // We are not using an initialiser block because elements must be initialised first
     endOfStringElement = findElement(CFGKind.EOS, "$");
     startOfStringElement = findElement(CFGKind.SOS, "$$");
@@ -112,43 +121,24 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
     endOfStringNode.seq = endOfStringNode; // trick to ensure initial call collects rootNode
 
     for (var e : src.elements.keySet()) // Make new elememts
-      findElement(e.cfgKind, e.str);
+      if (!doNotCloneKinds.contains(e.cfgKind)) findElement(e.cfgKind, e.str);
+
     cloneSetElements(paraterminals, src.paraterminals);
     cloneSetElements(declaredAsTokens, src.declaredAsTokens);
+    seenWhitespaceDirective = src.seenWhitespaceDirective;
+    Util.debug("Set seenWhitespaceDirective in cfgRulesNumber " + nextFreeCFGRulesNumber + " to " + seenWhitespaceDirective);
+    ;
     cloneSetElements(whitespaces, src.whitespaces);
-    startNonterminal = findElement(src.startNonterminal.cfgKind, src.startNonterminal.str);
+    if (src.startOfStringElement != null && src.startNonterminal != null)
+      startNonterminal = findElement(src.startNonterminal.cfgKind, src.startNonterminal.str);
     filePrelude = src.filePrelude; // Strings are immutable so we can just assign reference
     classPrelude = src.classPrelude; // Strings are immutable so we can just assign reference
+    // Now build the rules
   }
 
   private void cloneSetElements(Set<CFGElement> dstSet, Set<CFGElement> srcSet) {
     for (var e : srcSet)
       dstSet.add(findElement(e.cfgKind, e.str));
-  }
-
-  private void subGrammarConsistencyCheck() {
-    for (var n : elementToRulesNodeMap.keySet())
-      if (terminalKinds.contains(n)) {
-        var mainElement = elementToRulesNodeMap.get(n);
-        var lexerElement = cfgRulesLexer.elementToRulesNodeMap.get(n);
-        var parserElement = cfgRulesParser.elementToRulesNodeMap.get(n);
-
-        if (lexerElement == null)
-          Util.error("Main element missing in lexer grammar: " + mainElement);
-        else {
-          if (lexerElement == mainElement) Util.error("Main and lexer cfgRules share element " + mainElement);
-          if (lexerElement.num != mainElement.num)
-            Util.error("Main and lexer element has number mismatch " + mainElement + ": " + mainElement.num + " -> " + lexerElement.num);
-        }
-
-        if (parserElement == null)
-          Util.error("Main and parser cfgRules share element " + mainElement);
-        else {
-          if (parserElement == mainElement) Util.error("Main and parser cfgRules share element " + mainElement);
-          if (parserElement.num != mainElement.num)
-            Util.error("Main and parser element has number mismatch " + mainElement + ": " + mainElement.num + " -> " + parserElement.num);
-        }
-      }
   }
 
   private void buildGrammarRulesRec(CFGRules cfgRules, CFGNode cfgNode, boolean expandToCharacterTerminals, boolean multiplyOut, boolean closureLeft,
@@ -175,6 +165,7 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
   }
 
   public void normalise() { // Compute the fields that are not directly set by the script interpeter
+    Util.debug("Normalising cfgRulesNumber " + nextFreeCFGRulesNumber + " " + cfgRulesKind);
     if (!seenWhitespaceDirective) whitespaces.add(findElement(CFGKind.TRM_BI, "SIMPLE_WHITESPACE"));
 
     derivesExactly = new Relation<CFGElement, CFGElement>();
@@ -278,8 +269,8 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
     // Construct lexer and parser subgrammars in we are a USER grammar
     // Note, by the time we get here, we are fully normalised so the subgrammars can use our reachability information
     if (cfgRulesKind == CFGRulesKind.USER) {
-      cfgRulesLexer = new CFGRules(this, CFGRulesKind.LEXER, false, false, false, false);
-      cfgRulesParser = new CFGRules(this, CFGRulesKind.PARSER, false, false, false, false);
+      cfgRulesLexer = new CFGRules(this, CFGRulesKind.LEXER, false, false, false, false, false);
+      cfgRulesParser = new CFGRules(this, CFGRulesKind.PARSER, false, false, false, false, false);
       subGrammarConsistencyCheck();
     }
   }
@@ -351,6 +342,7 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
    */
 
   private void computeAndCheckNonterminalSets() {
+    if (startNonterminal == null) return; // empty grammar
     parserNonterminals.addAll(reachableNonterminalsPara.get(startNonterminal));
     parserNonterminals.add(startNonterminal);
     reachableParaterminals = new TreeSet(parserNonterminals);
@@ -406,6 +398,31 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
 
   private String plural(TreeSet<CFGElement> tmp) {
     return tmp.size() == 1 ? "" : "s";
+  }
+
+  private void subGrammarConsistencyCheck() {
+    for (var n : elementToRulesNodeMap.keySet())
+      if (terminalKinds.contains(n)) {
+        var mainElement = elementToRulesNodeMap.get(n);
+        var lexerElement = cfgRulesLexer.elementToRulesNodeMap.get(n);
+        var parserElement = cfgRulesParser.elementToRulesNodeMap.get(n);
+
+        if (lexerElement == null)
+          Util.error("Main element missing in lexer grammar: " + mainElement);
+        else {
+          if (lexerElement == mainElement) Util.error("Main and lexer cfgRules share element " + mainElement);
+          if (lexerElement.num != mainElement.num)
+            Util.error("Main and lexer element has number mismatch " + mainElement + ": " + mainElement.num + " -> " + lexerElement.num);
+        }
+
+        if (parserElement == null)
+          Util.error("Main and parser cfgRules share element " + mainElement);
+        else {
+          if (parserElement == mainElement) Util.error("Main and parser cfgRules share element " + mainElement);
+          if (parserElement.num != mainElement.num)
+            Util.error("Main and parser element has number mismatch " + mainElement + ": " + mainElement.num + " -> " + parserElement.num);
+        }
+      }
   }
 
   Set<CFGElement> removeEpsilon(Set<CFGElement> set) {
@@ -889,7 +906,10 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
     }
 
     outputStream.print("!whitespace ");
-    printElements(outputStream, whitespaces);
+    if (whitespaces.isEmpty())
+      outputStream.print("#");
+    else
+      printElements(outputStream, whitespaces);
     outputStream.println();
 
     outputStream.println("!start " + startNonterminal);

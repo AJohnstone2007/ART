@@ -7,7 +7,7 @@ public class ScriptValueCFGRules extends ScriptValue {
 
   public ScriptValueCFGRules(CFGRules payload) {
     super();
-    this.payload = new CFGRules(payload, payload.cfgRulesKind, false, false, false, false);
+    this.payload = new CFGRules(payload, payload.cfgRulesKind, false, false, false, false, false);
   }
 
 }
