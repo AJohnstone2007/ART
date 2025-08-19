@@ -139,10 +139,10 @@ public final class ScriptTermInterpreter {
     ret.addActionBreak("cfgCharacterAntiSetTerminal", (Integer t) -> currentCFGRules.actionSEQ(CFGKind.TRM_CH_ANTI_SET, childSymbolString(t), t), null, null);
     ret.addActionBreak("cfgStartString", (Integer t) -> currentCFGRules.actionSEQ(CFGKind.SOS, "$$", t), null, null);
 
-    ret.addAction("cfgDoFirst", (Integer t) -> currentCFGRules.actionSEQ(CFGKind.PAR, null, t), null, null);
-    ret.addAction("cfgOptional", (Integer t) -> currentCFGRules.actionSEQ(CFGKind.OPT, null, t), null, null);
-    ret.addAction("cfgKleene", (Integer t) -> currentCFGRules.actionSEQ(CFGKind.KLN, null, t), null, null);
-    ret.addAction("cfgPositive", (Integer t) -> currentCFGRules.actionSEQ(CFGKind.POS, null, t), null, null);
+    ret.addAction("cfgDoFirst", (Integer t) -> currentCFGRules.actionSEQ(CFGKind.PAR, currentCFGRules.nextUniqueLabel(), t), null, null);
+    ret.addAction("cfgOptional", (Integer t) -> currentCFGRules.actionSEQ(CFGKind.OPT, currentCFGRules.nextUniqueLabel(), t), null, null);
+    ret.addAction("cfgKleene", (Integer t) -> currentCFGRules.actionSEQ(CFGKind.KLN, currentCFGRules.nextUniqueLabel(), t), null, null);
+    ret.addAction("cfgPositive", (Integer t) -> currentCFGRules.actionSEQ(CFGKind.POS, currentCFGRules.nextUniqueLabel(), t), null, null);
 
     // Note - folds can only be applied to primitives, so why not ditch the working fold and just apply directly postorder - see delay below for model
     ret.addAction("cfgFoldNone", (Integer t) -> currentCFGRules.workingFold = GIFTKind.NONE, null, null);

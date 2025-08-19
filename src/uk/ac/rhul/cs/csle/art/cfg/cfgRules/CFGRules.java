@@ -24,6 +24,12 @@ import uk.ac.rhul.cs.csle.art.util.statistics.Statistics;
 public final class CFGRules implements DisplayInterface { // final to avoid this-escape
   // Fields set by the script interpreter that must be cloned
   public static int nextFreeCFGRulesNumber = 1;
+  private int nextUniqueLabelNumber = 0;
+
+  public String nextUniqueLabel() {
+    return Integer.toString(++nextUniqueLabelNumber);
+  }
+
   public final int cfgRulesNumber;
   public final CFGRulesKind cfgRulesKind;
   public CFGElement characters = new CFGElement(CFGKind.TRM_CH_SET, defaultCharacterSet);
@@ -126,8 +132,7 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
     cloneSetElements(paraterminals, src.paraterminals);
     cloneSetElements(declaredAsTokens, src.declaredAsTokens);
     seenWhitespaceDirective = src.seenWhitespaceDirective;
-    Util.debug("Set seenWhitespaceDirective in cfgRulesNumber " + nextFreeCFGRulesNumber + " to " + seenWhitespaceDirective);
-    ;
+    // Util.debug("Set seenWhitespaceDirective in cfgRulesNumber " + nextFreeCFGRulesNumber + " to " + seenWhitespaceDirective);
     cloneSetElements(whitespaces, src.whitespaces);
     if (src.startOfStringElement != null && src.startNonterminal != null)
       startNonterminal = findElement(src.startNonterminal.cfgKind, src.startNonterminal.str);
@@ -149,7 +154,7 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
   private void cloneGrammarRulesRec(CFGRules src, CFGNode cfgNode, boolean character, boolean createParaterminals, boolean multiplyOut, boolean closureLeft,
       boolean closureRight) {
     if (cfgNode == null) return;
-    Util.debug("cloneGrammarsRulesRec at cfgNode " + cfgNode.toStringDot());
+    // Util.debug("cloneGrammarsRulesRec at cfgNode " + cfgNode.toStringDot());
     switch (cfgNode.cfgElement.cfgKind) {
     case ALT:
       actionALT();
@@ -162,7 +167,7 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
       // Util.debug("END");
       return;
     case CFGKind.PAR, CFGKind.OPT, CFGKind.KLN, CFGKind.POS:
-      actionSEQ(cfgNode.cfgElement.cfgKind, cfgNode.cfgElement.str, cfgNode.actionAsTerm);
+      actionSEQ(cfgNode.cfgElement.cfgKind, nextUniqueLabel()/* cfgNode.cfgElement.str */, cfgNode.actionAsTerm);
       cloneGrammarRulesRec(src, cfgNode.alt, character, createParaterminals, multiplyOut, closureLeft, closureRight);
       cloneGrammarRulesRec(src, cfgNode.seq, character, createParaterminals, multiplyOut, closureLeft, closureRight);
       break;
@@ -278,12 +283,11 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
 
     // Construct lexer and parser subgrammars in we are a USER grammar
     // Note, by the time we get here, we are fully normalised so the subgrammars can use our reachability information
-    Util.debug("SUBGRAMMARS DISABLED!");
-    // if (cfgRulesKind == CFGRulesKind.USER) {
-    // cfgRulesLexer = new CFGRules(this, CFGRulesKind.LEXER, false, false, false, false, false);
-    // cfgRulesParser = new CFGRules(this, CFGRulesKind.PARSER, false, false, false, false, false);
-    // subGrammarConsistencyCheck();
-    // }
+    if (cfgRulesKind == CFGRulesKind.USER) {
+      cfgRulesLexer = new CFGRules(this, CFGRulesKind.LEXER, false, false, false, false, false);
+      cfgRulesParser = new CFGRules(this, CFGRulesKind.PARSER, false, false, false, false, false);
+      subGrammarConsistencyCheck();
+    }
   }
 
   /*
@@ -722,6 +726,9 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
 
   /* Action routines called from the script term traverser */
   public CFGElement findElement(CFGKind kind, String s) {
+    if (s == null) {
+      Util.debug("bang");
+    }
     CFGElement candidate = new CFGElement(kind, s);
     if (elements.get(candidate) == null) elements.put(candidate, candidate);
     var ret = elements.get(candidate);
@@ -750,7 +757,7 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
     stack.push(workingNode);
     while (workingNode.alt != null) // Maintain specification order by adding new alternate at the end
       workingNode = workingNode.alt;
-    workingNode = new CFGNode(this, CFGKind.ALT, null, 0, workingFold, null, workingNode);
+    workingNode = new CFGNode(this, CFGKind.ALT, nextUniqueLabel(), 0, workingFold, null, workingNode);
     workingFold = GIFTKind.NONE;
   }
 
@@ -974,7 +981,7 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
             outputStream.print("}");
           }
         }
-        if (gn.actionAsTerm != 0) outputStream.print(" Action: " + gn.toStringActions());
+        outputStream.print(" Action: " + gn.toStringActions());
         outputStream.print("\n");
       }
 

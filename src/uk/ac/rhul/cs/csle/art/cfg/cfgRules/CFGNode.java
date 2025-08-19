@@ -18,11 +18,8 @@ public class CFGNode {
   public int actionAsTerm; // Holds the slot term as parent to slot decorations
   public int instanceNumber = -1;
 
-  private static int nextUniqueNumericLabel = 1;
-
   public CFGNode(CFGRules cfgRules, CFGKind kind, String str, int actionAsTerm, GIFTKind giftKind, CFGNode previous, CFGNode parent) {
     super();
-    if (str == null) str = "" + nextUniqueNumericLabel++; // EBNF and ALT nodes have null string - uniquify
     this.cfgElement = cfgRules.findElement(kind, str);
     this.actionAsTerm = actionAsTerm;
     this.giftKind = giftKind;
