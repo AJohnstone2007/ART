@@ -243,4 +243,54 @@ public class Util {
   public static void notImplemented(String methodName, Class<?> classObject) {
     error(methodName + " not implemented for class " + classObject.getSimpleName());
   }
+
+  private static String asciiIdentifiers[] = { "_NUL", "_SOH", "_STX", "_ETX", "_EOT", "_ENQ", "_ACK", "_BEL", "_BS", "_HT", "_LF", "_VT", "_FF", "_CR", "_SO",
+      "_SI", "_DLE", "_DC1", "_DC2", "_DC3", "_DC4", "_NAK", "_SYN", "_ETB", "_CAN", "_EM", "_SUB", "_ESC", "_FS", "_GS", "_RS", "_", "_SPACE", "_SHREIK",
+      "_DBLQUOTE", "_HASH", "_DOLLAR", "_PERCENT", "_AMPERSAND", "_QUOTE", "_LPAR", "_RPAR", "_STAR", "_PLUS", "_COMMA", "_MINUS", "_PERIOD", "_SLASH", "0",
+      "1", "2", "3", "4", "5", "6", "7", "8", "9", "_COLON", "_SEMICOLON", "_LT", "_EQUAL", "_GT", "_QUERY", "_AT", "A", "B", "C", "D", "E", "F", "G", "H", "I",
+      "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "_LBRACK", "_BACKSLASH", "_RBRACK", "_UPARROW", "_", "_BACKQUOTE",
+      "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "_LBRACE", "_BAR",
+      "_RBRACE", "_TILDE", "_DEL" };
+
+  private static String asciiLiteralStrings[] = { "\\000", "\\001", "\\002", "\\003", "\\004", "\\005", "\\006", "\\007", "\\010", "\\t", "\\n", "\\013",
+      "\\014", "\\r", "\\016", "\\017", "\\020", "\\021", "\\022", "\\023", "\\024", "\\025", "\\026", "\\027", "\\030", "\\031", "\\032", "\\033", "\\034",
+      "\\035", "\\036", "\\037", " ", "!", "\\\"", "#", "$", "%", "&", "'", "(", ")", "*", "+", ",", "-", ".", "/", "0", "1", "2", "3", "4", "5", "6", "7", "8",
+      "9", ":", ";", "<", "=", ">", "?", "@", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W",
+      "X", "Y", "Z", "[", "\\\\", "]", "^", "_", "`", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u",
+      "v", "w", "x", "y", "z", "{", "|", "}", "~", "_DEL" };
+
+  private static String asciiQuotedLiteralStrings[] = { "\\\\\\\\000", "\\\\\\\\001", "\\\\\\\\002", "\\\\\\\\003", "\\\\\\\\004", "\\\\\\\\005", "\\\\\\\\006",
+      "\\\\\\\\007", "\\\\\\\\010", "\\\\\\\\t", "\\\\\\\\n", "\\\\\\\\013", "\\\\\\\\014", "\\\\\\\\r", "\\\\\\\\016", "\\\\\\\\017", "\\\\\\\\020",
+      "\\\\\\\\021", "\\\\\\\\022", "\\\\\\\\023", "\\\\\\\\024", "\\\\\\\\025", "\\\\\\\\026", "\\\\\\\\027", "\\\\\\\\030", "\\\\\\\\031", "\\\\\\\\032",
+      "\\\\\\\\033", "\\\\\\\\034", "\\\\\\\\035", "\\\\\\\\036", "\\\\\\\\037", " ", "!", "\\\\\\\"", "#", "$", "%", "&", "\\\\\\\\'", "(", ")", "*", "+", ",",
+      "-", ".", "/", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", ":", ";", "<", "=", ">", "?", "@", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K",
+      "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "[", "\\\\\\\\\\\\\\\\", "]", "^", "_", "\\\\\\\\`", "a", "b", "c", "d", "e",
+      "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "{", "|", "}", "~", "\\\\\\\\0177" };
+
+  private static String toString(String string, String[] table) {
+    String ret = "";
+
+    if (string != null) for (int i = 0; i < string.length(); i++) {
+      char c = string.charAt(i);
+      if (c > 0 && c < 128)
+        ret += table[c];
+      else
+        ret += ' ';
+    }
+
+    return ret;
+  }
+
+  public static String toIdentifier(String string) {
+    return toString(string, asciiIdentifiers);
+  }
+
+  public static String toLiteralString(String string) {
+    return toString(string, asciiLiteralStrings);
+  }
+
+  public static String toQuotedLiteralString(String string) {
+    return toString(string, asciiQuotedLiteralStrings);
+  }
+
 }
