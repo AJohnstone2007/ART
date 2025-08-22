@@ -12,18 +12,17 @@ If you wish to use ART's Integrated Development Environment then you will also n
 
 Reference, tutorial and internals information is [here](https://github.com/AJohnstone2007/ART/tree/main/doc). The four main documents are
 
-* [ARTRef](https://github.com/AJohnstone2007/ART/tree/main/doc/ARTRef.pdf)
-Reference material on the ART Script Language, along with a Getting Started guide in Chapter 1
+* [ARTRef](https://github.com/AJohnstone2007/ART/blob/main/doc/artRef.pdf)
+Reference material on the ART Script Language, along with a Getting Started guide in Chapter 1.
 
-* [ARTTut](https://github.com/AJohnstone2007/ART/tree/main/doc/ARTTut.pdf)
-An introduction to Software Language Engineering using ART, as used in the Royal Holloway SLE course
+* [ARTTut](https://github.com/AJohnstone2007/ART/blob/main/doc/artTut.pdf)
+An introduction to Software Language Engineering using ART, as used in the Royal Holloway SLE course.
 
-* [ARTLab](https://github.com/AJohnstone2007/ART/tree/main/doc/ARTLab.pdf)
-A sequence of lab exercises and a project specification for our SLE course
+* [ARTLab](https://github.com/AJohnstone2007/ART/blob/main/doc/artLab.pdf)
+A sequence of lab exercises and a project specification for our SLE course.
 
-* [ARTInt](https://github.com/AJohnstone2007/ART/tree/main/doc/ARTInt.pdf)
+* [ARTInt](https://github.com/AJohnstone2007/ART/blob/main/doc/artInt.pdf)
 A sequence of technical notes on various aspects of ART's implementation.
-
 
 To characterise the space and time performance of our algorithms, we use a variety of language grammars and language examples which you can find at https://github.com/AJohnstone2007/referenceLanguageCorpora.
 
