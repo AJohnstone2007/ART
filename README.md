@@ -8,10 +8,22 @@ A variety of algorithms are available within ART; in particular *reference* GLL 
 
 Reference, tutorial and internals information is [here](https://github.com/AJohnstone2007/ART/tree/main/doc). The four main documents are
 
-* [ARTRef]https://github.com/AJohnstone2007/ART/tree/main/doc/ARTRef.pdf)
-* [ARTTut]https://github.com/AJohnstone2007/ART/tree/main/doc/ARTTut.pdf)
-* [ARTLab]https://github.com/AJohnstone2007/ART/tree/main/doc/ARTLab.pdf)
-* [ARTInt]https://github.com/AJohnstone2007/ART/tree/main/doc/ARTInt.pdf)
+* [ARTRef](https://github.com/AJohnstone2007/ART/tree/main/doc/ARTRef.pdf)
+
+Reference material on the ART Script Language, along with a Getting Started guide in Chapter 1
+
+* [ARTTut](https://github.com/AJohnstone2007/ART/tree/main/doc/ARTTut.pdf)
+
+An introduction to Software Language Engineering using ART, as used in the Royal Holloway SLE course
+
+* [ARTLab](https://github.com/AJohnstone2007/ART/tree/main/doc/ARTLab.pdf)
+
+A sequence of lab exercises and a project specification for our SLE course
+
+* [ARTInt](https://github.com/AJohnstone2007/ART/tree/main/doc/ARTInt.pdf)
+
+A sequence of technical notes on various aspects of ART's implementation.
+
 
 To run from the command line, all you need is a Java installation and a copy of **art.jar** which is the current stable version. **artALPHA.jar** is the current development version which should be treated with caution. 
 
