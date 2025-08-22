@@ -6,28 +6,24 @@ The default ART pipeline processes language inputs using an MGLL multiparser cou
 
 A variety of algorithms are available within ART; in particular *reference* GLL implementations that illustrate the central ideas along with a variety of optimisations. An early publication on these versions, and the associated presentation slides are [here](https://github.com/AJohnstone2007/ART/tree/main/doc/referenceImplementations), and a recording of the presentation is [here](https://www.youtube.com/watch?v=lwNhOL4eV2U). The corresponding code is [here](https://github.com/AJohnstone2007/ART/tree/main/src/uk/ac/rhul/cs/csle/art/cfg/gll).
 
-Reference, tutorial and internals information is [here](https://github.com/AJohnstone2007/ART/tree/main/doc). The four main documents are
-
-* [ARTRef](https://github.com/AJohnstone2007/ART/tree/main/doc/ARTRef.pdf)
-
-Reference material on the ART Script Language, along with a Getting Started guide in Chapter 1
-
-* [ARTTut](https://github.com/AJohnstone2007/ART/tree/main/doc/ARTTut.pdf)
-
-An introduction to Software Language Engineering using ART, as used in the Royal Holloway SLE course
-
-* [ARTLab](https://github.com/AJohnstone2007/ART/tree/main/doc/ARTLab.pdf)
-
-A sequence of lab exercises and a project specification for our SLE course
-
-* [ARTInt](https://github.com/AJohnstone2007/ART/tree/main/doc/ARTInt.pdf)
-
-A sequence of technical notes on various aspects of ART's implementation.
-
-
 To run from the command line, all you need is a Java installation and a copy of **art.jar** which is the current stable version. **artALPHA.jar** is the current development version which should be treated with caution. 
 
 If you wish to use ART's Integrated Development Environment then you will also need an operating system-specific JavaFX installation which you can download from https://gluonhq.com/products/javafx/. You will also need a copy of **richtextfx.jar** from https://github.com/FXMisc/RichTextFX.
+
+Reference, tutorial and internals information is [here](https://github.com/AJohnstone2007/ART/tree/main/doc). The four main documents are
+
+* [ARTRef](https://github.com/AJohnstone2007/ART/tree/main/doc/ARTRef.pdf)
+Reference material on the ART Script Language, along with a Getting Started guide in Chapter 1
+
+* [ARTTut](https://github.com/AJohnstone2007/ART/tree/main/doc/ARTTut.pdf)
+An introduction to Software Language Engineering using ART, as used in the Royal Holloway SLE course
+
+* [ARTLab](https://github.com/AJohnstone2007/ART/tree/main/doc/ARTLab.pdf)
+A sequence of lab exercises and a project specification for our SLE course
+
+* [ARTInt](https://github.com/AJohnstone2007/ART/tree/main/doc/ARTInt.pdf)
+A sequence of technical notes on various aspects of ART's implementation.
+
 
 To characterise the space and time performance of our algorithms, we use a variety of language grammars and language examples which you can find at https://github.com/AJohnstone2007/referenceLanguageCorpora.
 
