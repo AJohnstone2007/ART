@@ -6,7 +6,12 @@ The default ART pipeline processes language inputs using an MGLL multiparser cou
 
 A variety of algorithms are available within ART; in particular *reference* GLL implementations that illustrate the central ideas along with a variety of optimisations. An early publication on these versions, and the associated presentation slides are [here](https://github.com/AJohnstone2007/ART/tree/main/doc/referenceImplementations), and a recording of the presentation is [here](https://www.youtube.com/watch?v=lwNhOL4eV2U). The corresponding code is [here](https://github.com/AJohnstone2007/ART/tree/main/src/uk/ac/rhul/cs/csle/art/cfg/gll).
 
-You will find a tutorial and user manual in the document [Software Language  Engineering With ART](https://github.com/AJohnstone2007/ART/blob/main/doc/slewa.pdf); Appendix A explains in detail how to download and run ART.
+Reference, tutorial and internals information is [here](https://github.com/AJohnstone2007/ART/tree/main/doc). The four main documents are
+
+* [ARTRef]https://github.com/AJohnstone2007/ART/tree/main/doc/ARTRef.pdf)
+* [ARTTut]https://github.com/AJohnstone2007/ART/tree/main/doc/ARTTut.pdf)
+* [ARTLab]https://github.com/AJohnstone2007/ART/tree/main/doc/ARTLab.pdf)
+* [ARTInt]https://github.com/AJohnstone2007/ART/tree/main/doc/ARTInt.pdf)
 
 To run from the command line, all you need is a Java installation and a copy of **art.jar** which is the current stable version. **artALPHA.jar** is the current development version which should be treated with caution. 
 
