@@ -612,7 +612,7 @@ public abstract class AbstractLexer implements DisplayInterface {
 
   private void artSkipEscapeSequence() {
     char control = getCh(); // Step over element
-    Util.debug("skipEscapeSquence at " + inputIndex + ": " + peekCh());
+    // Util.debug("skipEscapeSquence at " + inputIndex + ": " + peekCh());
     if (control == 'u') {
       getCh();
       getCh();
