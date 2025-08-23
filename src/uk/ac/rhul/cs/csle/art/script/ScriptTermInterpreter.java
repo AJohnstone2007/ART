@@ -214,6 +214,7 @@ public final class ScriptTermInterpreter {
         currentStatistics = new Statistics();
         break;
       case "whitespace":
+        currentCFGRules.seenWhitespaceDirective = true;
         currentCFGRules.whitespaces.clear();
         break;
       default:
