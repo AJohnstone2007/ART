@@ -42,7 +42,8 @@ public final class AJDebug {
   ScriptTermInterpreter regressionScriptInterpreter;
 
   public AJDebug(String[] args) {
-    Util.info("ajdebug " + args[1]);
+    Util.errorLevel = 4;
+    Util.info("!! Test mode ajdebug " + args[1]);
     testStringEscapes();
 
     // testSetRegressions(args);
@@ -64,13 +65,10 @@ public final class AJDebug {
   }
 
   void testStringEscapes() {
-    String str = "adr\"i\'\n\t\r  an";
-    Util.info(str);
-    String escStr = Util.escapeString(str, true);
-    Util.info(escStr);
-    String unescStr = Util.unescapeString(escStr);
-    Util.info(unescStr);
-    Util.info(unescStr.equals(str) ? "Same" : "Different");
+    String str = "adri " + "\\" + "v" + "00005Aan";
+    Util.info("Original string: " + str);
+    Util.info("Escaped space original string: " + Util.escapeString(str, true));
+    Util.info("Unescaped original string: " + Util.unescapeString(str));
   }
 
   private void processFile(Path filePath) throws IOException {

@@ -141,48 +141,78 @@ public class Util {
   }
 
   public static String unescapeString(String str, int leftDelimiterWidth, int rightDelimiterWidth) {
-    char ret[] = new char[str.length()];
-    int retI = 0;
-    char[] chars = str.toCharArray();
+    StringBuilder sb = new StringBuilder();
 
-    for (int i = leftDelimiterWidth; i < chars.length - rightDelimiterWidth; i++)
-      if (chars[i] == '\\')
-        switch (chars[++i]) {
+    for (int i = leftDelimiterWidth; i < str.length() - rightDelimiterWidth; i++)
+      if (str.charAt(i) == '\\')
+        switch (str.charAt(i + 1)) {
         case '\\':
-          ret[retI++] = '\\';
+          sb.append('\\');
+          i++;
           break;
         case 'b':
-          ret[retI++] = '\b';
+          sb.append('\b');
+          i++;
           break;
         case 'f':
-          ret[retI++] = '\f';
+          sb.append('\f');
+          i++;
           break;
         case 'n':
-          ret[retI++] = '\n';
+          sb.append('\n');
+          i++;
           break;
         case 'r':
-          ret[retI++] = '\r';
+          sb.append('\r');
+          i++;
           break;
         case 't':
-          ret[retI++] = '\t';
+          sb.append('\t');
+          i++;
           break;
         case '"':
-          ret[retI++] = '"';
+          sb.append('"');
+          i++;
           break;
         case '\'':
-          ret[retI++] = '\'';
+          sb.append('\'');
+          i++;
           break;
         case '}':
-          ret[retI++] = '}';
+          sb.append('}');
+          i++;
+          break;
+        case '$':
+          sb.append('$');
+          i++;
+          break;
+        case 'u', 'U':
+          try {
+            int bmpCP = Integer.parseInt(str.substring(i + 2, i + 6), 16);
+            sb.appendCodePoint(bmpCP);
+            i += 5;
+          } catch (NumberFormatException nfe) {
+            Util.fatal("escape sequence \\" + str.substring(i + 1, i + 6) + "contains non-hexadecial digit");
+          }
+          break;
+        case 'v', 'V':
+          try {
+            int bmpCP = Integer.parseInt(str.substring(i + 2, i + 8), 16);
+            sb.appendCodePoint(bmpCP);
+            i += 7;
+          } catch (NumberFormatException nfe) {
+            Util.fatal("escape sequence \\" + str.substring(i + 1, i + 8) + "contains non-hexadecial digit");
+          }
           break;
         default:
-          warning(" unrecognised escape sequence \\" + chars[i] + " - unescaping to " + chars[i]);
-          ret[retI++] = chars[i];
+          warning(" unrecognised escape sequence \\" + str.charAt(i) + " - unescaping to itself");
+          sb.append(str.charAt(i));
         }
       else
-        ret[retI++] = chars[i];
+        sb.append(str.charAt(i));
 
-    return new String(ret, 0, retI);
+    return sb.toString();
+
   }
 
   public static String escapeString(String str) {
