@@ -5,7 +5,7 @@ public enum CFGKind {
   EOS, // End of String ($)
   EPSILON, // Epsilon
   TRM_CS, // Termial case sensitive
-  TRM_CI, // Terminal case insenitive
+  TRM_CI, // Terminal case insensitive
   TRM_BI, // Terminal built in
   TRM_CH, // Terminal character
   TRM_CH_SET, // Terminal character set: match anything in the contents

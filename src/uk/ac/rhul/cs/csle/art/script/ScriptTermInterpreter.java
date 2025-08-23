@@ -308,10 +308,10 @@ public final class ScriptTermInterpreter {
 
     case "!convert":
       switch (iTerms.termSymbolString(iTerms.subterm(term, 0, 0)).toLowerCase()) {
-      case "cfgcharacter":
+      case "cfgcharacterinline":
         currentCFGRules = new CFGRules(currentCFGRules, CFGRulesKind.USER, true, false, false, false, false);
         break;
-      case "cfgcharacterparaterminal":
+      case "cfgcharacter":
         currentCFGRules = new CFGRules(currentCFGRules, CFGRulesKind.USER, true, true, false, false, false);
         break;
       case "cfgmultiplyout":

@@ -210,9 +210,7 @@ public class Util {
         }
       else
         sb.append(str.charAt(i));
-
     return sb.toString();
-
   }
 
   public static String escapeString(String str) {

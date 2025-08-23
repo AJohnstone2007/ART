@@ -25,6 +25,7 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
   // Fields set by the script interpreter that must be cloned
   public static int nextFreeCFGRulesNumber = 1;
   private int nextUniqueLabelNumber = 0;
+  private int nextGeneratedNonterminalNumber = 1;
 
   public String nextUniqueLabel() {
     return Integer.toString(++nextUniqueLabelNumber);
@@ -144,6 +145,11 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
         actionLHS(n.str);
         cloneGrammarRulesRec(src, src.elementToRulesNodeMap.get(n).alt, character, createParaterminals, multiplyOut, closureLeft, closureRight);
       }
+    dequeueRules(src, cfgRulesKind, character, createParaterminals, multiplyOut, closureLeft, closureRight);
+    if (character) { // We've handled whitespace explictly
+      whitespaces.clear();
+      seenWhitespaceDirective = true;
+    }
   }
 
   private void cloneSetElements(Set<CFGElement> dstSet, Set<CFGElement> srcSet) {
@@ -166,17 +172,71 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
       // Util.debug("" + cfgNode.toStringAsProduction());
       // Util.debug("END");
       return;
-    case CFGKind.PAR, CFGKind.OPT, CFGKind.KLN, CFGKind.POS:
+    case PAR, OPT, KLN, POS:
       actionSEQ(cfgNode.cfgElement.cfgKind, nextUniqueLabel()/* cfgNode.cfgElement.str */, cfgNode.actionAsTerm);
       cloneGrammarRulesRec(src, cfgNode.alt, character, createParaterminals, multiplyOut, closureLeft, closureRight);
       cloneGrammarRulesRec(src, cfgNode.seq, character, createParaterminals, multiplyOut, closureLeft, closureRight);
       break;
+    case TRM_CS:
+      if (character) {
+        // Util.debug("Expanding to characters: " + cfgNode);
+        if (createParaterminals) {
+          actionSEQ(CFGKind.NONTERMINAL, "ART_" + nextGeneratedNonterminalNumber, ScriptTermInterpreter.iTerms.termEmpty);
+          queueRule(nextGeneratedNonterminalNumber++, cfgNode);
+        } else {
+          for (int i = 0; i < cfgNode.cfgElement.str.length(); i++)
+            actionSEQ(CFGKind.TRM_CH, cfgNode.cfgElement.str.substring(i, i + 1), ScriptTermInterpreter.iTerms.termEmpty);
+          if (whitespaces.size() > 0) {
+            actionSEQ(CFGKind.NONTERMINAL, "ART_0", ScriptTermInterpreter.iTerms.termEmpty);
+            queueRule(0, null);
+          }
+        }
+      } else // no expansion required; let's just carry on
+        actionSEQ(cfgNode.cfgElement.cfgKind, cfgNode.cfgElement.str, cfgNode.actionAsTerm);
+      cloneGrammarRulesRec(src, cfgNode.seq, character, createParaterminals, multiplyOut, closureLeft, closureRight);
+      break;
     default:
       actionSEQ(cfgNode.cfgElement.cfgKind, cfgNode.cfgElement.str, cfgNode.actionAsTerm);
-      // Util.debug("" + cfgNode.toStringAsProduction());
       cloneGrammarRulesRec(src, cfgNode.seq, character, createParaterminals, multiplyOut, closureLeft, closureRight);
       break;
     }
+  }
+
+  private record QueueRuleElement(int number, CFGNode cfgNode) {
+  }
+
+  Set<QueueRuleElement> queuedRules = new HashSet<>();
+  LinkedList<QueueRuleElement> listRules = new LinkedList<>();
+
+  private void queueRule(int i, CFGNode cfgNode) {
+    var candidate = new QueueRuleElement(i, cfgNode);
+    if (!queuedRules.contains(candidate)) {
+      queuedRules.add(candidate);
+      listRules.add(candidate);
+    }
+  }
+
+  private void dequeueRules(CFGRules src, CFGRulesKind cfgRulesKind, boolean character, boolean createParaterminals, boolean multiplyOut, boolean closureLeft,
+      boolean closureRight) {
+    QueueRuleElement ruleElement;
+    while ((ruleElement = listRules.poll()) != null) {
+      if (ruleElement.number == 0) { // special case: whitespace is rule 0
+        actionLHS("ART_0");
+        actionALT();
+        actionSEQ(CFGKind.KLN, nextUniqueLabel(), ScriptTermInterpreter.iTerms.termEmpty);
+        for (var w : whitespaces) {
+          actionALT();
+          actionSEQ(w.cfgKind, w.str, ScriptTermInterpreter.iTerms.termEmpty);
+          actionEND("");
+        }
+        actionEND("");
+      } else {
+        actionLHS("ART_" + ruleElement.number);
+        actionALT();
+        cloneGrammarRulesRec(src, ruleElement.cfgNode, character, false, multiplyOut, closureLeft, closureRight);
+      }
+    }
+
   }
 
   public void normalise() { // Compute the fields that are not directly set by the script interpeter
@@ -924,11 +984,12 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
       outputStream.println();
     }
 
-    outputStream.print("!whitespace ");
     if (whitespaces.isEmpty())
-      outputStream.print("#");
-    else
+      outputStream.print("!clear whitespace ");
+    else {
+      outputStream.print("!whitespace ");
       printElements(outputStream, whitespaces);
+    }
     outputStream.println();
 
     outputStream.println("!start " + startNonterminal);
