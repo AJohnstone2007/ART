@@ -186,7 +186,7 @@ public class Util {
           sb.append('$');
           i++;
           break;
-        case 'u', 'U':
+        case 'u':
           try {
             int bmpCP = Integer.parseInt(str.substring(i + 2, i + 6), 16);
             sb.appendCodePoint(bmpCP);
@@ -195,7 +195,7 @@ public class Util {
             Util.fatal("escape sequence \\" + str.substring(i + 1, i + 6) + "contains non-hexadecial digit");
           }
           break;
-        case 'v', 'V':
+        case 'v':
           try {
             int bmpCP = Integer.parseInt(str.substring(i + 2, i + 8), 16);
             sb.appendCodePoint(bmpCP);
