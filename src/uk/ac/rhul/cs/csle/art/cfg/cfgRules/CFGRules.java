@@ -25,7 +25,7 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
   // Fields set by the script interpreter that must be cloned
   public static int nextFreeCFGRulesNumber = 1;
   private int nextUniqueLabelNumber = 0;
-  private int nextGeneratedNonterminalNumber = 1;
+  private final int nextGeneratedNonterminalNumber = 1;
 
   public String nextUniqueLabel() {
     return Integer.toString(++nextUniqueLabelNumber);
@@ -115,6 +115,8 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
    * paraterminal numberings match the source element numberings because this constructor is used to create the lexer and parser sub-grammars which need to be
    * in sync
    */
+  private final Map<String, Integer> terminalNumbers = new TreeMap<>();
+
   public CFGRules(CFGRules src, CFGRulesKind cfgRulesKind, boolean character, boolean createParaterminals, boolean multiplyOut, boolean closureLeft,
       boolean closureRight) {
     cfgRulesNumber = nextFreeCFGRulesNumber++;
@@ -127,13 +129,42 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
     endOfStringNode = new CFGNode(this, CFGKind.EOS, "$", 0, GIFTKind.NONE, null, null);
     endOfStringNode.seq = endOfStringNode; // trick to ensure initial call collects rootNode
 
-    for (var e : src.elements.keySet()) // Make new elememts
-      if (!doNotCloneKinds.contains(e.cfgKind)) findElement(e.cfgKind, e.str);
+    for (var e : src.elements.keySet()) // Make new elements and collect TRM_CS elements
+      if (character && e.cfgKind == CFGKind.TRM_CS)
+        terminalNumbers.put(e.str, 0);
+      else if (!doNotCloneKinds.contains(e.cfgKind)) findElement(e.cfgKind, e.str);
+
+    if (character) {
+      int terminalNumber = 0;
+
+      if (src.whitespaces.size() > 0) { // Create WS nonterminal
+        actionLHS("ART_" + terminalNumber++);
+        actionALT();
+        actionSEQ(CFGKind.KLN, nextUniqueLabel(), ScriptTermInterpreter.iTerms.termEmpty);
+        for (var w : src.whitespaces) {
+          actionALT();
+          actionSEQ(w.cfgKind, w.str, ScriptTermInterpreter.iTerms.termEmpty);
+          actionEND("");
+        }
+        actionEND("");
+      }
+
+      for (var s : terminalNumbers.keySet()) { // Now add each nonterminal to map and optionally create rule
+        if (createParaterminals) {
+          actionLHS("ART_" + terminalNumber);
+          actionALT();
+          trm_CS_to_TRM_CH(s, src.whitespaces.size() > 0);
+
+          actionEND("");
+        }
+        terminalNumbers.put(s, terminalNumber++);
+      }
+      Util.debug("Terminal numbers: " + terminalNumbers);
+    }
 
     cloneSetElements(paraterminals, src.paraterminals);
     cloneSetElements(declaredAsTokens, src.declaredAsTokens);
     seenWhitespaceDirective = src.seenWhitespaceDirective;
-    // Util.debug("Set seenWhitespaceDirective in cfgRulesNumber " + nextFreeCFGRulesNumber + " to " + seenWhitespaceDirective);
     cloneSetElements(whitespaces, src.whitespaces);
     if (src.startOfStringElement != null && src.startNonterminal != null)
       startNonterminal = findElement(src.startNonterminal.cfgKind, src.startNonterminal.str);
@@ -150,6 +181,12 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
       whitespaces.clear();
       seenWhitespaceDirective = true;
     }
+  }
+
+  private void trm_CS_to_TRM_CH(String s, boolean addWS) {
+    for (int i = 0; i < s.length(); i++)
+      actionSEQ(CFGKind.TRM_CH, s.substring(i, i + 1), ScriptTermInterpreter.iTerms.termEmpty);
+    if (addWS) actionSEQ(CFGKind.NONTERMINAL, "ART_0", ScriptTermInterpreter.iTerms.termEmpty);
   }
 
   private void cloneSetElements(Set<CFGElement> dstSet, Set<CFGElement> srcSet) {
@@ -180,17 +217,10 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
     case TRM_CS:
       if (character) {
         // Util.debug("Expanding to characters: " + cfgNode);
-        if (createParaterminals) {
-          actionSEQ(CFGKind.NONTERMINAL, "ART_" + nextGeneratedNonterminalNumber, ScriptTermInterpreter.iTerms.termEmpty);
-          queueRule(nextGeneratedNonterminalNumber++, cfgNode);
-        } else {
-          for (int i = 0; i < cfgNode.cfgElement.str.length(); i++)
-            actionSEQ(CFGKind.TRM_CH, cfgNode.cfgElement.str.substring(i, i + 1), ScriptTermInterpreter.iTerms.termEmpty);
-          if (whitespaces.size() > 0) {
-            actionSEQ(CFGKind.NONTERMINAL, "ART_0", ScriptTermInterpreter.iTerms.termEmpty);
-            queueRule(0, null);
-          }
-        }
+        if (createParaterminals)
+          actionSEQ(CFGKind.NONTERMINAL, "ART_" + terminalNumbers.get(cfgNode.cfgElement.str), cfgNode.actionAsTerm);
+        else
+          trm_CS_to_TRM_CH(cfgNode.cfgElement.str, src.whitespaces.size() > 0);
       } else // no expansion required; let's just carry on
         actionSEQ(cfgNode.cfgElement.cfgKind, cfgNode.cfgElement.str, cfgNode.actionAsTerm);
       cloneGrammarRulesRec(src, cfgNode.seq, character, createParaterminals, multiplyOut, closureLeft, closureRight);
@@ -220,23 +250,10 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
       boolean closureRight) {
     QueueRuleElement ruleElement;
     while ((ruleElement = listRules.poll()) != null) {
-      if (ruleElement.number == 0) { // special case: whitespace is rule 0
-        actionLHS("ART_0");
-        actionALT();
-        actionSEQ(CFGKind.KLN, nextUniqueLabel(), ScriptTermInterpreter.iTerms.termEmpty);
-        for (var w : whitespaces) {
-          actionALT();
-          actionSEQ(w.cfgKind, w.str, ScriptTermInterpreter.iTerms.termEmpty);
-          actionEND("");
-        }
-        actionEND("");
-      } else {
-        actionLHS("ART_" + ruleElement.number);
-        actionALT();
-        cloneGrammarRulesRec(src, ruleElement.cfgNode, character, false, multiplyOut, closureLeft, closureRight);
-      }
+      actionLHS("ART_" + ruleElement.number);
+      actionALT();
+      cloneGrammarRulesRec(src, ruleElement.cfgNode, character, false, multiplyOut, closureLeft, closureRight);
     }
-
   }
 
   public void normalise() { // Compute the fields that are not directly set by the script interpeter
@@ -834,7 +851,6 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
   }
 
   public void actionEND(String actions) {
-    // TODO: actions are omitted
     actionSEQ(CFGKind.END, "", 0);
     workingNode = stack.pop();
   }

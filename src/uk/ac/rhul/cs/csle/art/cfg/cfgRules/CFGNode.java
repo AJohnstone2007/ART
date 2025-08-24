@@ -12,6 +12,7 @@ public class CFGNode {
   public final CFGElement cfgElement; // Grammar element
   public int num;
   public CFGNode seq; // sequence link
+  public final CFGNode previous; // previous sequence link
   public CFGNode alt; // alternate link
   public final GIFTKind giftKind;
   public boolean delayed;
@@ -23,6 +24,7 @@ public class CFGNode {
     this.cfgElement = cfgRules.findElement(kind, str);
     this.actionAsTerm = actionAsTerm;
     this.giftKind = giftKind;
+    this.previous = previous;
     if (previous != null) previous.seq = this;
     if (parent != null) parent.alt = this;
   }
@@ -130,7 +132,12 @@ public class CFGNode {
         }
       }
       if (tmpSeq.cfgElement.cfgKind == CFGKind.END) return;
-      sb.append(" " + tmpSeq);
+      // Print space except between character terminals
+      if ((tmpSeq.cfgElement.cfgKind == CFGKind.TRM_CH) && tmpSeq.previous.cfgElement.cfgKind == CFGKind.TRM_CH)
+        ;
+      else
+        sb.append(" ");
+      sb.append(tmpSeq);
     }
   }
 
