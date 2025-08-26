@@ -23,6 +23,7 @@ import uk.ac.rhul.cs.csle.art.util.statistics.Statistics;
 
 public final class CFGRules implements DisplayInterface { // final to avoid this-escape
   // Fields set by the script interpreter that must be cloned
+  private boolean clean = false; // set True by normalise; reset by anything that touches the data stuctures
   public static int nextFreeCFGRulesNumber = 1;
   private int nextUniqueLabelNumber = 0;
   private final int nextGeneratedNonterminalNumber = 1;
@@ -31,6 +32,7 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
     return Integer.toString(++nextUniqueLabelNumber);
   }
 
+  // TODO: These need setters that set clean to false
   public final int cfgRulesNumber;
   public final CFGRulesKind cfgRulesKind;
   public CFGElement characters = new CFGElement(CFGKind.TRM_CH_SET, defaultCharacterSet);
@@ -117,8 +119,8 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
    */
   private final Map<String, Integer> terminalNumbers = new TreeMap<>();
 
-  public CFGRules(CFGRules src, CFGRulesKind cfgRulesKind, boolean character, boolean createParaterminals, boolean multiplyOut, boolean closureLeft,
-      boolean closureRight) {
+  public CFGRules(CFGRules src, CFGRulesKind cfgRulesKind, boolean character, boolean createParaterminals, boolean bnfLeft, boolean bnfRight) {
+    if (src.cfgRulesKind == CFGRulesKind.USER) src.normalise();
     cfgRulesNumber = nextFreeCFGRulesNumber++;
     this.cfgRulesKind = cfgRulesKind; // Do not preserve the original kind
     // Util.debug("Copy constructing cfgRulesNumber " + cfgRulesNumber + " " + cfgRulesKind + " with parentnumber " + src.cfgRulesNumber);
@@ -174,9 +176,9 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
     for (var n : src.elementToRulesNodeMap.keySet())
       if (n.cfgKind == CFGKind.NONTERMINAL) {
         actionLHS(n.str);
-        cloneGrammarRulesRec(src, src.elementToRulesNodeMap.get(n).alt, character, createParaterminals, multiplyOut, closureLeft, closureRight);
+        cloneGrammarRulesRec(src, src.elementToRulesNodeMap.get(n).alt, character, createParaterminals, bnfLeft, bnfRight);
       }
-    dequeueRules(src, cfgRulesKind, character, createParaterminals, multiplyOut, closureLeft, closureRight);
+    dequeueRules(src, cfgRulesKind, character, createParaterminals, bnfLeft, bnfRight);
     if (character) { // We've handled whitespace explictly
       whitespaces.clear();
       seenWhitespaceDirective = true;
@@ -194,15 +196,14 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
       dstSet.add(findElement(e.cfgKind, e.str));
   }
 
-  private void cloneGrammarRulesRec(CFGRules src, CFGNode cfgNode, boolean character, boolean createParaterminals, boolean multiplyOut, boolean closureLeft,
-      boolean closureRight) {
+  private void cloneGrammarRulesRec(CFGRules src, CFGNode cfgNode, boolean character, boolean createParaterminals, boolean closureLeft, boolean closureRight) {
     if (cfgNode == null) return;
     // Util.debug("cloneGrammarsRulesRec at cfgNode " + cfgNode.toStringDot());
     switch (cfgNode.cfgElement.cfgKind) {
     case ALT:
       actionALT();
-      cloneGrammarRulesRec(src, cfgNode.seq, character, createParaterminals, multiplyOut, closureLeft, closureRight);
-      cloneGrammarRulesRec(src, cfgNode.alt, character, createParaterminals, multiplyOut, closureLeft, closureRight);
+      cloneGrammarRulesRec(src, cfgNode.seq, character, createParaterminals, closureLeft, closureRight);
+      cloneGrammarRulesRec(src, cfgNode.alt, character, createParaterminals, closureLeft, closureRight);
       return;
     case END:
       actionEND(cfgNode.cfgElement.str);
@@ -211,8 +212,8 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
       return;
     case PAR, OPT, KLN, POS:
       actionSEQ(cfgNode.cfgElement.cfgKind, nextUniqueLabel()/* cfgNode.cfgElement.str */, cfgNode.actionAsTerm);
-      cloneGrammarRulesRec(src, cfgNode.alt, character, createParaterminals, multiplyOut, closureLeft, closureRight);
-      cloneGrammarRulesRec(src, cfgNode.seq, character, createParaterminals, multiplyOut, closureLeft, closureRight);
+      cloneGrammarRulesRec(src, cfgNode.alt, character, createParaterminals, closureLeft, closureRight);
+      cloneGrammarRulesRec(src, cfgNode.seq, character, createParaterminals, closureLeft, closureRight);
       break;
     case TRM_CS:
       if (character) {
@@ -223,11 +224,11 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
           trm_CS_to_TRM_CH(cfgNode.cfgElement.str, src.whitespaces.size() > 0);
       } else // no expansion required; let's just carry on
         actionSEQ(cfgNode.cfgElement.cfgKind, cfgNode.cfgElement.str, cfgNode.actionAsTerm);
-      cloneGrammarRulesRec(src, cfgNode.seq, character, createParaterminals, multiplyOut, closureLeft, closureRight);
+      cloneGrammarRulesRec(src, cfgNode.seq, character, createParaterminals, closureLeft, closureRight);
       break;
     default:
       actionSEQ(cfgNode.cfgElement.cfgKind, cfgNode.cfgElement.str, cfgNode.actionAsTerm);
-      cloneGrammarRulesRec(src, cfgNode.seq, character, createParaterminals, multiplyOut, closureLeft, closureRight);
+      cloneGrammarRulesRec(src, cfgNode.seq, character, createParaterminals, closureLeft, closureRight);
       break;
     }
   }
@@ -246,17 +247,18 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
     }
   }
 
-  private void dequeueRules(CFGRules src, CFGRulesKind cfgRulesKind, boolean character, boolean createParaterminals, boolean multiplyOut, boolean closureLeft,
+  private void dequeueRules(CFGRules src, CFGRulesKind cfgRulesKind, boolean character, boolean createParaterminals, boolean closureLeft,
       boolean closureRight) {
     QueueRuleElement ruleElement;
     while ((ruleElement = listRules.poll()) != null) {
       actionLHS("ART_" + ruleElement.number);
       actionALT();
-      cloneGrammarRulesRec(src, ruleElement.cfgNode, character, false, multiplyOut, closureLeft, closureRight);
+      cloneGrammarRulesRec(src, ruleElement.cfgNode, character, false, closureLeft, closureRight);
     }
   }
 
   public void normalise() { // Compute the fields that are not directly set by the script interpeter
+    if (clean) return;
     // Util.debug("Normalising cfgRulesNumber " + nextFreeCFGRulesNumber + " " + cfgRulesKind);
     if (!seenWhitespaceDirective) whitespaces.add(findElement(CFGKind.TRM_BI, "SIMPLE_WHITESPACE"));
 
@@ -358,11 +360,13 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
       }
     }
 
+    clean = true;
+
     // Construct lexer and parser subgrammars in we are a USER grammar
     // Note, by the time we get here, we are fully normalised so the subgrammars can use our reachability information
     if (cfgRulesKind == CFGRulesKind.USER) {
-      cfgRulesLexer = new CFGRules(this, CFGRulesKind.LEXER, false, false, false, false, false);
-      cfgRulesParser = new CFGRules(this, CFGRulesKind.PARSER, false, false, false, false, false);
+      cfgRulesLexer = new CFGRules(this, CFGRulesKind.LEXER, false, false, false, false);
+      cfgRulesParser = new CFGRules(this, CFGRulesKind.PARSER, false, false, false, false);
       subGrammarConsistencyCheck();
     }
   }
@@ -828,6 +832,7 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
     workingNode = elementToRulesNodeMap.get(element);
     if (workingNode == null) elementToRulesNodeMap.put(element, actionSEQ(CFGKind.NONTERMINAL, id, 0));
     mostRecentLHS = elementToRulesNodeMap.get(element);
+    clean = false;
   }
 
   public void actionALT() {
@@ -836,6 +841,7 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
       workingNode = workingNode.alt;
     workingNode = new CFGNode(this, CFGKind.ALT, nextUniqueLabel(), 0, workingFold, null, workingNode);
     workingFold = GIFTKind.NONE;
+    clean = false;
   }
 
   public CFGNode actionSEQ(CFGKind kind, String str, Integer actionAsTerm) {
@@ -843,16 +849,19 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
     workingNode = new CFGNode(this, kind, str, actionAsTerm, workingFold, workingNode, null);
     if (kind != CFGKind.END) used.add(workingNode.cfgElement);
     workingFold = GIFTKind.NONE;
+    clean = false;
     return workingNode;
   }
 
   public void actionAttribute(String name, String type) {
     mostRecentLHS.cfgElement.attributes.put(name, type);
+    clean = false;
   }
 
   public void actionEND(String actions) {
     actionSEQ(CFGKind.END, "", 0);
     workingNode = stack.pop();
+    clean = false;
   }
 
   /** Support for table driven parsers ***************************************/

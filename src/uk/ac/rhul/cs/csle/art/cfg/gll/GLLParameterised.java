@@ -1,6 +1,7 @@
 package uk.ac.rhul.cs.csle.art.cfg.gll;
 
 import java.io.PrintStream;
+import java.util.Set;
 
 import uk.ac.rhul.cs.csle.art.cfg.AbstractParser;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGElement;
@@ -8,6 +9,7 @@ import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGKind;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGRules;
 import uk.ac.rhul.cs.csle.art.cfg.lexer.AbstractLexer;
+import uk.ac.rhul.cs.csle.art.cfg.lexer.TWESetElement;
 import uk.ac.rhul.cs.csle.art.choose.ChooseRules;
 import uk.ac.rhul.cs.csle.art.util.Util;
 import uk.ac.rhul.cs.csle.art.util.derivations.AbstractDerivationNode;
@@ -126,6 +128,20 @@ public class GLLParameterised extends AbstractParser {
     }
   }
 
+  private boolean matchSliceSet(Set<CFGElement> set, TWESetElement[] slice) {
+    for (var e : slice)
+      if (set.contains(e)) return true;
+
+    return false;
+  }
+
+  private boolean matchSliceElment(CFGElement elmnt, TWESetElement[] slice) {
+    for (var e : slice)
+      if (e.equals(elmnt)) return true;
+
+    return false;
+  }
+
   private AbstractDerivationNode updateDerivation(int rightExtent) {
     var tmp = cfgRules.elementToRulesNodeMap.get(cfgNode.cfgElement);
     var rightNode = derivations.find(tmp, inputIndex, rightExtent);
@@ -134,6 +150,7 @@ public class GLLParameterised extends AbstractParser {
 
   private void queueAlternateTasks() {
     for (CFGNode production = cfgNode; production != null; production = production.alt)
+      // if (cfgRules.instanceFirst.get(production).contains())
       tasks.queue(inputIndex, production.seq, stackNode, derivationNode);
   }
 

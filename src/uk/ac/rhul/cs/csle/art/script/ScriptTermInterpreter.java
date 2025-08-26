@@ -196,7 +196,7 @@ public final class ScriptTermInterpreter {
     case "!clear":
       String argument = iTerms.termSymbolString(iTerms.subterm(term, 0, 0)).toLowerCase();
       switch (argument) {
-      case "all":
+      case "allrules":
         currentCFGRules = new CFGRules(CFGRulesKind.USER);
         currentChooseRules = new ChooseRules();
         currentTRRules = new TRRules();
@@ -218,7 +218,7 @@ public final class ScriptTermInterpreter {
         currentCFGRules.whitespaces.clear();
         break;
       default:
-        Util.fatal("Unknown !clear argument " + argument + "\nmust be one of (case insensitive):\nall\ncfgRules\nchoseRules\nrewriteRules");
+        Util.fatal("Unknown !clear argument " + argument + "\nmust be one of (case insensitive): allRules cfgRules choseRulesrewriteRules whitespace mode");
       }
       break;
 
@@ -245,23 +245,12 @@ public final class ScriptTermInterpreter {
         case "cyk":
           currentParser = new CYK();
           break;
-        case "gllhashpool":
-          currentParser = new GLLHashPool();
-          break;
-        case "gllBaseline":
-          currentParser = new GLLBaseLine();
-          break;
         case "gll":
           currentParser = new GLLParameterised(false, false);
           break;
-        case "gllrecogniser":
-          currentParser = new GLLParameterised(false, true);
-          break;
         case "mgll":
           currentParser = new GLLParameterised(true, false);
-          break;
-        case "mgllrecogniser":
-          currentParser = new GLLParameterised(true, true);
+          currentChooseMode = ChooseMode.USER;
           break;
         case "rdsobfunction":
           currentParser = new RDSOBFunction();
@@ -269,9 +258,22 @@ public final class ScriptTermInterpreter {
         case "rdsobexplicitstack":
           currentParser = new RDSOBExplicitStack();
           break;
+
+        case "gllhashpool":
+          currentParser = new GLLHashPool();
+          break;
+        case "gllBaseline":
+          currentParser = new GLLBaseLine();
+          break;
+        case "gllrecogniser":
+          currentParser = new GLLParameterised(false, true);
+          break;
+        case "mgllrecogniser":
+          currentParser = new GLLParameterised(true, true);
+          break;
         default:
           Util.fatal("Unexpected !parser argument " + iTerms.toString(iTerms.subterm(term, 0, i))
-              + "\nmust be one of (case insensitive):\nalgx  cyk\ngllHashpool  gllBaseline  mgll\ngllHashpool  gllRecogniser  mgllRecogniser\nrdsobfunction  rdsobexplicitstack");
+              + "\nmust be one of (case insensitive): algx cyk gll mgll rdsobfunction rdsobexplicitstack");
         }
       break;
 
@@ -282,50 +284,68 @@ public final class ScriptTermInterpreter {
         break;
       default:
         Util.fatal(
-            "Unexpected !interpreter argument " + iTerms.toString(iTerms.subterm(term, 0, 0)) + "\nmust be one of (case insensitive)\nattributeAction\n");
+            "Unexpected !interpreter argument " + iTerms.toString(iTerms.subterm(term, 0, 0)) + "\nmust be one of (case insensitive): attributeAction esos\n");
       }
       break;
 
     case "!mode":
       switch (iTerms.termSymbolString(iTerms.subterm(term, 0, 0)).toLowerCase()) {
-      case "choosedefault":
-        currentChooseMode = ChooseMode.DEFAULT;
+      case "recogniser":
+        currentParser.modeRecogniser = true;
         break;
-      case "choosenone":
-        currentChooseMode = ChooseMode.NONE;
+      case "parser":
+        currentParser.modeRecogniser = false;
         break;
-      case "chooseuser":
-        currentChooseMode = ChooseMode.USER;
+      case "hashpool":
+        currentParser.modeHashPool = true;
         break;
-      case "chooseeas":
-        currentChooseMode = ChooseMode.EAS;
+      case "tasklifo":
+        currentParser.modeTaskLIFO = true;
+        break;
+      case "taskfifo":
+        currentParser.modeTaskFIFO = true;
+        break;
+      case "productionlookahead":
+        currentParser.modeProductionLookeahead = true;
+        break;
+      case "noproductionlookahead":
+        currentParser.modeProductionLookeahead = false;
+        break;
+      case "poplookahead":
+        currentParser.modePopLookeahead = true;
+        break;
+      case "nopoplookahead":
+        currentParser.modePopLookeahead = false;
+        break;
+      case "derivationTrim":
+        currentParser.modeDerivationTrim = true;
+        break;
+      case "noderivationTrim":
+        currentParser.modeDerivationTrim = false;
         break;
       default:
         Util.fatal("Unexpected !mode argument " + iTerms.toString(iTerms.subterm(term, 0, 0))
-            + "\nmust be one of (case insensitive)\nwsDefault  wsNone  wsUser\nchooseDefault chooseNone  chooseUser  chooseEAS\n");
+            + "\nmust be one of (case insensitive): recogniser hashpool taskLIFO taskFIFO productionLookahead popLookahead derivationTrim noderivationTrim\n");
       }
       break;
 
     case "!convert":
       switch (iTerms.termSymbolString(iTerms.subterm(term, 0, 0)).toLowerCase()) {
       case "cfgcharacterinline":
-        currentCFGRules = new CFGRules(currentCFGRules, CFGRulesKind.USER, true, false, false, false, false);
+        currentCFGRules = new CFGRules(currentCFGRules, CFGRulesKind.USER, true, false, false, false);
         break;
       case "cfgcharacter":
-        currentCFGRules = new CFGRules(currentCFGRules, CFGRulesKind.USER, true, true, false, false, false);
+        currentCFGRules = new CFGRules(currentCFGRules, CFGRulesKind.USER, true, true, false, false);
         break;
-      case "cfgmultiplyout":
-        currentCFGRules = new CFGRules(currentCFGRules, CFGRulesKind.USER, false, false, true, false, false);
+      case "cfgbnfleft":
+        currentCFGRules = new CFGRules(currentCFGRules, CFGRulesKind.USER, false, false, true, false);
         break;
-      case "cfgclosureleft":
-        currentCFGRules = new CFGRules(currentCFGRules, CFGRulesKind.USER, false, false, false, true, false);
-        break;
-      case "cfclosureright":
-        currentCFGRules = new CFGRules(currentCFGRules, CFGRulesKind.USER, false, false, false, false, true);
+      case "cfgbnfright":
+        currentCFGRules = new CFGRules(currentCFGRules, CFGRulesKind.USER, false, false, false, true);
         break;
       default:
         Util.fatal("Unexpected !convert argument " + iTerms.toString(iTerms.subterm(term, 0, 0))
-            + "\nmust be one of (case insensitive)\ncfgCharacter  cfgClosureLeft  cfgClosureRight  cfgMultiplyOut\n");
+            + "\nmust be one of (case insensitive): cfgCharacter cfgCharacterInline cfgbnfLeft cfgbnfRight\n");
       }
       break;
 
