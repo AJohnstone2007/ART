@@ -69,36 +69,19 @@ public class GLLParameterised extends AbstractParser {
           derivationNode = updateDerivation(inputIndex); // Must match, but nothing consumed, so rightExtent = inputIndex
           cfgNode = cfgNode.seq; // Next grammar node which will be an END node
           continue nextCFGNode; // Continue with this sequence
-        case SOS, TRM_BI, TRM_CS, TRM_CI, TRM_CH: // Look for exact instance
-          var trmSlice = lexer.tweSlices[inputIndex];
-          if (trmSlice != null) // Nothing todo for empty TWE slices
-            nextSliceElement: for (int sliceIndex = 0; sliceIndex < trmSlice.length; sliceIndex++) // Iterate over the TWE set elements in this slice
-            if (!trmSlice[sliceIndex].suppressed && matchTerminal(trmSlice[sliceIndex].cfgElement)) { // Ignore suppressed TWE set elements
+        case SOS, TRM_BI, TRM_CS, TRM_CI, TRM_CH, TRM_CH_SET, TRM_CH_ANTI_SET: // Look for exact instance
+          var slice = lexer.tweSlices[inputIndex];
+          if (slice == null) continue nextTask;// Nothing todo for empty TWE slices
+          nextSliceElement: for (int sliceIndex = 0; sliceIndex < slice.length; sliceIndex++) // Iterate over the TWE set elements in this slice
+            if (!slice[sliceIndex].suppressed && matchTerminal(slice[sliceIndex].cfgElement)) { // Ignore suppressed TWE set elements
               // Util.debug("Matched " + cfgNode.toStringAsProduction());
-              if (isMGLL) // MGLL only: createdescriptors for any other match in this TWE set slice
-                for (int restOfIndex = sliceIndex + 1; restOfIndex < trmSlice.length; restOfIndex++)
-                if (!trmSlice[sliceIndex].suppressed && matchTerminal(trmSlice[sliceIndex].cfgElement))
-                  tasks.queue(trmSlice[restOfIndex].rightExtent, cfgNode.seq, stackNode, updateDerivation(trmSlice[restOfIndex].rightExtent));
-
-              derivationNode = updateDerivation(trmSlice[sliceIndex].rightExtent);
-              inputIndex = trmSlice[sliceIndex].rightExtent; // Step over the matched TWE
-              cfgNode = cfgNode.seq; // Next grammar node
-              continue nextCFGNode; // Continue with this sequence
-            }
-          continue nextTask;
-        case TRM_CH_SET, TRM_CH_ANTI_SET: // Look for character TWE set element whose string is in the set
-          var setSlice = lexer.tweSlices[inputIndex];
-          if (setSlice != null) // Nothing todo for empty TWE slices
-            nextSliceElement: for (int sliceIndex = 0; sliceIndex < setSlice.length; sliceIndex++) // Iterate over the TWE set elements in this slice
-            if (!setSlice[sliceIndex].suppressed && matchTerminal(setSlice[sliceIndex].cfgElement)) { // Ignore suppressed TWE set elements
-              // Util.debug("Matched " + cfgNode.toStringAsProduction());
-              if (isMGLL) // MGLL only: createdescriptors for any other match in this TWE set slice
-                for (int restOfIndex = sliceIndex + 1; restOfIndex < setSlice.length; restOfIndex++)
-                if (!setSlice[sliceIndex].suppressed && matchTerminal(setSlice[sliceIndex].cfgElement))
-                  tasks.queue(setSlice[restOfIndex].rightExtent, cfgNode.seq, stackNode, updateDerivation(setSlice[restOfIndex].rightExtent));
-
-              derivationNode = updateDerivation(setSlice[sliceIndex].rightExtent);
-              inputIndex = setSlice[sliceIndex].rightExtent; // Step over the matched TWE
+              if (isMGLL) { // MGLL only: createdescriptors for any other match in this TWE set slice
+                for (int restOfIndex = sliceIndex + 1; restOfIndex < slice.length; restOfIndex++)
+                  if (!slice[sliceIndex].suppressed && matchTerminal(slice[sliceIndex].cfgElement))
+                    tasks.queue(slice[restOfIndex].rightExtent, cfgNode.seq, stackNode, updateDerivation(slice[restOfIndex].rightExtent));
+              }
+              derivationNode = updateDerivation(slice[sliceIndex].rightExtent);
+              inputIndex = slice[sliceIndex].rightExtent; // Step over the matched TWE
               cfgNode = cfgNode.seq; // Next grammar node
               continue nextCFGNode; // Continue with this sequence
             }
@@ -135,9 +118,9 @@ public class GLLParameterised extends AbstractParser {
     return false;
   }
 
-  private boolean matchSliceElment(CFGElement elmnt, TWESetElement[] slice) {
-    for (var e : slice)
-      if (e.equals(elmnt)) return true;
+  private boolean matchSliceElement(CFGElement element, TWESetElement[] slice) {
+    for (TWESetElement e : slice)
+      if (!e.suppressed && e.cfgElement == element) return true;
 
     return false;
   }
