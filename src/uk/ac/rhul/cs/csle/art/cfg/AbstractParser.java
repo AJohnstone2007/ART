@@ -23,8 +23,9 @@ public abstract class AbstractParser {
   public boolean modeHashPool;
   public boolean modeTaskLIFO;
   public boolean modeTaskFIFO;
-  public boolean modeProductionLookeahead;
-  public boolean modePopLookeahead;
+  public boolean modeMGLLLookahead;
+  public boolean modeProductionLookahead;
+  public boolean modePopLookahead;
   public boolean modeDerivationTrim;
 
   public abstract void parse(String input, CFGRules cfgRules, AbstractLexer lexer, ChooseRules chooseRules);

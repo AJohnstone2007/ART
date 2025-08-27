@@ -19,7 +19,7 @@ import uk.ac.rhul.cs.csle.art.cfg.chart.AlgX;
 import uk.ac.rhul.cs.csle.art.cfg.chart.CYK;
 import uk.ac.rhul.cs.csle.art.cfg.gll.GLLBaseLine;
 import uk.ac.rhul.cs.csle.art.cfg.gll.GLLHashPool;
-import uk.ac.rhul.cs.csle.art.cfg.gll.GLLParameterised;
+import uk.ac.rhul.cs.csle.art.cfg.gll.GLLModal;
 import uk.ac.rhul.cs.csle.art.cfg.lexer.AbstractLexer;
 import uk.ac.rhul.cs.csle.art.cfg.lexer.LexerBaseLine;
 import uk.ac.rhul.cs.csle.art.cfg.lexer.LexerGLLRecogniser;
@@ -61,7 +61,7 @@ public final class ScriptTermInterpreter {
   private final TermTraverser scriptTraverser;
 
   private AbstractLexer currentLexer = new LexerBaseLine();
-  private AbstractParser currentParser = new GLLParameterised(true, false);
+  private AbstractParser currentParser = new GLLModal(true, false);
   private final Rewriter currentRewriter;
   private AbstractInterpreter currentInterpreter = null;
 
@@ -245,11 +245,11 @@ public final class ScriptTermInterpreter {
         case "cyk":
           currentParser = new CYK();
           break;
-        case "gll":
-          currentParser = new GLLParameterised(false, false);
+        case "gllmodal", "gll":
+          currentParser = new GLLModal(false, false);
           break;
         case "mgll":
-          currentParser = new GLLParameterised(true, false);
+          currentParser = new GLLModal(true, false);
           currentChooseMode = ChooseMode.USER;
           break;
         case "rdsobfunction":
@@ -266,10 +266,10 @@ public final class ScriptTermInterpreter {
           currentParser = new GLLBaseLine();
           break;
         case "gllrecogniser":
-          currentParser = new GLLParameterised(false, true);
+          currentParser = new GLLModal(false, true);
           break;
         case "mgllrecogniser":
-          currentParser = new GLLParameterised(true, true);
+          currentParser = new GLLModal(true, true);
           break;
         default:
           Util.fatal("Unexpected !parser argument " + iTerms.toString(iTerms.subterm(term, 0, i))
@@ -306,16 +306,22 @@ public final class ScriptTermInterpreter {
         currentParser.modeTaskFIFO = true;
         break;
       case "productionlookahead":
-        currentParser.modeProductionLookeahead = true;
+        currentParser.modeProductionLookahead = true;
         break;
       case "noproductionlookahead":
-        currentParser.modeProductionLookeahead = false;
+        currentParser.modeProductionLookahead = false;
         break;
       case "poplookahead":
-        currentParser.modePopLookeahead = true;
+        currentParser.modePopLookahead = true;
         break;
       case "nopoplookahead":
-        currentParser.modePopLookeahead = false;
+        currentParser.modePopLookahead = false;
+        break;
+      case "mglllookahead":
+        currentParser.modeMGLLLookahead = true;
+        break;
+      case "mgllpoplookahead":
+        currentParser.modeMGLLLookahead = false;
         break;
       case "derivationTrim":
         currentParser.modeDerivationTrim = true;

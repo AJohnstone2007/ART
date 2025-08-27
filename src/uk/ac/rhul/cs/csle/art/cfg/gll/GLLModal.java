@@ -1,7 +1,6 @@
 package uk.ac.rhul.cs.csle.art.cfg.gll;
 
 import java.io.PrintStream;
-import java.util.Set;
 
 import uk.ac.rhul.cs.csle.art.cfg.AbstractParser;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGElement;
@@ -22,14 +21,14 @@ import uk.ac.rhul.cs.csle.art.util.tasks.TasksGLL;
 /**
  * This is the 'master' GLL/MGLL implementation which has selectable features based on final booleans
  */
-public class GLLParameterised extends AbstractParser {
+public class GLLModal extends AbstractParser {
   private final boolean isMGLL;
   private final boolean isRecogniser;
   private CFGNode cfgNode; // current Context Free Grammar Node
   private AbstractStackNode stackNode; // current top of stack node
   private AbstractDerivationNode derivationNode; // current derivation forest node
 
-  public GLLParameterised(boolean isMGLL, boolean isRecogniser) {
+  public GLLModal(boolean isMGLL, boolean isRecogniser) {
     super();
     this.isMGLL = isMGLL;
     this.isRecogniser = isRecogniser;
@@ -58,12 +57,12 @@ public class GLLParameterised extends AbstractParser {
     cfgNode = cfgRules.elementToRulesNodeMap.get(cfgRules.startNonterminal).alt;
     stackNode = stacks.getRoot();
     derivationNode = null;
-    queueAlternateTasks();
+    queueProductionTasks();
     nextTask: while (nextTask())
       nextCFGNode: while (true) {
         switch (cfgNode.cfgElement.cfgKind) {
         case ALT:
-          queueAlternateTasks(); // Create task descriptor for the start of each production
+          queueProductionTasks(); // Create task descriptor for the start of each production
           continue nextTask;
         case EPSILON:
           derivationNode = updateDerivation(inputIndex); // Must match, but nothing consumed, so rightExtent = inputIndex
@@ -75,14 +74,14 @@ public class GLLParameterised extends AbstractParser {
           nextSliceElement: for (int sliceIndex = 0; sliceIndex < slice.length; sliceIndex++) // Iterate over the TWE set elements in this slice
             if (!slice[sliceIndex].suppressed && matchTerminal(slice[sliceIndex].cfgElement)) { // Ignore suppressed TWE set elements
               // Util.debug("Matched " + cfgNode.toStringAsProduction());
-              if (isMGLL) { // MGLL only: createdescriptors for any other match in this TWE set slice
+              if (isMGLL) { // MGLL only: create continuation task descriptors for all subsequent matches in this slice
                 for (int restOfIndex = sliceIndex + 1; restOfIndex < slice.length; restOfIndex++)
                   if (!slice[sliceIndex].suppressed && matchTerminal(slice[sliceIndex].cfgElement))
                     tasks.queue(slice[restOfIndex].rightExtent, cfgNode.seq, stackNode, updateDerivation(slice[restOfIndex].rightExtent));
               }
-              derivationNode = updateDerivation(slice[sliceIndex].rightExtent);
-              inputIndex = slice[sliceIndex].rightExtent; // Step over the matched TWE
-              cfgNode = cfgNode.seq; // Next grammar node
+              derivationNode = updateDerivation(slice[sliceIndex].rightExtent); // Now process the first-found slice element
+              inputIndex = slice[sliceIndex].rightExtent; // Step input past the matched TWE
+              cfgNode = cfgNode.seq; // Step to next grammar node
               continue nextCFGNode; // Continue with this sequence
             }
           continue nextTask;
@@ -111,17 +110,18 @@ public class GLLParameterised extends AbstractParser {
     }
   }
 
-  private boolean matchSliceSet(Set<CFGElement> set, TWESetElement[] slice) {
-    for (var e : slice)
-      if (set.contains(e)) return true;
+  private boolean lookahead(boolean enabled, CFGNode cfgNode) {
+    if (!enabled) return true;
 
-    return false;
-  }
+    var firstSet = cfgRules.instanceFirst.get(cfgNode);
+    var slice = lexer.tweSlices[inputIndex];
+    Util.debug("lookahead() on node " + cfgNode + " with instance first " + firstSet + " and  slice ");
+    for (var s : slice)
+      Util.info(s.toString());
 
-  private boolean matchSliceElement(CFGElement element, TWESetElement[] slice) {
-    for (TWESetElement e : slice)
-      if (!e.suppressed && e.cfgElement == element) return true;
-
+    for (TWESetElement s : slice)
+      if (!s.suppressed && firstSet.contains(s.cfgElement)) return true;
+    Util.debug("lookahead() false");
     return false;
   }
 
@@ -131,10 +131,9 @@ public class GLLParameterised extends AbstractParser {
     return derivations.extend(cfgNode.seq, derivationNode, rightNode);
   }
 
-  private void queueAlternateTasks() {
+  private void queueProductionTasks() {
     for (CFGNode production = cfgNode; production != null; production = production.alt)
-      // if (cfgRules.instanceFirst.get(production).contains())
-      tasks.queue(inputIndex, production.seq, stackNode, derivationNode);
+      if (lookahead(modeProductionLookahead, production.seq)) tasks.queue(inputIndex, production.seq, stackNode, derivationNode);
   }
 
   private boolean nextTask() {
@@ -151,7 +150,7 @@ public class GLLParameterised extends AbstractParser {
   private void call(CFGNode cfgNode) {
     var newStackNode = stacks.push(derivations, tasks, inputIndex, cfgNode, stackNode, derivationNode);
     for (CFGNode p = cfgRules.elementToRulesNodeMap.get(cfgNode.cfgElement).alt; p != null; p = p.alt)
-      tasks.queue(inputIndex, p.seq, newStackNode, null);
+      if (lookahead(modeProductionLookahead, p.seq)) tasks.queue(inputIndex, p.seq, newStackNode, null);
   }
 
   private void retrn() {
