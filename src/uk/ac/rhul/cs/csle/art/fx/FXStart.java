@@ -10,7 +10,7 @@ import javafx.geometry.Rectangle2D;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import uk.ac.rhul.cs.csle.art.ART;
-import uk.ac.rhul.cs.csle.art.script.ScriptTermInterpreter;
+import uk.ac.rhul.cs.csle.art.script.ScriptInterpreter;
 import uk.ac.rhul.cs.csle.art.util.Util;
 
 public class FXStart extends Application {
@@ -20,7 +20,7 @@ public class FXStart extends Application {
 
     if (ART.clargs[0].equals("fx")) {
       var graphicsWindow = new GraphicsWindow(new Stage(), 700, 0, 800, 400, "ART visualiser", new MenuBuilderARTGraphics(), 500.0);
-      new ScriptTermInterpreter(ART.scriptString(Arrays.copyOfRange(ART.clargs, 1, ART.clargs.length)));
+      new ScriptInterpreter(ART.scriptString(Arrays.copyOfRange(ART.clargs, 1, ART.clargs.length)));
       // Platform.exit();
       // System.exit(0);
     }

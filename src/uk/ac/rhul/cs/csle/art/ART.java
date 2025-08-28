@@ -13,7 +13,7 @@ import javafx.application.Application;
 import uk.ac.rhul.cs.csle.art.fx.FXStart;
 import uk.ac.rhul.cs.csle.art.old.v3.ARTV3;
 import uk.ac.rhul.cs.csle.art.old.v4.core.ARTV4;
-import uk.ac.rhul.cs.csle.art.script.ScriptTermInterpreter;
+import uk.ac.rhul.cs.csle.art.script.ScriptInterpreter;
 import uk.ac.rhul.cs.csle.art.test.AJDebug;
 import uk.ac.rhul.cs.csle.art.util.Util;
 import uk.ac.rhul.cs.csle.art.util.Version;
@@ -31,7 +31,7 @@ public class ART {
     case "v3":        new ARTV3(Arrays.copyOfRange(args, 1, args.length)); return; // Undocumented internal mode
     case "v4":        new ARTV4(Arrays.copyOfRange(args, 1, args.length)); return; // Undocumented internal mode
     case "ide", "fx": Application.launch(FXStart.class); return;
-    default:          new ScriptTermInterpreter(scriptString(args)); return; // Run batch mode without fx in this context
+    default:          new ScriptInterpreter(scriptString(args)); return; // Run batch mode without fx in this context
     }
     // No args
     Util.info("ART " + Version.version() + "\nUsage:");

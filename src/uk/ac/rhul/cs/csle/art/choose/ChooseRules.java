@@ -10,10 +10,11 @@ import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGRules;
 import uk.ac.rhul.cs.csle.art.old.v3.manager.grammar.element.ARTGrammarElement;
 import uk.ac.rhul.cs.csle.art.old.v3.manager.module.ARTV3Module;
 import uk.ac.rhul.cs.csle.art.old.v4.util.bitset.ARTBitSet;
-import uk.ac.rhul.cs.csle.art.script.ScriptTermInterpreter;
+import uk.ac.rhul.cs.csle.art.script.ScriptInterpreter;
 import uk.ac.rhul.cs.csle.art.term.ITerms;
 import uk.ac.rhul.cs.csle.art.term.TermTraverserText;
 import uk.ac.rhul.cs.csle.art.util.DisplayInterface;
+import uk.ac.rhul.cs.csle.art.util.Util;
 import uk.ac.rhul.cs.csle.art.util.relation.Relation;
 import uk.ac.rhul.cs.csle.art.util.statistics.Statistics;
 
@@ -31,6 +32,7 @@ public class ChooseRules implements DisplayInterface {
   }
 
   public void buildChooseRule(int term) {
+    Util.debug("Choose rule : " + ScriptInterpreter.iTerms.toString(term));
     chooseTerms.add(term);
   }
 
@@ -93,14 +95,14 @@ public class ChooseRules implements DisplayInterface {
     anyStr += ")";
 
     // Now make the terms, and assign to the bindings array
-    bindings[anyCharacterTerminal] = ScriptTermInterpreter.iTerms.findTerm(anyCharacterStr);
-    bindings[anyBuiltinTerminal] = ScriptTermInterpreter.iTerms.findTerm(anyBuiltinStr);
-    bindings[anyCaseSensitiveTerminal] = ScriptTermInterpreter.iTerms.findTerm(anyCaseSensitiveStr);
-    bindings[anyCaseInsensitiveTerminal] = ScriptTermInterpreter.iTerms.findTerm(anyCaseInsensitiveStr);
-    bindings[anyParaterminal] = ScriptTermInterpreter.iTerms.findTerm(anyParaStr);
-    bindings[anyNonterminal] = ScriptTermInterpreter.iTerms.findTerm(anyNonStr);
-    bindings[anyLiteralTerminal] = ScriptTermInterpreter.iTerms.findTerm(anyLiteralStr);
-    bindings[anyTerminal] = ScriptTermInterpreter.iTerms.findTerm(anyStr);
+    bindings[anyCharacterTerminal] = ScriptInterpreter.iTerms.findTerm(anyCharacterStr);
+    bindings[anyBuiltinTerminal] = ScriptInterpreter.iTerms.findTerm(anyBuiltinStr);
+    bindings[anyCaseSensitiveTerminal] = ScriptInterpreter.iTerms.findTerm(anyCaseSensitiveStr);
+    bindings[anyCaseInsensitiveTerminal] = ScriptInterpreter.iTerms.findTerm(anyCaseInsensitiveStr);
+    bindings[anyParaterminal] = ScriptInterpreter.iTerms.findTerm(anyParaStr);
+    bindings[anyNonterminal] = ScriptInterpreter.iTerms.findTerm(anyNonStr);
+    bindings[anyLiteralTerminal] = ScriptInterpreter.iTerms.findTerm(anyLiteralStr);
+    bindings[anyTerminal] = ScriptInterpreter.iTerms.findTerm(anyStr);
 
     // Debug: announce what we have just constructed
     // Util.info("Characters: " + ScriptTermInterpreter.iTerms.toString(bindings[1]));
@@ -164,11 +166,11 @@ public class ChooseRules implements DisplayInterface {
   }
 
   private void updateChooser(ARTV3Module ARTV3Module, ARTBitSet[] bits, int lhsTerm, int rhsTerm) {
-    for (int l = 0; l < ScriptTermInterpreter.iTerms.termArity(lhsTerm); l++) {
+    for (int l = 0; l < ScriptInterpreter.iTerms.termArity(lhsTerm); l++) {
       // Util.info("Updating chooser with: " + ScriptTermInterpreter.iTerms.toString(lhsTerm) + " relation " + ScriptTermInterpreter.iTerms.toString(rhsTerm));
-      int lTerm = ScriptTermInterpreter.iTerms.subterm(lhsTerm, l);
-      for (int r = 0; r < ScriptTermInterpreter.iTerms.termArity(rhsTerm); r++) {
-        int rTerm = ScriptTermInterpreter.iTerms.subterm(rhsTerm, r);
+      int lTerm = ScriptInterpreter.iTerms.subterm(lhsTerm, l);
+      for (int r = 0; r < ScriptInterpreter.iTerms.termArity(rhsTerm); r++) {
+        int rTerm = ScriptInterpreter.iTerms.subterm(rhsTerm, r);
         setChooserBit(ARTV3Module, bits, lTerm, rTerm);
       }
     }
@@ -183,7 +185,7 @@ public class ChooseRules implements DisplayInterface {
   }
 
   private int convertTermToEnumerationElement(ARTV3Module module, int term) {
-    String child = ITerms.unescapeMeta(ScriptTermInterpreter.iTerms.termSymbolString(ScriptTermInterpreter.iTerms.subterm(term, 0)));
+    String child = ITerms.unescapeMeta(ScriptInterpreter.iTerms.termSymbolString(ScriptInterpreter.iTerms.subterm(term, 0)));
     // Util.info("Converting: " + child);
 
     ARTGrammarElement element = null;

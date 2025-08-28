@@ -7,7 +7,7 @@ import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGElement;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGKind;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGRules;
 import uk.ac.rhul.cs.csle.art.choose.ChooseRules;
-import uk.ac.rhul.cs.csle.art.script.ScriptTermInterpreter;
+import uk.ac.rhul.cs.csle.art.script.ScriptInterpreter;
 import uk.ac.rhul.cs.csle.art.util.Util;
 
 public class LexerBaseLine extends AbstractLexer {
@@ -49,7 +49,7 @@ public class LexerBaseLine extends AbstractLexer {
     tweSlices[inputString.length() - 1][0] = new TWESetElement(cfgRules.endOfStringElement, inputString.length() - 1, inputString.length() - 1,
         inputString.length());
 
-    switch (ScriptTermInterpreter.currentChooseMode) {
+    switch (ScriptInterpreter.currentChooseMode) {
     case DEFAULT:
       chooseDefault();
       break;

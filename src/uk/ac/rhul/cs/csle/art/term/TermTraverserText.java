@@ -3,7 +3,7 @@ package uk.ac.rhul.cs.csle.art.term;
 import java.util.HashMap;
 import java.util.Map;
 
-import uk.ac.rhul.cs.csle.art.script.ScriptTermInterpreter;
+import uk.ac.rhul.cs.csle.art.script.ScriptInterpreter;
 import uk.ac.rhul.cs.csle.art.util.Util;
 
 /* This extension to TermTraverser adds text specific functions that allow a traverser to build a String rendering of a term, taking into account aliases
@@ -43,15 +43,15 @@ public class TermTraverserText extends TermTraverser {
   }
 
   public void addGlobalAlias(String key, String value) {
-    addGlobalAlias(ScriptTermInterpreter.iTerms.findString(key), ScriptTermInterpreter.iTerms.findString(value));
+    addGlobalAlias(ScriptInterpreter.iTerms.findString(key), ScriptInterpreter.iTerms.findString(value));
   }
 
   public int childSymbolIndex(int root, int childNumber) {
-    return ScriptTermInterpreter.iTerms.termChildren(root)[childNumber];
+    return ScriptInterpreter.iTerms.termChildren(root)[childNumber];
   }
 
   public String childSymbolString(int root, int childNumber) {
-    return ScriptTermInterpreter.iTerms.termSymbolString(childSymbolIndex(root, childNumber));
+    return ScriptInterpreter.iTerms.termSymbolString(childSymbolIndex(root, childNumber));
   }
 
   // public String childStrippedSymbolString(int root, int childNumber) {
@@ -64,7 +64,7 @@ public class TermTraverserText extends TermTraverser {
   }
 
   public void appendAlias(String prefix, int stringIndex, String postfix) {
-    sb.append(prefix + Util.escapeString(ScriptTermInterpreter.iTerms.getString(aliasLookup(stringIndex)), false) + postfix);
+    sb.append(prefix + Util.escapeString(ScriptInterpreter.iTerms.getString(aliasLookup(stringIndex)), false) + postfix);
   }
 
   public Integer aliasLookup(int stringIndex) {
@@ -98,9 +98,9 @@ public class TermTraverserText extends TermTraverser {
         sb.append(" ");
     }
     perform(opsPreorder, termIndex);
-    int[] children = ScriptTermInterpreter.iTerms.termChildren(termIndex);
+    int[] children = ScriptInterpreter.iTerms.termChildren(termIndex);
     int length = children.length;
-    if (!breakSet.contains(ScriptTermInterpreter.iTerms.termSymbolStringIndex(termIndex))) {
+    if (!breakSet.contains(ScriptInterpreter.iTerms.termSymbolStringIndex(termIndex))) {
       for (int childNumber = 0; childNumber < length; childNumber++) {
 
         if (depthLimit >= 0 && depth >= depthLimit)

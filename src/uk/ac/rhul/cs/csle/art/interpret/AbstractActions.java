@@ -1,6 +1,6 @@
 package uk.ac.rhul.cs.csle.art.interpret;
 
-import uk.ac.rhul.cs.csle.art.script.ScriptTermInterpreter;
+import uk.ac.rhul.cs.csle.art.script.ScriptInterpreter;
 
 public abstract class AbstractActions {
   protected AbstractInterpreter interpreter; // call back
@@ -26,7 +26,7 @@ public abstract class AbstractActions {
   }
 
   protected Object plugin(Object... args) {
-    return ScriptTermInterpreter.iTerms.plugin.plugin(args);
+    return ScriptInterpreter.iTerms.plugin.plugin(args);
   }
 
 }

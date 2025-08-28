@@ -8,7 +8,7 @@ import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGRules;
 import uk.ac.rhul.cs.csle.art.cfg.hashpool.HashPool;
 import uk.ac.rhul.cs.csle.art.cfg.lexer.AbstractLexer;
 import uk.ac.rhul.cs.csle.art.choose.ChooseRules;
-import uk.ac.rhul.cs.csle.art.script.ScriptTermInterpreter;
+import uk.ac.rhul.cs.csle.art.script.ScriptInterpreter;
 import uk.ac.rhul.cs.csle.art.util.Util;
 
 public class GLLHashPool extends HashPool {
@@ -309,17 +309,17 @@ public class GLLHashPool extends HashPool {
 
   /* Statistics support ******************************************************/
   private void loadCounts() {
-    ScriptTermInterpreter.currentStatistics.put("tweNodeCount", lexer.tweSlices.length);
-    ScriptTermInterpreter.currentStatistics.put("tweEdgeCount", lexer.tweSlices.length - 1);
-    ScriptTermInterpreter.currentStatistics.put("tweLexCount", 1);
-    ScriptTermInterpreter.currentStatistics.put("descriptorCount", cardinality(descriptorBuckets));
-    ScriptTermInterpreter.currentStatistics.put("gssNodeCount", cardinality(gssNodeBuckets));
-    ScriptTermInterpreter.currentStatistics.put("gssEdgeCount", cardinality(gssEdgeBuckets));
-    ScriptTermInterpreter.currentStatistics.put("popCount", cardinality(popElementBuckets));
+    ScriptInterpreter.currentStatistics.put("tweNodeCount", lexer.tweSlices.length);
+    ScriptInterpreter.currentStatistics.put("tweEdgeCount", lexer.tweSlices.length - 1);
+    ScriptInterpreter.currentStatistics.put("tweLexCount", 1);
+    ScriptInterpreter.currentStatistics.put("descriptorCount", cardinality(descriptorBuckets));
+    ScriptInterpreter.currentStatistics.put("gssNodeCount", cardinality(gssNodeBuckets));
+    ScriptInterpreter.currentStatistics.put("gssEdgeCount", cardinality(gssEdgeBuckets));
+    ScriptInterpreter.currentStatistics.put("popCount", cardinality(popElementBuckets));
 
-    ScriptTermInterpreter.currentStatistics.put("sppfSymbolPlusIntermediateNodeCount", cardinality(sppfNodeBuckets));
-    ScriptTermInterpreter.currentStatistics.put("sppfPackNodeCount", cardinality(sppfPackNodeBuckets));
-    ScriptTermInterpreter.currentStatistics.put("poolAllocated", getFirstUnusedElement());
+    ScriptInterpreter.currentStatistics.put("sppfSymbolPlusIntermediateNodeCount", cardinality(sppfNodeBuckets));
+    ScriptInterpreter.currentStatistics.put("sppfPackNodeCount", cardinality(sppfPackNodeBuckets));
+    ScriptInterpreter.currentStatistics.put("poolAllocated", getFirstUnusedElement());
 
     Map<Integer, Integer> hist = new HashMap<>();
     hist.put(0, 0);
@@ -337,13 +337,13 @@ public class GLLHashPool extends HashPool {
     accumulateOccupancies(hist, sppfNodeBuckets);
     accumulateOccupancies(hist, sppfPackNodeBuckets);
 
-    ScriptTermInterpreter.currentStatistics.put("h0", hist.get(0));
-    ScriptTermInterpreter.currentStatistics.put("h1", hist.get(1));
-    ScriptTermInterpreter.currentStatistics.put("h2", hist.get(2));
-    ScriptTermInterpreter.currentStatistics.put("h3", hist.get(3));
-    ScriptTermInterpreter.currentStatistics.put("h4", hist.get(4));
-    ScriptTermInterpreter.currentStatistics.put("h5", hist.get(5));
-    ScriptTermInterpreter.currentStatistics.put("h6more", hist.get(-1));
+    ScriptInterpreter.currentStatistics.put("h0", hist.get(0));
+    ScriptInterpreter.currentStatistics.put("h1", hist.get(1));
+    ScriptInterpreter.currentStatistics.put("h2", hist.get(2));
+    ScriptInterpreter.currentStatistics.put("h3", hist.get(3));
+    ScriptInterpreter.currentStatistics.put("h4", hist.get(4));
+    ScriptInterpreter.currentStatistics.put("h5", hist.get(5));
+    ScriptInterpreter.currentStatistics.put("h6more", hist.get(-1));
   }
 
   int sppfAmbiguityCount() {

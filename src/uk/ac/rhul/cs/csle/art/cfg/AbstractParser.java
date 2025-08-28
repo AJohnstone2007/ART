@@ -19,14 +19,6 @@ public abstract class AbstractParser {
   public AbstractLexer lexer;
   protected int inputIndex; // Current input index
   public AbstractDerivations derivations;
-  public boolean modeRecogniser;
-  public boolean modeHashPool;
-  public boolean modeTaskLIFO;
-  public boolean modeTaskFIFO;
-  public boolean modeMGLLLookahead;
-  public boolean modeProductionLookahead;
-  public boolean modePopLookahead;
-  public boolean modeDerivationTrim;
 
   public abstract void parse(String input, CFGRules cfgRules, AbstractLexer lexer, ChooseRules chooseRules);
 

@@ -13,7 +13,7 @@ import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGKind;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.GIFTKind;
 import uk.ac.rhul.cs.csle.art.choose.ChooseRules;
-import uk.ac.rhul.cs.csle.art.script.ScriptTermInterpreter;
+import uk.ac.rhul.cs.csle.art.script.ScriptInterpreter;
 import uk.ac.rhul.cs.csle.art.term.TermTraverserText;
 import uk.ac.rhul.cs.csle.art.util.Util;
 import uk.ac.rhul.cs.csle.art.util.relation.RelationOverNaturals;
@@ -94,7 +94,7 @@ public class SPPF extends AbstractDerivations {
     int ret = 1;
     for (SPPFSymbolNode s : nodes.keySet())
       if (ret < s.rightExtent) ret = s.rightExtent;
-    Util.debug("Returning widest derivation " + ret);
+    // Util.debug("Returning widest derivation " + ret);
     return ret;
   }
 
@@ -193,7 +193,7 @@ public class SPPF extends AbstractDerivations {
 
     // Util.debug("At SPPF node " + sppfn + " and grammar node " + gn + " make new term with constructor: " + constructor);
     if (children != childrenFromParent) {
-      childrenFromParent.add(ScriptTermInterpreter.iTerms.findTerm(constructor, children));
+      childrenFromParent.add(ScriptInterpreter.iTerms.findTerm(constructor, children));
       derivationNodeCount++;
     }
 
@@ -259,7 +259,7 @@ public class SPPF extends AbstractDerivations {
 
     if (activePackedNodes > 1) {
       ambiguousSPPF = true;
-      Util.info("Ambiguous SPPF node " + sppfn.toString() + " involving slots: ");
+      Util.warning("Ambiguous SPPF node " + sppfn.toString() + " involving slots: ");
       for (SPPFPackedNode p : sppfn.packNodes)
         if (!p.suppressed) Util.info("  " + p);
     }
@@ -292,14 +292,14 @@ public class SPPF extends AbstractDerivations {
       }
     }
 
-    ScriptTermInterpreter.currentStatistics.put("sppfEpsilonNodeCount", sppfEpsilonNodeCount);
-    ScriptTermInterpreter.currentStatistics.put("sppfTerminalNodeCount", sppfTerminalNodeCount);
-    ScriptTermInterpreter.currentStatistics.put("sppfNonterminalNodeCount", sppfNonterminalNodeCount);
-    ScriptTermInterpreter.currentStatistics.put("sppfIntermediateNodeCount", sppfIntermediateNodeCount);
-    ScriptTermInterpreter.currentStatistics.put("sppfSymbolPlusIntermediateNodeCount", nodes.keySet().size());
-    ScriptTermInterpreter.currentStatistics.put("sppfPackNodeCount", sppfPackNodeCount);
-    ScriptTermInterpreter.currentStatistics.put("sppfAmbiguityCount", sppfAmbiguityCount);
-    ScriptTermInterpreter.currentStatistics.put("sppfEdgeCount", sppfEdgeCount);
+    ScriptInterpreter.currentStatistics.put("sppfEpsilonNodeCount", sppfEpsilonNodeCount);
+    ScriptInterpreter.currentStatistics.put("sppfTerminalNodeCount", sppfTerminalNodeCount);
+    ScriptInterpreter.currentStatistics.put("sppfNonterminalNodeCount", sppfNonterminalNodeCount);
+    ScriptInterpreter.currentStatistics.put("sppfIntermediateNodeCount", sppfIntermediateNodeCount);
+    ScriptInterpreter.currentStatistics.put("sppfSymbolPlusIntermediateNodeCount", nodes.keySet().size());
+    ScriptInterpreter.currentStatistics.put("sppfPackNodeCount", sppfPackNodeCount);
+    ScriptInterpreter.currentStatistics.put("sppfAmbiguityCount", sppfAmbiguityCount);
+    ScriptInterpreter.currentStatistics.put("sppfEdgeCount", sppfEdgeCount);
     // loadPoolAllocated(-1);
     // loadHashCounts(-20, -21, -22, -23, -24, -25, -26);
   }

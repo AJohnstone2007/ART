@@ -9,7 +9,7 @@ import java.util.Set;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGKind;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGRules;
-import uk.ac.rhul.cs.csle.art.script.ScriptTermInterpreter;
+import uk.ac.rhul.cs.csle.art.script.ScriptInterpreter;
 import uk.ac.rhul.cs.csle.art.term.ITerms;
 import uk.ac.rhul.cs.csle.art.util.Util;
 
@@ -39,7 +39,7 @@ public class RDSOBOracleGenerator {
   public RDSOBOracleGenerator(CFGRules cfgRules) {
     if (cfgRules.startNonterminal == null) Util.fatal("RDSOBOracle found no CFG rules");
     String filename = "ARTGeneratedRDSOBOracle";
-    iTerms = ScriptTermInterpreter.iTerms;
+    iTerms = ScriptInterpreter.iTerms;
     String timeStamp = Util.timestamp();
     Util.info("Writing new " + filename + ": " + timeStamp);
     try {

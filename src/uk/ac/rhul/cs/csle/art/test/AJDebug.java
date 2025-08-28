@@ -30,7 +30,7 @@ import uk.ac.rhul.cs.csle.art.old.v3.manager.grammar.element.ARTGrammarElementTe
 import uk.ac.rhul.cs.csle.art.old.v3.manager.grammar.instance.ARTGrammarInstance;
 import uk.ac.rhul.cs.csle.art.old.v3.manager.grammar.instance.ARTGrammarInstanceSlot;
 import uk.ac.rhul.cs.csle.art.old.v3.manager.module.ARTV3Module;
-import uk.ac.rhul.cs.csle.art.script.ScriptTermInterpreter;
+import uk.ac.rhul.cs.csle.art.script.ScriptInterpreter;
 import uk.ac.rhul.cs.csle.art.util.Util;
 
 /* This version of AJDebug is intended to perform regression testing between V5 and V3 first/follow set computations */
@@ -39,7 +39,7 @@ public final class AJDebug {
   CFGRules grammarV5; // regression V5 grammar
   ARTGrammar grammarV3; // regression V3 grammar
 
-  ScriptTermInterpreter regressionScriptInterpreter;
+  ScriptInterpreter regressionScriptInterpreter;
 
   public AJDebug(String[] args) {
     Util.errorLevel = 4;
@@ -81,7 +81,7 @@ public final class AJDebug {
     // System.out.print("v5v3RegressionFirstAndFollowSets");
 
     ART.tracing = true;
-    regressionScriptInterpreter = new ScriptTermInterpreter(scriptString);
+    regressionScriptInterpreter = new ScriptInterpreter(scriptString);
 
     ARTV3 artV3 = new ARTV3(scriptString);
 

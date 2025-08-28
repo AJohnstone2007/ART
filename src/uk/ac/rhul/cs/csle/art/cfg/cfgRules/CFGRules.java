@@ -12,7 +12,7 @@ import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import uk.ac.rhul.cs.csle.art.script.ScriptTermInterpreter;
+import uk.ac.rhul.cs.csle.art.script.ScriptInterpreter;
 import uk.ac.rhul.cs.csle.art.term.TermTraverserText;
 import uk.ac.rhul.cs.csle.art.util.DisplayInterface;
 import uk.ac.rhul.cs.csle.art.util.Util;
@@ -142,10 +142,10 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
       if (src.whitespaces.size() > 0) { // Create WS nonterminal
         actionLHS("ART_" + terminalNumber++);
         actionALT();
-        actionSEQ(CFGKind.KLN, nextUniqueLabel(), ScriptTermInterpreter.iTerms.termEmpty);
+        actionSEQ(CFGKind.KLN, nextUniqueLabel(), ScriptInterpreter.iTerms.termEmpty);
         for (var w : src.whitespaces) {
           actionALT();
-          actionSEQ(w.cfgKind, w.str, ScriptTermInterpreter.iTerms.termEmpty);
+          actionSEQ(w.cfgKind, w.str, ScriptInterpreter.iTerms.termEmpty);
           actionEND("");
         }
         actionEND("");
@@ -187,8 +187,8 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
 
   private void trm_CS_to_TRM_CH(String s, boolean addWS) {
     for (int i = 0; i < s.length(); i++)
-      actionSEQ(CFGKind.TRM_CH, s.substring(i, i + 1), ScriptTermInterpreter.iTerms.termEmpty);
-    if (addWS) actionSEQ(CFGKind.NONTERMINAL, "ART_0", ScriptTermInterpreter.iTerms.termEmpty);
+      actionSEQ(CFGKind.TRM_CH, s.substring(i, i + 1), ScriptInterpreter.iTerms.termEmpty);
+    if (addWS) actionSEQ(CFGKind.NONTERMINAL, "ART_0", ScriptInterpreter.iTerms.termEmpty);
   }
 
   private void cloneSetElements(Set<CFGElement> dstSet, Set<CFGElement> srcSet) {
@@ -339,16 +339,16 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
         // Now check each action to see if it is trying to access a RHS nonterminal which is not instances in this LHS
         for (CFGNode gn = elementToRulesNodeMap.get(e).alt; gn != null; gn = gn.alt) {
           for (CFGNode gs = gn.seq; gs.cfgElement.cfgKind != CFGKind.END; gs = gs.seq) {
-            for (int i = 0; i < ScriptTermInterpreter.iTerms.termArity(gs.actionAsTerm); i++) {
-              int annotationRoot = ScriptTermInterpreter.iTerms.subterm(gs.actionAsTerm, i);
+            for (int i = 0; i < ScriptInterpreter.iTerms.termArity(gs.actionAsTerm); i++) {
+              int annotationRoot = ScriptInterpreter.iTerms.subterm(gs.actionAsTerm, i);
               // Util.info("Processing slot annotation " + ScriptTermInterpreter.iTerms.toString(annotationRoot));
-              switch (ScriptTermInterpreter.iTerms.termSymbolString(annotationRoot)) {
+              switch (ScriptInterpreter.iTerms.termSymbolString(annotationRoot)) {
               case "cfgEquation", "cfgAssignment":
                 checkTermActionsRec(annotationRoot, lhs, e.rhsNonterminalsAcrossAllProductions);
                 break;
 
               case "cfgNative":
-                checkNativeActions(ScriptTermInterpreter.iTerms.toString(annotationRoot), lhs, e.rhsNonterminalsAcrossAllProductions, true);
+                checkNativeActions(ScriptInterpreter.iTerms.toString(annotationRoot), lhs, e.rhsNonterminalsAcrossAllProductions, true);
                 break;
               case "cfgInsert":
                 break;
@@ -451,17 +451,18 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
 
     if (cfgRulesKind == CFGRulesKind.USER) {
       // Warnings here; diagnostics to be moved later to !print
-      Util.debug("Parser nonterminals" + parserNonterminals);
-      Util.debug("Paraterminals" + paraterminals);
-      Util.debug("Lexer nonterminals" + lexerNonterminals);
+      // Util.debug("Parser nonterminals" + parserNonterminals);
+      // Util.debug("Paraterminals" + paraterminals);
+      // Util.debug("Lexer nonterminals" + lexerNonterminals);
 
       TreeSet<CFGElement> tmp = new TreeSet<>(elements.keySet());
       tmp.removeAll(reachable.get(startNonterminal));
       tmp.remove(startNonterminal);
+      tmp.removeAll(whitespaces);
       for (var e : elements.keySet())
         if (scaffoldingKinds.contains(e.cfgKind)) tmp.remove(e);
       if (!tmp.isEmpty()) {
-        Util.warning("unused grammar element" + plural(tmp) + ": " + tmp);
+        Util.warning("unused CFG element" + plural(tmp) + ": " + tmp);
       }
 
       tmp = new TreeSet<>(paraterminals);
@@ -708,13 +709,13 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
   }
 
   private void checkTermActionsRec(int annotationRoot, String lhs, Map<String, Integer> rhsNonterminals) {
-    if (ScriptTermInterpreter.iTerms.termSymbolString(annotationRoot).equals("cfgAttribute")) {
-      String nonterminalID = ScriptTermInterpreter.iTerms.termSymbolString(ScriptTermInterpreter.iTerms.subterm(annotationRoot, 0));
-      String attributeID = ScriptTermInterpreter.iTerms.termSymbolString(ScriptTermInterpreter.iTerms.subterm(annotationRoot, 1));
+    if (ScriptInterpreter.iTerms.termSymbolString(annotationRoot).equals("cfgAttribute")) {
+      String nonterminalID = ScriptInterpreter.iTerms.termSymbolString(ScriptInterpreter.iTerms.subterm(annotationRoot, 0));
+      String attributeID = ScriptInterpreter.iTerms.termSymbolString(ScriptInterpreter.iTerms.subterm(annotationRoot, 1));
       validateAttribute(nonterminalID, attributeID, lhs, rhsNonterminals, false); // int is default attribute type - overriden by <> declaration on rhs
     } else
-      for (int i = 0; i < ScriptTermInterpreter.iTerms.termArity(annotationRoot); i++)
-        checkTermActionsRec(ScriptTermInterpreter.iTerms.subterm(annotationRoot, i), lhs, rhsNonterminals);
+      for (int i = 0; i < ScriptInterpreter.iTerms.termArity(annotationRoot); i++)
+        checkTermActionsRec(ScriptInterpreter.iTerms.subterm(annotationRoot, i), lhs, rhsNonterminals);
   }
 
   private void validateAttribute(String nonterminalID, String attributeID, String lhs, Map<String, Integer> rhsNonterminals, boolean isNative) {

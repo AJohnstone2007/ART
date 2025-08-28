@@ -10,6 +10,7 @@ import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGRules;
 import uk.ac.rhul.cs.csle.art.cfg.lexer.AbstractLexer;
 import uk.ac.rhul.cs.csle.art.cfg.lexer.TWESetElement;
 import uk.ac.rhul.cs.csle.art.choose.ChooseRules;
+import uk.ac.rhul.cs.csle.art.script.ScriptInterpreter;
 import uk.ac.rhul.cs.csle.art.util.Util;
 import uk.ac.rhul.cs.csle.art.util.derivations.AbstractDerivationNode;
 import uk.ac.rhul.cs.csle.art.util.derivations.SPPF;
@@ -22,35 +23,24 @@ import uk.ac.rhul.cs.csle.art.util.tasks.TasksGLL;
  * This is the 'master' GLL/MGLL implementation which has selectable features based on final booleans
  */
 public class GLLModal extends AbstractParser {
-  private final boolean isMGLL;
-  private final boolean isRecogniser;
   private CFGNode cfgNode; // current Context Free Grammar Node
   private AbstractStackNode stackNode; // current top of stack node
   private AbstractDerivationNode derivationNode; // current derivation forest node
 
-  public GLLModal(boolean isMGLL, boolean isRecogniser) {
-    super();
-    this.isMGLL = isMGLL;
-    this.isRecogniser = isRecogniser;
-  }
-
-  @Override
-  protected String name() { // Unpack the control booleans to give the canonical algorithm name
-    return (isMGLL ? "M" : "") + "GLL" + (isRecogniser ? "Recogniser" : "");
-  }
-
   @Override
   public void parse(String input, CFGRules cfgRules, AbstractLexer lexer, ChooseRules chooseRules) {
+    Util.debug("GLLModal.parse() with current modes " + ScriptInterpreter.currentModes);
     inLanguage = false;
     this.input = input;
     this.cfgRules = cfgRules;
     this.lexer = lexer;
     tasks = new TasksGLL();
     stacks = new GSSGLL(cfgRules);
-    if (isRecogniser)
+    if (ScriptInterpreter.currentModes.contains("recogniser"))
       derivations = new SPPFDummyForRecognisers(this);
     else
       derivations = new SPPF(this);
+    Util.debug("Derivation implementation: " + derivations.getClass().getSimpleName());
 
     if (!lexer.lex(input, cfgRules, chooseRules)) return; // Nothing to do if the lexer fails
     inputIndex = 0;
@@ -74,7 +64,7 @@ public class GLLModal extends AbstractParser {
           nextSliceElement: for (int sliceIndex = 0; sliceIndex < slice.length; sliceIndex++) // Iterate over the TWE set elements in this slice
             if (!slice[sliceIndex].suppressed && matchTerminal(slice[sliceIndex].cfgElement)) { // Ignore suppressed TWE set elements
               // Util.debug("Matched " + cfgNode.toStringAsProduction());
-              if (isMGLL) { // MGLL only: create continuation task descriptors for all subsequent matches in this slice
+              if (ScriptInterpreter.currentModes.contains("mgll")) { // MGLL only: create continuation task descriptors for all subsequent matches in this slice
                 for (int restOfIndex = sliceIndex + 1; restOfIndex < slice.length; restOfIndex++)
                   if (!slice[sliceIndex].suppressed && matchTerminal(slice[sliceIndex].cfgElement))
                     tasks.queue(slice[restOfIndex].rightExtent, cfgNode.seq, stackNode, updateDerivation(slice[restOfIndex].rightExtent));
@@ -89,7 +79,8 @@ public class GLLModal extends AbstractParser {
           call(cfgNode);
           continue nextTask;
         case END:
-          retrn();
+          var lhs = cfgNode.seq.cfgElement;
+          if (lookaheadFollow("returnLookahead", cfgNode.seq.cfgElement)) retrn();
           continue nextTask;
         default:
           Util.fatal("Unexpected CFGNode kind " + cfgNode.cfgElement.cfgKind + " in " + getClass().getSimpleName());
@@ -110,21 +101,6 @@ public class GLLModal extends AbstractParser {
     }
   }
 
-  private boolean lookahead(boolean enabled, CFGNode cfgNode) {
-    if (!enabled) return true;
-
-    var firstSet = cfgRules.instanceFirst.get(cfgNode);
-    var slice = lexer.tweSlices[inputIndex];
-    Util.debug("lookahead() on node " + cfgNode + " with instance first " + firstSet + " and  slice ");
-    for (var s : slice)
-      Util.info(s.toString());
-
-    for (TWESetElement s : slice)
-      if (!s.suppressed && firstSet.contains(s.cfgElement)) return true;
-    Util.debug("lookahead() false");
-    return false;
-  }
-
   private AbstractDerivationNode updateDerivation(int rightExtent) {
     var tmp = cfgRules.elementToRulesNodeMap.get(cfgNode.cfgElement);
     var rightNode = derivations.find(tmp, inputIndex, rightExtent);
@@ -133,7 +109,7 @@ public class GLLModal extends AbstractParser {
 
   private void queueProductionTasks() {
     for (CFGNode production = cfgNode; production != null; production = production.alt)
-      if (lookahead(modeProductionLookahead, production.seq)) tasks.queue(inputIndex, production.seq, stackNode, derivationNode);
+      if (lookaheadInstanceFirst("productionLookahead", production.seq)) tasks.queue(inputIndex, production.seq, stackNode, derivationNode);
   }
 
   private boolean nextTask() {
@@ -150,7 +126,7 @@ public class GLLModal extends AbstractParser {
   private void call(CFGNode cfgNode) {
     var newStackNode = stacks.push(derivations, tasks, inputIndex, cfgNode, stackNode, derivationNode);
     for (CFGNode p = cfgRules.elementToRulesNodeMap.get(cfgNode.cfgElement).alt; p != null; p = p.alt)
-      if (lookahead(modeProductionLookahead, p.seq)) tasks.queue(inputIndex, p.seq, newStackNode, null);
+      if (lookaheadInstanceFirst("productionLookahead", p.seq)) tasks.queue(inputIndex, p.seq, newStackNode, null);
   }
 
   private void retrn() {
@@ -162,6 +138,36 @@ public class GLLModal extends AbstractParser {
       return;
     }
     stacks.pop(derivations, tasks, inputIndex, stackNode, derivationNode);
+  }
+
+  private boolean lookaheadInstanceFirst(String mode, CFGNode cfgNode) {
+    if (!ScriptInterpreter.currentModes.contains(mode)) return true;
+
+    var set = cfgRules.instanceFirst.get(cfgNode);
+    var slice = lexer.tweSlices[inputIndex];
+    // Util.debug("lookaheadInstanceFirst() on node " + cfgNode + " with instance first " + set + " and slice ");
+    // for (var s : slice)
+    // Util.info(s.toString());
+
+    for (TWESetElement s : slice)
+      if (!s.suppressed && set.contains(s.cfgElement)) return true;
+    Util.debug("lookahead() false");
+    return false;
+  }
+
+  private boolean lookaheadFollow(String mode, CFGElement cfgElement) {
+    if (!ScriptInterpreter.currentModes.contains(mode)) return true;
+
+    var set = cfgRules.follow.get(cfgElement);
+    var slice = lexer.tweSlices[inputIndex];
+    // Util.debug("lookaheadFollow() on element " + cfgElement + " with set " + set + " and slice ");
+    // for (var s : slice)
+    // Util.info(s.toString());
+
+    for (TWESetElement s : slice)
+      if (!s.suppressed && set.contains(s.cfgElement)) return true;
+    Util.debug("lookahead() false");
+    return false;
   }
 
   @Override

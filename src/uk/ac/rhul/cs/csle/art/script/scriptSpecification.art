@@ -68,16 +68,14 @@ trPremises ::= #^ | trMatch trPremises^ | trTransition trPremises^
 trMatch ::= trTopTuple '|>'^ trTopTuple
 
 trTransition ::= trTopTuple trRelation^ trTopTuple
-trTopTuple ::= trTerm | trTuple^^ trTerms^
+trTopTuple ::= trTerm | trTuple^^ trTerm ','^ trTerms^
 trTuple ::= #^  
-trTerms ::= trTerm trTermsTail^
-trTermsTail ::= ','^ trTerm | ','^ trTerm trTermsTail^
+trTerms ::= trTerm | trTerm ','^ trTerms^
 
 trTerm ::= 
   __bool^^ | __char^^ | __intAP^^ | __int32^^ | __realAP^^ | __real64^^ | __string^^  // lexical from builtins - see below  
 | __array^^ | __list^^ | __set^^ | __map^^ 
 | ID^^ | IDSTAR^^ | ID^^ '('^ ')'^ | ID^^ '('^ trTerm ')'^ | ID^^ '('^ trTerms^ ')'^ | trTuple^^ '<'^ trTerms^ '>'^
-
 
 __array ::= '['^  __int32 '|'^ ']'^ | '['^ __int32 '|'^ __a ']'^
 __a ::= trTerm | trTerm ','^ __a
@@ -96,31 +94,23 @@ trRelation ::= '->' | '=>' | '~>' | ':->' | ':=>' | ':~>'
 (* Choose rules ***************************************************************)
 chooseRule ::= chooseElementRule^^ | chooseSlotRule^^
 
-chooseElementRule ::= chooseElementExpr chooserOp^^ chooseElementExpr 
-chooseSlotRule ::= chooseSlotExpr chooserOp^^ chooseSlotExpr  
+chooseElementRule ::= chooseElement chooserOp chooseElement
+chooseSlotRule ::= chooseSlot chooserOp chooseSlot
 
-chooseElementExpr ::= chooseElement^^ | chooseElementExpr chooseSetOp^^ chooseElement 
-chooseSlotExpr    ::= chooseSlot^^    | chooseSlotExpr    chooseSetOp^^ chooseSlot
-
-chooseElement ::= cfgNonterminal | cfgCharacterTerminal | cfgBuiltinTerminal | cfgCaseInsensitiveTerminal | cfgCaseSensitiveTerminal | choosePredefinedElementSet^ | '('^ chooseElementExpr ')'^
-chooseSlot ::= cfgLHS '::=' cfgAlt | '('^ chooseSlotExpr ')'^
+chooseElement ::= cfgNonterminal | cfgCharacterTerminal | cfgBuiltinTerminal | cfgCaseInsensitiveTerminal | cfgCaseSensitiveTerminal | choosePredefinedElementSet^
+chooseSlot ::= cfgLHS '::=' cfgAlt | choosePredefinedSlotSet^
 
 choosePredefinedElementSet ::=
-  'anyCharacterTerminal' | 'anyBuiltinTerminal' | 'anyCaseSensitiveTerminal' | 'anyCaseInsensitiveTerminal' 
-| 'anyParaterminal'      | 'anyLiteralTerminal' | 'anyTerminal'              | 'anyNonterminal' 
+  'anyCharacterTerminal'^^ | 'anyBuiltinTerminal'^^ | 'anyCaseSensitiveTerminal'^^ | 'anyCaseInsensitiveTerminal'^^ 
+| 'anyParaterminal'^^      | 'anyLiteralTerminal'^^ | 'anyTerminal'^^              | 'anyNonterminal'^^ 
 
-choosePredefinedSlotSet ::= 'anySlot'
+choosePredefinedSlotSet ::= 'anySlot'^^
 
 chooserOp ::= chooseHigher^^ | chooseLower^^ | chooseLonger^^ | chooseShorter^^
 chooseHigher ::= '>'^
 chooseLower ::= '<'^
 chooseLonger ::= '>>'^
 chooseShorter ::= '<<'^
-
-chooseSetOp ::= chooseUnion | chooseDifference| chooseIntersection 
-chooseUnion ::= '+'^
-chooseDifference ::= '-'^
-chooseIntersection ::= '*'^
 
 (* Directives ****************************************************************)
 directive ::= directiveCarrier
@@ -133,7 +123,7 @@ directiveCarrier ::=
 | '!show'^^ displayElements^
 | '!trace'^^ __int32
 
-| '!clear'^^ ID | '!lexer'^^ ID | '!parser'^^ ID | '!interpreter'^^ ID | '!mode'^^ ID | '!convert'^^ ID 
+| '!clear'^^ IDs | '!lexer'^^ ID | '!parser'^^ ID | '!interpreter'^^ ID | '!mode'^^ modes^ | '!convert'^^ IDs^ 
 
 | '!characters'^^ cfgCharacterSetTerminal
 | '!whitespace'^^ cfgPrims^
@@ -145,20 +135,22 @@ directiveCarrier ::=
 
 | '!start'^^ cfgNonterminal | '!start'^^ trRelation // Set parser start nonterminal or rewriter start relation
 | '!configuration'^^ trRelation configurationElements
-| '!terminal'^^ trRelation trTerm
-| '!terminal'^^ trRelation trTerm trTermsTail^
+| '!final'^^ trRelation trTerms
 
 | '!try'^^ file       | '!try'^^ file '='^ trTopTuple 
 | '!try'^^ trTopTuple | '!try'^^ trTopTuple '='^ trTopTuple
 
 | '!save'^^ ID ID | '!recall'^^ ID
 
-(* Undocumented research features *)
+(* Research features *)
 | '!deleteTokens'^^ __int32 | '!swapTokens'^^ __int32 
 | '!sppfBreakCycles'^^ | '!sppfBreakCyclesRelation'^^
 
 file ::= &STRING_SQ
 
+IDs ::= ID | ID ','^ IDs
+
+modes ::= ID | ID ','^ modes^ | 'not' ID | 'not' ID ','^ modes^
 
 configurationElements ::= configurationElement | configurationElement ','^ configurationElements^
 configurationElement ::= ID ':'^ ID
@@ -179,7 +171,6 @@ __string ::= &STRING_DQ
 
 ID ::= &ID^^
 IDSTAR ::= ID '*'^
-ID_ATTRIBUTE ::= &ID '.'^ &ID
 STRING_SQ ::= &STRING_SQ^^ 
 STRING_DQ ::= &STRING_DQ^^ 
 STRING_DOLLAR ::= &STRING_DOLLAR^^

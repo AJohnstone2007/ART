@@ -8,7 +8,7 @@ import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGElement;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGKind;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGRules;
-import uk.ac.rhul.cs.csle.art.script.ScriptTermInterpreter;
+import uk.ac.rhul.cs.csle.art.script.ScriptInterpreter;
 import uk.ac.rhul.cs.csle.art.util.Util;
 
 public class ActionsGenerator {
@@ -89,7 +89,7 @@ public class ActionsGenerator {
 
   private void printAllActionsRec(PrintWriter text, CFGElement lhs, CFGNode cfgNode) {
     if (cfgNode == null || cfgNode.cfgElement.cfgKind == CFGKind.END) return;
-    if (cfgNode.actionAsTerm != 0 && ScriptTermInterpreter.iTerms.termArity(cfgNode.actionAsTerm) != 0) {
+    if (cfgNode.actionAsTerm != 0 && ScriptInterpreter.iTerms.termArity(cfgNode.actionAsTerm) != 0) {
       text.print("      case " + cfgNode.num + ":");
       printSlotTermRec(text, cfgNode.actionAsTerm);
       text.println(" break;");
@@ -101,12 +101,12 @@ public class ActionsGenerator {
   private void printSlotTermRec(PrintWriter text, int slotTerm) {
     // Util.info(ScriptTermInterpreter.iTerms.termSymbolString(slotTerm));
 
-    if (ScriptTermInterpreter.iTerms.hasSymbol(slotTerm, "cfgNative")) {
-      text.print(ScriptTermInterpreter.iTerms.toString(ScriptTermInterpreter.iTerms.subterm(slotTerm, 0)));
+    if (ScriptInterpreter.iTerms.hasSymbol(slotTerm, "cfgNative")) {
+      text.print(ScriptInterpreter.iTerms.toString(ScriptInterpreter.iTerms.subterm(slotTerm, 0)));
       return;
     }
-    for (int i = 0; i < ScriptTermInterpreter.iTerms.termArity(slotTerm); i++)
-      printSlotTermRec(text, ScriptTermInterpreter.iTerms.termChildren(slotTerm)[i]);
+    for (int i = 0; i < ScriptInterpreter.iTerms.termArity(slotTerm); i++)
+      printSlotTermRec(text, ScriptInterpreter.iTerms.termChildren(slotTerm)[i]);
   }
 
   private void printTermActionsRec(PrintWriter text, CFGNode cfgNode) {

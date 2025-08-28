@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import uk.ac.rhul.cs.csle.art.script.ScriptTermInterpreter;
+import uk.ac.rhul.cs.csle.art.script.ScriptInterpreter;
 import uk.ac.rhul.cs.csle.art.util.DisplayInterface;
 import uk.ac.rhul.cs.csle.art.util.Util;
 import uk.ac.rhul.cs.csle.art.util.statistics.Statistics;
@@ -50,15 +50,15 @@ public class TRRules implements DisplayInterface {
   }
 
   public void modifyConfiguration(int term) {
-    if (!ScriptTermInterpreter.iTerms.hasSymbol(term, "configuration"))
-      Util.fatal("Unexpected term passed to TRRules.modifyConfiguration " + ScriptTermInterpreter.iTerms.toString(term));
-    int relation = ScriptTermInterpreter.iTerms.subterm(term, 0, 0);
-    int configurationElements = ScriptTermInterpreter.iTerms.subterm(term, 1);
+    if (!ScriptInterpreter.iTerms.hasSymbol(term, "configuration"))
+      Util.fatal("Unexpected term passed to TRRules.modifyConfiguration " + ScriptInterpreter.iTerms.toString(term));
+    int relation = ScriptInterpreter.iTerms.subterm(term, 0, 0);
+    int configurationElements = ScriptInterpreter.iTerms.subterm(term, 1);
     if (configurationMap.get(relation) == null) configurationMap.put(relation, new LinkedHashMap<>());
     var relationConfigurationMap = configurationMap.get(relation);
-    for (int i = 0; i < ScriptTermInterpreter.iTerms.termArity(configurationElements); i++)
-      relationConfigurationMap.put(ScriptTermInterpreter.iTerms.subterm(configurationElements, i, 0),
-          ScriptTermInterpreter.iTerms.subterm(configurationElements, i, 1));
+    for (int i = 0; i < ScriptInterpreter.iTerms.termArity(configurationElements); i++)
+      relationConfigurationMap.put(ScriptInterpreter.iTerms.subterm(configurationElements, i, 0),
+          ScriptInterpreter.iTerms.subterm(configurationElements, i, 1));
     // Util.info("Updated configuration map to: ");
     // for (var r : configurationMap.keySet()) {
     // System.out.print(ScriptTermInterpreter.iTerms.toRawString(r));
@@ -77,7 +77,7 @@ public class TRRules implements DisplayInterface {
    */
   public int unelideConfiguration(int term, int relation, boolean useType) {
     // Util.info("!!!Term before unelision is " + ScriptTermInterpreter.iTerms.toRawString(term));
-    if (ScriptTermInterpreter.iTerms.hasSymbol(term, "trTuple")) {
+    if (ScriptInterpreter.iTerms.hasSymbol(term, "trTuple")) {
       // Util.info("Already tupled; returning");
       return term;
     }
@@ -86,7 +86,7 @@ public class TRRules implements DisplayInterface {
       return term;
     }
     // Util.info("Uneliding against relation " + ScriptTermInterpreter.iTerms.toRawString(relation) + " " + ScriptTermInterpreter.iTerms.toRawString(term));
-    int theta = ScriptTermInterpreter.iTerms.subterm(term);
+    int theta = ScriptInterpreter.iTerms.subterm(term);
     Map<Integer, Integer> relationConfigurationElements = new LinkedHashMap<>(configurationMap.get(relation));
 
     if (!useType) { // useType is called after parsing to append all of the types from the configuration to the raw parse term
@@ -96,7 +96,7 @@ public class TRRules implements DisplayInterface {
 
       // Now walk the terms semantic entities, loading the map with each we find
       // !TODO
-      for (int i = 1; i < ScriptTermInterpreter.iTerms.termArity(term); i++)
+      for (int i = 1; i < ScriptInterpreter.iTerms.termArity(term); i++)
         // Util.info("found entity: " + ScriptTermInterpreter.iTerms.toRawString(ScriptTermInterpreter.iTerms.subterm(term, i)))
         ;
     }
@@ -106,7 +106,7 @@ public class TRRules implements DisplayInterface {
     for (var e : relationConfigurationElements.keySet())
       list.add(relationConfigurationElements.get(e));
 
-    int ret = ScriptTermInterpreter.iTerms.findTerm("trTuple", list);
+    int ret = ScriptInterpreter.iTerms.findTerm("trTuple", list);
     // Util.info("Unelided term: " + ScriptTermInterpreter.iTerms.toRawString(ret));
 
     // Util.info("!!!Term after unelision is " + ScriptTermInterpreter.iTerms.toRawString(ret));
@@ -115,8 +115,8 @@ public class TRRules implements DisplayInterface {
 
   public void buildTRRule(int term) {
     // Util.debug("Processing trRule: " + ScriptTermInterpreter.iTerms.toString(term));
-    int relation = ScriptTermInterpreter.iTerms.subterm(term, 1, 1, 1);
-    int constructorIndex = ScriptTermInterpreter.iTerms.termSymbolStringIndex((ScriptTermInterpreter.iTerms.subterm(term, 1, 1, 0, 0)));
+    int relation = ScriptInterpreter.iTerms.subterm(term, 1, 1, 1);
+    int constructorIndex = ScriptInterpreter.iTerms.termSymbolStringIndex((ScriptInterpreter.iTerms.subterm(term, 1, 1, 0, 0)));
     // Util.debug("Building TR rule " + ScriptTermInterpreter.iTerms.toString(term) + "\nwith relation " + ScriptTermInterpreter.iTerms.toString(relation) +
     // "\nand constructor "
     // + ScriptTermInterpreter.iTerms.getString(constructorIndex));
@@ -137,7 +137,7 @@ public class TRRules implements DisplayInterface {
     for (int rel : trRules.keySet())
       for (int c : trRules.get(rel).keySet())
         for (int r : trRules.get(rel).get(c)) {
-          sb.append(ScriptTermInterpreter.iTerms.plainTextTraverser.toString(r));
+          sb.append(ScriptInterpreter.iTerms.plainTextTraverser.toString(r));
           sb.append("\n");
         }
     return sb.toString();
@@ -150,8 +150,8 @@ public class TRRules implements DisplayInterface {
     for (int i = 0; i < bindings.length; i++) {
       if (bindings[i] > 0) {
         if (seen) sb.append(", ");
-        sb.append(ScriptTermInterpreter.iTerms.toString(ScriptTermInterpreter.iTerms.findTerm("_" + i), variableMap) + "="
-            + ScriptTermInterpreter.iTerms.toString(bindings[i], variableMap));
+        sb.append(ScriptInterpreter.iTerms.toString(ScriptInterpreter.iTerms.findTerm("_" + i), variableMap) + "="
+            + ScriptInterpreter.iTerms.toString(bindings[i], variableMap));
         seen = true;
       }
     }
@@ -162,8 +162,8 @@ public class TRRules implements DisplayInterface {
   boolean isTerminatingConfiguration(int term, int relation) {
     int thetaRoot = thetaFromConfiguration(term);
     Set<Integer> terminals = rewriteTerminals.get(relation);
-    return ScriptTermInterpreter.iTerms.isSpecialTerm(thetaRoot)
-        || (terminals != null && terminals.contains(ScriptTermInterpreter.iTerms.termSymbolStringIndex(thetaRoot)));
+    return ScriptInterpreter.iTerms.isSpecialTerm(thetaRoot)
+        || (terminals != null && terminals.contains(ScriptInterpreter.iTerms.termSymbolStringIndex(thetaRoot)));
   }
 
   public void normalise() {
@@ -184,23 +184,23 @@ public class TRRules implements DisplayInterface {
     Map<Integer, Integer> constructorCount = new HashMap<>(); // The number of defined rules for each constructor Map<Integer, Integer>
 
     // Stage one - collect information
-    termRewriteConstructorDefinitions.put(ScriptTermInterpreter.iTerms.findString("_"), 1);
-    termRewriteConstructorDefinitions.put(ScriptTermInterpreter.iTerms.findString("_*"), 1);
-    termRewriteConstructorDefinitions.put(ScriptTermInterpreter.iTerms.findString("->"), 1);
-    termRewriteConstructorDefinitions.put(ScriptTermInterpreter.iTerms.findString("=>"), 1);
-    termRewriteConstructorDefinitions.put(ScriptTermInterpreter.iTerms.findString("~>"), 1);
-    termRewriteConstructorDefinitions.put(ScriptTermInterpreter.iTerms.findString("true"), 1);
-    termRewriteConstructorDefinitions.put(ScriptTermInterpreter.iTerms.findString("false"), 1);
-    termRewriteConstructorDefinitions.put(ScriptTermInterpreter.iTerms.findString("trLabel"), 1);
-    termRewriteConstructorDefinitions.put(ScriptTermInterpreter.iTerms.findString("trTransition"), 1);
-    termRewriteConstructorDefinitions.put(ScriptTermInterpreter.iTerms.findString("trMatch"), 1);
-    termRewriteConstructorDefinitions.put(ScriptTermInterpreter.iTerms.findString("trPremises"), 1);
-    termRewriteConstructorDefinitions.put(ScriptTermInterpreter.iTerms.findString("tr"), 1);
-    termRewriteConstructorDefinitions.put(ScriptTermInterpreter.iTerms.findString("trTopTuple"), 1);
-    termRewriteConstructorDefinitions.put(ScriptTermInterpreter.iTerms.findString("trTuple"), 1);
-    termRewriteConstructorDefinitions.put(ScriptTermInterpreter.iTerms.findString("trRule"), 1);
+    termRewriteConstructorDefinitions.put(ScriptInterpreter.iTerms.findString("_"), 1);
+    termRewriteConstructorDefinitions.put(ScriptInterpreter.iTerms.findString("_*"), 1);
+    termRewriteConstructorDefinitions.put(ScriptInterpreter.iTerms.findString("->"), 1);
+    termRewriteConstructorDefinitions.put(ScriptInterpreter.iTerms.findString("=>"), 1);
+    termRewriteConstructorDefinitions.put(ScriptInterpreter.iTerms.findString("~>"), 1);
+    termRewriteConstructorDefinitions.put(ScriptInterpreter.iTerms.findString("true"), 1);
+    termRewriteConstructorDefinitions.put(ScriptInterpreter.iTerms.findString("false"), 1);
+    termRewriteConstructorDefinitions.put(ScriptInterpreter.iTerms.findString("trLabel"), 1);
+    termRewriteConstructorDefinitions.put(ScriptInterpreter.iTerms.findString("trTransition"), 1);
+    termRewriteConstructorDefinitions.put(ScriptInterpreter.iTerms.findString("trMatch"), 1);
+    termRewriteConstructorDefinitions.put(ScriptInterpreter.iTerms.findString("trPremises"), 1);
+    termRewriteConstructorDefinitions.put(ScriptInterpreter.iTerms.findString("tr"), 1);
+    termRewriteConstructorDefinitions.put(ScriptInterpreter.iTerms.findString("trTopTuple"), 1);
+    termRewriteConstructorDefinitions.put(ScriptInterpreter.iTerms.findString("trTuple"), 1);
+    termRewriteConstructorDefinitions.put(ScriptInterpreter.iTerms.findString("trRule"), 1);
 
-    termRewriteConstructorDefinitions.put(ScriptTermInterpreter.iTerms.findString("trRelation"), 1);
+    termRewriteConstructorDefinitions.put(ScriptInterpreter.iTerms.findString("trRelation"), 1);
 
     // Util.info("IndexToTerm:" + ((ITermsLowLevelAPI) iTerms).getIndexToTerm());
     for (Integer scanRelationIndex : trRules.keySet()) { // Step through the relations
@@ -218,7 +218,7 @@ public class TRRules implements DisplayInterface {
             termRewriteConstructorDefinitions.put(ruleRoot, termRewriteConstructorDefinitions.get(ruleRoot) + 1);
 
           // Util.info("Checking for invalid function calls on " + ScriptTermInterpreter.iTerms.toString(ruleIndex));
-          reportInvalidFunctionCallsRec(ruleIndex, ScriptTermInterpreter.iTerms.subterm(ruleIndex, 1, 1, 0));
+          reportInvalidFunctionCallsRec(ruleIndex, ScriptInterpreter.iTerms.subterm(ruleIndex, 1, 1, 0));
 
           Map<Integer, Integer> variableStringIndexToVariableNumberMap = new HashMap<>();
           Map<Integer, Integer> variableNumberMapToVariableStringIndex = new HashMap<>();
@@ -230,12 +230,12 @@ public class TRRules implements DisplayInterface {
               ruleIndex);
 
           if (numericVariablesInUse.size() > 0 && variableStringIndexToVariableNumberMap.size() > 0)
-            Util.info("*** Error - mix of numeric and alphanumeric variables in " + ScriptTermInterpreter.iTerms.plainTextTraverser.toString(ruleIndex));
+            Util.info("*** Error - mix of numeric and alphanumeric variables in " + ScriptInterpreter.iTerms.plainTextTraverser.toString(ruleIndex));
           for (int v : numericVariablesInUse)
-            if (!ScriptTermInterpreter.iTerms.isVariableSymbol(v)) Util.info("*** Error - variable outside available range of _1 to _" + ITerms.variableCount
-                + " in " + ScriptTermInterpreter.iTerms.plainTextTraverser.toString(ruleIndex));
+            if (!ScriptInterpreter.iTerms.isVariableSymbol(v)) Util.info("*** Error - variable outside available range of _1 to _" + ITerms.variableCount
+                + " in " + ScriptInterpreter.iTerms.plainTextTraverser.toString(ruleIndex));
           if (variableStringIndexToVariableNumberMap.size() > ITerms.variableCount) Util.info(
-              "*** Error - more than " + ITerms.variableCount + " variables used in " + ScriptTermInterpreter.iTerms.plainTextTraverser.toString(ruleIndex));
+              "*** Error - more than " + ITerms.variableCount + " variables used in " + ScriptInterpreter.iTerms.plainTextTraverser.toString(ruleIndex));
 
           for (int v : variableStringIndexToVariableNumberMap.keySet())
             variableNumberMapToVariableStringIndex.put(variableStringIndexToVariableNumberMap.get(v), v);
@@ -247,7 +247,7 @@ public class TRRules implements DisplayInterface {
       for (int c : constructorCount.keySet())
         if (termRewriteConstructorDefinitions.get(c) == null) {
 
-          String label = ScriptTermInterpreter.iTerms.getString(c);
+          String label = ScriptInterpreter.iTerms.getString(c);
 
           if (label.charAt(0) == '"') continue;
 
@@ -263,7 +263,7 @@ public class TRRules implements DisplayInterface {
 
           var terminals = rewriteTerminals.get(scanRelationIndex);
           if (terminals != null && terminals.contains(c)) continue;
-          Util.warning("in relation " + ScriptTermInterpreter.iTerms.plainTextTraverser.toString(scanRelationIndex) + " constructor " + label
+          Util.warning("in relation " + ScriptInterpreter.iTerms.plainTextTraverser.toString(scanRelationIndex) + " constructor " + label
               + " has no rule definitions");
         }
     }
@@ -291,14 +291,14 @@ public class TRRules implements DisplayInterface {
 
   private int normaliseRuleRec(Integer ruleIndex, Map<Integer, Integer> variableNameMap) {
     // Util.info("normaliseRuleRec at " + ScriptTermInterpreter.iTerms.toString(ruleIndex));
-    int arity = ScriptTermInterpreter.iTerms.termArity(ruleIndex);
-    int ruleStringIndex = ScriptTermInterpreter.iTerms.termSymbolStringIndex(ruleIndex);
+    int arity = ScriptInterpreter.iTerms.termArity(ruleIndex);
+    int ruleStringIndex = ScriptInterpreter.iTerms.termSymbolStringIndex(ruleIndex);
     // Special case processing for unlabelled rules - generate a label ofthe form Rx
-    if (arity == 0 && ScriptTermInterpreter.iTerms.hasSymbol(ruleIndex, "trLabel")) {
+    if (arity == 0 && ScriptInterpreter.iTerms.hasSymbol(ruleIndex, "trLabel")) {
       // Util.info("Generating new label R" + unlabeledRuleNumber);
       int[] newChildren = new int[1];
-      newChildren[0] = ScriptTermInterpreter.iTerms.findTerm("R" + unlabeledRuleNumber++);
-      return ScriptTermInterpreter.iTerms.findTerm(ruleStringIndex, newChildren);
+      newChildren[0] = ScriptInterpreter.iTerms.findTerm("R" + unlabeledRuleNumber++);
+      return ScriptInterpreter.iTerms.findTerm(ruleStringIndex, newChildren);
     }
 
     int[] newChildren = new int[arity];
@@ -310,9 +310,9 @@ public class TRRules implements DisplayInterface {
     }
 
     for (int i = 0; i < arity; i++)
-      newChildren[i] = normaliseRuleRec(ScriptTermInterpreter.iTerms.subterm(ruleIndex, i), variableNameMap);
+      newChildren[i] = normaliseRuleRec(ScriptInterpreter.iTerms.subterm(ruleIndex, i), variableNameMap);
 
-    return ScriptTermInterpreter.iTerms.findTerm(ruleStringIndex, newChildren);
+    return ScriptInterpreter.iTerms.findTerm(ruleStringIndex, newChildren);
   }
 
   private int nextFreeVariableNumber = 1;
@@ -321,13 +321,13 @@ public class TRRules implements DisplayInterface {
       Map<Integer, Integer> constructorCount, Set<Integer> functionsInUse, Set<Integer> numericVariablesInUse, Integer termIndex) {
     // Util.info("collectVariablesAndConstructorsRec() at " +ScriptTermInterpreter.iTerms.plainTextTraverser.toString(termIndex, null));
 
-    int termSymbolStringIndex = ScriptTermInterpreter.iTerms.termSymbolStringIndex(termIndex);
-    if (ScriptTermInterpreter.iTerms.hasSymbol(termIndex, "trLabel")) return; // Do not go down into labels
-    String termSymbolString = ScriptTermInterpreter.iTerms.termSymbolString(termIndex);
+    int termSymbolStringIndex = ScriptInterpreter.iTerms.termSymbolStringIndex(termIndex);
+    if (ScriptInterpreter.iTerms.hasSymbol(termIndex, "trLabel")) return; // Do not go down into labels
+    String termSymbolString = ScriptInterpreter.iTerms.termSymbolString(termIndex);
 
     if (termSymbolString.length() > 1 && termSymbolString.charAt(0) == '_' && termSymbolString.charAt(1) != '_') { // Variable
-      if (ScriptTermInterpreter.iTerms.termArity(termIndex) > 0) Util
-          .info("*** Error: non-leaf variable " + termSymbolString + " in " + ScriptTermInterpreter.iTerms.plainTextTraverser.toString(parentRewriteTermIndex));
+      if (ScriptInterpreter.iTerms.termArity(termIndex) > 0) Util
+          .info("*** Error: non-leaf variable " + termSymbolString + " in " + ScriptInterpreter.iTerms.plainTextTraverser.toString(parentRewriteTermIndex));
       boolean isNumeric = true;
       for (int i = 1; i < termSymbolString.length(); i++)
         if (termSymbolString.charAt(i) < '0' || termSymbolString.charAt(i) > '9') isNumeric = false;
@@ -348,14 +348,14 @@ public class TRRules implements DisplayInterface {
       constructorCount.put(termSymbolStringIndex, constructorCount.get(termSymbolStringIndex) + 1);
     }
 
-    for (int i = 0; i < ScriptTermInterpreter.iTerms.termArity(termIndex); i++)
+    for (int i = 0; i < ScriptInterpreter.iTerms.termArity(termIndex); i++)
       collectVariablesAndConstructorsRec(parentRewriteTermIndex, variableStringIndexToVariableNumberMap, constructorCount, functionsInUse,
-          numericVariablesInUse, ScriptTermInterpreter.iTerms.subterm(termIndex, i));
+          numericVariablesInUse, ScriptInterpreter.iTerms.subterm(termIndex, i));
   }
 
   private void reportInvalidFunctionCallsRec(int parentRewriteTermIndex, int termIndex) {
-    String termSymbolString = ScriptTermInterpreter.iTerms.termSymbolString(termIndex);
-    int termStringIndex = ScriptTermInterpreter.iTerms.termSymbolStringIndex(termIndex);
+    String termSymbolString = ScriptInterpreter.iTerms.termSymbolString(termIndex);
+    int termStringIndex = ScriptInterpreter.iTerms.termSymbolStringIndex(termIndex);
     if (termSymbolString.length() > 0 && termSymbolString.charAt(0) != '_') {
       if (termRewriteConstructorUsages.get(termStringIndex) == null)
         termRewriteConstructorUsages.put(termStringIndex, 1);
@@ -363,19 +363,19 @@ public class TRRules implements DisplayInterface {
         termRewriteConstructorUsages.put(termStringIndex, termRewriteConstructorUsages.get(termStringIndex) + 1);
     }
 
-    for (int i = 0; i < ScriptTermInterpreter.iTerms.termArity(termIndex); i++)
-      reportInvalidFunctionCallsRec(parentRewriteTermIndex, ScriptTermInterpreter.iTerms.subterm(termIndex, i));
+    for (int i = 0; i < ScriptInterpreter.iTerms.termArity(termIndex); i++)
+      reportInvalidFunctionCallsRec(parentRewriteTermIndex, ScriptInterpreter.iTerms.subterm(termIndex, i));
   }
   /* End of variable and function mapping ****************************************************************************/
 
   int thetaFromConfiguration(int term) {
-    return (ScriptTermInterpreter.iTerms.hasSymbol(term, "trTopTuple") || ScriptTermInterpreter.iTerms.hasSymbol(term, "trTuple"))
-        ? ScriptTermInterpreter.iTerms.subterm(term, 0)
+    return (ScriptInterpreter.iTerms.hasSymbol(term, "trTopTuple") || ScriptInterpreter.iTerms.hasSymbol(term, "trTuple"))
+        ? ScriptInterpreter.iTerms.subterm(term, 0)
         : term;
   }
 
   int thetaLHSFromConfiguration(int term) {
-    return ScriptTermInterpreter.iTerms.subterm(thetaFromConfiguration(term), 0);
+    return ScriptInterpreter.iTerms.subterm(thetaFromConfiguration(term), 0);
   }
 
   @Override

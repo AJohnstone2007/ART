@@ -3,7 +3,7 @@ package uk.ac.rhul.cs.csle.art.interpret;
 import uk.ac.rhul.cs.csle.art.cfg.AbstractParser;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGKind;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
-import uk.ac.rhul.cs.csle.art.script.ScriptTermInterpreter;
+import uk.ac.rhul.cs.csle.art.script.ScriptInterpreter;
 import uk.ac.rhul.cs.csle.art.util.Util;
 
 public class AttributeActionInterpreter extends AbstractInterpreter {
@@ -23,7 +23,7 @@ public class AttributeActionInterpreter extends AbstractInterpreter {
   }
 
   private int intFromTermSymbol(int term) {
-    return Integer.parseInt(ScriptTermInterpreter.iTerms.termSymbolString(term));
+    return Integer.parseInt(ScriptInterpreter.iTerms.termSymbolString(term));
   }
 
   @Override
@@ -40,7 +40,7 @@ public class AttributeActionInterpreter extends AbstractInterpreter {
   public void interpret(AbstractAttributeBlock attributes) {
     if (attributes == null) Util.fatal("Invalid ARTGeneratedActions - debug, regenerate and recompile");
     CFGNode altNode = parser.cfgRules.numberToRulesNodeMap.get(intFromTermSymbol(attributes.term));
-    var children = ScriptTermInterpreter.iTerms.termChildren(attributes.term);
+    var children = ScriptInterpreter.iTerms.termChildren(attributes.term);
     int childNumber = 0;
 
     for (var node = altNode.seq; node.cfgElement.cfgKind != CFGKind.END; node = node.seq) // Skip alt node

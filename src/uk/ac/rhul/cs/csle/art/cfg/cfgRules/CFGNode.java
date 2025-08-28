@@ -1,6 +1,6 @@
 package uk.ac.rhul.cs.csle.art.cfg.cfgRules;
 
-import uk.ac.rhul.cs.csle.art.script.ScriptTermInterpreter;
+import uk.ac.rhul.cs.csle.art.script.ScriptInterpreter;
 import uk.ac.rhul.cs.csle.art.util.Util;
 
 public class CFGNode {
@@ -86,7 +86,7 @@ public class CFGNode {
       ret = "???";
       break;
     }
-    if (actionAsTerm != 0) ret += Util.escapeString(ScriptTermInterpreter.iTerms.toString(actionAsTerm), false);
+    if (actionAsTerm != 0) ret += Util.escapeString(ScriptInterpreter.iTerms.toString(actionAsTerm), false);
     return ret;
   }
 
@@ -155,12 +155,12 @@ public class CFGNode {
 
   private void toStringActionsRec(StringBuilder sb, int actionAsTerm) {
     if (actionAsTerm == 0) return;
-    if (ScriptTermInterpreter.iTerms.hasSymbol(actionAsTerm, "cfgNative")) {
-      sb.append(ScriptTermInterpreter.iTerms.toString(ScriptTermInterpreter.iTerms.subterm(actionAsTerm, 0)));
+    if (ScriptInterpreter.iTerms.hasSymbol(actionAsTerm, "cfgNative")) {
+      sb.append(ScriptInterpreter.iTerms.toString(ScriptInterpreter.iTerms.subterm(actionAsTerm, 0)));
       return;
     }
-    for (int i = 0; i < ScriptTermInterpreter.iTerms.termArity(actionAsTerm); i++)
-      toStringActionsRec(sb, ScriptTermInterpreter.iTerms.termChildren(actionAsTerm)[i]);
+    for (int i = 0; i < ScriptInterpreter.iTerms.termArity(actionAsTerm); i++)
+      toStringActionsRec(sb, ScriptInterpreter.iTerms.termChildren(actionAsTerm)[i]);
   }
 
 }
