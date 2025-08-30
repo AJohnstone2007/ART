@@ -76,9 +76,9 @@ public final class ScriptInterpreter {
   private Rewriter currentRewriter;
   private AbstractInterpreter currentInterpreter = null;
 
-  public CFGRules currentCFGRules; // scriptTraverser builds CFG rules into this grammar
-  private ChooseRules currentChooseRules;
-  private TRRules currentTRRules;
+  public static CFGRules currentCFGRules; // scriptTraverser builds CFG rules into this grammar
+  private static ChooseRules currentChooseRules;
+  private static TRRules currentTRRules;
 
   private int currentTryTerm = 0;
   private int currentIndexedTryTerm = 0;
@@ -107,7 +107,6 @@ public final class ScriptInterpreter {
     // Util.debug("Script cfgRules");
     // scriptCFGRules.print(System.out, iTerms.plainTextTraverser, false, true, false);
     currentChooseRules = new ChooseRules();
-    currentChooseRules.normalise(currentCFGRules);
 
     // Initialise rewriter
     currentTRRules = new TRRules();
@@ -171,7 +170,8 @@ public final class ScriptInterpreter {
     // primoitives
 
     ret.addAction("cfgSlot", (Integer t) -> currentCFGRules.workingNode.actionAsTerm = t, null, null);
-    ret.addAction("chooseRule", (Integer t) -> currentChooseRules.buildChooseRule(t), null, null);
+
+    ret.addActionBreak("chooseRule", (Integer t) -> currentChooseRules.buildChooseRule(t), null, null);
 
     ret.addAction("trRule", (Integer t) -> currentTRRules.buildTRRule(t), null, null);
     return ret;
@@ -633,7 +633,7 @@ public final class ScriptInterpreter {
         if (isShow)
           currentChooseRules.show(outputStream, outputTraverser, indexed, full, indented);
         else
-          currentCFGRules.print(outputStream, outputTraverser, indexed, full, indented);
+          currentChooseRules.print(outputStream, outputTraverser, indexed, full, indented);
         break;
 
       case "trRules":
@@ -738,7 +738,7 @@ public final class ScriptInterpreter {
 
   }
 
-  private CFGElement findCFGElement(int term) {
+  public static CFGElement findCFGElement(int term) {
     // Util.debug("findCFGElement on " + iTerms.toRawString(term));
     switch (iTerms.termSymbolString(term)) {
     case "cfgEpsilon":
@@ -768,7 +768,6 @@ public final class ScriptInterpreter {
     Util.trace(8, "Parser trace using " + currentParser.getClass().getSimpleName());
 
     currentCFGRules.normalise();
-    currentChooseRules.normalise(currentCFGRules);
     currentStatistics.putTime("SetupTime");
     currentParser.parse(inputString, currentCFGRules, currentLexer, currentChooseRules);
     currentStatistics.putTime("ParseTime");

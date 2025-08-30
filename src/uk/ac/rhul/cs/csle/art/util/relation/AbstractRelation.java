@@ -42,6 +42,14 @@ public abstract class AbstractRelation<T1, T2> {
     return map.get(src).addAll(dsts);
   }
 
+  public boolean addAllAll(Set<T1> srcSet, Set<T2> dsts) {
+    boolean ret = false;
+    for (var src : srcSet)
+      ret |= addAll(src, dsts);
+
+    return ret;
+  }
+
   public void remove(T1 src, T2 dst) {
     if (map.get(src) == null) return;
     map.get(src).remove(dst);
