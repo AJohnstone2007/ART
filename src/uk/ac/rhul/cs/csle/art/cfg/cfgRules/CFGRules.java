@@ -487,7 +487,7 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
       tmp.addAll(lexerNonterminals);
       tmp.removeAll(defined);
       if (!tmp.isEmpty()) {
-        Util.error("undefined nonterminal" + plural(tmp) + ": " + tmp);
+        Util.fatal("undefined nonterminal" + plural(tmp) + ": " + tmp);
       }
     }
 

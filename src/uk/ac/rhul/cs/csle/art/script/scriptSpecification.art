@@ -92,25 +92,32 @@ __m ::= trTerm '='^ trTerm | trTerm '='^ trTerm ','^ __m
 trRelation ::= '->' | '=>' | '~>' | ':->' | ':=>' | ':~>'  
 
 (* Choose rules ***************************************************************)
-chooseRule ::= chooseElementRule^^ | chooseSlotRule^^
+chooseRule ::= chooseExpr chooserOp chooseExpr
 
-chooseElementRule ::= chooseElement chooserOp chooseElement
-chooseSlotRule ::= chooseSlot chooserOp chooseSlot
+chooseExpr ::= 
+  chooseElement^ | chooseElement^ chooseExprTail^
+| chooseSet^     | chooseSet^ chooseExprTail^
 
-chooseElement ::= cfgNonterminal | cfgCharacterTerminal | cfgBuiltinTerminal | cfgCaseInsensitiveTerminal | cfgCaseSensitiveTerminal | choosePredefinedElementSet^
-chooseSlot ::= cfgLHS '::=' cfgAlt | choosePredefinedSlotSet^
+chooseExprTail ::= chooseCarrier | chooseCarrier chooseExprTail^
 
-choosePredefinedElementSet ::=
+chooseCarrier ::= chooseAdd^^ chooseElement^ | chooseRemove^^ chooseElement^  
+
+chooseElement ::= 
+  cfgNonterminal | cfgCharacterTerminal | cfgBuiltinTerminal | cfgCaseInsensitiveTerminal | cfgCaseSensitiveTerminal | cfgDottedProduction
+  
+cfgDottedProduction ::= '('^ cfgLHS '::=' cfgAlt ')'
+
+chooseSet ::=
   'anyCharacterTerminal'^^ | 'anyBuiltinTerminal'^^ | 'anyCaseSensitiveTerminal'^^ | 'anyCaseInsensitiveTerminal'^^ 
-| 'anyParaterminal'^^      | 'anyLiteralTerminal'^^ | 'anyTerminal'^^              | 'anyNonterminal'^^ 
-
-choosePredefinedSlotSet ::= 'anySlot'^^
+| 'anyParaterminal'^^      | 'anyNonterminal'^^     | 'anySlot'^^
 
 chooserOp ::= chooseHigher^^ | chooseLower^^ | chooseLonger^^ | chooseShorter^^
 chooseHigher ::= '>'^
 chooseLower ::= '<'^
 chooseLonger ::= '>>'^
 chooseShorter ::= '<<'^
+chooseAdd ::= '+'^
+chooseRemove ::= '-'^
 
 (* Directives ****************************************************************)
 directive ::= directiveCarrier
