@@ -49,18 +49,11 @@ public class LexerBaseLine extends AbstractLexer {
     tweSlices[inputString.length() - 1][0] = new TWESetElement(cfgRules.endOfStringElement, inputString.length() - 1, inputString.length() - 1,
         inputString.length());
 
-    switch (ScriptInterpreter.currentChooseMode) {
-    case DEFAULT:
+    if (ScriptInterpreter.seenChooseRule)
+      choose();
+    else
       chooseDefault();
-      break;
-    case USER:
-      break;
-    case NONE:
-      break;
-    case EAS:
-      chooseEAS();
-      break;
-    }
+
     return true;
   }
 
@@ -69,19 +62,21 @@ public class LexerBaseLine extends AbstractLexer {
     // if (index == 0) ret.add(new TWESetElement(cfgRules.startOfStringElement, 1, 1, inputIndex));
 
     int lexemeStart = index == 0 ? whitespacePrefix : index; // Index zero is special case because of leading whitespace
-    for (var e : cfgRules.elements.keySet())
+    for (var e : cfgRules.elements.keySet()) {
+      // Util.debug("Lexer at " + inputIndex + " testing " + e.toStringDetailed());
       switch (e.cfgKind) {
       case TRM_CS, TRM_CI, TRM_BI, TRM_CH:
         inputIndex = lexemeStart;
         tryTokenMatch(e);
         if (inputIndex != lexemeStart) {// Matched?
-          // Util.debug("constructTWESlice() matched " + e + " with right extent " + inputIndex);
+          // Util.debug("constructTWESlice() matched " + e + " with right extent " + inputIndex + " - " + inputString.substring(lexemeStart, inputIndex));
           lexemeEnd = inputIndex;
           if (e.cfgKind != CFGKind.TRM_CH) whitespaceLongstMatch(); // absorb trailing whitespace
           ret.add(new TWESetElement(e, lexemeStart, lexemeEnd, inputIndex));
           hasSlice[inputIndex] = true; // Mark for downstream processing
         }
       }
+    }
     return ret.isEmpty() ? null : ret.toArray(new TWESetElement[0]);
   }
 
@@ -95,14 +90,14 @@ public class LexerBaseLine extends AbstractLexer {
   }
 
   private void tryTokenMatch(CFGElement e) {
-    // System.out.println("tryTokenMatch(" + e.toStringDetailed() + ") at inputIndex " + inputIndex);
+    // Util.debug("tryTokenMatch(" + e.toStringDetailed() + ") at inputIndex " + inputIndex);
     lexemeStart = inputIndex;
     switch (e.cfgKind) {
     default:
       Util.fatal("tryTokenMatch() on cfgElement with unexpected cfgKind " + e);
       break;
     case TRM_CS:
-      match_SINGLETON_CASE_INSENSITIVE(e.str);
+      match_SINGLETON_CASE_SENSITIVE(e.str);
       break;
     case TRM_CI:
       match_SINGLETON_CASE_INSENSITIVE(e.str);

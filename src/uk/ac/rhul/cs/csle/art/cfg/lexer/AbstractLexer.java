@@ -7,6 +7,7 @@ import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGKind;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGRules;
 import uk.ac.rhul.cs.csle.art.choose.ChooseRules;
+import uk.ac.rhul.cs.csle.art.script.ScriptInterpreter;
 import uk.ac.rhul.cs.csle.art.term.TermTraverserText;
 import uk.ac.rhul.cs.csle.art.util.DisplayInterface;
 import uk.ac.rhul.cs.csle.art.util.Util;
@@ -114,8 +115,43 @@ public abstract class AbstractLexer implements DisplayInterface {
     return full;
   }
 
+  public void choose() {
+    if (tweSlices[0] == null) {
+      Util.error("lexer.choose() - empty tweSet");
+      return;
+    }
+
+    for (int sliceIndex = 0; sliceIndex < tweSlices.length; sliceIndex++) {
+      var slice = tweSlices[sliceIndex];
+      if (slice != null) for (int rightTWEIndex = 0; rightTWEIndex < tweSlices[sliceIndex].length; rightTWEIndex++) { // The right element is suppressable
+        var rightTWE = tweSlices[sliceIndex][rightTWEIndex];
+        if (rightTWE.suppressed) continue; // Already suppressed so nothing to do
+        var rightElement = rightTWE.cfgElement;
+        var rightKind = rightElement.cfgKind;
+        if (rightKind == CFGKind.SOS) continue; // do not suppress the start of string token
+
+        for (int leftTWEIndex = 0; leftTWEIndex < tweSlices[sliceIndex].length; leftTWEIndex++) {
+          if (leftTWEIndex == rightTWEIndex) continue; // Do not self-compare
+          var leftTWE = tweSlices[sliceIndex][leftTWEIndex];
+          var leftElement = leftTWE.cfgElement;
+          var leftKind = leftElement.cfgKind;
+
+          // All set - now check the relations
+
+          if ((ScriptInterpreter.currentChooseRules.testLonger(leftElement, rightElement) && leftTWE.leftExtent > rightTWE.rightExtent)
+              || (ScriptInterpreter.currentChooseRules.testShorter(leftElement, rightElement) && leftTWE.leftExtent < rightTWE.rightExtent)
+              || (ScriptInterpreter.currentChooseRules.testHigher(leftElement, rightElement) && leftTWE.leftExtent == rightTWE.rightExtent)) {
+            rightTWE.suppressed = true;
+
+            Util.debug("Suppression against TWE pair " + leftTWE + " and " + rightTWE);
+          }
+        }
+      }
+    }
+  }
+
   public void chooseDefault() {
-    // Util.debug("Running default lexical chooser");
+    Util.debug("Running default lexical chooser");
     if (tweSlices[0] == null) {
       Util.error("lexer.chooseDefault() - empty tweSet");
       return;

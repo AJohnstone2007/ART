@@ -96,7 +96,7 @@ chooseRule ::= chooseExpr chooserOp chooseExpr
 
 chooseExpr ::= 
   chooseElement^ | chooseElement^ chooseExprTail^
-| chooseSet^     | chooseSet^ chooseExprTail^
+| chooseSet      | chooseSet chooseExprTail^
 
 chooseExprTail ::= chooseCarrier | chooseCarrier chooseExprTail^
 
@@ -108,8 +108,8 @@ chooseElement ::=
 cfgDottedProduction ::= '('^ cfgLHS '::=' cfgAlt ')'
 
 chooseSet ::=
-  'anyCharacterTerminal'^^ | 'anyBuiltinTerminal'^^ | 'anyCaseSensitiveTerminal'^^ | 'anyCaseInsensitiveTerminal'^^ 
-| 'anyParaterminal'^^      | 'anyNonterminal'^^     | 'anySlot'^^
+  'anyCharacterTerminal' | 'anyBuiltinTerminal' | 'anyCaseSensitiveTerminal' | 'anyCaseInsensitiveTerminal'
+| 'anyTerminal' | 'anyParaterminal' | 'anyNonterminal' | 'anySlot'
 
 chooserOp ::= chooseHigher^^ | chooseLower^^ | chooseLonger^^ | chooseShorter^^
 chooseHigher ::= '>'^

@@ -49,18 +49,11 @@ public class LexerGLLRecogniser extends AbstractLexer {
     tweSlices[inputString.length() - 1][0] = new TWESetElement(cfgRules.endOfStringElement, inputString.length() - 1, inputString.length() - 1,
         inputString.length());
 
-    switch (ScriptInterpreter.currentChooseMode) {
-    case DEFAULT:
+    if (ScriptInterpreter.seenChooseRule)
       chooseDefault();
-      break;
-    case USER:
-      break;
-    case NONE:
-      break;
-    case EAS:
-      chooseEAS();
-      break;
-    }
+    else
+      choose();
+
     return true;
   }
 

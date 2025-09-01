@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGElement;
+import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGKind;
 import uk.ac.rhul.cs.csle.art.script.ScriptInterpreter;
 import uk.ac.rhul.cs.csle.art.term.TermTraverserText;
 import uk.ac.rhul.cs.csle.art.util.DisplayInterface;
@@ -32,6 +33,7 @@ public class ChooseRules implements DisplayInterface {
 
   public void buildChooseRule(int term) {
     Util.debug("Choose rule : " + ScriptInterpreter.iTerms.toRawString(term));
+    ScriptInterpreter.seenChooseRule = true;
     Set<CFGElement> lhs = new HashSet<>(), rhs = new HashSet<>();
     buildChooseSet(lhs, ScriptInterpreter.iTerms.subterm(term, 0));
     buildChooseSet(rhs, ScriptInterpreter.iTerms.subterm(term, 2));
@@ -54,8 +56,54 @@ public class ChooseRules implements DisplayInterface {
     }
   }
 
+  public boolean testHigher(CFGElement left, CFGElement right) {
+    return higher.get(left).contains(right);
+  }
+
+  public boolean testLonger(CFGElement left, CFGElement right) {
+    return longer.get(left).contains(right);
+  }
+
+  public boolean testShorter(CFGElement left, CFGElement right) {
+    return shorter.get(left).contains(right);
+  }
+
   void buildChooseSet(Set<CFGElement> set, int term) {
-    set.add(ScriptInterpreter.findCFGElement(ScriptInterpreter.iTerms.subterm(term, 0))); // First element is implicit add
+    int firstChild = ScriptInterpreter.iTerms.subterm(term, 0);
+    if (ScriptInterpreter.iTerms.termSymbolString(firstChild).equals("chooseSet")) {
+      Set<CFGKind> collectKinds = new HashSet<>();
+      String chooseSetName = ScriptInterpreter.iTerms.termSymbolString(ScriptInterpreter.iTerms.subterm(firstChild, 0));
+      switch (chooseSetName) {
+      case "anyCharacterTerminal":
+        collectKinds.add(CFGKind.TRM_CH);
+        break;
+      case "anyBuiltinTerminal":
+        collectKinds.add(CFGKind.TRM_BI);
+        break;
+      case "anyCaseSensitiveTerminal":
+        collectKinds.add(CFGKind.TRM_CS);
+        break;
+      case "anyCaseInsensitiveTerminal":
+        collectKinds.add(CFGKind.TRM_CI);
+        break;
+      case "anyParaterminal":
+        collectKinds.add(CFGKind.NONTERMINAL);
+        break;
+      case "anyTerminal":
+        collectKinds.add(CFGKind.TRM_CH);
+        collectKinds.add(CFGKind.TRM_BI);
+        collectKinds.add(CFGKind.TRM_CS);
+        collectKinds.add(CFGKind.TRM_CI);
+        collectKinds.add(CFGKind.NONTERMINAL);
+        break;
+
+      default:
+        Util.fatal("Unexpected chooser set: " + chooseSetName);
+      }
+      for (var e : ScriptInterpreter.currentCFGRules.elements.keySet())
+        if (collectKinds.contains(e.cfgKind)) set.add(e);
+    } else
+      set.add(ScriptInterpreter.findCFGElement(firstChild)); // First element is implicit add
     for (int i = 1; i < ScriptInterpreter.iTerms.termArity(term); i++) {
       CFGElement element = ScriptInterpreter.findCFGElement(ScriptInterpreter.iTerms.subterm(term, i, 0));
       if (ScriptInterpreter.iTerms.termSymbolString(ScriptInterpreter.iTerms.subterm(term, i)).equals("chooseAdd"))
