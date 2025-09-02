@@ -39,11 +39,13 @@ public class ChooseRules implements DisplayInterface {
   }
 
   public void addDerivationChooseRule(int term) {
+    ScriptInterpreter.seenChooseRule = true;
     derivationTerms.add(term);
     dirty = true;
   }
 
   public void addLexicalChooseRule(int term) {
+    ScriptInterpreter.seenChooseRule = true;
     lexicalTerms.add(term);
     dirty = true;
   }
@@ -53,11 +55,28 @@ public class ChooseRules implements DisplayInterface {
 
     for (int term : derivationTerms) {
       Util.debug("Choose derivation rule : " + ScriptInterpreter.iTerms.toRawString(term));
+      CFGNode lhs = locateCFGNode(ScriptInterpreter.iTerms.subterm(term, 0)), rhs = locateCFGNode(ScriptInterpreter.iTerms.subterm(term, 2));
+      var op = ScriptInterpreter.iTerms.termSymbolString(ScriptInterpreter.iTerms.subterm(term, 1));
+      switch (op) {
+      case "chooseHigher":
+        derivationHigher.add(lhs, rhs);
+        break;
+      case "chooseLower":
+        derivationHigher.add(rhs, lhs);
+        break;
+      case "chooseLonger":
+        derivationLonger.add(lhs, rhs);
+        break;
+      case "chooseShorter":
+        derivationShorter.add(lhs, rhs);
+        break;
+      default:
+        Util.fatal("Unexpected chooserOp: " + op);
+      }
     }
 
     for (int term : lexicalTerms) {
-      Util.debug("Choose lexical rule : " + ScriptInterpreter.iTerms.toRawString(term));
-      ScriptInterpreter.seenChooseRule = true;
+      // Util.debug("Choose lexical rule : " + ScriptInterpreter.iTerms.toRawString(term));
       Set<CFGElement> lhs = new HashSet<>(), rhs = new HashSet<>();
       buildLexicalChooseSet(lhs, ScriptInterpreter.iTerms.subterm(term, 0));
       buildLexicalChooseSet(rhs, ScriptInterpreter.iTerms.subterm(term, 2));
@@ -80,6 +99,16 @@ public class ChooseRules implements DisplayInterface {
       }
     }
     dirty = false;
+  }
+
+  private CFGNode locateCFGNode(int term) {
+    CFGElement lhs = ScriptInterpreter.findCFGElement(ScriptInterpreter.iTerms.subterm(term, 0));
+    CFGNode production = ScriptInterpreter.currentCFGRules.elementToRulesNodeMap.get(lhs);
+    if (production == null) Util.warning("No matching rules found for derivation chooser " + lhs.str + " ::= ...");
+    for (production = production.alt; production != null; production = production.alt) {
+      Util.debug("Testing choose rule against production " + production.toStringAsProduction());
+    }
+    return null;
   }
 
   public boolean testHigher(CFGElement left, CFGElement right) {
