@@ -5,7 +5,7 @@ This is the documentation site for the ART software language engineering tool.
 * [ARTRef](https://github.com/AJohnstone2007/ART/blob/main/doc/artRef.pdf)
 Reference material on the ART Script Language, along with a Getting Started guide in Chapter 1.
 
-* [ARTTut](https://github.com/AJohnstone2007/ART/blob/main/doc/artTut.pdf)
+* [ARTSLE](https://github.com/AJohnstone2007/ART/blob/main/doc/artSLE.pdf)
 An introduction to Software Language Engineering using ART, as used in the Royal Holloway SLE course.
 
 * [ARTLab](https://github.com/AJohnstone2007/ART/blob/main/doc/artLab.pdf)
