@@ -54,7 +54,7 @@ public class ChooseRules implements DisplayInterface {
     if (!dirty) return;
 
     for (int term : derivationTerms) {
-      Util.debug("Choose derivation rule : " + ScriptInterpreter.iTerms.toRawString(term));
+      // Util.debug("Choose derivation rule : " + ScriptInterpreter.iTerms.toRawString(term));
       CFGNode lhs = locateCFGNode(ScriptInterpreter.iTerms.subterm(term, 0)), rhs = locateCFGNode(ScriptInterpreter.iTerms.subterm(term, 2));
       var op = ScriptInterpreter.iTerms.termSymbolString(ScriptInterpreter.iTerms.subterm(term, 1));
       switch (op) {
@@ -107,7 +107,7 @@ public class ChooseRules implements DisplayInterface {
     CFGNode altNode = ScriptInterpreter.currentCFGRules.elementToRulesNodeMap.get(lhs);
     if (altNode == null) Util.warning("No matching rules found for derivation chooser " + lhs.str + " ::= ...");
     for (altNode = altNode.alt; altNode != null; altNode = altNode.alt) {
-      Util.debug("Testing choose rule against production " + altNode.toStringAsProduction());
+      // Util.debug("Testing choose rule against production " + altNode.toStringAsProduction());
       int subTerm = 1;
       CFGNode ret = null;
       CFGNode seqNode = altNode.seq;

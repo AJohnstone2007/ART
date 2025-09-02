@@ -16,6 +16,7 @@ class SPPF2Dot {
   private final String deletedPackNodeStyle = "[style=\"filled,rounded\" fillcolor=cornflowerblue]";
   private final String deletedPrimePackNodeStyle = "[style=\"filled,rounded\" fillcolor=pink]";
   private final String deletedAndDeletedPrimePackNodeStyle = "[style=\"filled,rounded\" fillcolor=mediumpurple]";
+  private final String suppressedPackNodeStyle = "[style=\"filled,rounded\" fillcolor=pink]";
   private PrintStream outputStream = null;
   private boolean indexed;
   private boolean showIntermediates;
@@ -124,10 +125,11 @@ class SPPF2Dot {
     for (SPPFPackedNode p : sppfn.packNodes) {
       boolean isCyclicP = sppf.cyclic.get(p.number);
 
-      outputStream
-          .println("\"" + p.number + "\"" + packNodeStyle + " [label=\"" + p.number + ": " + p.grammarNode.toStringAsProduction() + " , " + p.pivot + "\"]");
+      outputStream.println("\"" + p.number + "\"" + packNodeStyle + " [label=\"" + (p.suppressed ? "*" : "") + p.number + ": "
+          + p.grammarNode.toStringAsProduction() + " , " + p.pivot + "\"]");
       if (isCyclicP) outputStream.println(cycleStyle);
       if (!sppf.rootReachable.get(p.number)) outputStream.println(unreachablePackNodeStyle);
+      if (p.suppressed) outputStream.println(suppressedPackNodeStyle);
 
       if (sppf.cbD.contains(p) && sppf.cbDPrime.contains(p))
         outputStream.println(deletedAndDeletedPrimePackNodeStyle);

@@ -193,11 +193,11 @@ public class SPPF extends AbstractDerivations {
 
     if (candidate == null) Util.info("No unsuppressed pack nodes found at SPPF node " + sppfn);
 
-    if (ambiguous) {
-      Util.info("Ambiguous SPPF node " + sppfn.toString() + " involving slots: ");
-      for (SPPFPackedNode p : sppfn.packNodes)
-        if (!p.suppressed) Util.info("  " + p);
-    }
+    // if (ambiguous) {
+    // Util.info("Ambiguous SPPF node " + sppfn.toString() + " involving slots: ");
+    // for (SPPFPackedNode p : sppfn.packNodes)
+    // if (!p.suppressed) Util.info(" " + p);
+    // }
     return candidate;
   }
 
@@ -224,9 +224,9 @@ public class SPPF extends AbstractDerivations {
 
     if (activePackedNodes > 1) {
       ambiguousSPPF = true;
-      Util.warning("Ambiguous SPPF node " + sppfn.toString() + " involving slots: ");
-      for (SPPFPackedNode p : sppfn.packNodes)
-        if (!p.suppressed) Util.info("  " + p);
+      // Util.warning("Ambiguous SPPF node " + sppfn.toString() + " involving slots: ");
+      // for (SPPFPackedNode p : sppfn.packNodes)
+      // if (!p.suppressed) Util.info(" " + p);
     }
   }
 
@@ -271,42 +271,56 @@ public class SPPF extends AbstractDerivations {
 
   @Override
   public void choose(ChooseRules chooseRules) {
+    Util.debug("Running choosers");
     visited.clear();
     if (root == null) {
       Util.warning("SPPF contains no derivations: skipping choosers");
       return;
     }
     chooseRec(root);
-
   }
 
   private void chooseRec(SPPFSymbolNode sn) {
+    // Util.debug("chooseRec() at " + sn);
     if (visited.get(sn.number)) return;
     visited.set(sn.number);
 
-    int rightMostPivot = -1;
-    SPPFPackedNode candidate = null;
+    // 1. Diagnostic
     if (sn.packNodes.size() > 1) {
-      Util.warning("Ambiguity detected at SPPF node " + sn.number + ": " + sn.grammarNode.toStringAsProduction() + " involving ");
+      Util.debug("Ambiguity detected at SPPF node " + sn.number + ": " + sn.grammarNode.toStringAsProduction() + " involving ");
       for (var p : sn.packNodes)
         Util.info("   " + p.toString());
     }
-    for (SPPFPackedNode p : sn.packNodes) {
-      if (p.pivot > rightMostPivot) {
-        rightMostPivot = p.pivot;
-        candidate = p;
-      }
-      if (p.leftChild != null) chooseLongestMatchRec(p.leftChild);
-      if (p.rightChild != null) chooseLongestMatchRec(p.rightChild);
+
+    // 2. Choose
+    if (sn.packNodes.size() > 1) {
+      for (SPPFPackedNode leftPackedNode : sn.packNodes)
+        for (SPPFPackedNode rightPackedNode : sn.packNodes) {
+          if (leftPackedNode == rightPackedNode) continue; // Do not self test
+          var leftNode = leftPackedNode.grammarNode;
+          var rightNode = rightPackedNode.grammarNode;
+          if ((ScriptInterpreter.currentChooseRules.testLonger(leftNode, rightNode) && leftPackedNode.pivot > rightPackedNode.pivot)
+              || (ScriptInterpreter.currentChooseRules.testShorter(leftNode, rightNode) && leftPackedNode.pivot < rightPackedNode.pivot)
+              || (ScriptInterpreter.currentChooseRules.testHigher(leftNode, rightNode) && leftPackedNode.pivot == rightPackedNode.pivot)) {
+            rightPackedNode.suppressed = true;
+            Util.debug("Suppressed  " + rightPackedNode);
+          }
+        }
     }
 
-    for (SPPFPackedNode p : sn.packNodes)
-      if (p != candidate) p.suppressed = true;
+    // 3. Recurse
+    for (var p : sn.packNodes) {
+      if (p.suppressed) continue;
+      if (p.leftChild != null) chooseRec(p.leftChild);
+      if (p.rightChild != null) chooseRec(p.rightChild);
+    }
+
   }
 
   /* Temporary disambiguation before choosers are implemented ****************/
   @Override
-  public void zchooseLongestMatch() {
+  public void chooseLongestMatch() {
+    Util.debug("Running default chooseLongestMatch()");
     visited.clear();
     if (root == null) {
       Util.warning("SPPF contains no derivations: skipping choosers");
@@ -353,8 +367,10 @@ public class SPPF extends AbstractDerivations {
   public void print(PrintStream outputStream, TermTraverserText outputTraverser, boolean indexed, boolean full, boolean indented) {
     for (var n : nodes.keySet()) {
       outputStream.println(n);
-      for (var pn : n.packNodes)
+      for (var pn : n.packNodes) {
+        outputStream.print(pn.suppressed ? "*" : " ");
         outputStream.println(pn);
+      }
     }
   }
 

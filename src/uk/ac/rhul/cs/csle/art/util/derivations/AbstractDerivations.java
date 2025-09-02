@@ -9,7 +9,7 @@ import uk.ac.rhul.cs.csle.art.util.DisplayInterface;
 import uk.ac.rhul.cs.csle.art.util.Util;
 
 public abstract class AbstractDerivations implements DisplayInterface {
-  public void zchooseLongestMatch() {
+  public void chooseLongestMatch() {
     Util.notImplemented("chooseLongestMatch()", getClass());
   }
 

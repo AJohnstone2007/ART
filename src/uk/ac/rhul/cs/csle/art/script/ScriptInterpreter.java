@@ -737,7 +737,7 @@ public final class ScriptInterpreter {
       default:
         Util.error("Ignoring " + (isShow ? "!show" : "!print") + " argument: " + displayElement
             + "\n   Must be a double-quoted string, or one of (case insensitive):\n" + "     raw plain latex full indented depth <n>\n"
-            + "     cfgRules cfgRulesLexer cfgRulesParser chooseRules trRules\n" + "     lexicalisations tasks stacks derivations derivationTerm\n"
+            + "     cfgRules cfgRulesLexer cfgRulesParser chooseRules trRules\n" + "     lexicalisations tasks stacks derivations tryTerm\n"
             + "     scriptLexicalisations scriptDerivations scriptTerm\n" + "     version statistics cardinalities paraterminals parasentences\n");
       }
     }
