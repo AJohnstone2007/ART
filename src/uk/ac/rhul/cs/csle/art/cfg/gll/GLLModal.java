@@ -29,7 +29,7 @@ public class GLLModal extends AbstractParser {
 
   @Override
   public void parse(String input, CFGRules cfgRules, AbstractLexer lexer, ChooseRules chooseRules) {
-    Util.debug("GLLModal.parse() with current modes " + ScriptInterpreter.currentModes);
+    // Util.debug("GLLModal.parse() with current modes " + ScriptInterpreter.currentModes);
     inLanguage = false;
     this.input = input;
     this.cfgRules = cfgRules;
@@ -40,7 +40,7 @@ public class GLLModal extends AbstractParser {
       derivations = new SPPFDummyForRecognisers(this);
     else
       derivations = new SPPF(this);
-    Util.debug("Derivation implementation: " + derivations.getClass().getSimpleName());
+    // Util.debug("Derivation implementation: " + derivations.getClass().getSimpleName());
 
     if (!lexer.lex(input, cfgRules, chooseRules)) return; // Nothing to do if the lexer fails
     inputIndex = 0;

@@ -42,11 +42,11 @@ public class ChooseRules implements DisplayInterface {
   }
 
   public void buildDerivationChooseRule(int term) {
-    Util.debug("Choose derivation rule : " + ScriptInterpreter.iTerms.toRawString(term));
+    // Util.debug("Choose derivation rule : " + ScriptInterpreter.iTerms.toRawString(term));
   }
 
   public void buildLexicalChooseRule(int term) {
-    Util.debug("Choose lexical rule : " + ScriptInterpreter.iTerms.toRawString(term));
+    // Util.debug("Choose lexical rule : " + ScriptInterpreter.iTerms.toRawString(term));
     ScriptInterpreter.seenChooseRule = true;
     Set<CFGElement> lhs = new HashSet<>(), rhs = new HashSet<>();
     buildLexicalChooseSet(lhs, ScriptInterpreter.iTerms.subterm(term, 0));

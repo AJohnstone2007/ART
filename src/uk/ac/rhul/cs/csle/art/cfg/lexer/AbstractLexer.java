@@ -136,7 +136,7 @@ public abstract class AbstractLexer implements DisplayInterface {
           var leftElement = leftTWE.cfgElement;
           var leftKind = leftElement.cfgKind;
 
-          Util.debug("AbstractLexer.choose() at slice " + sliceIndex + " comparing " + leftTWE + " to " + rightTWE);
+          // Util.debug("AbstractLexer.choose() at slice " + sliceIndex + " comparing " + leftTWE + " to " + rightTWE);
 
           // All set - now check the relations
           if ((ScriptInterpreter.currentChooseRules.testLonger(leftElement, rightElement) && leftTWE.rightExtent > rightTWE.rightExtent)
@@ -144,7 +144,7 @@ public abstract class AbstractLexer implements DisplayInterface {
               || (ScriptInterpreter.currentChooseRules.testHigher(leftElement, rightElement) && leftTWE.rightExtent == rightTWE.rightExtent)) {
             rightTWE.suppressed = true;
 
-            Util.debug("Suppressed " + rightTWE);
+            // Util.debug("Suppressed " + rightTWE);
           }
         }
       }
@@ -152,7 +152,7 @@ public abstract class AbstractLexer implements DisplayInterface {
   }
 
   public void chooseDefault() {
-    Util.debug("Running default lexical chooser");
+    // Util.debug("Running default lexical chooser");
     if (tweSlices[0] == null) {
       Util.error("lexer.chooseDefault() - empty tweSet");
       return;
