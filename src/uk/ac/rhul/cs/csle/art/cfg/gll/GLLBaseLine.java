@@ -66,8 +66,6 @@ public class GLLBaseLine extends AbstractParser {
           Util.fatal("Unexpected CFGNode kind " + cfgNode.cfgElement.cfgKind + " in " + getClass().getSimpleName());
         }
       }
-    derivations.numberNodes();
-    derivations.choose(chooseRules);
   }
 
   private AbstractDerivationNode updateDerivation(int rightExtent) {

@@ -9,7 +9,7 @@ import uk.ac.rhul.cs.csle.art.util.DisplayInterface;
 import uk.ac.rhul.cs.csle.art.util.Util;
 
 public abstract class AbstractDerivations implements DisplayInterface {
-  public void chooseLongestMatch() {
+  public void zchooseLongestMatch() {
     Util.notImplemented("chooseLongestMatch()", getClass());
   }
 
@@ -58,7 +58,9 @@ public abstract class AbstractDerivations implements DisplayInterface {
 
   public abstract void numberNodes();
 
-  public abstract void choose(ChooseRules chooseRules);
+  public void choose(ChooseRules chooseRules) {
+    Util.notImplemented("choose()", getClass());
+  }
 
   public abstract int bsrCardinality();
 }

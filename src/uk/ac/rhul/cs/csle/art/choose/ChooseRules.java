@@ -102,11 +102,36 @@ public class ChooseRules implements DisplayInterface {
   }
 
   private CFGNode locateCFGNode(int term) {
+    int arity = ScriptInterpreter.iTerms.termArity(term);
     CFGElement lhs = ScriptInterpreter.findCFGElement(ScriptInterpreter.iTerms.subterm(term, 0));
-    CFGNode production = ScriptInterpreter.currentCFGRules.elementToRulesNodeMap.get(lhs);
-    if (production == null) Util.warning("No matching rules found for derivation chooser " + lhs.str + " ::= ...");
-    for (production = production.alt; production != null; production = production.alt) {
-      Util.debug("Testing choose rule against production " + production.toStringAsProduction());
+    CFGNode altNode = ScriptInterpreter.currentCFGRules.elementToRulesNodeMap.get(lhs);
+    if (altNode == null) Util.warning("No matching rules found for derivation chooser " + lhs.str + " ::= ...");
+    for (altNode = altNode.alt; altNode != null; altNode = altNode.alt) {
+      Util.debug("Testing choose rule against production " + altNode.toStringAsProduction());
+      int subTerm = 1;
+      CFGNode ret = null;
+      CFGNode seqNode = altNode.seq;
+      while (true) {
+        if (seqNode.cfgElement.cfgKind == CFGKind.END) {
+          ret = seqNode;
+          break;
+        } // End of sequence
+        if (subTerm > arity) break; // End of chooser term
+        int child = ScriptInterpreter.iTerms.subterm(term, subTerm);
+
+        if (ScriptInterpreter.iTerms.termSymbolString(child).equals(".")) {
+          ret = seqNode;
+          subTerm++;
+        }
+
+        CFGElement rhsElement = ScriptInterpreter.findCFGElement(child);
+        if (seqNode.cfgElement != rhsElement) break; // Mismatch
+
+        seqNode = seqNode.seq;
+        subTerm++;
+      }
+
+      if (seqNode.cfgElement.cfgKind == CFGKind.END && subTerm == arity) return ret;
     }
     return null;
   }
@@ -191,7 +216,7 @@ public class ChooseRules implements DisplayInterface {
       boolean indexed, boolean full, boolean indented) {
     for (var t1 : relation.getDomain())
       for (var t2 : relation.get(t1))
-        outputStream.println(t1 + " " + op + " " + t2);
+        outputStream.println(t1.toStringAsProduction() + " " + op + " " + t2.toStringAsProduction());
   }
 
   @Override

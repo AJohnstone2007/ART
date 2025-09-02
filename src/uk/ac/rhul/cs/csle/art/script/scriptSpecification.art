@@ -95,8 +95,8 @@ trRelation ::= '->' | '=>' | '~>' | ':->' | ':=>' | ':~>'
 chooseRule ::= chooseDerivation^^ | chooseLexical^^ 
 
 chooseDerivation ::= chooseDerivationProduction chooserOp chooseDerivationProduction
-chooseDerivationProduction ::= cfgNonterminal '::='^ chooseDerivationProductionRHS
-chooseDerivationProductionRHS ::= cfgPrim | '.' | cfgPrim chooseDerivationProductionRHS | '.' chooseDerivationProductionRHS
+chooseDerivationProduction ::= cfgNonterminal '::='^ chooseDerivationProductionRHS^
+chooseDerivationProductionRHS ::= cfgPrim | '.' | cfgPrim chooseDerivationProductionRHS^ | '.' chooseDerivationProductionRHS^
 
 chooseLexical ::= chooseExpr chooserOp chooseExpr
 

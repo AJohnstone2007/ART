@@ -86,8 +86,6 @@ public class GLLModal extends AbstractParser {
           Util.fatal("Unexpected CFGNode kind " + cfgNode.cfgElement.cfgKind + " in " + getClass().getSimpleName());
         }
       }
-    derivations.numberNodes();
-    derivations.choose(chooseRules);
   }
 
   private boolean matchTerminal(CFGElement cfgElement) {

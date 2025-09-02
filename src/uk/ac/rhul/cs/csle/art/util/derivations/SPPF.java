@@ -98,41 +98,6 @@ public class SPPF extends AbstractDerivations {
     return ret;
   }
 
-  /* Temporary disambiguation before choosers are implemented ****************/
-  @Override
-  public void chooseLongestMatch() {
-    visited.clear();
-    if (root == null) {
-      Util.warning("SPPF contains no derivations: skipping choosers");
-      return;
-    }
-    chooseLongestMatchRec(root);
-  }
-
-  private void chooseLongestMatchRec(SPPFSymbolNode sn) {
-    if (visited.get(sn.number)) return;
-    visited.set(sn.number);
-
-    int rightMostPivot = -1;
-    SPPFPackedNode candidate = null;
-    if (sn.packNodes.size() > 1) {
-      Util.warning("Ambiguity detected at SPPF node " + sn.number + ": " + sn.grammarNode.toStringAsProduction() + " involving ");
-      for (var p : sn.packNodes)
-        Util.info("   " + p.toString());
-    }
-    for (SPPFPackedNode p : sn.packNodes) {
-      if (p.pivot > rightMostPivot) {
-        rightMostPivot = p.pivot;
-        candidate = p;
-      }
-      if (p.leftChild != null) chooseLongestMatchRec(p.leftChild);
-      if (p.rightChild != null) chooseLongestMatchRec(p.rightChild);
-    }
-
-    for (SPPFPackedNode p : sn.packNodes)
-      if (p != candidate) p.suppressed = true;
-  }
-
   /* Term generation **************************************************************************/
   /* This version handles promotion operators, but does not create ambiguity nodes */
 
@@ -306,7 +271,72 @@ public class SPPF extends AbstractDerivations {
 
   @Override
   public void choose(ChooseRules chooseRules) {
-    // TODO Auto-generated method stub - no choosers at present
+    visited.clear();
+    if (root == null) {
+      Util.warning("SPPF contains no derivations: skipping choosers");
+      return;
+    }
+    chooseRec(root);
+
+  }
+
+  private void chooseRec(SPPFSymbolNode sn) {
+    if (visited.get(sn.number)) return;
+    visited.set(sn.number);
+
+    int rightMostPivot = -1;
+    SPPFPackedNode candidate = null;
+    if (sn.packNodes.size() > 1) {
+      Util.warning("Ambiguity detected at SPPF node " + sn.number + ": " + sn.grammarNode.toStringAsProduction() + " involving ");
+      for (var p : sn.packNodes)
+        Util.info("   " + p.toString());
+    }
+    for (SPPFPackedNode p : sn.packNodes) {
+      if (p.pivot > rightMostPivot) {
+        rightMostPivot = p.pivot;
+        candidate = p;
+      }
+      if (p.leftChild != null) chooseLongestMatchRec(p.leftChild);
+      if (p.rightChild != null) chooseLongestMatchRec(p.rightChild);
+    }
+
+    for (SPPFPackedNode p : sn.packNodes)
+      if (p != candidate) p.suppressed = true;
+  }
+
+  /* Temporary disambiguation before choosers are implemented ****************/
+  @Override
+  public void zchooseLongestMatch() {
+    visited.clear();
+    if (root == null) {
+      Util.warning("SPPF contains no derivations: skipping choosers");
+      return;
+    }
+    chooseLongestMatchRec(root);
+  }
+
+  private void chooseLongestMatchRec(SPPFSymbolNode sn) {
+    if (visited.get(sn.number)) return;
+    visited.set(sn.number);
+
+    int rightMostPivot = -1;
+    SPPFPackedNode candidate = null;
+    if (sn.packNodes.size() > 1) {
+      Util.warning("Ambiguity detected at SPPF node " + sn.number + ": " + sn.grammarNode.toStringAsProduction() + " involving ");
+      for (var p : sn.packNodes)
+        Util.info("   " + p.toString());
+    }
+    for (SPPFPackedNode p : sn.packNodes) {
+      if (p.pivot > rightMostPivot) {
+        rightMostPivot = p.pivot;
+        candidate = p;
+      }
+      if (p.leftChild != null) chooseLongestMatchRec(p.leftChild);
+      if (p.rightChild != null) chooseLongestMatchRec(p.rightChild);
+    }
+
+    for (SPPFPackedNode p : sn.packNodes)
+      if (p != candidate) p.suppressed = true;
   }
 
   @Override

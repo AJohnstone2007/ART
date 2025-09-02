@@ -62,7 +62,7 @@ public class SPPFDummyForRecognisers extends AbstractDerivations {
 
   /* Temporary disambiguation before choosers are implemented ****************/
   @Override
-  public void chooseLongestMatch() {
+  public void zchooseLongestMatch() {
   }
 
   /* Term generation **************************************************************************/
