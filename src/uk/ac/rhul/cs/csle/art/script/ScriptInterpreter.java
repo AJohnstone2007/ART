@@ -128,6 +128,12 @@ public final class ScriptInterpreter {
     if (successfulTests != 0 || failedTests != 0) Util.info("Successful tests: " + successfulTests + "; failed tests " + failedTests);
   }
 
+  private void normalise() {
+    currentCFGRules.normalise();
+    currentChooseRules.normalise();
+    currentTRRules.normalise();
+  }
+
   private TermTraverserText initialiseScriptTraverser() {
     TermTraverserText ret = new TermTraverserText(iTerms, "ART Script traverser");
 
@@ -163,8 +169,8 @@ public final class ScriptInterpreter {
 
     ret.addAction("cfgSlot", (Integer t) -> currentCFGRules.workingNode.actionAsTerm = t, null, null);
 
-    ret.addActionBreak("chooseDerivation", (Integer t) -> currentChooseRules.buildDerivationChooseRule(t), null, null);
-    ret.addActionBreak("chooseLexical", (Integer t) -> currentChooseRules.buildLexicalChooseRule(t), null, null);
+    ret.addActionBreak("chooseDerivation", (Integer t) -> currentChooseRules.addDerivationChooseRule(t), null, null);
+    ret.addActionBreak("chooseLexical", (Integer t) -> currentChooseRules.addLexicalChooseRule(t), null, null);
 
     ret.addAction("trRule", (Integer t) -> currentTRRules.buildTRRule(t), null, null);
     return ret;
@@ -195,6 +201,7 @@ public final class ScriptInterpreter {
       break;
 
     case "!print", "!show":
+      normalise();
       processDisplayElements(operationTerm);
       break;
 
@@ -230,6 +237,7 @@ public final class ScriptInterpreter {
       default:
         Util.fatal("Unknown !clear argument " + argument + "\nmust be one of (case insensitive): allRules cfgRules choseRulesrewriteRules whitespace mode");
       }
+      normalise();
       break;
 
     case "!lexer":
@@ -333,6 +341,7 @@ public final class ScriptInterpreter {
       break;
 
     case "!convert":
+      normalise();
       switch (iTerms.termSymbolString(iTerms.subterm(term, 0, 0)).toLowerCase()) {
       case "cfgcharacterinline":
         currentCFGRules = new CFGRules(currentCFGRules, CFGRulesKind.USER, true, false, false, false);
@@ -374,16 +383,17 @@ public final class ScriptInterpreter {
       break;
 
     case "!generate":
+      normalise();
       switch (iTerms.termSymbolString(iTerms.subterm(term, 0, 0)).toLowerCase()) {
       case "rdsob":
         new RDSOBGenerator(currentCFGRules, "RDSOB");
         break;
       case "rdsoboracle":
-        currentCFGRules.normalise();
+        normalise();
         new RDSOBOracleGenerator(currentCFGRules);
         break;
       case "actions":
-        currentCFGRules.normalise();
+        normalise();
         if (iTerms.termArity(iTerms.subterm(term, 0)) == 1) new ActionsGenerator(currentCFGRules, currentCFGRules.filePrelude, currentCFGRules.classPrelude);
         break;
       case "__int32": { // sentence and sentential forms generator
@@ -427,6 +437,7 @@ public final class ScriptInterpreter {
 
     case "!try":
       // Util.debug("processing try " + iTerms.toString(term));
+      normalise();
       if (iTerms.termSymbolString(iTerms.subterm(term, 0, 0)).equals("file")) // Parse contents of file
         try {
           String filename = iTerms.termSymbolString(iTerms.subterm(term, 0, 0, 0));
@@ -459,6 +470,7 @@ public final class ScriptInterpreter {
       break;
 
     case "!save": {
+      normalise();
       String id = iTerms.termSymbolString(iTerms.subterm(term, 0, 1));
       switch (iTerms.termSymbolString(iTerms.subterm(term, 0, 0)).toLowerCase()) {
       case "cfgrules":
@@ -491,6 +503,7 @@ public final class ScriptInterpreter {
 
       default -> Util.fatal("Unexpected !recall value type: " + scriptVariables.get(id).getClass().getSimpleName());
       }
+      normalise();
     }
       break;
 
@@ -594,7 +607,6 @@ public final class ScriptInterpreter {
         break;
 
       case "cfgRulesScript":
-        scriptCFGRules.normalise();
         if (isShow)
           scriptCFGRules.show(outputStream, outputTraverser, indexed, full, indented);
         else
@@ -602,7 +614,6 @@ public final class ScriptInterpreter {
         break;
 
       case "cfgRules":
-        currentCFGRules.normalise();
         if (isShow)
           currentCFGRules.show(outputStream, outputTraverser, indexed, full, indented);
         else
@@ -610,7 +621,6 @@ public final class ScriptInterpreter {
         break;
 
       case "cfgRulesLexer":
-        currentCFGRules.normalise();
         if (isShow)
           currentCFGRules.cfgRulesLexer.show(outputStream, outputTraverser, indexed, full, indented);
         else
@@ -618,7 +628,6 @@ public final class ScriptInterpreter {
         break;
 
       case "cfgRulesParser":
-        currentCFGRules.normalise();
         if (isShow)
           currentCFGRules.cfgRulesParser.show(outputStream, outputTraverser, indexed, full, indented);
         else
@@ -626,7 +635,6 @@ public final class ScriptInterpreter {
         break;
 
       case "chooseRules":
-        currentCFGRules.normalise();
         if (isShow)
           currentChooseRules.show(outputStream, outputTraverser, indexed, full, indented);
         else
@@ -764,7 +772,6 @@ public final class ScriptInterpreter {
   private void tryParse(String inputStringName, String inputString) {
     Util.trace(8, "Parser trace using " + currentParser.getClass().getSimpleName());
 
-    currentCFGRules.normalise();
     currentStatistics.putTime("SetupTime");
     currentParser.parse(inputString, currentCFGRules, currentLexer, currentChooseRules);
     currentStatistics.putTime("ParseTime");

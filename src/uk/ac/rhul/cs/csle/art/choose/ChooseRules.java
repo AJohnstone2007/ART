@@ -15,59 +15,71 @@ import uk.ac.rhul.cs.csle.art.util.relation.Relation;
 import uk.ac.rhul.cs.csle.art.util.statistics.Statistics;
 
 public class ChooseRules implements DisplayInterface {
-  private final Relation<CFGElement, CFGElement> lexicalHigher;
-  private final Relation<CFGElement, CFGElement> lexicalLonger;
-  private final Relation<CFGElement, CFGElement> lexicalShorter;
-  private final Relation<CFGNode, CFGNode> derivationHigher;
-  private final Relation<CFGNode, CFGNode> derivationLonger;
-  private final Relation<CFGNode, CFGNode> derivationShorter;
+  private final Set<Integer> lexicalTerms;
+  private final Set<Integer> derivationTerms;
+  private boolean dirty = true;
+
+  private final Relation<CFGElement, CFGElement> lexicalHigher = new Relation<>();
+  private final Relation<CFGElement, CFGElement> lexicalLonger = new Relation<>();
+  private final Relation<CFGElement, CFGElement> lexicalShorter = new Relation<>();
+  private final Relation<CFGNode, CFGNode> derivationHigher = new Relation<>();
+  private final Relation<CFGNode, CFGNode> derivationLonger = new Relation<>();
+  private final Relation<CFGNode, CFGNode> derivationShorter = new Relation<>();
 
   public ChooseRules(ChooseRules payload) { // Copy constructor
-    lexicalHigher = new Relation<>(payload.lexicalHigher);
-    lexicalLonger = new Relation<>(payload.lexicalLonger);
-    lexicalShorter = new Relation<>(payload.lexicalShorter);
-    derivationHigher = new Relation<>(payload.derivationHigher);
-    derivationLonger = new Relation<>(payload.derivationLonger);
-    derivationShorter = new Relation<>(payload.derivationShorter);
+    super();
+    lexicalTerms = new HashSet<>(payload.lexicalTerms);
+    derivationTerms = new HashSet<>(payload.derivationTerms);
   }
 
   public ChooseRules() {
     super();
-    lexicalHigher = new Relation<>();
-    lexicalLonger = new Relation<>();
-    lexicalShorter = new Relation<>();
-    derivationHigher = new Relation<>();
-    derivationLonger = new Relation<>();
-    derivationShorter = new Relation<>();
+    lexicalTerms = new HashSet<>();
+    derivationTerms = new HashSet<>();
   }
 
-  public void buildDerivationChooseRule(int term) {
-    // Util.debug("Choose derivation rule : " + ScriptInterpreter.iTerms.toRawString(term));
+  public void addDerivationChooseRule(int term) {
+    derivationTerms.add(term);
+    dirty = true;
   }
 
-  public void buildLexicalChooseRule(int term) {
-    // Util.debug("Choose lexical rule : " + ScriptInterpreter.iTerms.toRawString(term));
-    ScriptInterpreter.seenChooseRule = true;
-    Set<CFGElement> lhs = new HashSet<>(), rhs = new HashSet<>();
-    buildLexicalChooseSet(lhs, ScriptInterpreter.iTerms.subterm(term, 0));
-    buildLexicalChooseSet(rhs, ScriptInterpreter.iTerms.subterm(term, 2));
-    var op = ScriptInterpreter.iTerms.termSymbolString(ScriptInterpreter.iTerms.subterm(term, 1));
-    switch (op) {
-    case "chooseHigher":
-      lexicalHigher.addAllAll(lhs, rhs);
-      break;
-    case "chooseLower":
-      lexicalHigher.addAllAll(rhs, lhs);
-      break;
-    case "chooseLonger":
-      lexicalLonger.addAllAll(lhs, rhs);
-      break;
-    case "chooseShorter":
-      lexicalShorter.addAllAll(lhs, rhs);
-      break;
-    default:
-      Util.fatal("Unexpected chooserOp: " + op);
+  public void addLexicalChooseRule(int term) {
+    lexicalTerms.add(term);
+    dirty = true;
+  }
+
+  public void normalise() {
+    if (!dirty) return;
+
+    for (int term : derivationTerms) {
+      Util.debug("Choose derivation rule : " + ScriptInterpreter.iTerms.toRawString(term));
     }
+
+    for (int term : lexicalTerms) {
+      Util.debug("Choose lexical rule : " + ScriptInterpreter.iTerms.toRawString(term));
+      ScriptInterpreter.seenChooseRule = true;
+      Set<CFGElement> lhs = new HashSet<>(), rhs = new HashSet<>();
+      buildLexicalChooseSet(lhs, ScriptInterpreter.iTerms.subterm(term, 0));
+      buildLexicalChooseSet(rhs, ScriptInterpreter.iTerms.subterm(term, 2));
+      var op = ScriptInterpreter.iTerms.termSymbolString(ScriptInterpreter.iTerms.subterm(term, 1));
+      switch (op) {
+      case "chooseHigher":
+        lexicalHigher.addAllAll(lhs, rhs);
+        break;
+      case "chooseLower":
+        lexicalHigher.addAllAll(rhs, lhs);
+        break;
+      case "chooseLonger":
+        lexicalLonger.addAllAll(lhs, rhs);
+        break;
+      case "chooseShorter":
+        lexicalShorter.addAllAll(lhs, rhs);
+        break;
+      default:
+        Util.fatal("Unexpected chooserOp: " + op);
+      }
+    }
+    dirty = false;
   }
 
   public boolean testHigher(CFGElement left, CFGElement right) {
