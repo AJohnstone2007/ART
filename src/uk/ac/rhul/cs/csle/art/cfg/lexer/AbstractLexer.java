@@ -136,14 +136,15 @@ public abstract class AbstractLexer implements DisplayInterface {
           var leftElement = leftTWE.cfgElement;
           var leftKind = leftElement.cfgKind;
 
-          // All set - now check the relations
+          Util.debug("AbstractLexer.choose() at slice " + sliceIndex + " comparing " + leftTWE + " to " + rightTWE);
 
-          if ((ScriptInterpreter.currentChooseRules.testLonger(leftElement, rightElement) && leftTWE.leftExtent > rightTWE.rightExtent)
-              || (ScriptInterpreter.currentChooseRules.testShorter(leftElement, rightElement) && leftTWE.leftExtent < rightTWE.rightExtent)
-              || (ScriptInterpreter.currentChooseRules.testHigher(leftElement, rightElement) && leftTWE.leftExtent == rightTWE.rightExtent)) {
+          // All set - now check the relations
+          if ((ScriptInterpreter.currentChooseRules.testLonger(leftElement, rightElement) && leftTWE.rightExtent > rightTWE.rightExtent)
+              || (ScriptInterpreter.currentChooseRules.testShorter(leftElement, rightElement) && leftTWE.rightExtent < rightTWE.rightExtent)
+              || (ScriptInterpreter.currentChooseRules.testHigher(leftElement, rightElement) && leftTWE.rightExtent == rightTWE.rightExtent)) {
             rightTWE.suppressed = true;
 
-            Util.debug("Suppression against TWE pair " + leftTWE + " and " + rightTWE);
+            Util.debug("Suppressed " + rightTWE);
           }
         }
       }
