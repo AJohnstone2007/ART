@@ -92,7 +92,13 @@ __m ::= trTerm '='^ trTerm | trTerm '='^ trTerm ','^ __m
 trRelation ::= '->' | '=>' | '~>' | ':->' | ':=>' | ':~>'  
 
 (* Choose rules ***************************************************************)
-chooseRule ::= chooseExpr chooserOp chooseExpr
+chooseRule ::= chooseDerivation^^ | chooseLexical^^ 
+
+chooseDerivation ::= chooseDerivationProduction chooserOp chooseDerivationProduction
+chooseDerivationProduction ::= cfgNonterminal '::='^ chooseDerivationProductionRHS
+chooseDerivationProductionRHS ::= cfgPrim | '.' | cfgPrim chooseDerivationProductionRHS | '.' chooseDerivationProductionRHS
+
+chooseLexical ::= chooseExpr chooserOp chooseExpr
 
 chooseExpr ::= 
   chooseElement^ | chooseElement^ chooseExprTail^
@@ -103,9 +109,7 @@ chooseExprTail ::= chooseCarrier | chooseCarrier chooseExprTail^
 chooseCarrier ::= chooseAdd^^ chooseElement^ | chooseRemove^^ chooseElement^  
 
 chooseElement ::= 
-  cfgNonterminal | cfgCharacterTerminal | cfgBuiltinTerminal | cfgCaseInsensitiveTerminal | cfgCaseSensitiveTerminal | cfgDottedProduction
-  
-cfgDottedProduction ::= '('^ cfgLHS '::=' cfgAlt ')'
+  cfgNonterminal | cfgCharacterTerminal | cfgBuiltinTerminal | cfgCaseInsensitiveTerminal | cfgCaseSensitiveTerminal
 
 chooseSet ::=
   'anyCharacterTerminal' | 'anyBuiltinTerminal' | 'anyCaseSensitiveTerminal' | 'anyCaseInsensitiveTerminal'
