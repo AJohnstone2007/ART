@@ -56,6 +56,10 @@ public class ChooseRules implements DisplayInterface {
     for (int term : derivationTerms) {
       // Util.debug("Choose derivation rule : " + ScriptInterpreter.iTerms.toRawString(term));
       CFGNode lhs = locateCFGNode(ScriptInterpreter.iTerms.subterm(term, 0)), rhs = locateCFGNode(ScriptInterpreter.iTerms.subterm(term, 2));
+      if (lhs == null || rhs == null) {
+        Util.warning("No matching CFG rule found in derivation choose rule " + ScriptInterpreter.iTerms.toString(term));
+        continue;
+      }
       var op = ScriptInterpreter.iTerms.termSymbolString(ScriptInterpreter.iTerms.subterm(term, 1));
       switch (op) {
       case "chooseHigher":
@@ -103,36 +107,49 @@ public class ChooseRules implements DisplayInterface {
 
   private CFGNode locateCFGNode(int term) {
     int arity = ScriptInterpreter.iTerms.termArity(term);
+
+    // Check for multiple dots
+    int dotCount = 0;
+    for (int i = 0; i < arity; i++)
+      if (ScriptInterpreter.iTerms.termSymbolString(ScriptInterpreter.iTerms.subterm(term, i)).equals(".")) dotCount++;
+    if (dotCount > 1) Util.fatal("Choose rule subterm has multiple dots " + ScriptInterpreter.iTerms.toString(term));
+
     CFGElement lhs = ScriptInterpreter.findCFGElement(ScriptInterpreter.iTerms.subterm(term, 0));
     CFGNode altNode = ScriptInterpreter.currentCFGRules.elementToRulesNodeMap.get(lhs);
-    if (altNode == null) Util.warning("No matching rules found for derivation chooser " + lhs.str + " ::= ...");
-    for (altNode = altNode.alt; altNode != null; altNode = altNode.alt) {
-      // Util.debug("Testing choose rule against production " + altNode.toStringAsProduction());
+    if (altNode == null) return null; // No lhs nonterminal
+
+    for (altNode = altNode.alt; altNode != null; altNode = altNode.alt) { // Check each production
+      Util.debug("Testing choose rule term " + ScriptInterpreter.iTerms.toString(term) + " against production " + altNode.toStringAsProduction());
+
       int subTerm = 1;
       CFGNode ret = null;
       CFGNode seqNode = altNode.seq;
-      while (true) {
-        if (seqNode.cfgElement.cfgKind == CFGKind.END) {
-          ret = seqNode;
-          break;
-        } // End of sequence
-        if (subTerm > arity) break; // End of chooser term
-        int child = ScriptInterpreter.iTerms.subterm(term, subTerm);
 
-        if (ScriptInterpreter.iTerms.termSymbolString(child).equals(".")) {
+      while (true) {
+        if (seqNode.cfgElement.cfgKind == CFGKind.END && ret == null) ret = seqNode;
+
+        if (subTerm < arity && ScriptInterpreter.iTerms.termSymbolString(ScriptInterpreter.iTerms.subterm(term, subTerm)).equals(".")) {
           ret = seqNode;
+          // Skip the dot
           subTerm++;
         }
 
-        CFGElement rhsElement = ScriptInterpreter.findCFGElement(child);
-        if (seqNode.cfgElement != rhsElement) break; // Mismatch
+        if (seqNode.cfgElement.cfgKind == CFGKind.END || subTerm >= arity) // We have exhausted either the production, or the term, or both
+          break;
+
+        // We have not exhausted either the term or the production, so test for match
+        if (seqNode.cfgElement != ScriptInterpreter.findCFGElement(ScriptInterpreter.iTerms.subterm(term, subTerm))) break; // Mismatch
 
         seqNode = seqNode.seq;
         subTerm++;
       }
 
-      if (seqNode.cfgElement.cfgKind == CFGKind.END && subTerm == arity) return ret;
+      if (seqNode.cfgElement.cfgKind == CFGKind.END && subTerm == arity) {
+        Util.debug("Choose term " + ScriptInterpreter.iTerms.toString(term) + " matched to " + ret.toStringAsProduction());
+        return ret;
+      }
     }
+    if (altNode == null) Util.warning("No matching production found for derivation chooser " + ScriptInterpreter.iTerms.toString(term));
     return null;
   }
 
@@ -216,7 +233,7 @@ public class ChooseRules implements DisplayInterface {
       boolean indexed, boolean full, boolean indented) {
     for (var t1 : relation.getDomain())
       for (var t2 : relation.get(t1))
-        outputStream.println(t1.toStringAsProduction() + " " + op + " " + t2.toStringAsProduction());
+        outputStream.println(t1.toStringAsProduction() + " " + op + " " + (t2 == null ? t2 : t2.toStringAsProduction()));
   }
 
   @Override
