@@ -175,6 +175,7 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
     // Now build the rules
     for (var n : src.elementToRulesNodeMap.keySet())
       if (n.cfgKind == CFGKind.NONTERMINAL) {
+        Util.debug("CFGRules copy constructor mode " + cfgRulesKind + ": adding rule for " + n);
         actionLHS(n.str);
         cloneGrammarRulesRec(src, src.elementToRulesNodeMap.get(n).alt, character, createParaterminals, bnfLeft, bnfRight);
       }
@@ -362,11 +363,13 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
 
     clean = true;
 
-    // Construct lexer and parser subgrammars in we are a USER grammar
+    // Construct lexer and parser subgrammars ONLY if we are a USER grammar
     // Note, by the time we get here, we are fully normalised so the subgrammars can use our reachability information
     if (cfgRulesKind == CFGRulesKind.USER) {
       cfgRulesLexer = new CFGRules(this, CFGRulesKind.LEXER, false, false, false, false);
+      cfgRulesLexer.normalise(); // recurse only once for the lexer grammar
       cfgRulesParser = new CFGRules(this, CFGRulesKind.PARSER, false, false, false, false);
+      cfgRulesParser.normalise(); // recurse only once for the parser grammar
       subGrammarConsistencyCheck();
     }
   }
@@ -450,11 +453,6 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
       lexerNonterminals.addAll(reachableNonterminals.get(n)); // Note we want all reachable nonterminals including paraterminals
 
     if (cfgRulesKind == CFGRulesKind.USER) {
-      // Warnings here; diagnostics to be moved later to !print
-      // Util.debug("Parser nonterminals" + parserNonterminals);
-      // Util.debug("Paraterminals" + paraterminals);
-      // Util.debug("Lexer nonterminals" + lexerNonterminals);
-
       TreeSet<CFGElement> tmp = new TreeSet<>(elements.keySet());
       tmp.removeAll(reachable.get(startNonterminal));
       tmp.remove(startNonterminal);
@@ -1025,9 +1023,8 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
         if (first) {
           outputStream.print(production.toStringAsProduction(" ::=\n ", null) + "\n");
           first = false;
-        } else {
+        } else
           outputStream.print("|" + production.toStringAsRHS(null) + "\n");
-        }
       }
     }
 

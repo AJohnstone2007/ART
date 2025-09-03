@@ -29,7 +29,7 @@ public class GLLModal extends AbstractParser {
 
   @Override
   public void parse(String input, CFGRules cfgRules, AbstractLexer lexer, ChooseRules chooseRules) {
-    // Util.debug("GLLModal.parse() with current modes " + ScriptInterpreter.currentModes);
+    Util.debug("GLLModal.parse() with current modes " + ScriptInterpreter.currentModes);
     inLanguage = false;
     this.input = input;
     this.cfgRules = cfgRules;
