@@ -134,7 +134,7 @@ directiveCarrier ::=
 | '!show'^^ displayElements^
 | '!trace'^^ __int32
 
-| '!clear'^^ IDs | '!lexer'^^ ID | '!parser'^^ ID | '!interpreter'^^ ID | '!mode'^^ modes^ | '!convert'^^ IDs^ 
+| '!clear'^^ IDs^ | '!lexer'^^ ID | '!parser'^^ ID | '!interpreter'^^ ID | '!mode'^^ modes^ | '!convert'^^ IDs^ 
 
 | '!characters'^^ cfgCharacterSetTerminal
 | '!whitespace'^^ cfgPrims^
@@ -159,7 +159,7 @@ directiveCarrier ::=
 
 file ::= &STRING_SQ
 
-IDs ::= ID | ID ','^ IDs
+IDs ::= ID | ID ','^ IDs^
 
 modes ::= ID | ID ','^ modes^ | 'not' ID | 'not' ID ','^ modes^
 

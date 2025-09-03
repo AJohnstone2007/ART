@@ -1,0 +1,6 @@
+!clear whitespace
+
+S ::= WT T
+T ::= `b WT  |  `b WT `+ WT T
+WS ::= `  | `\t | `\n  | `\r
+WT ::= #  | WS WT
