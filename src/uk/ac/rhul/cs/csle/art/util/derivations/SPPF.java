@@ -271,7 +271,7 @@ public class SPPF extends AbstractDerivations {
 
   @Override
   public void choose(ChooseRules chooseRules) {
-    Util.debug("Running choosers");
+    // Util.debug("Running choosers");
     visited.clear();
     if (root == null) {
       Util.warning("SPPF contains no derivations: skipping choosers");
@@ -287,7 +287,7 @@ public class SPPF extends AbstractDerivations {
 
     // 1. Diagnostic
     if (sn.packNodes.size() > 1) {
-      Util.debug("Ambiguity detected at SPPF node " + sn.number + ": " + sn.grammarNode.toStringAsProduction() + " involving ");
+      Util.warning("Ambiguity detected at SPPF node " + sn.number + ": " + sn.grammarNode.toStringAsProduction() + " involving ");
       for (var p : sn.packNodes)
         Util.info("   " + p.toString());
     }
@@ -303,7 +303,7 @@ public class SPPF extends AbstractDerivations {
               || (ScriptInterpreter.currentChooseRules.testShorter(leftNode, rightNode) && leftPackedNode.pivot < rightPackedNode.pivot)
               || (ScriptInterpreter.currentChooseRules.testHigher(leftNode, rightNode) && leftPackedNode.pivot == rightPackedNode.pivot)) {
             rightPackedNode.suppressed = true;
-            Util.debug("Suppressed  " + rightPackedNode);
+            Util.warning("Suppressed  " + rightPackedNode);
           }
         }
     }

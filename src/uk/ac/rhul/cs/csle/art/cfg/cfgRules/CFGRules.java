@@ -175,7 +175,7 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
     // Now build the rules
     for (var n : src.elementToRulesNodeMap.keySet())
       if (n.cfgKind == CFGKind.NONTERMINAL) {
-        Util.debug("CFGRules copy constructor mode " + cfgRulesKind + ": adding rule for " + n);
+        // Util.debug("CFGRules copy constructor mode " + cfgRulesKind + ": adding rule for " + n);
         actionLHS(n.str);
         cloneGrammarRulesRec(src, src.elementToRulesNodeMap.get(n).alt, character, createParaterminals, bnfLeft, bnfRight);
       }

@@ -95,8 +95,14 @@ trRelation ::= '->' | '=>' | '~>' | ':->' | ':=>' | ':~>'
 chooseRule ::= chooseDerivation^^ | chooseLexical^^ 
 
 chooseDerivation ::= chooseDerivationProduction chooserOp chooseDerivationProduction
-chooseDerivationProduction ::= cfgNonterminal '::='^ chooseDerivationProductionRHS^
-chooseDerivationProductionRHS ::= cfgPrim | '.' | cfgPrim chooseDerivationProductionRHS^ | '.' chooseDerivationProductionRHS^
+chooseDerivationProduction ::= 
+  cfgNonterminal '::='^ chooseEpsilonRHS^
+| cfgNonterminal '::='^ chooseDerivationProductionRHS^
+
+chooseEpsilonRHS ::= cfgEpsilon | '.' cfgEpsilon | cfgEpsilon '.'
+
+chooseDerivationProductionRHS ::= 
+   cfgPrim | '.' | cfgPrim chooseDerivationProductionRHS^ | '.' chooseDerivationProductionRHS^
 
 chooseLexical ::= chooseExpr chooserOp chooseExpr
 
@@ -136,7 +142,7 @@ directiveCarrier ::=
 
 | '!clear'^^ IDs^ | '!lexer'^^ ID | '!parser'^^ ID | '!interpreter'^^ ID | '!mode'^^ modes^ | '!convert'^^ IDs^ 
 
-| '!characters'^^ cfgCharacterSetTerminal
+| '!character'^^ cfgCharacterSetTerminal
 | '!whitespace'^^ cfgPrims^
 | '!paraterminal'^^ paraterminalElements^
 | '!token'^^ cfgPrims^

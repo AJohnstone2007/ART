@@ -29,7 +29,7 @@ public class GLLModal extends AbstractParser {
 
   @Override
   public void parse(String input, CFGRules cfgRules, AbstractLexer lexer, ChooseRules chooseRules) {
-    Util.debug("GLLModal.parse() with current modes " + ScriptInterpreter.currentModes);
+    // Util.debug("GLLModal.parse() with current modes " + ScriptInterpreter.currentModes);
     inLanguage = false;
     this.input = input;
     this.cfgRules = cfgRules;
@@ -177,5 +177,15 @@ public class GLLModal extends AbstractParser {
 
   private String fmt(int n) {
     return String.format("%,d", n);
+  }
+
+  @Override
+  protected String name() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("GLLModal( ");
+    for (var m : ScriptInterpreter.currentModes)
+      sb.append(m + " ");
+    sb.append(")");
+    return sb.toString();
   }
 }

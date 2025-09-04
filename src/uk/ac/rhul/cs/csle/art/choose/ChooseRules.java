@@ -119,7 +119,7 @@ public class ChooseRules implements DisplayInterface {
     if (altNode == null) return null; // No lhs nonterminal
 
     for (altNode = altNode.alt; altNode != null; altNode = altNode.alt) { // Check each production
-      Util.debug("Testing choose rule term " + ScriptInterpreter.iTerms.toString(term) + " against production " + altNode.toStringAsProduction());
+      // Util.debug("Testing choose rule term " + ScriptInterpreter.iTerms.toString(term) + " against production " + altNode.toStringAsProduction());
 
       int subTerm = 1;
       CFGNode ret = null;
@@ -145,7 +145,7 @@ public class ChooseRules implements DisplayInterface {
       }
 
       if (seqNode.cfgElement.cfgKind == CFGKind.END && subTerm == arity) {
-        Util.debug("Choose term " + ScriptInterpreter.iTerms.toString(term) + " matched to " + ret.toStringAsProduction());
+        // Util.debug("Choose term " + ScriptInterpreter.iTerms.toString(term) + " matched to " + ret.toStringAsProduction());
         return ret;
       }
     }
