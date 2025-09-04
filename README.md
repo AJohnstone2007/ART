@@ -16,10 +16,10 @@ Reference, tutorial and internals information is [here](https://github.com/AJohn
 Reference material on the ART Script Language, along with a Getting Started guide in Chapter 1.
 
 * [ARTSLE](https://github.com/AJohnstone2007/ART/blob/main/doc/artSLE.pdf)
-An introduction to Software Language Engineering using ART, as used in the Royal Holloway SLE course.
+An introduction to Software Language Engineering using ART, as used in the Royal Holloway undergraduate SLE course.
 
 * [ARTLab](https://github.com/AJohnstone2007/ART/blob/main/doc/artLab.pdf)
-A sequence of lab exercises and a project specification for our SLE course.
+A sequence of lab exercises and a project specification for the Royal Holloway undergraduate SLE course.
 
 * [ARTInt](https://github.com/AJohnstone2007/ART/blob/main/doc/artInt.pdf)
 A sequence of technical notes on various aspects of ART's implementation.
