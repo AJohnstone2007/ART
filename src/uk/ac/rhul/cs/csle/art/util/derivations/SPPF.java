@@ -301,7 +301,7 @@ public class SPPF extends AbstractDerivations {
           var rightNode = rightPackedNode.grammarNode;
           if ((ScriptInterpreter.currentChooseRules.testLonger(leftNode, rightNode) && leftPackedNode.pivot > rightPackedNode.pivot)
               || (ScriptInterpreter.currentChooseRules.testShorter(leftNode, rightNode) && leftPackedNode.pivot < rightPackedNode.pivot)
-              || (ScriptInterpreter.currentChooseRules.testHigher(leftNode, rightNode) && leftPackedNode.pivot == rightPackedNode.pivot)) {
+              || (ScriptInterpreter.currentChooseRules.testHigher(leftNode, rightNode))) {
             rightPackedNode.suppressed = true;
             Util.warning("Suppressed  " + rightPackedNode);
           }
