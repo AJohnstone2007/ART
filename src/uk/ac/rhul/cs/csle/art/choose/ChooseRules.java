@@ -163,14 +163,21 @@ public class ChooseRules implements DisplayInterface {
     tmpL = lexicalLonger.cyclic();
     if (tmpL.size() != 0) Util.warning("Lexical longer (>>) choosers are cyclic on " + tmpL);
     tmpL = lexicalShorter.cyclic();
-    if (tmpL.size() != 0) Util.warning("Lexical shorter (>>) choosers are cyclic on " + tmpL);
+    if (tmpL.size() != 0) Util.warning("Lexical shorter (<<) choosers are cyclic on " + tmpL);
 
-    var tmpD = lexicalHigher.cyclic();
-    if (tmpD.size() != 0) Util.warning("Derivation higher (>) choosers are cyclic on " + tmpD);
-    tmpD = lexicalLonger.cyclic();
-    if (tmpD.size() != 0) Util.warning("Derivation longer (>>) choosers are cyclic on " + tmpD);
-    tmpD = lexicalShorter.cyclic();
-    if (tmpD.size() != 0) Util.warning("Derivation shorter (>>) choosers are cyclic on " + tmpD);
+    var tmpD = derivationHigher.cyclic();
+    if (tmpD.size() != 0) Util.warning("Derivation higher (>) choosers are cyclic on ");
+    for (var d : tmpD)
+      Util.info(d.toStringAsProduction());
+
+    tmpD = derivationLonger.cyclic();
+    if (tmpD.size() != 0) Util.warning("Derivation longer (>>) choosers are cyclic on ");
+    for (var d : tmpD)
+      Util.info(d.toStringAsProduction());
+    tmpD = derivationShorter.cyclic();
+    if (tmpD.size() != 0) Util.warning("Derivation shorter (<<) choosers are cyclic on ");
+    for (var d : tmpD)
+      Util.info(d.toStringAsProduction());
   }
 
   public boolean testHigher(CFGElement left, CFGElement right) {
