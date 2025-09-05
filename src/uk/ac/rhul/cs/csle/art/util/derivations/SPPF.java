@@ -191,7 +191,12 @@ public class SPPF extends AbstractDerivations {
       else
         ambiguous = true;
 
-    if (candidate == null) Util.info("No unsuppressed pack nodes found at SPPF node " + sppfn);
+    if (candidate == null) {
+      Util.error("Ambiguous SPPF node has all children suppressed - please review choosers: ");
+      for (SPPFPackedNode p : sppfn.packNodes)
+        Util.info(" " + p);
+      Util.fatal("Cannot generate derivation term");
+    }
 
     // if (ambiguous) {
     // Util.info("Ambiguous SPPF node " + sppfn.toString() + " involving slots: ");

@@ -102,6 +102,9 @@ public class ChooseRules implements DisplayInterface {
         Util.fatal("Unexpected chooserOp: " + op);
       }
     }
+
+    checkCyclic();
+
     dirty = false;
   }
 
@@ -151,6 +154,23 @@ public class ChooseRules implements DisplayInterface {
     }
     if (altNode == null) Util.warning("No matching production found for derivation chooser " + ScriptInterpreter.iTerms.toString(term));
     return null;
+  }
+
+  void checkCyclic() {
+
+    var tmpL = lexicalHigher.cyclic();
+    if (tmpL.size() != 0) Util.warning("Lexical higher (>) choosers are cyclic on " + tmpL);
+    tmpL = lexicalLonger.cyclic();
+    if (tmpL.size() != 0) Util.warning("Lexical longer (>>) choosers are cyclic on " + tmpL);
+    tmpL = lexicalShorter.cyclic();
+    if (tmpL.size() != 0) Util.warning("Lexical shorter (>>) choosers are cyclic on " + tmpL);
+
+    var tmpD = lexicalHigher.cyclic();
+    if (tmpD.size() != 0) Util.warning("Derivation higher (>) choosers are cyclic on " + tmpD);
+    tmpD = lexicalLonger.cyclic();
+    if (tmpD.size() != 0) Util.warning("Derivation longer (>>) choosers are cyclic on " + tmpD);
+    tmpD = lexicalShorter.cyclic();
+    if (tmpD.size() != 0) Util.warning("Derivation shorter (>>) choosers are cyclic on " + tmpD);
   }
 
   public boolean testHigher(CFGElement left, CFGElement right) {

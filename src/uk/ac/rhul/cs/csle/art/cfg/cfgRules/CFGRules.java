@@ -460,39 +460,35 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
       for (var e : elements.keySet())
         if (scaffoldingKinds.contains(e.cfgKind)) tmp.remove(e);
       if (!tmp.isEmpty()) {
-        Util.warning("unused CFG element" + plural(tmp) + ": " + tmp);
+        Util.warning("unused CFG element" + (tmp.size() == 1 ? "" : "s") + ": " + tmp);
       }
 
       tmp = new TreeSet<>(paraterminals);
       tmp.removeAll(reachable.get(startNonterminal));
       if (!tmp.isEmpty()) {
-        Util.warning("unused paraterminal" + plural(tmp) + ": " + tmp);
+        Util.warning("unused paraterminal" + (tmp.size() == 1 ? "" : "s") + ": " + tmp);
       }
 
       tmp = new TreeSet<>(parserNonterminals);
       tmp.retainAll(lexerNonterminals);
       if (!tmp.isEmpty()) {
-        Util.warning("nonterminal" + plural(tmp) + " used by both the parser and the lexer: " + tmp);
+        Util.warning("nonterminal" + (tmp.size() == 1 ? "" : "s") + " used by both the parser and the lexer: " + tmp);
       }
 
       tmp = new TreeSet<>(paraterminals);
       tmp.retainAll(lexerNonterminals);
       if (!tmp.isEmpty()) {
-        Util.warning("paraterminal" + plural(tmp) + " used by paraterminals: " + tmp);
+        Util.warning("paraterminal" + (tmp.size() == 1 ? "" : "s") + " used by paraterminals: " + tmp);
       }
 
       tmp = new TreeSet<>(parserNonterminals);
       tmp.addAll(lexerNonterminals);
       tmp.removeAll(defined);
       if (!tmp.isEmpty()) {
-        Util.fatal("undefined nonterminal" + plural(tmp) + ": " + tmp);
+        Util.fatal("undefined nonterminal" + (tmp.size() == 1 ? "" : "s") + ": " + tmp);
       }
     }
 
-  }
-
-  private String plural(TreeSet<CFGElement> tmp) {
-    return tmp.size() == 1 ? "" : "s";
   }
 
   private void subGrammarConsistencyCheck() {

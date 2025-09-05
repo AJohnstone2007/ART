@@ -101,4 +101,15 @@ public abstract class AbstractRelation<T1, T2> {
       }
     }
   }
+
+  public Set<T1> cyclic() {
+    final Relation<T1, T2> tmp = new Relation(this);
+    tmp.transitiveClosure();
+
+    Set<T1> ret = new HashSet<>();
+
+    for (var e : tmp.getDomain())
+      if (tmp.get(e).contains(e)) ret.add(e);
+    return ret;
+  }
 }
