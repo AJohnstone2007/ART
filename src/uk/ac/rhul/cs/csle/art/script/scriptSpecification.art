@@ -32,16 +32,20 @@ cfgPositive ::= '('^ cfgAlts ')'^ '+'^ | cfgAltNoAction '+'^
 cfgKleene   ::= '('^ cfgAlts ')'^ '*'^ | cfgAltNoAction '*'^  
 
 cfgName ::= cfgPrim^^ | cfgPrim ':'^ ID           // second child if present is a local name
-cfgPrim ::= cfgNonterminal^^ | cfgCaseSensitiveTerminal^^| cfgCaseInsensitiveTerminal^^ | cfgBuiltinTerminal^^ | cfgBuiltinNoWSTerminal^^ | cfgCharacterTerminal^^ | cfgCharacterSetTerminal^^| cfgCharacterAntiSetTerminal^^ | cfgStartString^^
+cfgPrim ::= 
+  cfgNonterminal^^ | cfgCaseSensitiveTerminal^^| cfgCaseInsensitiveTerminal^^ | cfgBuiltinTerminal^^ | cfgBuiltinNoWSTerminal^^ 
+| cfgCharacterTerminal^^ | cfgCharacterSetTerminal^^| cfgCharacterAntiSetTerminal^^ | cfgCharacterOutOfBand^^ | cfgStartOfString^^
+  
   cfgNonterminal ::= ID | STRING_DOLLAR
   cfgCaseSensitiveTerminal ::= STRING_SQ
   cfgCaseInsensitiveTerminal ::= STRING_DQ
   cfgBuiltinTerminal ::= '&'^ ID
   cfgBuiltinNoWSTerminal ::= '&&'^ ID
   cfgCharacterTerminal ::= CHAR_BQ
-  cfgStartString ::= '!$$'
   cfgCharacterSetTerminal ::= STRING_BRACE
   cfgCharacterAntiSetTerminal ::= '~'^ STRING_BRACE
+  cfgCharacterOutOfBand ::= '!{}'
+  cfgStartOfString ::= '!$$'
 cfgPrims ::= cfgPrim | cfgPrim ','^ cfgPrims^ 
 
 

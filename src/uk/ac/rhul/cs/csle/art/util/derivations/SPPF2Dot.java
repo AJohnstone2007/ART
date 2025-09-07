@@ -35,7 +35,7 @@ class SPPF2Dot {
         sppfSubtreeToDot(n);
     else {
       if (sppf.root == null) {
-        Util.error("SPPF for rejected string can only be visualused in full");
+        Util.error("SPPF for rejected string has no root and so can only be visualised in full mode");
         return;
       }
       sppf.visited.clear();

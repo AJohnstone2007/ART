@@ -321,4 +321,21 @@ public class Util {
     return toString(string, asciiQuotedLiteralStrings);
   }
 
+  public static boolean containsWhitespace(String string) {
+    for (var c : string.toCharArray())
+      switch (c) {
+      case ' ', '\t', '\r', '\n':
+        return true;
+      }
+    return false;
+  }
+
+  public static boolean containsNewline(String string) {
+    for (var c : string.toCharArray())
+      switch (c) {
+      case '\r', '\n':
+        return true;
+      }
+    return false;
+  }
 }

@@ -35,7 +35,7 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
   // TODO: These need setters that set clean to false
   public final int cfgRulesNumber;
   public final CFGRulesKind cfgRulesKind;
-  public CFGElement characters = new CFGElement(CFGKind.TRM_CH_SET, defaultCharacterSet);
+  public Set<Character> characters = new HashSet<>();;
   public final Map<CFGElement, CFGElement> elements = new TreeMap<>(); // We use a map for elements because we need there to be one canonical instance
   public final Set<CFGElement> paraterminals = new TreeSet<>();
   public final Set<CFGElement> declaredAsTokens = new TreeSet<>();
@@ -46,8 +46,6 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
   public CFGElement startNonterminal = null;
 
   // Static fields that are constant across all instances and thus do not need to be cloned
-  private final static String printableASCII = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
-  private final static String defaultCharacterSet = "\r\n\t£" + printableASCII;
   private final static Set<CFGKind> terminalKinds = Set.of(CFGKind.TRM_BI, CFGKind.TRM_CH, CFGKind.TRM_CS, CFGKind.TRM_CI, CFGKind.TRM_CH_SET,
       CFGKind.TRM_CH_ANTI_SET);
   private final static Set<CFGKind> bracketKinds = Set.of(CFGKind.PAR, CFGKind.OPT, CFGKind.KLN, CFGKind.POS);
@@ -276,6 +274,32 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
     numberElementsAndNodes();
     setEndNodeLinks();
 
+    // Load characters
+    String printableASCII = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
+    String defaultCharacterSet = "\r\n\t£" + printableASCII;
+    for (CFGElement e : elements.keySet())
+      switch (e.cfgKind) {
+      case TRM_BI:
+        switch (e.str) {
+        case "ID":
+          addCharacters("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz");
+          break;
+        case "INTEGER":
+          addCharacters("0123456789");
+          break;
+        case "REAL":
+          addCharacters("0123456789.");
+          break;
+        case "SIMPLE_WHITESPACE":
+          addCharacters("\r\n\t ");
+          break;
+        }
+        break;
+      case TRM_CS, TRM_CI, TRM_CH, TRM_CH_SET, TRM_CH_ANTI_SET:
+        addCharacters(e.str);
+        break;
+      }
+
     // Set positional attributes and accepting slots, and seed nullablePrefixSlots and nullableSuffixSlots
     for (CFGElement ge : elements.keySet())
       if (ge.cfgKind == CFGKind.NONTERMINAL && elementToRulesNodeMap.get(ge) != null)
@@ -294,6 +318,11 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
             acceptingNodeNumbers.add(gs.seq.num);
           }
         }
+
+    // Look for dubious literals
+    if (cfgRulesKind == CFGRulesKind.USER) for (var e : elements.keySet())
+      if (e.cfgKind == CFGKind.TRM_CI || e.cfgKind == CFGKind.TRM_CS)
+        if (Util.containsWhitespace(e.str)) Util.warning("Context free terminal contains whitespace: " + e);
 
     // Compute reachability relation
     computeReachabilities();
@@ -372,6 +401,11 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
       cfgRulesParser.normalise(); // recurse only once for the parser grammar
       subGrammarConsistencyCheck();
     }
+  }
+
+  private void addCharacters(String string) {
+    for (var c : string.toCharArray())
+      characters.add(c);
   }
 
   /*
@@ -990,7 +1024,7 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
   public void print(PrintStream outputStream, TermTraverserText outputTraverser, boolean indexed, boolean full, boolean indented) {
     outputStream.print("(* " + (isEmpty() ? "Empty " : "") + cfgRulesKind + " Context Free Grammar rules *)\n");
 
-    if (!characters.set.isEmpty()) outputStream.println("!characters " + characters);
+    if (!characters.isEmpty()) outputStream.println("!characters " + characters);
 
     if (!declaredAsTokens.isEmpty()) {
       outputStream.print("!token ");

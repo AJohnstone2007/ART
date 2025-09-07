@@ -121,11 +121,15 @@ public class SPPF extends AbstractDerivations {
     visited.clear();
     derivationSeenCycle = false;
     LinkedList<Integer> carrier = new LinkedList<>();
-    derivationAsTermRec(root, carrier, firstAvailablePackNode(root).grammarNode.seq); // Root grammar node is the end of a start production
+    try {
+      derivationAsTermRec(root, carrier, firstAvailablePackNode(root).grammarNode.seq); // Root grammar node is the end of a start production
+    } catch (TermException e) {
+      return 0;
+    }
     return carrier.getFirst();
   }
 
-  private String derivationAsTermRec(SPPFSymbolNode sppfn, LinkedList<Integer> childrenFromParent, CFGNode gn) {
+  private String derivationAsTermRec(SPPFSymbolNode sppfn, LinkedList<Integer> childrenFromParent, CFGNode gn) throws TermException {
     // Util.debug("Entered derivationAsTermRec() at node (" + sppfn + ") instance " + gn.toStringAsProduction());
     if (visited.get(sppfn.number)) {
       if (!derivationSeenCycle) Util.error(System.err, "derivationAsTermRec() found cycle in derivation");
@@ -166,7 +170,7 @@ public class SPPF extends AbstractDerivations {
     return (gn.giftKind == GIFTKind.OVER) ? constructor : null;
   }
 
-  private void collectChildNodesRec(SPPFPackedNode sppfpn, LinkedList<SPPFSymbolNode> childNodes) {
+  private void collectChildNodesRec(SPPFPackedNode sppfpn, LinkedList<SPPFSymbolNode> childNodes) throws TermException {
     // Util.info("CollectChildNodesRec() at pack node " + sppfpn);
     SPPFSymbolNode leftChild = sppfpn.leftChild, rightChild = sppfpn.rightChild;
     if (leftChild != null) {
@@ -182,7 +186,7 @@ public class SPPF extends AbstractDerivations {
       collectChildNodesRec(firstAvailablePackNode(rightChild), childNodes);
   }
 
-  private SPPFPackedNode firstAvailablePackNode(SPPFSymbolNode sppfn) {
+  private SPPFPackedNode firstAvailablePackNode(SPPFSymbolNode sppfn) throws TermException {
     SPPFPackedNode candidate = null;
     boolean ambiguous = false;
     for (SPPFPackedNode p : sppfn.packNodes)
@@ -195,7 +199,7 @@ public class SPPF extends AbstractDerivations {
       Util.error("Ambiguous SPPF node has all children suppressed - please review choosers: ");
       for (SPPFPackedNode p : sppfn.packNodes)
         Util.info(" " + p);
-      Util.fatal("Cannot generate derivation term");
+      throw new TermException();
     }
 
     // if (ambiguous) {

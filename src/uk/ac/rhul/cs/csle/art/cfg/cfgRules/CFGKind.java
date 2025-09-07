@@ -8,6 +8,7 @@ public enum CFGKind {
   TRM_CI, // Terminal case insensitive
   TRM_BI, // Terminal built in
   TRM_CH, // Terminal character
+  TRM_CH_OOB, // Terminal out of band character
   TRM_CH_SET, // Terminal character set: match anything in the contents
   TRM_CH_ANTI_SET, // Terminal character anti set: match anything but the contents
   NONTERMINAL, // Nonterminal

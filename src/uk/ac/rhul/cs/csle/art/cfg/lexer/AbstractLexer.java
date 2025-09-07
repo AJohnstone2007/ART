@@ -158,8 +158,7 @@ public abstract class AbstractLexer implements DisplayInterface {
       return;
     }
 
-    if (!isDeterministic())
-      Util.warning("TWE set has multiple lexicalisations; picking one using default strategy of longest match with builtins having low priority");
+    if (!isDeterministic()) Util.warning("TWE set has multiple lexicalisations but no choosers defined; running default lexical diambiguation");
 
     for (int i = 0; i < tweSlices.length; i++) {
       var slice = tweSlices[i];
@@ -176,30 +175,6 @@ public abstract class AbstractLexer implements DisplayInterface {
             // Util.debug("TWE pair " + e + " and " + f + " - suppressing " + f);
             f.suppressed = true;
           }
-        }
-    }
-  }
-
-  public void chooseEAS() {
-    // Util.debug("Running EAS lexical chooser");
-    if (tweSlices[0] == null) {
-      Util.error("lexer.chooseEAS() - empty tweSet");
-      return;
-    }
-
-    if (!isDeterministic())
-      Util.warning("TWE set has multiple lexicalisations; picking one using EAS strategy of case insensitive terminals having high priority");
-
-    for (int i = 0; i < tweSlices.length; i++) {
-      var slice = tweSlices[i];
-      if (slice != null) for (int ee = 0; ee < tweSlices[i].length; ee++)
-        for (int ff = 0; ff < tweSlices[i].length; ff++) {
-          if (ee == ff) continue; // Do not self-compare
-          var f = tweSlices[i][ff];
-          if (f.cfgElement.cfgKind == CFGKind.SOS) continue; // do not suppress the start of string token
-
-          var e = tweSlices[i][ee];
-          if (e.cfgElement.cfgKind == CFGKind.TRM_CS && f.cfgElement.cfgKind != CFGKind.TRM_CS) f.suppressed = true;
         }
     }
   }
