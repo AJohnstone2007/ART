@@ -54,6 +54,9 @@ public class CFGElement implements Comparable<Object> {
       return "{" + setToString() + "}";
     case TRM_CH_ANTI_SET:
       return "~{" + setToString() + "}";
+    case TRM_CH_OOB:
+      return "!{}";
+
     case TRM_BI:
       return "&" + Util.escapeString(str);
     case NONTERMINAL:

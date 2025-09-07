@@ -35,7 +35,7 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
   // TODO: These need setters that set clean to false
   public final int cfgRulesNumber;
   public final CFGRulesKind cfgRulesKind;
-  public Set<Character> characters = new HashSet<>();;
+  public Set<Character> characterSet = new HashSet<>();
   public final Map<CFGElement, CFGElement> elements = new TreeMap<>(); // We use a map for elements because we need there to be one canonical instance
   public final Set<CFGElement> paraterminals = new TreeSet<>();
   public final Set<CFGElement> declaredAsTokens = new TreeSet<>();
@@ -405,7 +405,7 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
 
   private void addCharacters(String string) {
     for (var c : string.toCharArray())
-      characters.add(c);
+      characterSet.add(c);
   }
 
   /*
@@ -1024,7 +1024,12 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
   public void print(PrintStream outputStream, TermTraverserText outputTraverser, boolean indexed, boolean full, boolean indented) {
     outputStream.print("(* " + (isEmpty() ? "Empty " : "") + cfgRulesKind + " Context Free Grammar rules *)\n");
 
-    if (!characters.isEmpty()) outputStream.println("!characters " + characters);
+    if (!characterSet.isEmpty()) {
+      outputStream.print("!characterSet {");
+      for (var c : characterSet)
+        outputStream.print(Util.escapeString(c.toString()));
+      outputStream.println("}");
+    }
 
     if (!declaredAsTokens.isEmpty()) {
       outputStream.print("!token ");
