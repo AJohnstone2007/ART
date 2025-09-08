@@ -1,6 +1,7 @@
 package uk.ac.rhul.cs.csle.art.old.fx;
 
 import javafx.application.Application;
+import javafx.scene.Node;
 import javafx.stage.Stage;
 
 public class Alero extends Application {
@@ -10,6 +11,12 @@ public class Alero extends Application {
     // TODO Auto-generated method stub
 
   }
+
+  public static void add(Node node) {
+    // TODO Auto-generated method stub
+
+  }
+
   // /**********************************************************************************************************
   // *
   // * Initialisaton, window creation and access
@@ -17,9 +24,9 @@ public class Alero extends Application {
   // **********************************************************************************************************/
   // private static Stage textStage;
   // private static Stage graphicsStage;
-  // public static TextWindow tw;
+  // public static EditorWithConsoleWindow tw;
   // private static GraphicsWindow gw;
-  // public static ITerms iTerms = new ITermsLowLevelAPI();
+  // public static ITerms iTerms = new ITerms();
   // private static ADLInterpreter adlInterpreter = new ADLInterpreter(iTerms);
   //
   // @Override
@@ -41,7 +48,7 @@ public class Alero extends Application {
   // gw = new GraphicsWindow(graphicsStage, 800 - 3 * w10Vff, 0, screen.getWidth() - 800 + 4 * w10Vff, screen.getHeight(), "Alero graphics", 500.0);
   //
   // textStage = primaryStage;
-  // tw = new TextWindow(textStage, -w10Vff, 0, 800, screen.getHeight(), "Alero text", fileContents);
+  // tw = new EditorWithConsoleWindow(textStage, -w10Vff, 0, 800, screen.getHeight(), "Alero text", fileContents);
   //
   // // Comment next line out for production!
   // // new JavaSandbox();

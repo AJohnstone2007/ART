@@ -1,4 +1,4 @@
-package uk.ac.rhul.cs.csle.art.old.fx.language.adlBase;
+package uk.ac.rhul.cs.csle.art.old.fx;
 
 public class ADLException extends RuntimeException {
 

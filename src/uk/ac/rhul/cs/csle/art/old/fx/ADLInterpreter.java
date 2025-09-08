@@ -1,4 +1,4 @@
-package uk.ac.rhul.cs.csle.art.old.fx.language;
+package uk.ac.rhul.cs.csle.art.old.fx;
 
 public class ADLInterpreter {
   // private final ITerms iTerms;
@@ -9,7 +9,7 @@ public class ADLInterpreter {
   //
   // public static void mainx(String[] args) {
   // System.out.println("ADL0_Alero standalone interpreter");
-  // ADLInterpreter adlInterpreter = new ADLInterpreter(new ITermsLowLevelAPI());
+  // ADLInterpreter adlInterpreter = new ADLInterpreter(new ITerms());
   //
   // if (args[0] != null) try {
   // System.out.print(args[0] + ": ");
