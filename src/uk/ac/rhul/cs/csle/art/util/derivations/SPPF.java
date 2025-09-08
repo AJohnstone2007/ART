@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.Set;
 
 import uk.ac.rhul.cs.csle.art.cfg.AbstractParser;
-import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGKind;
+import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGElementKind;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.GIFTKind;
 import uk.ac.rhul.cs.csle.art.choose.ChooseRules;
@@ -63,7 +63,7 @@ public class SPPF extends AbstractDerivations {
       return rightNode;
     }
 
-    SPPFSymbolNode ret = (SPPFSymbolNode) find(gn.cfgElement.cfgKind == CFGKind.END ? gn.seq : gn,
+    SPPFSymbolNode ret = (SPPFSymbolNode) find(gn.cfgElement.cfgKind == CFGElementKind.END ? gn.seq : gn,
         leftNode == null ? rightNode.getLeftExtent() : leftNode.getLeftExtent(), rightNode.getRightExtent());
 
     // Util.debug("Extending SPPF node with gn " + gn.toStringAsProduction() + " and extents "
@@ -158,7 +158,7 @@ public class SPPF extends AbstractDerivations {
       if (derivationForInterpreter)
       constructor = firstAvailableSPPFPN == null ? "" + -sppfn.rightExtent : "" + firstAvailableSPPFPN.grammarNode.alt.num;
       else
-      constructor = (gn.cfgElement.cfgKind == CFGKind.TRM_BI) ? parser.lexer.lexeme(sppfn.grammarNode, sppfn.leftExtent) : gn.cfgElement.str;
+      constructor = (gn.cfgElement.cfgKind == CFGElementKind.TRM_BI) ? parser.lexer.lexeme(sppfn.grammarNode, sppfn.leftExtent) : gn.cfgElement.str;
 
     // Util.debug("At SPPF node " + sppfn + " and grammar node " + gn + " make new term with constructor: " + constructor);
     if (children != childrenFromParent) {

@@ -1,9 +1,11 @@
 package uk.ac.rhul.cs.csle.art.cfg.lexer;
 
 import java.io.PrintStream;
+import java.util.Map;
 import java.util.Set;
 
-import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGKind;
+import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGElement;
+import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGElementKind;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGRules;
 import uk.ac.rhul.cs.csle.art.choose.ChooseRules;
@@ -19,6 +21,7 @@ public abstract class AbstractLexer implements DisplayInterface {
   public TWESetElement[][] tweSlices;
   protected int inputIndex, lexemeStart, lexemeEnd, whitespacePrefix;
   protected char[] inputAsCharArray;
+  public Map<CFGElement, CFGElement> uobs, uibs;
 
   // public static boolean useWhitespacePrefix = true; // dirty tricks department: this is a static variable so after making the script term we can switch to th
   // lexing regime for any !try directive
@@ -104,7 +107,7 @@ public abstract class AbstractLexer implements DisplayInterface {
   public String lexeme(TWESetElement element) {
     String full = inputString.substring(element.leftExtent, element.lexemeEnd);
 
-    if (element.cfgElement.cfgKind == CFGKind.TRM_BI) {
+    if (element.cfgElement.cfgKind == CFGElementKind.TRM_BI) {
       switch (element.cfgElement.str) {
       case "STRING_DQ", "STRING_SQ", "STRING_PLAIN_SQ", "STRING_DOLLAR", "STRING_BRACE":
         return full.substring(1, full.length() - 1);
@@ -128,7 +131,7 @@ public abstract class AbstractLexer implements DisplayInterface {
         if (rightTWE.suppressed) continue; // Already suppressed so nothing to do
         var rightElement = rightTWE.cfgElement;
         var rightKind = rightElement.cfgKind;
-        if (rightKind == CFGKind.SOS) continue; // do not suppress the start of string token
+        if (rightKind == CFGElementKind.SOS) continue; // do not suppress the start of string token
 
         for (int leftTWEIndex = 0; leftTWEIndex < tweSlices[sliceIndex].length; leftTWEIndex++) {
           if (leftTWEIndex == rightTWEIndex) continue; // Do not self-compare
@@ -166,12 +169,12 @@ public abstract class AbstractLexer implements DisplayInterface {
         for (int ff = 0; ff < tweSlices[i].length; ff++) {
           if (ee == ff) continue; // Do not self-compare
           var f = tweSlices[i][ff];
-          if (f.cfgElement.cfgKind == CFGKind.SOS) continue; // do not suppress the start of string token
+          if (f.cfgElement.cfgKind == CFGElementKind.SOS) continue; // do not suppress the start of string token
 
           var e = tweSlices[i][ee];
           if (e.rightExtent > f.rightExtent)
             f.suppressed = true;
-          else if (e.rightExtent == f.rightExtent && f.cfgElement.cfgKind == CFGKind.TRM_BI) {
+          else if (e.rightExtent == f.rightExtent && f.cfgElement.cfgKind == CFGElementKind.TRM_BI) {
             // Util.debug("TWE pair " + e + " and " + f + " - suppressing " + f);
             f.suppressed = true;
           }

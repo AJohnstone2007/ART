@@ -5,7 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGElement;
-import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGKind;
+import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGElementKind;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGRules;
 import uk.ac.rhul.cs.csle.art.util.Util;
@@ -28,7 +28,7 @@ public class RDSOBGenerator {
 
     boolean firstLexeme = true;
     for (CFGElement s : grammar.elements.keySet()) {
-      if (s.cfgKind != CFGKind.TRM_CS) continue;
+      if (s.cfgKind != CFGElementKind.TRM_CS) continue;
       if (firstLexeme)
         firstLexeme = false;
       else

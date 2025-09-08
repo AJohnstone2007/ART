@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 
 import uk.ac.rhul.cs.csle.art.ART;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGElement;
-import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGKind;
+import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGElementKind;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGRules;
 import uk.ac.rhul.cs.csle.art.old.v3.ARTV3;
@@ -96,7 +96,7 @@ public final class AJDebug {
 
     // First check the nonterminals
     for (ARTGrammarElementNonterminal v3Nonterminal : grammarV3.getNonterminals()) {
-      CFGElement v5Nonterminal = grammarV5.elements.get(new CFGElement(CFGKind.NONTERMINAL, v3Nonterminal.getId()));
+      CFGElement v5Nonterminal = grammarV5.elements.get(new CFGElement(CFGElementKind.NONTERMINAL, v3Nonterminal.getId()));
 
       // Util.info(
       // "V3 nonterminal " + v3Nonterminal + " first " + new TreeSet<>(v3Nonterminal.getFirst()) + " follow " + new TreeSet<>(v3Nonterminal.getFollow()));
@@ -151,7 +151,7 @@ public final class AJDebug {
       // }
     }
     // Util.info();
-    if (v5.cfgElement.cfgKind == CFGKind.END) return good;
+    if (v5.cfgElement.cfgKind == CFGElementKind.END) return good;
 
     good &= v5v3RegressionCheckFirstAndFollowInstanceSetsRec(v5.seq, artV3);
     good &= v5v3RegressionCheckFirstAndFollowInstanceSetsRec(v5.alt, artV3);
@@ -162,7 +162,7 @@ public final class AJDebug {
   private boolean v5v3RegressionCheckFirstAndFollowInstanceSets(CFGRules grammarV5, ARTV3 artV3) {
     boolean good = true;
     for (CFGElement e : grammarV5.elements.keySet())
-      if (e.cfgKind == CFGKind.NONTERMINAL) good &= v5v3RegressionCheckFirstAndFollowInstanceSetsRec(grammarV5.elementToRulesNodeMap.get(e).alt, artV3);
+      if (e.cfgKind == CFGElementKind.NONTERMINAL) good &= v5v3RegressionCheckFirstAndFollowInstanceSetsRec(grammarV5.elementToRulesNodeMap.get(e).alt, artV3);
 
     return good;
   }
@@ -203,13 +203,13 @@ public final class AJDebug {
   }
 
   CFGElement v3Element2v5Element(ARTGrammarElement elem) {
-    if (elem instanceof ARTGrammarElementTerminalBuiltin) return new CFGElement(CFGKind.TRM_BI, ((ARTGrammarElementTerminal) elem).getId());
-    if (elem instanceof ARTGrammarElementTerminalCharacter) return new CFGElement(CFGKind.TRM_CH, ((ARTGrammarElementTerminal) elem).getId());
-    if (elem instanceof ARTGrammarElementEoS) return new CFGElement(CFGKind.EOS, "$");
-    if (elem instanceof ARTGrammarElementEpsilon) return new CFGElement(CFGKind.EPSILON, "#");
-    if (elem instanceof ARTGrammarElementNonterminal) return new CFGElement(CFGKind.NONTERMINAL, elem.toString());
-    if (elem instanceof ARTGrammarElementTerminalCaseSensitive) return new CFGElement(CFGKind.TRM_CS, ((ARTGrammarElementTerminal) elem).getId());
-    if (elem instanceof ARTGrammarElementTerminalCaseInsensitive) return new CFGElement(CFGKind.TRM_CI, ((ARTGrammarElementTerminal) elem).getId());
+    if (elem instanceof ARTGrammarElementTerminalBuiltin) return new CFGElement(CFGElementKind.TRM_BI, ((ARTGrammarElementTerminal) elem).getId());
+    if (elem instanceof ARTGrammarElementTerminalCharacter) return new CFGElement(CFGElementKind.TRM_CH, ((ARTGrammarElementTerminal) elem).getId());
+    if (elem instanceof ARTGrammarElementEoS) return new CFGElement(CFGElementKind.EOS, "$");
+    if (elem instanceof ARTGrammarElementEpsilon) return new CFGElement(CFGElementKind.EPSILON, "#");
+    if (elem instanceof ARTGrammarElementNonterminal) return new CFGElement(CFGElementKind.NONTERMINAL, elem.toString());
+    if (elem instanceof ARTGrammarElementTerminalCaseSensitive) return new CFGElement(CFGElementKind.TRM_CS, ((ARTGrammarElementTerminal) elem).getId());
+    if (elem instanceof ARTGrammarElementTerminalCaseInsensitive) return new CFGElement(CFGElementKind.TRM_CI, ((ARTGrammarElementTerminal) elem).getId());
 
     return null;
   }

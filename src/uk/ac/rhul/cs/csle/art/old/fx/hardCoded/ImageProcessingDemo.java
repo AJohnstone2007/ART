@@ -1,4 +1,4 @@
-package uk.ac.rhul.cs.csle.alero.hardCoded;
+package uk.ac.rhul.cs.csle.art.old.fx.hardCoded;
 
 public class ImageProcessingDemo {
   // ImageProcessingDemo() {

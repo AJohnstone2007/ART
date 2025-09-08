@@ -6,7 +6,7 @@ import java.io.PrintWriter;
 import java.util.HashSet;
 import java.util.Set;
 
-import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGKind;
+import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGElementKind;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGRules;
 import uk.ac.rhul.cs.csle.art.script.ScriptInterpreter;
@@ -20,9 +20,9 @@ public class RDSOBOracleGenerator {
   private final Set<String> printedInits = new HashSet<>();
 
   private void printAllInitsRec(CFGNode cfgNode) {
-    if (cfgNode == null || cfgNode.cfgElement.cfgKind == CFGKind.END) return;
+    if (cfgNode == null || cfgNode.cfgElement.cfgKind == CFGElementKind.END) return;
 
-    if (cfgNode.cfgElement.cfgKind == CFGKind.NONTERMINAL && cfgNode.cfgElement.attributes.keySet().size() > 0) {
+    if (cfgNode.cfgElement.cfgKind == CFGElementKind.NONTERMINAL && cfgNode.cfgElement.attributes.keySet().size() > 0) {
       String name = cfgNode.cfgElement.str + cfgNode.instanceNumber;
       if (!printedInits.contains(name)) text.println("  Attributes_" + cfgNode.cfgElement.str + " " + name + " = new Attributes_" + cfgNode.cfgElement.str + "(); ");
       printedInits.add(name);
@@ -53,7 +53,7 @@ public class RDSOBOracleGenerator {
 
     // Write parse functions
     for (var e : cfgRules.elements.keySet())
-      if (e.cfgKind == CFGKind.NONTERMINAL) {
+      if (e.cfgKind == CFGElementKind.NONTERMINAL) {
         text.printf("boolean parse_%s() {\n  int iiAtEntry = inputIndex, oiAtEntry = oracleIndex;\n", e.str);
         int pCount = 0;
         boolean seenEpsilon = false;
@@ -63,7 +63,7 @@ public class RDSOBOracleGenerator {
           text.printf("\n  /* Nonterminal %s, alternate %d */\n  inputIndex = iiAtEntry; oracleIndex = oiAtEntry; oracleSet(%d);", e.str, pCount, pCount);
 
           int braceCount = 0;
-          for (var seq = alt.seq; seq.cfgElement.cfgKind != CFGKind.END; seq = seq.seq) {
+          for (var seq = alt.seq; seq.cfgElement.cfgKind != CFGElementKind.END; seq = seq.seq) {
             switch (seq.cfgElement.cfgKind) {
             case NONTERMINAL:
               text.printf("\n  if (parse_%s()) {", seq.cfgElement.str);
@@ -98,7 +98,7 @@ public class RDSOBOracleGenerator {
       }
     // Write semantics functions
     for (var e : cfgRules.elements.keySet())
-      if (e.cfgKind == CFGKind.NONTERMINAL) {
+      if (e.cfgKind == CFGElementKind.NONTERMINAL) {
         if (e.attributes.keySet().size() > 0) {
           text.printf("class Attributes_%s {", e.str);
           boolean first = true;
@@ -144,7 +144,7 @@ public class RDSOBOracleGenerator {
               Util.fatal("Unexpected CFGKind in RDSOBV4Generator semantics function " + seq.cfgElement.cfgKind);
             }
             printActions(seq);
-          } while (seq.cfgElement.cfgKind != CFGKind.END);
+          } while (seq.cfgElement.cfgKind != CFGElementKind.END);
           text.println("    break;");
         }
         text.printf("  }\n }\n\n");

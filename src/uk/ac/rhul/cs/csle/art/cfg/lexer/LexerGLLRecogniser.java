@@ -4,7 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGElement;
-import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGKind;
+import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGElementKind;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGRules;
 import uk.ac.rhul.cs.csle.art.choose.ChooseRules;
 import uk.ac.rhul.cs.csle.art.script.ScriptInterpreter;
@@ -70,7 +70,7 @@ public class LexerGLLRecogniser extends AbstractLexer {
         if (inputIndex != lexemeStart) {// Matched?
           // Util.debug("constructTWESlice() matched " + e + " with right extent " + inputIndex);
           lexemeEnd = inputIndex;
-          if (e.cfgKind != CFGKind.TRM_CH) whitespaceLongstMatch(); // absorb trailing whitespace
+          if (e.cfgKind != CFGElementKind.TRM_CH) whitespaceLongstMatch(); // absorb trailing whitespace
           ret.add(new TWESetElement(e, lexemeStart, lexemeEnd, inputIndex));
           hasSlice[inputIndex] = true; // Mark for downstream processing
         }

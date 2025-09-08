@@ -5,7 +5,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGElement;
-import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGKind;
+import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGElementKind;
 import uk.ac.rhul.cs.csle.art.util.Util;
 import uk.ac.rhul.cs.csle.art.util.relation.Relation;
 
@@ -36,7 +36,7 @@ public class TWESet {
     for (var slice : slices)
       if (slice != null) for (var e : slice)
         for (var f : slice)
-          if ((e.rightExtent > f.rightExtent) || (e.rightExtent == f.rightExtent && e.cfgElement.cfgKind != CFGKind.TRM_BI && f.cfgElement.cfgKind == CFGKind.TRM_BI))
+          if ((e.rightExtent > f.rightExtent) || (e.rightExtent == f.rightExtent && e.cfgElement.cfgKind != CFGElementKind.TRM_BI && f.cfgElement.cfgKind == CFGElementKind.TRM_BI))
             f.suppressed = true;
     suppressDeadPaths();
   }

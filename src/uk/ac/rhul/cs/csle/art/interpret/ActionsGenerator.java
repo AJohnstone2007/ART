@@ -5,7 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGElement;
-import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGKind;
+import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGElementKind;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGRules;
 import uk.ac.rhul.cs.csle.art.script.ScriptInterpreter;
@@ -34,7 +34,7 @@ public class ActionsGenerator {
     text.println("  public String name() { return \"" + timeStamp + "\"; }");
 
     for (var e : cfgRules.elements.keySet())
-      if (e.cfgKind == CFGKind.NONTERMINAL) {
+      if (e.cfgKind == CFGElementKind.NONTERMINAL) {
         text.println("\n  public class ART_C_" + e.str + " extends AbstractAttributeBlock {");
         text.print("    ART_C_" + e.str + " " + e.str + " = this;"); // LHS
 
@@ -72,23 +72,23 @@ public class ActionsGenerator {
   }
 
   private void printAllInitsRec(PrintWriter text, CFGNode cfgNode) {
-    if (cfgNode == null || cfgNode.cfgElement.cfgKind == CFGKind.END) return;
-    if (cfgNode.cfgElement.cfgKind == CFGKind.NONTERMINAL) text.println("      case " + cfgNode.num + ": " + cfgNode.cfgElement.str + cfgNode.instanceNumber
+    if (cfgNode == null || cfgNode.cfgElement.cfgKind == CFGElementKind.END) return;
+    if (cfgNode.cfgElement.cfgKind == CFGElementKind.NONTERMINAL) text.println("      case " + cfgNode.num + ": " + cfgNode.cfgElement.str + cfgNode.instanceNumber
         + " = new ART_C_" + cfgNode.cfgElement.str + "(); " + cfgNode.cfgElement.str + cfgNode.instanceNumber + ".term = term; break;");
     printAllInitsRec(text, cfgNode.seq);
     printAllInitsRec(text, cfgNode.alt);
   }
 
   private void printAllGetsRec(PrintWriter text, CFGNode cfgNode) {
-    if (cfgNode == null || cfgNode.cfgElement.cfgKind == CFGKind.END) return;
-    if (cfgNode.cfgElement.cfgKind == CFGKind.NONTERMINAL)
+    if (cfgNode == null || cfgNode.cfgElement.cfgKind == CFGElementKind.END) return;
+    if (cfgNode.cfgElement.cfgKind == CFGElementKind.NONTERMINAL)
       text.println("      case " + cfgNode.num + ": return " + cfgNode.cfgElement.str + cfgNode.instanceNumber + ";");
     printAllGetsRec(text, cfgNode.seq);
     printAllGetsRec(text, cfgNode.alt);
   }
 
   private void printAllActionsRec(PrintWriter text, CFGElement lhs, CFGNode cfgNode) {
-    if (cfgNode == null || cfgNode.cfgElement.cfgKind == CFGKind.END) return;
+    if (cfgNode == null || cfgNode.cfgElement.cfgKind == CFGElementKind.END) return;
     if (cfgNode.actionAsTerm != 0 && ScriptInterpreter.iTerms.termArity(cfgNode.actionAsTerm) != 0) {
       text.print("      case " + cfgNode.num + ":");
       printSlotTermRec(text, cfgNode.actionAsTerm);
@@ -110,7 +110,7 @@ public class ActionsGenerator {
   }
 
   private void printTermActionsRec(PrintWriter text, CFGNode cfgNode) {
-    if (cfgNode == null || cfgNode.cfgElement.cfgKind == CFGKind.END) return;
+    if (cfgNode == null || cfgNode.cfgElement.cfgKind == CFGElementKind.END) return;
     // printSlotTerm(text, cfgNode.slotTerm);
     printTermActionsRec(text, cfgNode.seq);
     printTermActionsRec(text, cfgNode.alt);

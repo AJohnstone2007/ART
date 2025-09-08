@@ -3,7 +3,7 @@ package uk.ac.rhul.cs.csle.art.util.derivations;
 import java.util.HashSet;
 import java.util.Set;
 
-import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGKind;
+import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGElementKind;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
 
 public class SPPFSymbolNode extends AbstractSPPFNode {
@@ -21,7 +21,7 @@ public class SPPFSymbolNode extends AbstractSPPFNode {
   }
 
   public boolean isSymbol() {
-    return packNodes.size() == 0 /* terminal or epsilon */ || (grammarNode.cfgElement.cfgKind == CFGKind.NONTERMINAL && grammarNode.seq == null /* LHS */);
+    return packNodes.size() == 0 /* terminal or epsilon */ || (grammarNode.cfgElement.cfgKind == CFGElementKind.NONTERMINAL && grammarNode.seq == null /* LHS */);
   }
 
   @Override

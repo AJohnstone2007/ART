@@ -13,7 +13,7 @@ import java.util.Set;
 
 import uk.ac.rhul.cs.csle.art.cfg.AbstractParser;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGElement;
-import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGKind;
+import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGElementKind;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGRules;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGRulesKind;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.GIFTKind;
@@ -145,21 +145,21 @@ public final class ScriptInterpreter {
     ret.addAction("cfgAttributeDeclaration", (Integer t) -> currentCFGRules.actionAttribute(childSymbolString(t), childSymbolString1(t)), null, null);
     ret.addAction("cfgSeq", (Integer t) -> currentCFGRules.actionALT(), null, (Integer t) -> currentCFGRules.actionEND(""));
 
-    ret.addAction("cfgEpsilon", (Integer t) -> currentCFGRules.actionSEQ(CFGKind.EPSILON, "#", t), null, null);
-    ret.addActionBreak("cfgNonterminal", (Integer t) -> currentCFGRules.actionSEQ(CFGKind.NONTERMINAL, childSymbolString(t), t), null, null);
-    ret.addActionBreak("cfgCaseSensitiveTerminal", (Integer t) -> currentCFGRules.actionSEQ(CFGKind.TRM_CS, childSymbolString(t), t), null, null);
-    ret.addActionBreak("cfgBuiltinTerminal", (Integer t) -> currentCFGRules.actionSEQ(CFGKind.TRM_BI, childSymbolString(t), t), null, null);
+    ret.addAction("cfgEpsilon", (Integer t) -> currentCFGRules.actionSEQ(CFGElementKind.EPSILON, "#", t), null, null);
+    ret.addActionBreak("cfgNonterminal", (Integer t) -> currentCFGRules.actionSEQ(CFGElementKind.NONTERMINAL, childSymbolString(t), t), null, null);
+    ret.addActionBreak("cfgCaseSensitiveTerminal", (Integer t) -> currentCFGRules.actionSEQ(CFGElementKind.TRM_CS, childSymbolString(t), t), null, null);
+    ret.addActionBreak("cfgBuiltinTerminal", (Integer t) -> currentCFGRules.actionSEQ(CFGElementKind.TRM_BI, childSymbolString(t), t), null, null);
 
-    ret.addActionBreak("cfgCharacterTerminal", (Integer t) -> currentCFGRules.actionSEQ(CFGKind.TRM_CH, childSymbolString(t), t), null, null);
-    ret.addActionBreak("cfgCharacterSetTerminal", (Integer t) -> currentCFGRules.actionSEQ(CFGKind.TRM_CH_SET, childSymbolString(t), t), null, null);
-    ret.addActionBreak("cfgCharacterAntiSetTerminal", (Integer t) -> currentCFGRules.actionSEQ(CFGKind.TRM_CH_ANTI_SET, childSymbolString(t), t), null, null);
-    ret.addActionBreak("cfgCharacterOutOfBand", (Integer t) -> currentCFGRules.actionSEQ(CFGKind.TRM_CH_OOB, "!{}", t), null, null);
-    ret.addActionBreak("cfgStartOfString", (Integer t) -> currentCFGRules.actionSEQ(CFGKind.SOS, "$$", t), null, null);
+    ret.addActionBreak("cfgCharacterTerminal", (Integer t) -> currentCFGRules.actionSEQ(CFGElementKind.TRM_CH, childSymbolString(t), t), null, null);
+    ret.addActionBreak("cfgCharacterSetTerminal", (Integer t) -> currentCFGRules.actionSEQ(CFGElementKind.TRM_CH_SET, childSymbolString(t), t), null, null);
+    ret.addActionBreak("cfgCharacterAntiSetTerminal", (Integer t) -> currentCFGRules.actionSEQ(CFGElementKind.TRM_CH_ANTI_SET, childSymbolString(t), t), null, null);
+    ret.addActionBreak("cfgCharacterOutOfBand", (Integer t) -> currentCFGRules.actionSEQ(CFGElementKind.TRM_CH_UOB, "!{}", t), null, null);
+    ret.addActionBreak("cfgStartOfString", (Integer t) -> currentCFGRules.actionSEQ(CFGElementKind.SOS, "$$", t), null, null);
 
-    ret.addAction("cfgDoFirst", (Integer t) -> currentCFGRules.actionSEQ(CFGKind.PAR, currentCFGRules.nextUniqueLabel(), t), null, null);
-    ret.addAction("cfgOptional", (Integer t) -> currentCFGRules.actionSEQ(CFGKind.OPT, currentCFGRules.nextUniqueLabel(), t), null, null);
-    ret.addAction("cfgKleene", (Integer t) -> currentCFGRules.actionSEQ(CFGKind.KLN, currentCFGRules.nextUniqueLabel(), t), null, null);
-    ret.addAction("cfgPositive", (Integer t) -> currentCFGRules.actionSEQ(CFGKind.POS, currentCFGRules.nextUniqueLabel(), t), null, null);
+    ret.addAction("cfgDoFirst", (Integer t) -> currentCFGRules.actionSEQ(CFGElementKind.PAR, currentCFGRules.nextUniqueLabel(), t), null, null);
+    ret.addAction("cfgOptional", (Integer t) -> currentCFGRules.actionSEQ(CFGElementKind.OPT, currentCFGRules.nextUniqueLabel(), t), null, null);
+    ret.addAction("cfgKleene", (Integer t) -> currentCFGRules.actionSEQ(CFGElementKind.KLN, currentCFGRules.nextUniqueLabel(), t), null, null);
+    ret.addAction("cfgPositive", (Integer t) -> currentCFGRules.actionSEQ(CFGElementKind.POS, currentCFGRules.nextUniqueLabel(), t), null, null);
 
     // Note - folds can only be applied to primitives, so why not ditch the working fold and just apply directly postorder - see delay below for model
     ret.addAction("cfgFoldNone", (Integer t) -> currentCFGRules.workingFold = GIFTKind.NONE, null, null);
@@ -752,21 +752,21 @@ public final class ScriptInterpreter {
     // Util.debug("findCFGElement on " + iTerms.toRawString(term));
     switch (iTerms.termSymbolString(term)) {
     case "cfgEpsilon":
-      return currentCFGRules.findElement(CFGKind.EPSILON, "#");
+      return currentCFGRules.findElement(CFGElementKind.EPSILON, "#");
     case "cfgCaseSensitiveTerminal":
-      return currentCFGRules.findElement(CFGKind.TRM_CS, iTerms.termSymbolString(iTerms.termChildren(term)[0]));
+      return currentCFGRules.findElement(CFGElementKind.TRM_CS, iTerms.termSymbolString(iTerms.termChildren(term)[0]));
     case "cfgCaseInsensitiveTerminal":
-      return currentCFGRules.findElement(CFGKind.TRM_CI, iTerms.termSymbolString(iTerms.termChildren(term)[0]));
+      return currentCFGRules.findElement(CFGElementKind.TRM_CI, iTerms.termSymbolString(iTerms.termChildren(term)[0]));
     case "cfgBuiltinTerminal":
-      return currentCFGRules.findElement(CFGKind.TRM_BI, iTerms.termSymbolString(iTerms.termChildren(term)[0]));
+      return currentCFGRules.findElement(CFGElementKind.TRM_BI, iTerms.termSymbolString(iTerms.termChildren(term)[0]));
     case "cfgNonterminal":
-      return currentCFGRules.findElement(CFGKind.NONTERMINAL, iTerms.termSymbolString(iTerms.termChildren(term)[0]));
+      return currentCFGRules.findElement(CFGElementKind.NONTERMINAL, iTerms.termSymbolString(iTerms.termChildren(term)[0]));
     case "cfgCharacterTerminal":
-      return currentCFGRules.findElement(CFGKind.TRM_CH, iTerms.termSymbolString(iTerms.termChildren(term)[0]));
+      return currentCFGRules.findElement(CFGElementKind.TRM_CH, iTerms.termSymbolString(iTerms.termChildren(term)[0]));
     case "cfgCharacterSetTerminal":
-      return currentCFGRules.findElement(CFGKind.TRM_CH_SET, iTerms.termSymbolString(iTerms.termChildren(term)[0]));
+      return currentCFGRules.findElement(CFGElementKind.TRM_CH_SET, iTerms.termSymbolString(iTerms.termChildren(term)[0]));
     case "cfgCharacterAntiSetTerminal":
-      return currentCFGRules.findElement(CFGKind.TRM_CH_ANTI_SET, iTerms.termSymbolString(iTerms.termChildren(term)[0]));
+      return currentCFGRules.findElement(CFGElementKind.TRM_CH_ANTI_SET, iTerms.termSymbolString(iTerms.termChildren(term)[0]));
 
     default:
       Util.fatal("Unknown CFG element type " + iTerms.termSymbolString(term));

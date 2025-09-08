@@ -1,7 +1,7 @@
 package uk.ac.rhul.cs.csle.art.interpret;
 
 import uk.ac.rhul.cs.csle.art.cfg.AbstractParser;
-import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGKind;
+import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGElementKind;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
 import uk.ac.rhul.cs.csle.art.script.ScriptInterpreter;
 import uk.ac.rhul.cs.csle.art.util.Util;
@@ -43,11 +43,11 @@ public class AttributeActionInterpreter extends AbstractInterpreter {
     var children = ScriptInterpreter.iTerms.termChildren(attributes.term);
     int childNumber = 0;
 
-    for (var node = altNode.seq; node.cfgElement.cfgKind != CFGKind.END; node = node.seq) // Skip alt node
+    for (var node = altNode.seq; node.cfgElement.cfgKind != CFGElementKind.END; node = node.seq) // Skip alt node
       attributes.initRHSAttributeBlock(node.num, children[childNumber++]);
 
     childNumber = -1;
-    for (var node = altNode; node.cfgElement.cfgKind != CFGKind.END; node = node.seq) {
+    for (var node = altNode; node.cfgElement.cfgKind != CFGElementKind.END; node = node.seq) {
       // Util.info("node number " + node.num + " childNumber = " + childNumber + " previous token = " + previousToken);
       switch (node.cfgElement.cfgKind) {
       case NONTERMINAL:

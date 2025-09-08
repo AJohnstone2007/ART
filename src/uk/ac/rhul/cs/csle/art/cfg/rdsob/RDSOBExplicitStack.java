@@ -1,7 +1,7 @@
 package uk.ac.rhul.cs.csle.art.cfg.rdsob;
 
 import uk.ac.rhul.cs.csle.art.cfg.AbstractParser;
-import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGKind;
+import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGElementKind;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGRules;
 import uk.ac.rhul.cs.csle.art.cfg.lexer.AbstractLexer;
@@ -69,7 +69,7 @@ public class RDSOBExplicitStack extends AbstractParser {
 
   boolean backtrack() { // return true if no backtrack target found
     while (true) {
-      while (gn.cfgElement.cfgKind != CFGKind.END)
+      while (gn.cfgElement.cfgKind != CFGElementKind.END)
         gn = gn.seq;
       if (gn.alt.alt == null) {
         gn = retrn();

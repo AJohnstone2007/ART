@@ -10,7 +10,7 @@ import java.util.LinkedList;
 import java.util.Set;
 import java.util.Stack;
 
-import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGKind;
+import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGElementKind;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
 import uk.ac.rhul.cs.csle.art.util.Util;
 import uk.ac.rhul.cs.csle.art.util.relation.Relation;
@@ -296,7 +296,7 @@ class SPPFCycleBreak {
     sppf.visited.set(sppfn.number);
     updateCountReachable(sppfn);
 
-    if (sppfn.grammarNode.cfgElement.cfgKind == CFGKind.EPSILON)
+    if (sppfn.grammarNode.cfgElement.cfgKind == CFGElementKind.EPSILON)
       countEps++;
     else if (sppfn.packNodes.size() == 0)
       countTerm++;

@@ -3,7 +3,7 @@ package uk.ac.rhul.cs.csle.art.cfg.gll;
 import java.util.HashMap;
 import java.util.Map;
 
-import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGKind;
+import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGElementKind;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGRules;
 import uk.ac.rhul.cs.csle.art.cfg.hashpool.HashPool;
 import uk.ac.rhul.cs.csle.art.cfg.lexer.AbstractLexer;
@@ -118,10 +118,10 @@ public class GLLHashPool extends HashPool {
     targetOf = cfgRules.makeCallTargetsArray();
     elementOf = cfgRules.makeElementOfArray();
     // Defensive programming - make sure we've not messed up the enumeration value
-    if (T != CFGKind.TRM_CS.ordinal()) Util.fatal("Enumeration mismatch for T - check ParserHashPool.java for consistency with Kind enumeration");
-    if (EPS != CFGKind.EPSILON.ordinal()) Util.fatal("Enumeration mismatch for EPS - check ParserHashPool.java for consistency with Kind enumeration");
-    if (N != CFGKind.NONTERMINAL.ordinal()) Util.fatal("Enumeration mismatch for N - check ParserHashPool.java for consistency with Kind enumeration");
-    if (END != CFGKind.END.ordinal()) Util.fatal("Enumeration mismatch for END - check ParserHashPool.java for consistency with Kind enumeration");
+    if (T != CFGElementKind.TRM_CS.ordinal()) Util.fatal("Enumeration mismatch for T - check ParserHashPool.java for consistency with Kind enumeration");
+    if (EPS != CFGElementKind.EPSILON.ordinal()) Util.fatal("Enumeration mismatch for EPS - check ParserHashPool.java for consistency with Kind enumeration");
+    if (N != CFGElementKind.NONTERMINAL.ordinal()) Util.fatal("Enumeration mismatch for N - check ParserHashPool.java for consistency with Kind enumeration");
+    if (END != CFGElementKind.END.ordinal()) Util.fatal("Enumeration mismatch for END - check ParserHashPool.java for consistency with Kind enumeration");
 
     // 1a. (Debug): print precomputed tables
     // Util.debug("CFGRules:" + cfgRules);

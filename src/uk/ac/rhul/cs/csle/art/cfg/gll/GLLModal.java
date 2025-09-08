@@ -4,7 +4,7 @@ import java.io.PrintStream;
 
 import uk.ac.rhul.cs.csle.art.cfg.AbstractParser;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGElement;
-import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGKind;
+import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGElementKind;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGRules;
 import uk.ac.rhul.cs.csle.art.cfg.lexer.AbstractLexer;
@@ -42,7 +42,8 @@ public class GLLModal extends AbstractParser {
       derivations = new SPPF(this);
     // Util.debug("Derivation implementation: " + derivations.getClass().getSimpleName());
 
-    if (!lexer.lex(input, cfgRules, chooseRules)) return; // Nothing to do if the lexer fails
+    lexer.lex(input, cfgRules, chooseRules);
+
     inputIndex = 0;
     cfgNode = cfgRules.elementToRulesNodeMap.get(cfgRules.startNonterminal).alt;
     stackNode = stacks.getRoot();
@@ -91,9 +92,9 @@ public class GLLModal extends AbstractParser {
   private boolean matchTerminal(CFGElement cfgElement) {
     switch (cfgNode.cfgElement.cfgKind) {
     case TRM_CH_SET:
-      return cfgElement.cfgKind == CFGKind.TRM_CH && cfgNode.cfgElement.set.contains(cfgElement.str.charAt(0));
+      return cfgElement.cfgKind == CFGElementKind.TRM_CH && cfgNode.cfgElement.set.contains(cfgElement.str.charAt(0));
     case TRM_CH_ANTI_SET:
-      return cfgElement.cfgKind == CFGKind.TRM_CH && !cfgNode.cfgElement.set.contains(cfgElement.str.charAt(0));
+      return cfgElement.cfgKind == CFGElementKind.TRM_CH && !cfgNode.cfgElement.set.contains(cfgElement.str.charAt(0));
     default:
       return (cfgElement == cfgNode.cfgElement);
     }

@@ -5,7 +5,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGElement;
-import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGKind;
+import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGElementKind;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
 import uk.ac.rhul.cs.csle.art.script.ScriptInterpreter;
 import uk.ac.rhul.cs.csle.art.term.TermTraverserText;
@@ -129,7 +129,7 @@ public class ChooseRules implements DisplayInterface {
       CFGNode seqNode = altNode.seq;
 
       while (true) {
-        if (seqNode.cfgElement.cfgKind == CFGKind.END && ret == null) ret = seqNode;
+        if (seqNode.cfgElement.cfgKind == CFGElementKind.END && ret == null) ret = seqNode;
 
         if (subTerm < arity && ScriptInterpreter.iTerms.termSymbolString(ScriptInterpreter.iTerms.subterm(term, subTerm)).equals(".")) {
           ret = seqNode;
@@ -137,7 +137,7 @@ public class ChooseRules implements DisplayInterface {
           subTerm++;
         }
 
-        if (seqNode.cfgElement.cfgKind == CFGKind.END || subTerm >= arity) // We have exhausted either the production, or the term, or both
+        if (seqNode.cfgElement.cfgKind == CFGElementKind.END || subTerm >= arity) // We have exhausted either the production, or the term, or both
           break;
 
         // We have not exhausted either the term or the production, so test for match
@@ -147,7 +147,7 @@ public class ChooseRules implements DisplayInterface {
         subTerm++;
       }
 
-      if (seqNode.cfgElement.cfgKind == CFGKind.END && subTerm == arity) {
+      if (seqNode.cfgElement.cfgKind == CFGElementKind.END && subTerm == arity) {
         // Util.debug("Choose term " + ScriptInterpreter.iTerms.toString(term) + " matched to " + ret.toStringAsProduction());
         return ret;
       }
@@ -207,30 +207,30 @@ public class ChooseRules implements DisplayInterface {
   void buildLexicalChooseSet(Set<CFGElement> set, int term) {
     int firstChild = ScriptInterpreter.iTerms.subterm(term, 0);
     if (ScriptInterpreter.iTerms.termSymbolString(firstChild).equals("chooseSet")) {
-      Set<CFGKind> collectKinds = new HashSet<>();
+      Set<CFGElementKind> collectKinds = new HashSet<>();
       String chooseSetName = ScriptInterpreter.iTerms.termSymbolString(ScriptInterpreter.iTerms.subterm(firstChild, 0));
       switch (chooseSetName) {
       case "anyCharacterTerminal":
-        collectKinds.add(CFGKind.TRM_CH);
+        collectKinds.add(CFGElementKind.TRM_CH);
         break;
       case "anyBuiltinTerminal":
-        collectKinds.add(CFGKind.TRM_BI);
+        collectKinds.add(CFGElementKind.TRM_BI);
         break;
       case "anyCaseSensitiveTerminal":
-        collectKinds.add(CFGKind.TRM_CS);
+        collectKinds.add(CFGElementKind.TRM_CS);
         break;
       case "anyCaseInsensitiveTerminal":
-        collectKinds.add(CFGKind.TRM_CI);
+        collectKinds.add(CFGElementKind.TRM_CI);
         break;
       case "anyParaterminal":
-        collectKinds.add(CFGKind.NONTERMINAL);
+        collectKinds.add(CFGElementKind.NONTERMINAL);
         break;
       case "anyTerminal":
-        collectKinds.add(CFGKind.TRM_CH);
-        collectKinds.add(CFGKind.TRM_BI);
-        collectKinds.add(CFGKind.TRM_CS);
-        collectKinds.add(CFGKind.TRM_CI);
-        collectKinds.add(CFGKind.NONTERMINAL);
+        collectKinds.add(CFGElementKind.TRM_CH);
+        collectKinds.add(CFGElementKind.TRM_BI);
+        collectKinds.add(CFGElementKind.TRM_CS);
+        collectKinds.add(CFGElementKind.TRM_CI);
+        collectKinds.add(CFGElementKind.NONTERMINAL);
         break;
 
       default:

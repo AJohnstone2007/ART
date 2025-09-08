@@ -19,7 +19,7 @@ public class CFGNode {
   public int actionAsTerm; // Holds the slot term as parent to slot decorations
   public int instanceNumber = -1;
 
-  public CFGNode(CFGRules cfgRules, CFGKind kind, String str, int actionAsTerm, GIFTKind giftKind, CFGNode previous, CFGNode parent) {
+  public CFGNode(CFGRules cfgRules, CFGElementKind kind, String str, int actionAsTerm, GIFTKind giftKind, CFGNode previous, CFGNode parent) {
     super();
     this.cfgElement = cfgRules.findElement(kind, str);
     this.actionAsTerm = actionAsTerm;
@@ -105,11 +105,11 @@ public class CFGNode {
 
     if (CFGRules.isLHS(this) || (seq == null && alt == null))
       sb.append(cfgElement);
-    else if (seq.cfgElement.cfgKind == CFGKind.EOS)
+    else if (seq.cfgElement.cfgKind == CFGElementKind.EOS)
       sb.append(seq);
     else {
       CFGNode tmp;
-      for (tmp = this; !(tmp.cfgElement.cfgKind == CFGKind.END && CFGRules.isLHS(tmp.seq)); tmp = tmp.seq) {// Locate the end of this production
+      for (tmp = this; !(tmp.cfgElement.cfgKind == CFGElementKind.END && CFGRules.isLHS(tmp.seq)); tmp = tmp.seq) {// Locate the end of this production
         // Util.info("toStringAsProduction at " + tmp + " with next-in-sequence element " + tmp.seq.elm);
       }
       sb.append(tmp.seq.cfgElement + rewritesDenotation); // Render LHS
@@ -121,19 +121,19 @@ public class CFGNode {
 
   private void toStringAsSequenceRec(StringBuilder sb, CFGNode alt, String slotDenotation, CFGNode targetNode) {
     // Util.info("toStringAsSequenceRec called on " + this.instanceNumber + ":" + this);
-    if (alt.cfgElement.cfgKind != CFGKind.ALT) Util.fatal("toStringAsSequenceRec() called on node " + alt.num + " which is not not an ALT node");
+    if (alt.cfgElement.cfgKind != CFGElementKind.ALT) Util.fatal("toStringAsSequenceRec() called on node " + alt.num + " which is not not an ALT node");
     for (CFGNode tmpSeq = alt.seq;; tmpSeq = tmpSeq.seq) { // run down this sequence
       if (tmpSeq == targetNode) sb.append(slotDenotation);
-      if (tmpSeq.cfgElement.cfgKind != CFGKind.END && tmpSeq.alt != null) { // If this element has an alt, then recursively process it first
+      if (tmpSeq.cfgElement.cfgKind != CFGElementKind.END && tmpSeq.alt != null) { // If this element has an alt, then recursively process it first
         sb.append(" (");
         for (CFGNode tmpAlt = tmpSeq.alt; tmpAlt != null; tmpAlt = tmpAlt.alt) {
           toStringAsSequenceRec(sb, tmpAlt, slotDenotation, targetNode);
           if (tmpAlt.alt != null) sb.append(" |"); // Closing parethesis supplied by next level up
         }
       }
-      if (tmpSeq.cfgElement.cfgKind == CFGKind.END) return;
+      if (tmpSeq.cfgElement.cfgKind == CFGElementKind.END) return;
       // Print space except between character terminals
-      if ((tmpSeq.cfgElement.cfgKind == CFGKind.TRM_CH) && tmpSeq.previous.cfgElement.cfgKind == CFGKind.TRM_CH)
+      if ((tmpSeq.cfgElement.cfgKind == CFGElementKind.TRM_CH) && tmpSeq.previous.cfgElement.cfgKind == CFGElementKind.TRM_CH)
         ;
       else
         sb.append(" ");

@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGKind;
+import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGElementKind;
 import uk.ac.rhul.cs.csle.art.util.Util;
 
 class SPPFSentenceAnalyser {
@@ -52,7 +52,7 @@ class SPPFSentenceAnalyser {
     }
     if (sppfn.packNodes.size() == 0) {
       paraterminalInstanceAdd(sppfn);
-      if (sppfn.grammarNode.cfgElement.cfgKind != CFGKind.EPSILON) terminalCount++;
+      if (sppfn.grammarNode.cfgElement.cfgKind != CFGElementKind.EPSILON) terminalCount++;
     }
     for (var p : sppfn.packNodes) {
       if (p.leftChild != null) sppfCollectParaterminalsRec(p.leftChild);
@@ -112,7 +112,7 @@ class SPPFSentenceAnalyser {
     sppf.visited.set(node.number);
 
     if (node.packNodes.isEmpty() || (node.isSymbol() && sppf.parser.cfgRules.paraterminals.contains(node.grammarNode.cfgElement))) {
-      if (!(node.packNodes.isEmpty() && node.grammarNode.cfgElement.cfgKind == CFGKind.EPSILON)) {
+      if (!(node.packNodes.isEmpty() && node.grammarNode.cfgElement.cfgKind == CFGElementKind.EPSILON)) {
         Util.info("Extending with " + node.grammarNode.cfgElement.str);
         parasentence[parasentenceIndex++] = node;
         if (node.rightExtent == sppf.parser.lexer.tweSlices.length - 1) addParasentence(parasentenceIndex);

@@ -10,14 +10,14 @@ import uk.ac.rhul.cs.csle.art.util.Util;
 public class CFGElement implements Comparable<Object> {
 
   public int number;
-  public final CFGKind cfgKind;
+  public final CFGElementKind cfgKind;
   public final String str;
   public Set<Character> set;
 
   public final Map<String, String> attributes = new HashMap<>();
   public final Map<String, Integer> rhsNonterminalsAcrossAllProductions = new HashMap<>();
 
-  public CFGElement(CFGKind kind, String s) {
+  public CFGElement(CFGElementKind kind, String s) {
     super();
     this.cfgKind = kind;
     this.str = s;
@@ -54,8 +54,8 @@ public class CFGElement implements Comparable<Object> {
       return "{" + setToString() + "}";
     case TRM_CH_ANTI_SET:
       return "~{" + setToString() + "}";
-    case TRM_CH_OOB:
-      return "!{}";
+    case TRM_CH_UOB:
+      return "!{}" + Util.escapeString(str);
 
     case TRM_BI:
       return "&" + Util.escapeString(str);
