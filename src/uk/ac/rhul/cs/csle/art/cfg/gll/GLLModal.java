@@ -81,7 +81,7 @@ public class GLLModal extends AbstractParser {
           continue nextTask;
         case END:
           var lhs = cfgNode.seq.cfgElement;
-          if (lookaheadFollow("returnLookahead", cfgNode.seq.cfgElement)) retrn();
+          if (lookaheadFollow("returnlookahead", cfgNode.seq.cfgElement)) retrn();
           continue nextTask;
         default:
           Util.fatal("Unexpected CFGNode kind " + cfgNode.cfgElement.cfgKind + " in " + getClass().getSimpleName());
@@ -108,7 +108,7 @@ public class GLLModal extends AbstractParser {
 
   private void queueProductionTasks() {
     for (CFGNode production = cfgNode; production != null; production = production.alt)
-      if (lookaheadInstanceFirst("productionLookahead", production.seq)) tasks.queue(inputIndex, production.seq, stackNode, derivationNode);
+      if (lookaheadInstanceFirst("productionlookahead", production.seq)) tasks.queue(inputIndex, production.seq, stackNode, derivationNode);
   }
 
   private boolean nextTask() {
