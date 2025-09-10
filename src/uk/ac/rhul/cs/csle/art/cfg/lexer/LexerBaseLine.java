@@ -2,7 +2,6 @@ package uk.ac.rhul.cs.csle.art.cfg.lexer;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.TreeMap;
 
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGElement;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGElementKind;
@@ -21,11 +20,9 @@ public class LexerBaseLine extends AbstractLexer {
     inputString = userString + "\0";
     inputAsCharArray = inputString.toCharArray();
 
-    tweSlices = new TWESetElement[inputString.length() + 1][];
-    hasSlice = new boolean[inputString.length() + 1];
+    tweSlices = new TWESetElement[inputString.length()][];
+    hasSlice = new boolean[inputString.length()];
     inputIndex = 0;
-    uibs = new TreeMap<>();
-    uobs = new TreeMap<>();
 
     whitespaceLongstMatch();
 
@@ -35,17 +32,17 @@ public class LexerBaseLine extends AbstractLexer {
     for (int i = 0; i < inputString.length(); i++)
       if (hasSlice[i]) tweSlices[i] = constructTWESlice(i);
 
-    // if (!hasSlice[inputString.length() - 1]) { // Lexical reject
-    // int rightmostActiveSlice;
-    // for (rightmostActiveSlice = inputString.length() - 1; rightmostActiveSlice >= 0; rightmostActiveSlice--)
-    // if (hasSlice[rightmostActiveSlice]) break;
-    //
-    // lexicalError("Unknown lexeme starting with character " + (int) inputAsCharArray[rightmostActiveSlice] + " - " + inputAsCharArray[rightmostActiveSlice],
-    // rightmostActiveSlice);
-    //
-    // tweSlices = null;
-    // return false;
-    // }
+    if (!hasSlice[inputString.length() - 1]) { // Lexical reject
+      int rightmostActiveSlice;
+      for (rightmostActiveSlice = inputString.length() - 1; rightmostActiveSlice >= 0; rightmostActiveSlice--)
+        if (hasSlice[rightmostActiveSlice]) break;
+
+      lexicalError("Unknown lexeme starting with character " + (int) inputAsCharArray[rightmostActiveSlice] + " - " + inputAsCharArray[rightmostActiveSlice],
+          rightmostActiveSlice);
+
+      tweSlices = null;
+      return false;
+    }
 
     // Add EOS
     tweSlices[inputString.length() - 1] = new TWESetElement[1];
@@ -57,20 +54,16 @@ public class LexerBaseLine extends AbstractLexer {
     else
       chooseDefault();
 
-    Util.debug("Lexicalisations");
-    print(System.out, ScriptInterpreter.iTerms.rawTextTraverser, false, false, false);
-
     return true;
   }
 
   public TWESetElement[] constructTWESlice(int index) {
-    Util.debug("Lexer at " + inputIndex);
-
     Set<TWESetElement> ret = new HashSet<>();
     // if (index == 0) ret.add(new TWESetElement(cfgRules.startOfStringElement, 1, 1, inputIndex));
 
     int lexemeStart = index == 0 ? whitespacePrefix : index; // Index zero is special case because of leading whitespace
     for (var e : cfgRules.elements.keySet()) {
+      // Util.debug("Lexer at " + inputIndex + " testing " + e.toStringDetailed());
       switch (e.cfgKind) {
       case TRM_CS, TRM_CI, TRM_BI, TRM_CH:
         inputIndex = lexemeStart;
@@ -84,34 +77,7 @@ public class LexerBaseLine extends AbstractLexer {
         }
       }
     }
-    if (ret.isEmpty()) {
-      var ch = peekCh();
-      if (cfgRules.characterSet.contains(ch)) {
-        CFGElement uib = findUIB(getCh());
-        Util.debug("Added to UIB: " + uib);
-        ret.add(new TWESetElement(uib, lexemeStart, lexemeEnd, inputIndex));
-        hasSlice[inputIndex] = true; // Mark for downstream processing
-      } else {
-        CFGElement uob = findUOB(getCh());
-        Util.debug("Added to UOB: " + uob);
-        ret.add(new TWESetElement(uob, lexemeStart, lexemeEnd, inputIndex));
-        hasSlice[inputIndex] = true; // Mark for downstream processing
-      }
-    }
-
-    return ret.toArray(new TWESetElement[0]);
-  }
-
-  private CFGElement findUOB(Character ch) {
-    CFGElement candidate = new CFGElement(CFGElementKind.TRM_CH_UOB, ch.toString());
-    if (uobs.get(candidate) == null) uobs.put(candidate, candidate);
-    return uobs.get(candidate);
-  }
-
-  private CFGElement findUIB(Character ch) {
-    CFGElement candidate = new CFGElement(CFGElementKind.TRM_CH_UIB, ch.toString());
-    if (uibs.get(candidate) == null) uibs.put(candidate, candidate);
-    return uibs.get(candidate);
+    return ret.isEmpty() ? null : ret.toArray(new TWESetElement[0]);
   }
 
   private void whitespaceLongstMatch() {

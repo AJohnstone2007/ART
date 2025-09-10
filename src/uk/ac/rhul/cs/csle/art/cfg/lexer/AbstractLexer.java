@@ -37,7 +37,7 @@ public abstract class AbstractLexer implements DisplayInterface {
     if (tweSlices == null) return 0;
     int ret = 0;
     for (var i : tweSlices)
-      ret += i.length;
+      if (i != null) ret += i.length;
     return ret;
   }
 

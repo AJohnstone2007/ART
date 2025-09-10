@@ -5,7 +5,6 @@ import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGRules;
 import uk.ac.rhul.cs.csle.art.cfg.lexer.AbstractLexer;
 import uk.ac.rhul.cs.csle.art.choose.ChooseRules;
-import uk.ac.rhul.cs.csle.art.script.ScriptInterpreter;
 import uk.ac.rhul.cs.csle.art.util.Util;
 import uk.ac.rhul.cs.csle.art.util.derivations.AbstractDerivationNode;
 import uk.ac.rhul.cs.csle.art.util.derivations.SPPF;
@@ -98,7 +97,7 @@ public class GLLBaseLine extends AbstractParser {
 
   private void retrn() {
     if (stackNode.equals(stacks.getRoot())) {
-      derivations.print(System.out, ScriptInterpreter.iTerms.rawTextTraverser, false, false, false);
+      // derivations.print(System.out, ScriptInterpreter.iTerms.rawTextTraverser, false, false, false);
       if (cfgRules.acceptingNodeNumbers.contains(cfgNode.num) && (inputIndex == lexer.tweSlices.length - 1)) {
         derivations.setRoot(cfgRules.elementToRulesNodeMap.get(cfgRules.startNonterminal), lexer.tweSlices.length - 1);
         inLanguage = true;

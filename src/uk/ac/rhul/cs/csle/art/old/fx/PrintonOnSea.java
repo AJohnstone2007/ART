@@ -140,7 +140,7 @@ public class PrintonOnSea {
     Box ret = new Box(x, y, boardZ);
     ret.setMaterial(plywoodMaterial);
     ret.setTranslateZ(-boardZ);
-    add(ret);
+    // add(ret);
     return ret;
   }
 
@@ -184,7 +184,7 @@ public class PrintonOnSea {
     ret.setTranslateX(length / 2 + originX);
     ret.setTranslateY(originY);
 
-    add(ret);
+    // add(ret);
 
     return ret;
   }
@@ -218,6 +218,6 @@ public class PrintonOnSea {
     // meshView.setCullFace(CullFace.NONE); // So we can see the backs of the triangles in case the winding order is incorrect - will render in black
     meshView.setCullFace(CullFace.NONE);
     meshView.setDrawMode(DrawMode.FILL);
-    gw.meshGroup.getChildren().add(meshView);
+    // gw.meshGroup.getChildren().add(meshView);
   }
 }

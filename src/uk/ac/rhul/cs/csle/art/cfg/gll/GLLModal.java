@@ -125,7 +125,7 @@ public class GLLModal extends AbstractParser {
   private void call(CFGNode cfgNode) {
     var newStackNode = stacks.push(derivations, tasks, inputIndex, cfgNode, stackNode, derivationNode);
     for (CFGNode p = cfgRules.elementToRulesNodeMap.get(cfgNode.cfgElement).alt; p != null; p = p.alt)
-      if (lookaheadInstanceFirst("productionLookahead", p.seq)) tasks.queue(inputIndex, p.seq, newStackNode, null);
+      if (lookaheadInstanceFirst("productionlookahead", p.seq)) tasks.queue(inputIndex, p.seq, newStackNode, null);
   }
 
   private void retrn() {
@@ -150,7 +150,7 @@ public class GLLModal extends AbstractParser {
 
     for (TWESetElement s : slice)
       if (!s.suppressed && set.contains(s.cfgElement)) return true;
-    Util.debug("lookahead() false");
+    // Util.debug("lookahead() false");
     return false;
   }
 
