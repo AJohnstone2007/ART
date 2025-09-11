@@ -29,7 +29,6 @@ public class GLLModal extends AbstractParser {
 
   @Override
   public void parse(String input, CFGRules cfgRules, AbstractLexer lexer, ChooseRules chooseRules) {
-    // Util.debug("GLLModal.parse() with current modes " + ScriptInterpreter.currentModes);
     inLanguage = false;
     this.input = input;
     this.cfgRules = cfgRules;
@@ -40,7 +39,6 @@ public class GLLModal extends AbstractParser {
       derivations = new SPPFDummyForRecognisers(this);
     else
       derivations = new SPPF(this);
-    // Util.debug("Derivation implementation: " + derivations.getClass().getSimpleName());
 
     lexer.lex(input, cfgRules, chooseRules);
 
@@ -113,7 +111,7 @@ public class GLLModal extends AbstractParser {
 
   private boolean nextTask() {
     var task = tasks.next();
-    // Util.debug("Processing task " + task);
+    Util.debug("Processing task " + task);
     if (task == null) return false;
     inputIndex = task.inputIndex;
     cfgNode = task.cfgNode;
@@ -123,9 +121,12 @@ public class GLLModal extends AbstractParser {
   }
 
   private void call(CFGNode cfgNode) {
+    Util.debug("Call on nonterminal node " + cfgNode);
     var newStackNode = stacks.push(derivations, tasks, inputIndex, cfgNode, stackNode, derivationNode);
-    for (CFGNode p = cfgRules.elementToRulesNodeMap.get(cfgNode.cfgElement).alt; p != null; p = p.alt)
+    for (CFGNode p = cfgRules.elementToRulesNodeMap.get(cfgNode.cfgElement).alt; p != null; p = p.alt) {
+      Util.debug("Production " + p.toStringAsProduction());
       if (lookaheadInstanceFirst("productionlookahead", p.seq)) tasks.queue(inputIndex, p.seq, newStackNode, null);
+    }
   }
 
   private void retrn() {
@@ -144,13 +145,13 @@ public class GLLModal extends AbstractParser {
 
     var set = cfgRules.instanceFirst.get(cfgNode);
     var slice = lexer.tweSlices[inputIndex];
-    // Util.debug("lookaheadInstanceFirst() on node " + cfgNode + " with instance first " + set + " and slice ");
-    // for (var s : slice)
-    // Util.info(s.toString());
+    Util.debug("lookaheadInstanceFirst() on node " + cfgNode + " with instance first " + set + " and slice ");
+    for (var s : slice)
+      Util.info(s.toString());
 
     for (TWESetElement s : slice)
       if (!s.suppressed && set.contains(s.cfgElement)) return true;
-    // Util.debug("lookahead() false");
+    Util.debug("lookahead() false");
     return false;
   }
 
