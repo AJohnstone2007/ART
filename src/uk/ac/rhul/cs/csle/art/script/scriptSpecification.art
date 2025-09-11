@@ -137,31 +137,32 @@ chooseRemove ::= '-'^
 directive ::= directiveCarrier
 
 directiveCarrier ::=  
-  '!nop'^^
+  '!prompt'^^ | '!prompt'^^ &STRING_DQ
+| '!trace'^^ __int32
+| '!error'^^ __int32
 
-| '!prompt'^^ | '!prompt'^^ &STRING_DQ
 | '!print'^^ displayElements^
 | '!show'^^ displayElements^
-| '!trace'^^ __int32
 
-| '!clear'^^ IDs^ | '!lexer'^^ ID | '!parser'^^ ID | '!interpreter'^^ ID | '!mode'^^ modes^ | '!convert'^^ IDs^ 
+| '!clear'^^ IDs^ | '!save'^^ ID ID | '!recall'^^ ID | '!convert'^^ IDs^
 
 | '!characterSet'^^ cfgCharacterSetTerminal
+| '!token'^^ cfgPrims^
 | '!whitespace'^^ cfgPrims^
 | '!paraterminal'^^ paraterminalElements^
-| '!token'^^ cfgPrims^
 
-| '!generate'^^ __int32 ID | '!generate'^^ ID  
-| '!support'^^ cfgNative cfgNative 
-
-| '!start'^^ cfgNonterminal | '!start'^^ trRelation // Set parser start nonterminal or rewriter start relation
 | '!configuration'^^ trRelation configurationElements
 | '!final'^^ trRelation trTerms
 
+| '!lexer'^^ ID | '!parser'^^ ID | '!interpreter'^^ ID 
+| '!generate'^^ __int32 ID | '!generate'^^ ID  
+| '!support'^^ cfgNative cfgNative 
+| '!mode'^^ modes^  
+
+| '!start'^^ cfgNonterminal | '!start'^^ trRelation // Set parser start nonterminal or rewriter start relation
+
 | '!try'^^ file       | '!try'^^ file '='^ trTopTuple 
 | '!try'^^ trTopTuple | '!try'^^ trTopTuple '='^ trTopTuple
-
-| '!save'^^ ID ID | '!recall'^^ ID
 
 (* Research features *)
 | '!deleteTokens'^^ __int32 | '!swapTokens'^^ __int32 

@@ -1,0 +1,69 @@
+\documentclass[10pt,leqno,fleqn]{article}
+\usepackage{a4}
+\usepackage{xcolor}
+\usepackage[outline]{contour}
+\usepackage{amsmath}
+\usepackage{fancybox}
+\parindent 0pt
+\parskip 0.5ex
+\fboxsep 0.05ex
+\newcommand{\artTerminalStrut}{\vphantom{Xtg}}
+\newcommand{\artCFGRuleColour}{\color{blue}}
+\newcommand{\artDirectiveColour}{\color{red}}
+\newcommand{\artTRRuleColour}{\color{olive}}
+\newcommand{\artActionColour}{\color{orange}}
+\newcommand{\artVariableColour}{\color{red}}
+\newcommand{\artMetaColour}{\color{blue}}
+\newcommand{\artLabelColour}{\color{olive}}
+\newcommand{\artConstructorColour}{\color{cyan}}
+\newcommand{\artRelationColour}{\color{olive}}
+\newcommand{\artChooseColour}{\color{brown}}
+\newcommand{\artAttributeColour}{\color{orange}}
+
+\newcommand{\artAssignment}{}
+\newcommand{\artAttributeDeclarations}[1]{{\artAttributeColour$\langle$#1$\rangle$}}
+\newcommand{\artAttributeDeclaration}[2]{{\artAttributeColour #1: #2}}
+\newcommand{\artAttribute}[2]{{\artAttributeColour #1.#2}}
+\newcommand{\artBuiltinTerminal}[1]{\fbox{\tt\&#1}}
+\newcommand{\artCaseInsensitiveTerminal}[1]{\doublebox{\artTerminalStrut \tt  #1}}
+%{\fbox{\fbox{\artTerminalStrut \tt #1}}}
+\newcommand{\artCaseSensitiveTerminal}[1]{\fbox{\artTerminalStrut\tt #1}}
+\newcommand{\artCFGRule}[1]{\par{\artCFGRuleColour\sf #1}\par\vspace{0.5ex}}
+\newcommand{\artCharacterRangeTerminal}{}
+\newcommand{\artCharacterTerminal}{}
+\newcommand{\artChooseHigher}[2]{\par{\artChooseColour #1 $>$ #2}\par}
+\newcommand{\artChooseLower}[2]{\par{\artChooseColour #1 $<$ #2}\par}
+\newcommand{\artChooseLonger}[2]{\par{\artChooseColour #1 $\gg$ #2}\par}
+\newcommand{\artChooseShorter}[2]{\par{\artChooseColour #1 $\ll$ #2}\par}
+\newcommand{\artChooseRule}{}
+\newcommand{\artDirective}[1]{\par{\artDirectiveColour\sf #1}\par}
+\newcommand{\artDoFirst}[1]{{{\artMetaColour(}#1{\artMetaColour)}}}
+\newcommand{\artEpsilon}{}
+\newcommand{\artEquation}[2]{{\artActionColour #1 = #2}}
+\newcommand{\artExpandsTo}{\artTerminalStrut{\artMetaColour\ ::=\ }}
+\newcommand{\artFile}[1]{{\tt\char13#1\char13}}
+\newcommand{\artFoldOver}{{\hspace*{0.2ex}\color{red}\contour{red}{$^{^{\wedge\wedge}}$}}}
+\newcommand{\artFoldUnder}{{\hspace*{0.2ex}\color{red}\contour{red}{$^{^{\wedge}}$}}}
+\newcommand{\artInsert}{}
+\newcommand{\artKleene}[1]{{{\artMetaColour(}#1{\artMetaColour)$^{\mbox{*}}$}}}
+\newcommand{\artLHS}{}
+\newcommand{\artNonterminal}[1]{{#1}}
+\newcommand{\artOptional}[1]{{{\artMetaColour(}#1{\artMetaColour)$^{\mbox{?}}$}}}
+\newcommand{\artPositive}[1]{{{\artMetaColour(}#1{\artMetaColour)$^{\mbox{+}}$}}}
+\newcommand{\artPremiseSpace}{\quad}
+\newcommand{\artSequenceSeperator}{\par\quad{\artMetaColour\artTerminalStrut\contour{blue}{$|$}}\ \ }
+\newcommand{\artSequenceSpace}{\hspace{0.5ex}}
+\newcommand{\artTear}{}
+\newcommand{\artTR}[2]{\frac{#1}{#2}}
+\newcommand{\artTransition}[3]{#1 #2 #3}
+\newcommand{\artTRLabel}[1]{\tag*{\artLabelColour\sf [#1]}}
+\newcommand{\artTRRule}[2]{{\artTRRuleColour\begin{equation}#1 #2\end{equation}}}
+\newcommand{\artRelation}[1]{\mbox{\artRelationColour\,#1\,}}
+\newcommand{\artTuple}[1]{\langle #1\rangle}
+\newcommand{\artConstructor}[1]{\mbox{\artConstructorColour\sf #1}}
+\newcommand{\artValue}[1]{{\tt\artActionColour #1}}
+\newcommand{\artVariable}[1]{\mbox{\artVariableColour\em #1}}
+\newcommand{\artNative}[1]{{\artActionColour{\tt #1}}}
+\begin{document}
+\input{rules.tex}
+\end{document}
