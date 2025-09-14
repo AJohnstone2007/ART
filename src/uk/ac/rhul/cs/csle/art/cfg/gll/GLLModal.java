@@ -111,7 +111,7 @@ public class GLLModal extends AbstractParser {
 
   private boolean nextTask() {
     var task = tasks.next();
-    Util.debug("Processing task " + task);
+    // Util.debug("Processing task " + task);
     if (task == null) return false;
     inputIndex = task.inputIndex;
     cfgNode = task.cfgNode;
@@ -121,10 +121,10 @@ public class GLLModal extends AbstractParser {
   }
 
   private void call(CFGNode cfgNode) {
-    Util.debug("Call on nonterminal node " + cfgNode);
+    // Util.debug("Call on nonterminal node " + cfgNode);
     var newStackNode = stacks.push(derivations, tasks, inputIndex, cfgNode, stackNode, derivationNode);
     for (CFGNode p = cfgRules.elementToRulesNodeMap.get(cfgNode.cfgElement).alt; p != null; p = p.alt) {
-      Util.debug("Production " + p.toStringAsProduction());
+      // Util.debug("Production " + p.toStringAsProduction());
       if (lookaheadInstanceFirst("productionlookahead", p.seq)) tasks.queue(inputIndex, p.seq, newStackNode, null);
     }
   }
@@ -145,13 +145,16 @@ public class GLLModal extends AbstractParser {
 
     var set = cfgRules.instanceFirst.get(cfgNode);
     var slice = lexer.tweSlices[inputIndex];
-    Util.debug("lookaheadInstanceFirst() on node " + cfgNode + " with instance first " + set + " and slice ");
-    for (var s : slice)
-      Util.info(s.toString());
+    // Util.debug("lookaheadInstanceFirst() on node " + cfgNode + " with instance first " + set + " and slice ");
+    // for (var s : slice)
+    // Util.info(s.toString());
 
     for (TWESetElement s : slice)
-      if (!s.suppressed && set.contains(s.cfgElement)) return true;
-    Util.debug("lookahead() false");
+      if (!s.suppressed) {
+        if (set.contains(s.cfgElement)) return true;
+        if (set.contains(cfgRules.epsilonElement) && cfgRules.follow.get(cfgRules.lhsOf.get(cfgNode)).contains(s.cfgElement)) return true;
+      }
+    // Util.debug("lookahead() false");
     return false;
   }
 
@@ -166,7 +169,7 @@ public class GLLModal extends AbstractParser {
 
     for (TWESetElement s : slice)
       if (!s.suppressed && set.contains(s.cfgElement)) return true;
-    Util.debug("lookahead() false");
+    // Util.debug("lookahead() false");
     return false;
   }
 

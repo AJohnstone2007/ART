@@ -1739,6 +1739,7 @@ public abstract class ARTGLLParserBase extends ARTParserBase {
   private void artPrintTriples() {
     if (artTriples == null) return;
     // Now print out the triples
+    System.out.println("V3 printTriples()");
     for (int i = 0; i < artTriples.length; i++) {
       if (artTriples[i] != null) {
         System.out.print(i + ": ");
@@ -1927,10 +1928,10 @@ public abstract class ARTGLLParserBase extends ARTParserBase {
       artWhitespaceEOSPrefixLength = artLexer.artInputLength - leftExtent;
     }
     // System.out.println("Triples from longest match front end");
-    artPrintTriples();
+    // artPrintTriples();
     artLexBuildSuccessorSets();
     // System.out.println("Lexer dump after building the successor sets");
-    artLexDump("lexical dump longest match");
+    // artLexDump("V3 lexical dump longest match");
     // System.out.println("**** End of front end lexer");
   }
 }

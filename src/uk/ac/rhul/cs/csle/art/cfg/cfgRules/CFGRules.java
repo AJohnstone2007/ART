@@ -46,13 +46,15 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
   public CFGElement startNonterminal = null;
 
   // Static fields that are constant across all instances and thus do not need to be cloned
-  private final static Set<CFGElementKind> terminalKinds = Set.of(CFGElementKind.TRM_BI, CFGElementKind.TRM_CH, CFGElementKind.TRM_CS, CFGElementKind.TRM_CI, CFGElementKind.TRM_CH_SET,
-      CFGElementKind.TRM_CH_ANTI_SET);
+  private final static Set<CFGElementKind> terminalKinds = Set.of(CFGElementKind.TRM_BI, CFGElementKind.TRM_CH, CFGElementKind.TRM_CS, CFGElementKind.TRM_CI,
+      CFGElementKind.TRM_CH_SET, CFGElementKind.TRM_CH_ANTI_SET);
   private final static Set<CFGElementKind> bracketKinds = Set.of(CFGElementKind.PAR, CFGElementKind.OPT, CFGElementKind.KLN, CFGElementKind.POS);
-  private final static Set<CFGElementKind> selfFirst = Set.of(CFGElementKind.TRM_BI, CFGElementKind.TRM_CH, CFGElementKind.EOS, CFGElementKind.TRM_CS, CFGElementKind.TRM_CI, CFGElementKind.EPSILON);
-  private final static Set<CFGElementKind> scaffoldingKinds = Set.of(CFGElementKind.SOS, CFGElementKind.EOS, CFGElementKind.EPSILON, CFGElementKind.ALT, CFGElementKind.END, CFGElementKind.PAR, CFGElementKind.OPT,
+  private final static Set<CFGElementKind> selfFirst = Set.of(CFGElementKind.TRM_BI, CFGElementKind.TRM_CH, CFGElementKind.EOS, CFGElementKind.TRM_CS,
+      CFGElementKind.TRM_CI, CFGElementKind.EPSILON);
+  private final static Set<CFGElementKind> scaffoldingKinds = Set.of(CFGElementKind.SOS, CFGElementKind.EOS, CFGElementKind.EPSILON, CFGElementKind.ALT,
+      CFGElementKind.END, CFGElementKind.PAR, CFGElementKind.OPT, CFGElementKind.POS, CFGElementKind.KLN);
+  private final static Set<CFGElementKind> doNotCloneKinds = Set.of(CFGElementKind.ALT, CFGElementKind.END, CFGElementKind.PAR, CFGElementKind.OPT,
       CFGElementKind.POS, CFGElementKind.KLN);
-  private final static Set<CFGElementKind> doNotCloneKinds = Set.of(CFGElementKind.ALT, CFGElementKind.END, CFGElementKind.PAR, CFGElementKind.OPT, CFGElementKind.POS, CFGElementKind.KLN);
 
   // Fields that are computed by !try or normalise() and thus do not need to be cloned
   private int nextFreeEnumerationElement;
@@ -62,6 +64,7 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
   public final CFGNode endOfStringNode;
   public final Map<Integer, CFGNode> numberToRulesNodeMap = new TreeMap<>();
   public final Map<CFGElement, CFGNode> elementToRulesNodeMap = new TreeMap<>(); // Map from nonterminals to list of productions represented by their LHS node
+  public Map<CFGNode, CFGElement> lhsOf = new HashMap<>();
   public int lexSize;
   public Set<CFGElement> defined = new TreeSet<>();
   public Set<CFGElement> used = new TreeSet<>();
@@ -333,6 +336,10 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
         break;
       }
 
+    // Set lhsOf
+    for (CFGElement ge : elements.keySet())
+      computeLHSOf(ge, elementToRulesNodeMap.get(ge), elementToRulesNodeMap.get(ge));
+
     // Set positional attributes and accepting slots, and seed nullablePrefixSlots and nullableSuffixSlots
     for (CFGElement ge : elements.keySet())
       if (ge.cfgKind == CFGElementKind.NONTERMINAL && elementToRulesNodeMap.get(ge) != null)
@@ -433,6 +440,15 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
       cfgRulesParser = new CFGRules(this, CFGRulesKind.PARSER, false, false, false, false);
       cfgRulesParser.normalise(); // recurse only once for the parser grammar
       subGrammarConsistencyCheck();
+    }
+  }
+
+  private void computeLHSOf(CFGElement lhs, CFGNode cfgNode, CFGNode topNode) {
+    if (cfgNode == null) return;
+    lhsOf.put(cfgNode, lhs);
+    if (cfgNode.cfgElement.cfgKind != CFGElementKind.END) {
+      computeLHSOf(lhs, cfgNode.seq, topNode);
+      computeLHSOf(lhs, cfgNode.alt, topNode);
     }
   }
 
@@ -614,7 +630,10 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
                 changed |= nullablePrefixSlots.add(seqNode);
               }
 
-              if (seqNode.cfgElement.cfgKind == CFGElementKind.END) break;
+              if (seqNode.cfgElement.cfgKind == CFGElementKind.END) {
+                instanceFirst.add(seqNode, epsilonElement);
+                break;
+              }
 
               // 2. Update instance first with the element itself for nonterminals only
               if (seqNode.cfgElement.cfgKind == CFGElementKind.NONTERMINAL) changed |= instanceFirst.add(seqNode, seqNode.cfgElement);
@@ -712,7 +731,9 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
               if (seqNode.cfgElement.cfgKind == CFGElementKind.NONTERMINAL)
                 changed |= follow.addAll(seqNode.cfgElement, removeEpsilon(instanceFirst.get(seqNode.seq)));
               if (nullableSuffixSlots.contains(seqNode.seq)) changed |= follow.addAll(seqNode.cfgElement, follow.get(lhs));
-              if (seqNode.cfgElement.cfgKind == CFGElementKind.END) break;
+              if (seqNode.cfgElement.cfgKind == CFGElementKind.END) {
+                break;
+              }
               seqNode = seqNode.seq;
             }
           }
@@ -1133,6 +1154,7 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
             outputStream.print("}");
           }
         }
+        outputStream.print(" LHS: " + lhsOf.get(gn));
         outputStream.print(" Action: " + gn.toStringActions());
         outputStream.print("\n");
       }

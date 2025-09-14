@@ -138,8 +138,8 @@ directive ::= directiveCarrier
 
 directiveCarrier ::=  
   '!prompt'^^ | '!prompt'^^ &STRING_DQ
-| '!trace'^^ __int32
-| '!error'^^ __int32
+| '!traceLevel'^^ __int32
+| '!errorLevel'^^ __int32
 
 | '!print'^^ displayElements^
 | '!show'^^ displayElements^

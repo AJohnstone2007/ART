@@ -43,10 +43,10 @@ public final class AJDebug {
 
   public AJDebug(String[] args) {
     Util.errorLevel = 4;
-    Util.info("!! Test mode ajdebug " + args[1]);
-    testStringEscapes();
+    Util.info("!! ajdebug " + args[1]);
+    // testStringEscapes();
 
-    // testSetRegressions(args);
+    testSetRegressions(args);
   }
 
   private void testSetRegressions(String[] args) {
@@ -72,13 +72,14 @@ public final class AJDebug {
   }
 
   private void processFile(Path filePath) throws IOException {
+    Util.info("File " + filePath);
     boolean good = v5v3RegressionFirstAndFollowSets(Files.readString(filePath));
     Util.info("File " + filePath + " " + (good ? " Good " : "Bad"));
   }
 
   private boolean v5v3RegressionFirstAndFollowSets(String scriptString) {
 
-    // System.out.print("v5v3RegressionFirstAndFollowSets");
+    Util.debug("v5v3RegressionFirstAndFollowSets");
 
     ART.tracing = true;
     regressionScriptInterpreter = new ScriptInterpreter(scriptString);
@@ -86,10 +87,7 @@ public final class AJDebug {
     ARTV3 artV3 = new ARTV3(scriptString);
 
     grammarV3 = artV3.artManager.addGrammar("Parser grammar", artV3.artManager.getDefaultMainModule(), false, artV3.artManager.artDirectives);
-
-    // System.out.print("\n*** V3 grammar\n" + grammarV3.toString());
     grammarV5 = regressionScriptInterpreter.currentCFGRules;
-    Util.info("*** Working grammar normalisation starts here");
     grammarV5.normalise();
 
     boolean good = true;
@@ -100,17 +98,18 @@ public final class AJDebug {
 
       // Util.info(
       // "V3 nonterminal " + v3Nonterminal + " first " + new TreeSet<>(v3Nonterminal.getFirst()) + " follow " + new TreeSet<>(v3Nonterminal.getFollow()));
-      // Util.info("V5 nonterminal " + v5Nonterminal + " first " + v5Nonterminal.first + " follow " + v5Nonterminal.follow + "\n");
+      // Util.info("V5 nonterminal " + v5Nonterminal + " first " + grammarV5.first.get(v5Nonterminal) + " follow " + grammarV5.follow.get(v5Nonterminal) +
+      // "\n");
 
+      // Util.info("Testing first sets for " + v5Nonterminal);
       if (!v5v3ElementSetSame(grammarV5.first.get(v5Nonterminal), new TreeSet<>(v3Nonterminal.getFirst()), artV3.artManager.getDefaultMainModule(),
-          v5Nonterminal)) {
+          v5Nonterminal)) { // Nonterminal excluded because V3 puts self into first - should only be doing that for recursive ones
         System.out
             .println("First for " + v5Nonterminal + " differ:\nV5 " + grammarV5.first.get(v5Nonterminal) + "\nV3 " + new TreeSet<>(v3Nonterminal.getFirst()));
         good = false;
       }
 
-      if (!v5v3ElementSetSame(grammarV5.first.get(v5Nonterminal), new TreeSet<>(v3Nonterminal.getFollow()), artV3.artManager.getDefaultMainModule(), null)) {
-        // Bug in V3? Spurious $ check
+      if (!v5v3ElementSetSame(grammarV5.follow.get(v5Nonterminal), new TreeSet<>(v3Nonterminal.getFollow()), artV3.artManager.getDefaultMainModule(), null)) {
         // Set<GrammarElement> v5prime = new TreeSet<>(grammarV5.follow.get(v5Nonterminal));
         // v5prime.add(grammarV5.endOfStringElement);
         // if (!v5v3ElementSetSame(v5prime, new TreeSet<>(v3Nonterminal.getFollow()), artV3.artManager.getDefaultMainModule()))
@@ -124,45 +123,52 @@ public final class AJDebug {
     }
 
     // Now work through instance sets
-    // v5v3RegressionGatherV3FirstAndFollowInstanceSetsRec((ARTGrammarInstance) grammarV3.getInstanceTree().getRoot());
-    // good &= v5v3RegressionCheckFirstAndFollowInstanceSets(grammarV5, artV3);
-    return good;
-  }
-
-  private boolean v5v3RegressionCheckFirstAndFollowInstanceSetsRec(CFGNode v5, ARTV3 artV3) {
-    if (v5 == null) return true;
-
-    boolean good = true;
-    String key = v5.toStringAsProduction().replaceAll("\\s", "");
-    // Util.info("V5 instance " + key + " first " + v5.instanceFirst + " follow " + v5.instanceFollow);
-    Set<ARTGrammarElement> v3InstanceFirst = v3InstanceFirsts.get(key), v3InstanceFollow = v3InstanceFollows.get(key);
-
-    if (v3InstanceFirsts.get(key) == null)
-      // Util.info(" v3 key is missing")
-      ;
-    else {
-      // if (!v5v3ElementSetSame(v5.instanceFirst, v3InstanceFirst, artV3.artManager.getDefaultMainModule())) {
-      // Util.info("Instance first differ: V5 " + v5.instanceFirst + " V3 " + v3InstanceFirst);
-      // good = false;
-      // }
-      // if (v5.elm.kind == GrammarKind.N && !v5v3ElementSetSame(v5.instanceFollow, v3InstanceFollow, artV3.artManager.getDefaultMainModule())) {
-      // Util.info("Instance follow differ: V5 " + v5.instanceFollow + " V3 " + v3InstanceFollow);
-      // good = false;
-      // }
-    }
-    // Util.info();
-    if (v5.cfgElement.cfgKind == CFGElementKind.END) return good;
-
-    good &= v5v3RegressionCheckFirstAndFollowInstanceSetsRec(v5.seq, artV3);
-    good &= v5v3RegressionCheckFirstAndFollowInstanceSetsRec(v5.alt, artV3);
-
+    v5v3RegressionGatherV3FirstAndFollowInstanceSetsRec((ARTGrammarInstance) grammarV3.getInstanceTree().getRoot());
+    good &= v5v3RegressionCheckFirstAndFollowInstanceSets(grammarV5, artV3);
     return good;
   }
 
   private boolean v5v3RegressionCheckFirstAndFollowInstanceSets(CFGRules grammarV5, ARTV3 artV3) {
     boolean good = true;
     for (CFGElement e : grammarV5.elements.keySet())
-      if (e.cfgKind == CFGElementKind.NONTERMINAL) good &= v5v3RegressionCheckFirstAndFollowInstanceSetsRec(grammarV5.elementToRulesNodeMap.get(e).alt, artV3);
+      if (e.cfgKind == CFGElementKind.NONTERMINAL) {
+        Util.debug("Checking instance sets for " + e);
+        good &= v5v3RegressionCheckFirstAndFollowInstanceSetsRec(grammarV5.elementToRulesNodeMap.get(e).alt, artV3);
+      }
+
+    return good;
+  }
+
+  Set<CFGElementKind> scaffoldingKinds = Set.of(CFGElementKind.ALT, CFGElementKind.KLN, CFGElementKind.OPT, CFGElementKind.PAR, CFGElementKind.POS);
+
+  private boolean v5v3RegressionCheckFirstAndFollowInstanceSetsRec(CFGNode v5, ARTV3 artV3) {
+    if (v5 == null) return true;
+
+    // Util.debug("v5v3RegressionCheckFirstAndFollowInstanceSetsRec at " + v5.toStringDot());
+    boolean good = true;
+    String key = v5.toStringAsProduction().replaceAll("\\s", "");
+    // Util.info("V5 instance " + key + " first " + grammarV5.instanceFirst.get(v5) + " follow " + grammarV5.instanceFollow.get(v5));
+    Set<ARTGrammarElement> v3InstanceFirst = v3InstanceFirsts.get(key), v3InstanceFollow = v3InstanceFollows.get(key);
+
+    if (!scaffoldingKinds.contains(v5.cfgElement.cfgKind)) {
+      if (v3InstanceFirsts.get(key) == null)
+        Util.info(" v3 key is missing");
+      else {
+        if (!v5v3ElementSetSame(grammarV5.instanceFirst.get(v5), v3InstanceFirst, artV3.artManager.getDefaultMainModule(), null)) {
+          Util.info("Instance first differ: V5 " + grammarV5.instanceFirst.get(v5) + " V3 " + v3InstanceFirst);
+          good = false;
+        }
+        if (v5.cfgElement.cfgKind == CFGElementKind.NONTERMINAL
+            && !v5v3ElementSetSame(grammarV5.instanceFollow.get(v5), v3InstanceFollow, artV3.artManager.getDefaultMainModule(), null)) {
+          Util.info("Instance follow differ: V5 " + grammarV5.instanceFollow.get(v5) + " V3 " + v3InstanceFollow);
+          good = false;
+        }
+      }
+
+      if (v5.cfgElement.cfgKind == CFGElementKind.END) return good;
+    }
+    good &= v5v3RegressionCheckFirstAndFollowInstanceSetsRec(v5.seq, artV3);
+    good &= v5v3RegressionCheckFirstAndFollowInstanceSetsRec(v5.alt, artV3);
 
     return good;
   }
@@ -189,6 +195,9 @@ public final class AJDebug {
 
     for (CFGElement ve5 : v5) {
       if (ve5.equals(v5IgnoreElement)) continue;
+      if (!v3.contains(v5Element2v3Element(ve5, artv3Module))) {
+        Util.debug("V3 set missing " + ve5);
+      }
       ret &= v3.contains(v5Element2v3Element(ve5, artv3Module));
       // Util.info("Checked v5 " + ve5 + " " + ret);
     }
@@ -196,8 +205,15 @@ public final class AJDebug {
     for (ARTGrammarElement ve3 : v3) {
       CFGElement ve5 = v3Element2v5Element(ve3);
 
+      if (!v5.contains(ve5)) {
+        // Util.info("Checked v3 " + ve3 + " " + ret + " with v5 as " + ve5);
+        Util.debug("V5 set missing " + ve5);
+        // for (var tmp : v5)
+        // Util.debug("V5Element " + tmp);
+
+      }
       ret &= v5.contains(ve5);
-      // Util.info("Checked v3 " + ve3 + " " + ret + " with v5 as " + ve5);
+
     }
     return ret;
   }

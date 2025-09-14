@@ -12,7 +12,7 @@ public class CFGElement implements Comparable<Object> {
   public int number;
   public final CFGElementKind cfgKind;
   public final String str;
-  public Set<Character> set;
+  public final Set<Character> set;
 
   public final Map<String, String> attributes = new HashMap<>();
   public final Map<String, Integer> rhsNonterminalsAcrossAllProductions = new HashMap<>();
@@ -20,13 +20,17 @@ public class CFGElement implements Comparable<Object> {
   public CFGElement(CFGElementKind kind, String s) {
     super();
     this.cfgKind = kind;
-    this.str = s;
     switch (this.cfgKind) {
     case TRM_CH_SET, TRM_CH_ANTI_SET:
       set = new TreeSet<>();
       // Util.debug("Processing to set: " + s);
       for (var c : Util.unescapeString(s).toCharArray())
         set.add(c);
+      this.str = set.toString(); // canonicalise string for character sets
+      return;
+    default:
+      set = null;
+      this.str = s;
       return;
     }
   }
@@ -38,12 +42,8 @@ public class CFGElement implements Comparable<Object> {
   @Override
   public String toString() {
     switch (cfgKind) {
-    case SOS:
-      return "$$";
-    case EOS:
-      return "$";
-    case EPSILON:
-      return "#";
+    case SOS, EOS, EPSILON, ALT, END, PAR, OPT, POS, KLN:
+      return str;
     case TRM_CS:
       return "'" + Util.escapeString(str) + "'";
     case TRM_CI:
@@ -56,23 +56,10 @@ public class CFGElement implements Comparable<Object> {
       return "~{" + setToString() + "}";
     case TRM_CH_UOB:
       return "!{}" + Util.escapeString(str);
-
     case TRM_BI:
       return "&" + Util.escapeString(str);
     case NONTERMINAL:
       return Util.escapeString(str);
-    case ALT:
-      return "|";
-    case END:
-      return "END";
-    case PAR:
-      return ")";
-    case OPT:
-      return ")?";
-    case POS:
-      return ")+";
-    case KLN:
-      return ")*";
     default:
       return "???";
     }
