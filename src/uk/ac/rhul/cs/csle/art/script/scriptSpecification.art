@@ -44,7 +44,7 @@ cfgPrim ::=
   cfgCharacterTerminal ::= CHAR_BQ
   cfgCharacterSetTerminal ::= STRING_BRACE
   cfgCharacterAntiSetTerminal ::= '~'^ STRING_BRACE
-  cfgCharacterOutOfBand ::= '!{}'
+  cfgCharacterOutOfBand ::= '~!{}'
   cfgStartOfString ::= '!$$'
 cfgPrims ::= cfgPrim | cfgPrim ','^ cfgPrims^ 
 
