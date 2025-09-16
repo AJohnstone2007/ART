@@ -508,6 +508,7 @@ public final class ITerms {
   }
 
   public int subterm(int term, int... path) {
+    // Util.debug("Iterms.subTerm() with term " + term + " and path " + path);
     int ret = term;
     for (int i = 0; i < path.length; i++)
       ret = termChildren(ret)[path[i]];

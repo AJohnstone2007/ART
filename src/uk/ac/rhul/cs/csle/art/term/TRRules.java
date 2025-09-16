@@ -50,7 +50,7 @@ public class TRRules implements DisplayInterface {
   }
 
   public void modifyConfiguration(int term) {
-    if (!ScriptInterpreter.iTerms.hasSymbol(term, "configuration"))
+    if (!ScriptInterpreter.iTerms.hasSymbol(term, "!configuration"))
       Util.fatal("Unexpected term passed to TRRules.modifyConfiguration " + ScriptInterpreter.iTerms.toString(term));
     int relation = ScriptInterpreter.iTerms.subterm(term, 0, 0);
     int configurationElements = ScriptInterpreter.iTerms.subterm(term, 1);
@@ -234,8 +234,8 @@ public class TRRules implements DisplayInterface {
           for (int v : numericVariablesInUse)
             if (!ScriptInterpreter.iTerms.isVariableSymbol(v)) Util.info("*** Error - variable outside available range of _1 to _" + ITerms.variableCount
                 + " in " + ScriptInterpreter.iTerms.plainTextTraverser.toString(ruleIndex));
-          if (variableStringIndexToVariableNumberMap.size() > ITerms.variableCount) Util.info(
-              "*** Error - more than " + ITerms.variableCount + " variables used in " + ScriptInterpreter.iTerms.plainTextTraverser.toString(ruleIndex));
+          if (variableStringIndexToVariableNumberMap.size() > ITerms.variableCount) Util
+              .info("*** Error - more than " + ITerms.variableCount + " variables used in " + ScriptInterpreter.iTerms.plainTextTraverser.toString(ruleIndex));
 
           for (int v : variableStringIndexToVariableNumberMap.keySet())
             variableNumberMapToVariableStringIndex.put(variableStringIndexToVariableNumberMap.get(v), v);
@@ -263,8 +263,8 @@ public class TRRules implements DisplayInterface {
 
           var terminals = rewriteTerminals.get(scanRelationIndex);
           if (terminals != null && terminals.contains(c)) continue;
-          Util.warning("in relation " + ScriptInterpreter.iTerms.plainTextTraverser.toString(scanRelationIndex) + " constructor " + label
-              + " has no rule definitions");
+          Util.warning(
+              "in relation " + ScriptInterpreter.iTerms.plainTextTraverser.toString(scanRelationIndex) + " constructor " + label + " has no rule definitions");
         }
     }
     // Stage two - generate rewritten rules to use only only numeric variables to normalise the configurations
@@ -326,8 +326,8 @@ public class TRRules implements DisplayInterface {
     String termSymbolString = ScriptInterpreter.iTerms.termSymbolString(termIndex);
 
     if (termSymbolString.length() > 1 && termSymbolString.charAt(0) == '_' && termSymbolString.charAt(1) != '_') { // Variable
-      if (ScriptInterpreter.iTerms.termArity(termIndex) > 0) Util
-          .info("*** Error: non-leaf variable " + termSymbolString + " in " + ScriptInterpreter.iTerms.plainTextTraverser.toString(parentRewriteTermIndex));
+      if (ScriptInterpreter.iTerms.termArity(termIndex) > 0)
+        Util.info("*** Error: non-leaf variable " + termSymbolString + " in " + ScriptInterpreter.iTerms.plainTextTraverser.toString(parentRewriteTermIndex));
       boolean isNumeric = true;
       for (int i = 1; i < termSymbolString.length(); i++)
         if (termSymbolString.charAt(i) < '0' || termSymbolString.charAt(i) > '9') isNumeric = false;

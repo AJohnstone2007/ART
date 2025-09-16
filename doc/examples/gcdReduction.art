@@ -1,5 +1,5 @@
 (* gcdReduction.art GCD in eSOS - 18 TR rules and 15 CFG rules *)
-!trace 1
+
 !configuration -> _sig:__map
 
 -assign  _n |> __int32(_)      --- assign(_X,_n),_sig -> __done,__put(_sig,_X,_n)
@@ -44,5 +44,7 @@ operand ::= __int32^^ | deref^^
 __int32 ::= &INTEGER
 deref ::= &ID
 
+!print "Try with internal syntax term"
 !try seq(assign(a,6), seq(assign(b,9), while(ne(deref(a), deref(b)), if(gt(deref(a), deref(b)), assign(a, sub(deref(a), deref(b))), assign(b, sub(deref(b), deref(a))))))), __map
+!print "Try with external syntax"
 !try "a := 6; b := 9; while a != b do if a > b then a := a - b; else b := b - a;"

@@ -2,7 +2,7 @@
 
 (* Part A - output of expressions over addition *)
 !configuration -> _alpha:__list
-!trace  5
+!traceLevel  5
 
 -add 
 _n1 |> __int32(_) _n2 |> __int32(_)
@@ -25,14 +25,14 @@ _E1, _alpha -> _E1P, _alphaP
 add(_E1, _E2), _alpha -> add(_E1P,_E2), _alphaP
 
 
-!trace 3
+!traceLevel 3
 //!try add(add(2,3), add(4,5)), __list
 
 -output _E, _alpha -> _EP, _alphaP
 ---
 output(_E), _alpha -> __done, __put(_alphaP, 0, _EP)
 
-!trace 2
+!traceLevel 2
 //!try output(add(3,4)),__list
 
 -sequenceDone                      
@@ -97,7 +97,7 @@ assign(_X, _n), _sig -> __done,  _sigP
 deref(_X),_sig -> __get(_sig, _X)
 
 !try deref(a), __map(_m(a,7))
-!try deref(a), {a=13}
+//!try deref(a), {a=13}
 
 
 -assignReference

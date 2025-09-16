@@ -1,115 +1,106 @@
-
-// First example
+!print "First example"
 S ::= 'a' R T
 R ::= 'r' 
 T ::= 't'
 !generate 10 sententialforms
 
 
-(*
-// Adding a rule
+!print "Adding a rule"
+!clear cfgRules
 S ::= 'a' R T
 R ::= 'r' 
 R ::= 'r' 'r'
 T ::= 't'
 !generate 10 sententialforms
-*)
 
-(*
-// Using the | bar to combine rules
+
+!print "Using the | bar to combine rules"
+!clear cfgRules
 S ::= 'a' R T
 R ::= 'r' | 'r' 'r' 
 T ::= 't'
 !generate 10 sententialforms
-*)
+
 
 (*
-// Illegal empty rules style generates syntax error 
+!print "Illegal empty rules style generates syntax error"
+!clear cfgRules
 S ::= 'a' R T
 R ::= 
 T ::= 't'
 !generate 10 sententialforms
 *)
 
-(*
-// Correct form for empty rules 
+!print "Correct form for empty rules"
+!clear cfgRules
 S ::= 'a' R T
 R ::= #
 T ::= 't'
 !generate 10 sententialforms
-*)
 
 (*
-// Illegal use of #
-
+!print "Illegal use of #"
+!clear cfgRules
 R ::= 'r' # A
 *)
 
-(*
-// Correct form for empty rules 
+!print "Correct form for empty rules" 
+!clear cfgRules
 S ::= 'a' R T
 R ::= #
 T ::= 't'
 !generate 10 sententialforms
 !try "at"
-!print outcome
-!show derivation
-*)
+!print tryTerm
 
-(*
-// Using the | bar with an empty rule
+!print "Using the | bar with an empty rule"
+!clear cfgRules
 S ::= 'a' R T
 R ::= 'r' | #
 T ::= 't'
 !generate 10 sententialforms
-*)
 
-(*
-// Right recursion
+!print "Right recursion"
+!clear cfgRules
 S ::= 'a' R T
 R ::= 'r' | 'r' R
 T ::= 't'
 !generate 10 sententialforms
 !generate 10 sentences
-*)
 
-(*
-// Left recursion
+!print "Left recursion"
+!clear cfgRules
 S ::= 'a' R T
 R ::= 'r' | R 'r'
 T ::= 't'
 !generate 10 sententialforms
 !generate 10 sentences
-*)
 
-(*
-// Right recursion with empty rule
+!print "Right recursion with empty rule"
+!clear cfgRules
 S ::= 'a' R T
 R ::= # | 'r' R
 T ::= 't'
 !generate 10 sentences
-*)
 
-(*
-// Ambiguous CFG
+!print "Ambiguous CFG"
+!clear cfgRules
 S ::= 'a' R | A 't'
 A ::= 'a' 'r'
 R ::= 'r' 't'
 !generate 10 sententialforms
 !try "art"
-!print derivation
-*)
+!print tryTerm
 
-(*
-// Cyclic CFG
+!print "Cyclic CFG"
+!clear cfgRules
 S ::= 'a' R T
 R ::= 'r'| R
 T ::= 't'
 !generate 10 sententialforms
-*)
 
-(*
-// Thank you letter generator
+!print "Thank you letter generator"
+!clear cfgRules
 letter ::= salutation person ',' 'thank' 'you' 'for' 'my' gift '.' 'It' 'is' reaction '.' 'I' 'will' action 'it' '.'
 gift ::= occasion 'present'
 occasion ::= 'birthday' | 'house' 'warming'
@@ -120,5 +111,3 @@ action ::= 'love' | 'hide' | 'try' 'to' 'forget'
 
 !generate 1000 sententialforms
 !generate 1000 sentences
-*)
-

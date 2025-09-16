@@ -161,7 +161,9 @@ public abstract class AbstractLexer implements DisplayInterface {
       return;
     }
 
-    if (!isDeterministic()) Util.warning("TWE set has multiple lexicalisations but no choosers defined; running default lexical diambiguation");
+    if (!isDeterministic()) Util.warning("TWE set has multiple lexicalisations but no choosers defined; running default lexical disambiguation");
+
+    // print(System.out, ScriptInterpreter.iTerms.plainTextTraverser, false, false, false);
 
     for (int i = 0; i < tweSlices.length; i++) {
       var slice = tweSlices[i];

@@ -20,7 +20,7 @@ import uk.ac.rhul.cs.csle.art.util.stacks.GSSGLL;
 import uk.ac.rhul.cs.csle.art.util.tasks.TasksGLL;
 
 /**
- * This is the 'master' GLL/MGLL implementation which has selectable features based on final booleans
+ * This is the modal (M)GLL implementation which has selectable optimisations
  */
 public class GLLModal extends AbstractParser {
   private CFGNode cfgNode; // current Context Free Grammar Node
@@ -35,13 +35,9 @@ public class GLLModal extends AbstractParser {
     this.lexer = lexer;
     tasks = new TasksGLL();
     stacks = new GSSGLL(cfgRules);
-    if (ScriptInterpreter.currentModes.contains("recogniser"))
-      derivations = new SPPFDummyForRecognisers(this);
-    else
-      derivations = new SPPF(this);
+    derivations = ScriptInterpreter.currentModes.contains("recogniser") ? new SPPFDummyForRecognisers(this) : new SPPF(this);
 
     lexer.lex(input, cfgRules, chooseRules);
-
     inputIndex = 0;
     cfgNode = cfgRules.elementToRulesNodeMap.get(cfgRules.startNonterminal).alt;
     stackNode = stacks.getRoot();
@@ -51,7 +47,7 @@ public class GLLModal extends AbstractParser {
       nextCFGNode: while (true) {
         switch (cfgNode.cfgElement.cfgKind) {
         case ALT:
-          queueProductionTasks(); // Create task descriptor for the start of each production
+          queueProductionTasks(); // Create task descriptor for the start of each production - is this needed for BNF?
           continue nextTask;
         case EPSILON:
           derivationNode = updateDerivation(inputIndex); // Must match, but nothing consumed, so rightExtent = inputIndex
@@ -60,14 +56,14 @@ public class GLLModal extends AbstractParser {
         case SOS, TRM_BI, TRM_CS, TRM_CI, TRM_CH, TRM_CH_SET, TRM_CH_ANTI_SET: // Look for exact instance
           var slice = lexer.tweSlices[inputIndex];
           if (slice == null) continue nextTask;// Nothing todo for empty TWE slices
-          nextSliceElement: for (int sliceIndex = 0; sliceIndex < slice.length; sliceIndex++) // Iterate over the TWE set elements in this slice
+          for (int sliceIndex = 0; sliceIndex < slice.length; sliceIndex++) // Iterate over the TWE set elements in this slice
             if (!slice[sliceIndex].suppressed && matchTerminal(slice[sliceIndex].cfgElement)) { // Ignore suppressed TWE set elements
               // Util.debug("Matched " + cfgNode.toStringAsProduction());
-              if (ScriptInterpreter.currentModes.contains("mgll")) { // MGLL only: create continuation task descriptors for all subsequent matches in this slice
+              if (ScriptInterpreter.currentModes.contains("mgll")) // MGLL only: create continuation task descriptors for all subsequent matches in this slice
                 for (int restOfIndex = sliceIndex + 1; restOfIndex < slice.length; restOfIndex++)
-                  if (!slice[sliceIndex].suppressed && matchTerminal(slice[sliceIndex].cfgElement))
-                    tasks.queue(slice[restOfIndex].rightExtent, cfgNode.seq, stackNode, updateDerivation(slice[restOfIndex].rightExtent));
-              }
+                if (!slice[sliceIndex].suppressed && matchTerminal(slice[sliceIndex].cfgElement))
+                  tasks.queue(slice[restOfIndex].rightExtent, cfgNode.seq, stackNode, updateDerivation(slice[restOfIndex].rightExtent));
+
               derivationNode = updateDerivation(slice[sliceIndex].rightExtent); // Now process the first-found slice element
               inputIndex = slice[sliceIndex].rightExtent; // Step input past the matched TWE
               cfgNode = cfgNode.seq; // Step to next grammar node
@@ -78,7 +74,6 @@ public class GLLModal extends AbstractParser {
           call(cfgNode);
           continue nextTask;
         case END:
-          var lhs = cfgNode.seq.cfgElement;
           if (lookaheadFollow("returnlookahead", cfgNode.seq.cfgElement)) retrn();
           continue nextTask;
         default:
@@ -99,8 +94,7 @@ public class GLLModal extends AbstractParser {
   }
 
   private AbstractDerivationNode updateDerivation(int rightExtent) {
-    var tmp = cfgRules.elementToRulesNodeMap.get(cfgNode.cfgElement);
-    var rightNode = derivations.find(tmp, inputIndex, rightExtent);
+    var rightNode = derivations.find(cfgRules.elementToRulesNodeMap.get(cfgNode.cfgElement), inputIndex, rightExtent);
     return derivations.extend(cfgNode.seq, derivationNode, rightNode);
   }
 
@@ -121,12 +115,9 @@ public class GLLModal extends AbstractParser {
   }
 
   private void call(CFGNode cfgNode) {
-    // Util.debug("Call on nonterminal node " + cfgNode);
     var newStackNode = stacks.push(derivations, tasks, inputIndex, cfgNode, stackNode, derivationNode);
-    for (CFGNode p = cfgRules.elementToRulesNodeMap.get(cfgNode.cfgElement).alt; p != null; p = p.alt) {
-      // Util.debug("Production " + p.toStringAsProduction());
+    for (CFGNode p = cfgRules.elementToRulesNodeMap.get(cfgNode.cfgElement).alt; p != null; p = p.alt)
       if (lookaheadInstanceFirst("productionlookahead", p.seq)) tasks.queue(inputIndex, p.seq, newStackNode, null);
-    }
   }
 
   private void retrn() {

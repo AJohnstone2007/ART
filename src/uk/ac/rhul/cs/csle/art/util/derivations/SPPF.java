@@ -233,9 +233,9 @@ public class SPPF extends AbstractDerivations {
 
     if (activePackedNodes > 1) {
       ambiguousSPPF = true;
-      // Util.warning("Ambiguous SPPF node " + sppfn.toString() + " involving slots: ");
-      // for (SPPFPackedNode p : sppfn.packNodes)
-      // if (!p.suppressed) Util.info(" " + p);
+      Util.warning("Ambiguous SPPF node " + sppfn.toString() + " involving slots: ");
+      for (SPPFPackedNode p : sppfn.packNodes)
+        if (!p.suppressed) Util.info(" " + p);
     }
   }
 
