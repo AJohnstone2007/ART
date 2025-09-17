@@ -19,8 +19,8 @@ public class RDSOBGenerator {
     } catch (FileNotFoundException e) {
       Util.fatal("Unable to open output file " + className + ".java");
     }
+    Util.info("Writing new " + className + ": " + Util.timestamp());
 
-    Util.info(grammar.toString());
     text.print(
         "import java.io.IOException;\nimport java.nio.file.Files;\nimport java.nio.file.Paths;\nimport uk.ac.rhul.cs.csle.art.v5.DNode;\nimport uk.ac.rhul.cs.csle.art.v5.grammar.Kind;\n"
             + "import uk.ac.rhul.cs.csle.art.v5.lexer.LexerLM;\n\n" + "class RDSOB extends uk.ac.rhul.cs.csle.art.v5.rdsob.RDSOBParser {\n"
@@ -67,8 +67,8 @@ public class RDSOBGenerator {
               text.print("}");
             text.println();
             break seqLoop;
-          case ALT, TRM_BI, TRM_CH, PAR, EOS, KLN, OPT, POS, TRM_CI:
-            Util.fatal("internal error - unexpected grammar node in rdsobFunction");
+          default:
+            Util.error("internal error - unsupported grammar node in RDSOBGenerator: " + seq);
           }
         }
       }
@@ -83,6 +83,5 @@ public class RDSOBGenerator {
         + " System.out.println((parser.accepted ? \"Accept\" : \"Reject\")\n    + \" with derivation: \" + parser.dn);\n }\n}");
 
     text.close();
-    Util.info("SOBRD generated parser written to " + className + ".java");
   }
 }

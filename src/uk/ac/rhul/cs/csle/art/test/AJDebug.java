@@ -87,7 +87,7 @@ public final class AJDebug {
     ARTV3 artV3 = new ARTV3(scriptString);
 
     grammarV3 = artV3.artManager.addGrammar("Parser grammar", artV3.artManager.getDefaultMainModule(), false, artV3.artManager.artDirectives);
-    grammarV5 = regressionScriptInterpreter.currentCFGRules;
+    grammarV5 = ScriptInterpreter.currentCFGRules;
     grammarV5.normalise();
 
     boolean good = true;

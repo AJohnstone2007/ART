@@ -5,8 +5,8 @@ import java.util.Map;
 import java.util.Set;
 
 public abstract class AbstractRelation<T1, T2> {
-  final protected Map<T1, Set<T2>> map = makeMap();
-  final protected Set<T2> empty = makeSet();
+  protected Map<T1, Set<T2>> map;
+  protected Set<T2> empty;
 
   abstract protected Set<T2> makeSet();
 
@@ -103,7 +103,7 @@ public abstract class AbstractRelation<T1, T2> {
   }
 
   public Set<T1> cyclic() {
-    final Relation<T1, T2> tmp = new Relation(this);
+    final Relation<T1, T2> tmp = new Relation<>(this);
     tmp.transitiveClosure();
 
     Set<T1> ret = new HashSet<>();

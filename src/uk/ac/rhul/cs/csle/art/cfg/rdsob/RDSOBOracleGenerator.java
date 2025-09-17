@@ -24,7 +24,8 @@ public class RDSOBOracleGenerator {
 
     if (cfgNode.cfgElement.cfgKind == CFGElementKind.NONTERMINAL && cfgNode.cfgElement.attributes.keySet().size() > 0) {
       String name = cfgNode.cfgElement.str + cfgNode.instanceNumber;
-      if (!printedInits.contains(name)) text.println("  Attributes_" + cfgNode.cfgElement.str + " " + name + " = new Attributes_" + cfgNode.cfgElement.str + "(); ");
+      if (!printedInits.contains(name))
+        text.println("  Attributes_" + cfgNode.cfgElement.str + " " + name + " = new Attributes_" + cfgNode.cfgElement.str + "(); ");
       printedInits.add(name);
     }
     printAllInitsRec(cfgNode.seq);
@@ -49,7 +50,7 @@ public class RDSOBOracleGenerator {
     }
 
     text.println("import java.io.FileNotFoundException;import java.util.LinkedList;\n\nclass " + filename
-        + " extends uk.ac.rhul.cs.csle.art.cfg.rdsob.RDSOBAbstract {\n");
+        + " extends uk.ac.rhul.cs.csle.art.cfg.rdsob.AbstractRDSOB {\n");
 
     // Write parse functions
     for (var e : cfgRules.elements.keySet())

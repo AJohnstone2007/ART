@@ -275,7 +275,7 @@ public abstract class ARTParserBase {
       artDirectives = new Directives();
     artText = new ARTText(new ARTTextHandlerConsole());
     this.artLexer = artLexer;
-    if (artLexer != null) artLexer.artSetParser(this);
+    if (artLexer != null) artLexer.artParser = this;
     if (artGrammar != null)
       this.artGrammarKind = artGrammar.getGrammarKind();
     else

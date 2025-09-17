@@ -385,7 +385,7 @@ public final class ScriptInterpreter {
       normalise();
       switch (iTerms.termSymbolString(iTerms.subterm(term, 0, 0)).toLowerCase()) {
       case "rdsob":
-        new RDSOBGenerator(currentCFGRules, "RDSOB");
+        new RDSOBGenerator(currentCFGRules, "ARTGeneratedRDSOB");
         break;
       case "rdsoboracle":
         normalise();

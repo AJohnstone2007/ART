@@ -7,9 +7,13 @@ import java.util.Set;
 
 public class Relation<T1, T2> extends AbstractRelation<T1, T2> {
   public Relation() {
+    super();
+    map = new HashMap<T1, Set<T2>>();
+    empty = new HashSet<T2>();
   }
 
   public Relation(AbstractRelation<T1, T2> relation) { // copy constructor
+    this();
     for (T1 t1 : relation.getDomain())
       map.put(t1, new HashSet<>(relation.get(t1)));
   }

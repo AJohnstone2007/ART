@@ -34,7 +34,6 @@ public abstract class ARTValue {
   public ARTValue(ARTValue r) {
     throw new ARTUncheckedException(
         "value class " + strip(this.getClass().toString()) + " does not provide constructor for class " + strip(r.getClass().toString()));
-
   }
 
   // Internal methods used for display, equality, hashCode etc
@@ -63,7 +62,7 @@ public abstract class ARTValue {
   public abstract boolean equals(Object obj);
 
   // Internal methods used for error reporting
-  protected String strip(String s) {
+  protected static final String strip(String s) {
     return s.substring(s.indexOf("ART"));
   }
 

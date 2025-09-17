@@ -527,7 +527,7 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
     if (startNonterminal == null) return; // empty grammar
     parserNonterminals.addAll(reachableNonterminalsPara.get(startNonterminal));
     parserNonterminals.add(startNonterminal);
-    reachableParaterminals = new TreeSet(parserNonterminals);
+    reachableParaterminals = new TreeSet<CFGElement>(parserNonterminals);
 
     parserNonterminals.removeAll(paraterminals);
     reachableParaterminals.retainAll(paraterminals);

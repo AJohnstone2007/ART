@@ -51,7 +51,7 @@ public class ARTLexerV3 {
    *
    ******************************************************************************/
   private ARTGrammar grammar; // The grammar containing the lexical definitions
-  protected ARTParserBase artParser;
+  public ARTParserBase artParser;
 
   public Directives artDirectives;
 
