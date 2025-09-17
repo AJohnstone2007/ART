@@ -797,10 +797,22 @@ public final class ScriptInterpreter {
     ret.addAction("__map", (Integer t) -> ret.sb.append(iTerms.termArity(t) == 0 ? "{=" : "{"), null, (Integer t) -> ret.sb.append("}"));
     ret.addAction("__m", null, "=", null); // note that intext traverses, inorder always adds , after the second argument
 
-    ret.addActionBreak("__string", (Integer t) -> ret.appendAlias("\"", iTerms.termSymbolStringIndex(iTerms.subterm(t, 0)), "\""), null, null);
     ret.addActionBreak("__bool", (Integer t) -> ret.appendAlias("", iTerms.termSymbolStringIndex(iTerms.subterm(t, 0)), ""), null, null);
     ret.addActionBreak("__int32", (Integer t) -> ret.appendAlias("", iTerms.termSymbolStringIndex(iTerms.subterm(t, 0)), ""), null, null);
     ret.addActionBreak("__real64", (Integer t) -> ret.appendAlias("", iTerms.termSymbolStringIndex(iTerms.subterm(t, 0)), ""), null, null);
+    ret.addActionBreak("__char", (Integer t) -> ret.appendAlias("'", iTerms.termSymbolStringIndex(iTerms.subterm(t, 0)), ""), null, null);
+    ret.addActionBreak("__string", (Integer t) -> ret.appendAlias("\"", iTerms.termSymbolStringIndex(iTerms.subterm(t, 0)), "\""), null, null);
+    ret.addActionBreak("__intAP", (Integer t) -> ret.appendAlias("£", iTerms.termSymbolStringIndex(iTerms.subterm(t, 0)), ""), null, null);
+    ret.addActionBreak("__realAP", (Integer t) -> ret.appendAlias("£", iTerms.termSymbolStringIndex(iTerms.subterm(t, 0)), ""), null, null);
+
+    ret.addAction("__array", "[", " | ", "]");
+    ret.addAction("__a", null, ", ", null);
+
+    ret.addAction("__list", "[", ", ", "]");
+    ret.addAction("__l", null, ", ", null);
+
+    ret.addAction("__set", "{", ", ", "}");
+    ret.addAction("__s", null, ", ", null);
 
     // 0. Line break after each rule
     ret.addAction("rules", null, "\n", null);
