@@ -65,7 +65,7 @@ public class GLLBaseLine extends AbstractParser {
               // Util.debug("Matched " + cfgNode.toStringAsProduction());
               if (isMGLL) // MGLL only: create continuation task descriptors for all subsequent matches in this slice
                 for (int restOfIndex = sliceIndex + 1; restOfIndex < slice.length; restOfIndex++)
-                if (!slice[sliceIndex].suppressed && matchTerminal(slice[sliceIndex].cfgElement))
+                if (!slice[restOfIndex].suppressed && matchTerminal(slice[restOfIndex].cfgElement))
                   tasks.queue(slice[restOfIndex].rightExtent, cfgNode.seq, stackNode, updateDerivation(slice[restOfIndex].rightExtent));
 
               derivationNode = updateDerivation(slice[sliceIndex].rightExtent); // Now process the first-found slice element

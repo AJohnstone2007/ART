@@ -83,9 +83,12 @@ public class TermTraverser {
     int[] children = ScriptInterpreter.iTerms.termChildren(termIndex);
     int length = children.length;
     int lengthLessOne = length - 1;
-    if (!breakSet.contains(ScriptInterpreter.iTerms.termSymbolStringIndex(termIndex))) for (int i = 0; i < length; i++) {
-      traverse(children[i]);
-      if (i < lengthLessOne) perform(opsInorder, termIndex);
+    if (!breakSet.contains(ScriptInterpreter.iTerms.termSymbolStringIndex(termIndex))) {
+      for (int i = 0; i < length; i++) {
+        // System.out.println("Bang! on length " + length + " with i = " + i);
+        traverse(children[i]);
+        if (i < lengthLessOne) perform(opsInorder, termIndex);
+      }
     }
     perform(opsPostorder, termIndex);
   }

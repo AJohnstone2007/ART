@@ -68,11 +68,9 @@ public abstract class AbstractLexer implements DisplayInterface {
   @Override
   public void print(PrintStream outputStream, TermTraverserText outputTraverser, boolean indexed, boolean full, boolean indented) {
     if (tweSlices == null) {
-      Util.warning("TWE set is empty");
       outputStream.println("Empty TWE set");
       return;
     }
-    outputStream.println("TWE Set");
 
     for (int i = 0; i < tweSlices.length; i++) {
       if (tweSlices[i] == null) continue;

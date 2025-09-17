@@ -32,7 +32,7 @@ cfgOptional ::= '('^ cfgAlts ')'^ '?'^ | cfgAltNoAction '?'^
 cfgPositive ::= '('^ cfgAlts ')'^ '+'^ | cfgAltNoAction '+'^  
 cfgKleene   ::= '('^ cfgAlts ')'^ '*'^ | cfgAltNoAction '*'^  
 
-cfgName ::= cfgPrim^^ | cfgPrim ':'^ ID           // second child if present is a local name
+cfgName ::= cfgPrim^^ | cfgPrim ':'^ ID           // second child (if present) is a local name
 cfgPrim ::= 
   cfgNonterminal^^ | cfgCaseSensitiveTerminal^^| cfgCaseInsensitiveTerminal^^ | cfgBuiltinTerminal^^ | cfgBuiltinNoWSTerminal^^ 
 | cfgCharacterTerminal^^ | cfgCharacterSetTerminal^^| cfgCharacterAntiSetTerminal^^ | cfgCharacterOutOfBand^^ | cfgStartOfString^^
@@ -59,8 +59,8 @@ cfgNative ::= STRING_SHRIEK_SHRIEK
 cfgInsert ::= '^+:'^ ID  
 cfgAttribute ::= ID | ID '.'^ ID   
 
+cfgExpressionList ::= cfgExpression | cfgExpression cfgExpressionList^
 cfgExpression ::= __bool^^ | __intAP^^ | __int32^^ | __realAP^^ | __real64^^ | __string^^ | __char^^ | cfgAttribute^^ | ID^^ | ID^^ '('^  cfgExpressionList^ ')'^
-cfgExpressionList ::= cfgExpression | cfgExpression ','^ cfgExpressionList^
 
 cfgSeq ::= #^   // Dirty trick: both cfgAlt and cfgAltNoAction promote cfgSeq to achieve gather operation
 cfgSlot ::= #^  
@@ -75,7 +75,7 @@ trMatch ::= trTopTuple '|>'^ trTopTuple
 trTransition ::= trTopTuple trRelation^ trTopTuple
 trTopTuple ::= trTerm | trTuple^^ trTerm ','^ trTerms^
 trTuple ::= #^  
-trTerms ::= trTerm | trTerm ','^ trTerms^
+trTerms ::= trTerm | trTerm ','^ trTerms^ | trTerm trTerms^ // comma is optional
 
 trTerm ::= 
   __bool^^ | __char^^ | __intAP^^ | __int32^^ | __realAP^^ | __real64^^ | __string^^  // lexical from builtins - see below  
@@ -83,16 +83,16 @@ trTerm ::=
 | ID^^ | IDSTAR^^ | ID^^ '('^ ')'^ | ID^^ '('^ trTerms^ ')'^ | trTuple^^ '<'^ trTerms^ '>'^
 
 __array ::= '['^  __int32 '|'^ ']'^ | '['^ __int32 '|'^ __a ']'^
-__a ::= trTerm | trTerm ','^ __a
+__a ::= trTerm | trTerm ','^ __a | trTerm __a // comma is optional
 
 __list ::= '['^ ']'^ | '['^ __l ']'^
-__l ::= trTerm | trTerm ','^ __l
+__l ::= trTerm | trTerm ','^ __l | trTerm __l // comma is optional
 
 __set  ::= '{'^ '}'^ | '{'^ __s '}'^ 
-__s ::= trTerm | trTerm ','^ __s
+__s ::= trTerm | trTerm ','^ __s | trTerm __s // comma is optional
 
 __map  ::= '{'^ '='^ '}'^  |'{'^ __m '}'^  // Note ugly empty map syntax
-__m ::= trTerm '='^ trTerm | trTerm '='^ trTerm ','^ __m
+__m ::= trTerm '='^ trTerm | trTerm '='^ trTerm ','^ __m | trTerm '='^ trTerm __m // comma is optional
 
 trRelation ::= '->' | '=>' | '~>' | ':->' | ':=>' | ':~>'  
 
@@ -142,8 +142,8 @@ directiveCarrier ::=
 | '!traceLevel'^^ __int32
 | '!errorLevel'^^ __int32
 
-| '!print'^^ displayElements^
-| '!show'^^ displayElements^
+| '!print'^^ trTerms^
+| '!show'^^ trTerms^
 
 | '!clear'^^ IDs^ | '!save'^^ ID ID | '!recall'^^ ID | '!convert'^^ IDs^
 
@@ -175,12 +175,13 @@ IDs ::= ID | ID ','^ IDs^
 
 modes ::= ID | ID ','^ modes^ | 'not' ID | 'not' ID ','^ modes^
 
-configurationElements ::= configurationElement | configurationElement ','^ configurationElements^
-configurationElement ::= ID ':'^ ID
+configurationElements ::= configurationElement | configurationElement configurationElements^
+configurationElement ::= ID '::'^ ID
 
 paraterminalElements ::= paraterminalElement | paraterminalElement ','^ paraterminalElements^
 paraterminalElement  ::= cfgNonterminal^^
 
+(*
 displayElements ::= 
   ID | ID displayElements^ 
 //| termCarrier | termCarrier displayElements 
@@ -188,7 +189,7 @@ displayElements ::=
 | __string | __string displayElements^
 
 termCarrier ::= 'term'^^ trTerm
-
+*)
 (* Lexical elements **********************************************************)
 __bool ::= 'true' | 'false'
 __char ::= &CHAR_BQ
