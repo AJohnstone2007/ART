@@ -558,13 +558,20 @@ public final class ScriptInterpreter {
 
     for (int i = 0; i < iTerms.termArity(iTerms.subterm(term)); i++) {
       int displayTerm = iTerms.subterm(term, i);
-      if (iTerms.termArity(displayTerm) > 0)
-        outputStream.println(iTerms.toString(displayTerm, outputTraverser, indented, depthLimit));
-      else {
-        String displayElement = iTerms.termSymbolString(displayTerm);
+      String displayElement = iTerms.termSymbolString(displayTerm);
+
+      if (iTerms.termArity(displayTerm) > 0) {
+        if (displayElement.equals("__string")) // special case
+          outputStream.println(iTerms.termSymbolString(iTerms.subterm(displayTerm, 0)));
+        else
+          outputStream.println(iTerms.toString(displayTerm, outputTraverser, indented, depthLimit));
+      } else {
         // Util.debug("Processing display element " + displayElement);
 
         switch (displayElement) {
+        case "__array", "__list", "__set", "__map": // This is to handle empty collections
+          outputStream.println(iTerms.toString(displayTerm, outputTraverser, indented, depthLimit));
+          break;
         case "file":
           String filename = iTerms.termSymbolString(iTerms.subterm(term, i, 0));
           Util.info("Redirecting output to file " + filename);
