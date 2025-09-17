@@ -183,7 +183,7 @@ paraterminalElement  ::= cfgNonterminal^^
 
 displayElements ::= 
   ID | ID displayElements^ 
-| termCarrier | termCarrier displayElements 
+//| termCarrier | termCarrier displayElements 
 | file displayElements^ 
 | __string | __string displayElements^
 
