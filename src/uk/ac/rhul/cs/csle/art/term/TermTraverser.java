@@ -11,7 +11,8 @@ import uk.ac.rhul.cs.csle.art.script.ScriptInterpreter;
 public class TermTraverser {
   protected final String name;
   protected final Map<Integer, Consumer<Integer>> opsPreorder;
-  protected final Map<Integer, Consumer<Integer>> opsInorder;
+  protected final Map<Integer, Consumer<Integer>> opsInorderFirst;
+  protected final Map<Integer, Consumer<Integer>> opsInorderRest;
   protected final Map<Integer, Consumer<Integer>> opsPostorder;
   protected final Set<Integer> breakSet;
 
@@ -20,7 +21,8 @@ public class TermTraverser {
     // Util.debug("After term traverser creation " + this);
 
     opsPreorder = new HashMap<>();
-    opsInorder = new HashMap<>();
+    opsInorderFirst = new HashMap<>();
+    opsInorderRest = new HashMap<>();
     opsPostorder = new HashMap<>();
     breakSet = new HashSet<>();
   }
@@ -39,15 +41,24 @@ public class TermTraverser {
     addAction(ScriptInterpreter.iTerms.findString(symbol), preorder, inorder, postorder);
   }
 
+  public void addAction(String symbol, Consumer<Integer> preorder, Consumer<Integer> inorderFirst, Consumer<Integer> inorderRest, Consumer<Integer> postorder) {
+    addAction(ScriptInterpreter.iTerms.findString(symbol), preorder, inorderFirst, inorderRest, postorder);
+  }
+
   public void addActionBreak(String symbol, Consumer<Integer> preorder, Consumer<Integer> inorder, Consumer<Integer> postorder) {
     addAction(ScriptInterpreter.iTerms.findString(symbol), preorder, inorder, postorder);
     addBreak(symbol);
   }
 
+  public void addAction(Integer symbolIndex, Consumer<Integer> preorder, Consumer<Integer> inorderFirst, Consumer<Integer> postorder) {
+    addAction(symbolIndex, preorder, inorderFirst, null, postorder);
+  }
+
   //@formatter:off
-  public void addAction(Integer symbolIndex, Consumer<Integer> preorder, Consumer<Integer> inorder, Consumer<Integer> postorder) {
+  public void addAction(Integer symbolIndex, Consumer<Integer> preorder, Consumer<Integer> inorderFirst, Consumer<Integer> inorderRest, Consumer<Integer> postorder) {
     opsPreorder.put(symbolIndex, preorder == null ? (Integer t) -> {} : preorder);
-    opsInorder.put(symbolIndex, inorder == null ? (Integer t) -> {} : inorder);
+    opsInorderFirst.put(symbolIndex, inorderFirst == null ? (Integer t) -> {} : inorderFirst);
+    opsInorderRest.put(symbolIndex, inorderFirst == null ? (Integer t) -> {} : inorderRest);
     opsPostorder.put(symbolIndex, postorder == null ? (Integer t) -> {} : postorder);
   }
 
@@ -55,6 +66,7 @@ public class TermTraverser {
     for (String s : symbolString) {
 //      Util.info("Setting empty action for " + s);
       addAction(s,
+          (Integer t) -> {},
           (Integer t) -> {},
           (Integer t) -> {},
           (Integer t) -> {});
@@ -87,7 +99,7 @@ public class TermTraverser {
       for (int i = 0; i < length; i++) {
         // System.out.println("Bang! on length " + length + " with i = " + i);
         traverse(children[i]);
-        if (i < lengthLessOne) perform(opsInorder, termIndex);
+        if (i < lengthLessOne) perform(opsInorderFirst, termIndex);
       }
     }
     perform(opsPostorder, termIndex);
@@ -97,9 +109,9 @@ public class TermTraverser {
   public String toString() {
     StringBuilder builder = new StringBuilder();
     builder.append("TermTraverser " + "[opsPreorder=");
-    builder.append(opsInorder.keySet());
+    builder.append(opsInorderFirst.keySet());
     builder.append("\nopsInorder=");
-    builder.append(opsInorder.keySet());
+    builder.append(opsInorderFirst.keySet());
     builder.append("\nopsPostorder=");
     builder.append(opsPostorder.keySet());
     builder.append("\nbreakSet=");

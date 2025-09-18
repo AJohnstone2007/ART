@@ -33,6 +33,15 @@ public class TermTraverserText extends TermTraverser {
   }
   //@formatter:on
 
+  //@formatter:off
+  public void addAction(String symbol, String preorder, String inFirst, String inorderRest, String postorder) {
+    addAction(symbol,
+        (preorder == null ? null : (Integer t) -> sb.append(preorder)),
+        (inFirst == null ? null : (Integer t) -> sb.append(inFirst)),
+        (postorder == null ? null : (Integer t) -> sb.append(postorder)));
+  }
+  //@formatter:on
+
   public void addActionBreak(String symbol, String preorder, String inorder, String postorder) {
     addBreak(symbol);
     addAction(symbol, preorder, inorder, postorder);
@@ -107,7 +116,12 @@ public class TermTraverserText extends TermTraverser {
           sb.append("..");
         else
           traverse(children[childNumber], depth + 1);
-        if (length > 1 && childNumber < length - 1) perform(opsInorder, termIndex);
+        if (length > 1 && childNumber < length - 1) {
+          if (childNumber == 0)
+            perform(opsInorderFirst, termIndex);
+          else
+            perform(opsInorderRest, termIndex);
+        }
       }
     }
 
