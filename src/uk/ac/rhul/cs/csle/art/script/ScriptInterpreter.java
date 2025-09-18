@@ -795,7 +795,7 @@ public final class ScriptInterpreter {
     // __map and __m require special treatment because they don't fit neatly pre/in/post string model, so we shall directly program the underlying actions
     // For __map, the preorder action tests the arity of the term, and appends {= instead of {
     ret.addAction("__map", (Integer t) -> ret.sb.append(iTerms.termArity(t) == 0 ? "{=" : "{"), null, (Integer t) -> ret.sb.append("}"));
-    ret.addAction("__m", null, (Integer t) -> ret.sb.append("="), (Integer t) -> ret.sb.append(","), null);
+    ret.addAction("__m", null, (Integer t) -> ret.sb.append("="), (Integer t) -> ret.sb.append(", "), null);
 
     ret.addActionBreak("__bool", (Integer t) -> ret.appendAlias("", iTerms.termSymbolStringIndex(iTerms.subterm(t, 0)), ""), null, null);
     ret.addActionBreak("__int32", (Integer t) -> ret.appendAlias("", iTerms.termSymbolStringIndex(iTerms.subterm(t, 0)), ""), null, null);
