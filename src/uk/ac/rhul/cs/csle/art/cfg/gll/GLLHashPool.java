@@ -206,6 +206,8 @@ public class GLLHashPool extends HashPool {
         }
       }
     // loadCounts(); // This is very slow!
+    derivations.numberNodes();
+    derivations.choose(chooseRules);
   }
 
   /* Stack handling **********************************************************/

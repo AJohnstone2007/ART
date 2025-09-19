@@ -58,6 +58,8 @@ public final class ScriptInterpreter {
 
   private final AbstractParser scriptParser = new GLLBaseLine(true);
   private final AbstractLexer scriptLexer = new LexerBaseLine();
+  public static CFGRules scriptCFGRules;
+  private static ChooseRules scriptChooseRules;
   private final int scriptParserTerm; // This received the derivation from scriptParser
   private final Map<String, ScriptValue> scriptVariables = new HashMap<>();
   private final int scriptDerivationTerm;
@@ -71,7 +73,6 @@ public final class ScriptInterpreter {
   private final Rewriter currentRewriter = new Rewriter();
   private AbstractInterpreter currentInterpreter = null;
 
-  public static CFGRules scriptCFGRules;
   public static CFGRules currentCFGRules; // scriptTraverser builds CFG rules into this grammar
   public static ChooseRules currentChooseRules = new ChooseRules();
   public static TRRules currentTRRules = new TRRules();
@@ -100,17 +101,13 @@ public final class ScriptInterpreter {
     scriptTraverser.traverse(scriptParserTerm); // Construct the script parser grammar by walking the script parser term from the last bootstrap
     normalise();
     scriptCFGRules = currentCFGRules; // Now we have a usable script parser
+    scriptChooseRules = currentChooseRules;
 
     currentCFGRules = new CFGRules(CFGRulesKind.USER);
     Util.traceLevel = 0;
     Util.errorLevel = 1;
-    scriptParser.parse(scriptString, scriptCFGRules, scriptLexer, null);
-    // Util.debug("Script lexicalisation:\n");
-    // scriptParser.lexer.print(System.out, iTerms.rawTextTraverser, false, false, false);
-    // Util.debug("Script derivations:\n");
-    // scriptParser.derivations.print(System.out, iTerms.rawTextTraverser, false, false, true);
+    scriptParser.parse(scriptString, scriptCFGRules, scriptLexer, scriptChooseRules);
     scriptParser.outcomeReport();
-    scriptParser.derivations.numberNodes();
     if (scriptParser.derivations.ambiguityCheck()) {
       Util.errorLevel = 10;
       Util.error("Script ambiguity");
@@ -582,7 +579,7 @@ public final class ScriptInterpreter {
           break;
 
         case "artDepth": // depth syntax
-          depthLimit = 3;
+          depthLimit = iTerms.termToJavaInteger(iTerms.subterm(term, i, 0));
           break;
 
         default:
@@ -789,8 +786,6 @@ public final class ScriptInterpreter {
 
     currentTryTerm = 0;
     if (currentParser.derivations != null) {
-      currentParser.derivations.numberNodes();
-      currentParser.derivations.choose(currentChooseRules);
       currentStatistics.putTime("ChooseTime");
       currentTryTerm = currentParser.derivations.derivationAsTerm();
       currentStatistics.putTime("TermGenerateTime");
