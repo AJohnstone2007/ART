@@ -51,7 +51,7 @@ public class TermTraverser {
   }
 
   public void addAction(Integer symbolIndex, Consumer<Integer> preorder, Consumer<Integer> inorderFirst, Consumer<Integer> postorder) {
-    addAction(symbolIndex, preorder, inorderFirst, null, postorder);
+    addAction(symbolIndex, preorder, inorderFirst, inorderFirst, postorder);
   }
 
   //@formatter:off

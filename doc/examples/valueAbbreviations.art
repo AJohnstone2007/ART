@@ -1,47 +1,57 @@
 !print "** The term a(b,c) with no abbreviations"
 !print a(b,c) 
-!print raw a(b,c) 
-(*
-!print "** __bool true"
+!print raw a(b,c)
+ 
+!print "\n** __bool true"
 !print true
 !print raw true
 !print "** __bool false"
 !print false
 !print raw false
-*)
-!print "** __char `a"
+
+!print "\n** __char `a"
 !print `a
 !print raw `a
-!print "** __intAP 1234"
+
+!print "\n** __intAP 1234"
 !print £1234
 !print raw £1234
-!print "** __int32 1234"
+
+!print "\n** __int32 1234"
 !print 1234
 !print raw 1234
-!print "** __realAP 1234.0"
+
+!print "\n** __realAP 1234.0"
 !print £1234.0
 !print raw £1234.0
-!print "** __real64 1234.0"
+
+!print "\n** __real64 1234.0"
 !print 1234.0
 !print raw 1234.0
-!print "** __array of size 3 a,b,c"
+
+!print "\n** __string 1234"
+!print x("1234")
+!print raw x("1234")
+
+!print "\n** __array of size 3 a,b,c"
 !print [3 | a,b,c ]
 !print raw [ 3 | a,b,c]
-!print "** __list a,b,c"
+
+!print "\n** __list a,b,c"
 !print [ a,b,c ]
 !print raw [ a,b,c]
 !print "** empty list"
 !print [ ]
 !print raw [ ]
-!print "** __set a,b,c"
+
+!print "\n** __set a,b,c"
 !print { a,b,c }
 !print raw { a,b,c }
-
 !print "** empty set"
 !print { }
 !print raw { }
 
-!print "** __map a=p, b=q, c=r"
+!print "\n** __map a=p, b=q, c=r"
 !print { a=p, b=q, c=r }
 !print raw { a=p, b=q, c=r }
 !print "** empty map"

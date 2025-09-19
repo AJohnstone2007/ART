@@ -1,12 +1,13 @@
-(* ART script grammar rules - suitable for RDSOB parsers: No left recursive rules; Alterates in decreasing length order;   directive at end of each rule *)
+(* ART script grammar rules - mostly suitable for RDSOB parsers: No left recursive rules; Alterates in decreasing length order;   directive at end of each rule *)
 !clear chooseRules  // remove default lexical choice
 !parser gll
 //!parser rdsobFunction // Uncomment this line to try bootstrapping with Recursive Descent Singleton Ordered Backtracking parser instead of default GLL parser
 !whitespace &SIMPLE_WHITESPACE, &COMMENT_NEST_ART, &COMMENT_LINE_C 
 
-// We want to let MGLL resolve ambiguities at derivation level, butthe boolean literals might best be handled at lexical level
+// We want to let MGLL resolve ambiguities at derivation level, butthe boolean literals might best be handled at lexical level,and our depth rule also needs priority
 'true' > &ID
 'false' > &ID
+trTermFiles ::= artDepth trTermFiles . > trTermFiles ::= trTerm trTermFiles .
 
 rules ::= rule rules^ | rule
 rule  ::= cfgRule^^ | trRule^^ | chooseRule^^ | directive^^   
@@ -81,6 +82,9 @@ trTransition ::= trTopTuple trRelation^ trTopTuple
 trTopTuple ::= trTerm | trTuple^^ trTerm ','^ trTerms^
 trTuple ::= #^  
 trTerms ::= trTerm | trTerm ','^ trTerms^ | trTerm trTerms^ // comma is optional
+trTermFiles ::= trTerm | trTerm trTermFiles^ | artFile | artFile trTermFiles^ | artDepth | artDepth trTermFiles^
+
+artDepth ::= 'depth'^ __int32
 
 trTerm ::= 
   __bool^^ | __char^^ | __intAP^^ | __int32^^ | __realAP^^ | __real64^^ | __string^^  // lexical from builtins - see below  
@@ -147,8 +151,8 @@ directiveCarrier ::=
 | '!traceLevel'^^ __int32
 | '!errorLevel'^^ __int32
 
-| '!print'^^ trTerms^
-| '!show'^^ trTerms^
+| '!print'^^ trTermFiles^
+| '!show'^^ trTermFiles^
 
 | '!clear'^^ IDs^ | '!save'^^ ID ID | '!recall'^^ ID | '!convert'^^ IDs^
 
@@ -167,14 +171,14 @@ directiveCarrier ::=
 
 | '!start'^^ cfgNonterminal | '!start'^^ trRelation // Set parser start nonterminal or rewriter start relation
 
-| '!try'^^ file       | '!try'^^ file '='^ trTopTuple 
+| '!try'^^ artFile       | '!try'^^ artFile '='^ trTopTuple 
 | '!try'^^ trTopTuple | '!try'^^ trTopTuple '='^ trTopTuple
 
 (* Research features *)
 | '!deleteTokens'^^ __int32 | '!swapTokens'^^ __int32 
 | '!sppfBreakCycles'^^ | '!sppfBreakCyclesRelation'^^
 
-file ::= &STRING_SQ
+artFile ::= &STRING_SQ
 
 IDs ::= ID | ID ','^ IDs^
 
@@ -190,7 +194,7 @@ paraterminalElement  ::= cfgNonterminal^^
 displayElements ::= 
   ID | ID displayElements^ 
 //| termCarrier | termCarrier displayElements 
-| file displayElements^ 
+| artFile displayElements^ 
 | __string | __string displayElements^
 
 termCarrier ::= 'term'^^ trTerm
