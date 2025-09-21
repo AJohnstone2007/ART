@@ -161,7 +161,8 @@ directiveCarrier ::=
 | '!whitespace'^^ cfgPrims^
 | '!paraterminal'^^ paraterminalElements^
 
-| '!configuration'^^ trRelation configurationElements
+| '!configuration'^^ trRelation typedIDs
+| '!signature'^^ ID '('^ typedIDs ')'^ type
 | '!final'^^ trRelation trTerms
 
 | '!lexer'^^ ID | '!parser'^^ ID | '!interpreter'^^ ID 
@@ -181,24 +182,19 @@ directiveCarrier ::=
 artFile ::= &STRING_SQ
 
 IDs ::= ID | ID ','^ IDs^
+typedIDs ::= typedID | typedID ','^ typedIDs
+typedID ::= ID '::' type
+type ::= 
+  'any' | 'cmd' | 'expr' 
+| '__bool' |'__char' | '__intAP' | '__int32' | '__realAP' | '__real64' | '__string' 
+| typeCollection^
+typeCollection ::= '__array' | '__list' | '__set' | '__map'
 
 modes ::= ID | ID ','^ modes^ | 'not' ID | 'not' ID ','^ modes^
-
-configurationElements ::= configurationElement | configurationElement configurationElements^
-configurationElement ::= ID '::'^ ID
 
 paraterminalElements ::= paraterminalElement | paraterminalElement ','^ paraterminalElements^
 paraterminalElement  ::= cfgNonterminal^^
 
-(*
-displayElements ::= 
-  ID | ID displayElements^ 
-//| termCarrier | termCarrier displayElements 
-| artFile displayElements^ 
-| __string | __string displayElements^
-
-termCarrier ::= 'term'^^ trTerm
-*)
 (* Lexical elements **********************************************************)
 __bool ::= 'true' | 'false'
 __char ::= &CHAR_BQ

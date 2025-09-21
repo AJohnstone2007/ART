@@ -73,7 +73,7 @@ public abstract class AbstractRelation<T1, T2> {
 
   public String toStringDot() {
     StringBuilder sb = new StringBuilder();
-    sb.append("digraph \"GDG\" {\n"
+    sb.append("digraph \"From ART\" {\n"
         + "graph[ordering=out ranksep=0.1]\n node[fontname=Helvetica fontsize=9 shape=box height=0 width=0 margin=0.04 color=gray]\nedge[arrowsize=0.1 color=gray]");
 
     for (T1 t1 : getDomain())

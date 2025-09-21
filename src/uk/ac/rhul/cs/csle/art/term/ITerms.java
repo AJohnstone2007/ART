@@ -73,6 +73,7 @@ public final class ITerms {
   public TermTraverserText rawTextTraverser = new TermTraverserText(this, "Default iTerms raw traverser"); // This is intended for debugging - show the raw term
   public TermTraverserText plainTextTraverser; // Plain text pretty printer - loaded by user
   public TermTraverserLaTeX latexTraverser; // LaTeX pretty printer - loaded by user
+  public TermTraverserText cssTraverser; // HTML CSS pretty printer - loaded by user
 
   private final Map<String, Integer> stringToIndex = new HashMap<>(); // Each unique string is mapped onto the naturals
   private final Map<Integer, String> indexToString = new HashMap<>(); // Reverse map for recovering the strings
