@@ -37,6 +37,7 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
   public final CFGRulesKind cfgRulesKind;
   public Set<Character> characterSet = new HashSet<>();
   public final Map<CFGElement, CFGElement> elements = new TreeMap<>(); // We use a map for elements because we need there to be one canonical instance
+  public final Map<String, Set<Integer>> signatures = new TreeMap<>(); // A set of signatures for each constructor keyed on constructor name
   public final Set<CFGElement> paraterminals = new TreeSet<>();
   public final Set<CFGElement> declaredAsTokens = new TreeSet<>();
   public boolean seenWhitespaceDirective = false;
@@ -103,6 +104,7 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
 
   public CFGRules(CFGRulesKind cfgRulesKind) { // Ab initio constructor for an empty rules set
     cfgRulesNumber = nextFreeCFGRulesNumber++;
+    // Util.debug("Primary CFGRules constructor " + cfgRulesNumber + " " + cfgRulesKind);
     this.cfgRulesKind = cfgRulesKind;
     // Util.debug("Constructing cfgRulesNumber " + cfgRulesNumber + " " + cfgRulesKind);
     epsilonElement = findElement(CFGElementKind.EPSILON, "#"); // We are not using an initialiser block because elements must be initialised first
@@ -121,9 +123,9 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
   private final Map<String, Integer> terminalNumbers = new TreeMap<>();
 
   public CFGRules(CFGRules src, CFGRulesKind cfgRulesKind, boolean character, boolean createParaterminals, boolean bnfLeft, boolean bnfRight) {
-    if (src.cfgRulesKind == CFGRulesKind.USER) src.normalise();
     cfgRulesNumber = nextFreeCFGRulesNumber++;
     this.cfgRulesKind = cfgRulesKind; // Do not preserve the original kind
+    // Util.debug("Copy CFGRules constructor made " + cfgRulesNumber + " " + cfgRulesKind);
     // Util.debug("Copy constructing cfgRulesNumber " + cfgRulesNumber + " " + cfgRulesKind + " with parentnumber " + src.cfgRulesNumber);
     epsilonElement = findElement(CFGElementKind.EPSILON, "#"); // We are not using an initialiser block because elements must be initialised first
     endOfStringElement = findElement(CFGElementKind.EOS, "$");
@@ -261,8 +263,11 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
 
   public void normalise() { // Compute the fields that are not directly set by the script interpeter
     if (clean) return;
-    // Util.debug("Normalising cfgRulesNumber " + nextFreeCFGRulesNumber + " " + cfgRulesKind);
-    if (!seenWhitespaceDirective) whitespaces.add(findElement(CFGElementKind.TRM_BI, "SIMPLE_WHITESPACE"));
+    // Util.debug("Normalising cfgRulesNumber " + cfgRulesNumber + " " + cfgRulesKind);
+    if (!seenWhitespaceDirective) {
+      Util.info("Adding default whitespace handling");
+      whitespaces.add(findElement(CFGElementKind.TRM_BI, "SIMPLE_WHITESPACE"));
+    }
 
     derivesExactly = new Relation<CFGElement, CFGElement>();
 
@@ -434,13 +439,13 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
 
     // Construct lexer and parser subgrammars ONLY if we are a USER grammar
     // Note, by the time we get here, we are fully normalised so the subgrammars can use our reachability information
-    if (cfgRulesKind == CFGRulesKind.USER) {
-      cfgRulesLexer = new CFGRules(this, CFGRulesKind.LEXER, false, false, false, false);
-      cfgRulesLexer.normalise(); // recurse only once for the lexer grammar
-      cfgRulesParser = new CFGRules(this, CFGRulesKind.PARSER, false, false, false, false);
-      cfgRulesParser.normalise(); // recurse only once for the parser grammar
-      subGrammarConsistencyCheck();
-    }
+    // if (cfgRulesKind == CFGRulesKind.USER) {
+    // cfgRulesLexer = new CFGRules(this, CFGRulesKind.LEXER, false, false, false, false);
+    // cfgRulesLexer.normalise(); // recurse only once for the lexer grammar
+    // cfgRulesParser = new CFGRules(this, CFGRulesKind.PARSER, false, false, false, false);
+    // cfgRulesParser.normalise(); // recurse only once for the parser grammar
+    // subGrammarConsistencyCheck();
+    // }
   }
 
   private void computeLHSOf(CFGElement lhs, CFGNode cfgNode, CFGNode topNode) {
@@ -1076,6 +1081,7 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
 
   @Override
   public void print(PrintStream outputStream, TermTraverserText outputTraverser, boolean indexed, boolean full, boolean indented) {
+    normalise();
     outputStream.print("(* " + (isEmpty() ? "Empty " : "") + cfgRulesKind + " Context Free Grammar rules *)\n");
 
     if (!characterSet.isEmpty()) {
@@ -1237,6 +1243,7 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
 
   @Override
   public void show(PrintStream outputStream, TermTraverserText outputTraverser, boolean indexed, boolean full, boolean indented) {
+    normalise();
     outputStream.print("digraph \"Reference grammar\"\n" + "{\n" + "graph[ordering=out ranksep=0.1]\n"
         + "node[fontname=Helvetica fontsize=9 shape=box height = 0 width = 0 margin= 0.04 color=gray]\n"
         + "edge[fontname=Helvetica fontsize=9 arrowsize = 0.3 color=gray]\n\n");
@@ -1275,4 +1282,11 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
     // TODO Auto-generated method stub
   }
 
+  public void addSignature(int term) {
+    String constructor = ScriptInterpreter.iTerms.termSymbolString(term);
+
+    if (signatures.get(constructor) == null) signatures.put(constructor, new HashSet<Integer>());
+
+    signatures.get(constructor).add(term);
+  }
 }

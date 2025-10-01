@@ -10,6 +10,7 @@ import uk.ac.rhul.cs.csle.art.util.Util;
 
 public class Statistics implements DisplayInterface {
   private final Map<String, Object> elements = new LinkedHashMap<>();
+  private long previousTime;
 
   public Statistics(String... elementKeys) {
     for (var k : elementKeys)
@@ -17,15 +18,16 @@ public class Statistics implements DisplayInterface {
   }
 
   public void put(String k, Object v) {
-    if (!elements.keySet().contains(k))
-      // Util.warning("Statistics.put() passed unknown key " + k)
-      ;
-    else
-      elements.put(k, v);
+    Util.trace(8, k + ":" + v);
+    elements.put(k, v);
+  }
+
+  public void setBaseTime() {
+    previousTime = System.nanoTime();
   }
 
   public void putTime(String key) {
-    put(key, System.nanoTime());
+    put(key, (System.nanoTime() - previousTime) / 1E9);
   }
 
   public Object get(String k) {
@@ -40,7 +42,7 @@ public class Statistics implements DisplayInterface {
   public void print(PrintStream outputStream, TermTraverserText outputTraverser, boolean indexed, boolean full, boolean indented) {
     for (var k : elements.keySet())
       outputStream.print(k + ",");
-
+    outputStream.println();
     for (var k : elements.keySet())
       outputStream.print(elements.get(k) + ",");
   }

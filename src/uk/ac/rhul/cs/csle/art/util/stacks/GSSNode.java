@@ -8,8 +8,8 @@ import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
 public class GSSNode extends AbstractStackNode {
   public final CFGNode cfgNode;
   final int inputIndex;
-  public final Set<GSSEdge> edges = new HashSet<>();
-  public final Set<PopSetElement> pops = new HashSet<>();
+  public final Set<GSSEdge> edges = new HashSet<>(150);
+  public final Set<PopSetElement> pops = new HashSet<>(75);
 
   @Override
   public CFGNode getGrammarNode() {

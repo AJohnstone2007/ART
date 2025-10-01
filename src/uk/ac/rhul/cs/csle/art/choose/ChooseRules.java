@@ -265,6 +265,7 @@ public class ChooseRules implements DisplayInterface {
 
   @Override
   public void print(PrintStream outputStream, TermTraverserText outputTraverser, boolean indexed, boolean full, boolean indented) {
+    normalise();
     printLexicalRelation(lexicalHigher, ">", outputStream, outputTraverser, indexed, full, indented);
     printDerivationRelation(derivationHigher, ">", outputStream, outputTraverser, indexed, full, indented);
     printLexicalRelation(lexicalLonger, ">>", outputStream, outputTraverser, indexed, full, indented);
@@ -275,6 +276,7 @@ public class ChooseRules implements DisplayInterface {
 
   @Override
   public void show(PrintStream outputStream, TermTraverserText outputTraverser, boolean indexed, boolean full, boolean indented) {
+    normalise();
     // TODO Auto-generated method stub
 
   }

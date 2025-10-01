@@ -663,7 +663,7 @@ public abstract class AbstractLexer implements DisplayInterface {
   protected void match_STRING_SQ() {
     if (peekCh() != '\'') return;
     do {
-      if (peekCh() == '\0') {
+      if (peekCh() == '\0' || peekCh() == '\n') {
         lexicalError("Unterminated ' ... ' string", lexemeStart);
         return;
       }
@@ -675,11 +675,7 @@ public abstract class AbstractLexer implements DisplayInterface {
   protected void match_STRING_PLAIN_SQ() {
     if (peekCh() != '\'') return;
     do {
-      if (peekCh() == '\n') {
-        lexicalError("Newline character in ' ... ' string", lexemeStart);
-        return;
-      }
-      if (peekCh() == '\0') {
+      if (peekCh() == '\0' || peekCh() == '\n') {
         lexicalError("Unterminated ' ... ' string", lexemeStart);
         return;
       }
@@ -691,7 +687,7 @@ public abstract class AbstractLexer implements DisplayInterface {
   protected void match_STRING_DQ() {
     if (peekCh() != '"') return;
     do {
-      if (peekCh() == '\0') {
+      if (peekCh() == '\0' || peekCh() == '\n') {
         lexicalError("Unterminated \" ... \" string", lexemeStart);
         return;
       }
@@ -715,7 +711,7 @@ public abstract class AbstractLexer implements DisplayInterface {
   protected void match_STRING_DOLLAR() {
     if (peekCh() != '$') return;
     do {
-      if (peekCh() == '\0') {
+      if (peekCh() == '\0' || peekCh() == '\n') {
         lexicalError("Unterminated $ ... $ string", lexemeStart);
         return;
       }
@@ -727,7 +723,7 @@ public abstract class AbstractLexer implements DisplayInterface {
   protected void match_STRING_SHRIEK_SHREIK() {
     if (!(peekCh() == '!' && peekOneCh() == '!')) return;
     do {
-      if (peekCh() == '\0') {
+      if (peekCh() == '\0' || peekCh() == '\n') {
         lexicalError("Unterminated !! ... !! string", lexemeStart);
         return;
       }
@@ -743,7 +739,7 @@ public abstract class AbstractLexer implements DisplayInterface {
     do {
       if (peekCh() == '[') nestLevel++;
       if (peekCh() == ']') nestLevel--;
-      if (peekCh() == '\0') {
+      if (peekCh() == '\0' || peekCh() == '\n') {
         lexicalError("Unterminated nestable [ ... ] string", lexemeStart);
         return;
       }
@@ -755,7 +751,7 @@ public abstract class AbstractLexer implements DisplayInterface {
   protected void match_STRING_BRACKET() {
     if (peekCh() != '[') return;
     do {
-      if (peekCh() == '\0') {
+      if (peekCh() == '\0' || peekCh() == '\n') {
         lexicalError("Unterminated [ ... ] string", lexemeStart);
         return;
       }
@@ -767,7 +763,7 @@ public abstract class AbstractLexer implements DisplayInterface {
   protected void match_STRING_BRACE() {
     if (peekCh() != '{') return;
     do {
-      if (peekCh() == '\0') {
+      if (peekCh() == '\0' || peekCh() == '\n') {
         lexicalError("Unterminated { ... } string", lexemeStart);
         return;
       }
@@ -782,7 +778,7 @@ public abstract class AbstractLexer implements DisplayInterface {
     do {
       if (peekCh() == '{') nestLevel++;
       if (peekCh() == '}') nestLevel--;
-      if (peekCh() == '\0') {
+      if (peekCh() == '\0' || peekCh() == '\n') {
         lexicalError("Unterminated nestable { ... } string", lexemeStart);
         return;
       }
@@ -794,7 +790,7 @@ public abstract class AbstractLexer implements DisplayInterface {
   protected void match_STRING_BB() {
     if (!((peekCh() == '[') && (peekOneCh() == '['))) return;
     do {
-      if (peekCh() == '\0') {
+      if (peekCh() == '\0' || peekCh() == '\n') {
         lexicalError("Unterminated [[ ... ]] string", lexemeStart);
         return;
       }

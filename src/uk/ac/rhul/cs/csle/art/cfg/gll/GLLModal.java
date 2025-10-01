@@ -37,14 +37,22 @@ public class GLLModal extends AbstractParser {
     stacks = new GSSGLL(cfgRules);
     derivations = ScriptInterpreter.currentModes.contains("recogniser") ? new SPPFDummyForRecognisers(this) : new SPPF(this);
 
+    int loops = 0;
+
     lexer.lex(input, cfgRules, chooseRules);
+    ScriptInterpreter.currentStatistics.putTime("Lexer time");
+    if (ScriptInterpreter.currentModes.contains("stopafterlexer")) {
+      Util.info("!try stopped after lexer");
+      return;
+    }
     inputIndex = 0;
     cfgNode = cfgRules.elementToRulesNodeMap.get(cfgRules.startNonterminal).alt;
     stackNode = stacks.getRoot();
     derivationNode = null;
     queueProductionTasks();
-    nextTask: while (nextTask())
-      nextCFGNode: while (true) {
+    nextTask: while (nextTask()) {
+      if ((++loops) % 1000000 == 0 && Util.traceLevel >= 8) printCardinalities(System.out);
+      nextCFGNode: while (true) 
         switch (cfgNode.cfgElement.cfgKind) {
         case ALT:
           queueProductionTasks(); // Create task descriptor for the start of each production - is this needed for BNF?
@@ -80,6 +88,7 @@ public class GLLModal extends AbstractParser {
           Util.fatal("Unexpected CFGNode kind " + cfgNode.cfgElement.cfgKind + " in " + getClass().getSimpleName());
         }
       }
+    
     derivations.numberNodes();
     derivations.choose(chooseRules);
   }
@@ -168,7 +177,7 @@ public class GLLModal extends AbstractParser {
 
   @Override
   public void printCardinalities(PrintStream outputStream) {
-    outputStream.println(name() + ": characters:" + fmt(input.length()) + " TWEs:" + fmt(lexer.cardinality()) + " tasks:" + fmt(tasks.cardinality())
+    outputStream.println(">> " + name() + ": characters:" + fmt(input.length()) + " TWEs:" + fmt(lexer.cardinality()) + " tasks:" + fmt(tasks.cardinality())
         + " stackNodes:" + fmt(stacks.nodeCardinality()) + " stackEdges:" + fmt(stacks.edgeCardinality()) + " pops:" + fmt(stacks.popCardinality()) + " BSRs:"
         + fmt(derivations.bsrCardinality()));
   }

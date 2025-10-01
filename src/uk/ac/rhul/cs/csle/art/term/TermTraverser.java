@@ -90,7 +90,7 @@ public class TermTraverser {
   }
 
   public void traverse(int termIndex) {
-    // Util.info("traverse() at term " + ScriptTermInterpreter.iTerms.toRawString(termIndex));
+    // Util.info("traverse() at term " + ScriptInterpreter.iTerms.toRawString(termIndex));
     perform(opsPreorder, termIndex);
     int[] children = ScriptInterpreter.iTerms.termChildren(termIndex);
     int length = children.length;

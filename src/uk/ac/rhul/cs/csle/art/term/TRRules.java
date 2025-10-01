@@ -380,12 +380,14 @@ public class TRRules implements DisplayInterface {
 
   @Override
   public void print(PrintStream outputStream, TermTraverserText outputTraverser, boolean indexed, boolean full, boolean indented) {
+    normalise();
     // TODO Auto-generated method stub
 
   }
 
   @Override
   public void show(PrintStream outputStream, TermTraverserText outputTraverser, boolean indexed, boolean full, boolean indented) {
+    normalise();
     // TODO Auto-generated method stub
 
   }

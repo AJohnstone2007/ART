@@ -98,9 +98,8 @@ public class TermTraverserText extends TermTraverser {
   }
 
   public void traverse(int termIndex, int depth) {
-    // Util.info("Text traverser at term " + termIndex + " labeled " + ScriptTermInterpreter.iTerms.termSymbolStringIndex(termIndex) + ":" +
-    // ScriptTermInterpreter.iTerms.termSymbolString(termIndex) + "$"
-    // + " and string " + sb);
+    // Util.info("Text traverser at term " + termIndex + " labeled " + ScriptInterpreter.iTerms.termSymbolStringIndex(termIndex) + ":"
+    // + ScriptInterpreter.iTerms.termSymbolString(termIndex) + "$" + " and string " + sb);
     if (indent) {
       sb.append("\n");
       for (int i = 0; i < depth; i++)

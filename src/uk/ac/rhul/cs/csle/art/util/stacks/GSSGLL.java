@@ -13,7 +13,7 @@ import uk.ac.rhul.cs.csle.art.util.statistics.Statistics;
 import uk.ac.rhul.cs.csle.art.util.tasks.AbstractTasks;
 
 public class GSSGLL extends AbstractStacks {
-  public Map<GSSNode, GSSNode> nodes = new HashMap<>();
+  public Map<GSSNode, GSSNode> nodes = new HashMap<>(100000);
   public GSSNode root;
 
   public GSSGLL(CFGRules cfgRules) {

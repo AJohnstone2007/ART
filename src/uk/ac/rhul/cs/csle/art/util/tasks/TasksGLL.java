@@ -18,7 +18,7 @@ public class TasksGLL extends AbstractTasks {
   private final Deque<DescriptorGLL> descriptorQueue;
 
   public TasksGLL() {
-    descriptors = new HashSet<>();
+    descriptors = new HashSet<>(20000000);
     descriptorQueue = new LinkedList<>();
   }
 

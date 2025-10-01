@@ -5,6 +5,7 @@ import java.io.PrintStream;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGRules;
 import uk.ac.rhul.cs.csle.art.cfg.lexer.AbstractLexer;
 import uk.ac.rhul.cs.csle.art.choose.ChooseRules;
+import uk.ac.rhul.cs.csle.art.script.ScriptInterpreter;
 import uk.ac.rhul.cs.csle.art.util.Util;
 import uk.ac.rhul.cs.csle.art.util.derivations.AbstractDerivations;
 import uk.ac.rhul.cs.csle.art.util.stacks.AbstractStacks;
@@ -23,7 +24,7 @@ public abstract class AbstractParser {
   public abstract void parse(String input, CFGRules cfgRules, AbstractLexer lexer, ChooseRules chooseRules);
 
   public void outcomeReport() {
-    if (lexer.tweSlices == null) return; // A lexical error will already have been reported
+    if (lexer.tweSlices == null || ScriptInterpreter.currentModes.contains("stopafterlexer")) return; // A lexical error will already have been reported
 
     if (inLanguage)
       Util.trace(1, name() + " accept");
@@ -35,6 +36,7 @@ public abstract class AbstractParser {
         Util.error(Util.echo(name() + " syntax error ", lexer.tweSlices[widestIndex][0].leftExtent, lexer.inputString));
       }
     }
+    if (Util.traceLevel >= 8) printCardinalities(System.out);
   }
 
   protected String name() {
