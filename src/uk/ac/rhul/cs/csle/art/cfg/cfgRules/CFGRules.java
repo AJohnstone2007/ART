@@ -125,7 +125,7 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
   public CFGRules(CFGRules src, CFGRulesKind cfgRulesKind, boolean character, boolean createParaterminals, boolean bnfLeft, boolean bnfRight) {
     cfgRulesNumber = nextFreeCFGRulesNumber++;
     this.cfgRulesKind = cfgRulesKind; // Do not preserve the original kind
-    // Util.debug("Copy CFGRules constructor made " + cfgRulesNumber + " " + cfgRulesKind);
+    // Util.debug("Copy CFGRules constructor " + cfgRulesNumber + " " + cfgRulesKind);
     // Util.debug("Copy constructing cfgRulesNumber " + cfgRulesNumber + " " + cfgRulesKind + " with parentnumber " + src.cfgRulesNumber);
     epsilonElement = findElement(CFGElementKind.EPSILON, "#"); // We are not using an initialiser block because elements must be initialised first
     endOfStringElement = findElement(CFGElementKind.EOS, "$");
@@ -895,9 +895,6 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
 
   /* Action routines called from the script term traverser */
   public CFGElement findElement(CFGElementKind kind, String s) {
-    if (s == null) {
-      Util.debug("bang");
-    }
     CFGElement candidate = new CFGElement(kind, s);
     if (elements.get(candidate) == null) elements.put(candidate, candidate);
     var ret = elements.get(candidate);

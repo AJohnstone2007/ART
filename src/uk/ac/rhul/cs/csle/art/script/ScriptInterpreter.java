@@ -106,6 +106,8 @@ public final class ScriptInterpreter {
     scriptChooseRules = currentChooseRules;
 
     currentCFGRules = new CFGRules(CFGRulesKind.USER);
+    currentChooseRules = new ChooseRules();
+    // currentCFGRules.print(System.err, null, false, true, false);
     Util.traceLevel = 0;
     Util.errorLevel = 1;
     scriptParser.parse(scriptString, scriptCFGRules, scriptLexer, scriptChooseRules);
