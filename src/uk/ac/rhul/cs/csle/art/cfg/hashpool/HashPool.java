@@ -77,7 +77,7 @@ public abstract class HashPool extends AbstractParser { // Uncomment this line f
    * Future extension: rehash function when load factor exceeds threshold
    */
 
-  protected int[] clean(int[] hashTable, int bucketCount) {
+  protected int[] clear(int[] hashTable, int bucketCount) {
     if (hashTable == null) return new int[bucketCount];
 
     for (int i = 0; i < hashTable.length; i++)

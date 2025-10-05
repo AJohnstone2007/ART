@@ -56,6 +56,24 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
       CFGElementKind.END, CFGElementKind.PAR, CFGElementKind.OPT, CFGElementKind.POS, CFGElementKind.KLN);
   private final static Set<CFGElementKind> doNotCloneKinds = Set.of(CFGElementKind.ALT, CFGElementKind.END, CFGElementKind.PAR, CFGElementKind.OPT,
       CFGElementKind.POS, CFGElementKind.KLN);
+  public static final int SOS = 0;
+  public static final int EOS = 1;
+  public static final int EPSILON = 2;
+  public static final int TRM_CS = 3;
+  public static final int TRM_CI = 4;
+  public static final int TRM_BI = 5;
+  public static final int TRM_CH = 6;
+  public static final int TRM_CH_UIB = 7;
+  public static final int TRM_CH_UOB = 8;
+  public static final int TRM_CH_SET = 9;
+  public static final int TRM_CH_ANTI_SET = 10;
+  public static final int NONTERMINAL = 11;
+  public static final int ALT = 12;
+  public static final int END = 13;
+  public static final int PAR = 14;
+  public static final int OPT = 15;
+  public static final int POS = 16;
+  public static final int KLN = 17;
 
   // Fields that are computed by !try or normalise() and thus do not need to be cloned
   private int nextFreeEnumerationElement;
@@ -949,7 +967,11 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
     clean = false;
   }
 
-  /** Support for table driven parsers ***************************************/
+  /** Support for table driven parsers sich as GLLHashPool ***************************************/
+  public static void main(String[] args) {
+    for (var v : CFGElementKind.values())
+      System.out.println("public static final int " + v + "=" + v.ordinal() + ";");
+  }
 
   public int[] makeKindsArray() {
     int ret[] = new int[nextFreeEnumerationElement];

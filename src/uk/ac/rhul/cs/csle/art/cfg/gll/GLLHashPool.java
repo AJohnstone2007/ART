@@ -1,9 +1,9 @@
 package uk.ac.rhul.cs.csle.art.cfg.gll;
 
+import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.Map;
 
-import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGElementKind;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGRules;
 import uk.ac.rhul.cs.csle.art.cfg.hashpool.HashPool;
 import uk.ac.rhul.cs.csle.art.cfg.lexer.AbstractLexer;
@@ -12,6 +12,7 @@ import uk.ac.rhul.cs.csle.art.script.ScriptInterpreter;
 import uk.ac.rhul.cs.csle.art.util.Util;
 
 public class GLLHashPool extends HashPool {
+  int loops;
   // Tabular copies of grammar information installed by setGrammar()
   int endOfStringNodeNi;
   int startNonterminalNodeNi;
@@ -20,12 +21,6 @@ public class GLLHashPool extends HashPool {
   int seqOf[];
   int targetOf[];
   int elementOf[];
-  // !!! Alert - this must have changed because of SOS
-  final int T = 1; // This is a bit weird - these constants must be compile time so that we can use them in a switch statement, and GKind.T.ordinal() is
-                   // runtime, so we hardcode and check for agreement with the runtime values below
-  final int EPS = 5;
-  final int N = 6;
-  final int END = 8;
 
   /** Constant field offsets. In each case, offset zero links to next in hash chain ********/
   final int gssNode_gn = 1; // Key
@@ -109,6 +104,8 @@ public class GLLHashPool extends HashPool {
 
   /* Parser ******************************************************************/
   private void initialise() {
+    // 0. Defensive programming - make sure we've not messed up the enumeration value
+
     // 1. Make local references to grammar tables
     endOfStringNodeNi = cfgRules.endOfStringNode.num;
     startNonterminalNodeNi = cfgRules.elementToRulesNodeMap.get(cfgRules.startNonterminal).num;
@@ -117,11 +114,6 @@ public class GLLHashPool extends HashPool {
     seqOf = cfgRules.makeSeqsArray();
     targetOf = cfgRules.makeCallTargetsArray();
     elementOf = cfgRules.makeElementOfArray();
-    // Defensive programming - make sure we've not messed up the enumeration value
-    if (T != CFGElementKind.TRM_CS.ordinal()) Util.fatal("Enumeration mismatch for T - check ParserHashPool.java for consistency with Kind enumeration");
-    if (EPS != CFGElementKind.EPSILON.ordinal()) Util.fatal("Enumeration mismatch for EPS - check ParserHashPool.java for consistency with Kind enumeration");
-    if (N != CFGElementKind.NONTERMINAL.ordinal()) Util.fatal("Enumeration mismatch for N - check ParserHashPool.java for consistency with Kind enumeration");
-    if (END != CFGElementKind.END.ordinal()) Util.fatal("Enumeration mismatch for END - check ParserHashPool.java for consistency with Kind enumeration");
 
     // 1a. (Debug): print precomputed tables
     // Util.debug("CFGRules:" + cfgRules);
@@ -136,26 +128,26 @@ public class GLLHashPool extends HashPool {
     // Util.debug("targetOf[" + i + "]=" + targetOf[i]);
     // for (int i = 0; i < elementOf.length; i++)
     // Util.debug("elementOf[" + i + "]=" + elementOf[i] + " ");
-
     // 2. Clean hash pool and tables
+
     initialisehashPool();
     descriptorBucketCount = descriptorBucketInitialCount;
-    descriptorBuckets = clean(descriptorBuckets, descriptorBucketCount);
+    descriptorBuckets = clear(descriptorBuckets, descriptorBucketCount);
 
     gssNodeBucketCount = gssNodeBucketInitialCount;
-    gssNodeBuckets = clean(gssNodeBuckets, gssNodeBucketCount);
+    gssNodeBuckets = clear(gssNodeBuckets, gssNodeBucketCount);
 
     gssEdgeBucketCount = gssEdgeBucketInitialCount;
-    gssEdgeBuckets = clean(gssEdgeBuckets, gssEdgeBucketCount);
+    gssEdgeBuckets = clear(gssEdgeBuckets, gssEdgeBucketCount);
 
     popElementBucketCount = popElementBucketInitialCount;
-    popElementBuckets = clean(popElementBuckets, popElementBucketCount);
+    popElementBuckets = clear(popElementBuckets, popElementBucketCount);
 
     sppfNodeBucketCount = sppfNodeBucketInitialCount;
-    sppfNodeBuckets = clean(sppfNodeBuckets, sppfNodeBucketCount);
+    sppfNodeBuckets = clear(sppfNodeBuckets, sppfNodeBucketCount);
 
     sppfPackNodeBucketCount = sppfPackNodeBucketInitialCount;
-    sppfPackNodeBuckets = clean(sppfPackNodeBuckets, sppfPackNodeBucketCount);
+    sppfPackNodeBuckets = clear(sppfPackNodeBuckets, sppfPackNodeBucketCount);
 
     // 3. Initialise parser data structures
     find(gssNodeBuckets, gssNodeBucketCount, gssNode_SIZE, endOfStringNodeNi, 0);
@@ -168,6 +160,8 @@ public class GLLHashPool extends HashPool {
 
   @Override
   public void parse(String input, CFGRules cfgRules, AbstractLexer lexer, ChooseRules chooseRules) {
+    loops = 0;
+
     inLanguage = false;
     this.input = input;
     this.cfgRules = cfgRules;
@@ -175,39 +169,42 @@ public class GLLHashPool extends HashPool {
 
     initialise();
 
-    if (!lexer.lex(input, cfgRules, chooseRules)) return;
+    lexer.lex(input, cfgRules, chooseRules);
+    ScriptInterpreter.currentStatistics.putTime("Lexer time");
+    if (ScriptInterpreter.currentModes.contains("stopafterlexer")) {
+      Util.info("!try stopped after lexer");
+      return;
+    }
 
-    // Util.debug(lexer.tweSet.toString());
-
-    nextDescriptor: while (dequeueDescriptor())
+    nextDescriptor: while (dequeueDescriptor()) {
+      if ((++loops) % 1000000 == 0 && Util.traceLevel >= 8) printCardinalities(System.out);
       while (true) {
         switch (kindOf[gn]) {
-        case T:
+        case CFGRules.TRM_CS, CFGRules.TRM_CI, CFGRules.TRM_BI, CFGRules.TRM_CH, CFGRules.TRM_CH_UIB, CFGRules.TRM_CH_UOB, CFGRules.TRM_CH_SET, CFGRules.TRM_CH_ANTI_SET:
           if (lexer.tweSlices[inputIndex][0].cfgElement.number == elementOf[gn]) {
-            // Util.debug("Matched " + lexer.firstLexicalisation.get(tokenIndex).element);
+            // S ::= SUtil.debug("At input " + inputIndex + " matched " + lexer.tweSlices[inputIndex][0].cfgElement.number);
             d(1);
             inputIndex++;
             gn++;
             break;
           } else
             continue nextDescriptor;
-        case N:
+        case CFGRules.NONTERMINAL:
           call(gn);
           continue nextDescriptor;
-        case EPS:
+        case CFGRules.EPSILON:
           d(0);
           gn++;
           break;
-        case END:
+        case CFGRules.END:
           retrn();
           continue nextDescriptor;
         default:
           Util.fatal("internal error - unexpected grammar node in gllHashPool");
         }
       }
+    }
     // loadCounts(); // This is very slow!
-    derivations.numberNodes();
-    derivations.choose(chooseRules);
   }
 
   /* Stack handling **********************************************************/
@@ -257,7 +254,7 @@ public class GLLHashPool extends HashPool {
   }
 
   private int derivationUpdate(int gni, int leftChild, int rightChild) {
-    int symbolNode = derivationFindNode(kindOf[gni] == END ? seqOf[gni] : gni,
+    int symbolNode = derivationFindNode(kindOf[gni] == CFGRules.END ? seqOf[gni] : gni,
         leftChild == 0 ? poolGet(rightChild + sppfNode_leftExt) : poolGet(leftChild + sppfNode_leftExt), poolGet(rightChild + sppfNode_rightExt));
 
     find(sppfPackNodeBuckets, sppfPackNodeBucketCount, sppfPackNode_SIZE, // Parent for uniqueness because there is a single set of packed nodes?
@@ -388,5 +385,10 @@ public class GLLHashPool extends HashPool {
     int pivot = poolGet(n + sppfPackNode_pivot);
 
     return cfgRules.numberToRulesNodeMap.get(gn).toStringAsProduction() + ", " + pivot;
+  }
+
+  @Override
+  public void printCardinalities(PrintStream outputStream) {
+    outputStream.println(loops);
   }
 }
