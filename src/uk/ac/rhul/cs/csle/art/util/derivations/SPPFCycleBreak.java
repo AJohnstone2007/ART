@@ -70,7 +70,7 @@ class SPPFCycleBreak {
   }
 
   public void sppfPrintCyclicSPPFNodesFromReachability() {
-    sppfComputeCoreReachability(sppf.parser.cfgRules.cyclicSlots);
+    sppfComputeCoreReachability(sppf.lexicalisations.cfgRules.cyclicSlots);
     Util.info(sppf.cyclic.isEmpty() ? "There are no cyclic nodes" : "Cyclic nodes are");
     for (int i = 0; i < sppf.cyclic.length(); i++)
       if (sppf.cyclic.get(i)) System.out.print("  " + i);
@@ -97,7 +97,7 @@ class SPPFCycleBreak {
     sppf.visited.set(n.number);
     // Util.info("loadXPartitionsFromCFGRulesRec() entered " + n);
     for (var p : n.packNodes) {
-      if (sppf.parser.cfgRules.cyclicSlots.contains(p.grammarNode)) {
+      if (sppf.lexicalisations.cfgRules.cyclicSlots.contains(p.grammarNode)) {
         xS.add(n);
         // Util.info("Added cyclic symbol node " + n);
         xP.add(p);
@@ -300,7 +300,7 @@ class SPPFCycleBreak {
       countEps++;
     else if (sppfn.packNodes.size() == 0)
       countTerm++;
-    else if (sppf.parser.cfgRules.paraterminals.contains(sppfn.grammarNode.cfgElement)) {
+    else if (sppf.lexicalisations.cfgRules.paraterminals.contains(sppfn.grammarNode.cfgElement)) {
       countPara++;
       return;
     } else if (sppfn.isSymbol())

@@ -6,21 +6,19 @@ import java.util.Set;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGElement;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGElementKind;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGRules;
-import uk.ac.rhul.cs.csle.art.choose.ChooseRules;
-import uk.ac.rhul.cs.csle.art.script.ScriptInterpreter;
 import uk.ac.rhul.cs.csle.art.util.Util;
+import uk.ac.rhul.cs.csle.art.util.lexicalisations.AbstractLexicalisations;
+import uk.ac.rhul.cs.csle.art.util.lexicalisations.TWESet;
 
 public class LexerBaseLine extends AbstractLexer {
   private boolean[] hasSlice;
 
   @Override
-  public boolean lex(String userString, CFGRules cfgRules, ChooseRules chooseRules) {
-    this.cfgRules = cfgRules;
-    // Util.debug("Grammar" + cfgRules + "end of grammar");
-    inputString = userString + "\0";
+  public AbstractLexicalisations lex(String userString, CFGRules cfgRules) {
+    lexicalisations = new TWESet(userString, cfgRules);
+    String inputString = userString + "\0";
     inputAsCharArray = inputString.toCharArray();
 
-    tweSlices = new TWESetElement[inputString.length()][];
     hasSlice = new boolean[inputString.length()];
     inputIndex = 0;
 
@@ -30,7 +28,7 @@ public class LexerBaseLine extends AbstractLexer {
     hasSlice[0] = true;
 
     for (int i = 0; i < inputString.length(); i++)
-      if (hasSlice[i]) tweSlices[i] = constructTWESlice(i);
+      if (hasSlice[i]) lexicalisations.putSlice(i, constructTWESlice(i));
 
     if (!hasSlice[inputString.length() - 1]) { // Lexical reject
       int rightmostActiveSlice;
@@ -39,22 +37,15 @@ public class LexerBaseLine extends AbstractLexer {
 
       lexicalError("Unknown lexeme starting with character " + (int) inputAsCharArray[rightmostActiveSlice] + " - " + inputAsCharArray[rightmostActiveSlice],
           rightmostActiveSlice);
-
-      tweSlices = null;
-      return false;
+      return lexicalisations;
     }
 
     // Add EOS
-    tweSlices[inputString.length() - 1] = new TWESetElement[1];
-    tweSlices[inputString.length() - 1][0] = new TWESetElement(cfgRules.endOfStringElement, inputString.length() - 1, inputString.length() - 1,
-        inputString.length());
+    TWESetElement[] eosSlice = new TWESetElement[1];
+    eosSlice[0] = new TWESetElement(cfgRules.endOfStringElement, inputString.length() - 1, inputString.length() - 1, inputString.length());
+    lexicalisations.putSlice(inputString.length() - 1, eosSlice);
 
-    if (ScriptInterpreter.seenChooseRule)
-      choose();
-    else
-      chooseDefault();
-
-    return true;
+    return lexicalisations;
   }
 
   public TWESetElement[] constructTWESlice(int index) {
@@ -62,7 +53,7 @@ public class LexerBaseLine extends AbstractLexer {
     // if (index == 0) ret.add(new TWESetElement(cfgRules.startOfStringElement, 1, 1, inputIndex));
 
     int lexemeStart = index == 0 ? whitespacePrefix : index; // Index zero is special case because of leading whitespace
-    for (var e : cfgRules.elements.keySet()) {
+    for (var e : lexicalisations.cfgRules.elements.keySet()) {
       // Util.debug("Lexer at " + inputIndex + " testing " + e.toStringDetailed());
       switch (e.cfgKind) {
       case TRM_CS, TRM_CI, TRM_BI, TRM_CH:
@@ -84,7 +75,7 @@ public class LexerBaseLine extends AbstractLexer {
     int wsStart;
     do {
       wsStart = inputIndex;
-      for (var w : cfgRules.whitespaces)
+      for (var w : lexicalisations.cfgRules.whitespaces)
         tryTokenMatch(w);
     } while (inputIndex != wsStart); // No more whitespace found
   }

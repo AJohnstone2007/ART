@@ -7,11 +7,10 @@ import uk.ac.rhul.cs.csle.art.choose.ChooseRules;
 import uk.ac.rhul.cs.csle.art.term.TermTraverserText;
 import uk.ac.rhul.cs.csle.art.util.DisplayInterface;
 import uk.ac.rhul.cs.csle.art.util.Util;
+import uk.ac.rhul.cs.csle.art.util.lexicalisations.AbstractLexicalisations;
 
 public abstract class AbstractDerivations implements DisplayInterface {
-  public void chooseLongestMatch() {
-    Util.notImplemented("chooseLongestMatch()", getClass());
-  }
+  AbstractLexicalisations lexicalisations;
 
   public int derivationAsTerm() {
     Util.notImplemented("derivationAsTerm()", getClass());
@@ -57,6 +56,10 @@ public abstract class AbstractDerivations implements DisplayInterface {
   public abstract void setRoot(CFGNode cfgNode, int i);
 
   public abstract void numberNodes();
+
+  public void xchooseLongestMatch() {
+    Util.notImplemented("chooseLongestMatch()", getClass());
+  }
 
   public void choose(ChooseRules chooseRules) {
     Util.notImplemented("choose()", getClass());

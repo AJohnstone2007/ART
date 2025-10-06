@@ -6,12 +6,10 @@ import uk.ac.rhul.cs.csle.art.cfg.AbstractParser;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGElement;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGElementKind;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
-import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGRules;
-import uk.ac.rhul.cs.csle.art.cfg.lexer.AbstractLexer;
-import uk.ac.rhul.cs.csle.art.choose.ChooseRules;
 import uk.ac.rhul.cs.csle.art.util.Util;
 import uk.ac.rhul.cs.csle.art.util.derivations.AbstractDerivationNode;
 import uk.ac.rhul.cs.csle.art.util.derivations.SPPF;
+import uk.ac.rhul.cs.csle.art.util.lexicalisations.AbstractLexicalisations;
 import uk.ac.rhul.cs.csle.art.util.stacks.AbstractStackNode;
 import uk.ac.rhul.cs.csle.art.util.stacks.GSSGLL;
 import uk.ac.rhul.cs.csle.art.util.tasks.TasksGLL;
@@ -32,18 +30,16 @@ public class GLLBaseLine extends AbstractParser {
   private AbstractDerivationNode derivationNode; // current derivation forest node
 
   @Override
-  public void parse(String input, CFGRules cfgRules, AbstractLexer lexer, ChooseRules chooseRules) {
-    inLanguage = false;
-    this.input = input;
-    this.cfgRules = cfgRules;
-    this.lexer = lexer;
-    tasks = new TasksGLL();
-    stacks = new GSSGLL(cfgRules);
-    derivations = new SPPF(this);
+  public void parse(AbstractLexicalisations lexicalisations) {
 
-    lexer.lex(input, cfgRules, chooseRules);
+    // public void parse(String input, CFGRules cfgRules, AbstractLexer lexer, ChooseRules chooseRules) {
+    inLanguage = false;
+    tasks = new TasksGLL();
+    stacks = new GSSGLL(lexicalisations.cfgRules);
+    derivations = new SPPF(lexicalisations);
+
     inputIndex = 0;
-    cfgNode = cfgRules.elementToRulesNodeMap.get(cfgRules.startNonterminal).alt;
+    cfgNode = lexicalisations.cfgRules.elementToRulesNodeMap.get(lexicalisations.cfgRules.startNonterminal).alt;
     stackNode = stacks.getRoot();
     derivationNode = null;
     queueProductionTasks();
@@ -58,7 +54,8 @@ public class GLLBaseLine extends AbstractParser {
           cfgNode = cfgNode.seq; // Next grammar node which will be an END node
           continue nextCFGNode; // Continue with this sequence
         case SOS, TRM_BI, TRM_CS, TRM_CI, TRM_CH, TRM_CH_SET, TRM_CH_ANTI_SET: // Look for exact instance
-          var slice = lexer.tweSlices[inputIndex];
+          // var slice = lexicalisations.tweSlices[inputIndex];
+          var slice = lexicalisations.getSlice(inputIndex);
           if (slice == null) continue nextTask;// Nothing todo for empty TWE slices
           for (int sliceIndex = 0; sliceIndex < slice.length; sliceIndex++) // Iterate over the TWE set elements in this slice
             if (!slice[sliceIndex].suppressed && matchTerminal(slice[sliceIndex].cfgElement)) { // Ignore suppressed TWE set elements
@@ -85,7 +82,6 @@ public class GLLBaseLine extends AbstractParser {
         }
       }
     derivations.numberNodes();
-    derivations.choose(chooseRules);
   }
 
   private boolean matchTerminal(CFGElement cfgElement) {
@@ -100,7 +96,7 @@ public class GLLBaseLine extends AbstractParser {
   }
 
   private AbstractDerivationNode updateDerivation(int rightExtent) {
-    var rightNode = derivations.find(cfgRules.elementToRulesNodeMap.get(cfgNode.cfgElement), inputIndex, rightExtent);
+    var rightNode = derivations.find(lexicalisations.cfgRules.elementToRulesNodeMap.get(cfgNode.cfgElement), inputIndex, rightExtent);
     return derivations.extend(cfgNode.seq, derivationNode, rightNode);
   }
 
@@ -122,14 +118,15 @@ public class GLLBaseLine extends AbstractParser {
 
   private void call(CFGNode cfgNode) {
     var newStackNode = stacks.push(derivations, tasks, inputIndex, cfgNode, stackNode, derivationNode);
-    for (CFGNode p = cfgRules.elementToRulesNodeMap.get(cfgNode.cfgElement).alt; p != null; p = p.alt)
+    for (CFGNode p = lexicalisations.cfgRules.elementToRulesNodeMap.get(cfgNode.cfgElement).alt; p != null; p = p.alt)
       tasks.queue(inputIndex, p.seq, newStackNode, null);
   }
 
   private void retrn() {
     if (stackNode.equals(stacks.getRoot())) {
-      if (cfgRules.acceptingNodeNumbers.contains(cfgNode.num) && (inputIndex == lexer.tweSlices.length - 1)) {
-        derivations.setRoot(cfgRules.elementToRulesNodeMap.get(cfgRules.startNonterminal), lexer.tweSlices.length - 1);
+      if (lexicalisations.cfgRules.acceptingNodeNumbers.contains(cfgNode.num) && (inputIndex == lexicalisations.inputString.length() - 1)) {
+        derivations.setRoot(lexicalisations.cfgRules.elementToRulesNodeMap.get(lexicalisations.cfgRules.startNonterminal),
+            lexicalisations.inputString.length() - 1);
         inLanguage = true;
       }
       return;
@@ -139,9 +136,9 @@ public class GLLBaseLine extends AbstractParser {
 
   @Override
   public void printCardinalities(PrintStream outputStream) {
-    outputStream.println(name() + ": characters:" + fmt(input.length()) + " TWEs:" + fmt(lexer.cardinality()) + " tasks:" + fmt(tasks.cardinality())
-        + " stackNodes:" + fmt(stacks.nodeCardinality()) + " stackEdges:" + fmt(stacks.edgeCardinality()) + " pops:" + fmt(stacks.popCardinality()) + " BSRs:"
-        + fmt(derivations.bsrCardinality()));
+    outputStream.println(name() + ": characters:" + fmt(lexicalisations.inputString.length()) + " TWEs:" + fmt(lexicalisations.cardinality()) + " tasks:"
+        + fmt(tasks.cardinality()) + " stackNodes:" + fmt(stacks.nodeCardinality()) + " stackEdges:" + fmt(stacks.edgeCardinality()) + " pops:"
+        + fmt(stacks.popCardinality()) + " BSRs:" + fmt(derivations.bsrCardinality()));
   }
 
   private String fmt(int n) {
@@ -152,4 +149,5 @@ public class GLLBaseLine extends AbstractParser {
   protected String name() {
     return isMGLL ? "MGLL" : "GLL";
   }
+
 }

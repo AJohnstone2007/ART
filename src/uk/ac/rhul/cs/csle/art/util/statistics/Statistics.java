@@ -26,8 +26,13 @@ public class Statistics implements DisplayInterface {
     previousTime = System.nanoTime();
   }
 
+  public double currentTime() {
+    return (System.nanoTime() - previousTime) / 1E9;
+  }
+
   public void putTime(String key) {
-    put(key, (System.nanoTime() - previousTime) / 1E9);
+    put(key, currentTime());
+    previousTime = System.nanoTime();
   }
 
   public Object get(String k) {

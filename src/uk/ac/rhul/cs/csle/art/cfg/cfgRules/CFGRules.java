@@ -1025,6 +1025,16 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
     return ret;
   }
 
+  public int[] makeFirstOfArray() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  public int[] makeFollowOfArray() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
   /** Static methods *********************************************************/
 
   public static boolean isLHS(CFGNode gn) {
@@ -1308,4 +1318,5 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
 
     signatures.get(constructor).add(term);
   }
+
 }

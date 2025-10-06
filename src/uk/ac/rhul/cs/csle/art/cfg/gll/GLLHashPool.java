@@ -6,10 +6,9 @@ import java.util.Map;
 
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGRules;
 import uk.ac.rhul.cs.csle.art.cfg.hashpool.HashPool;
-import uk.ac.rhul.cs.csle.art.cfg.lexer.AbstractLexer;
-import uk.ac.rhul.cs.csle.art.choose.ChooseRules;
 import uk.ac.rhul.cs.csle.art.script.ScriptInterpreter;
 import uk.ac.rhul.cs.csle.art.util.Util;
+import uk.ac.rhul.cs.csle.art.util.lexicalisations.AbstractLexicalisations;
 
 public class GLLHashPool extends HashPool {
   int loops;
@@ -21,6 +20,8 @@ public class GLLHashPool extends HashPool {
   int seqOf[];
   int targetOf[];
   int elementOf[];
+  int firstOf[];
+  int followOf[];
 
   /** Constant field offsets. In each case, offset zero links to next in hash chain ********/
   final int gssNode_gn = 1; // Key
@@ -107,16 +108,18 @@ public class GLLHashPool extends HashPool {
     // 0. Defensive programming - make sure we've not messed up the enumeration value
 
     // 1. Make local references to grammar tables
-    endOfStringNodeNi = cfgRules.endOfStringNode.num;
-    startNonterminalNodeNi = cfgRules.elementToRulesNodeMap.get(cfgRules.startNonterminal).num;
-    kindOf = cfgRules.makeKindsArray();
-    altOf = cfgRules.makeAltsArray();
-    seqOf = cfgRules.makeSeqsArray();
-    targetOf = cfgRules.makeCallTargetsArray();
-    elementOf = cfgRules.makeElementOfArray();
+    endOfStringNodeNi = lexicalisations.cfgRules.endOfStringNode.num;
+    startNonterminalNodeNi = lexicalisations.cfgRules.elementToRulesNodeMap.get(lexicalisations.cfgRules.startNonterminal).num;
+    kindOf = lexicalisations.cfgRules.makeKindsArray();
+    altOf = lexicalisations.cfgRules.makeAltsArray();
+    seqOf = lexicalisations.cfgRules.makeSeqsArray();
+    targetOf = lexicalisations.cfgRules.makeCallTargetsArray();
+    elementOf = lexicalisations.cfgRules.makeElementOfArray();
+    firstOf = lexicalisations.cfgRules.makeFirstOfArray();
+    followOf = lexicalisations.cfgRules.makeFollowOfArray();
 
     // 1a. (Debug): print precomputed tables
-    // Util.debug("CFGRules:" + cfgRules);
+    // Util.debug("CFGRules:" + lexicalisations.cfgRules);
     // for (int i = 0; i < kindOf.length; i++)
     // Util.debug("kindOf[" + i + "]=" + kindOf[i] + " ");
     // for (int i = 0; i < altOf.length; i++) {
@@ -159,29 +162,20 @@ public class GLLHashPool extends HashPool {
   }
 
   @Override
-  public void parse(String input, CFGRules cfgRules, AbstractLexer lexer, ChooseRules chooseRules) {
+  public void parse(AbstractLexicalisations lexicalisations) {
     loops = 0;
 
     inLanguage = false;
-    this.input = input;
-    this.cfgRules = cfgRules;
-    this.lexer = lexer;
+    this.lexicalisations = lexicalisations;
 
     initialise();
-
-    lexer.lex(input, cfgRules, chooseRules);
-    ScriptInterpreter.currentStatistics.putTime("Lexer time");
-    if (ScriptInterpreter.currentModes.contains("stopafterlexer")) {
-      Util.info("!try stopped after lexer");
-      return;
-    }
 
     nextDescriptor: while (dequeueDescriptor()) {
       if ((++loops) % 1000000 == 0 && Util.traceLevel >= 8) printCardinalities(System.out);
       while (true) {
         switch (kindOf[gn]) {
         case CFGRules.TRM_CS, CFGRules.TRM_CI, CFGRules.TRM_BI, CFGRules.TRM_CH, CFGRules.TRM_CH_UIB, CFGRules.TRM_CH_UOB, CFGRules.TRM_CH_SET, CFGRules.TRM_CH_ANTI_SET:
-          if (lexer.tweSlices[inputIndex][0].cfgElement.number == elementOf[gn]) {
+          if (lexicalisations.getSlice(inputIndex)[0].cfgElement.number == elementOf[gn]) {
             // S ::= SUtil.debug("At input " + inputIndex + " matched " + lexer.tweSlices[inputIndex][0].cfgElement.number);
             d(1);
             inputIndex++;
@@ -229,11 +223,11 @@ public class GLLHashPool extends HashPool {
 
   private void retrn() {
     // Util.debug("Return");
-    if (poolGet(sn + gssNode_gn) == endOfStringNodeNi) {
-      if (cfgRules.acceptingNodeNumbers.contains(gn)) inLanguage |= (inputIndex == lexer.tweSlices.length - 1); // Make gni to boolean array for
-                                                                                                                // acceptance
-      // testing
-      // Util.debug("Acceptance test returns " + inLanguage);
+    if (poolGet(sn + gssNode_gn) == endOfStringNodeNi) { // Are we popping the basenode
+      if (lexicalisations.cfgRules.acceptingNodeNumbers.contains(gn)) inLanguage |= (inputIndex == lexicalisations.inputString.length() - 1); // Make gni to
+                                                                                                                                              // boolean array
+                                                                                                                                              // for
+      Util.debug("Acceptance test returns " + inLanguage);
       return;
     }
     find(popElementBuckets, popElementBucketCount, popElement_SIZE, inputIndex, sn, dn);
@@ -308,9 +302,7 @@ public class GLLHashPool extends HashPool {
 
   /* Statistics support ******************************************************/
   private void loadCounts() {
-    ScriptInterpreter.currentStatistics.put("tweNodeCount", lexer.tweSlices.length);
-    ScriptInterpreter.currentStatistics.put("tweEdgeCount", lexer.tweSlices.length - 1);
-    ScriptInterpreter.currentStatistics.put("tweLexCount", 1);
+    ScriptInterpreter.currentStatistics.put("twes", lexicalisations.cardinality());
     ScriptInterpreter.currentStatistics.put("descriptorCount", cardinality(descriptorBuckets));
     ScriptInterpreter.currentStatistics.put("gssNodeCount", cardinality(gssNodeBuckets));
     ScriptInterpreter.currentStatistics.put("gssEdgeCount", cardinality(gssEdgeBuckets));
@@ -376,7 +368,7 @@ public class GLLHashPool extends HashPool {
     int leftExtent = poolGet(n + sppfNode_leftExt);
     int rightExtent = poolGet(n + sppfNode_rightExt);
 
-    return cfgRules.numberToRulesNodeMap.get(gn).toStringAsProduction() + ", " + leftExtent + ", " + rightExtent;
+    return lexicalisations.cfgRules.numberToRulesNodeMap.get(gn).toStringAsProduction() + ", " + leftExtent + ", " + rightExtent;
   }
 
   String toStringSPPFPackNode(int n) {
@@ -384,11 +376,12 @@ public class GLLHashPool extends HashPool {
     int gn = poolGet(n + sppfPackNode_gn);
     int pivot = poolGet(n + sppfPackNode_pivot);
 
-    return cfgRules.numberToRulesNodeMap.get(gn).toStringAsProduction() + ", " + pivot;
+    return lexicalisations.cfgRules.numberToRulesNodeMap.get(gn).toStringAsProduction() + ", " + pivot;
   }
 
   @Override
   public void printCardinalities(PrintStream outputStream) {
     outputStream.println(loops);
   }
+
 }

@@ -2,19 +2,17 @@ package uk.ac.rhul.cs.csle.art.cfg.rdsob;
 
 import uk.ac.rhul.cs.csle.art.cfg.AbstractParser;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
-import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGRules;
-import uk.ac.rhul.cs.csle.art.cfg.lexer.AbstractLexer;
-import uk.ac.rhul.cs.csle.art.choose.ChooseRules;
 import uk.ac.rhul.cs.csle.art.util.Util;
+import uk.ac.rhul.cs.csle.art.util.lexicalisations.AbstractLexicalisations;
 
 public class RDSOBFunction extends AbstractParser {
 
   public boolean match(CFGNode gn, int tokenIndex) {
-    return lexer.tweSlices[tokenIndex][0].cfgElement == gn.cfgElement;
+    return lexicalisations.getSlice(tokenIndex)[0].cfgElement == gn.cfgElement;
   }
 
   boolean rdsobFunction(CFGNode lhs) {
-    if (dn.next == null) dn.next = new DerivationSingletonNode(cfgRules.endOfStringNode, null);
+    if (dn.next == null) dn.next = new DerivationSingletonNode(lexicalisations.cfgRules.endOfStringNode, null);
     dn = dn.next;
     DerivationSingletonNode dnAtEntry = dn;
 
@@ -27,7 +25,7 @@ public class RDSOBFunction extends AbstractParser {
       while (true) {
         switch (gn.cfgElement.cfgKind) {
         case TRM_BI, TRM_CH, TRM_CS, TRM_CI:
-          if (lexer.tweSlices[inputIndex][0].cfgElement == gn.cfgElement) {
+          if (lexicalisations.getSlice(inputIndex)[0].cfgElement == gn.cfgElement) {
             Util.trace(8, "Match " + gn);
             inputIndex++;
             gn = gn.seq;
@@ -36,7 +34,7 @@ public class RDSOBFunction extends AbstractParser {
             Util.trace(8, "Mismatch " + gn);
           continue altLoop;
         case NONTERMINAL:
-          if (rdsobFunction(cfgRules.elementToRulesNodeMap.get(gn.cfgElement))) {
+          if (rdsobFunction(lexicalisations.cfgRules.elementToRulesNodeMap.get(gn.cfgElement))) {
             gn = gn.seq;
             break;
           } else
@@ -55,18 +53,14 @@ public class RDSOBFunction extends AbstractParser {
   }
 
   @Override
-  public void parse(String input, CFGRules cfgRules, AbstractLexer lexer, ChooseRules chooseRules) {
-    inLanguage = false;
-    this.input = input;
-    this.cfgRules = cfgRules;
-    this.lexer = lexer;
-
-    if (!lexer.lex(input, cfgRules, chooseRules)) return;
+  public void parse(AbstractLexicalisations lexicalisations) {
+    this.lexicalisations = lexicalisations;
 
     inputIndex = 0;
-    dnRoot = dn = new DerivationSingletonNode(cfgRules.endOfStringNode, null);
-    inLanguage = rdsobFunction(cfgRules.elementToRulesNodeMap.get(cfgRules.startNonterminal)) && lexer.tweSlices[inputIndex][0].cfgElement.number == 0;
-    if (!inLanguage) Util.echo("Syntax error at location " + inputIndex, Util.lineNumber(inputIndex, lexer.inputString), lexer.inputString);
+    dnRoot = dn = new DerivationSingletonNode(lexicalisations.cfgRules.endOfStringNode, null);
+    inLanguage = rdsobFunction(lexicalisations.cfgRules.elementToRulesNodeMap.get(lexicalisations.cfgRules.startNonterminal))
+        && lexicalisations.getSlice(inputIndex)[0].cfgElement.number == 0;
+    if (!inLanguage) Util.echo("Syntax error at location " + inputIndex, Util.lineNumber(inputIndex, lexicalisations.inputString), lexicalisations.inputString);
   }
 
   protected DerivationSingletonNode dnRoot, dn;

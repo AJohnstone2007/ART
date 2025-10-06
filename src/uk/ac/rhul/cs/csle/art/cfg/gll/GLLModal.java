@@ -6,15 +6,13 @@ import uk.ac.rhul.cs.csle.art.cfg.AbstractParser;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGElement;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGElementKind;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
-import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGRules;
-import uk.ac.rhul.cs.csle.art.cfg.lexer.AbstractLexer;
 import uk.ac.rhul.cs.csle.art.cfg.lexer.TWESetElement;
-import uk.ac.rhul.cs.csle.art.choose.ChooseRules;
 import uk.ac.rhul.cs.csle.art.script.ScriptInterpreter;
 import uk.ac.rhul.cs.csle.art.util.Util;
 import uk.ac.rhul.cs.csle.art.util.derivations.AbstractDerivationNode;
 import uk.ac.rhul.cs.csle.art.util.derivations.SPPF;
 import uk.ac.rhul.cs.csle.art.util.derivations.SPPFDummyForRecognisers;
+import uk.ac.rhul.cs.csle.art.util.lexicalisations.AbstractLexicalisations;
 import uk.ac.rhul.cs.csle.art.util.stacks.AbstractStackNode;
 import uk.ac.rhul.cs.csle.art.util.stacks.GSSGLL;
 import uk.ac.rhul.cs.csle.art.util.tasks.TasksGLL;
@@ -28,31 +26,24 @@ public class GLLModal extends AbstractParser {
   private AbstractDerivationNode derivationNode; // current derivation forest node
 
   @Override
-  public void parse(String input, CFGRules cfgRules, AbstractLexer lexer, ChooseRules chooseRules) {
+  public void parse(AbstractLexicalisations lexicalisations) {
     inLanguage = false;
-    this.input = input;
-    this.cfgRules = cfgRules;
-    this.lexer = lexer;
+    this.lexicalisations = lexicalisations;
+    // this.lexer = lexer;
     tasks = new TasksGLL();
-    stacks = new GSSGLL(cfgRules);
-    derivations = ScriptInterpreter.currentModes.contains("recogniser") ? new SPPFDummyForRecognisers(this) : new SPPF(this);
+    stacks = new GSSGLL(lexicalisations.cfgRules);
+    derivations = ScriptInterpreter.currentModes.contains("recogniser") ? new SPPFDummyForRecognisers(lexicalisations) : new SPPF(lexicalisations);
 
     int loops = 0;
 
-    lexer.lex(input, cfgRules, chooseRules);
-    ScriptInterpreter.currentStatistics.putTime("Lexer time");
-    if (ScriptInterpreter.currentModes.contains("stopafterlexer")) {
-      Util.info("!try stopped after lexer");
-      return;
-    }
     inputIndex = 0;
-    cfgNode = cfgRules.elementToRulesNodeMap.get(cfgRules.startNonterminal).alt;
+    cfgNode = lexicalisations.cfgRules.elementToRulesNodeMap.get(lexicalisations.cfgRules.startNonterminal).alt;
     stackNode = stacks.getRoot();
     derivationNode = null;
     queueProductionTasks();
     nextTask: while (nextTask()) {
-      if ((++loops) % 1000000 == 0 && Util.traceLevel >= 8) printCardinalities(System.out);
-      nextCFGNode: while (true) 
+      if ((++loops) % 1000000 == 0 && Util.traceLevel >= 8) printReport(System.out, loops);
+      nextCFGNode: while (true)
         switch (cfgNode.cfgElement.cfgKind) {
         case ALT:
           queueProductionTasks(); // Create task descriptor for the start of each production - is this needed for BNF?
@@ -62,7 +53,7 @@ public class GLLModal extends AbstractParser {
           cfgNode = cfgNode.seq; // Next grammar node which will be an END node
           continue nextCFGNode; // Continue with this sequence
         case SOS, TRM_BI, TRM_CS, TRM_CI, TRM_CH, TRM_CH_SET, TRM_CH_ANTI_SET: // Look for exact instance
-          var slice = lexer.tweSlices[inputIndex];
+          var slice = lexicalisations.getSlice(inputIndex);
           if (slice == null) continue nextTask;// Nothing todo for empty TWE slices
           for (int sliceIndex = 0; sliceIndex < slice.length; sliceIndex++) // Iterate over the TWE set elements in this slice
             if (!slice[sliceIndex].suppressed && matchTerminal(slice[sliceIndex].cfgElement)) { // Ignore suppressed TWE set elements
@@ -87,10 +78,10 @@ public class GLLModal extends AbstractParser {
         default:
           Util.fatal("Unexpected CFGNode kind " + cfgNode.cfgElement.cfgKind + " in " + getClass().getSimpleName());
         }
-      }
-    
+    }
+
+    ScriptInterpreter.currentStatistics.putTime("Parse time");
     derivations.numberNodes();
-    derivations.choose(chooseRules);
   }
 
   private boolean matchTerminal(CFGElement cfgElement) {
@@ -105,7 +96,7 @@ public class GLLModal extends AbstractParser {
   }
 
   private AbstractDerivationNode updateDerivation(int rightExtent) {
-    var rightNode = derivations.find(cfgRules.elementToRulesNodeMap.get(cfgNode.cfgElement), inputIndex, rightExtent);
+    var rightNode = derivations.find(lexicalisations.cfgRules.elementToRulesNodeMap.get(cfgNode.cfgElement), inputIndex, rightExtent);
     return derivations.extend(cfgNode.seq, derivationNode, rightNode);
   }
 
@@ -127,14 +118,15 @@ public class GLLModal extends AbstractParser {
 
   private void call(CFGNode cfgNode) {
     var newStackNode = stacks.push(derivations, tasks, inputIndex, cfgNode, stackNode, derivationNode);
-    for (CFGNode p = cfgRules.elementToRulesNodeMap.get(cfgNode.cfgElement).alt; p != null; p = p.alt)
+    for (CFGNode p = lexicalisations.cfgRules.elementToRulesNodeMap.get(cfgNode.cfgElement).alt; p != null; p = p.alt)
       if (lookaheadInstanceFirst("productionlookahead", p.seq)) tasks.queue(inputIndex, p.seq, newStackNode, null);
   }
 
   private void retrn() {
     if (stackNode.equals(stacks.getRoot())) {
-      if (cfgRules.acceptingNodeNumbers.contains(cfgNode.num) && (inputIndex == lexer.tweSlices.length - 1)) {
-        derivations.setRoot(cfgRules.elementToRulesNodeMap.get(cfgRules.startNonterminal), lexer.tweSlices.length - 1);
+      if (lexicalisations.cfgRules.acceptingNodeNumbers.contains(cfgNode.num) && (inputIndex == lexicalisations.inputString.length() - 1)) {
+        derivations.setRoot(lexicalisations.cfgRules.elementToRulesNodeMap.get(lexicalisations.cfgRules.startNonterminal),
+            lexicalisations.inputString.length());
         inLanguage = true;
       }
       return;
@@ -145,8 +137,8 @@ public class GLLModal extends AbstractParser {
   private boolean lookaheadInstanceFirst(String mode, CFGNode cfgNode) {
     if (!ScriptInterpreter.currentModes.contains(mode)) return true;
 
-    var set = cfgRules.instanceFirst.get(cfgNode);
-    var slice = lexer.tweSlices[inputIndex];
+    var set = lexicalisations.cfgRules.instanceFirst.get(cfgNode);
+    var slice = lexicalisations.getSlice(inputIndex);
     // Util.debug("lookaheadInstanceFirst() on node " + cfgNode + " with instance first " + set + " and slice ");
     // for (var s : slice)
     // Util.info(s.toString());
@@ -154,7 +146,9 @@ public class GLLModal extends AbstractParser {
     for (TWESetElement s : slice)
       if (!s.suppressed) {
         if (set.contains(s.cfgElement)) return true;
-        if (set.contains(cfgRules.epsilonElement) && cfgRules.follow.get(cfgRules.lhsOf.get(cfgNode)).contains(s.cfgElement)) return true;
+        if (set.contains(lexicalisations.cfgRules.epsilonElement)
+            && lexicalisations.cfgRules.follow.get(lexicalisations.cfgRules.lhsOf.get(cfgNode)).contains(s.cfgElement))
+          return true;
       }
     // Util.debug("lookahead() false");
     return false;
@@ -163,8 +157,8 @@ public class GLLModal extends AbstractParser {
   private boolean lookaheadFollow(String mode, CFGElement cfgElement) {
     if (!ScriptInterpreter.currentModes.contains(mode)) return true;
 
-    var set = cfgRules.follow.get(cfgElement);
-    var slice = lexer.tweSlices[inputIndex];
+    var set = lexicalisations.cfgRules.follow.get(cfgElement);
+    var slice = lexicalisations.getSlice(inputIndex);
     // Util.debug("lookaheadFollow() on element " + cfgElement + " with set " + set + " and slice ");
     // for (var s : slice)
     // Util.info(s.toString());
@@ -177,13 +171,19 @@ public class GLLModal extends AbstractParser {
 
   @Override
   public void printCardinalities(PrintStream outputStream) {
-    outputStream.println(">> " + name() + ": characters:" + fmt(input.length()) + " TWEs:" + fmt(lexer.cardinality()) + " tasks:" + fmt(tasks.cardinality())
-        + " stackNodes:" + fmt(stacks.nodeCardinality()) + " stackEdges:" + fmt(stacks.edgeCardinality()) + " pops:" + fmt(stacks.popCardinality()) + " BSRs:"
-        + fmt(derivations.bsrCardinality()));
+    outputStream.println(">> " + name() + ": characters:" + fmt(lexicalisations.inputString.length()) + " TWEs:" + fmt(lexicalisations.cardinality())
+        + " tasks:" + fmt(tasks.cardinality()) + " stackNodes:" + fmt(stacks.nodeCardinality()) + " stackEdges:" + fmt(stacks.edgeCardinality()) + " pops:"
+        + fmt(stacks.popCardinality()) + " BSRs:" + fmt(derivations.bsrCardinality()));
   }
 
   private String fmt(int n) {
     return String.format("%,d", n);
+  }
+
+  public void printReport(PrintStream outputStream, int count) {
+    outputStream.println(">> After " + count + " parser loops: " + ScriptInterpreter.currentStatistics.currentTime() + "s elapsed, tasks:"
+        + fmt(tasks.cardinality()) + " stackNodes:" + fmt(stacks.nodeCardinality()) + " stackEdges:" + fmt(stacks.edgeCardinality()) + " pops:"
+        + fmt(stacks.popCardinality()) + " BSRs:" + fmt(derivations.bsrCardinality()));
   }
 
   @Override
@@ -195,4 +195,5 @@ public class GLLModal extends AbstractParser {
     sb.append(")");
     return sb.toString();
   }
+
 }

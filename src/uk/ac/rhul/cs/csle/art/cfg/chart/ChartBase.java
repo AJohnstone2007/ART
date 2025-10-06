@@ -5,9 +5,7 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 import uk.ac.rhul.cs.csle.art.cfg.AbstractParser;
-import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGRules;
-import uk.ac.rhul.cs.csle.art.cfg.lexer.AbstractLexer;
-import uk.ac.rhul.cs.csle.art.choose.ChooseRules;
+import uk.ac.rhul.cs.csle.art.util.lexicalisations.AbstractLexicalisations;
 
 public class ChartBase extends AbstractParser {
   protected ArrayList<ArrayList<Set<Integer>>> chart;
@@ -61,8 +59,9 @@ public class ChartBase extends AbstractParser {
   }
 
   @Override
-  public void parse(String input, CFGRules cfgRules, AbstractLexer lexer, ChooseRules chooseRules) {
+  public void parse(AbstractLexicalisations lexicalisations) {
     // TODO Auto-generated method stub
 
   }
+
 }

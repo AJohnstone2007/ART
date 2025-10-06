@@ -24,7 +24,6 @@ import uk.ac.rhul.cs.csle.art.cfg.gll.GLLHashPool;
 import uk.ac.rhul.cs.csle.art.cfg.gll.GLLModal;
 import uk.ac.rhul.cs.csle.art.cfg.lexer.AbstractLexer;
 import uk.ac.rhul.cs.csle.art.cfg.lexer.LexerBaseLine;
-import uk.ac.rhul.cs.csle.art.cfg.lexer.LexerGLLRecogniser;
 import uk.ac.rhul.cs.csle.art.cfg.rdsob.RDSOBExplicitStack;
 import uk.ac.rhul.cs.csle.art.cfg.rdsob.RDSOBFunction;
 import uk.ac.rhul.cs.csle.art.cfg.rdsob.RDSOBGenerator;
@@ -63,6 +62,7 @@ public final class ScriptInterpreter {
 
   private final Set<String> validModes = Set.of("recogniser", "hashpool", "mgll", "tasklifo", "taskfifo", "productionlookahead", "mglllookahead",
       "returnlookahead", "derivationtrim", "stopafterlexer", "stopafterparser", "stopafterderivation");
+
   public final static Set<String> currentModes = new HashSet<>();
   private AbstractLexer currentLexer = new LexerBaseLine();
   private AbstractParser currentParser = new GLLModal();
@@ -101,11 +101,15 @@ public final class ScriptInterpreter {
 
     currentCFGRules = new CFGRules(CFGRulesKind.USER);
     currentChooseRules = new ChooseRules();
+
     // currentCFGRules.print(System.err, null, false, true, false);
+
     Util.traceLevel = 0;
     Util.errorLevel = 1;
-    scriptParser.parse(scriptString, scriptCFGRules, scriptLexer, scriptChooseRules);
+    scriptLexer.lex(scriptString, scriptCFGRules);
+    if (scriptLexer.lexicalisations.valid()) scriptParser.parse(scriptLexer.lexicalisations);
     scriptParser.outcomeReport();
+    scriptParser.derivations.choose(scriptChooseRules);
     if (scriptParser.derivations.ambiguityCheck()) {
       Util.errorLevel = 10;
       Util.error("Script ambiguity");
@@ -242,9 +246,6 @@ public final class ScriptInterpreter {
       switch (iTerms.termSymbolString(iTerms.subterm(term, 0, 0)).toLowerCase()) {
       case "baseline":
         currentLexer = new LexerBaseLine();
-        break;
-      case "gllrecogniser":
-        currentLexer = new LexerGLLRecogniser();
         break;
       default:
         Util.fatal(
@@ -442,12 +443,12 @@ public final class ScriptInterpreter {
         try {
           String filename = iTerms.termSymbolString(iTerms.subterm(term, 0, 0, 0));
           // Util.info("Attempting to open file " + filename);
-          tryParse(filename, Files.readString(Paths.get(filename)));
+          tryParse(Files.readString(Paths.get(filename)));
         } catch (IOException e) {
           Util.fatal("Unable to open try file; skipping " + iTerms.toString(term));
         }
       else if (iTerms.termSymbolString(iTerms.subterm(term, 0, 0, 0)).equals("__string")) // Parse literal string
-        tryParse("", Util.unescapeString(iTerms.termSymbolString(iTerms.subterm(term, 0, 0, 0, 0))));
+        tryParse(Util.unescapeString(iTerms.termSymbolString(iTerms.subterm(term, 0, 0, 0, 0))));
       else
         currentTryTerm = iTerms.subterm(term, 0, 0); // No parsing - process term directly
 
@@ -512,11 +513,11 @@ public final class ScriptInterpreter {
 
     /* Undocumented research features */
     case "!deletetokens":
-      currentLexer.deleteTokenCount = iTerms.termToJavaInteger(iTerms.subterm(term, 0, 0));
+      currentLexer.lexicalisations.deleteTokenCount = iTerms.termToJavaInteger(iTerms.subterm(term, 0, 0));
       break;
 
     case "!swaptokens":
-      currentLexer.swapTokenCount = iTerms.termToJavaInteger(iTerms.subterm(term, 0, 0));
+      currentLexer.lexicalisations.swapTokenCount = iTerms.termToJavaInteger(iTerms.subterm(term, 0, 0));
       break;
 
     case "!sppfBreakCycles": {
@@ -676,9 +677,9 @@ public final class ScriptInterpreter {
 
         case "lexicalisations":
           if (isShow)
-            currentLexer.show(outputStream, outputTraverser, indexed, full, indented);
+            currentLexer.lexicalisations.show(outputStream, outputTraverser, indexed, full, indented);
           else
-            currentLexer.print(outputStream, outputTraverser, indexed, full, indented);
+            currentLexer.lexicalisations.print(outputStream, outputTraverser, indexed, full, indented);
           break;
 
         case "tasks":
@@ -731,9 +732,9 @@ public final class ScriptInterpreter {
 
         case "scriptlexicalisations":
           if (isShow)
-            scriptParser.lexer.show(outputStream, outputTraverser, indexed, full, indented);
+            scriptLexer.lexicalisations.show(outputStream, outputTraverser, indexed, full, indented);
           else
-            scriptParser.lexer.print(outputStream, outputTraverser, indexed, full, indented);
+            scriptLexer.lexicalisations.print(outputStream, outputTraverser, indexed, full, indented);
           break;
 
         case "scriptderivations":
@@ -811,20 +812,37 @@ public final class ScriptInterpreter {
     }
   }
 
-  private void tryParse(String inputStringName, String inputString) {
+  private void tryParse(String inputString) {
     currentStatistics = new Statistics();
     currentStatistics.setBaseTime();
-    currentStatistics.putTime("Initialisation time");
-    currentParser.parse(inputString, currentCFGRules, currentLexer, currentChooseRules);
-    currentStatistics.putTime("Parse time");
+
+    currentLexer.lex(inputString, currentCFGRules);
+    ScriptInterpreter.currentStatistics.putTime("Lexer time");
+
+    if (ScriptInterpreter.currentModes.contains("stopafterlexer")) {
+      Util.info("!try stopped after lexer");
+      return;
+    }
+
+    if (seenChooseRule)
+      currentLexer.lexicalisations.choose(currentChooseRules);
+    else
+      currentLexer.lexicalisations.chooseDefault();
+
+    ScriptInterpreter.currentStatistics.putTime("Lexical choose time");
+
+    if (currentLexer.lexicalisations.valid()) currentParser.parse(currentLexer.lexicalisations);
     currentParser.outcomeReport();
+
     if (ScriptInterpreter.currentModes.contains("stopafterparser")) {
       Util.info("!try stopped after parser");
       return;
     }
-    currentTryTerm = 0;
+
     if (currentParser.derivations != null) {
+      currentParser.derivations.choose(currentChooseRules);
       currentStatistics.putTime("Derivation choose time");
+      currentTryTerm = 0;
       currentTryTerm = currentParser.derivations.derivationAsTerm();
       currentStatistics.putTime("Term construction time");
     }

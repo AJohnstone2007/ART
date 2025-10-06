@@ -9,11 +9,11 @@ import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGElementKind;
 import uk.ac.rhul.cs.csle.art.util.Util;
 import uk.ac.rhul.cs.csle.art.util.relation.Relation;
 
-public class TWESet {
+public class ZTWESet {
   private final String inputString;
   private final ArrayList<Set<TWESetElement>> slices = new ArrayList<>();
 
-  public TWESet(String inputString) {
+  public ZTWESet(String inputString) {
     this.inputString = inputString;
     slices.add(new HashSet<>());
     for (int i = 1; i < inputString.length(); i++)
@@ -36,7 +36,8 @@ public class TWESet {
     for (var slice : slices)
       if (slice != null) for (var e : slice)
         for (var f : slice)
-          if ((e.rightExtent > f.rightExtent) || (e.rightExtent == f.rightExtent && e.cfgElement.cfgKind != CFGElementKind.TRM_BI && f.cfgElement.cfgKind == CFGElementKind.TRM_BI))
+          if ((e.rightExtent > f.rightExtent)
+              || (e.rightExtent == f.rightExtent && e.cfgElement.cfgKind != CFGElementKind.TRM_BI && f.cfgElement.cfgKind == CFGElementKind.TRM_BI))
             f.suppressed = true;
     suppressDeadPaths();
   }

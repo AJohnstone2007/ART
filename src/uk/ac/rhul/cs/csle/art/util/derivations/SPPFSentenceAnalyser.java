@@ -45,7 +45,7 @@ class SPPFSentenceAnalyser {
     if (sppf.visited.get(sppfn.number)) return;
     sppf.visited.set(sppfn.number);
 
-    if (sppfn.isSymbol() && sppf.parser.cfgRules.paraterminals.contains(sppfn.grammarNode.cfgElement)) {
+    if (sppfn.isSymbol() && sppf.lexicalisations.cfgRules.paraterminals.contains(sppfn.grammarNode.cfgElement)) {
       paraterminalInstanceAdd(sppfn);
       paraterminalCount++;
       return;
@@ -75,7 +75,7 @@ class SPPFSentenceAnalyser {
     }
     Util.info("Parasentences");
     sppf.visited.clear();
-    parasentence = new SPPFSymbolNode[100 * sppf.parser.lexer.tweSlices.length + 1];
+    parasentence = new SPPFSymbolNode[100 * sppf.lexicalisations.inputString.length() + 1];
     psCall = 0;
     parasentences = new HashSet<>();
     // sppfCollectParasentencesRec(sppf.root, 0);
@@ -111,11 +111,11 @@ class SPPFSentenceAnalyser {
     }
     sppf.visited.set(node.number);
 
-    if (node.packNodes.isEmpty() || (node.isSymbol() && sppf.parser.cfgRules.paraterminals.contains(node.grammarNode.cfgElement))) {
+    if (node.packNodes.isEmpty() || (node.isSymbol() && sppf.lexicalisations.cfgRules.paraterminals.contains(node.grammarNode.cfgElement))) {
       if (!(node.packNodes.isEmpty() && node.grammarNode.cfgElement.cfgKind == CFGElementKind.EPSILON)) {
         Util.info("Extending with " + node.grammarNode.cfgElement.str);
         parasentence[parasentenceIndex++] = node;
-        if (node.rightExtent == sppf.parser.lexer.tweSlices.length - 1) addParasentence(parasentenceIndex);
+        if (node.rightExtent == sppf.lexicalisations.inputString.length() - 1) addParasentence(parasentenceIndex);
       }
     } else
       for (var p : node.packNodes) {

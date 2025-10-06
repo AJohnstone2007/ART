@@ -1,44 +1,20 @@
 package uk.ac.rhul.cs.csle.art.util.derivations;
 
 import java.io.PrintStream;
-import java.util.BitSet;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 
-import uk.ac.rhul.cs.csle.art.cfg.AbstractParser;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
 import uk.ac.rhul.cs.csle.art.choose.ChooseRules;
 import uk.ac.rhul.cs.csle.art.term.TermTraverserText;
-import uk.ac.rhul.cs.csle.art.util.relation.RelationOverNaturals;
+import uk.ac.rhul.cs.csle.art.util.lexicalisations.AbstractLexicalisations;
 import uk.ac.rhul.cs.csle.art.util.statistics.Statistics;
 
 public class SPPFDummyForRecognisers extends AbstractDerivations {
-  public final AbstractParser parser;
-  private final boolean firstSuppressParent;
   public SPPFSymbolNode root;
-  public String inputString; // Original input string
 
-  public final Map<SPPFSymbolNode, SPPFSymbolNode> nodes = new HashMap<>();
-  public final BitSet visited = new BitSet();
-
-  public final BitSet cyclic = new BitSet();
-  public RelationOverNaturals reachable;
-  public BitSet rootReachable = new BitSet();
-  private final BitSet suppressedSPPFNode = new BitSet();
-  public final Set<SPPFPackedNode> cbD = new HashSet<>(); // Set of deleted cyclic nodes: D in Elizabeth's note
-  public final Set<SPPFPackedNode> cbDPrime = new HashSet<>(); // Set of deleted cyclic nodes: D' in Elizabeth's note
-
-  public SPPFDummyForRecognisers(AbstractParser parser) {
-    this(parser, false);
-  }
-
-  public SPPFDummyForRecognisers(AbstractParser parser, boolean firstSuppressParent) {
+  public SPPFDummyForRecognisers(AbstractLexicalisations lexicalisations) {
     super();
-    this.parser = parser;
-    this.firstSuppressParent = firstSuppressParent;
-    root = new SPPFSymbolNode(parser.cfgRules.endOfStringNode, 0, 0); // Create a dummy root node and use that for returns
+    this.lexicalisations = lexicalisations;
+    root = new SPPFSymbolNode(lexicalisations.cfgRules.endOfStringNode, 0, 0); // Create a dummy root node and use that for returns
   }
 
   @Override
@@ -58,11 +34,6 @@ public class SPPFDummyForRecognisers extends AbstractDerivations {
   @Override
   public int widestIndex() {
     return 0;
-  }
-
-  /* Temporary disambiguation before choosers are implemented ****************/
-  @Override
-  public void chooseLongestMatch() {
   }
 
   /* Term generation **************************************************************************/

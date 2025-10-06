@@ -2,30 +2,24 @@ package uk.ac.rhul.cs.csle.art.cfg;
 
 import java.io.PrintStream;
 
-import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGRules;
-import uk.ac.rhul.cs.csle.art.cfg.lexer.AbstractLexer;
-import uk.ac.rhul.cs.csle.art.choose.ChooseRules;
-import uk.ac.rhul.cs.csle.art.script.ScriptInterpreter;
 import uk.ac.rhul.cs.csle.art.util.Util;
 import uk.ac.rhul.cs.csle.art.util.derivations.AbstractDerivations;
+import uk.ac.rhul.cs.csle.art.util.lexicalisations.AbstractLexicalisations;
 import uk.ac.rhul.cs.csle.art.util.stacks.AbstractStacks;
 import uk.ac.rhul.cs.csle.art.util.tasks.AbstractTasks;
 
 public abstract class AbstractParser {
   public boolean inLanguage;
-  public String input;
-  public CFGRules cfgRules;
+  // public String input;
+  public AbstractLexicalisations lexicalisations;
   public AbstractTasks tasks;
   public AbstractStacks stacks;
-  public AbstractLexer lexer;
-  protected int inputIndex; // Current input index
   public AbstractDerivations derivations;
+  protected int inputIndex; // Current input index
 
-  public abstract void parse(String input, CFGRules cfgRules, AbstractLexer lexer, ChooseRules chooseRules);
+  public abstract void parse(AbstractLexicalisations lexicalisations);
 
   public void outcomeReport() {
-    if (lexer.tweSlices == null || ScriptInterpreter.currentModes.contains("stopafterlexer")) return; // A lexical error will already have been reported
-
     if (inLanguage)
       Util.trace(1, name() + " accept");
     else {
@@ -33,7 +27,7 @@ public abstract class AbstractParser {
         Util.trace(1, name() + " reject");
       else {
         int widestIndex = derivations.widestIndex();
-        Util.error(Util.echo(name() + " syntax error ", lexer.tweSlices[widestIndex][0].leftExtent, lexer.inputString));
+        Util.error(Util.echo(name() + " syntax error ", lexicalisations.getSlice(widestIndex)[0].leftExtent, lexicalisations.inputString));
       }
     }
     if (Util.traceLevel >= 8) printCardinalities(System.out);

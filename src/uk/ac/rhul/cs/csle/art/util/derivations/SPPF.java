@@ -8,7 +8,6 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 
-import uk.ac.rhul.cs.csle.art.cfg.AbstractParser;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGElementKind;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.GIFTKind;
@@ -16,13 +15,12 @@ import uk.ac.rhul.cs.csle.art.choose.ChooseRules;
 import uk.ac.rhul.cs.csle.art.script.ScriptInterpreter;
 import uk.ac.rhul.cs.csle.art.term.TermTraverserText;
 import uk.ac.rhul.cs.csle.art.util.Util;
+import uk.ac.rhul.cs.csle.art.util.lexicalisations.AbstractLexicalisations;
 import uk.ac.rhul.cs.csle.art.util.relation.RelationOverNaturals;
 import uk.ac.rhul.cs.csle.art.util.statistics.Statistics;
 
 public class SPPF extends AbstractDerivations {
-  public final AbstractParser parser;
   public SPPFSymbolNode root;
-  public String inputString; // Original input string
 
   public final Map<SPPFSymbolNode, SPPFSymbolNode> nodes = new HashMap<>();
   public final BitSet visited = new BitSet();
@@ -34,9 +32,8 @@ public class SPPF extends AbstractDerivations {
   public final Set<SPPFPackedNode> cbD = new HashSet<>(); // Set of deleted cyclic nodes: D in Elizabeth's note
   public final Set<SPPFPackedNode> cbDPrime = new HashSet<>(); // Set of deleted cyclic nodes: D' in Elizabeth's note
 
-  public SPPF(AbstractParser parser) {
-    super();
-    this.parser = parser;
+  public SPPF(AbstractLexicalisations lexicalisations) {
+    this.lexicalisations = lexicalisations;
   }
 
   @Override
@@ -58,7 +55,7 @@ public class SPPF extends AbstractDerivations {
 
     if (gn == null) return rightNode;
 
-    if (parser.cfgRules.secondSlots.contains(gn)) {
+    if (lexicalisations.cfgRules.secondSlots.contains(gn)) {
       // Util.debug("sppf.extend grammar node is second node - returning rightNode");
       return rightNode;
     }
@@ -158,7 +155,7 @@ public class SPPF extends AbstractDerivations {
       if (derivationForInterpreter)
       constructor = firstAvailableSPPFPN == null ? "" + -sppfn.rightExtent : "" + firstAvailableSPPFPN.grammarNode.alt.num;
       else
-      constructor = (gn.cfgElement.cfgKind == CFGElementKind.TRM_BI) ? parser.lexer.lexeme(sppfn.grammarNode, sppfn.leftExtent) : gn.cfgElement.str;
+      constructor = (gn.cfgElement.cfgKind == CFGElementKind.TRM_BI) ? lexicalisations.lexeme(sppfn.grammarNode, sppfn.leftExtent) : gn.cfgElement.str;
 
     // Util.debug("At SPPF node " + sppfn + " and grammar node " + gn + " make new term with constructor: " + constructor);
     if (children != childrenFromParent) {
@@ -278,15 +275,24 @@ public class SPPF extends AbstractDerivations {
     // loadHashCounts(-20, -21, -22, -23, -24, -25, -26);
   }
 
+  Set<CFGNode> ambiguousSlots;
+
   @Override
   public void choose(ChooseRules chooseRules) {
     // Util.debug("Running choosers");
     visited.clear();
+    ambiguousSlots = new HashSet<>();
     if (root == null) {
       Util.warning("SPPF contains no derivations: skipping choosers");
       return;
     }
     chooseRec(root);
+
+    if (!ambiguousSlots.isEmpty()) {
+      Util.warning("After choose rule application, ambiguities remain involving the following slots. Use !print ambiguities for full details");
+      for (var s : ambiguousSlots)
+        Util.info(s.toStringAsProduction());
+    }
   }
 
   private void chooseRec(SPPFSymbolNode sn) {
@@ -294,14 +300,7 @@ public class SPPF extends AbstractDerivations {
     if (visited.get(sn.number)) return;
     visited.set(sn.number);
 
-    // 1. Diagnostic
-    if (sn.packNodes.size() > 1) {
-      Util.warning("Ambiguity detected at SPPF node " + sn.number + ": " + sn.grammarNode.toStringAsProduction() + " involving ");
-      for (var p : sn.packNodes)
-        Util.info("   " + p.toString());
-    }
-
-    // 2. Choose
+    // 1. Choose
     if (sn.packNodes.size() > 1) {
       for (SPPFPackedNode leftPackedNode : sn.packNodes)
         for (SPPFPackedNode rightPackedNode : sn.packNodes) {
@@ -315,6 +314,16 @@ public class SPPF extends AbstractDerivations {
             Util.warning("Suppressed  " + rightPackedNode);
           }
         }
+
+      // 2. Flag any remaining ambiguities
+      int livePN = 0;
+      for (var pn : sn.packNodes)
+        if (!pn.suppressed) livePN++;
+
+      if (livePN == 0)
+        Util.error("No unsuppressed packed nodes under " + sn);
+      else if (livePN > 1) for (var pn : sn.packNodes)
+        if (!pn.suppressed) ambiguousSlots.add(pn.grammarNode);
     }
 
     // 3. Recurse
@@ -324,42 +333,6 @@ public class SPPF extends AbstractDerivations {
       if (p.rightChild != null) chooseRec(p.rightChild);
     }
 
-  }
-
-  /* Temporary disambiguation before choosers are implemented ****************/
-  @Override
-  public void chooseLongestMatch() {
-    Util.debug("Running default chooseLongestMatch()");
-    visited.clear();
-    if (root == null) {
-      Util.warning("SPPF contains no derivations: skipping choosers");
-      return;
-    }
-    chooseLongestMatchRec(root);
-  }
-
-  private void chooseLongestMatchRec(SPPFSymbolNode sn) {
-    if (visited.get(sn.number)) return;
-    visited.set(sn.number);
-
-    int rightMostPivot = -1;
-    SPPFPackedNode candidate = null;
-    if (sn.packNodes.size() > 1) {
-      Util.warning("Ambiguity detected at SPPF node " + sn.number + ": " + sn.grammarNode.toStringAsProduction() + " involving ");
-      for (var p : sn.packNodes)
-        Util.info("   " + p.toString());
-    }
-    for (SPPFPackedNode p : sn.packNodes) {
-      if (p.pivot > rightMostPivot) {
-        rightMostPivot = p.pivot;
-        candidate = p;
-      }
-      if (p.leftChild != null) chooseLongestMatchRec(p.leftChild);
-      if (p.rightChild != null) chooseLongestMatchRec(p.rightChild);
-    }
-
-    for (SPPFPackedNode p : sn.packNodes)
-      if (p != candidate) p.suppressed = true;
   }
 
   @Override
