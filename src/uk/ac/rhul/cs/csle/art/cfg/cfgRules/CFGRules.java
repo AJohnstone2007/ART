@@ -283,7 +283,7 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
     if (clean) return;
     // Util.debug("Normalising cfgRulesNumber " + cfgRulesNumber + " " + cfgRulesKind);
     if (!seenWhitespaceDirective) {
-      Util.info("Adding default whitespace handling");
+      // Util.info("Adding default whitespace handling");
       whitespaces.add(findElement(CFGElementKind.TRM_BI, "SIMPLE_WHITESPACE"));
     }
 

@@ -239,6 +239,6 @@ public class TWESet extends AbstractLexicalisations {
 
   @Override
   public boolean valid() {
-    return tweSlices[inputString.length() - 1] == null; // If EOS slice is missing, then lexer gace up early
+    return tweSlices[inputString.length() - 1] != null; // If EOS slice is missing, then lexer gace up early
   }
 }

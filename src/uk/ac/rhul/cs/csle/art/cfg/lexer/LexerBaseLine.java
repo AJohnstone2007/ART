@@ -15,9 +15,9 @@ public class LexerBaseLine extends AbstractLexer {
 
   @Override
   public AbstractLexicalisations lex(String userString, CFGRules cfgRules) {
-    lexicalisations = new TWESet(userString, cfgRules);
     String inputString = userString + "\0";
     inputAsCharArray = inputString.toCharArray();
+    lexicalisations = new TWESet(inputString, cfgRules);
 
     hasSlice = new boolean[inputString.length()];
     inputIndex = 0;

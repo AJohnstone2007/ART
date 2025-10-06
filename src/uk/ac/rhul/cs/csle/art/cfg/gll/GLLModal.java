@@ -126,7 +126,7 @@ public class GLLModal extends AbstractParser {
     if (stackNode.equals(stacks.getRoot())) {
       if (lexicalisations.cfgRules.acceptingNodeNumbers.contains(cfgNode.num) && (inputIndex == lexicalisations.inputString.length() - 1)) {
         derivations.setRoot(lexicalisations.cfgRules.elementToRulesNodeMap.get(lexicalisations.cfgRules.startNonterminal),
-            lexicalisations.inputString.length());
+            lexicalisations.inputString.length() - 1);
         inLanguage = true;
       }
       return;

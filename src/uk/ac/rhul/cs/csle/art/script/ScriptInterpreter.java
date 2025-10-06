@@ -99,14 +99,15 @@ public final class ScriptInterpreter {
     scriptCFGRules = currentCFGRules; // Now we have a usable script parser
     scriptChooseRules = currentChooseRules;
 
+    // currentCFGRules.print(System.err, null, false, false, false);
+
     currentCFGRules = new CFGRules(CFGRulesKind.USER);
     currentChooseRules = new ChooseRules();
-
-    // currentCFGRules.print(System.err, null, false, true, false);
 
     Util.traceLevel = 0;
     Util.errorLevel = 1;
     scriptLexer.lex(scriptString, scriptCFGRules);
+    // scriptLexer.lexicalisations.print(System.out, null, seenChooseRule, seenChooseRule, seenChooseRule);
     if (scriptLexer.lexicalisations.valid()) scriptParser.parse(scriptLexer.lexicalisations);
     scriptParser.outcomeReport();
     scriptParser.derivations.choose(scriptChooseRules);

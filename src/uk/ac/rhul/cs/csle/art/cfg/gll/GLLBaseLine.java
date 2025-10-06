@@ -31,8 +31,7 @@ public class GLLBaseLine extends AbstractParser {
 
   @Override
   public void parse(AbstractLexicalisations lexicalisations) {
-
-    // public void parse(String input, CFGRules cfgRules, AbstractLexer lexer, ChooseRules chooseRules) {
+    this.lexicalisations = lexicalisations;
     inLanguage = false;
     tasks = new TasksGLL();
     stacks = new GSSGLL(lexicalisations.cfgRules);
@@ -54,7 +53,6 @@ public class GLLBaseLine extends AbstractParser {
           cfgNode = cfgNode.seq; // Next grammar node which will be an END node
           continue nextCFGNode; // Continue with this sequence
         case SOS, TRM_BI, TRM_CS, TRM_CI, TRM_CH, TRM_CH_SET, TRM_CH_ANTI_SET: // Look for exact instance
-          // var slice = lexicalisations.tweSlices[inputIndex];
           var slice = lexicalisations.getSlice(inputIndex);
           if (slice == null) continue nextTask;// Nothing todo for empty TWE slices
           for (int sliceIndex = 0; sliceIndex < slice.length; sliceIndex++) // Iterate over the TWE set elements in this slice
