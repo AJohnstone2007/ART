@@ -80,7 +80,6 @@ public class GLLModal extends AbstractParser {
         }
     }
 
-    ScriptInterpreter.currentStatistics.putTime("Parse time");
     derivations.numberNodes();
   }
 

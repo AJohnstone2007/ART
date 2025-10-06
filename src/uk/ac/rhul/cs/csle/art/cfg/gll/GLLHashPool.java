@@ -198,7 +198,6 @@ public class GLLHashPool extends HashPool {
         }
       }
     }
-    // loadCounts(); // This is very slow!
   }
 
   /* Stack handling **********************************************************/
@@ -225,9 +224,7 @@ public class GLLHashPool extends HashPool {
     // Util.debug("Return");
     if (poolGet(sn + gssNode_gn) == endOfStringNodeNi) { // Are we popping the basenode
       if (lexicalisations.cfgRules.acceptingNodeNumbers.contains(gn)) inLanguage |= (inputIndex == lexicalisations.inputString.length() - 1); // Make gni to
-                                                                                                                                              // boolean array
-                                                                                                                                              // for
-      Util.debug("Acceptance test returns " + inLanguage);
+      // Util.debug("Acceptance test returns " + inLanguage);
       return;
     }
     find(popElementBuckets, popElementBucketCount, popElement_SIZE, inputIndex, sn, dn);
@@ -383,5 +380,4 @@ public class GLLHashPool extends HashPool {
   public void printCardinalities(PrintStream outputStream) {
     outputStream.println(loops);
   }
-
 }

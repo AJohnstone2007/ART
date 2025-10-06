@@ -833,6 +833,7 @@ public final class ScriptInterpreter {
     ScriptInterpreter.currentStatistics.putTime("Lexical choose time");
 
     if (currentLexer.lexicalisations.valid()) currentParser.parse(currentLexer.lexicalisations);
+    ScriptInterpreter.currentStatistics.putTime("Parse time");
     currentParser.outcomeReport();
 
     if (ScriptInterpreter.currentModes.contains("stopafterparser")) {

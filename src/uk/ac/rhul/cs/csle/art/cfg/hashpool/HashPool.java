@@ -3,6 +3,7 @@ package uk.ac.rhul.cs.csle.art.cfg.hashpool;
 import java.util.Map;
 
 import uk.ac.rhul.cs.csle.art.cfg.AbstractParser;
+import uk.ac.rhul.cs.csle.art.util.Util;
 
 /**
  * An expandable pool of integers which supports sequential allocation of small blocks. There is no facility to free memory once it has been allocated.
@@ -49,6 +50,7 @@ public abstract class HashPool extends AbstractParser { // Uncomment this line f
 
       if (poolBlockTop >= poolBlockCount) { // resize pointer array
         poolBlockCount += poolBlockCount / 2;
+        Util.info("Resizing pool to new block count " + poolBlockCount);
         int[][] newPool = new int[poolBlockCount][];
 
         for (int i = 0; i < poolBlockTop; i++)
