@@ -61,7 +61,7 @@ public final class ScriptInterpreter {
   private final TermTraverser scriptTraverser;
 
   private final Set<String> validModes = Set.of("recogniser", "hashpool", "mgll", "tasklifo", "taskfifo", "productionlookahead", "mglllookahead",
-      "returnlookahead", "derivationtrim", "stopafterlexer", "stopafterparser", "stopafterderivation");
+      "returnlookahead", "compactderivations", "stopafterlexer", "stopafterparser", "stopafterderivation");
 
   public final static Set<String> currentModes = new HashSet<>();
   private AbstractLexer currentLexer = new LexerBaseLine();
@@ -572,7 +572,7 @@ public final class ScriptInterpreter {
           outputStream.println(Util.unescapeString(iTerms.termSymbolString(iTerms.subterm(displayTerm, 0))));
           break;
 
-        case "artFile": // 'myfile' syntax
+        case "artfile": // 'myfile' syntax
           String filename = iTerms.termSymbolString(iTerms.subterm(term, i, 0));
           Util.info("Redirecting output to file " + filename);
           try {
@@ -583,7 +583,7 @@ public final class ScriptInterpreter {
           }
           break;
 
-        case "artDepth": // depth syntax
+        case "artdepth": // depth syntax
           depthLimit = iTerms.termToJavaInteger(iTerms.subterm(term, i, 0));
           break;
 

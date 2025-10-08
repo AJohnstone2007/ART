@@ -55,10 +55,10 @@ public class SPPF extends AbstractDerivations {
 
     if (gn == null) return rightNode;
 
-    // if (lexicalisations.cfgRules.secondSlots.contains(gn)) {
-    // // Util.debug("sppf.extend grammar node is second node - returning rightNode");
-    // return rightNode;
-    // }
+    if (ScriptInterpreter.currentModes.contains("compactderivations") && lexicalisations.cfgRules.secondSlots.contains(gn)) {
+      // Util.debug("sppf.extend grammar node is second node - returning rightNode");
+      return rightNode;
+    }
 
     SPPFSymbolNode ret = (SPPFSymbolNode) find(gn.cfgElement.cfgKind == CFGElementKind.END ? gn.seq : gn,
         leftNode == null ? rightNode.getLeftExtent() : leftNode.getLeftExtent(), rightNode.getRightExtent());
