@@ -55,10 +55,10 @@ public class SPPF extends AbstractDerivations {
 
     if (gn == null) return rightNode;
 
-    if (lexicalisations.cfgRules.secondSlots.contains(gn)) {
-      // Util.debug("sppf.extend grammar node is second node - returning rightNode");
-      return rightNode;
-    }
+    // if (lexicalisations.cfgRules.secondSlots.contains(gn)) {
+    // // Util.debug("sppf.extend grammar node is second node - returning rightNode");
+    // return rightNode;
+    // }
 
     SPPFSymbolNode ret = (SPPFSymbolNode) find(gn.cfgElement.cfgKind == CFGElementKind.END ? gn.seq : gn,
         leftNode == null ? rightNode.getLeftExtent() : leftNode.getLeftExtent(), rightNode.getRightExtent());
@@ -369,12 +369,19 @@ public class SPPF extends AbstractDerivations {
   }
 
   @Override
-  public int bsrCardinality() {
-    int ret = 0;
+  public long bsrCardinality() {
+    long ret = 0;
     for (var n : nodes.keySet())
       for (var pn : n.packNodes)
         ret++;
     return ret;
   }
 
+  @Override
+  public long symbolCardinality() {
+    long ret = 0;
+    for (var n : nodes.keySet())
+      ret++;
+    return ret;
+  }
 }

@@ -11,7 +11,7 @@ public abstract class AbstractTasks implements DisplayInterface {
 
   public abstract DescriptorGLL next();
 
-  public int cardinality() {
+  public long cardinality() {
     return 0;
   }
 }

@@ -27,7 +27,7 @@ public class TasksGLL extends AbstractTasks {
     DescriptorGLL tmp = new DescriptorGLL(tokenIndex, cfgNode, stackNode, derivationNode);
     if (descriptors.add(tmp)) {
       descriptorQueue.addFirst(tmp);
-      // Util.debug("Queued GLL descriptor " + tmp);
+      // Util.debug("enqueue task " + tmp);
     }
   }
 
@@ -37,7 +37,9 @@ public class TasksGLL extends AbstractTasks {
 
   @Override
   public DescriptorGLL next() {
-    return descriptorQueue.poll();
+    var ret = descriptorQueue.poll();
+    // Util.debug("dequeue task " + ret);
+    return ret;
   }
 
   @Override
@@ -59,7 +61,7 @@ public class TasksGLL extends AbstractTasks {
   }
 
   @Override
-  public int cardinality() {
+  public long cardinality() {
     return descriptors.size();
   }
 }

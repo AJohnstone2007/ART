@@ -170,19 +170,19 @@ public class GLLModal extends AbstractParser {
 
   @Override
   public void printCardinalities(PrintStream outputStream) {
-    outputStream.println(">> " + name() + ": characters:" + fmt(lexicalisations.inputString.length()) + " TWEs:" + fmt(lexicalisations.cardinality())
-        + " tasks:" + fmt(tasks.cardinality()) + " stackNodes:" + fmt(stacks.nodeCardinality()) + " stackEdges:" + fmt(stacks.edgeCardinality()) + " pops:"
-        + fmt(stacks.popCardinality()) + " BSRs:" + fmt(derivations.bsrCardinality()));
+    outputStream.println(name() + ": characters:" + fmt(lexicalisations.inputString.length()) + " TWEs:" + fmt(lexicalisations.cardinality()) + " tasks:"
+        + fmt(tasks.cardinality()) + " stackNodes:" + fmt(stacks.nodeCardinality()) + " stackEdges:" + fmt(stacks.edgeCardinality()) + " pops:"
+        + fmt(stacks.popCardinality()) + " derivationNodes:" + fmt(derivations.symbolCardinality()) + " BSRs:" + fmt(derivations.bsrCardinality()));
   }
 
-  private String fmt(int n) {
+  private String fmt(long n) {
     return String.format("%,d", n);
   }
 
   public void printReport(PrintStream outputStream, int count) {
-    outputStream.println(">> After " + count + " parser loops: " + ScriptInterpreter.currentStatistics.currentTime() + "s elapsed, tasks:"
-        + fmt(tasks.cardinality()) + " stackNodes:" + fmt(stacks.nodeCardinality()) + " stackEdges:" + fmt(stacks.edgeCardinality()) + " pops:"
-        + fmt(stacks.popCardinality()) + " BSRs:" + fmt(derivations.bsrCardinality()));
+    outputStream.println(">> After " + count + " tasks: " + ScriptInterpreter.currentStatistics.currentTime() + "s elapsed, tasks:" + fmt(tasks.cardinality())
+        + " stackNodes:" + fmt(stacks.nodeCardinality()) + " stackEdges:" + fmt(stacks.edgeCardinality()) + " pops:" + fmt(stacks.popCardinality())
+        + " derivationNodes:" + fmt(derivations.symbolCardinality()) + " BSRs:" + fmt(derivations.bsrCardinality()));
   }
 
   @Override

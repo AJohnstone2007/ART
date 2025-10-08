@@ -22,7 +22,7 @@ public abstract class AbstractLexicalisations implements DisplayInterface {
 
   public abstract boolean valid();
 
-  public abstract int cardinality();
+  public abstract long cardinality();
 
   public abstract boolean isDeterministic();
 

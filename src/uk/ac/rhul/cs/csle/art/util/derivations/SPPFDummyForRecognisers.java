@@ -94,8 +94,12 @@ public class SPPFDummyForRecognisers extends AbstractDerivations {
   }
 
   @Override
-  public int bsrCardinality() {
+  public long bsrCardinality() {
     return -1;
   }
 
+  @Override
+  public long symbolCardinality() {
+    return -1;
+  }
 }

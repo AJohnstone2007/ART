@@ -63,42 +63,34 @@ public class GLLHashPool extends HashPool {
   final int descriptor_queue = 5; // zero once processed, otherwise next in the queue of awaited descriptors
   final int descriptor_SIZE = 6; // Key size 4
 
-  private final int loadFactor = 2;
-
-  // DescriptorMax data from ansi_c and gtb_src; primes set for load factor 2. This is the experimental setup for the SLE23 paper
+  // These primes are for non-lookahead recognition on shifts.sml
   int sizeKludge = 1; // Leave this at one for normal operations. Can be used to zoom up the bucket count, but probably loses coprime property
-  final int descriptorMax = 6_578_603;
-  final int descriptorPrime = 13_157_231;
+  final int descriptorPrime = 80_000_029;
   final int descriptorBucketInitialCount = descriptorPrime * sizeKludge;
   int descriptorBucketCount;
   int descriptorBuckets[];
 
-  final int gssNodeMax = 946_975;
-  final int gssNodePrime = 1_893_967;
+  final int gssNodePrime = 500_003;
   final int gssNodeBucketInitialCount = gssNodePrime * sizeKludge;
   int gssNodeBucketCount;
   int gssNodeBuckets[];
 
-  final int gssEdgeMax = 2_989_166;
-  final int gssEdgePrime = 5_978_341;
+  final int gssEdgePrime = 47_000_017;
   final int gssEdgeBucketInitialCount = gssEdgePrime * sizeKludge;
   int gssEdgeBucketCount;
   int gssEdgeBuckets[];
 
-  final int PopElementMax = 776_934;
-  final int popElementPrime = 1_553_869;
+  final int popElementPrime = 25_000_019;
   final int popElementBucketInitialCount = popElementPrime * sizeKludge;
   int popElementBucketCount;
   int popElementBuckets[];
 
-  final int sppfNodeMax = 881_128;
-  final int sppfNodePrime = 1_762_259;
+  final int sppfNodePrime = 25_000_019; // Guess
   final int sppfNodeBucketInitialCount = sppfNodePrime * sizeKludge;
   int sppfNodeBucketCount;
   int sppfNodeBuckets[];
 
-  final int sppfPackNodeMax = 829_463;
-  final int sppfPackNodePrime = 1_658_927;
+  final int sppfPackNodePrime = 700_000_007; // Guess
   final int sppfPackNodeBucketInitialCount = sppfPackNodePrime * sizeKludge;
   int sppfPackNodeBucketCount;
   int sppfPackNodeBuckets[];
@@ -171,12 +163,12 @@ public class GLLHashPool extends HashPool {
     initialise();
 
     nextDescriptor: while (dequeueDescriptor()) {
-      if ((++loops) % 1000000 == 0 && Util.traceLevel >= 8) printCardinalities(System.out);
+      if ((++loops) % 1000000 == 0 && Util.traceLevel >= 8) printReport(System.out, loops);
       while (true) {
         switch (kindOf[gn]) {
         case CFGRules.TRM_CS, CFGRules.TRM_CI, CFGRules.TRM_BI, CFGRules.TRM_CH, CFGRules.TRM_CH_UIB, CFGRules.TRM_CH_UOB, CFGRules.TRM_CH_SET, CFGRules.TRM_CH_ANTI_SET:
           if (lexicalisations.getSlice(inputIndex)[0].cfgElement.number == elementOf[gn]) {
-            // S ::= SUtil.debug("At input " + inputIndex + " matched " + lexer.tweSlices[inputIndex][0].cfgElement.number);
+            // Util.debug("At input " + inputIndex + " matched " + lexicalisations.getSlice(inputIndex)[0].cfgElement.number);
             d(1);
             inputIndex++;
             gn++;
@@ -207,6 +199,8 @@ public class GLLHashPool extends HashPool {
     int parentGSSNode = findIndex;
 
     find(gssEdgeBuckets, gssEdgeBucketCount, gssEdge_SIZE, parentGSSNode, sn, dn);
+    // Util.debug("Push with GSS edge labelled " + toStringSPPFNode(dn));
+
     int gssEdge = findIndex;
 
     if (findMadeNew) {
@@ -227,20 +221,24 @@ public class GLLHashPool extends HashPool {
       // Util.debug("Acceptance test returns " + inLanguage);
       return;
     }
+
     find(popElementBuckets, popElementBucketCount, popElement_SIZE, inputIndex, sn, dn);
     if (findMadeNew) {
       poolSet(findIndex + popElement_popList, poolGet(sn + gssNode_popList));
       poolSet(sn + gssNode_popList, findIndex);
     }
 
-    for (int e = poolGet(sn + gssNode_edgeList); e != 0; e = poolGet(e + gssEdge_edgeList))
+    for (int e = poolGet(sn + gssNode_edgeList); e != 0; e = poolGet(e + gssEdge_edgeList)) {
+      // Util.debug("Popping using edge labelled " + toStringSPPFNode(poolGet(e + gssEdge_dn)));
       enqueueDescriptor(poolGet(sn + gssNode_gn), inputIndex, poolGet(e + gssEdge_dst),
           derivationUpdate(poolGet(sn + gssNode_gn), poolGet(e + gssEdge_dn), dn));
+    }
   }
 
   /* Derivation handling *****************************************************/
   private int derivationFindNode(int dni, int leftExt, int rightExt) {
     find(sppfNodeBuckets, sppfNodeBucketCount, sppfNode_SIZE, dni, leftExt, rightExt);
+    // Util.debug("derivationFindNode returns " + toStringSPPFNode(findIndex));
     return findIndex;
   }
 
@@ -277,12 +275,12 @@ public class GLLHashPool extends HashPool {
     dn = poolGet(descriptorQueue + descriptor_dn);
 
     descriptorQueue = poolGet(descriptorQueue + descriptor_queue);
-    // Util.debug("dequeued descriptor (" + gn + ", " + tokenIndex + ", " + sn + ", " + dn + ")");
+    // Util.debug("dequeuDescriptor (" + toStringSlot(gn) + ", " + inputIndex + ", (" + toStringGSSNode(sn) + "), (" + toStringSPPFNode(dn) + "))");
     return true;
   }
 
   private void enqueueDescriptor(int gn, int i, int sn, int dn) {
-    // Util.debug("enqueueDescriptor(" + gni + "," + i + "," + sni + "," + dni + ")");
+    // Util.debug("enqueueDescriptor(" + toStringSlot(gn) + "," + i + ", (" + toStringGSSNode(sn) + "), (" + toStringSPPFNode(dn) + "))");
     find(descriptorBuckets, descriptorBucketCount, descriptor_SIZE, gn, i, sn, dn);
     if (findMadeNew) {
       poolSet(findIndex + descriptor_queue, descriptorQueue);
@@ -359,13 +357,25 @@ public class GLLHashPool extends HashPool {
     return count;
   }
 
-  String toStringSPPFNode(int n) {
-    if (n == 0) return "null SPPF node";
-    int gn = poolGet(n + sppfNode_gn);
-    int leftExtent = poolGet(n + sppfNode_leftExt);
-    int rightExtent = poolGet(n + sppfNode_rightExt);
+  String toStringSlot(int gn) {
+    return lexicalisations.cfgRules.numberToRulesNodeMap.get(gn).toStringAsProduction();
+  }
 
-    return lexicalisations.cfgRules.numberToRulesNodeMap.get(gn).toStringAsProduction() + ", " + leftExtent + ", " + rightExtent;
+  String toStringGSSNode(int sn) {
+    if (sn == 0) return "null GSS node";
+    int gn = poolGet(sn + gssNode_gn);
+    int i = poolGet(sn + gssNode_i);
+
+    return toStringSlot(gn) + ", " + i;
+  }
+
+  String toStringSPPFNode(int dn) {
+    if (dn == 0) return "null SPPF node";
+    int gn = poolGet(dn + sppfNode_gn);
+    int leftExtent = poolGet(dn + sppfNode_leftExt);
+    int rightExtent = poolGet(dn + sppfNode_rightExt);
+
+    return toStringSlot(gn) + ", " + leftExtent + ", " + rightExtent;
   }
 
   String toStringSPPFPackNode(int n) {
@@ -378,6 +388,27 @@ public class GLLHashPool extends HashPool {
 
   @Override
   public void printCardinalities(PrintStream outputStream) {
-    outputStream.println(loops);
+    loadCounts();
+    outputStream.println(">> " + name() + ": characters:" + fmt(lexicalisations.inputString.length()) + " TWEs:" + fmt(lexicalisations.cardinality()));
+
+    // !! Debug !!
+    // for (int bucket : sppfNodeBuckets)
+    // for (int chain = bucket; chain != 0; chain = poolGet(chain)) {
+    // Util.debug("SPPF node " + toStringSPPFNode(chain));
+    // for (int packNode = poolGet(chain + sppfNode_packNodeList); packNode != 0; packNode = poolGet(packNode + sppfPackNode_packNodeList)) {
+    // Util.debug("Pack node " + toStringSPPFPackNode(packNode) + ": " + "[" + toStringSPPFNode(poolGet(packNode + sppfPackNode_leftChild)) + "] " + "["
+    // + toStringSPPFNode(poolGet(packNode + sppfPackNode_rightChild)) + "]");
+    // }
+    // }
+
   }
+
+  private String fmt(long n) {
+    return String.format("%,d", n);
+  }
+
+  public void printReport(PrintStream outputStream, int count) {
+    outputStream.println(">> After " + count + " tasks: " + ScriptInterpreter.currentStatistics.currentTime() + "s elapsed");
+  }
+
 }

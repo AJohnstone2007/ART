@@ -57,13 +57,11 @@ public abstract class AbstractDerivations implements DisplayInterface {
 
   public abstract void numberNodes();
 
-  public void xchooseLongestMatch() {
-    Util.notImplemented("chooseLongestMatch()", getClass());
-  }
-
   public void choose(ChooseRules chooseRules) {
     Util.notImplemented("choose()", getClass());
   }
 
-  public abstract int bsrCardinality();
+  public abstract long bsrCardinality();
+
+  public abstract long symbolCardinality();
 }

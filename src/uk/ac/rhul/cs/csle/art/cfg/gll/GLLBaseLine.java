@@ -136,10 +136,10 @@ public class GLLBaseLine extends AbstractParser {
   public void printCardinalities(PrintStream outputStream) {
     outputStream.println(name() + ": characters:" + fmt(lexicalisations.inputString.length()) + " TWEs:" + fmt(lexicalisations.cardinality()) + " tasks:"
         + fmt(tasks.cardinality()) + " stackNodes:" + fmt(stacks.nodeCardinality()) + " stackEdges:" + fmt(stacks.edgeCardinality()) + " pops:"
-        + fmt(stacks.popCardinality()) + " BSRs:" + fmt(derivations.bsrCardinality()));
+        + fmt(stacks.popCardinality()) + " derivationNodes:" + fmt(derivations.symbolCardinality()) + " BSRs:" + fmt(derivations.bsrCardinality()));
   }
 
-  private String fmt(int n) {
+  private String fmt(long n) {
     return String.format("%,d", n);
   }
 

@@ -32,8 +32,8 @@ public class TWESet extends AbstractLexicalisations {
   }
 
   @Override
-  public int cardinality() {
-    int ret = 0;
+  public long cardinality() {
+    long ret = 0;
     for (var i : tweSlices)
       if (i != null) ret += i.length;
     return ret;

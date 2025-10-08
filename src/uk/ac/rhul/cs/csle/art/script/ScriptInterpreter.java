@@ -848,6 +848,9 @@ public final class ScriptInterpreter {
       currentTryTerm = currentParser.derivations.derivationAsTerm();
       currentStatistics.putTime("Term construction time");
     }
+
+    if (Util.traceLevel >= 8) currentParser.printCardinalities(System.out);
+
   }
 
   private TermTraverserText initialisePlainTextTraverser() {

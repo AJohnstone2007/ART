@@ -37,6 +37,7 @@ public class GSSGLL extends AbstractStacks {
       AbstractDerivationNode derivationNode) {
     GSSNode gssNode = find(gn.seq, tokenIndex);
     GSSEdge gssEdge = new GSSEdge(stackNode, derivationNode);
+    // Util.debug("Push with GSS edge labelled " + derivationNode);
     if (!gssNode.edges.contains(gssEdge)) {
       gssNode.edges.add(gssEdge);
       for (PopSetElement rc : gssNode.pops) // Contingent pops
@@ -59,21 +60,21 @@ public class GSSGLL extends AbstractStacks {
   }
 
   @Override
-  public int nodeCardinality() {
+  public long nodeCardinality() {
     return nodes.keySet().size();
   }
 
   @Override
-  public int edgeCardinality() {
-    int gssEdgeCount = 0;
+  public long edgeCardinality() {
+    long gssEdgeCount = 0;
     for (GSSNode g : nodes.keySet())
       gssEdgeCount += g.edges.size();
     return gssEdgeCount;
   }
 
   @Override
-  public int popCardinality() {
-    int popCount = 0;
+  public long popCardinality() {
+    long popCount = 0;
     for (GSSNode g : nodes.keySet())
       popCount += g.pops.size();
     return popCount;

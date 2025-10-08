@@ -30,7 +30,6 @@ public abstract class AbstractParser {
         Util.error(Util.echo(name() + " syntax error ", lexicalisations.getSlice(widestIndex)[0].leftExtent, lexicalisations.inputString));
       }
     }
-    if (Util.traceLevel >= 8) printCardinalities(System.out);
   }
 
   protected String name() {
