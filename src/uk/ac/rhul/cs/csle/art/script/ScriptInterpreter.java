@@ -711,6 +711,7 @@ public final class ScriptInterpreter {
             currentIndexedTryTerm = currentParser.derivations.derivationAsInterpeterTerm();
             outputStream.println(iTerms.toString(currentIndexedTryTerm, outputTraverser, indented, depthLimit));
           } else {
+            outputStream.println("!try term: " + currentTryTerm);
             outputStream.println(iTerms.toString(currentTryTerm, outputTraverser, indented, depthLimit));
             if (scriptParserTerm == currentTryTerm) Util.info("Bootstrap achieved: script parser term and current derivation term identical");
           }

@@ -42,7 +42,7 @@ public class GLLModal extends AbstractParser {
     derivationNode = null;
     queueProductionTasks();
     nextTask: while (nextTask()) {
-      if ((++loops) % 1000000 == 0 && Util.traceLevel >= 8) printReport(System.out, loops);
+      if ((++loops) % 1000000 == 0) printReport(System.out, loops);
       nextCFGNode: while (true)
         switch (cfgNode.cfgElement.cfgKind) {
         case ALT:
