@@ -24,6 +24,7 @@ public class GLLModal extends AbstractParser {
   private CFGNode cfgNode; // current Context Free Grammar Node
   private AbstractStackNode stackNode; // current top of stack node
   private AbstractDerivationNode derivationNode; // current derivation forest node
+  int tasksProcessed;
 
   @Override
   public void parse(AbstractLexicalisations lexicalisations) {
@@ -33,8 +34,7 @@ public class GLLModal extends AbstractParser {
     tasks = new TasksGLL();
     stacks = new GSSGLL(lexicalisations.cfgRules);
     derivations = ScriptInterpreter.currentModes.contains("recogniser") ? new SPPFDummyForRecognisers(lexicalisations) : new SPPF(lexicalisations);
-
-    int loops = 0;
+    tasksProcessed = 0;
 
     inputIndex = 0;
     cfgNode = lexicalisations.cfgRules.elementToRulesNodeMap.get(lexicalisations.cfgRules.startNonterminal).alt;
@@ -42,7 +42,8 @@ public class GLLModal extends AbstractParser {
     derivationNode = null;
     queueProductionTasks();
     nextTask: while (nextTask()) {
-      if ((++loops) % 1000000 == 0) printReport(System.out, loops);
+      ++tasksProcessed;
+      if (ScriptInterpreter.currentTaskReport != 0 && tasksProcessed % ScriptInterpreter.currentTaskReport == 0) printReport(System.out, tasksProcessed);
       nextCFGNode: while (true)
         switch (cfgNode.cfgElement.cfgKind) {
         case ALT:
@@ -107,7 +108,7 @@ public class GLLModal extends AbstractParser {
   private boolean nextTask() {
     var task = tasks.next();
     // Util.debug("Processing task " + task);
-    if (task == null) return false;
+    if (task == null || (ScriptInterpreter.currentTaskLimit != 0 && ScriptInterpreter.currentTaskLimit < tasksProcessed)) return false;
     inputIndex = task.inputIndex;
     cfgNode = task.cfgNode;
     stackNode = task.stackNode;
