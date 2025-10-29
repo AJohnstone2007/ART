@@ -192,7 +192,7 @@ type ::=
 | typeCollection^
 typeCollection ::= '__array' | '__list' | '__set' | '__map'
 
-modes ::= ID | ID ','^ modes^ | 'not' ID | 'not' ID ','^ modes^
+modes ::= ID | ID ','^ modes^ | 'not' ID | 'not' ID ','^ modes^ | ID '='^ __int32 | ID '='^ __int32 ','^ modes 
 
 paraterminalElements ::= paraterminalElement | paraterminalElement ','^ paraterminalElements^
 paraterminalElement  ::= cfgNonterminal^^
