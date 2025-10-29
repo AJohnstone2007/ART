@@ -108,7 +108,11 @@ public class GLLModal extends AbstractParser {
   private boolean nextTask() {
     var task = tasks.next();
     // Util.debug("Processing task " + task);
-    if (task == null || (ScriptInterpreter.currentTaskLimit != 0 && ScriptInterpreter.currentTaskLimit < tasksProcessed)) return false;
+    if (task == null) return false;
+    if (ScriptInterpreter.currentTaskLimit != 0 && ScriptInterpreter.currentTaskLimit < tasksProcessed) {
+      Util.warning("Parse terminated early by task limit");
+      return false;
+    }
     inputIndex = task.inputIndex;
     cfgNode = task.cfgNode;
     stackNode = task.stackNode;
