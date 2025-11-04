@@ -106,6 +106,8 @@ public class TWESet extends AbstractLexicalisations {
 
     if (element.cfgElement.cfgKind == CFGElementKind.TRM_BI) {
       switch (element.cfgElement.str) {
+      case "STRING_SHRIEK_SHRIEK":
+        return full.substring(2, full.length() - 2);
       case "STRING_DQ", "STRING_SQ", "STRING_PLAIN_SQ", "STRING_DOLLAR", "STRING_BRACE":
         return full.substring(1, full.length() - 1);
       case "CHAR_BQ", "AP_INTEGER", "AP_REAL":
@@ -217,10 +219,11 @@ public class TWESet extends AbstractLexicalisations {
 
   /*
    * Work through the current TWEset, counting thnumber of suppressed elements in each slice. If this is >0, make a new replacement slice and copy the
-   * unsuppressed elements into it.
+   * unsuppressed elements into it. Return the cardinality of the TWE set.
    */
   @Override
-  public void removeSuppressedTWE() {
+  public int removeSuppressedTWE() {
+    int newCardinality = 0;
     for (int i = 0; i < tweSlices.length; i++)
       if (tweSlices[i] != null && tweSlices[i].length > 1) {
         var oldSlice = tweSlices[i];
@@ -234,7 +237,9 @@ public class TWESet extends AbstractLexicalisations {
           for (int ei = 0; ei < oldSlice.length; ei++)
             if (!oldSlice[ei].suppressed) tweSlices[i][newSliceIndex++] = oldSlice[ei];
         }
+        newCardinality += tweSlices[i].length;
       }
+    return newCardinality;
   }
 
   @Override

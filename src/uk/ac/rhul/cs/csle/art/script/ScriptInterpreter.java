@@ -143,8 +143,7 @@ public final class ScriptInterpreter {
 
     ret.addActionBreak("directive", (Integer t) -> directiveAction(t), null, null);
 
-    ret.addActionBreak("cfgLHS", (Integer t) -> currentCFGRules.actionLHS(childSymbolString(t)), null, null);
-    ret.addAction("cfgAttributeDeclaration", (Integer t) -> currentCFGRules.actionAttribute(childSymbolString(t), childSymbolString1(t)), null, null);
+    ret.addActionBreak("cfgLHS", (Integer t) -> currentCFGRules.actionLHS(t), null, null);
     ret.addAction("cfgSeq", (Integer t) -> currentCFGRules.actionALT(), null, (Integer t) -> currentCFGRules.actionEND(""));
 
     ret.addAction("cfgEpsilon", (Integer t) -> currentCFGRules.actionSEQ(CFGElementKind.EPSILON, "#", t), null, null);
@@ -181,7 +180,7 @@ public final class ScriptInterpreter {
     return ret;
   }
 
-  private String childSymbolString(int t) {
+  public static String childSymbolString(int t) {
     return Util.unescapeString(iTerms.termSymbolString(iTerms.subterm(t, 0)));
   }
 

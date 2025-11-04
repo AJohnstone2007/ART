@@ -100,13 +100,9 @@ public class SPPF extends AbstractDerivations {
 
   long derivationNodeCount = 0, derivationAmbiguityNodeCount = 0;
 
-  boolean derivationForInterpreter = false;
-
   @Override
   public int derivationAsInterpeterTerm() {
-    derivationForInterpreter = true;
     int ret = derivationAsTerm();
-    derivationForInterpreter = false;
     return ret;
   }
 
@@ -152,9 +148,6 @@ public class SPPF extends AbstractDerivations {
     }
 
     if (constructor == null) // If there were no OVERs, then set the constructor to be our symbol
-      if (derivationForInterpreter)
-      constructor = firstAvailableSPPFPN == null ? "" + -sppfn.rightExtent : "" + firstAvailableSPPFPN.grammarNode.alt.num;
-      else
       constructor = (gn.cfgElement.cfgKind == CFGElementKind.TRM_BI) ? lexicalisations.lexeme(sppfn.grammarNode, sppfn.leftExtent) : gn.cfgElement.str;
 
     // Util.debug("At SPPF node " + sppfn + " and grammar node " + gn + " make new term with constructor: " + constructor);

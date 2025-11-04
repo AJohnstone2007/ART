@@ -55,7 +55,7 @@ public class GLLModal extends AbstractParser {
           continue nextCFGNode; // Continue with this sequence
         case SOS, TRM_BI, TRM_CS, TRM_CI, TRM_CH, TRM_CH_SET, TRM_CH_ANTI_SET: // Look for exact instance
           var slice = lexicalisations.getSlice(inputIndex);
-          if (slice == null) continue nextTask;// Nothing todo for empty TWE slices
+          if (slice == null) continue nextTask;// Nothing to do for empty TWE slices
           for (int sliceIndex = 0; sliceIndex < slice.length; sliceIndex++) // Iterate over the TWE set elements in this slice
             if (!slice[sliceIndex].suppressed && matchTerminal(slice[sliceIndex].cfgElement)) { // Ignore suppressed TWE set elements
               // Util.debug("Matched " + cfgNode.toStringAsProduction());

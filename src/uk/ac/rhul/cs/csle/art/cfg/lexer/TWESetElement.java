@@ -7,6 +7,7 @@ public class TWESetElement {
   public final int leftExtent;
   public final int lexemeEnd; // first non-whitespace character
   public final int rightExtent;
+  public int indexNumber;
   public boolean suppressed;
 
   public TWESetElement(CFGElement element, int leftExtent, int lexemeEnd, int rightExtent) {

@@ -46,5 +46,5 @@ public abstract class AbstractLexicalisations implements DisplayInterface {
 
   public abstract void suppressDeadPaths();
 
-  public abstract void removeSuppressedTWE();
+  public abstract int removeSuppressedTWE();
 }

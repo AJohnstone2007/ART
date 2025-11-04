@@ -15,11 +15,6 @@ public abstract class AbstractInterpreter {
     return "";
   }
 
-  protected String lexemeCore() {
-    String lexeme = lexeme();
-    return lexeme.substring(1, lexeme.length() - 1);
-  }
-
   public void interpret(AbstractAttributeBlock nonterminalActions) {
     Util.error("interpret() not implemented for interpreter class " + this.getClass().getSimpleName());
   }

@@ -928,6 +928,13 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
 
   LinkedList<CFGNode> stack = new LinkedList<>();
 
+  public void actionLHS(int t) {
+    actionLHS(ScriptInterpreter.childSymbolString(t));
+    if (ScriptInterpreter.iTerms.termArity(t) == 2) for (int i = 0; i < ScriptInterpreter.iTerms.termArity(ScriptInterpreter.iTerms.subterm(t, 1)); i++)
+      mostRecentLHS.cfgElement.attributes.put(ScriptInterpreter.iTerms.termSymbolString(ScriptInterpreter.iTerms.subterm(t, 1, i, 0)),
+          ScriptInterpreter.iTerms.termSymbolString(ScriptInterpreter.iTerms.subterm(t, 1, i, 1)));
+  }
+
   public void actionLHS(String id) {
     CFGElement element = findElement(CFGElementKind.NONTERMINAL, id);
     defined.add(element);
@@ -936,6 +943,7 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
     if (workingNode == null) elementToRulesNodeMap.put(element, actionSEQ(CFGElementKind.NONTERMINAL, id, 0));
     mostRecentLHS = elementToRulesNodeMap.get(element);
     clean = false;
+
   }
 
   public void actionALT() {
@@ -957,8 +965,6 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
   }
 
   public void actionAttribute(String name, String type) {
-    mostRecentLHS.cfgElement.attributes.put(name, type);
-    clean = false;
   }
 
   public void actionEND(String actions) {
@@ -1025,14 +1031,32 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
     return ret;
   }
 
-  public int[] makeFirstOfArray() {
-    // TODO Auto-generated method stub
+  public boolean[][] makeFirstOfArray() { // FirstOf is slot, token -> boolean
+    boolean[][] ret = new boolean[nextFreeEnumerationElement][];
+    for (int i = 0; i < ret.length; i++)
+      ret[i] = new boolean[nextFreeEnumerationElement];
+    for (var e : first.getDomain())
+      for (var f : first.get(e))
+        ret[e.number][f.number] = true;
     return null;
   }
 
-  public int[] makeFollowOfArray() {
-    // TODO Auto-generated method stub
-    return null;
+  public boolean[][] makeFollowOfArray() { // FollowOf is slot, token -> boolean
+    boolean[][] ret = new boolean[nextFreeEnumerationElement][];
+    for (int i = 0; i < ret.length; i++)
+      ret[i] = new boolean[nextFreeEnumerationElement];
+    for (var e : follow.getDomain())
+      for (var f : follow.get(e))
+        ret[e.number][f.number] = true;
+    return ret;
+  }
+
+  public boolean[] makeSecondOfArray() { // SecondOf is a slot -> boolean
+    boolean ret[] = new boolean[nextFreeEnumerationElement];
+    for (var s : secondSlots)
+      // ret[s.]
+      ;
+    return ret;
   }
 
   /** Static methods *********************************************************/

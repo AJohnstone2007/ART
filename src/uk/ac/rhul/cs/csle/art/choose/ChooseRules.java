@@ -16,7 +16,7 @@ import uk.ac.rhul.cs.csle.art.util.statistics.Statistics;
 
 public class ChooseRules implements DisplayInterface {
   private final Set<Integer> lexicalTerms;
-  private final Set<Integer> derivationTerms;
+  private final Set<Integer> derivationChooseTerms;
   private boolean dirty = true;
 
   private final Relation<CFGElement, CFGElement> lexicalHigher = new Relation<>();
@@ -29,18 +29,18 @@ public class ChooseRules implements DisplayInterface {
   public ChooseRules(ChooseRules payload) { // Copy constructor
     super();
     lexicalTerms = new HashSet<>(payload.lexicalTerms);
-    derivationTerms = new HashSet<>(payload.derivationTerms);
+    derivationChooseTerms = new HashSet<>(payload.derivationChooseTerms);
   }
 
   public ChooseRules() {
     super();
     lexicalTerms = new HashSet<>();
-    derivationTerms = new HashSet<>();
+    derivationChooseTerms = new HashSet<>();
   }
 
   public void addDerivationChooseRule(int term) {
     ScriptInterpreter.seenChooseRule = true;
-    derivationTerms.add(term);
+    derivationChooseTerms.add(term);
     dirty = true;
   }
 
@@ -53,7 +53,7 @@ public class ChooseRules implements DisplayInterface {
   public void normalise() {
     if (!dirty) return;
 
-    for (int term : derivationTerms) {
+    for (int term : derivationChooseTerms) {
       // Util.debug("Choose derivation rule : " + ScriptInterpreter.iTerms.toRawString(term));
       CFGNode lhs = locateCFGNode(ScriptInterpreter.iTerms.subterm(term, 0)), rhs = locateCFGNode(ScriptInterpreter.iTerms.subterm(term, 2));
       if (lhs == null || rhs == null) {

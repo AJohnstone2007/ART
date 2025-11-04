@@ -8,7 +8,7 @@ import uk.ac.rhul.cs.csle.art.util.Util;
 
 public class AttributeActionInterpreter extends AbstractInterpreter {
   private AbstractActions artActions = new ARTDefaultActions();
-  private int previousToken;
+  private String lexeme;
 
   public AttributeActionInterpreter() {
     // Util.info("Interpreter set to Attribute-Action");
@@ -54,17 +54,17 @@ public class AttributeActionInterpreter extends AbstractInterpreter {
         if (!node.delayed) interpret(attributes.getAttributes(node.num));
         break;
       case TRM_CS, TRM_CI, TRM_CH, TRM_BI:
-        previousToken = -intFromTermSymbol(children[childNumber]) - 1; // Change this to get token index from the derivation tree
+        lexeme = ScriptInterpreter.iTerms.termSymbolString(children[childNumber]);
         break;
       }
       childNumber++;
-      // Util.info("Calling action " + node.toStringAsProduction());
+      Util.info("Calling action " + node.toStringAsProduction());
       attributes.action(node.num);
     }
   }
 
   @Override
   public String lexeme() {
-    return "Unimplemented lexeme()"; // parser.lexer.lexeme(previousToken);
+    return lexeme;
   }
 }
