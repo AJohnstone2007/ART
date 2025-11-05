@@ -14,6 +14,7 @@ import uk.ac.rhul.cs.csle.art.util.Util;
 public class ActionsGenerator {
 
   public ActionsGenerator(CFGRules cfgRules, String filePrelude, String classPrelude) {
+    cfgRules.normalise();
     String filename = "ARTGeneratedActions";
     String timeStamp = Util.timestamp();
     Util.info("Writing new " + filename + ": " + timeStamp);
@@ -73,8 +74,9 @@ public class ActionsGenerator {
 
   private void printAllInitsRec(PrintWriter text, CFGNode cfgNode) {
     if (cfgNode == null || cfgNode.cfgElement.cfgKind == CFGElementKind.END) return;
-    if (cfgNode.cfgElement.cfgKind == CFGElementKind.NONTERMINAL) text.println("      case " + cfgNode.num + ": " + cfgNode.cfgElement.str + cfgNode.instanceNumber
-        + " = new ART_C_" + cfgNode.cfgElement.str + "(); " + cfgNode.cfgElement.str + cfgNode.instanceNumber + ".term = term; break;");
+    if (cfgNode.cfgElement.cfgKind == CFGElementKind.NONTERMINAL)
+      text.println("      case " + cfgNode.num + ": " + cfgNode.cfgElement.str + cfgNode.instanceNumber + " = new ART_C_" + cfgNode.cfgElement.str + "(); "
+          + cfgNode.cfgElement.str + cfgNode.instanceNumber + ".term = term; break;");
     printAllInitsRec(text, cfgNode.seq);
     printAllInitsRec(text, cfgNode.alt);
   }

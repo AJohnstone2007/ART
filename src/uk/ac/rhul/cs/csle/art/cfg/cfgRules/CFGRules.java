@@ -410,7 +410,7 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
         for (CFGNode gn = elementToRulesNodeMap.get(e).alt; gn != null; gn = gn.alt) { // iterate over the productions
           rhsNonterminalsInProduction.clear();
           for (CFGNode gs = gn.seq; gs.cfgElement.cfgKind != CFGElementKind.END; gs = gs.seq) {
-            // Util.info("Collecting RHS nonterminals at " + gs + " " + ScriptTermInterpreter.iTerms.toRawString(gs.slotTerm));
+            // Util.info("Collecting RHS nonterminals at " + gs + " " + ScriptInterpreter.iTerms.toRawString(gs.actionAsTerm));
             if (gs.cfgElement.cfgKind == CFGElementKind.NONTERMINAL) {
               if (rhsNonterminalsInProduction.get(gs.cfgElement.str) == null)
                 rhsNonterminalsInProduction.put(gs.cfgElement.str, 1);
@@ -427,7 +427,7 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
           }
         }
 
-        // Util.info("LHS: " + lhs + " with valid nonterminals=instances: " + rhsNonterminalsInProduction);
+        Util.info("LHS: " + lhs + " with valid nonterminals=instances: " + rhsNonterminalsInProduction);
 
         // Now check each action to see if it is trying to access a RHS nonterminal which is not instances in this LHS
         for (CFGNode gn = elementToRulesNodeMap.get(e).alt; gn != null; gn = gn.alt) {
