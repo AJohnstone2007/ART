@@ -11,13 +11,13 @@ public class AttributeActionInterpreter extends AbstractInterpreter {
   private String lexeme;
 
   public AttributeActionInterpreter() {
-    // Util.info("Interpreter set to Attribute-Action");
+    Util.info("Interpreter set to Attribute-Action");
     artActions = new ARTDefaultActions(); // Set default
     try { // try to connect to user actions
       artActions = (AbstractActions) getClass().getClassLoader().loadClass("ARTGeneratedActions").getDeclaredConstructor().newInstance();
     } catch (Exception e) {
       // Silently absorb exceptions - uncomment the line below for debugging
-      // Util.info(e.getMessage() + "\nUnable to dynamically load user ARTActions - using default empty actions");
+      Util.info(e.getMessage() + "\nUnable to dynamically load user ARTActions - using default empty actions");
     }
     Util.info("Attached to " + artActions.getClass().getSimpleName() + " " + artActions.name());
   }
@@ -30,7 +30,7 @@ public class AttributeActionInterpreter extends AbstractInterpreter {
   public void interpret(AbstractParser parser) {
     this.parser = parser;
     int interpreterTerm = parser.derivations.derivationAsInterpeterTerm();
-    // ScriptTermInterpreter.iTerms.toDot(interpreterTerm, "interpreterTerm.dot");
+    ScriptInterpreter.iTerms.toDot(interpreterTerm, "interpreterTerm.dot");
 
     var root = artActions.init(this, interpreterTerm);
     interpret(root);

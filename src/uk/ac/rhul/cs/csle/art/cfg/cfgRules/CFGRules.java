@@ -427,7 +427,7 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
           }
         }
 
-        Util.info("LHS: " + lhs + " with valid nonterminals=instances: " + rhsNonterminalsInProduction);
+        // Util.info("LHS: " + lhs + " with valid nonterminals=instances: " + rhsNonterminalsInProduction);
 
         // Now check each action to see if it is trying to access a RHS nonterminal which is not instances in this LHS
         for (CFGNode gn = elementToRulesNodeMap.get(e).alt; gn != null; gn = gn.alt) {
