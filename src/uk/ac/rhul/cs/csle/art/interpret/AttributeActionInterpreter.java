@@ -41,6 +41,7 @@ public class AttributeActionInterpreter extends AbstractInterpreter {
     if (attributes == null) Util.fatal("Invalid ARTGeneratedActions - debug, regenerate and recompile");
     CFGNode altNode = parser.lexicalisations.cfgRules.numberToRulesNodeMap.get(intFromTermSymbol(attributes.term));
     var children = ScriptInterpreter.iTerms.termChildren(attributes.term);
+    // Util.info("Interpreting production " + altNode.toStringAsProduction() + " with " + children.length + "children");
     int childNumber = 0;
 
     for (var node = altNode.seq; node.cfgElement.cfgKind != CFGElementKind.END; node = node.seq) // Skip alt node
@@ -48,17 +49,19 @@ public class AttributeActionInterpreter extends AbstractInterpreter {
 
     childNumber = -1;
     for (var node = altNode; node.cfgElement.cfgKind != CFGElementKind.END; node = node.seq) {
-      // Util.info("node number " + node.num + " childNumber = " + childNumber + " previous token = " + previousToken);
+      // Util.info("node number " + node.num + " childNumber = " + childNumber);
       switch (node.cfgElement.cfgKind) {
       case NONTERMINAL:
         if (!node.delayed) interpret(attributes.getAttributes(node.num));
         break;
       case TRM_CS, TRM_CI, TRM_CH, TRM_BI:
-        lexeme = ScriptInterpreter.iTerms.termSymbolString(children[childNumber]);
+        String[] labelElements = ScriptInterpreter.iTerms.termSymbolString(children[childNumber]).split(",");
+
+        lexeme = parser.lexicalisations.lexeme(node.cfgElement, Integer.parseInt(labelElements[1]), Integer.parseInt(labelElements[2]));
         break;
       }
       childNumber++;
-      Util.info("Calling action " + node.toStringAsProduction());
+      // Util.info("Calling action at " + node.toStringAsProduction());
       attributes.action(node.num);
     }
   }

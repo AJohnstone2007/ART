@@ -157,7 +157,8 @@ public class SPPF extends AbstractDerivations {
         else
           constructor = "" + firstAvailableSPPFPN.grammarNode.alt.num;
       } else
-      constructor = (gn.cfgElement.cfgKind == CFGElementKind.TRM_BI) ? lexicalisations.lexeme(sppfn.grammarNode, sppfn.leftExtent) : gn.cfgElement.str;
+      constructor = (gn.cfgElement.cfgKind == CFGElementKind.TRM_BI) ? lexicalisations.lexeme(sppfn.grammarNode.cfgElement, sppfn.leftExtent, sppfn.rightExtent)
+          : gn.cfgElement.str;
 
     // Util.debug("At SPPF node " + sppfn + " and grammar node " + gn + " make new term with constructor: " + constructor);
     if (children != childrenFromParent) {

@@ -2,7 +2,7 @@ package uk.ac.rhul.cs.csle.art.util.lexicalisations;
 
 import java.io.PrintStream;
 
-import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
+import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGElement;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGRules;
 import uk.ac.rhul.cs.csle.art.cfg.lexer.TWESetElement;
 import uk.ac.rhul.cs.csle.art.choose.ChooseRules;
@@ -36,7 +36,7 @@ public abstract class AbstractLexicalisations implements DisplayInterface {
   public abstract void statistics(Statistics currentstatistics, PrintStream outputStream, TermTraverserText outputTraverser, boolean indexed, boolean full,
       boolean indented);
 
-  public abstract String lexeme(CFGNode grammarNode, int leftExtent);
+  public abstract String lexeme(CFGElement cfgElement, int leftExtent, int rightExtent);
 
   public abstract String lexeme(TWESetElement element);
 

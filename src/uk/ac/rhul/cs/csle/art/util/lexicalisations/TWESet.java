@@ -2,8 +2,8 @@ package uk.ac.rhul.cs.csle.art.util.lexicalisations;
 
 import java.io.PrintStream;
 
+import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGElement;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGElementKind;
-import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGRules;
 import uk.ac.rhul.cs.csle.art.cfg.lexer.TWESetElement;
 import uk.ac.rhul.cs.csle.art.choose.ChooseRules;
@@ -90,13 +90,13 @@ public class TWESet extends AbstractLexicalisations {
 
   /* Search tweSlices[leftExtent] for a TWE set elementthat matchs grammarNode */
   @Override
-  public String lexeme(CFGNode grammarNode, int leftExtent) {
+  public String lexeme(CFGElement cfgElement, int leftExtent, int rightExtent) {
 
-    if (tweSlices[leftExtent] == null) Util.fatal("internal error - SPPF has terminal with left extent referencing null TWE   slice " + leftExtent);
+    if (tweSlices[leftExtent] == null) Util.fatal("internal error - lexeme(" + cfgElement + ", " + leftExtent + ", " + rightExtent + ") references null slice");
     for (var te : tweSlices[leftExtent])
-      if (te.cfgElement.cfgKind == grammarNode.cfgElement.cfgKind) return lexeme(te);
+      if (!te.suppressed && te.cfgElement.cfgKind == cfgElement.cfgKind && te.rightExtent == rightExtent) return lexeme(te);
 
-    Util.fatal("internal error - SPPF has terminal which is not present in TWE slice " + leftExtent);
+    Util.fatal("internal error - lexeme(" + cfgElement + ", " + leftExtent + ", " + rightExtent + ") not found");
     return "??? Unmatched lexeme kind";
   }
 
