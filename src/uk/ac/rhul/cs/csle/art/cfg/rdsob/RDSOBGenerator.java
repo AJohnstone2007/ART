@@ -19,7 +19,7 @@ public class RDSOBGenerator {
     } catch (FileNotFoundException e) {
       Util.fatal("Unable to open output file " + className + ".java");
     }
-    Util.info("Writing new " + className + ": " + Util.timestamp());
+    Util.trace(3, "Writing new " + className + ": " + Util.timestamp());
 
     text.print(
         "import java.io.IOException;\nimport java.nio.file.Files;\nimport java.nio.file.Paths;\nimport uk.ac.rhul.cs.csle.art.v5.DNode;\nimport uk.ac.rhul.cs.csle.art.v5.grammar.Kind;\n"

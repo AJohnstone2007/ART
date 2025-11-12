@@ -20,7 +20,7 @@ public class FXStart extends Application {
 
     if (ART.clargs[0].equals("fx")) {
       var graphicsWindow = new GraphicsWindow(new Stage(), 700, 0, 800, 400, "ART visualiser", new MenuBuilderARTGraphics(), 500.0);
-      new ScriptInterpreter(ART.scriptString(Arrays.copyOfRange(ART.clargs, 1, ART.clargs.length)));
+      new ScriptInterpreter(ART.artScriptString(Arrays.copyOfRange(ART.clargs, 1, ART.clargs.length)));
       // Platform.exit();
       // System.exit(0);
     }

@@ -334,8 +334,14 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
         case "COMMENT_NEST_ART":
           addCharacters("(*)");
           break;
-        case "STRING_BRACE":
+        case "STRING_BRACE", "STRING_BRACE_NEST":
           addCharacters("{}\\");
+          break;
+        case "STRING_BRACKET", "STRING_BRACKET_NEST":
+          addCharacters("{}\\");
+          break;
+        case "STRING_ANGLE", "STRING_ANGLE_NEST":
+          addCharacters("<>\\");
           break;
         case "STRING_SHRIEK_SHRIEK":
           addCharacters("!\\");
@@ -930,9 +936,14 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
 
   public void actionLHS(int t) {
     actionLHS(ScriptInterpreter.childSymbolString(t));
-    if (ScriptInterpreter.iTerms.termArity(t) == 2) for (int i = 0; i < ScriptInterpreter.iTerms.termArity(ScriptInterpreter.iTerms.subterm(t, 1)); i++)
-      mostRecentLHS.cfgElement.attributes.put(ScriptInterpreter.iTerms.termSymbolString(ScriptInterpreter.iTerms.subterm(t, 1, i, 0)),
-          ScriptInterpreter.iTerms.termSymbolString(ScriptInterpreter.iTerms.subterm(t, 1, i, 1)));
+    if (ScriptInterpreter.iTerms.termArity(t) == 2) // Is there an attribute declaration?
+      for (int i = 0; i < ScriptInterpreter.iTerms.termArity(ScriptInterpreter.iTerms.subterm(t, 1)); i++) {
+        String typeParameter = "";
+        if (ScriptInterpreter.iTerms.termArity(ScriptInterpreter.iTerms.subterm(t, 1, i)) == 3)
+          typeParameter = ScriptInterpreter.iTerms.termSymbolString(ScriptInterpreter.iTerms.subterm(t, 1, i, 2));
+        mostRecentLHS.cfgElement.attributes.put(ScriptInterpreter.iTerms.termSymbolString(ScriptInterpreter.iTerms.subterm(t, 1, i, 0)),
+            ScriptInterpreter.iTerms.termSymbolString(ScriptInterpreter.iTerms.subterm(t, 1, i, 1)) + typeParameter);
+      }
   }
 
   public void actionLHS(String id) {

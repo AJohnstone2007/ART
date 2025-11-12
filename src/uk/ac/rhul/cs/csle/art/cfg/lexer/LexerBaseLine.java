@@ -149,6 +149,9 @@ public class LexerBaseLine extends AbstractLexer {
       case "STRING_BRACKET_NEST":
         match_STRING_BRACKET_NEST();
         break;
+      case "STRING_ANGLE_NEST":
+        match_STRING_ANGLE_NEST();
+        break;
       case "STRING_DOLLAR":
         match_STRING_DOLLAR();
         break;

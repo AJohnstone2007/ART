@@ -17,7 +17,7 @@ public class ActionsGenerator {
     cfgRules.normalise();
     String filename = "ARTGeneratedActions";
     String timeStamp = Util.timestamp();
-    Util.info("Writing new " + filename + ": " + timeStamp);
+    Util.trace(3, "Writing new " + filename + ": " + timeStamp);
     PrintWriter text = null;
     try {
       text = new PrintWriter(new File(filename + ".java"));
@@ -104,7 +104,7 @@ public class ActionsGenerator {
     // Util.info(ScriptTermInterpreter.iTerms.termSymbolString(slotTerm));
 
     if (ScriptInterpreter.iTerms.hasSymbol(slotTerm, "cfgNative")) {
-      text.print(ScriptInterpreter.iTerms.toString(ScriptInterpreter.iTerms.subterm(slotTerm, 0)));
+      text.print(ScriptInterpreter.iTerms.termSymbolString(ScriptInterpreter.iTerms.subterm(slotTerm, 0)));
       return;
     }
     for (int i = 0; i < ScriptInterpreter.iTerms.termArity(slotTerm); i++)

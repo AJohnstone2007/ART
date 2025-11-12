@@ -472,7 +472,7 @@ public abstract class AbstractLexer {
   protected void match_STRING_DQ() {
     if (peekCh() != '"') return;
     do {
-      if (peekCh() == '\0' || peekCh() == '\n') {
+      if (peekCh() == '\0') {
         lexicalError("Unterminated \" ... \" string", lexemeStart);
         return;
       }
@@ -508,7 +508,7 @@ public abstract class AbstractLexer {
   protected void match_STRING_SHRIEK_SHREIK() {
     if (!(peekCh() == '!' && peekOneCh() == '!')) return;
     do {
-      if (peekCh() == '\0' || peekCh() == '\n') {
+      if (peekCh() == '\0') {
         lexicalError("Unterminated !! ... !! string", lexemeStart);
         return;
       }
@@ -516,6 +516,21 @@ public abstract class AbstractLexer {
     } while (!(peekCh() == '!' && peekOneCh() == '!'));
     getCh();
     getCh();// Skip delimiter
+  }
+
+  protected void match_STRING_ANGLE_NEST() {
+    if (peekCh() != '<') return;
+    int nestLevel = 0;
+    do {
+      if (peekCh() == '<') nestLevel++;
+      if (peekCh() == '>') nestLevel--;
+      if (peekCh() == '\0' || peekCh() == '\n') {
+        lexicalError("Unterminated nestable < ... > string", lexemeStart);
+        return;
+      }
+
+      if (getCh() == '\\') artSkipEscapeSequence();
+    } while (nestLevel > 0);
   }
 
   protected void match_STRING_BRACKET_NEST() {

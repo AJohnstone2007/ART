@@ -2,11 +2,76 @@ import uk.ac.rhul.cs.csle.art.interpret.AbstractInterpreter;
 import uk.ac.rhul.cs.csle.art.interpret.AbstractActions;
 import uk.ac.rhul.cs.csle.art.interpret.AbstractAttributeBlock;
 import uk.ac.rhul.cs.csle.art.util.Util;
+ 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.Set;
+
 public class ARTGeneratedActions extends AbstractActions {
-  public String name() { return "2025-11-05 10:52:36"; }
+ 
+  Map<String, Map<String, String>> macros = new HashMap<>();
+  Map<String, String> currentMacro, emptyMap = new HashMap<>();
+  Set<String> macrosInUse = new HashSet<>();
 
-  public class ART_C_INTEGER extends AbstractAttributeBlock {
-    ART_C_INTEGER INTEGER = this; int v;
+  void fatal(String str) {
+    System.err.println(str);
+    System.exit(1);
+  }
+
+  String expand(String str, Map<String, String> parameterBindings) {
+  // System.out.println("Expanding " + str + " " + parameterBindings);
+    StringBuilder sb = new StringBuilder(str);
+    while (true) {
+      int start = sb.indexOf("^");
+      if (start == -1) return sb.toString(); // No instances left
+      int end = start + 1;
+      while (end < sb.length() && Character.isJavaIdentifierPart(sb.charAt(end)))
+        end++;
+      String id = sb.substring(start + 1, end);
+      LinkedList<String> arguments = new LinkedList<>();
+      char c = sb.charAt(end);
+      while (end < sb.length() && sb.charAt(end) == '{') {
+        int argumentStart = end + 1;
+        while (end < sb.length() && sb.charAt(end) != '}')
+          end++;
+        if (sb.charAt(end) != '}') fatal("Instance " + id + "unterminated argument");
+        arguments.add(sb.substring(argumentStart, end));
+        end++;
+      }
+      String replacement = expand(id, arguments);
+
+    }
+  }
+
+  String expand(String id, LinkedList<String> arguments) {
+    if (macrosInUse.contains(id)) fatal("^" + id + argumentsToString(arguments) + " macro already in us - recursive macro calls not allowed");
+    macrosInUse.add(id);
+    if (!macros.keySet().contains(id)) fatal("^" + id + argumentsToString(arguments) + " macro not defined");
+    if (macros.get(id).size() != arguments.size() + 1) // Add one for the body definition
+      fatal("^" + id + argumentsToString(arguments) + " incorrect arity " + arguments.size() + ": expecting " + (macros.get(id).size() - 1));
+
+    Map<String, String> parameterBindings = new HashMap<>();
+    int i = 0;
+    for (var m : macros.get(id).keySet())
+      if (!m.equals("")) parameterBindings.put(m, arguments.get(i++));
+    macrosInUse.remove(id);
+    return expand(macros.get(id).get(""), parameterBindings);
+  }
+
+  String argumentsToString(LinkedList<String> arguments) {
+    StringBuilder sb = new StringBuilder();
+    for (var a : arguments)
+      sb.append("{" + a + "}");
+    return sb.toString();
+  }
+
+  public String name() { return "2025-11-12 07:14:27"; }
+
+  public class ART_C_ID extends AbstractAttributeBlock {
+    ART_C_ID ID = this; String v;
 
     public void initRHSAttributeBlock(int nodeNumber, int term) {
       switch(nodeNumber){
@@ -21,13 +86,13 @@ public class ARTGeneratedActions extends AbstractActions {
 
     public void action(int nodeNumber) {
       switch(nodeNumber){
-      case 86: INTEGER.v = Integer.parseInt(lexeme());  break;
+      case 54: ID.v= lexeme();  break;
       }
     }
   }
 
-  public class ART_C_STRING_SQ extends AbstractAttributeBlock {
-    ART_C_STRING_SQ STRING_SQ = this; String v;
+  public class ART_C_STRING_BRACE extends AbstractAttributeBlock {
+    ART_C_STRING_BRACE STRING_BRACE = this; String v;
 
     public void initRHSAttributeBlock(int nodeNumber, int term) {
       switch(nodeNumber){
@@ -42,279 +107,217 @@ public class ARTGeneratedActions extends AbstractActions {
 
     public void action(int nodeNumber) {
       switch(nodeNumber){
-      case 90: STRING_SQ.v = lexeme().translateEscapes();  break;
+      case 58: STRING_BRACE.v = lexeme().translateEscapes();  break;
       }
     }
   }
 
-  public class ART_C_e0 extends AbstractAttributeBlock {
-    ART_C_e0 e0 = this; int v; ART_C_e1 e11; ART_C_e1 e12;
+  public class ART_C_arguments extends AbstractAttributeBlock {
+    ART_C_arguments arguments = this; LinkedList<String> v; ART_C_STRING_BRACE STRING_BRACE1; ART_C_arguments arguments1;
 
     public void initRHSAttributeBlock(int nodeNumber, int term) {
       switch(nodeNumber){
-      case 94: e11 = new ART_C_e1(); e11.term = term; break;
-      case 97: e11 = new ART_C_e1(); e11.term = term; break;
-      case 99: e12 = new ART_C_e1(); e12.term = term; break;
-      case 102: e11 = new ART_C_e1(); e11.term = term; break;
-      case 104: e12 = new ART_C_e1(); e12.term = term; break;
-      case 107: e11 = new ART_C_e1(); e11.term = term; break;
-      case 109: e12 = new ART_C_e1(); e12.term = term; break;
-      case 112: e11 = new ART_C_e1(); e11.term = term; break;
-      case 114: e12 = new ART_C_e1(); e12.term = term; break;
-      case 117: e11 = new ART_C_e1(); e11.term = term; break;
-      case 119: e12 = new ART_C_e1(); e12.term = term; break;
-      case 122: e11 = new ART_C_e1(); e11.term = term; break;
-      case 124: e12 = new ART_C_e1(); e12.term = term; break;
+      case 62: STRING_BRACE1 = new ART_C_STRING_BRACE(); STRING_BRACE1.term = term; break;
+      case 63: arguments1 = new ART_C_arguments(); arguments1.term = term; break;
       }
     }
 
     public AbstractAttributeBlock getAttributes(int nodeNumber) {
       switch(nodeNumber){
-      case 94: return e11;
-      case 97: return e11;
-      case 99: return e12;
-      case 102: return e11;
-      case 104: return e12;
-      case 107: return e11;
-      case 109: return e12;
-      case 112: return e11;
-      case 114: return e12;
-      case 117: return e11;
-      case 119: return e12;
-      case 122: return e11;
-      case 124: return e12;
+      case 62: return STRING_BRACE1;
+      case 63: return arguments1;
       default: Util.fatal("getAttributes: unknown node " + nodeNumber + ". Probable out-of-date ARTGeneratedActions - regenerate and recompile"); return null;
       }
     }
 
     public void action(int nodeNumber) {
       switch(nodeNumber){
-      case 94: e0.v = e11.v;  break;
-      case 99: e0.v = e11.v >  e12.v ? 1 : 0;  break;
-      case 104: e0.v = e11.v <  e12.v ? 1 : 0;  break;
-      case 109: e0.v = e11.v >= e12.v ? 1 : 0;  break;
-      case 114: e0.v = e11.v <= e12.v ? 1 : 0;  break;
-      case 119: e0.v = e11.v == e12.v ? 1 : 0;  break;
-      case 124: e0.v = e11.v != e12.v ? 1 : 0;  break;
+      case 62: arguments.v.add(STRING_BRACE1.v); arguments1.v = arguments.v;  break;
       }
     }
   }
 
-  public class ART_C_e1 extends AbstractAttributeBlock {
-    ART_C_e1 e1 = this; int v; ART_C_e1 e11; ART_C_e2 e21;
+  public class ART_C_define extends AbstractAttributeBlock {
+    ART_C_define define = this; ART_C_STRING_BRACE STRING_BRACE1; ART_C_paramatersOpt paramatersOpt1; ART_C_ID ID1;
 
     public void initRHSAttributeBlock(int nodeNumber, int term) {
       switch(nodeNumber){
-      case 128: e21 = new ART_C_e2(); e21.term = term; break;
-      case 131: e11 = new ART_C_e1(); e11.term = term; break;
-      case 133: e21 = new ART_C_e2(); e21.term = term; break;
-      case 136: e11 = new ART_C_e1(); e11.term = term; break;
-      case 138: e21 = new ART_C_e2(); e21.term = term; break;
+      case 71: ID1 = new ART_C_ID(); ID1.term = term; break;
+      case 72: paramatersOpt1 = new ART_C_paramatersOpt(); paramatersOpt1.term = term; break;
+      case 73: STRING_BRACE1 = new ART_C_STRING_BRACE(); STRING_BRACE1.term = term; break;
       }
     }
 
     public AbstractAttributeBlock getAttributes(int nodeNumber) {
       switch(nodeNumber){
-      case 128: return e21;
-      case 131: return e11;
-      case 133: return e21;
-      case 136: return e11;
-      case 138: return e21;
+      case 71: return ID1;
+      case 72: return paramatersOpt1;
+      case 73: return STRING_BRACE1;
       default: Util.fatal("getAttributes: unknown node " + nodeNumber + ". Probable out-of-date ARTGeneratedActions - regenerate and recompile"); return null;
       }
     }
 
     public void action(int nodeNumber) {
       switch(nodeNumber){
-      case 128: e1.v = e21.v;  break;
-      case 133: e1.v = e11.v + e21.v;  break;
-      case 138: e1.v = e11.v - e21.v;  break;
+      case 71: macros.put(ID1.v, new LinkedHashMap<>()); currentMacro = macros.get(ID1.v);  break;
+      case 73: currentMacro.put("", STRING_BRACE1.v);  break;
       }
     }
   }
 
-  public class ART_C_e2 extends AbstractAttributeBlock {
-    ART_C_e2 e2 = this; int v; ART_C_e2 e21; ART_C_e3 e31;
+  public class ART_C_instance extends AbstractAttributeBlock {
+    ART_C_instance instance = this; ART_C_arguments arguments1; ART_C_ID ID1;
 
     public void initRHSAttributeBlock(int nodeNumber, int term) {
       switch(nodeNumber){
-      case 142: e31 = new ART_C_e3(); e31.term = term; break;
-      case 145: e21 = new ART_C_e2(); e21.term = term; break;
-      case 147: e31 = new ART_C_e3(); e31.term = term; break;
-      case 150: e21 = new ART_C_e2(); e21.term = term; break;
-      case 152: e31 = new ART_C_e3(); e31.term = term; break;
-      case 155: e21 = new ART_C_e2(); e21.term = term; break;
-      case 157: e31 = new ART_C_e3(); e31.term = term; break;
+      case 78: ID1 = new ART_C_ID(); ID1.term = term; break;
+      case 79: arguments1 = new ART_C_arguments(); arguments1.term = term; break;
       }
     }
 
     public AbstractAttributeBlock getAttributes(int nodeNumber) {
       switch(nodeNumber){
-      case 142: return e31;
-      case 145: return e21;
-      case 147: return e31;
-      case 150: return e21;
-      case 152: return e31;
-      case 155: return e21;
-      case 157: return e31;
+      case 78: return ID1;
+      case 79: return arguments1;
       default: Util.fatal("getAttributes: unknown node " + nodeNumber + ". Probable out-of-date ARTGeneratedActions - regenerate and recompile"); return null;
       }
     }
 
     public void action(int nodeNumber) {
       switch(nodeNumber){
-      case 142: e2.v= e31.v;  break;
-      case 147: e2.v = e21.v * e31.v;  break;
-      case 152: e2.v = e21.v / e31.v;  break;
-      case 157: e2.v = e21.v % e31.v;  break;
+      case 78: arguments1.v = new LinkedList<String>();  break;
+      case 79: System.out.println(expand(ID1.v, arguments1.v));  break;
       }
     }
   }
 
-  public class ART_C_e3 extends AbstractAttributeBlock {
-    ART_C_e3 e3 = this; int v; ART_C_e3 e31; ART_C_e4 e41;
+  public class ART_C_mainline extends AbstractAttributeBlock {
+    ART_C_mainline mainline = this; String str; ART_C_text text1;
 
     public void initRHSAttributeBlock(int nodeNumber, int term) {
       switch(nodeNumber){
-      case 161: e41 = new ART_C_e4(); e41.term = term; break;
-      case 165: e31 = new ART_C_e3(); e31.term = term; break;
-      case 169: e31 = new ART_C_e3(); e31.term = term; break;
+      case 83: text1 = new ART_C_text(); text1.term = term; break;
       }
     }
 
     public AbstractAttributeBlock getAttributes(int nodeNumber) {
       switch(nodeNumber){
-      case 161: return e41;
-      case 165: return e31;
-      case 169: return e31;
+      case 83: return text1;
       default: Util.fatal("getAttributes: unknown node " + nodeNumber + ". Probable out-of-date ARTGeneratedActions - regenerate and recompile"); return null;
       }
     }
 
     public void action(int nodeNumber) {
       switch(nodeNumber){
-      case 161:e3.v = e41.v;  break;
-      case 165:e3.v = e31.v;  break;
-      case 169:e3.v = -e31.v;  break;
       }
     }
   }
 
-  public class ART_C_e4 extends AbstractAttributeBlock {
-    ART_C_e4 e4 = this; int v; ART_C_e5 e51; ART_C_e4 e41;
+  public class ART_C_paramatersOpt extends AbstractAttributeBlock {
+    ART_C_paramatersOpt paramatersOpt = this; ART_C_parameters parameters1;
 
     public void initRHSAttributeBlock(int nodeNumber, int term) {
       switch(nodeNumber){
-      case 173: e51 = new ART_C_e5(); e51.term = term; break;
-      case 176: e51 = new ART_C_e5(); e51.term = term; break;
-      case 178: e41 = new ART_C_e4(); e41.term = term; break;
+      case 88: parameters1 = new ART_C_parameters(); parameters1.term = term; break;
       }
     }
 
     public AbstractAttributeBlock getAttributes(int nodeNumber) {
       switch(nodeNumber){
-      case 173: return e51;
-      case 176: return e51;
-      case 178: return e41;
+      case 88: return parameters1;
       default: Util.fatal("getAttributes: unknown node " + nodeNumber + ". Probable out-of-date ARTGeneratedActions - regenerate and recompile"); return null;
       }
     }
 
     public void action(int nodeNumber) {
       switch(nodeNumber){
-      case 173: e4.v = e51.v;  break;
-      case 178: e4.v = (int) Math.pow(e51.v, e41.v);  break;
       }
     }
   }
 
-  public class ART_C_e5 extends AbstractAttributeBlock {
-    ART_C_e5 e5 = this; int v; ART_C_e1 e11; ART_C_INTEGER INTEGER1;
+  public class ART_C_parameters extends AbstractAttributeBlock {
+    ART_C_parameters parameters = this; ART_C_ID ID1; ART_C_parameters parameters1;
 
     public void initRHSAttributeBlock(int nodeNumber, int term) {
       switch(nodeNumber){
-      case 182: INTEGER1 = new ART_C_INTEGER(); INTEGER1.term = term; break;
-      case 186: e11 = new ART_C_e1(); e11.term = term; break;
+      case 96: ID1 = new ART_C_ID(); ID1.term = term; break;
+      case 97: parameters1 = new ART_C_parameters(); parameters1.term = term; break;
       }
     }
 
     public AbstractAttributeBlock getAttributes(int nodeNumber) {
       switch(nodeNumber){
-      case 182: return INTEGER1;
-      case 186: return e11;
+      case 96: return ID1;
+      case 97: return parameters1;
       default: Util.fatal("getAttributes: unknown node " + nodeNumber + ". Probable out-of-date ARTGeneratedActions - regenerate and recompile"); return null;
       }
     }
 
     public void action(int nodeNumber) {
       switch(nodeNumber){
-      case 182:e5.v = INTEGER1.v;  break;
-      case 186: e5.v = e11.v;  break;
+      case 96: currentMacro.put(ID1.v, null);  break;
       }
     }
   }
 
-  public class ART_C_printElements extends AbstractAttributeBlock {
-    ART_C_printElements printElements = this; ART_C_printElements printElements1; ART_C_e0 e01; ART_C_STRING_SQ STRING_SQ1;
+  public class ART_C_text extends AbstractAttributeBlock {
+    ART_C_text text = this; ART_C_instance instance1; ART_C_define define1; ART_C_text text1; ART_C_undefine undefine1;
 
     public void initRHSAttributeBlock(int nodeNumber, int term) {
       switch(nodeNumber){
-      case 191: STRING_SQ1 = new ART_C_STRING_SQ(); STRING_SQ1.term = term; break;
-      case 194: STRING_SQ1 = new ART_C_STRING_SQ(); STRING_SQ1.term = term; break;
-      case 196: printElements1 = new ART_C_printElements(); printElements1.term = term; break;
-      case 199: e01 = new ART_C_e0(); e01.term = term; break;
-      case 202: e01 = new ART_C_e0(); e01.term = term; break;
-      case 204: printElements1 = new ART_C_printElements(); printElements1.term = term; break;
+      case 104: undefine1 = new ART_C_undefine(); undefine1.term = term; break;
+      case 105: text1 = new ART_C_text(); text1.term = term; break;
+      case 108: define1 = new ART_C_define(); define1.term = term; break;
+      case 109: text1 = new ART_C_text(); text1.term = term; break;
+      case 112: instance1 = new ART_C_instance(); instance1.term = term; break;
+      case 113: text1 = new ART_C_text(); text1.term = term; break;
       }
     }
 
     public AbstractAttributeBlock getAttributes(int nodeNumber) {
       switch(nodeNumber){
-      case 191: return STRING_SQ1;
-      case 194: return STRING_SQ1;
-      case 196: return printElements1;
-      case 199: return e01;
-      case 202: return e01;
-      case 204: return printElements1;
+      case 104: return undefine1;
+      case 105: return text1;
+      case 108: return define1;
+      case 109: return text1;
+      case 112: return instance1;
+      case 113: return text1;
       default: Util.fatal("getAttributes: unknown node " + nodeNumber + ". Probable out-of-date ARTGeneratedActions - regenerate and recompile"); return null;
       }
     }
 
     public void action(int nodeNumber) {
       switch(nodeNumber){
-      case 191: System.out.print(STRING_SQ1.v);  break;
-      case 194: System.out.print(STRING_SQ1.v);  break;
-      case 199: System.out.print(e01.v);  break;
-      case 202: System.out.print(e01.v);  break;
       }
     }
   }
 
-  public class ART_C_statement extends AbstractAttributeBlock {
-    ART_C_statement statement = this; ART_C_printElements printElements1;
+  public class ART_C_undefine extends AbstractAttributeBlock {
+    ART_C_undefine undefine = this; ART_C_ID ID1;
 
     public void initRHSAttributeBlock(int nodeNumber, int term) {
       switch(nodeNumber){
-      case 210: printElements1 = new ART_C_printElements(); printElements1.term = term; break;
+      case 121: ID1 = new ART_C_ID(); ID1.term = term; break;
       }
     }
 
     public AbstractAttributeBlock getAttributes(int nodeNumber) {
       switch(nodeNumber){
-      case 210: return printElements1;
+      case 121: return ID1;
       default: Util.fatal("getAttributes: unknown node " + nodeNumber + ". Probable out-of-date ARTGeneratedActions - regenerate and recompile"); return null;
       }
     }
 
     public void action(int nodeNumber) {
       switch(nodeNumber){
+      case 121: macros.remove(ID1.v);  break;
       }
     }
   }
 
   public AbstractAttributeBlock init(AbstractInterpreter interpreter, int term) {
     this.interpreter = interpreter;
-    var ret = new ART_C_statement();
+    var ret = new ART_C_mainline();
     ret.term = term;
     return ret;
   }

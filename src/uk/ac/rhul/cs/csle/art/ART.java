@@ -31,7 +31,7 @@ public class ART {
     case "v3":        new ARTV3(Arrays.copyOfRange(args, 1, args.length)); return; // Undocumented internal mode
     case "v4":        new ARTV4(Arrays.copyOfRange(args, 1, args.length)); return; // Undocumented internal mode
     case "ide", "fx": Application.launch(FXStart.class); return;
-    default:          new ScriptInterpreter(scriptString(args)); return; // Run batch mode without fx in this context
+    default:          new ScriptInterpreter(artScriptString(args)); return; // Run batch mode without fx in this context
     }
     // No args
     Util.info("ART " + Version.version() + "\nUsage:");
@@ -41,18 +41,29 @@ public class ART {
   }
   // @formatter:on
 
-  public static String scriptString(String[] args) { // Construct an ART script string, processing embedded filenames accordingly
+  public static String artScriptString(String[] args) { // Construct an ART script string, processing embedded filenames accordingly
     StringBuilder scriptStringBuilder = new StringBuilder();
     for (int argp = 0; argp < args.length; argp++) {
       if (args[argp].endsWith(".art"))
         try {
-          // Util.info("Appending contents of ART script file" + args[argp]);
+          // Util.info("Appending contents of ART script file " + args[argp]);
           scriptStringBuilder.append(Files.readString(Paths.get((args[argp]))));
         } catch (IOException e) {
           Util.fatal("Unable to read script file " + args[argp] + "\n" + e);
         }
-      else if (!args[argp].startsWith("\"") && !args[argp].startsWith("'") && args[argp].contains("."))
-        scriptStringBuilder.append("!try '" + args[argp] + "'");
+      else if (!args[argp].startsWith("\"") && !args[argp].startsWith("'") && args[argp].contains(".")) {
+        StringBuilder tryStringBuilder = new StringBuilder();
+        while (argp < args.length && !args[argp].startsWith("\"") && !args[argp].startsWith("'") && args[argp].contains("."))
+          try {
+            // Util.info("Appending contents of !try string file " + args[argp]);
+            tryStringBuilder.append(Files.readString(Paths.get((args[argp]))));
+            argp++; // add after append in case an exception gets thrown - we want to report the inaccessible file
+          } catch (IOException e) {
+            Util.fatal("Unable to read !try string file " + args[argp] + "\n");
+          }
+        scriptStringBuilder.append("!try \"" + tryStringBuilder.toString() + "\"");
+      }
+
       else
         scriptStringBuilder.append(args[argp]);
       scriptStringBuilder.append("\n");

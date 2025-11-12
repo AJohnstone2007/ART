@@ -15,7 +15,7 @@ rule  ::= cfgRule^^ | trRule^^ | chooseRule^^ | directive^^
 cfgRule  ::= cfgLHS '::='^ cfgAlts
   cfgLHS ::= ID | ID '<'^ cfgAttributeDeclarations '>'^
   cfgAttributeDeclarations ::=  cfgAttributeDeclaration | cfgAttributeDeclaration cfgAttributeDeclarations^  
-  cfgAttributeDeclaration  ::= ID ':'^ ID 
+  cfgAttributeDeclaration  ::= ID ':'^ ID | ID ':'^ ID STRING_ANGLE_NEST 
 
 cfgAlts ::= cfgAlt '|'^ cfgAlts^ | cfgAlt  
 cfgAlt  ::= cfgSeq^^ cfgActions cfgEpsilonCarrier | cfgSeq^^ cfgActions cfgEpsilon | cfgSeq^^ cfgElems^ cfgActions (* final actions in sequence *)  
@@ -219,4 +219,7 @@ STRING_DQ ::= &STRING_DQ^^
 STRING_DOLLAR ::= &STRING_DOLLAR^^
 STRING_SHRIEK_SHRIEK ::= &STRING_SHRIEK_SHRIEK^^
 STRING_BRACE ::= &STRING_BRACE^^
+STRING_ANGLE_NEST ::= &STRING_ANGLE_NEST^^
 CHAR_BQ ::= &CHAR_BQ^^
+
+
