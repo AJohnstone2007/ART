@@ -12,10 +12,11 @@ import uk.ac.rhul.cs.csle.art.util.lexicalisations.TWESet;
 
 public class LexerBaseLine extends AbstractLexer {
   private boolean[] hasSlice;
+  String inputString;
 
   @Override
   public AbstractLexicalisations lex(String userString, CFGRules cfgRules) {
-    String inputString = userString + "\0";
+    inputString = userString + "\0";
     inputAsCharArray = inputString.toCharArray();
     lexicalisations = new TWESet(inputString, cfgRules);
 

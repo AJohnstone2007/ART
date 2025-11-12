@@ -573,12 +573,13 @@ public abstract class AbstractLexer {
   }
 
   protected void match_STRING_BRACE_NEST() {
+
     if (peekCh() != '{') return;
     int nestLevel = 0;
     do {
       if (peekCh() == '{') nestLevel++;
       if (peekCh() == '}') nestLevel--;
-      if (peekCh() == '\0' || peekCh() == '\n') {
+      if (peekCh() == '\0') {
         lexicalError("Unterminated nestable { ... } string", lexemeStart);
         return;
       }
