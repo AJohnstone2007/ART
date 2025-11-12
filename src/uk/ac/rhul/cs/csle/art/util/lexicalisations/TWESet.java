@@ -108,7 +108,7 @@ public class TWESet extends AbstractLexicalisations {
       switch (element.cfgElement.str) {
       case "STRING_SHRIEK_SHRIEK":
         return full.substring(2, full.length() - 2);
-      case "STRING_DQ", "STRING_SQ", "STRING_PLAIN_SQ", "STRING_DOLLAR", "STRING_BRACE":
+      case "STRING_DQ", "STRING_SQ", "STRING_PLAIN_SQ", "STRING_DOLLAR", "STRING_BRACE", "STRING_BRACE_NEST":
         return full.substring(1, full.length() - 1);
       case "CHAR_BQ", "AP_INTEGER", "AP_REAL":
         return full.substring(1);
