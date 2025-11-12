@@ -563,7 +563,7 @@ public abstract class AbstractLexer {
   protected void match_STRING_BRACE() {
     if (peekCh() != '{') return;
     do {
-      if (peekCh() == '\0' || peekCh() == '\n') {
+      if (peekCh() == '\0') {
         lexicalError("Unterminated { ... } string", lexemeStart);
         return;
       }

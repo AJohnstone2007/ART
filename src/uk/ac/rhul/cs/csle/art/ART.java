@@ -61,7 +61,7 @@ public class ART {
           } catch (IOException e) {
             Util.fatal("Unable to read !try string file " + args[argp] + "\n");
           }
-        scriptStringBuilder.append("!try \"" + tryStringBuilder.toString() + "\"");
+        scriptStringBuilder.append("!try \"" + Util.escapeString(tryStringBuilder.toString()) + "\"");
       }
 
       else

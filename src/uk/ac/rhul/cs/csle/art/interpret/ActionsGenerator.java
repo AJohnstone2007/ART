@@ -15,6 +15,10 @@ public class ActionsGenerator {
 
   public ActionsGenerator(CFGRules cfgRules, String filePrelude, String classPrelude) {
     cfgRules.normalise();
+    if (cfgRules.isEmpty()) {
+      Util.error("!generate actions called on empty grammar - nothing to do");
+      return;
+    }
     String filename = "ARTGeneratedActions";
     String timeStamp = Util.timestamp();
     Util.trace(3, "Writing new " + filename + ": " + timeStamp);
