@@ -22,7 +22,7 @@ public class ARTGeneratedActions extends AbstractActions {
   }
 
   String expand(String str, Map<String, String> parameterBindings) {
-  // System.out.println("Expanding " + str + " " + parameterBindings);
+    Util.trace(3, "Expanding " + str + " " + parameterBindings);
     StringBuilder sb = new StringBuilder(str);
     while (true) {
       int start = sb.indexOf("^");
@@ -41,8 +41,7 @@ public class ARTGeneratedActions extends AbstractActions {
         arguments.add(sb.substring(argumentStart, end));
         end++;
       }
-      String replacement = expand(id, arguments);
-
+      sb.replace(start, end, expand(id, arguments));
     }
   }
 
@@ -68,7 +67,7 @@ public class ARTGeneratedActions extends AbstractActions {
     return sb.toString();
   }
 
-  public String name() { return "2025-11-12 07:14:27"; }
+  public String name() { return "2025-11-12 10:37:36"; }
 
   public class ART_C_ID extends AbstractAttributeBlock {
     ART_C_ID ID = this; String v;
