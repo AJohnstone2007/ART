@@ -22,7 +22,7 @@ public class ARTGeneratedActions extends AbstractActions {
   }
 
   String expand(String str, Map<String, String> parameterBindings) {
-    Util.info("Expanding " + str + " " + parameterBindings);
+    // Util.info("Expanding " + str + " " + parameterBindings);
     StringBuilder sb = new StringBuilder(str);
     while (true) {
       int start = sb.indexOf("^");
@@ -37,18 +37,40 @@ public class ARTGeneratedActions extends AbstractActions {
         sb.replace(start, end, argument);
       else { // Collect any arguments following the macro
         LinkedList<String> arguments = new LinkedList<>();
-        char c = sb.charAt(end);
-        while (end < sb.length() && sb.charAt(end) == '{') {
-          int argumentStart = end + 1;
-          while (end < sb.length() && sb.charAt(end) != '}')
-            end++;
-          if (sb.charAt(end) != '}') fatal("Instance " + id + "unterminated argument");
-          String arg = sb.substring(argumentStart, end);
-          // Util.debug("Found argument " + arg);
-          arguments.add(arg);
-          end++; // skip terminating }
+        if (end < sb.length()) {
+          char c = sb.charAt(end);
+
+          while (end < sb.length() && sb.charAt(end) == '{') {
+            int argumentStart = end + 1;
+            while (end < sb.length() && sb.charAt(end) != '}')
+              end++;
+            if (sb.charAt(end) != '}') fatal("Instance " + id + "unterminated argument");
+            String arg = sb.substring(argumentStart, end);
+            // Util.debug("Found argument " + arg);
+            arguments.add(arg);
+            end++; // skip terminating }
+          }
         }
-        sb.replace(start, end, expand(id, arguments));
+        if (macros.keySet().contains(id))
+          sb.replace(start, end, expand(id, arguments));
+        else
+          switch (id) {
+          case "NOW":
+            sb.replace(start, end, Util.timestamp());
+            break;
+          case "PAR":
+            String arg = arguments.getFirst();
+            String exp = expand(arg, new HashMap<String, String>());
+            String rep = exp.replaceAll("\r?\n\r?\n", "\n</P>\n<P>");
+
+            sb.replace(start, end, "<P>" + rep + "</P>");
+            break;
+          case "OUT":
+            sb.replace(start, end, "Redirect output");
+            break;
+          default:
+            fatal("Macro " + "'^" + id + argumentsToString(arguments) + "' not defined");
+          }
       }
     }
   }
@@ -56,15 +78,6 @@ public class ARTGeneratedActions extends AbstractActions {
   String expand(String id, LinkedList<String> arguments) {
     if (macrosInUse.contains(id)) fatal("^" + id + argumentsToString(arguments) + " macro already in us - recursive macro calls not allowed");
     macrosInUse.add(id);
-    if (!macros.keySet().contains(id)) switch (id) {
-    case "NOW":
-      return Util.timestamp();
-    case "T":
-      return "HTML-ised text follows";
-    default:
-      fatal("Macro " + "'^" + id + argumentsToString(arguments) + "' not defined");
-    }
-
     if (macros.get(id).size() != arguments.size() + 1) // Add one for the body definition
       fatal("^" + id + argumentsToString(arguments) + " incorrect arity " + arguments.size() + ": expecting " + (macros.get(id).size() - 1));
 
