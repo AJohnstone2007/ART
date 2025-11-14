@@ -76,11 +76,31 @@ public class GLLModal extends AbstractParser {
         case END:
           if (lookaheadFollow("returnlookahead", cfgNode.seq.cfgElement)) retrn();
           continue nextTask;
+        case PAR: // Do first - continue with ALT node below is; it will be pickdup
+          cfgNode = cfgNode.alt;
+          continue nextCFGNode; // Continue with this sequence
+        case OPT:
+          derivationNode = updateDerivation(inputIndex); // Must match, but nothing consumed, so rightExtent = inputIndex
+          cfgNode = cfgNode.alt;
+          continue nextCFGNode; // Continue with this sequence
+        case POS:
+          break;
+        case KLN:
+          break;
         default:
           Util.fatal("Unexpected CFGNode kind " + cfgNode.cfgElement.cfgKind + " in " + getClass().getSimpleName());
         }
     }
 
+    /*
+     * SOS, // Start of String ($$) 0 EOS, // End of String ($) 1 EPSILON, // Epsilon 2 TRM_CS, // Terminal case sensitive 3 TRM_CI, // Terminal case
+     * insensitive 4 TRM_BI, // Terminal built in 5 TRM_CH, // Terminal character 6 TRM_CH_UIB, // Terminal unkown lexeme but in band character 7 TRM_CH_UOB, //
+     * Terminal unknown lexeme and out of band character 8 TRM_CH_SET, // Terminal character set: match anything in the contents 9 TRM_CH_ANTI_SET, // Terminal
+     * character anti set: match anything but the contents 10 NONTERMINAL, // Nonterminal 11 ALT, // Alternate 12 END, // End of rule 13 PAR, // Parenthesised
+     * sub-expression (FBNF) 14 OPT, // Optional sub-expression (EBNF) 15 POS, // Positive closure over sub-expression (EBNF) 16 KLN // Kleeene closure over
+     * sub-expression (EBNF) 17
+     *
+     */
     derivations.numberNodes();
   }
 

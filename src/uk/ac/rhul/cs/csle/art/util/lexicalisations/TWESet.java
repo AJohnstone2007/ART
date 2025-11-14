@@ -103,7 +103,7 @@ public class TWESet extends AbstractLexicalisations {
   @Override
   public String lexeme(TWESetElement element) {
     String full = inputString.substring(element.leftExtent, element.lexemeEnd);
-
+    // Util.debug("Computing lexeme for " + full);
     if (element.cfgElement.cfgKind == CFGElementKind.TRM_BI) {
       switch (element.cfgElement.str) {
       case "STRING_SHRIEK_SHRIEK":
