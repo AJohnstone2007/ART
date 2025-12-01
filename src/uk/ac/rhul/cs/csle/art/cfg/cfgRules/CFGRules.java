@@ -1308,7 +1308,7 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
   @Override
   public void show(PrintStream outputStream, TermTraverserText outputTraverser, boolean indexed, boolean full, boolean indented) {
     normalise();
-    outputStream.print("digraph \"Reference grammar\"\n" + "{\n" + "graph[ordering=out ranksep=0.1]\n"
+    outputStream.print("digraph \"Reference grammar\"\n" + "{\n" + "graph[ordering=out ranksep=0.1 rankdir=\"LR\"]\n"
         + "node[fontname=Helvetica fontsize=9 shape=box height = 0 width = 0 margin= 0.04 color=gray]\n"
         + "edge[fontname=Helvetica fontsize=9 arrowsize = 0.3 color=gray]\n\n");
     for (CFGElement n : elementToRulesNodeMap.keySet())

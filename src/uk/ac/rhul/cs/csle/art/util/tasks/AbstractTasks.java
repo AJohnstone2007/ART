@@ -9,7 +9,7 @@ public abstract class AbstractTasks implements DisplayInterface {
 
   public abstract void queue(int tokenIndex, CFGNode cfgNode, AbstractStackNode stackNode, AbstractDerivationNode derivationNode);
 
-  public abstract DescriptorGLL next();
+  public abstract ConfigurationGLL next();
 
   public long cardinality() {
     return 0;

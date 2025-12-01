@@ -14,37 +14,37 @@ import uk.ac.rhul.cs.csle.art.util.stacks.AbstractStackNode;
 import uk.ac.rhul.cs.csle.art.util.statistics.Statistics;
 
 public class TasksGLL extends AbstractTasks {
-  private final Set<DescriptorGLL> descriptors;
-  private final Deque<DescriptorGLL> descriptorQueue;
+  private final Set<ConfigurationGLL> tasks;
+  private final Deque<ConfigurationGLL> taskQueue;
 
   public TasksGLL() {
-    descriptors = new HashSet<>(20000000);
-    descriptorQueue = new LinkedList<>();
+    tasks = new HashSet<>(20000000);
+    taskQueue = new LinkedList<>();
   }
 
   @Override
   public void queue(int tokenIndex, CFGNode cfgNode, AbstractStackNode stackNode, AbstractDerivationNode derivationNode) {
-    DescriptorGLL tmp = new DescriptorGLL(tokenIndex, cfgNode, stackNode, derivationNode);
-    if (descriptors.add(tmp)) {
-      descriptorQueue.addFirst(tmp);
+    ConfigurationGLL tmp = new ConfigurationGLL(tokenIndex, cfgNode, stackNode, derivationNode);
+    if (tasks.add(tmp)) {
+      taskQueue.addFirst(tmp);
       // Util.debug("enqueue task " + tmp);
     }
   }
 
   public void loadstatistics(Statistics statistics) {
-    statistics.put("descriptorCount", descriptors.size());
+    statistics.put("descriptorCount", tasks.size());
   }
 
   @Override
-  public DescriptorGLL next() {
-    var ret = descriptorQueue.poll();
+  public ConfigurationGLL next() {
+    var ret = taskQueue.poll();
     // Util.debug("dequeue task " + ret);
     return ret;
   }
 
   @Override
   public void print(PrintStream outputStream, TermTraverserText outputTraverser, boolean indexed, boolean full, boolean indented) {
-    for (var d : descriptors)
+    for (var d : tasks)
       Util.info(d.toString());
   }
 
@@ -62,6 +62,6 @@ public class TasksGLL extends AbstractTasks {
 
   @Override
   public long cardinality() {
-    return descriptors.size();
+    return tasks.size();
   }
 }

@@ -44,7 +44,7 @@ public class SPPFDummyForRecognisers extends AbstractDerivations {
   boolean derivationForInterpreter = false;
 
   @Override
-  public int derivationAsInterpeterTerm() {
+  public int derivationAsInterpeterTerm(boolean full) {
     return 0;
   }
 

@@ -29,7 +29,7 @@ public class AttributeActionInterpreter extends AbstractInterpreter {
   @Override
   public void interpret(AbstractParser parser) {
     this.parser = parser;
-    int interpreterTerm = parser.derivations.derivationAsInterpeterTerm();
+    int interpreterTerm = parser.derivations.derivationAsInterpeterTerm(false);
     // ScriptInterpreter.iTerms.toDot(interpreterTerm, "interpreterTerm.dot");
 
     var root = artActions.init(this, interpreterTerm);

@@ -1601,7 +1601,7 @@ public final class ITerms {
     try {
       dotOut = new PrintStream(new File(filename));
       dotOut.println("digraph \"GSS\" {\n" + "node[fontname=Helvetica fontsize=9 shape=box height = 0 width = 0 margin= 0.04  color=gray]\n"
-          + "graph[ordering=out ranksep=0.1]\n" + "edge[arrowsize = 0.3  color=gray]");
+          + "graph[ordering=out ranksep=0.1 rankdir=\"LR\"]\n" + "edge[arrowsize = 0.3  color=gray]");
       toDotRec(term, dotOut);
       dotOut.println("}");
       dotOut.close();

@@ -99,22 +99,25 @@ public class SPPF extends AbstractDerivations {
   /* This version handles promotion operators, but does not create ambiguity nodes */
 
   long derivationNodeCount = 0, derivationAmbiguityNodeCount = 0;
-  boolean derivationForInterpreter = false;
+  boolean derivationForInterpreter = false, derivationForInterpreterFull = false;
+  boolean derivationSeenCycle;
+  int nodeNumber;
 
   @Override
-  public int derivationAsInterpeterTerm() {
+  public int derivationAsInterpeterTerm(boolean full) {
+    derivationForInterpreterFull = full;
     derivationForInterpreter = true;
     int ret = derivationAsTerm();
     derivationForInterpreter = false;
+    derivationForInterpreterFull = false;
     return ret;
   }
-
-  boolean derivationSeenCycle;
 
   @Override
   public int derivationAsTerm() {
     if (root == null) return 0;
     visited.clear();
+    nodeNumber = 1;
     derivationSeenCycle = false;
     LinkedList<Integer> carrier = new LinkedList<>();
     try {
@@ -151,14 +154,15 @@ public class SPPF extends AbstractDerivations {
     }
 
     if (constructor == null) // If there were no OVERs, then set the constructor to be our symbol
-      if (derivationForInterpreter) {
+      if (derivationForInterpreter && !derivationForInterpreterFull) {
         if (firstAvailableSPPFPN == null)
           constructor = "T" + sppfn.grammarNode.num + "," + sppfn.leftExtent + "," + sppfn.rightExtent;
         else
           constructor = "" + firstAvailableSPPFPN.grammarNode.alt.num;
-      } else
-      constructor = (gn.cfgElement.cfgKind == CFGElementKind.TRM_BI) ? lexicalisations.lexeme(sppfn.grammarNode.cfgElement, sppfn.leftExtent, sppfn.rightExtent)
-          : gn.cfgElement.str;
+      } else if (derivationForInterpreter && derivationForInterpreterFull)
+      constructor = nodeNumber++ + " " + readableLabel(sppfn, gn);
+      else
+      constructor = readableLabel(sppfn, gn);
 
     // Util.debug("At SPPF node " + sppfn + " and grammar node " + gn + " make new term with constructor: " + constructor);
     if (children != childrenFromParent) {
@@ -168,6 +172,11 @@ public class SPPF extends AbstractDerivations {
 
     visited.clear(sppfn.number);
     return (gn.giftKind == GIFTKind.OVER) ? constructor : null;
+  }
+
+  private String readableLabel(SPPFSymbolNode sppfn, CFGNode gn) {
+    return (gn.cfgElement.cfgKind == CFGElementKind.TRM_BI) ? lexicalisations.lexeme(sppfn.grammarNode.cfgElement, sppfn.leftExtent, sppfn.rightExtent)
+        : gn.cfgElement.str;
   }
 
   private void collectChildNodesRec(SPPFPackedNode sppfpn, LinkedList<SPPFSymbolNode> childNodes) throws TermException {

@@ -1,6 +1,7 @@
 package uk.ac.rhul.cs.csle.art.cfg.gll;
 
 import java.io.PrintStream;
+import java.util.Set;
 
 import uk.ac.rhul.cs.csle.art.cfg.AbstractParser;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGElement;
@@ -15,6 +16,7 @@ import uk.ac.rhul.cs.csle.art.util.derivations.SPPFDummyForRecognisers;
 import uk.ac.rhul.cs.csle.art.util.lexicalisations.AbstractLexicalisations;
 import uk.ac.rhul.cs.csle.art.util.stacks.AbstractStackNode;
 import uk.ac.rhul.cs.csle.art.util.stacks.GSSGLL;
+import uk.ac.rhul.cs.csle.art.util.tasks.ConfigurationGLL;
 import uk.ac.rhul.cs.csle.art.util.tasks.TasksGLL;
 
 /**
@@ -24,7 +26,8 @@ public class GLLModal extends AbstractParser {
   private CFGNode cfgNode; // current Context Free Grammar Node
   private AbstractStackNode stackNode; // current top of stack node
   private AbstractDerivationNode derivationNode; // current derivation forest node
-  int tasksProcessed;
+  int tasksProcessed; // Count of processed tasks for inline activity reporting
+  private Set<ConfigurationGLL> repeats; // Test-repeat set used by EBNF closures
 
   @Override
   public void parse(AbstractLexicalisations lexicalisations) {
@@ -76,31 +79,25 @@ public class GLLModal extends AbstractParser {
         case END:
           if (lookaheadFollow("returnlookahead", cfgNode.seq.cfgElement)) retrn();
           continue nextTask;
-        case PAR: // Do first - continue with ALT node below is; it will be pickdup
-          cfgNode = cfgNode.alt;
-          continue nextCFGNode; // Continue with this sequence
+
         case OPT:
-          derivationNode = updateDerivation(inputIndex); // Must match, but nothing consumed, so rightExtent = inputIndex
+          derivationNode = updateDerivation(inputIndex); // Must match, but nothing consumed, so rightExtent = inputIndex and flow through
+        case PAR: // Do first - continue with ALT node below us
           cfgNode = cfgNode.alt;
           continue nextCFGNode; // Continue with this sequence
-        case POS:
-          break;
+
         case KLN:
-          break;
+          derivationNode = updateDerivation(inputIndex); // Must match, but nothing consumed, so rightExtent = inputIndex and flow through
+        case POS:
+          while (true) {
+            if (!repeats.add(new ConfigurationGLL(inputIndex, cfgNode, stackNode, derivationNode))) continue nextTask;
+            cfgNode = cfgNode.alt;
+            continue nextCFGNode; // Continue with this sequence
+          }
         default:
           Util.fatal("Unexpected CFGNode kind " + cfgNode.cfgElement.cfgKind + " in " + getClass().getSimpleName());
         }
     }
-
-    /*
-     * SOS, // Start of String ($$) 0 EOS, // End of String ($) 1 EPSILON, // Epsilon 2 TRM_CS, // Terminal case sensitive 3 TRM_CI, // Terminal case
-     * insensitive 4 TRM_BI, // Terminal built in 5 TRM_CH, // Terminal character 6 TRM_CH_UIB, // Terminal unkown lexeme but in band character 7 TRM_CH_UOB, //
-     * Terminal unknown lexeme and out of band character 8 TRM_CH_SET, // Terminal character set: match anything in the contents 9 TRM_CH_ANTI_SET, // Terminal
-     * character anti set: match anything but the contents 10 NONTERMINAL, // Nonterminal 11 ALT, // Alternate 12 END, // End of rule 13 PAR, // Parenthesised
-     * sub-expression (FBNF) 14 OPT, // Optional sub-expression (EBNF) 15 POS, // Positive closure over sub-expression (EBNF) 16 KLN // Kleeene closure over
-     * sub-expression (EBNF) 17
-     *
-     */
     derivations.numberNodes();
   }
 

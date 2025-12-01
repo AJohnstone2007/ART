@@ -17,7 +17,7 @@ public abstract class AbstractDerivations implements DisplayInterface {
     return 0;
   }
 
-  public int derivationAsInterpeterTerm() {
+  public int derivationAsInterpeterTerm(boolean full) {
     Util.notImplemented("derivationAsInterpreterTerm()", getClass());
     return 0;
   }

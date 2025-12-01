@@ -78,7 +78,7 @@ public final class ScriptInterpreter {
   public static TRRules currentTRRules = new TRRules();
 
   private int currentTryTerm = 0;
-  private int currentIndexedTryTerm = 0;
+  private final int currentIndexedTryTerm = 0;
   private int currentRewriteTerm = 0;
 
   private int currentConfiguration;
@@ -576,6 +576,7 @@ public final class ScriptInterpreter {
 
   private void processDisplayElements(int term) {
     boolean isShow = iTerms.hasSymbol(term, "!show");
+    String outputFilename = null;
     PrintStream outputStream = Util.console;
     TermTraverserText outputTraverser = iTerms.plainTextTraverser;
     boolean full = false, indented = false, indexed = false;
@@ -594,13 +595,13 @@ public final class ScriptInterpreter {
           break;
 
         case "artfile": // 'myfile' syntax
-          String filename = iTerms.termSymbolString(iTerms.subterm(term, i, 0));
-          Util.info("Redirecting output to file " + filename);
+          outputFilename = iTerms.termSymbolString(iTerms.subterm(term, i, 0));
+          Util.info("Redirecting output to file " + outputFilename);
           try {
             if (outputStream != Util.console) outputStream.close();
-            outputStream = new PrintStream(filename);
+            outputStream = new PrintStream(outputFilename);
           } catch (FileNotFoundException e) {
-            Util.error("Unable to open file " + filename + " for output");
+            Util.error("Unable to open file " + outputFilename + " for output");
           }
           break;
 
@@ -728,13 +729,17 @@ public final class ScriptInterpreter {
           break;
 
         case "tryterm":
-          if (indexed) {
-            currentIndexedTryTerm = currentParser.derivations.derivationAsInterpeterTerm();
-            outputStream.println(iTerms.toString(currentIndexedTryTerm, outputTraverser, indented, depthLimit));
+          int trm = indexed ? currentParser.derivations.derivationAsInterpeterTerm(full) : currentParser.derivations.derivationAsTerm();
+          if (isShow) {
+            if (outputFilename == null) {
+              Util.error("no output file specified for !show tryTerm");
+              return;
+            } else
+              iTerms.toDot(trm, outputFilename);
           } else {
-            outputStream.println("!try term: " + currentTryTerm);
-            outputStream.println(iTerms.toString(currentTryTerm, outputTraverser, indented, depthLimit));
-            if (scriptParserTerm == currentTryTerm) Util.info("Bootstrap achieved: script parser term and current derivation term identical");
+            outputStream.println("!try term: " + trm + "\n" + iTerms.toString(currentTryTerm, outputTraverser, indented, depthLimit));
+
+            if (scriptParserTerm == trm) Util.info("Bootstrap achieved: script parser term and current derivation term identical");
           }
           break;
 

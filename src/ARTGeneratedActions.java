@@ -18,6 +18,7 @@ public class ARTGeneratedActions extends AbstractActions {
   Map<String, String> currentMacro, emptyMap = new HashMap<>();
   Set<String> macrosInUse = new HashSet<>();
   PrintStream out = System.out;
+  boolean trace = false;
 
   void fatal(String str) {
     System.err.println(str);
@@ -32,7 +33,7 @@ public class ARTGeneratedActions extends AbstractActions {
   }
 
   String expand(String str, Map<String, String> parameterBindings) {
-    // Util.info("Expanding " + str + " " + parameterBindings);
+    if (trace) System.err.println("Expanding " + str);
     StringBuilder sb = new StringBuilder(str);
     while (true) {
       // 1. Find first instance
@@ -44,10 +45,12 @@ public class ARTGeneratedActions extends AbstractActions {
       while (end < sb.length() && Character.isJavaIdentifierPart(sb.charAt(end)))
         end++;
       String id = sb.substring(start + 1, end);
+      if (trace) System.err.println("Found " + str);
 
       // 3. Check to see if this instance is a parameter; if so simple replacement as there can be no parameters to a parameter
       String replacement = parameterBindings == null ? null : parameterBindings.get(id);
       if (replacement != null) {
+        if (trace) System.err.println(id + "is a parameter, so replacing parameter with binding " + replacement);
         sb.replace(start, end, replacement);
         continue;
       }
@@ -57,15 +60,27 @@ public class ARTGeneratedActions extends AbstractActions {
       if (end < sb.length()) {
         char c = sb.charAt(end);
 
-        while (end < sb.length() && sb.charAt(end) == '{') {
+        /*
+         * if (peekCh() != '{') return;
+         *
+         */
+        // Old code
+
+        while (end < sb.length() && sb.charAt(end) == '{') { // Iterate over repeated arguments
           int argumentStart = end + 1;
-          while (end < sb.length() && sb.charAt(end) != '}')
+
+          int nestLevel = 0;
+          do {
+            if (end >= sb.length()) fatal("^" + id + " unterminated argument");
+            if (sb.charAt(end) == '{') nestLevel++;
+            if (sb.charAt(end) == '}') nestLevel--;
+            if (sb.charAt(end) == '\\') end++; // Allow escapes
             end++;
-          if (sb.charAt(end) != '}') fatal("Instance " + id + "unterminated argument");
-          String arg = sb.substring(argumentStart, end);
+          } while (nestLevel > 0);
+
+          String arg = sb.substring(argumentStart, end - 1); // Pull out the 'lexeme'
           // Util.debug("Found argument " + arg);
           arguments.add(arg);
-          end++; // skip terminating }
         }
       }
 
@@ -76,9 +91,9 @@ public class ARTGeneratedActions extends AbstractActions {
         continue;
       case "PAR":
         String arg = arguments.getFirst();
-        String exp = expand(arg, new HashMap<String, String>());
-        String rep = exp.replaceAll("\r?\n\r?\n", "\n</P>\n<P>");
-        sb.replace(start, end, "<P>" + rep + "</P>");
+        String exp = expand(arg, parameterBindings);
+        String rep = exp.replaceAll("\r?\n\r?\n", "</p>\n<p>");
+        sb.replace(start, end, "<p>" + rep + "</p>");
         continue;
       }
 
@@ -92,7 +107,8 @@ public class ARTGeneratedActions extends AbstractActions {
       Map<String, String> newParameterBindings = new HashMap<>();
       int i = 0;
       for (var m : macros.get(id).keySet())
-        if (!m.equals("")) newParameterBindings.put(m, expand(arguments.get(i++), null)); // Last element keyed on "" is the macro body, not a parameter
+        if (!m.equals("")) newParameterBindings.put(m, expand(arguments.get(i++), parameterBindings)); // Last element keyed on "" is the macro body, not a
+                                                                                                       // parameter
 
       // 8. Expand instance, and then go round again...
       replacement = expand(macros.get(id).get(""), newParameterBindings);
@@ -100,7 +116,7 @@ public class ARTGeneratedActions extends AbstractActions {
     }
   }
 
-  public String name() { return "2025-11-14 10:23:52"; }
+  public String name() { return "2025-12-01 07:20:39"; }
 
   public class ART_C_define extends AbstractAttributeBlock {
     ART_C_define define = this; ART_C_paramatersOpt paramatersOpt1;
@@ -120,7 +136,7 @@ public class ARTGeneratedActions extends AbstractActions {
 
     public void action(int nodeNumber) {
       switch(nodeNumber){
-      case 43: macros.put(lexeme(), new HashMap<String, String>()); currentMacro = macros.get(lexeme());  break;
+      case 43: macros.put(lexeme(), new LinkedHashMap<String, String>()); currentMacro = macros.get(lexeme());  break;
       case 45: currentMacro.put("", lexeme());  break;
       }
     }

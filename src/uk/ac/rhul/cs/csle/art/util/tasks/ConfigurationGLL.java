@@ -4,13 +4,13 @@ import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
 import uk.ac.rhul.cs.csle.art.util.derivations.AbstractDerivationNode;
 import uk.ac.rhul.cs.csle.art.util.stacks.AbstractStackNode;
 
-public class DescriptorGLL {
+public class ConfigurationGLL {
   public final int inputIndex;
   public final CFGNode cfgNode;
   public final AbstractStackNode stackNode;
   public final AbstractDerivationNode derivationNode;
 
-  public DescriptorGLL(int tokenIndex, CFGNode grammarNode, AbstractStackNode stackNode, AbstractDerivationNode derivationNode) {
+  public ConfigurationGLL(int tokenIndex, CFGNode grammarNode, AbstractStackNode stackNode, AbstractDerivationNode derivationNode) {
     super();
     this.inputIndex = tokenIndex;
     this.cfgNode = grammarNode;
@@ -49,7 +49,7 @@ public class DescriptorGLL {
     if (this == obj) return true;
     if (obj == null) return false;
     if (getClass() != obj.getClass()) return false;
-    DescriptorGLL other = (DescriptorGLL) obj;
+    ConfigurationGLL other = (ConfigurationGLL) obj;
     if (stackNode == null) {
       if (other.stackNode != null) return false;
     } else if (!stackNode.equals(other.stackNode)) return false;
