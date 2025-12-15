@@ -25,23 +25,27 @@ private static boolean[] ARTSet7;
 /* Start of artLabel enumeration */
 public static final int ARTX_EOS = 0;
 public static final int ARTTB_SIMPLE_WHITESPACE = 1;
-public static final int ARTTS_a = 2;
-public static final int ARTTS_b = 3;
-public static final int ARTX_EPSILON = 4;
-public static final int ARTL_ART_S = 5;
-public static final int ARTL_ART_S_1 = 6;
-public static final int ARTL_ART_S_2 = 7;
-public static final int ARTL_ART_S_3 = 8;
-public static final int ARTL_ART_S_4 = 9;
-public static final int ARTL_ART_S_5 = 10;
-public static final int ARTL_ART_S_6 = 11;
-public static final int ARTL_ART_S_7 = 12;
-public static final int ARTL_ART_S_8 = 13;
-public static final int ARTL_ART_S_9 = 14;
-public static final int ARTL_ART_S_10 = 15;
-public static final int ARTX_DESPATCH = 16;
-public static final int ARTX_DUMMY = 17;
-public static final int ARTX_LABEL_EXTENT = 18;
+public static final int ARTTS_x = 2;
+public static final int ARTTS_y = 3;
+public static final int ARTTS_z = 4;
+public static final int ARTX_EPSILON = 5;
+public static final int ARTL_ART_S = 6;
+public static final int ARTL_ART_Y = 7;
+public static final int ARTL_ART_S_1 = 8;
+public static final int ARTL_ART_S_2 = 9;
+public static final int ARTL_ART_S_3 = 10;
+public static final int ARTL_ART_S_4 = 11;
+public static final int ARTL_ART_S_5 = 12;
+public static final int ARTL_ART_S_6 = 13;
+public static final int ARTL_ART_S_7 = 14;
+public static final int ARTL_ART_S_8 = 15;
+public static final int ARTL_ART_Y_9 = 16;
+public static final int ARTL_ART_Y_10 = 17;
+public static final int ARTL_ART_Y_11 = 18;
+public static final int ARTL_ART_Y_12 = 19;
+public static final int ARTX_DESPATCH = 20;
+public static final int ARTX_DUMMY = 21;
+public static final int ARTX_LABEL_EXTENT = 22;
 /* End of artLabel enumeration */
 
 /* Start of artName enumeration */
@@ -52,38 +56,30 @@ public void ARTPF_ART_S() {
   switch (artCurrentRestartLabel) {
       /* Nonterminal S production descriptor loads*/
     case ARTL_ART_S: 
-      if (ARTSet4[artInputPairBuffer[artCurrentInputPairReference]]) 
+      if (ARTSet2[artInputPairBuffer[artCurrentInputPairReference]]) 
         artFindDescriptor(ARTL_ART_S_2, artCurrentGSSNode, artCurrentInputPairIndex, artDummySPPFNode);
-      if (ARTSet7[artInputPairBuffer[artCurrentInputPairReference]]) 
-        artFindDescriptor(ARTL_ART_S_8, artCurrentGSSNode, artCurrentInputPairIndex, artDummySPPFNode);
       { artCurrentRestartLabel = ARTX_DESPATCH; return; }
       /* Nonterminal S: match production*/
     case ARTL_ART_S_2: 
       /* Cat/unary template start */
       /* Terminal template start */
       artCurrentInputPairReference = artInputSuccessorIndex[artInputPairBuffer[artCurrentInputPairReference + 1]][artInputPairBuffer[artCurrentInputPairReference]];
-      artCurrentSPPFRightChildNode = artFindSPPFTerminal(ARTTS_a, artCurrentInputPairIndex, artInputPairBuffer[artCurrentInputPairReference + 1]);
+      artCurrentSPPFRightChildNode = artFindSPPFTerminal(ARTTS_x, artCurrentInputPairIndex, artInputPairBuffer[artCurrentInputPairReference + 1]);
       artCurrentInputPairIndex = artInputPairBuffer[artCurrentInputPairReference + 1];
       artCurrentSPPFNode = artFindSPPF(ARTL_ART_S_4, artCurrentSPPFNode, artCurrentSPPFRightChildNode);
       /* Terminal template end */
-      if (!ARTSet5[artInputPairBuffer[artCurrentInputPairReference]]) { artCurrentRestartLabel = ARTX_DESPATCH; return; }
+      if (!ARTSet4[artInputPairBuffer[artCurrentInputPairReference]]) { artCurrentRestartLabel = ARTX_DESPATCH; return; }
       /* Nonterminal template start */
       artCurrentGSSNode = artFindGSS(ARTL_ART_S_6, artCurrentGSSNode, artCurrentInputPairIndex, artCurrentSPPFNode);
-      { artCurrentRestartLabel = ARTL_ART_S; return; }
+      { artCurrentRestartLabel = ARTL_ART_Y; return; }
     case ARTL_ART_S_6: 
       /* Nonterminal template end */
-      /* Cat/unary template end */
-      if (!ARTSet3[artInputPairBuffer[artCurrentInputPairReference]]) { artCurrentRestartLabel = ARTX_DESPATCH; return; }
-      artPop(artCurrentGSSNode, artCurrentInputPairIndex, artCurrentSPPFNode);
-      { artCurrentRestartLabel = ARTX_DESPATCH /* Top level pop */; return; }
-      /* Nonterminal S: match production*/
-    case ARTL_ART_S_8: 
-      /* Cat/unary template start */
+      if (!ARTSet5[artInputPairBuffer[artCurrentInputPairReference]]) { artCurrentRestartLabel = ARTX_DESPATCH; return; }
       /* Terminal template start */
       artCurrentInputPairReference = artInputSuccessorIndex[artInputPairBuffer[artCurrentInputPairReference + 1]][artInputPairBuffer[artCurrentInputPairReference]];
-      artCurrentSPPFRightChildNode = artFindSPPFTerminal(ARTTS_b, artCurrentInputPairIndex, artInputPairBuffer[artCurrentInputPairReference + 1]);
+      artCurrentSPPFRightChildNode = artFindSPPFTerminal(ARTTS_z, artCurrentInputPairIndex, artInputPairBuffer[artCurrentInputPairReference + 1]);
       artCurrentInputPairIndex = artInputPairBuffer[artCurrentInputPairReference + 1];
-      artCurrentSPPFNode = artFindSPPF(ARTL_ART_S_10, artCurrentSPPFNode, artCurrentSPPFRightChildNode);
+      artCurrentSPPFNode = artFindSPPF(ARTL_ART_S_8, artCurrentSPPFNode, artCurrentSPPFRightChildNode);
       /* Terminal template end */
       /* Cat/unary template end */
       if (!ARTSet3[artInputPairBuffer[artCurrentInputPairReference]]) { artCurrentRestartLabel = ARTX_DESPATCH; return; }
@@ -92,12 +88,35 @@ public void ARTPF_ART_S() {
   }
 }
 
+public void ARTPF_ART_Y() {
+  switch (artCurrentRestartLabel) {
+      /* Nonterminal Y production descriptor loads*/
+    case ARTL_ART_Y: 
+      if (ARTSet7[artInputPairBuffer[artCurrentInputPairReference]]) 
+        artFindDescriptor(ARTL_ART_Y_10, artCurrentGSSNode, artCurrentInputPairIndex, artDummySPPFNode);
+      { artCurrentRestartLabel = ARTX_DESPATCH; return; }
+      /* Nonterminal Y: match production*/
+    case ARTL_ART_Y_10: 
+      /* Cat/unary template start */
+      /* Terminal template start */
+      artCurrentInputPairReference = artInputSuccessorIndex[artInputPairBuffer[artCurrentInputPairReference + 1]][artInputPairBuffer[artCurrentInputPairReference]];
+      artCurrentSPPFRightChildNode = artFindSPPFTerminal(ARTTS_y, artCurrentInputPairIndex, artInputPairBuffer[artCurrentInputPairReference + 1]);
+      artCurrentInputPairIndex = artInputPairBuffer[artCurrentInputPairReference + 1];
+      artCurrentSPPFNode = artFindSPPF(ARTL_ART_Y_12, artCurrentSPPFNode, artCurrentSPPFRightChildNode);
+      /* Terminal template end */
+      /* Cat/unary template end */
+      if (!ARTSet5[artInputPairBuffer[artCurrentInputPairReference]]) { artCurrentRestartLabel = ARTX_DESPATCH; return; }
+      artPop(artCurrentGSSNode, artCurrentInputPairIndex, artCurrentSPPFNode);
+      { artCurrentRestartLabel = ARTX_DESPATCH /* Top level pop */; return; }
+  }
+}
+
 public void artParseBody(int artStartLabel) {
   artLoadSetupTime();
-  artSpecificationName = "testV3.art";
+  artSpecificationName = "test.art";
   artStartSymbolLabel = artStartLabel;
   artIsInLanguage = false;
-  artTokenExtent = 6;
+  artTokenExtent = 8;
   artLexicaliseForV3GLL(artInputString, null);
   artLoadLexTime();
   artDummySPPFNode = artFindSPPFInitial(ARTL_DUMMY, 0, 0);
@@ -111,6 +130,9 @@ public void artParseBody(int artStartLabel) {
     switch (artlhsL[artCurrentRestartLabel]) {
       case ARTL_ART_S: 
         ARTPF_ART_S();
+        break;
+      case ARTL_ART_Y: 
+        ARTPF_ART_Y();
         break;
       case ARTX_DESPATCH: 
         if (artNoDescriptors()) { 
@@ -128,18 +150,35 @@ public void ARTSet1initialise() {
   artInitialiseBooleanArray(ARTSet1, 0, artSetExtent, false);
 }
 
-public void ARTSet5initialise() {
-  ARTSet5 = new boolean[artSetExtent];
-  artInitialiseBooleanArray(ARTSet5, 0, artSetExtent, false);
-  ARTSet5[ARTTS_a] = true;
-  ARTSet5[ARTTS_b] = true;
-  ARTSet5[ARTL_ART_S] = true;
-}
-
 public void ARTSet3initialise() {
   ARTSet3 = new boolean[artSetExtent];
   artInitialiseBooleanArray(ARTSet3, 0, artSetExtent, false);
   ARTSet3[ARTX_EOS] = true;
+}
+
+public void ARTSet2initialise() {
+  ARTSet2 = new boolean[artSetExtent];
+  artInitialiseBooleanArray(ARTSet2, 0, artSetExtent, false);
+  ARTSet2[ARTTS_x] = true;
+}
+
+public void ARTSet4initialise() {
+  ARTSet4 = new boolean[artSetExtent];
+  artInitialiseBooleanArray(ARTSet4, 0, artSetExtent, false);
+  ARTSet4[ARTTS_y] = true;
+  ARTSet4[ARTL_ART_Y] = true;
+}
+
+public void ARTSet7initialise() {
+  ARTSet7 = new boolean[artSetExtent];
+  artInitialiseBooleanArray(ARTSet7, 0, artSetExtent, false);
+  ARTSet7[ARTTS_y] = true;
+}
+
+public void ARTSet5initialise() {
+  ARTSet5 = new boolean[artSetExtent];
+  artInitialiseBooleanArray(ARTSet5, 0, artSetExtent, false);
+  ARTSet5[ARTTS_z] = true;
 }
 
 public void ARTSet6initialise() {
@@ -147,75 +186,71 @@ public void ARTSet6initialise() {
   artInitialiseBooleanArray(ARTSet6, 0, artSetExtent, false);
 }
 
-public void ARTSet2initialise() {
-  ARTSet2 = new boolean[artSetExtent];
-  artInitialiseBooleanArray(ARTSet2, 0, artSetExtent, false);
-  ARTSet2[ARTTS_a] = true;
-  ARTSet2[ARTTS_b] = true;
-}
-
-public void ARTSet4initialise() {
-  ARTSet4 = new boolean[artSetExtent];
-  artInitialiseBooleanArray(ARTSet4, 0, artSetExtent, false);
-  ARTSet4[ARTTS_a] = true;
-}
-
-public void ARTSet7initialise() {
-  ARTSet7 = new boolean[artSetExtent];
-  artInitialiseBooleanArray(ARTSet7, 0, artSetExtent, false);
-  ARTSet7[ARTTS_b] = true;
-}
-
 public void artSetInitialise() {
   ARTSet1initialise();
-  ARTSet5initialise();
   ARTSet3initialise();
-  ARTSet6initialise();
   ARTSet2initialise();
   ARTSet4initialise();
   ARTSet7initialise();
+  ARTSet5initialise();
+  ARTSet6initialise();
 }
 
 public void artTableInitialiser_ART_S() {
   artLabelInternalStrings[ARTL_ART_S] = "S";
   artLabelStrings[ARTL_ART_S] = "S";
   artKindOfs[ARTL_ART_S] = ARTK_NONTERMINAL;
-  artLabelInternalStrings[ARTL_ART_S_2] = "S ::= . 'a'  S ";
+  artLabelInternalStrings[ARTL_ART_S_2] = "S ::= . 'x'  Y 'z'  ";
   artLabelStrings[ARTL_ART_S_2] = "";
   artlhsL[ARTL_ART_S_2] = ARTL_ART_S;
   artKindOfs[ARTL_ART_S_2] = ARTK_INTERMEDIATE;
-  artLabelInternalStrings[ARTL_ART_S_3] = "S ::= 'a'  S ";
+  artLabelInternalStrings[ARTL_ART_S_3] = "S ::= 'x'  Y 'z'  ";
   artLabelStrings[ARTL_ART_S_3] = "";
   artlhsL[ARTL_ART_S_3] = ARTL_ART_S;
-  artLabelInternalStrings[ARTL_ART_S_4] = "S ::= 'a'  . S ";
+  artLabelInternalStrings[ARTL_ART_S_4] = "S ::= 'x'  . Y 'z'  ";
   artLabelStrings[ARTL_ART_S_4] = "";
   artlhsL[ARTL_ART_S_4] = ARTL_ART_S;
   artKindOfs[ARTL_ART_S_4] = ARTK_INTERMEDIATE;
   artfiRL[ARTL_ART_S_4] = true;
-  artLabelInternalStrings[ARTL_ART_S_6] = "S ::= 'a'  S .";
+  artLabelInternalStrings[ARTL_ART_S_6] = "S ::= 'x'  Y . 'z'  ";
   artLabelStrings[ARTL_ART_S_6] = "";
   artlhsL[ARTL_ART_S_6] = ARTL_ART_S;
-  artSlotInstanceOfs[ARTL_ART_S_6] = ARTL_ART_S;
+  artSlotInstanceOfs[ARTL_ART_S_6] = ARTL_ART_Y;
   artKindOfs[ARTL_ART_S_6] = ARTK_INTERMEDIATE;
-  arteoRL[ARTL_ART_S_6] = true;
-  arteoR_pL[ARTL_ART_S_6] = true;
   artPopD[ARTL_ART_S_6] = true;
-  artLabelInternalStrings[ARTL_ART_S_8] = "S ::= . 'b'  ";
+  artLabelInternalStrings[ARTL_ART_S_7] = "S ::= 'x'  Y 'z'  ";
+  artLabelStrings[ARTL_ART_S_7] = "";
+  artlhsL[ARTL_ART_S_7] = ARTL_ART_S;
+  artPopD[ARTL_ART_S_7] = true;
+  artLabelInternalStrings[ARTL_ART_S_8] = "S ::= 'x'  Y 'z'  .";
   artLabelStrings[ARTL_ART_S_8] = "";
   artlhsL[ARTL_ART_S_8] = ARTL_ART_S;
   artKindOfs[ARTL_ART_S_8] = ARTK_INTERMEDIATE;
+  arteoRL[ARTL_ART_S_8] = true;
+  arteoR_pL[ARTL_ART_S_8] = true;
   artPopD[ARTL_ART_S_8] = true;
-  artLabelInternalStrings[ARTL_ART_S_9] = "S ::= 'b'  ";
-  artLabelStrings[ARTL_ART_S_9] = "";
-  artlhsL[ARTL_ART_S_9] = ARTL_ART_S;
-  artPopD[ARTL_ART_S_9] = true;
-  artLabelInternalStrings[ARTL_ART_S_10] = "S ::= 'b'  .";
-  artLabelStrings[ARTL_ART_S_10] = "";
-  artlhsL[ARTL_ART_S_10] = ARTL_ART_S;
-  artKindOfs[ARTL_ART_S_10] = ARTK_INTERMEDIATE;
-  arteoRL[ARTL_ART_S_10] = true;
-  arteoR_pL[ARTL_ART_S_10] = true;
-  artPopD[ARTL_ART_S_10] = true;
+}
+
+public void artTableInitialiser_ART_Y() {
+  artLabelInternalStrings[ARTL_ART_Y] = "Y";
+  artLabelStrings[ARTL_ART_Y] = "Y";
+  artKindOfs[ARTL_ART_Y] = ARTK_NONTERMINAL;
+  artLabelInternalStrings[ARTL_ART_Y_10] = "Y ::= . 'y'  ";
+  artLabelStrings[ARTL_ART_Y_10] = "";
+  artlhsL[ARTL_ART_Y_10] = ARTL_ART_Y;
+  artKindOfs[ARTL_ART_Y_10] = ARTK_INTERMEDIATE;
+  artPopD[ARTL_ART_Y_10] = true;
+  artLabelInternalStrings[ARTL_ART_Y_11] = "Y ::= 'y'  ";
+  artLabelStrings[ARTL_ART_Y_11] = "";
+  artlhsL[ARTL_ART_Y_11] = ARTL_ART_Y;
+  artPopD[ARTL_ART_Y_11] = true;
+  artLabelInternalStrings[ARTL_ART_Y_12] = "Y ::= 'y'  .";
+  artLabelStrings[ARTL_ART_Y_12] = "";
+  artlhsL[ARTL_ART_Y_12] = ARTL_ART_Y;
+  artKindOfs[ARTL_ART_Y_12] = ARTK_INTERMEDIATE;
+  arteoRL[ARTL_ART_Y_12] = true;
+  arteoR_pL[ARTL_ART_Y_12] = true;
+  artPopD[ARTL_ART_Y_12] = true;
 }
 
 public void artTableInitialise() {
@@ -303,15 +338,20 @@ public void artTableInitialise() {
   artLabelInternalStrings[ARTTB_SIMPLE_WHITESPACE] = "&SIMPLE_WHITESPACE";
   artKindOfs[ARTTB_SIMPLE_WHITESPACE] = ARTK_BUILTIN_TERMINAL;
   artTerminalRequiresWhiteSpace[ARTTB_SIMPLE_WHITESPACE] = true;
-  artLabelStrings[ARTTS_a] = "a";
-  artLabelInternalStrings[ARTTS_a] = "'a'";
-  artKindOfs[ARTTS_a] = ARTK_CASE_SENSITIVE_TERMINAL;
-  artTerminalRequiresWhiteSpace[ARTTS_a] = true;
-  artLabelStrings[ARTTS_b] = "b";
-  artLabelInternalStrings[ARTTS_b] = "'b'";
-  artKindOfs[ARTTS_b] = ARTK_CASE_SENSITIVE_TERMINAL;
-  artTerminalRequiresWhiteSpace[ARTTS_b] = true;
+  artLabelStrings[ARTTS_x] = "x";
+  artLabelInternalStrings[ARTTS_x] = "'x'";
+  artKindOfs[ARTTS_x] = ARTK_CASE_SENSITIVE_TERMINAL;
+  artTerminalRequiresWhiteSpace[ARTTS_x] = true;
+  artLabelStrings[ARTTS_y] = "y";
+  artLabelInternalStrings[ARTTS_y] = "'y'";
+  artKindOfs[ARTTS_y] = ARTK_CASE_SENSITIVE_TERMINAL;
+  artTerminalRequiresWhiteSpace[ARTTS_y] = true;
+  artLabelStrings[ARTTS_z] = "z";
+  artLabelInternalStrings[ARTTS_z] = "'z'";
+  artKindOfs[ARTTS_z] = ARTK_CASE_SENSITIVE_TERMINAL;
+  artTerminalRequiresWhiteSpace[ARTTS_z] = true;
   artTableInitialiser_ART_S();
+  artTableInitialiser_ART_Y();
 }
 
 public ARTGeneratedParser(ARTLexerV3 artLexer) {
@@ -321,9 +361,9 @@ public ARTGeneratedParser(ARTLexerV3 artLexer) {
 public ARTGeneratedParser(ARTGrammar artGrammar, ARTLexerV3 artLexer) {
   super(artGrammar, artLexer);
   artParserKind = "GLL Gen";
-  artFirstTerminalLabel = ARTTS_a;
+  artFirstTerminalLabel = ARTTS_x;
   artFirstUnusedLabel = ARTX_LABEL_EXTENT + 1;
-  artSetExtent = 6;
+  artSetExtent = 8;
   ARTL_EOS = ARTX_EOS;
   ARTL_EPSILON = ARTX_EPSILON;
   ARTL_DUMMY = ARTX_DUMMY;
@@ -340,15 +380,28 @@ ARTGLLRDTVertex artNewParent; boolean artNewWriteable = true;
     for (int artPackedNode = artSPPFNodePackedNodeList(artElement); artPackedNode != 0; artPackedNode = artSPPFPackedNodePackedNodeList(artPackedNode)) {
       if (artSPPFPackedNodeSelected(artPackedNode)) {
         switch (artSPPFPackedNodeLabel(artPackedNode)) {
-    /*S ::= 'a'  S .*/
+    /*S ::= 'x'  Y . 'z'  */
     case ARTL_ART_S_6: 
-            artParent.addChild(artNextFreeNodeNumber++, new ARTGLLRDTPayload(artRDT, artSPPFNodeLeftExtent(artSPPFPackedNodeLeftChild(artPackedNode)), artSPPFNodeRightExtent(artSPPFPackedNodeLeftChild(artPackedNode)), artSPPFNodeLabel(artSPPFPackedNodeLeftChild(artPackedNode)), null));
+      artParent.addChild(artNextFreeNodeNumber++, new ARTGLLRDTPayload(artRDT, artSPPFNodeLeftExtent(artSPPFPackedNodeLeftChild(artPackedNode)), artSPPFNodeRightExtent(artSPPFPackedNodeLeftChild(artPackedNode)), artSPPFNodeLabel(artSPPFPackedNodeLeftChild(artPackedNode)), null));
             artNewWriteable = true; artNewParent = artParent.addChild(artNextFreeNodeNumber++, new ARTGLLRDTPayload(artRDT, artSPPFNodeLeftExtent(artSPPFPackedNodeRightChild(artPackedNode)), artSPPFNodeRightExtent(artSPPFPackedNodeRightChild(artPackedNode)), artSPPFNodeLabel(artSPPFPackedNodeRightChild(artPackedNode)), null));
-      ARTRD_S(artSPPFPackedNodeRightChild(artPackedNode), artNewParent, artNewWriteable);
+      ARTRD_Y(artSPPFPackedNodeRightChild(artPackedNode), artNewParent, artNewWriteable);
             break;
-    /*S ::= 'b'  .*/
-    case ARTL_ART_S_10: 
+    /*S ::= 'x'  Y 'z'  .*/
+    case ARTL_ART_S_8: 
             ARTRD_S(artSPPFPackedNodeLeftChild(artPackedNode), artParent, artWriteable);
+      artParent.addChild(artNextFreeNodeNumber++, new ARTGLLRDTPayload(artRDT, artSPPFNodeLeftExtent(artSPPFPackedNodeRightChild(artPackedNode)), artSPPFNodeRightExtent(artSPPFPackedNodeRightChild(artPackedNode)), artSPPFNodeLabel(artSPPFPackedNodeRightChild(artPackedNode)), null));
+            break;
+        default: ; }}}
+}
+
+public void ARTRD_Y(int artElement, ARTGLLRDTVertex artParent, boolean artWriteable)  {
+ARTGLLRDTVertex artNewParent; boolean artNewWriteable = true;
+    for (int artPackedNode = artSPPFNodePackedNodeList(artElement); artPackedNode != 0; artPackedNode = artSPPFPackedNodePackedNodeList(artPackedNode)) {
+      if (artSPPFPackedNodeSelected(artPackedNode)) {
+        switch (artSPPFPackedNodeLabel(artPackedNode)) {
+    /*Y ::= 'y'  .*/
+    case ARTL_ART_Y_12: 
+            ARTRD_Y(artSPPFPackedNodeLeftChild(artPackedNode), artParent, artWriteable);
       artParent.addChild(artNextFreeNodeNumber++, new ARTGLLRDTPayload(artRDT, artSPPFNodeLeftExtent(artSPPFPackedNodeRightChild(artPackedNode)), artSPPFNodeRightExtent(artSPPFPackedNodeRightChild(artPackedNode)), artSPPFNodeLabel(artSPPFPackedNodeRightChild(artPackedNode)), null));
             break;
         default: ; }}}
@@ -357,6 +410,7 @@ ARTGLLRDTVertex artNewParent; boolean artNewWriteable = true;
 public void artEvaluate(ARTGLLRDTHandle artElement, ARTGLLAttributeBlock artAttributes, ARTGLLRDTVertex artParent, Boolean artWriteable)  {
   switch (artSPPFNodeLabel(artElement.element)) {
     case ARTL_ART_S: ARTRD_S(artElement.element, artParent, artWriteable); break;
+    case ARTL_ART_Y: ARTRD_Y(artElement.element, artParent, artWriteable); break;
   }
 }
 

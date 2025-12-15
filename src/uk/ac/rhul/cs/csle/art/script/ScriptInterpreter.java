@@ -110,6 +110,7 @@ public final class ScriptInterpreter {
 
     currentCFGRules = new CFGRules(CFGRulesKind.USER);
     currentChooseRules = new ChooseRules();
+    seenChooseRule = false;
 
     Util.traceLevel = 0;
     Util.errorLevel = 1;
@@ -728,18 +729,30 @@ public final class ScriptInterpreter {
             currentParser.derivations.print(outputStream, outputTraverser, indexed, full, indented);
           break;
 
-        case "tryterm":
-          int trm = indexed ? currentParser.derivations.derivationAsInterpeterTerm(full) : currentParser.derivations.derivationAsTerm();
-          if (isShow) {
-            if (outputFilename == null) {
-              Util.error("no output file specified for !show tryTerm");
-              return;
-            } else
-              iTerms.toDot(trm, outputFilename);
-          } else {
-            outputStream.println("!try term: " + trm + "\n" + iTerms.toString(currentTryTerm, outputTraverser, indented, depthLimit));
+        case "ambiguities":
+          if (isShow)
+            // currentParser.derivations.show(outputStream, outputTraverser, indexed, full, indented)
+            ;
+          else
+            currentParser.derivations.ambiguityCheck();
+          break;
 
-            if (scriptParserTerm == trm) Util.info("Bootstrap achieved: script parser term and current derivation term identical");
+        case "tryterm":
+          if (currentParser.derivations == null)
+            Util.error("!show/!print tryTerm - no derivations found");
+          else {
+            int trm = indexed ? currentParser.derivations.derivationAsInterpeterTerm(full) : currentParser.derivations.derivationAsTerm();
+            if (isShow) {
+              if (outputFilename == null) {
+                Util.error("no output file specified for !show tryTerm");
+                return;
+              } else
+                iTerms.toDot(trm, outputFilename);
+            } else {
+              outputStream.println("!try term: " + trm + "\n" + iTerms.toString(currentTryTerm, outputTraverser, indented, depthLimit));
+
+              if (scriptParserTerm == trm) Util.info("Bootstrap achieved: script parser term and current derivation term identical");
+            }
           }
           break;
 
@@ -805,7 +818,7 @@ public final class ScriptInterpreter {
           Util.error("Ignoring " + (isShow ? "!show" : "!print") + " argument: " + displayElement
               + "\n   Must be a double-quoted string, a single quoted file name, a term or one of (case insensitive):\n"
               + "     raw plain latex css full indented depth n\n" + "     cfgRules cfgRulesLexer cfgRulesParser chooseRules trRules\n"
-              + "     lexicalisations tasks stacks derivations tryTerm\n"
+              + "     lexicalisations tasks stacks derivations ambiguities tryTerm\n"
               + "     scriptCFGRules scriptChooseRules scriptLexicalisations scriptDerivations scriptTerm\n"
               + "     version statistics cardinalities paraterminals parasentences\n");
         }
@@ -859,10 +872,11 @@ public final class ScriptInterpreter {
 
     ScriptInterpreter.currentStatistics.putTime("Lexical choose time");
 
-    if (currentLexer.lexicalisations.valid()) currentParser.parse(currentLexer.lexicalisations);
-    ScriptInterpreter.currentStatistics.putTime("Parse time");
-    currentParser.outcomeReport();
-
+    if (currentLexer.lexicalisations.valid()) {
+      currentParser.parse(currentLexer.lexicalisations);
+      ScriptInterpreter.currentStatistics.putTime("Parse time");
+      currentParser.outcomeReport();
+    }
     if (ScriptInterpreter.currentModes.contains("stopafterparser")) {
       Util.info("!try stopped after parser");
       return;

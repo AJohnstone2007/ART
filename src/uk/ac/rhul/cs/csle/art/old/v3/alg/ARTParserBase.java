@@ -210,9 +210,14 @@ public abstract class ARTParserBase {
 
   public String artStats() {
     normaliseTimes();
-    return inputStringLength + "," + getClass().getSimpleName() + "," + (artIsInLanguage ? "accept" : "reject") + ",OK," + artGetTimes() + ","
-        + inputTokenLength + "," + (inputTokenLength - 1) + ",1," + artEndPoolAllocated;
+    artComputeParseCounts();
+    int z = -1;
+    return getClass().getSimpleName() + "( ) " + (artIsInLanguage ? "accept" : "reject") + " in " + artTimeAsMilliseconds(lexChooseTime, parseTime)
+        + "ms; characters:" + artLexer.artInputLength + " tasks:" + artDescriptorCardinality + " stackNodes:" + artGSSNodeCardinality + " stackEdges:"
+        + artGSSEdgeCardinality + " pops:" + artPopElementCardinality + " derivationNodes:" + artSPPFNodeCardinality + " BSRs:" + artSPPFPackedNodeCardinality;
   }
+
+  /* GLLModal( ): characters:8 TWEs:4 tasks:3 stackNodes:2 stackEdges:1 pops:1 derivationNodes:7 BSRs:4 */
 
   // Statistics
   public String artSpecificationName = "Specification name not set";

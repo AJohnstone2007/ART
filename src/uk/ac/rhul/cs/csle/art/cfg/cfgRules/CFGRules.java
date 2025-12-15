@@ -572,7 +572,7 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
       for (var e : elements.keySet())
         if (scaffoldingKinds.contains(e.cfgKind)) tmp.remove(e);
       if (!tmp.isEmpty()) {
-        Util.warning("unused CFG element" + (tmp.size() == 1 ? "" : "s") + ": " + tmp);
+        Util.warning("unused CF rule element" + (tmp.size() == 1 ? "" : "s") + ": " + tmp);
       }
 
       tmp = new TreeSet<>(paraterminals);

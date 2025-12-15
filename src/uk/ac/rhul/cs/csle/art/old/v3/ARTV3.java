@@ -95,7 +95,7 @@ public final class ARTV3 {
     case grammarWrite:
       ARTGrammar printGrammar = artManager.addGrammar("Parser grammar", artManager.getDefaultMainModule(), false, artManager.artDirectives);
 
-      System.out.println("Printing grammar\n" + printGrammar);
+      System.out.println("Printing grammars\n" /* + printGrammar */);
       printGrammar.prettyPrint("ARTCharacterGrammar.art", true, false, false, false, false);
       printGrammar.prettyPrint("ARTLexerGrammar.art", false, true, false, false, false);
       printGrammar.prettyPrint("ARTParserGrammar.art", false, false, true, false, false);

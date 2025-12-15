@@ -20,13 +20,17 @@ public abstract class AbstractParser {
   public abstract void parse(AbstractLexicalisations lexicalisations);
 
   public void outcomeReport() {
-    if (inLanguage)
+    if (!lexicalisations.valid())
+      Util.trace(1, name() + "lexical reject");
+    else if (inLanguage)
       Util.trace(1, name() + " accept");
     else {
       if (derivations == null)
         Util.trace(1, name() + " reject");
       else {
         int widestIndex = derivations.widestIndex();
+        while (widestIndex > 0 && lexicalisations.getSlice(widestIndex) == null)
+          widestIndex--; // Step backwards to occupied slice
         Util.error(Util.echo(name() + " syntax error ", lexicalisations.getSlice(widestIndex)[0].leftExtent, lexicalisations.inputString));
       }
     }
