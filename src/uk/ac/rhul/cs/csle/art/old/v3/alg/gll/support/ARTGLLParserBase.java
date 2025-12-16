@@ -1896,7 +1896,7 @@ public abstract class ARTGLLParserBase extends ARTParserBase {
 
   // This is the lexer interface used by classicial GLL
   public void artLexicaliseForV3GLL(String stringInput, String filename) {
-    // System.out.println("**** Start of front end lexer");
+    System.out.println("**** Start of front end lexer");
     artLexer.artInputString = stringInput + "\0";
     artLexer.artLoadInputArray(stringInput);
     artLexer.artInputLength = artLexer.artInputString.length();
@@ -1919,19 +1919,19 @@ public abstract class ARTGLLParserBase extends ARTParserBase {
 
         if (artTriples[leftExtent] == null) artTriples[leftExtent] = new ARTRightExtentNode[artTokenExtent];
 
-        // System.out.println("** Adding " + artLexer.artLongestToken + " " + artLabelInternalStrings[artLexer.artLongestToken] + " with extents " + leftExtent
-        // + ", " + artLexer.artInputIndex);
+        System.out.println("** Adding " + artLexer.artLongestToken + " " + artLabelInternalStrings[artLexer.artLongestToken] + " with extents " + leftExtent
+            + ", " + artLexer.artInputIndex);
 
         if (!artContains(artLexer.artInputIndex, artTriples[leftExtent][artLexer.artLongestToken]))
           artTriples[leftExtent][artLexer.artLongestToken] = new ARTRightExtentNode(artLexer.artInputIndex, artTriples[leftExtent][artLexer.artLongestToken]); // Head
       } while (artLexer.artLongestToken != ARTGLLParserBase.ARTL_EOS);
       artWhitespaceEOSPrefixLength = artLexer.artInputLength - leftExtent;
     }
-    // System.out.println("Triples from longest match front end");
-    // artPrintTriples();
+    System.out.println("Triples from longest match front end");
+    artPrintTriples();
     artLexBuildSuccessorSets();
-    // System.out.println("Lexer dump after building the successor sets");
-    // artLexDump("V3 lexical dump longest match");
-    // System.out.println("**** End of front end lexer");
+    System.out.println("Lexer dump after building the successor sets");
+    artLexDump("V3 lexical dump longest match");
+    System.out.println("**** End of front end lexer");
   }
 }
