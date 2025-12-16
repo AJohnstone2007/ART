@@ -226,7 +226,8 @@ public final class ARTGrammar {
 
     // If no whitespace declaration at all, then assert the default behaviour into this grammar
     if (whitespaces.isEmpty() && paraterminals.isEmpty() && artDirectives.algorithmMode() != ARTModeAlgorithm.mgllGeneratorPool
-        && artDirectives.algorithmMode() != ARTModeAlgorithm.gllTWEGeneratorPool && artDirectives.algorithmMode() != ARTModeAlgorithm.grammarWrite) {
+        && artDirectives.algorithmMode() != ARTModeAlgorithm.gllTWEGeneratorPool && artDirectives.algorithmMode() != ARTModeAlgorithm.gllRecogniserGeneratorPool
+        && artDirectives.algorithmMode() != ARTModeAlgorithm.grammarWrite) {
       ARTGrammarElementTerminalBuiltin tmp = new ARTGrammarElementTerminalBuiltin("SIMPLE_WHITESPACE");
       terminals.add(tmp);
       whitespaces.add(tmp);
