@@ -114,6 +114,7 @@ public final class ARTV3 {
       ARTText.writeFile(artManager.artDirectives.s("outputDirectory"), artManager.artDirectives.s("parserName") + ".java", stringHandler.getText());
       break;
 
+    case gllRecogniserGeneratorPool:
     case gllTWEGeneratorPool:
     case gllGeneratorPool:
     case mgllGeneratorPool:

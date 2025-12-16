@@ -115,7 +115,7 @@ public class ARTGLLGenerator {
     writeSetInitialiserDeclarations();
     writeARTLabelEnumeration();
     writeARTNameEnumeration();
-    if (directives.algorithmMode() == ARTModeAlgorithm.gllTWEGeneratorPool) {
+    if (directives.algorithmMode() == ARTModeAlgorithm.gllTWEGeneratorPool || directives.algorithmMode() == ARTModeAlgorithm.gllRecogniserGeneratorPool) {
       gt.getText().println();
       gt.indent();
     }
@@ -196,7 +196,7 @@ public class ARTGLLGenerator {
   }
 
   void popSel(String nonterminalString) {
-    if (directives.algorithmMode() == ARTModeAlgorithm.gllTWEGeneratorPool)
+    if (directives.algorithmMode() == ARTModeAlgorithm.gllTWEGeneratorPool || directives.algorithmMode() == ARTModeAlgorithm.gllRecogniserGeneratorPool)
       gt.functionCall("artPopRecogniser", "artCurrentGSSNode", inputSelect());
     else if (directives.b("clusteredGSS"))
       gt.functionCall("artPopClustered", nonterminalString, "artCurrentGSSNode", inputSelect(), "artCurrentSPPFNode");
@@ -224,7 +224,7 @@ public class ARTGLLGenerator {
   }
 
   void findGSSSelect(ARTGrammarInstance iftNode) {
-    if (directives.algorithmMode() == ARTModeAlgorithm.gllTWEGeneratorPool)
+    if (directives.algorithmMode() == ARTModeAlgorithm.gllTWEGeneratorPool || directives.algorithmMode() == ARTModeAlgorithm.gllRecogniserGeneratorPool)
       gt.functionAssignCall("artCurrentGSSNode", "artFindGSSRecogniser", iftNode.erL.toEnumString("L"), "artCurrentGSSNode", "artCurrentInputPairIndex");
     else
       gt.functionAssignCall("artCurrentGSSNode", findGSSSelectName(), iftNode.erL.toEnumString("L"), "artCurrentGSSNode", "artCurrentInputPairIndex",
@@ -233,7 +233,7 @@ public class ARTGLLGenerator {
   }
 
   void findGSSInitialSelect() {
-    if (directives.algorithmMode() == ARTModeAlgorithm.gllTWEGeneratorPool)
+    if (directives.algorithmMode() == ARTModeAlgorithm.gllTWEGeneratorPool || directives.algorithmMode() == ARTModeAlgorithm.gllRecogniserGeneratorPool)
       gt.functionAssignCall("artRootGSSNode", "artFindGSSRecogniser", "ARTL_EOS", emptyNodeSelect(), "0");
     else if (directives.b("clusteredGSS"))
       gt.functionAssignCall("artRootGSSNode", "artFindGSSClusteredInitial", "ARTL_EOS", emptyNodeSelect(), "0", emptyNodeSelect());
@@ -342,7 +342,7 @@ public class ARTGLLGenerator {
 
         writeCodeGLLRec(childNode, iftNode); // Pass LHS node in
 
-        if (directives.algorithmMode() == ARTModeAlgorithm.gllTWEGeneratorPool) {
+        if (directives.algorithmMode() == ARTModeAlgorithm.gllTWEGeneratorPool || directives.algorithmMode() == ARTModeAlgorithm.gllRecogniserGeneratorPool) {
           if (grammar.getParaterminals().contains(iftNode.getPayload())) { // Only do this for paraterminals
             gt.indent();
             gt.getText().println(
@@ -441,7 +441,8 @@ public class ARTGLLGenerator {
         if (mgllOrGllGeneratorPool) gt.functionAssignCall("artCurrentSPPFRightChildNode", "artFindSPPFTerminal", iftNode.getPayload().toEnumerationString(null),
             "artCurrentInputPairIndex", gt.inputAccessLeftExtent());
         // Add to TWESet
-        if (directives.algorithmMode() == ARTModeAlgorithm.gllTWEGeneratorPool && !(iftNode.getPayload() instanceof ARTGrammarElementTerminalCharacter))
+        if ((directives.algorithmMode() == ARTModeAlgorithm.gllTWEGeneratorPool || directives.algorithmMode() == ARTModeAlgorithm.gllRecogniserGeneratorPool)
+            && !(iftNode.getPayload() instanceof ARTGrammarElementTerminalCharacter))
           gt.getText().println("tweSet.tweSetUpdateExactMakeLeftSet(" + iftNode.getPayload().toEnumerationString(null) + ", artCurrentInputPairIndex"
               + ", artInputPairBuffer[artCurrentInputPairReference + 1]);");
 
@@ -968,8 +969,10 @@ public class ARTGLLGenerator {
 
     for (ARTGrammarElementTerminal t : grammar.getTerminals()) {
       if (t instanceof ARTGrammarElementTerminalBuiltin) {
-        if (directives.algorithmMode() == ARTModeAlgorithm.gllTWEGeneratorPool || directives.algorithmMode() == ARTModeAlgorithm.mgllGeneratorPool)
-          throw new ARTUncheckedException("grammar builtins are not allowed in gllTWEGeneratorPool specifications - " + t);
+        if (directives.algorithmMode() == ARTModeAlgorithm.gllTWEGeneratorPool || directives.algorithmMode() == ARTModeAlgorithm.gllRecogniserGeneratorPool
+            || directives.algorithmMode() == ARTModeAlgorithm.mgllGeneratorPool)
+          throw new ARTUncheckedException(
+              "grammar builtins are not allowed in gllTWEGeneratorPool, gllRecogniserGeneratorPool or mllGeneratorPool specifications - " + t);
         // System.out.printf("Outputing enumeration for builtin terminal %s\n", t);
         gt.enumerationElement(t.toEnumerationString(null));
       }
@@ -1054,7 +1057,7 @@ public class ARTGLLGenerator {
     }
 
     gt.functionVoidOpen("artParseBody", gt.integerName(), "artStartLabel");
-    if (directives.algorithmMode() == ARTModeAlgorithm.gllTWEGeneratorPool) {
+    if (directives.algorithmMode() == ARTModeAlgorithm.gllTWEGeneratorPool || directives.algorithmMode() == ARTModeAlgorithm.gllRecogniserGeneratorPool) {
       gt.indent();
       gt.getText().printf(
           "tweSet = new ARTLexerV3(artHigher, artLonger, artInputString, artInputString.length(), ARTL_EOS, artLabelInternalStrings, artDirectives, %d);\n\n",
@@ -1068,7 +1071,8 @@ public class ARTGLLGenerator {
     gt.assign("artIsInLanguage", "false");
     Integer x = grammar.getLastNonterminalElementNumber() + 1;
     gt.assign("artTokenExtent", x.toString());
-    if (directives.algorithmMode() == ARTModeAlgorithm.gllTWEGeneratorPool) gt.functionCall("artLexicaliseForV3GLL", "artInputString", "null");
+    if (directives.algorithmMode() == ARTModeAlgorithm.gllTWEGeneratorPool || directives.algorithmMode() == ARTModeAlgorithm.gllRecogniserGeneratorPool)
+      gt.functionCall("artLexicaliseForV3GLL", "artInputString", "null");
     if (directives.algorithmMode() == ARTModeAlgorithm.gllGeneratorPool) gt.functionCall("artLexicaliseForV3GLL", "artInputString", null);
     if (directives.algorithmMode() == ARTModeAlgorithm.mgllGeneratorPool) {
       // gt.getText().println("ARTTRACE = true;\n ARTTRACETWE = true;\n");
@@ -1341,7 +1345,8 @@ public class ARTGLLGenerator {
 
     gt.newLine();
 
-    if (mgllOrGllGeneratorPool || directives.algorithmMode() == ARTModeAlgorithm.gllTWEGeneratorPool) {
+    if (mgllOrGllGeneratorPool || directives.algorithmMode() == ARTModeAlgorithm.gllTWEGeneratorPool
+        || directives.algorithmMode() == ARTModeAlgorithm.gllRecogniserGeneratorPool) {
       gt.allocateEnumerationArray("artLabel", "artPreSlots", "ARTX_LABEL_EXTENT");
       gt.functionCall("artInitialiseIntegerArray", "artPreSlots", "0", "ARTX_LABEL_EXTENT");
       gt.newLine();
@@ -1433,7 +1438,8 @@ public class ARTGLLGenerator {
     gt.assignString("artParserKind",
         directives.algorithmMode() == ARTModeAlgorithm.mgllGeneratorPool ? "MGLL Gen"
             : directives.algorithmMode() == ARTModeAlgorithm.gllGeneratorPool ? "GLL Gen"
-                : directives.algorithmMode() == ARTModeAlgorithm.gllTWEGeneratorPool ? "GLLTWE Gen" : "Unkown generated algorithm");
+                : directives.algorithmMode() == ARTModeAlgorithm.gllTWEGeneratorPool ? "GLLTWE Gen"
+                    : directives.algorithmMode() == ARTModeAlgorithm.gllRecogniserGeneratorPool ? "GLLRecogniser Gen" : "Unkown generated algorithm");
 
     // First go through the statically visible functions and make sure their values are appropriately labelled
     updateIsReferredLabelRec((ARTGrammarInstance) grammar.getInstanceTree().getRoot());

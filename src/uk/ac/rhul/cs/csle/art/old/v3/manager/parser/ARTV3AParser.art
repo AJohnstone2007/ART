@@ -1,3 +1,7 @@
+!namespace 'uk.ac.rhul.cs.csle.art.old.v3.manager.parser'
+!lexername 'ARTV3Lexer'
+!parsername 'ARTV3Parser'
+
 !whitespace &SIMPLE_WHITESPACE
 !whitespace &COMMENT_NEST_ART 
 !whitespace &COMMENT_LINE_C 
@@ -135,6 +139,7 @@ directive
     | 'gll'                                  { artManager.artDirectives.set("algorithmMode", ARTModeAlgorithm.gllGeneratorPool); }
     | 'gllGeneratorPool'                     { artManager.artDirectives.set("algorithmMode", ARTModeAlgorithm.gllGeneratorPool); }
     | 'gllTWEGeneratorPool'                  { artManager.artDirectives.set("algorithmMode", ARTModeAlgorithm.gllTWEGeneratorPool); }
+    | 'gllRecogniserGeneratorPool'           { artManager.artDirectives.set("algorithmMode", ARTModeAlgorithm.gllRecogniserGeneratorPool); }
     | 'gllClusteredGeneratorPool'            { artManager.artDirectives.set("algorithmMode", ARTModeAlgorithm.gllGeneratorPool); artManager.artDirectives.set("clusteredGSS", true); }
 
     | 'mgll'                                 { artManager.artDirectives.set("algorithmMode", ARTModeAlgorithm.mgllGeneratorPool); }

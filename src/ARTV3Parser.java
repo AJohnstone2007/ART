@@ -1,5 +1,3 @@
-package uk.ac.rhul.cs.csle.art.old.v3.manager.parser;
-
 import uk.ac.rhul.cs.csle.art.old.v3.alg.gll.support.ARTGLLAttributeBlock;
 import uk.ac.rhul.cs.csle.art.old.v3.alg.gll.support.ARTGLLParserHashPool;
 import uk.ac.rhul.cs.csle.art.old.v3.alg.gll.support.ARTGLLRDTHandle;

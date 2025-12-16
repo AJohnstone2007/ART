@@ -14,7 +14,7 @@ import uk.ac.rhul.cs.csle.art.old.v4.util.text.ARTText;
 public class ARTV3TestGenerated {
   public static void main(String[] args) throws FileNotFoundException {
     String inputFilename = null;
-    ARTGeneratedParser parser = new ARTGeneratedParser(new ARTGeneratedLexer());
+    ARTV3Parser parser = new ARTV3Parser(new ARTV3Lexer());
 
     if (args.length == 0) {
       System.out.println("No arguments supplied\n");
