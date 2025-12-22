@@ -355,6 +355,8 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
         case "STRING_DQ":
           addCharacters("\"\\");
           break;
+        case "SML_CHAR", "SML_INT", "SML_REAL", "SML_STRID", "SML_STRING", "SML_SYMID", "SML_TYVAR", "SML_WORD":
+          break;
         default:
           Util.fatal("Character set update found unexpected built in " + e);
           break;

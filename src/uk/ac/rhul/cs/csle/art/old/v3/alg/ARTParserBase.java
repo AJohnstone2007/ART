@@ -212,7 +212,7 @@ public abstract class ARTParserBase {
     normaliseTimes();
     artComputeParseCounts();
     int z = -1;
-    return getClass().getSimpleName() + "( ) " + (artIsInLanguage ? "accept" : "reject") + " in " + artTimeAsMilliseconds(lexChooseTime, parseTime)
+    return getClass().getSimpleName() + "( ) " + (artIsInLanguage ? "accept" : "") + " in " + artTimeAsMilliseconds(lexChooseTime, parseTime)
         + "ms; characters:" + artLexer.artInputLength + " tasks:" + artDescriptorCardinality + " stackNodes:" + artGSSNodeCardinality + " stackEdges:"
         + artGSSEdgeCardinality + " pops:" + artPopElementCardinality + " derivationNodes:" + artSPPFNodeCardinality + " BSRs:" + artSPPFPackedNodeCardinality;
   }
