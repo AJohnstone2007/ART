@@ -15,10 +15,12 @@ import uk.ac.rhul.cs.csle.art.old.v4.util.bitset.ARTBitSet;
 *******************************************************************************/
 @SuppressWarnings("fallthrough") public class ARTGeneratedLexer extends ARTLexerV3 {
 public void artLexicaliseBuiltinInstances() {
+  artBuiltin_SIMPLE_WHITESPACE();
+  artLexicaliseTest(ARTGeneratedParser.ARTTB_SIMPLE_WHITESPACE);
 }
 
 public void artLexicalisePreparseWhitespaceInstances() {
-  artBuiltin_SML_COMMENT();
+  artBuiltin_SIMPLE_WHITESPACE();
 }
 
 };

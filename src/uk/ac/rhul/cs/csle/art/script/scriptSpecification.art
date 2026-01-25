@@ -1,4 +1,4 @@
-(* ART script grammar rules - mostly suitable for RDSOB parsers: No left recursive rules; Alterates in decreasing length order;   directive at end of each rule *)
+(* ART` script grammar rules - mostly suitable for RDSOB parsers: No left recursive rules; Alterates in decreasing length order;   directive at end of each rule *)
 !clear chooseRules  // remove default lexical choice
 //!parser rdsobFunction // Uncomment this line to try bootstrapping with Recursive Descent Singleton Ordered Backtracking parser instead of default GLL parser
 !whitespace &SIMPLE_WHITESPACE, &COMMENT_NEST_ART, &COMMENT_LINE_C 
@@ -162,7 +162,7 @@ directiveCarrier ::=
 
 | '!configuration'^^ trRelation typedIDs
 | '!signature'^^ signatures
-| '!final'^^ trRelation trTerms
+| '!terminal'^^ trRelation trTerms
 
 | '!lexer'^^ ID | '!parser'^^ ID | '!interpreter'^^ ID 
 | '!generate'^^ __int32 ID | '!generate'^^ ID  

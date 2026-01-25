@@ -11,13 +11,16 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 
 public class ARTGeneratedActions extends AbstractActions {
  
   Map<String, Map<String, String>> macros = new HashMap<>();
-  Map<String, String> currentMacro, emptyMap = new HashMap<>();
-  Set<String> macrosInUse = new HashSet<>();
-  PrintStream out = System.out;
+  Stack<String> macrosInUse = new Stack<>();
+  Set<String> macrosNestable = new HashSet<>();
+  String currentMacroName;
+  Map<String, String> currentMacro;
+  String expansionString;
   boolean trace = false;
 
   void fatal(String str) {
@@ -30,6 +33,10 @@ public class ARTGeneratedActions extends AbstractActions {
     for (var a : arguments)
       sb.append("{" + a + "}");
     return sb.toString();
+  }
+
+  void expand(PrintStream printStream, String str, Map<String, String> parameterBindings) {
+    printStream.print(expand(str, parameterBindings));
   }
 
   String expand(String str, Map<String, String> parameterBindings) {
@@ -60,12 +67,6 @@ public class ARTGeneratedActions extends AbstractActions {
       if (end < sb.length()) {
         char c = sb.charAt(end);
 
-        /*
-         * if (peekCh() != '{') return;
-         *
-         */
-        // Old code
-
         while (end < sb.length() && sb.charAt(end) == '{') { // Iterate over repeated arguments
           int argumentStart = end + 1;
 
@@ -86,20 +87,27 @@ public class ARTGeneratedActions extends AbstractActions {
 
       // 5. Check for system macros
       switch (id) {
+      case "OUT": {
+        String filename = "???";
+        try { expand(new PrintStream(filename = expand(arguments.get(0), parameterBindings)), arguments.get(1), parameterBindings);
+        } catch (FileNotFoundException e) { fatal("Unable to open output file: " + filename); }
+        sb.replace(start, end, "");
+        } continue;
       case "NOW":
         sb.replace(start, end, Util.timestamp());
         continue;
-      case "PAR":
+      case "PAR": {
         String arg = arguments.getFirst();
         String exp = expand(arg, parameterBindings);
         String rep = exp.replaceAll("\r?\n\r?\n", "</p>\n<p>");
         sb.replace(start, end, "<p>" + rep + "</p>");
-        continue;
+        } continue;
       }
 
       // 6. Check for undefined macro, recursive instance and arity match
       if (!macros.keySet().contains(id)) fatal("Macro " + "'^" + id + argumentsToString(arguments) + "' not defined");
-      if (macrosInUse.contains(id)) fatal("^" + id + argumentsToString(arguments) + " macro already in us - recursive macro calls not allowed");
+      if (!macrosNestable.contains(id) && macrosInUse.contains(id)) fatal("Recursive macro call ^" + id + "\nMacro call stack " + macrosInUse + "\nNestable macros" + macrosNestable);
+      macrosInUse.push(id);
       if (macros.get(id).size() != arguments.size() + 1) // Add one for the body definition
         fatal("^" + id + argumentsToString(arguments) + " incorrect arity " + arguments.size() + ": expecting " + (macros.get(id).size() - 1));
 
@@ -113,52 +121,84 @@ public class ARTGeneratedActions extends AbstractActions {
       // 8. Expand instance, and then go round again...
       replacement = expand(macros.get(id).get(""), newParameterBindings);
       sb.replace(start, end, replacement);
+    
+      macrosInUse.pop();
     }
   }
 
-  public String name() { return "2025-12-01 07:20:39"; }
+  public String name() { return "2026-01-19 17:39:47"; }
 
-  public class ART_C_define extends AbstractAttributeBlock {
-    ART_C_define define = this; ART_C_paramatersOpt paramatersOpt1;
+  public class ART_C_argumentsOpt extends AbstractAttributeBlock {
+    ART_C_argumentsOpt argumentsOpt = this; ART_C_argumentsOpt argumentsOpt1;
 
     public void initRHSAttributeBlock(int nodeNumber, int term) {
       switch(nodeNumber){
-      case 44: paramatersOpt1 = new ART_C_paramatersOpt(); paramatersOpt1.term = term; break;
+      case 50: argumentsOpt1 = new ART_C_argumentsOpt(); argumentsOpt1.term = term; break;
       }
     }
 
     public AbstractAttributeBlock getAttributes(int nodeNumber) {
       switch(nodeNumber){
-      case 44: return paramatersOpt1;
+      case 50: return argumentsOpt1;
       default: Util.fatal("getAttributes: unknown node " + nodeNumber + ". Probable out-of-date ARTGeneratedActions - regenerate and recompile"); return null;
       }
     }
 
     public void action(int nodeNumber) {
       switch(nodeNumber){
-      case 43: macros.put(lexeme(), new LinkedHashMap<String, String>()); currentMacro = macros.get(lexeme());  break;
-      case 45: currentMacro.put("", lexeme());  break;
+      case 49: expansionString += "{" + lexeme() + "}";  break;
+      }
+    }
+  }
+
+  public class ART_C_define extends AbstractAttributeBlock {
+    ART_C_define define = this; ART_C_paramatersOpt paramatersOpt1; ART_C_starOpt starOpt1;
+
+    public void initRHSAttributeBlock(int nodeNumber, int term) {
+      switch(nodeNumber){
+      case 55: starOpt1 = new ART_C_starOpt(); starOpt1.term = term; break;
+      case 56: paramatersOpt1 = new ART_C_paramatersOpt(); paramatersOpt1.term = term; break;
+      }
+    }
+
+    public AbstractAttributeBlock getAttributes(int nodeNumber) {
+      switch(nodeNumber){
+      case 55: return starOpt1;
+      case 56: return paramatersOpt1;
+      default: Util.fatal("getAttributes: unknown node " + nodeNumber + ". Probable out-of-date ARTGeneratedActions - regenerate and recompile"); return null;
+      }
+    }
+
+    public void action(int nodeNumber) {
+      switch(nodeNumber){
+      case 54: currentMacroName = lexeme(); 
+                         if(macros.keySet().contains(currentMacroName)) fatal("Doubly defined macro " + currentMacroName);
+                         macros.put(currentMacroName, new LinkedHashMap<String, String>()); currentMacro = macros.get(lexeme());  break;
+      case 57: currentMacro.put("", lexeme());  break;
       }
     }
   }
 
   public class ART_C_expand extends AbstractAttributeBlock {
-    ART_C_expand expand = this;
+    ART_C_expand expand = this; ART_C_argumentsOpt argumentsOpt1;
 
     public void initRHSAttributeBlock(int nodeNumber, int term) {
       switch(nodeNumber){
+      case 63: argumentsOpt1 = new ART_C_argumentsOpt(); argumentsOpt1.term = term; break;
       }
     }
 
     public AbstractAttributeBlock getAttributes(int nodeNumber) {
       switch(nodeNumber){
+      case 63: return argumentsOpt1;
       default: Util.fatal("getAttributes: unknown node " + nodeNumber + ". Probable out-of-date ARTGeneratedActions - regenerate and recompile"); return null;
       }
     }
 
     public void action(int nodeNumber) {
       switch(nodeNumber){
-      case 49: out.println(expand(lexeme(), null));  break;
+      case 62: expansionString = "^" + lexeme();  break;
+      case 63: expand(System.out, expansionString, null);  break;
       }
     }
   }
@@ -168,13 +208,13 @@ public class ARTGeneratedActions extends AbstractActions {
 
     public void initRHSAttributeBlock(int nodeNumber, int term) {
       switch(nodeNumber){
-      case 54: parameters1 = new ART_C_parameters(); parameters1.term = term; break;
+      case 71: parameters1 = new ART_C_parameters(); parameters1.term = term; break;
       }
     }
 
     public AbstractAttributeBlock getAttributes(int nodeNumber) {
       switch(nodeNumber){
-      case 54: return parameters1;
+      case 71: return parameters1;
       default: Util.fatal("getAttributes: unknown node " + nodeNumber + ". Probable out-of-date ARTGeneratedActions - regenerate and recompile"); return null;
       }
     }
@@ -190,26 +230,26 @@ public class ARTGeneratedActions extends AbstractActions {
 
     public void initRHSAttributeBlock(int nodeNumber, int term) {
       switch(nodeNumber){
-      case 63: parameters1 = new ART_C_parameters(); parameters1.term = term; break;
+      case 77: parameters1 = new ART_C_parameters(); parameters1.term = term; break;
       }
     }
 
     public AbstractAttributeBlock getAttributes(int nodeNumber) {
       switch(nodeNumber){
-      case 63: return parameters1;
+      case 77: return parameters1;
       default: Util.fatal("getAttributes: unknown node " + nodeNumber + ". Probable out-of-date ARTGeneratedActions - regenerate and recompile"); return null;
       }
     }
 
     public void action(int nodeNumber) {
       switch(nodeNumber){
-      case 62: currentMacro.put(lexeme(), null);  break;
+      case 76: currentMacro.put(lexeme(), null);  break;
       }
     }
   }
 
-  public class ART_C_redirect extends AbstractAttributeBlock {
-    ART_C_redirect redirect = this;
+  public class ART_C_starOpt extends AbstractAttributeBlock {
+    ART_C_starOpt starOpt = this;
 
     public void initRHSAttributeBlock(int nodeNumber, int term) {
       switch(nodeNumber){
@@ -224,35 +264,29 @@ public class ARTGeneratedActions extends AbstractActions {
 
     public void action(int nodeNumber) {
       switch(nodeNumber){
-      case 70: out.close(); try { out = new PrintStream(expand(lexeme(), null));
-                    } catch (FileNotFoundException e) { fatal("Unable to open output file: " + lexeme()); }
- break;
+      case 87: macrosNestable.add(currentMacroName);  break;
       }
     }
   }
 
   public class ART_C_text extends AbstractAttributeBlock {
-    ART_C_text text = this; ART_C_redirect redirect1; ART_C_expand expand1; ART_C_define define1; ART_C_text text1;
+    ART_C_text text = this; ART_C_expand expand1; ART_C_define define1; ART_C_text text1;
 
     public void initRHSAttributeBlock(int nodeNumber, int term) {
       switch(nodeNumber){
-      case 74: define1 = new ART_C_define(); define1.term = term; break;
-      case 75: text1 = new ART_C_text(); text1.term = term; break;
-      case 78: expand1 = new ART_C_expand(); expand1.term = term; break;
-      case 79: text1 = new ART_C_text(); text1.term = term; break;
-      case 82: redirect1 = new ART_C_redirect(); redirect1.term = term; break;
-      case 83: text1 = new ART_C_text(); text1.term = term; break;
+      case 91: define1 = new ART_C_define(); define1.term = term; break;
+      case 92: text1 = new ART_C_text(); text1.term = term; break;
+      case 95: expand1 = new ART_C_expand(); expand1.term = term; break;
+      case 96: text1 = new ART_C_text(); text1.term = term; break;
       }
     }
 
     public AbstractAttributeBlock getAttributes(int nodeNumber) {
       switch(nodeNumber){
-      case 74: return define1;
-      case 75: return text1;
-      case 78: return expand1;
-      case 79: return text1;
-      case 82: return redirect1;
-      case 83: return text1;
+      case 91: return define1;
+      case 92: return text1;
+      case 95: return expand1;
+      case 96: return text1;
       default: Util.fatal("getAttributes: unknown node " + nodeNumber + ". Probable out-of-date ARTGeneratedActions - regenerate and recompile"); return null;
       }
     }
