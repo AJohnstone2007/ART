@@ -45,6 +45,7 @@ public class TRRules implements DisplayInterface {
   }
 
   public void addTerminal(int relation, int terminal) {
+    // Util.debug("Adding terminal " + ScriptInterpreter.iTerms.toString(terminal) + " in relation " + ScriptInterpreter.iTerms.toString(relation));
     if (rewriteTerminals.get(relation) == null) rewriteTerminals.put(relation, new HashSet<>());
     rewriteTerminals.get(relation).add(terminal);
   }

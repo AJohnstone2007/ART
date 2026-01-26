@@ -192,7 +192,7 @@ public final class ScriptInterpreter {
   }
 
   private void directiveAction(int term) {
-    // Util.debug("Evaluating directive !" + iTerms.toString(iTerms.subterm(term, 0)));
+    // Util.debug("Evaluating directive " + iTerms.toString(iTerms.subterm(term, 0)));
     int operationTerm = iTerms.subterm(term, 0);
     switch (iTerms.termSymbolString(operationTerm)) {
 
@@ -455,9 +455,10 @@ public final class ScriptInterpreter {
         currentCFGRules.addSignature(iTerms.subterm(term, i));
       break;
 
-    case "!final":
-      for (int i = 1; i < iTerms.termArity(iTerms.subterm(term, 0)); i++)
-        currentTRRules.addTerminal(iTerms.subterm(term, 0, 0, 0), iTerms.termSymbolStringIndex(iTerms.subterm(term, 0, i)));
+    case "!terminal":
+      // Util.debug("Processing terminal directive: " + iTerms.toRawString(term));
+      for (int i = 0; i < iTerms.termArity(iTerms.subterm(term, 0, 1)); i++)
+        currentTRRules.addTerminal(iTerms.subterm(term, 0, 0, 0), iTerms.termSymbolStringIndex(iTerms.subterm(term, 0, 1, i)));
       break;
 
     case "!try":

@@ -6,7 +6,7 @@ import java.util.Calendar;
 
 public class Util {
   public static PrintStream console = System.out;
-  public static int traceLevel = 3;
+  public static int traceLevel = 5;
   public static int errorLevel = 3;
 
   public static void trace(int level, int indent, String msg) {
