@@ -65,7 +65,6 @@ public class ActionsGenerator {
         // ACTION
         text.println("\n    public void action(int nodeNumber) {\n      switch(nodeNumber){");
         printAllActionsRec(text, e, cfgRules.elementToRulesNodeMap.get(e));
-        printTermActionsRec(text, cfgRules.elementToRulesNodeMap.get(e));
         text.println("      }\n    }\n  }");
       }
 
@@ -115,10 +114,4 @@ public class ActionsGenerator {
       printSlotTermRec(text, ScriptInterpreter.iTerms.termChildren(slotTerm)[i]);
   }
 
-  private void printTermActionsRec(PrintWriter text, CFGNode cfgNode) {
-    if (cfgNode == null || cfgNode.cfgElement.cfgKind == CFGElementKind.END) return;
-    // printSlotTerm(text, cfgNode.slotTerm);
-    printTermActionsRec(text, cfgNode.seq);
-    printTermActionsRec(text, cfgNode.alt);
-  }
 }

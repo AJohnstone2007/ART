@@ -725,37 +725,57 @@ public final class ScriptInterpreter {
           break;
 
         case "derivations":
-          if (isShow)
-            currentParser.derivations.show(outputStream, outputTraverser, indexed, full, indented);
-          else
-            currentParser.derivations.print(outputStream, outputTraverser, indexed, full, indented);
-          break;
+          if (currentParser.derivations == null)
+            Util.error("!show/!print derivations - no derivations found");
+          else {
+            if (isShow)
+              currentParser.derivations.show(outputStream, outputTraverser, indexed, full, indented);
+            else
+              currentParser.derivations.print(outputStream, outputTraverser, indexed, full, indented);
+            break;
+          }
 
         case "ambiguities":
-          if (isShow)
-            // currentParser.derivations.show(outputStream, outputTraverser, indexed, full, indented)
-            ;
-          else
-            currentParser.derivations.ambiguityCheck();
-          break;
-
-        case "tryterm":
           if (currentParser.derivations == null)
-            Util.error("!show/!print tryTerm - no derivations found");
+            Util.error("!show/!print derivations - no derivations found");
+          else {
+            if (isShow)
+              // currentParser.derivations.show(outputStream, outputTraverser, indexed, full, indented)
+              ;
+            else
+              currentParser.derivations.ambiguityCheck();
+            break;
+          }
+
+        case "derivationterm":
+          if (currentParser.derivations == null)
+            Util.error("!show/!print derivationTerm - no derivations found");
           else {
             int trm = indexed ? currentParser.derivations.derivationAsInterpeterTerm(full) : currentParser.derivations.derivationAsTerm();
             if (isShow) {
               if (outputFilename == null) {
-                Util.error("no output file specified for !show tryTerm");
+                Util.error("no output file specified for !show derivationTerm");
                 return;
               } else
                 iTerms.toDot(trm, outputFilename);
             } else {
-              outputStream.println("!try term: " + trm + "\n" + iTerms.toString(currentTryTerm, outputTraverser, indented, depthLimit));
+              outputStream.println("derivation term: " + trm + "\n" + iTerms.toString(trm, outputTraverser, indented, depthLimit));
 
               if (scriptParserTerm == trm) Util.info("Bootstrap achieved: script parser term and current derivation term identical");
             }
           }
+          break;
+
+        case "tryterm":
+          if (isShow) {
+            if (outputFilename == null) {
+              Util.error("no output file specified for !show tryTerm");
+              return;
+            } else
+              iTerms.toDot(currentTryTerm, outputFilename);
+          } else
+            outputStream.println("try term: " + currentTryTerm + "\n" + iTerms.toString(currentTryTerm, outputTraverser, indented, depthLimit));
+
           break;
 
         // Script structures
