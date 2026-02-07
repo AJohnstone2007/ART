@@ -4,8 +4,11 @@
 !whitespace &SIMPLE_WHITESPACE, &COMMENT_NEST_ART, &COMMENT_LINE_C 
 
 // We want to let MGLL resolve ambiguities at derivation level, butthe boolean literals might best be handled at lexical level,and our depth rule also needs priority
+//'__bool' > &ID
 'true' > &ID
 'false' > &ID
+// > &ID
+
 trTermFiles ::= artDepth trTermFiles . > trTermFiles ::= trTerm trTermFiles .
 
 rules ::= rule rules^ | rule

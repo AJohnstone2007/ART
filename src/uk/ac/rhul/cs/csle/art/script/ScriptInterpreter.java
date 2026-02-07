@@ -116,13 +116,16 @@ public final class ScriptInterpreter {
     Util.traceLevel = 0;
     Util.errorLevel = 1;
     scriptLexer.lex(scriptString, scriptCFGRules);
-    // scriptLexer.lexicalisations.print(System.out, null, seenChooseRule, seenChooseRule, seenChooseRule);
+    // scriptLexer.lexicalisations.print(System.out, null, false, false, false);
+    // scriptChooseRules.print(System.out, null, false, false, false); // Debug
+    scriptLexer.lexicalisations.choose(scriptChooseRules); // Is this correct? Added 7/2/26 - check examples
     if (scriptLexer.lexicalisations.valid()) scriptParser.parse(scriptLexer.lexicalisations);
     scriptParser.outcomeReport();
     scriptParser.derivations.choose(scriptChooseRules);
     if (scriptParser.derivations.ambiguityCheck()) {
       Util.errorLevel = 10;
       Util.error("Script ambiguity");
+
       scriptParser.derivations.ambiguityCheck(); // Run again to show actual ambiguities
       Util.fatal("Internal error");
     }
@@ -489,10 +492,10 @@ public final class ScriptInterpreter {
         currentRewriteTerm = currentRewriter.rewrite(currentTryTerm, currentTRRules); // Run the rewriter
         if (iTerms.termArity(iTerms.subterm(term, 0)) == 2) // There was a test term
           if (currentRewriteTerm == iTerms.subterm(term, 0, 1)) {
-            Util.info("*** Successful test");
+            Util.info("Successful test");
             successfulTests++;
           } else {
-            Util.info("*** Failed test: expected " + iTerms.plainTextTraverser.toString(iTerms.subterm(term, 0, 1)));
+            Util.info("Failed test: expected " + iTerms.plainTextTraverser.toString(iTerms.subterm(term, 0, 1)));
             failedTests++;
           }
       }
