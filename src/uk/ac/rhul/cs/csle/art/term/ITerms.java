@@ -589,7 +589,7 @@ public final class ITerms {
     if (isVariableTerm(openTermIndex) || isSequenceVariableTerm(openTermIndex)) {
       int termVariableNumber = termVariableNumber(openTermIndex);
       int boundValue = bindings[termVariableNumber];
-      if (boundValue == 0) Util.fatal("attempt to substitute unbound variable");
+      // if (boundValue == 0) Util.fatal("attempt to substitute unbound variable");
       ret = boundValue;
       // Now reduce substituted values by evaluation
       if (isSpecialTerm(boundValue))
@@ -1177,6 +1177,7 @@ public final class ITerms {
 
     case 3:
     case __putStringIndex:
+      // Util.debug("Processing __put on term " + toString(term));
       switch (firstChildSymbolStringIndex) {
       case __arrayStringIndex:
         ArrayList<Object> arrayList = termToJavaArrayList(children[0]);

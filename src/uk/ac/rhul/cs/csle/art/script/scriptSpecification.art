@@ -188,7 +188,7 @@ signature ::= ID '('^ typedIDs ')'^ '::'^ type
 
 IDs ::= ID | ID ','^ IDs^
 typedIDs ::= typedID | typedID ','^ typedIDs
-typedID ::= ID '::'^ type
+typedID ::= ID '::'^ type^
 type ::= 
   'any' | 'cmd' | 'expr' 
 | '__bool' |'__char' | '__intAP' | '__int32' | '__realAP' | '__real64' | '__string' 

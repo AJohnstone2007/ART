@@ -60,15 +60,15 @@ public class TRRules implements DisplayInterface {
     for (int i = 0; i < ScriptInterpreter.iTerms.termArity(configurationElements); i++)
       relationConfigurationMap.put(ScriptInterpreter.iTerms.subterm(configurationElements, i, 0),
           ScriptInterpreter.iTerms.subterm(configurationElements, i, 1));
-    // Util.info("Updated configuration map to: ");
+    // Util.debug("Updated configuration map to: ");
     // for (var r : configurationMap.keySet()) {
-    // System.out.print(ScriptTermInterpreter.iTerms.toRawString(r));
+    // Util.debug(ScriptInterpreter.iTerms.toRawString(r));
     // Map<Integer, Integer> relationConfigurationElements = configurationMap.get(r);
     // for (var e : relationConfigurationElements.keySet())
-    // System.out.print(" " + ScriptTermInterpreter.iTerms.toRawString(e) + ":" +
-    // ScriptTermInterpreter.iTerms.toRawString(relationConfigurationElements.get(e)));
-    // Util.info();
+    // Util.debug(" " + ScriptInterpreter.iTerms.toRawString(e) + ":" + ScriptInterpreter.iTerms.toRawString(relationConfigurationElements.get(e)));
+    // Util.debug("End of updated configuration map");
     // }
+
   }
 
   /*
@@ -77,30 +77,23 @@ public class TRRules implements DisplayInterface {
    *
    */
   public int unelideConfiguration(int term, int relation, boolean useType) {
-    // Util.info("!!!Term before unelision is " + ScriptTermInterpreter.iTerms.toRawString(term));
+    // Util.debug("Uneliding: term before unelision is " + ScriptInterpreter.iTerms.toRawString(term));
     if (ScriptInterpreter.iTerms.hasSymbol(term, "trTuple")) {
-      // Util.info("Already tupled; returning");
+      // Util.debug("Already tup/led; returning");
       return term;
     }
     if (configurationMap.get(relation) == null) {
-      // Util.warning("Uneliding against relation " + ScriptTermInterpreter.iTerms.toRawString(relation) + " but no corresponding !configuration; skipping");
+      Util.warning("Uneliding against relation " + ScriptInterpreter.iTerms.toRawString(relation) + " but no corresponding !configuration; skipping");
       return term;
     }
-    // Util.info("Uneliding against relation " + ScriptTermInterpreter.iTerms.toRawString(relation) + " " + ScriptTermInterpreter.iTerms.toRawString(term));
+    // Util.debug("Uneliding against relation " + ScriptInterpreter.iTerms.toRawString(relation) + " " + ScriptInterpreter.iTerms.toRawString(term));
     int theta = ScriptInterpreter.iTerms.subterm(term);
     Map<Integer, Integer> relationConfigurationElements = new LinkedHashMap<>(configurationMap.get(relation));
+    // Util.debug("Uneliding map is:");
+    // for (var e : relationConfigurationElements.keySet())
+    // Util.debug(ScriptInterpreter.iTerms.toRawString(e) + " |-> " + ScriptInterpreter.iTerms.toRawString(relationConfigurationElements.get(e)));
+    // Util.debug("nd of uneliding map");
 
-    if (!useType) { // useType is called after parsing to append all of the types from the configuration to the raw parse term
-      // Walk the map, setting the bound value to the key
-      for (var e : relationConfigurationElements.keySet())
-        relationConfigurationElements.put(e, e);
-
-      // Now walk the terms semantic entities, loading the map with each we find
-      // !TODO
-      for (int i = 1; i < ScriptInterpreter.iTerms.termArity(term); i++)
-        // Util.info("found entity: " + ScriptTermInterpreter.iTerms.toRawString(ScriptTermInterpreter.iTerms.subterm(term, i)))
-        ;
-    }
     // Now reconstitute the term, extracting field names from the map
     LinkedList<Integer> list = new LinkedList<>();
     list.add(theta);
@@ -108,9 +101,9 @@ public class TRRules implements DisplayInterface {
       list.add(relationConfigurationElements.get(e));
 
     int ret = ScriptInterpreter.iTerms.findTerm("trTuple", list);
-    // Util.info("Unelided term: " + ScriptTermInterpreter.iTerms.toRawString(ret));
+    // Util.debug("Unelided term: " + ScriptInterpreter.iTerms.toRawString(ret));
 
-    // Util.info("!!!Term after unelision is " + ScriptTermInterpreter.iTerms.toRawString(ret));
+    // Util.debug("Uneliding: term after unelision is " + ScriptInterpreter.iTerms.toRawString(ret));
     return ret;
   }
 
