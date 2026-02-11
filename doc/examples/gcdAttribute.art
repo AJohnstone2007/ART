@@ -1,9 +1,13 @@
 (* gcdAttribute.art GCD in attribute-actions with native Java actions - 5 CFG phrase level rules and 3 CFG lexical rules*)
+
 !interpreter attributeAction
+
 !support
 !! import java.util.Map; import java.util.HashMap; !!
 !! Map<String, Integer> variables = new HashMap<>(); 
    Map<String, AbstractAttributeBlock> procedures = new HashMap<>(); !!
+
+!traceLevel 0
 
 statements ::= statement statements
 | statement !! System.out.println("Final variable map " + variables); !! 
@@ -28,7 +32,6 @@ e2 ::= INTEGER !!e2.v = INTEGER1.v; !!                  // Integer literal
        
 // Lexical rules
 ID <v:String>        ::= &ID !! ID.v = lexeme(); !!  
-STRING_SQ <v:String> ::= &STRING_SQ !! STRING_SQ.v = lexemeCore().translateEscapes(); !!
 INTEGER              ::= &INTEGER   !! INTEGER.v = Integer.parseInt(lexeme()); !!
 
 !generate actions 

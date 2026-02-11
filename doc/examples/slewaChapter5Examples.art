@@ -1,7 +1,7 @@
 (* slewa.pdf  Chapter 5 examples - see also gcdReduction.art *)
 
 (* Part A - output of expressions over addition *)
-!configuration -> _alpha:__list
+!configuration -> _alpha::__list
 !traceLevel  5
 
 -add 
@@ -52,7 +52,7 @@ seq(_C1, _C2), _alpha -> seq(_C1P, _C2), _alphaP
 
 
 (* Part B - development of the GCD language *)
-!configuration -> _sig:__map
+!configuration -> _sig::__map
 
 -sub 
 _n1 |> __int32(_) _n2 |> __int32(_)

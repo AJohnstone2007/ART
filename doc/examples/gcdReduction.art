@@ -1,6 +1,6 @@
 (* gcdReduction.art GCD in eSOS - 18 TR rules and 15 CFG rules *)
 
-!configuration -> _sig:__map
+!configuration -> _sig::__map
 
 -assign  _n |> __int32(_)      --- assign(_X,_n),_sig -> __done,__put(_sig,_X,_n)
 -assignR _E,_sig -> _I,_sigP --- assign(_X,_E),_sig -> assign(_X,_I),_sigP

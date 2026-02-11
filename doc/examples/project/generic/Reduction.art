@@ -1,6 +1,6 @@
 (* GCD language with extra rules for plugin *)
 
-!configuration -> _sig:__map
+!configuration -> _sig::__map
 
 (* Term rewrite rules *)
 -assign  _n |> __int32(_)    --- assign(_X,_n),_sig -> __done,__put(_sig,_X,_n)
