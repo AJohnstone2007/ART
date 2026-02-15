@@ -589,7 +589,7 @@ public final class ITerms {
     if (isVariableTerm(openTermIndex) || isSequenceVariableTerm(openTermIndex)) {
       int termVariableNumber = termVariableNumber(openTermIndex);
       int boundValue = bindings[termVariableNumber];
-      // if (boundValue == 0) Util.fatal("attempt to substitute unbound variable");
+      if (boundValue == 0) Util.fatal("attempt to substitute unbound variable");
       ret = boundValue;
       // Now reduce substituted values by evaluation
       if (isSpecialTerm(boundValue))
@@ -1033,8 +1033,9 @@ public final class ITerms {
           Util.fatal("__put on __array must have arity 3: __put(__array,  _int32, X)");
           return termBottom;
         case __listStringIndex:
-          Util.fatal("__put on __list must have arity 3: __put(__list,  _int32, X)");
-          return termBottom;
+          List<Object> list = termToJavaLinkedList(children[0]);
+          list.add(termToJavaInteger(children[1]));
+          return javaListToTerm(list);
         case __setStringIndex:
           Set<Object> set = termToJavaLinkedHashSet(children[0]);
           set.add(termToJavaObject(children[1]));
