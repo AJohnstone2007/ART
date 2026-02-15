@@ -18,7 +18,7 @@ rule  ::= cfgRule^^ | trRule^^ | chooseRule^^ | directive^^
 cfgRule  ::= cfgLHS '::='^ cfgAlts
   cfgLHS ::= ID | ID '<'^ cfgAttributeDeclarations '>'^
   cfgAttributeDeclarations ::=  cfgAttributeDeclaration | cfgAttributeDeclaration cfgAttributeDeclarations^  
-  cfgAttributeDeclaration  ::= ID ':'^ ID | ID ':'^ ID STRING_ANGLE_NEST 
+  cfgAttributeDeclaration  ::= ID '::'^ ID | ID '::'^ ID STRING_ANGLE_NEST 
 
 cfgAlts ::= cfgAlt '|'^ cfgAlts^ | cfgAlt  
 cfgAlt  ::= cfgSeq^^ cfgActions cfgEpsilonCarrier | cfgSeq^^ cfgActions cfgEpsilon | cfgSeq^^ cfgElems^ cfgActions (* final actions in sequence *)  
