@@ -1,0 +1,27 @@
+(* Bounded string CFG rules: S ::= INTEGER P    P ::= X    X ::= 'x' X | # *)
+
+(* Informal semantics: accept an integer bound and a possibly empty X string of x and test whethr |X| <= bound *)
+
+(* 1. Attribute-action implementation with native (Java) actions and explicitly types attibutes *)
+
+!interpreter attributeAction
+
+S ::= 
+  INTEGER !! P1.bound = INTEGER1.v; !! 
+  P 
+  !! System.out.println("String in bounds: " + P1.ok); !!
+       
+P <ok::boolean bound::int> ::= 
+  X !! P.ok = P.bound >= X1.count; !!
+
+X < count::int> ::= 
+  'x' X !! X.count = X1.count+1; !! 
+| !! X.count = 0; !! #
+
+INTEGER <v::int> ::= &INTEGER !! INTEGER.v = Integer.parseInt(lexeme()); !!
+
+!generate actions 
+
+!try "3 xxx"
+
+(* 2. Attribute-action implementation with native (Java) actions and explicitly types attibutes *)

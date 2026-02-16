@@ -1,0 +1,17 @@
+!interpreter attributeAction
+
+SPrime ::= S !! System.out.println(S1.ok); !!
+S ::= I P1.bound = I1.v P S.ok = P1.ok 
+P ::= X P.ok = __ge(P.bound X1.count)
+X ::= 'x' X X.count = __add(X1.count 1) | X.count = 0 #
+
+I ::= &INTEGER  I.v = 3 
+
+!print raw scriptTerm
+!show raw scriptTerm
+
+ !generate actions
+ 
+ !try "3 xxxx"
+ 
+ !print latex cfgRules
