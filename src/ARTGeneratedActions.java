@@ -3,10 +3,10 @@ import uk.ac.rhul.cs.csle.art.interpret.AbstractActions;
 import uk.ac.rhul.cs.csle.art.interpret.AbstractAttributeBlock;
 import uk.ac.rhul.cs.csle.art.util.Util;
 public class ARTGeneratedActions extends AbstractActions {
-  public String name() { return "2026-02-11 19:04:06"; }
+  public String name() { return "2026-02-17 11:38:26"; }
 
-  public class ART_C_INTEGER extends AbstractAttributeBlock {
-    ART_C_INTEGER INTEGER = this; int v;
+  public class ART_C_I extends AbstractAttributeBlock {
+    ART_C_I I = this; int v;
 
     public void initRHSAttributeBlock(int nodeNumber, int term) {
       switch(nodeNumber){
@@ -21,13 +21,13 @@ public class ARTGeneratedActions extends AbstractActions {
 
     public void action(int nodeNumber) {
       switch(nodeNumber){
-      case 23: INTEGER.v = Integer.parseInt(lexeme());  break;
+      case 23: break;
       }
     }
   }
 
   public class ART_C_P extends AbstractAttributeBlock {
-    ART_C_P P = this; int bound; boolean ok; ART_C_X X1;
+    ART_C_P P = this; int bound; int ok; ART_C_X X1;
 
     public void initRHSAttributeBlock(int nodeNumber, int term) {
       switch(nodeNumber){
@@ -44,24 +44,24 @@ public class ARTGeneratedActions extends AbstractActions {
 
     public void action(int nodeNumber) {
       switch(nodeNumber){
-      case 27: P.ok = P.bound >= X1.count;  break;
+      case 27: break;
       }
     }
   }
 
   public class ART_C_S extends AbstractAttributeBlock {
-    ART_C_S S = this; ART_C_P P1; ART_C_INTEGER INTEGER1;
+    ART_C_S S = this; int ok; ART_C_P P1; ART_C_I I1;
 
     public void initRHSAttributeBlock(int nodeNumber, int term) {
       switch(nodeNumber){
-      case 31: INTEGER1 = new ART_C_INTEGER(); INTEGER1.term = term; break;
+      case 31: I1 = new ART_C_I(); I1.term = term; break;
       case 32: P1 = new ART_C_P(); P1.term = term; break;
       }
     }
 
     public AbstractAttributeBlock getAttributes(int nodeNumber) {
       switch(nodeNumber){
-      case 31: return INTEGER1;
+      case 31: return I1;
       case 32: return P1;
       default: Util.fatal("getAttributes: unknown node " + nodeNumber + ". Probable out-of-date ARTGeneratedActions - regenerate and recompile"); return null;
       }
@@ -69,8 +69,8 @@ public class ARTGeneratedActions extends AbstractActions {
 
     public void action(int nodeNumber) {
       switch(nodeNumber){
-      case 31: P1.bound = INTEGER1.v;  break;
-      case 32: System.out.println("String in bounds: " + P1.ok);  break;
+      case 31: break;
+      case 32: break;
       }
     }
   }
@@ -93,8 +93,8 @@ public class ARTGeneratedActions extends AbstractActions {
 
     public void action(int nodeNumber) {
       switch(nodeNumber){
-      case 37: X.count = X1.count+1;  break;
-      case 39: X.count = 0;  break;
+      case 37: break;
+      case 39: break;
       }
     }
   }

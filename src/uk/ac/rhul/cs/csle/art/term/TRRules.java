@@ -54,7 +54,7 @@ public class TRRules implements DisplayInterface {
     if (!ScriptInterpreter.iTerms.hasSymbol(term, "!configuration"))
       Util.fatal("Unexpected term passed to TRRules.modifyConfiguration " + ScriptInterpreter.iTerms.toString(term));
 
-    Util.debug("Processing !configuration on " + ScriptInterpreter.iTerms.toString(term));
+    // Util.debug("Processing !configuration on " + ScriptInterpreter.iTerms.toString(term));
     int relation = ScriptInterpreter.iTerms.subterm(term, 0, 0);
     int configurationElements = ScriptInterpreter.iTerms.subterm(term, 1);
     if (configurationMap.get(relation) == null) configurationMap.put(relation, new LinkedHashMap<>());
