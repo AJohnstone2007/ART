@@ -65,7 +65,7 @@ public final class ScriptInterpreter {
   private static ChooseRules scriptChooseRules;
   private final int scriptParserTerm; // This received the derivation from scriptParser
   private final Map<String, ScriptValue> scriptVariables = new HashMap<>();
-  private final int scriptDerivationTerm;
+  private int scriptDerivationTerm = 0;
   private final TermTraverser scriptTraverser;
 
   private final Set<String> validModes = Set.of("recogniser", "hashpool", "mgll", "tasklifo", "taskfifo", "productionlookahead", "mglllookahead",
@@ -122,7 +122,8 @@ public final class ScriptInterpreter {
     // scriptLexer.lexicalisations.print(System.out, null, false, false, false);
     // scriptChooseRules.print(System.out, null, false, false, false); // Debug
     scriptLexer.lexicalisations.choose(scriptChooseRules); // Is this correct? Added 7/2/26 - check examples
-    if (scriptLexer.lexicalisations.valid()) scriptParser.parse(scriptLexer.lexicalisations);
+    if (!scriptLexer.lexicalisations.valid()) return;
+    scriptParser.parse(scriptLexer.lexicalisations);
     scriptParser.outcomeReport();
     scriptParser.derivations.choose(scriptChooseRules);
     if (scriptParser.derivations.ambiguityCheck()) {

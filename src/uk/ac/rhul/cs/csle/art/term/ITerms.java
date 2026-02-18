@@ -523,29 +523,35 @@ public final class ITerms {
   }
 
   public boolean matchZeroSV(int closedTermIndex, int openTermIndex, int[] bindings) { // This matcher does not allow sequence
-    // System.out
-    // .println("matchZeroSV() " + closedTermIndex + ":" + toString(closedTermIndex) + " against open term " + openTermIndex + ":" + toString(openTermIndex));
+    // Util.debug("matchZeroSV() " + closedTermIndex + ":" + toString(closedTermIndex) + " against open term " + openTermIndex + ":" + toString(openTermIndex));
 
     if (isSequenceVariableTerm(openTermIndex)) Util.fatal("in matchZeroSV() right hand side must not contain sequence variables");
 
     if (isVariableTerm(openTermIndex)) {
       int variableNumber = termVariableNumber(openTermIndex);
       if (variableNumber == 0) {
-        // Util.info("matchZeroSV() matches wildcard and returns true with no update to bindings");
+        // Util.debug("matchZeroSV() matches wildcard and returns true with no update to bindings");
         return true;
       }
 
       bindings[variableNumber] = closedTermIndex; // Variable zero means match anything but don't bind
-      // Util.info("matchZeroSV() binds to variable and returns true");
+      // Util.debug("matchZeroSV() binds to variable and returns true");
       return true;
     }
 
-    if (!(termSymbolStringIndex(closedTermIndex) == termSymbolStringIndex(openTermIndex) && termArity(closedTermIndex) == termArity(openTermIndex)))
-      return false;
+    var cS = termSymbolString(closedTermIndex);
+    var oS = termSymbolString(openTermIndex);
+
+    var cSI = termSymbolStringIndex(closedTermIndex);
+    var oSI = termSymbolStringIndex(openTermIndex);
+    var cA = termArity(closedTermIndex);
+    var oA = termArity(openTermIndex);
+
+    if (!(cSI == oSI && cA == oA)) return false;
     for (int i = 0; i < termArity(openTermIndex); i++)
       if (!matchZeroSV(termChildren(closedTermIndex)[i], termChildren(openTermIndex)[i], bindings)) return false;
 
-    // Util.info("matchZeroSV() matched children and root, and returns true");
+    // Util.debug("matchZeroSV() matched children and root, and returns true");
 
     return true;
   }
