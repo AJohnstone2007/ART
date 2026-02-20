@@ -14,13 +14,15 @@ public class Rewriter {
   private int rewriteAttemptCounter;
   private int rewriteStepCounter;
   private final Map<Integer, Set<Integer>> cycleCheck = new HashMap<>();
+  private Map<Integer, Integer> variableMap;
 
   private int rewriteAttempt(int term, int relationTerm, int level) { // return rewritten term and set rewriteAttemptOutcome
 
     if (relationTerm == 0) Util.fatal("ESOS rewrite attempted on null relation");
 
-    Util.trace(4, level, "Rewrite attempt " + ++rewriteAttemptCounter + ": " + ScriptInterpreter.iTerms.toString(term, tr.variableMap) + " "
-        + ScriptInterpreter.iTerms.toString(relationTerm, tr.variableMap));
+    variableMap = tr.reverseVariableNamesByRule.get(term);
+    Util.trace(4, level, "Rewrite attempt " + ++rewriteAttemptCounter + ": " + ScriptInterpreter.iTerms.toString(term, variableMap) + " "
+        + ScriptInterpreter.iTerms.toString(relationTerm, variableMap));
     if (!cycleCheck.containsKey(relationTerm)) cycleCheck.put(relationTerm, new HashSet<Integer>());
     Set<Integer> cycleSet = cycleCheck.get(relationTerm);
     // if (cycleSet.contains(configuration)) throw new ARTExceptionFatal("cycle detected " +ScriptTermInterpreter.iTerms.toString(configuration)
@@ -43,25 +45,25 @@ public class Rewriter {
     }
 
     if (ruleList == null) {
-      Util.error("No rules in relation " + ScriptInterpreter.iTerms.toString(relationTerm, tr.variableMap) + " for constructor "
+      Util.error("No rules in relation " + ScriptInterpreter.iTerms.toString(relationTerm, variableMap) + " for constructor "
           + ScriptInterpreter.iTerms.termSymbolString(rootTheta));
       return term;
     }
 
     nextRule: for (int ruleIndex : ruleList) {
-      tr.variableMap = tr.reverseVariableNamesByRule.get(ruleIndex);
+      variableMap = tr.reverseVariableNamesByRule.get(ruleIndex);
       // Util.info("Variable map: ");
       // for (int i :rw.variableMap.keySet())
       // Util.info(i + ":" + ScriptTermInterpreter.iTerms.getString(variableMap.get(i)));
-      Util.trace(5, level, ScriptInterpreter.iTerms.toString(ruleIndex, ScriptInterpreter.iTerms.plainTextTraverser, false, -1, tr.variableMap)); // Announce
-                                                                                                                                                          // the
-                                                                                                                                                          // next
-                                                                                                                                                          // rule
-                                                                                                                                                          // we
-                                                                                                                                                          // are
-                                                                                                                                                          // going
-                                                                                                                                                          // to
-                                                                                                                                                          // try
+      Util.trace(5, level, ScriptInterpreter.iTerms.toString(ruleIndex, ScriptInterpreter.iTerms.plainTextTraverser, false, -1, variableMap)); // Announce
+                                                                                                                                               // the
+                                                                                                                                               // next
+                                                                                                                                               // rule
+                                                                                                                                               // we
+                                                                                                                                               // are
+                                                                                                                                               // going
+                                                                                                                                               // to
+                                                                                                                                               // try
       int lhs = ScriptInterpreter.iTerms.subterm(ruleIndex, 1, 1, 0);
       int premises = ScriptInterpreter.iTerms.subterm(ruleIndex, 1, 0);
       int premiseCount = ScriptInterpreter.iTerms.termArity(premises);
@@ -70,22 +72,22 @@ public class Rewriter {
 
       int ruleLabel = tr.thetaFromConfiguration(ruleIndex);
       if (!ScriptInterpreter.iTerms.matchZeroSV(term, lhs, bindings)) {
-        Util.trace(5, level, ScriptInterpreter.iTerms.toString(ScriptInterpreter.iTerms.subterm(ruleLabel, 0), tr.variableMap)
-            + " Theta match failed: seek another rule");
+        Util.trace(5, level,
+            ScriptInterpreter.iTerms.toString(ScriptInterpreter.iTerms.subterm(ruleLabel, 0), variableMap) + " Theta match failed: seek another rule");
         continue nextRule;
       }
-      Util.trace(7, level, ScriptInterpreter.iTerms.toString(ScriptInterpreter.iTerms.subterm(ruleLabel, 0), tr.variableMap)
-          + "bindings after Theta match " + tr.bindingsToString(bindings, tr.variableMap));
+      Util.trace(7, level, ScriptInterpreter.iTerms.toString(ScriptInterpreter.iTerms.subterm(ruleLabel, 0), variableMap) + "bindings after Theta match "
+          + tr.bindingsToString(bindings, variableMap));
 
       // Now work through the premises
       for (int premiseNumber = 0; premiseNumber < premiseCount; premiseNumber++) {
         int premise = ScriptInterpreter.iTerms.subterm(premises, premiseNumber);
-        Util.trace(6, level, ScriptInterpreter.iTerms.toString(ScriptInterpreter.iTerms.subterm(ruleLabel, 0), tr.variableMap) + "premise "
-            + (premiseNumber + 1) + " " + ScriptInterpreter.iTerms.toString(premise, tr.variableMap));
+        Util.trace(6, level, ScriptInterpreter.iTerms.toString(ScriptInterpreter.iTerms.subterm(ruleLabel, 0), variableMap) + "premise " + (premiseNumber + 1)
+            + " " + ScriptInterpreter.iTerms.toString(premise, variableMap));
         if (ScriptInterpreter.iTerms.hasSymbol(premise, "trMatch")) {// |> match expressions
           if (!ScriptInterpreter.iTerms.matchZeroSV(ScriptInterpreter.iTerms.substitute(bindings, ScriptInterpreter.iTerms.subterm(premise, 0), 0),
               ScriptInterpreter.iTerms.subterm(premise, 1), bindings)) {
-            Util.trace(6, level, ScriptInterpreter.iTerms.toString(ScriptInterpreter.iTerms.subterm(ruleLabel, 0), tr.variableMap) + "premise "
+            Util.trace(6, level, ScriptInterpreter.iTerms.toString(ScriptInterpreter.iTerms.subterm(ruleLabel, 0), variableMap) + "premise "
                 + (premiseNumber + 1) + " failed: seek another rule");
             continue nextRule;
           }
@@ -95,21 +97,21 @@ public class Rewriter {
             int rewriteRelation = ScriptInterpreter.iTerms.subterm(premise, 1);
             int rewrittenTerm = rewriteAttempt(rewriteTerm, rewriteRelation, level + 1);
             if (rewrittenTerm < 0) {
-              Util.trace(6, level, ScriptInterpreter.iTerms.toString(ScriptInterpreter.iTerms.subterm(ruleLabel, 0), tr.variableMap) + "premise"
+              Util.trace(6, level, ScriptInterpreter.iTerms.toString(ScriptInterpreter.iTerms.subterm(ruleLabel, 0), variableMap) + "premise"
                   + (premiseNumber + 1) + " failed: seek another rule");
               continue nextRule;
             }
             if (!ScriptInterpreter.iTerms.matchZeroSV(rewrittenTerm, ScriptInterpreter.iTerms.subterm(premise, 2), bindings)) continue nextRule;
           } else
-            Util.fatal("ESOS - unknown premise kind " + ScriptInterpreter.iTerms.toString(premise, tr.variableMap));
+            Util.fatal("ESOS - unknown premise kind " + ScriptInterpreter.iTerms.toString(premise, variableMap));
         }
-        Util.trace(7, level, ScriptInterpreter.iTerms.toString(ScriptInterpreter.iTerms.subterm(ruleLabel, 0), tr.variableMap)
-            + "bindings after premise " + (premiseNumber + 1) + " " + tr.bindingsToString(bindings, tr.variableMap));
+        Util.trace(7, level, ScriptInterpreter.iTerms.toString(ScriptInterpreter.iTerms.subterm(ruleLabel, 0), variableMap) + "bindings after premise "
+            + (premiseNumber + 1) + " " + tr.bindingsToString(bindings, variableMap));
       }
 
       term = ScriptInterpreter.iTerms.substitute(bindings, rhs, 0);
-      Util.trace(4, level, ScriptInterpreter.iTerms.toString(ScriptInterpreter.iTerms.subterm(ruleLabel, 0), tr.variableMap) + "rewrites to "
-          + ScriptInterpreter.iTerms.toString(term, tr.variableMap));
+      Util.trace(4, level, ScriptInterpreter.iTerms.toString(ScriptInterpreter.iTerms.subterm(ruleLabel, 0), variableMap) + "rewrites to "
+          + ScriptInterpreter.iTerms.toString(term, variableMap));
       return term;
     }
     // If we get here, then no rules succeeded
@@ -126,17 +128,17 @@ public class Rewriter {
     while (true) {
       for (int i : cycleCheck.keySet())
         cycleCheck.get(i).clear();
-      Util.trace(3, 0, "Step " + ++rewriteStepCounter + " "
-          + ScriptInterpreter.iTerms.toString(oldTerm, ScriptInterpreter.iTerms.plainTextTraverser, false, 4, null));
+      Util.trace(3, 0,
+          "Step " + ++rewriteStepCounter + " " + ScriptInterpreter.iTerms.toString(oldTerm, ScriptInterpreter.iTerms.plainTextTraverser, false, 4, null));
       newTerm = rewriteAttempt(oldTerm, relation, 1);
       if (tr.isTerminatingConfiguration(newTerm, relation) || newTerm == oldTerm /* nothing changed */) break;
       oldTerm = newTerm;
     }
 
     Util.trace(2, 0,
-        (tr.isTerminatingConfiguration(newTerm, relation) ? "Normal termination on " : "Stuck on ")
-            + ScriptInterpreter.iTerms.toString(newTerm, tr.variableMap) + " after " + rewriteStepCounter + " step" + (rewriteStepCounter == 1 ? "" : "s")
-            + " and " + rewriteAttemptCounter + " rewrite attempt" + (rewriteAttemptCounter == 1 ? "" : "s"));
+        (tr.isTerminatingConfiguration(newTerm, relation) ? "Normal termination on " : "Stuck on ") + ScriptInterpreter.iTerms.toString(newTerm, variableMap)
+            + " after " + rewriteStepCounter + " step" + (rewriteStepCounter == 1 ? "" : "s") + " and " + rewriteAttemptCounter + " rewrite attempt"
+            + (rewriteAttemptCounter == 1 ? "" : "s"));
     return newTerm;
   }
 

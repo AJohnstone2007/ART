@@ -32,7 +32,6 @@ public class TRRules implements DisplayInterface {
 
   private Map<Integer, Map<Integer, Integer>> variableNamesByRule; // Map from term to the variable aliases used in that term
   Map<Integer, Map<Integer, Integer>> reverseVariableNamesByRule; // Map from term to the variable aliases used in that term
-  Map<Integer, Integer> variableMap;
 
   private boolean normalised = false;
 

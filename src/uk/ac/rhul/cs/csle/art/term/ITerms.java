@@ -134,9 +134,9 @@ public final class ITerms {
     termSetEmpty = findTerm("__set");
     termMapEmpty = findTerm("__map");
 
-    // 5. Connect to a plugin - either the default built in to art.jar or one in the use class path if one can be found
+    // 5. Connect to a plugin - either the default built in to art.jar or one on the user's class path if one can be found
     plugin = new ARTDefaultPlugin();
-    // Try and find a plugin for __user() calls
+    // Try and find a plugin for __plugin() calls
     try {
       plugin = (AbstractValuePlugin) getClass().getClassLoader().loadClass("ARTValuePlugin").getDeclaredConstructor().newInstance();
       Util.trace(3, "Attached to " + plugin.description());
@@ -343,11 +343,6 @@ public final class ITerms {
 
   private void parseSyntaxError(String s) {
     Util.info(echo(s));
-    // Util.info("** " + s);
-    // Util.info(input);
-    // for (int i = 0; i < cp - 1; i++)
-    // System.out.print("-");
-    // Util.info("^");
     System.exit(1);
   }
 
@@ -595,7 +590,7 @@ public final class ITerms {
     if (isVariableTerm(openTermIndex) || isSequenceVariableTerm(openTermIndex)) {
       int termVariableNumber = termVariableNumber(openTermIndex);
       int boundValue = bindings[termVariableNumber];
-      if (boundValue == 0) Util.fatal("attempt to substitute unbound variable");
+      if (boundValue == 0) Util.fatal("attempt to substitute unbound variable " + toString(openTermIndex));
       ret = boundValue;
       // Now reduce substituted values by evaluation
       if (isSpecialTerm(boundValue))
