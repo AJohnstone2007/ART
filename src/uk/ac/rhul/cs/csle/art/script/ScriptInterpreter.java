@@ -785,6 +785,18 @@ public final class ScriptInterpreter {
 
           break;
 
+        case "rewriteterm":
+          if (isShow) {
+            if (outputFilename == null) {
+              Util.error("no output file specified for !show rewriteTerm");
+              return;
+            } else
+              iTerms.toDot(currentRewriteTerm, outputFilename);
+          } else
+            outputStream.println("rewrite term: " + currentRewriteTerm + "\n" + iTerms.toString(currentRewriteTerm, outputTraverser, indented, depthLimit));
+
+          break;
+
         // Script structures
         case "scriptcfgrules":
           if (isShow)
