@@ -127,17 +127,6 @@ public class TRRules implements DisplayInterface {
     normalised = false;
   }
 
-  public String rulesToString(Map<Integer, Map<Integer, List<Integer>>> trRules) {
-    StringBuilder sb = new StringBuilder();
-    for (int rel : trRules.keySet())
-      for (int c : trRules.get(rel).keySet())
-        for (int r : trRules.get(rel).get(c)) {
-          sb.append(ScriptInterpreter.iTerms.plainTextTraverser.toString(r));
-          sb.append("\n");
-        }
-    return sb.toString();
-  }
-
   String bindingsToString(int[] bindings, Map<Integer, Integer> variableMap) {
     StringBuilder sb = new StringBuilder();
     boolean seen = false;
@@ -376,8 +365,14 @@ public class TRRules implements DisplayInterface {
   @Override
   public void print(PrintStream outputStream, TermTraverserText outputTraverser, boolean indexed, boolean full, boolean indented) {
     normalise();
-    // TODO Auto-generated method stub
-
+    StringBuilder sb = new StringBuilder();
+    for (int rel : trRules.keySet())
+      for (int c : trRules.get(rel).keySet())
+        for (int r : trRules.get(rel).get(c)) {
+          sb.append(ScriptInterpreter.iTerms.plainTextTraverser.toString(r));
+          sb.append("\n");
+        }
+    outputStream.println(sb.toString());
   }
 
   @Override
