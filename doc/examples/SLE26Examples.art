@@ -12,7 +12,6 @@
 !configuration -> _sig::__map
 X ::= 'x' | 'x' X
 
-
 -Xbase  --- X(x),_sig -> 1,_sig
 
 -Xintermediate
@@ -228,14 +227,18 @@ _X -> _XP
 !print rewriteTerm
 *)
 
-(* 0. Scratchpad *)
+(*****************************************************************************)
+
+(* 10. Scratchpad for xCount grammar *)
+(*
+!traceLevel 3
 
 X ::= 'x' | 'x' X
 
 (* Phase 1 - rewrite derivation tree nodes to be a tuple of the node and an attribute *)
 
 -XAddAttribute1
---- X(x) -> <X(x), 1>  // add attribute X.count = 1, immediate evaluation of base case
+--- X(x) -> <X(x), __empty>  // add attribute X.count
 
 -XAddAttribute2
 _X -> _XP
@@ -243,37 +246,106 @@ _X -> _XP
 
 (* Phase 2 - evaluate the attributes *)
 
--XEvaluate1 // No need for recursion as we are at the penultimate level
+-XEvaluate1 // No need for recursion as we are at leaf level
 ---
-<X(x,<X(x), _count>), __empty> -> <X(x,<X(x), _count>), __add(_count, 1)>  
+<X(x), __empty> -> <X(x), 1>  
 
 -XEvaluate2
-_count |> __int32(_)
+<_X, _count> -> <_X, _countP> 
 ---
-<X(x,<X(x, _X), _count>), __empty> -> <X(x,<X(x, _X), _count>), __add(_count, 1)>  
-
--XEvaluate2Resolve // 
-<X(x, _X), _empty> -> <X(x, _X), _count>
----
-<X(x,<X(x, _X), _empty>), __empty> -> <X(x,<X(x, _X), _count>), __add(_count, 1)>  
+<X(x, <_X, _count>), __empty> -> <X(x, <_X, _countP>), __add(_countP, 1)>  
 
 (* Phase 3 - once the top level attribute is an integer, rewrite to that final terminal value *)
--XFinal1
-_count |> __int32(_)
---- 
-<X(_), _count> -> _count
+-XFinal1 _count |> __int32(_) --- <X(_), _count> -> _count
+-XFinal2 _count |> __int32(_) --- <X(_,_), _count> -> _count
 
--XFinal2
-_count |> __int32(_)
----
-<X(_,_), _count> -> _count
-
-
-!try <X(x,<X(x),1>),__empty>
-
-!try <X(x, <X(x,<X(x),1>),__empty>), __empty>
-
-!try <X(x, <X(x, <X(x,<X(x),1>),__empty>), __empty>), __empty>
-
+!try X(x)
+!try X(x,X(x))
 !try X(x,X(x,X(x)))
-//!try "xxx"
+
+
+(* Note that if we had sequence variables we would not need all the arity variants, and might move to: *)
+
+(*
+-XAddAttribute --- X(_X* ) -> <X(_X* ), __empty>  // add attribute X.count regardless of X arity
+-XFinal 
+_count |> __int32(_) 
+--- 
+<X(_* ), _count> -> _count
+*)
+*)
+
+(*****************************************************************************)
+
+(* 11. Scratchpad for bounded string grammar *)
+!traceLevel 3
+
+S ::= __int32  T    // Start rule collects integer bound and passes to T
+T ::= X             // Test rule receives bound from S and evaluates X subtree, then compares
+X ::= 'x' | 'x' X   // X rule counts Xs as in example 1
+__int32 ::= &INTEGER // This generates terms of the form __int32(13) which is ART's way of describing a typed number
+
+(* !!! NOTE - since all attributed rules have <> at top level, better to make new constructor S--->SAttr(S, __empty) *)
+
+(* Phase 1 - rewrite derivation tree nodes to be a tuple of the node and an attribute *)
+
+-SAddAttribute
+_T -> _TP
+--- S(_n, _T) -> SZ(_n, _TP, __empty)  // add attribute S.ok
+
+-TAddAttribute
+_X -> _XP
+--- T(_X) -> TZ(_XP, __empty, __empty)  // add attributes T.bound and T.ok
+
+-XAddAttribute1
+--- X(x) -> XZ(x, __empty)  // add attribute X.count
+
+-XAddAttribute2
+_X -> _XP
+---X(x, _X) -> XZ(x, _XP, __empty) // add attribute X.count
+
+
+(* Phase 2 - evaluate the attributes *)
+-SEvaluate
+TZ(_X, _n, __empty) -> TZ(_X, _n, _ok)  
+---
+SZ(_n, TZ(_X, __empty, __empty), __empty) -> SZ(_n, TZ(_X, _n, _ok), _ok) 
+
+
+-TEvaluateXArity1
+XZ(x, __empty) -> XZ(x, _count) 
+---
+TZ(XZ(x, __empty), _bound, __empty) -> TZ(XZ(x, _count), _bound, __le(_count, _bound))
+
+-TEvaluateXArity2
+XZ(x, _X, __empty) -> XZ(x, _X, _count) 
+---
+TZ(XZ(x, _X, __empty), _bound, __empty) -> TZ(XZ(x, _X, _count), _bound, __le(_count, _bound))
+
+
+-XEvaluate1 // No need for recursion as we are at leaf level
+---
+XZ(x, __empty) -> XZ(x, 1)  
+
+-XEvaluate2A
+_X -> XZ(x, _count)
+---
+XZ(x, _X, __empty) -> XZ(x, XZ(x, _count), __add(_count, 1))  
+
+-XEvaluate2B
+_X -> XZ(x, _XP, _count)
+---
+XZ(x, _X, __empty) -> XZ(x, XZ(x, _XP, _count), __add(_count, 1))  
+
+
+(* Phase 3 - once the top level attribute is a boolean, rewrite to that final boolean  value *)
+
+-SFinal1 _result |> __bool(_) --- SZ(_, _, _result) -> _result
+
+//!try "3 xxx"
+
+!try S(3, T(X(x)))
+!try S(0, T(X(x)))
+!try S(3, T(X(x, X(x))))
+!try S(3, T(X(x, X(x, X(x)))))
+!try S(3, T(X(x, X(x, X(x, X(x))))))
