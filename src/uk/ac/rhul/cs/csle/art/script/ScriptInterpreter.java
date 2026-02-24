@@ -139,7 +139,7 @@ public final class ScriptInterpreter {
     Util.traceLevel = 5;
     Util.errorLevel = 3;
     scriptTraverser.traverse(scriptDerivationTerm);
-    if (successfulTests != 0 || failedTests != 0) Util.info("Successful tests: " + successfulTests + "; failed tests " + failedTests);
+    if (successfulTests != 0 || failedTests != 0) Util.trace(3, "Successful tests: " + successfulTests + "; failed tests " + failedTests);
   }
 
   private void normaliseAll() {
@@ -496,10 +496,10 @@ public final class ScriptInterpreter {
         currentRewriteTerm = currentRewriter.rewrite(currentTryTerm, currentTRRules); // Run the rewriter
         if (iTerms.termArity(iTerms.subterm(term, 0)) == 2) // There was a test term
           if (currentRewriteTerm == iTerms.subterm(term, 0, 1)) {
-            Util.info("Successful test");
+            Util.trace(3, "Successful test");
             successfulTests++;
           } else {
-            Util.info("Failed test: expected " + iTerms.plainTextTraverser.toString(iTerms.subterm(term, 0, 1)));
+            Util.trace(3, "Failed test: expected " + iTerms.plainTextTraverser.toString(iTerms.subterm(term, 0, 1)));
             failedTests++;
           }
       }
@@ -639,7 +639,7 @@ public final class ScriptInterpreter {
           break;
 
         case "latex":
-          Util.debug("Selected LaTeX traverser");
+          Util.info("Selected LaTeX traverser");
           outputTraverser = iTerms.latexTraverser;
           break;
 

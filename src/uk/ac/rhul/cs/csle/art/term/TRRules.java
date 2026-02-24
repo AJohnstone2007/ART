@@ -368,11 +368,8 @@ public class TRRules implements DisplayInterface {
     StringBuilder sb = new StringBuilder();
     for (int rel : trRules.keySet())
       for (int c : trRules.get(rel).keySet())
-        for (int r : trRules.get(rel).get(c)) {
-          sb.append(ScriptInterpreter.iTerms.plainTextTraverser.toString(r));
-          sb.append("\n");
-        }
-    outputStream.println(sb.toString());
+        for (int r : trRules.get(rel).get(c))
+          outputStream.println(outputTraverser.toString(r, reverseVariableNamesByRule.get(r)));
   }
 
   @Override

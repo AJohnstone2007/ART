@@ -331,6 +331,9 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
         case "COMMENT_LINE_C":
           addCharacters("/");
           break;
+        case "COMMENT_BLOCK_C":
+          addCharacters("/*");
+          break;
         case "COMMENT_NEST_ART":
           addCharacters("(*)");
           break;

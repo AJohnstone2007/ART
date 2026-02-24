@@ -1149,20 +1149,67 @@ public final class ITerms {
         }
         break;
 
-      case __castStringIndex:
+      case __castStringIndex: // First child is value to be cast; second elment is the type to cast to
         switch (firstChildSymbolStringIndex) {
 
-        case __int32StringIndex:
+        case __int32StringIndex: {
+          var value = termToJavaInteger(children[0]);
           switch (secondChildSymbolStringIndex) {
           case __int32StringIndex:
             return children[0]; // No change
           case __intAPStringIndex:
-            return javaBigIntegerToTerm(new BigInteger(termToJavaInteger(children[0]).toString()));
+            return javaBigIntegerToTerm(new BigInteger(value.toString()));
           case __real64StringIndex:
-            return javaDoubleToTerm((double) termToJavaInteger(children[0]));
+            return javaDoubleToTerm((double) value);
           case __realAPStringIndex:
-            return javaBigDecimalToTerm(new BigDecimal(termToJavaInteger(children[0]).toString()));
+            return javaBigDecimalToTerm(new BigDecimal(value.toString()));
           }
+        }
+          break;
+
+        case __intAPStringIndex: {
+          var value = termToJavaBigInteger(children[0]);
+          switch (secondChildSymbolStringIndex) {
+          case __int32StringIndex:
+            return javaIntegerToTerm(value.intValueExact());
+          case __intAPStringIndex:
+            return children[0]; // No change
+          case __real64StringIndex:
+            return javaDoubleToTerm((double) value.intValueExact());
+          case __realAPStringIndex:
+            return javaBigDecimalToTerm(new BigDecimal(value.toString()));
+          }
+        }
+          break;
+
+        case __real64StringIndex: {
+          var value = termToJavaDouble(children[0]);
+          switch (secondChildSymbolStringIndex) {
+          case __int32StringIndex:
+            return javaIntegerToTerm(Integer.valueOf((int) Math.round(value)));
+          case __intAPStringIndex:
+            return javaBigIntegerToTerm(new BigInteger(Integer.valueOf((int) Math.round(value)).toString()));
+          case __real64StringIndex:
+            return children[0]; // No change
+          case __realAPStringIndex:
+            return javaBigDecimalToTerm(new BigDecimal(Double.valueOf(value).toString()));
+          }
+        }
+          break;
+
+        case __realAPStringIndex: {
+          var value = termToJavaBigDecimal(children[0]);
+          switch (secondChildSymbolStringIndex) {
+          case __int32StringIndex:
+            return javaIntegerToTerm(value.intValue());
+          case __intAPStringIndex:
+            return javaBigIntegerToTerm(new BigInteger(Integer.valueOf(value.intValue()).toString()));
+          case __real64StringIndex:
+            return javaDoubleToTerm(value.doubleValue());
+          case __realAPStringIndex:
+            return children[0]; // No change
+          }
+        }
           break;
 
         default:

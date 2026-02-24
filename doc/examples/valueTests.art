@@ -1,4 +1,6 @@
 (* Value system tests using the term rewriter *)
+!errorLevel 0
+!traceLevel 3
 
 (* One rule for each operation *)
 --- eq(_x, _y) -> __eq(_x, _y)
@@ -305,8 +307,23 @@
 !try extract(__map(__empty)) = __empty
 *)
 
+!print "** numeric __cast tests"
 !try cast(1,3) = 1
 !try cast(1,£3) = £1
-!try cast(1,3.0) = 1.0
-!try cast(1,£3.0) = £1.0
+!try cast(1.1,3.0) = 1.1
+!try cast(1.1,£3.0) = £1.1
 
+!try cast(£1,3) = 1
+!try cast(£1,£3) = £1
+!try cast(£1.1,3.0) = 1.1
+!try cast(£1.1,£3.0) = £1.1
+
+!try cast(1.0,3) = 1
+!try cast(1.0,£3) = £1
+!try cast(1.1,3.0) = 1.1
+!try cast(1.1,£3.0) = £1.1
+
+!try cast(£1.0,3) = 1
+!try cast(£1.0,£3) = £1
+!try cast(£1.1,3.0) = 1.1
+!try cast(£1.1,£3.0) = £1.1
