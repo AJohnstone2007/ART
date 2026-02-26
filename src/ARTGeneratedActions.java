@@ -3,97 +3,100 @@ import uk.ac.rhul.cs.csle.art.interpret.AbstractActions;
 import uk.ac.rhul.cs.csle.art.interpret.AbstractAttributeBlock;
 import uk.ac.rhul.cs.csle.art.util.Util;
 public class ARTGeneratedActions extends AbstractActions {
-  public String name() { return "2026-02-20 16:30:35"; }
+  public String name() { return "2026-02-25 22:29:20"; }
 
-  public class ART_C_S extends AbstractAttributeBlock {
-    ART_C_S S = this; int dummy; ART_C_T T1; ART_C___int32 __int321;
+  public class ART_C_I extends AbstractAttributeBlock {
+    ART_C_I I = this; int v;
 
     public void initRHSAttributeBlock(int nodeNumber, int term) {
       switch(nodeNumber){
-      case 23: __int321 = new ART_C___int32(); __int321.term = term; break;
-      case 24: T1 = new ART_C_T(); T1.term = term; break;
       }
     }
 
     public AbstractAttributeBlock getAttributes(int nodeNumber) {
       switch(nodeNumber){
-      case 23: return __int321;
-      case 24: return T1;
       default: Util.fatal("getAttributes: unknown node " + nodeNumber + ". Probable out-of-date ARTGeneratedActions - regenerate and recompile"); return null;
       }
     }
 
     public void action(int nodeNumber) {
       switch(nodeNumber){
-      case 23: break;
-      case 24: break;
+      case 29: I.v = 1;  break;
+      case 32: I.v = 2;  break;
+      case 35: I.v = 3;  break;
+      }
+    }
+  }
+
+  public class ART_C_S extends AbstractAttributeBlock {
+    ART_C_S S = this; boolean v; ART_C_T T1; ART_C_I I1;
+
+    public void initRHSAttributeBlock(int nodeNumber, int term) {
+      switch(nodeNumber){
+      case 39: I1 = new ART_C_I(); I1.term = term; break;
+      case 40: T1 = new ART_C_T(); T1.term = term; break;
+      }
+    }
+
+    public AbstractAttributeBlock getAttributes(int nodeNumber) {
+      switch(nodeNumber){
+      case 39: return I1;
+      case 40: return T1;
+      default: Util.fatal("getAttributes: unknown node " + nodeNumber + ". Probable out-of-date ARTGeneratedActions - regenerate and recompile"); return null;
+      }
+    }
+
+    public void action(int nodeNumber) {
+      switch(nodeNumber){
+      case 39: T1.b = I1.v;  break;
+      case 40: S.v = T1.v;  System.out.println("S.v = " + S.v);  break;
       }
     }
   }
 
   public class ART_C_T extends AbstractAttributeBlock {
-    ART_C_T T = this; int bound; int ok; ART_C_X X1;
+    ART_C_T T = this; int b; boolean v; ART_C_X X1;
 
     public void initRHSAttributeBlock(int nodeNumber, int term) {
       switch(nodeNumber){
-      case 28: X1 = new ART_C_X(); X1.term = term; break;
+      case 44: X1 = new ART_C_X(); X1.term = term; break;
       }
     }
 
     public AbstractAttributeBlock getAttributes(int nodeNumber) {
       switch(nodeNumber){
-      case 28: return X1;
+      case 44: return X1;
       default: Util.fatal("getAttributes: unknown node " + nodeNumber + ". Probable out-of-date ARTGeneratedActions - regenerate and recompile"); return null;
       }
     }
 
     public void action(int nodeNumber) {
       switch(nodeNumber){
-      case 28: break;
+      case 44: System.out.println("X1.c = " + X1.c); T.v = X1.c <= T.b;  break;
       }
     }
   }
 
   public class ART_C_X extends AbstractAttributeBlock {
-    ART_C_X X = this; int count; ART_C_X X1;
+    ART_C_X X = this; int c; ART_C_X X1;
 
     public void initRHSAttributeBlock(int nodeNumber, int term) {
       switch(nodeNumber){
-      case 33: X1 = new ART_C_X(); X1.term = term; break;
+      case 49: X1 = new ART_C_X(); X1.term = term; break;
       }
     }
 
     public AbstractAttributeBlock getAttributes(int nodeNumber) {
       switch(nodeNumber){
-      case 33: return X1;
+      case 49: return X1;
       default: Util.fatal("getAttributes: unknown node " + nodeNumber + ". Probable out-of-date ARTGeneratedActions - regenerate and recompile"); return null;
       }
     }
 
     public void action(int nodeNumber) {
       switch(nodeNumber){
-      case 33: break;
-      case 35: break;
-      }
-    }
-  }
-
-  public class ART_C___int32 extends AbstractAttributeBlock {
-    ART_C___int32 __int32 = this; int v;
-
-    public void initRHSAttributeBlock(int nodeNumber, int term) {
-      switch(nodeNumber){
-      }
-    }
-
-    public AbstractAttributeBlock getAttributes(int nodeNumber) {
-      switch(nodeNumber){
-      default: Util.fatal("getAttributes: unknown node " + nodeNumber + ". Probable out-of-date ARTGeneratedActions - regenerate and recompile"); return null;
-      }
-    }
-
-    public void action(int nodeNumber) {
-      switch(nodeNumber){
+      case 49: X.c = X1.c+1;  break;
+      case 52: X.c = 1;  break;
       }
     }
   }

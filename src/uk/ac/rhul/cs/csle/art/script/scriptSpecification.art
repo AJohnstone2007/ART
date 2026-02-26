@@ -67,7 +67,7 @@ cfgNative ::= STRING_SHRIEK_SHRIEK
 cfgInsert ::= '^+:'^ ID  
 cfgAttribute ::= ID | ID '.'^ ID   
 
-cfgExpressionList ::= cfgExpression | cfgExpression cfgExpressionList^
+cfgExpressionList ::= cfgExpression | cfgExpression ','^ cfgExpressionList^
 cfgExpression ::= __bool^^ | __intAP^^ | __int32^^ | __realAP^^ | __real64^^ | __string^^ | __char^^ | cfgAttribute^^ | ID^^ | ID^^ '('^  cfgExpressionList^ ')'^
 
 cfgSeq ::= #^   // Dirty trick: both cfgAlt and cfgAltNoAction promote cfgSeq to achieve gather operation

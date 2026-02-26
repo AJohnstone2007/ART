@@ -115,7 +115,7 @@ public class TRRules implements DisplayInterface {
     // Util.debug("Building TR rule " + ScriptTermInterpreter.iTerms.toString(term) + "\nwith relation " + ScriptTermInterpreter.iTerms.toString(relation) +
     // "\nand constructor "
     // + ScriptTermInterpreter.iTerms.getString(constructorIndex));
-    if (trScriptRules.get(relation) == null) trScriptRules.put(relation, new HashMap<>());
+    if (trScriptRules.get(relation) == null) trScriptRules.put(relation, new LinkedHashMap<>());
     Map<Integer, List<Integer>> map = trScriptRules.get(relation);
     if (map.get(constructorIndex) == null) map.put(constructorIndex, new LinkedList<>());
     map.get(constructorIndex).add(term);
@@ -156,7 +156,7 @@ public class TRRules implements DisplayInterface {
       // Util.info("nothing to do ");
       return;
     }
-    trRules = new HashMap<>(trScriptRules);
+    trRules = new LinkedHashMap<>(trScriptRules);
     startRelation = 0;
     termToEnumElementMap = new HashMap<>();
     enumElementToTermMap = new HashMap<>();
@@ -366,10 +366,10 @@ public class TRRules implements DisplayInterface {
   public void print(PrintStream outputStream, TermTraverserText outputTraverser, boolean indexed, boolean full, boolean indented) {
     normalise();
     StringBuilder sb = new StringBuilder();
-    for (int rel : trRules.keySet())
-      for (int c : trRules.get(rel).keySet())
-        for (int r : trRules.get(rel).get(c))
-          outputStream.println(outputTraverser.toString(r, reverseVariableNamesByRule.get(r)));
+    for (int relation : trRules.keySet())
+      for (int constructor : trRules.get(relation).keySet())
+        for (int rule : trRules.get(relation).get(constructor))
+          outputStream.println(outputTraverser.toString(rule, reverseVariableNamesByRule.get(rule)));
   }
 
   @Override

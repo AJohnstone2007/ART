@@ -1181,6 +1181,7 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
     outputStream.println();
 
     outputStream.println("!start " + startNonterminal);
+
     for (CFGElement n : elementToRulesNodeMap.keySet()) {
       boolean first = true;
       for (CFGNode production = elementToRulesNodeMap.get(n).alt; production != null; production = production.alt) {

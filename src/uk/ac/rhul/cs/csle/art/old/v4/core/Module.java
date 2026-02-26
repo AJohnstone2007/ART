@@ -521,7 +521,7 @@ public class Module {
     int constructorIndex = iTerms.getTermSymbolIndex((iTerms.getSubterm(term, 1, 1, 0, 0)));
     // System.out.println("Building TR rule " + iTerms.toString(term) + "\nwith relation " + iTerms.toString(relation) + "\nand constructor "
     // + iTerms.getString(constructorIndex));
-    if (trRules.get(relation) == null) trRules.put(relation, new HashMap<>());
+    if (trRules.get(relation) == null) trRules.put(relation, new LinkedHashMap<>());
     Map<Integer, List<Integer>> map = trRules.get(relation);
     if (map.get(constructorIndex) == null) map.put(constructorIndex, new LinkedList<>());
     map.get(constructorIndex).add(term);
