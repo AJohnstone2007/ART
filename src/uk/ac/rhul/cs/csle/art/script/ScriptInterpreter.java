@@ -1080,7 +1080,7 @@ public final class ScriptInterpreter {
     ret.addActionBreak("__realAP", (Integer t) -> ret.sb.append("\\artRealAP{" + iTerms.termSymbolString(iTerms.subterm(t, 0)) + "}"), null, null);
     ret.addActionBreak("__real", (Integer t) -> ret.sb.append("\\artReal{" + iTerms.termSymbolString(iTerms.subterm(t, 0)) + "}"), null, null);
     ret.addActionBreak("__string",
-        (Integer t) -> ret.append("\\\\artString{" + (iTerms.termArity(t) > 0 ? iTerms.termSymbolString(iTerms.subterm(t, 0)) : "") + "}"), null, null);
+        (Integer t) -> ret.append("\\artString{" + (iTerms.termArity(t) > 0 ? iTerms.termSymbolString(iTerms.subterm(t, 0)) : "") + "}"), null, null);
 
     ret.addAction("__array", "\\artArray{", "}{", "}");
     ret.addAction("__a", null, ", ", null);
@@ -1092,11 +1092,15 @@ public final class ScriptInterpreter {
     ret.addAction("__s", null, ", ", null);
 
     // -1B: load global aliases
-    ret.addGlobalAlias("->", "\\artRelation{\\rightarrow}");
-    ret.addGlobalAlias("=>", "\\artRelation{\\Rightarrow}");
-    ret.addGlobalAlias("-\\", "\\artRelation{\\rightharpoonup}");
-    ret.addGlobalAlias("-/", "\\artRelation{\\rightharpoondown}");
-    ret.addGlobalAlias("~>", "\\artRelation{\\leadsto}");
+    ret.addGlobalAlias("->", "\\rightarrow");
+    ret.addGlobalAlias("=>", "\\Rightarrow");
+    ret.addGlobalAlias("-\\", "\\rightharpoonup");
+    ret.addGlobalAlias("-/", "\\rightharpoondown");
+    ret.addGlobalAlias("~>", "\\leadsto");
+    ret.addGlobalAlias("_sig", "_\\sigma");
+    ret.addGlobalAlias("_rho", "_\\rho");
+    ret.addGlobalAlias("_alpha", "_\\alpha");
+    ret.addGlobalAlias("_beta", "_\\beta");
 
     // 0. Top level pretty print controls
     ret.addAction("rules", "\\input artStyle.tex\n\\begin{document}\n", "", "\\end{document}\n");
@@ -1105,7 +1109,10 @@ public final class ScriptInterpreter {
     ret.addEmptyAction("cfgSlot");
 
     ret.addAction("cfgRule", "\\artCFGRule{", "", "}\n");
-    ret.addAction("cfgLHS", "\\artLHS{", null, "}\\artExpandsTo");
+    ret.addActionBreak("cfgLHS",
+        (Integer t) -> ret.append("\\artLHS{" + texEscape(iTerms.getString(iTerms.termSymbolStringIndex(iTerms.subterm(t, 0)))) + "}\\artExpandsTo"), null,
+        null);
+
     ret.addAction("cfgAttributeDeclarations", "\\artAttributeDeclarations{", null, "}");
 
     ret.addAction("cfgAlts", null, "\\artSequenceSeperator", null);
@@ -1178,9 +1185,17 @@ public final class ScriptInterpreter {
     ret.addAction("trTransition", "\\artTransition{", "}\n{", "} %close trTransition\n");
     ret.addEmptyAction("trTopTuple");
     ret.addAction("trTuple", "\\artTuple{", ", ", "}\n");
+    ret.addActionBreak("trRelation", (Integer t) -> {
+      if (iTerms.termArity(t) > 0) {
+        ret.append("\\artRelation{");
+        ret.appendAlias(iTerms.termSymbolStringIndex(iTerms.subterm(t, 0)));
+        ret.append("}");
+      }
+    }, null, null);
 
     // 4. Directives
     ret.addAction("directive", "\\artDirective{", " ", "}\n");
+    // ret.addActionBreak("directive", "", null, null); // Do not output directives in LaTeX mode
 
     // 5. Default action
     // Debug - load text traverser default action to print message if we encounter an unknown constructor
