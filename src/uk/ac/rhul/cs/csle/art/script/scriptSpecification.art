@@ -80,7 +80,7 @@ tr ::= trPremises '---'^ trTransition
 trPremises ::= #^ | trMatch trPremises^ | trTransition trPremises^
 trMatch ::= trTopTuple '|>'^ trTopTuple
 
-trTransition ::= trTopTuple trRelation^ trTopTuple
+trTransition ::= trTopTuple trRelation trTopTuple
 trTopTuple ::= trTerm | trTuple^^ trTerm ','^ trTerms^
 trTuple ::= #^  
 trTerms ::= trTerm | trTerm ','^ trTerms^ | trTerm trTerms^ // comma is optional
