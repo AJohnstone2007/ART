@@ -184,16 +184,11 @@ directiveCarrier ::=
 artFile ::= &STRING_SQ
 
 signatures ::= signature | signature signatures
-signature ::= ID '('^ typedIDs ')'^ '::'^ type
+signature ::= ID '('^ typedIDs ')'^ '::'^ trTerm
 
 IDs ::= ID | ID ','^ IDs^
 typedIDs ::= typedID | typedID ','^ typedIDs^
-typedID ::= ID '::'^ type^
-type ::= 
-  'any' | 'cmd' | 'expr' 
-| '__bool' |'__char' | '__intAP' | '__int32' | '__realAP' | '__real64' | '__string' 
-| typeCollection^
-typeCollection ::= '__array' | '__list' | '__set' | '__map'
+typedID ::= ID '::'^ trTerm
 
 modes ::= mode^ | mode^ ','^ modes^ 
 

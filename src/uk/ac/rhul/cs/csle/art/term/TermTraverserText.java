@@ -74,7 +74,7 @@ public class TermTraverserText extends TermTraverser {
 
   public void appendAlias(String prefix, int stringIndex, String postfix) {
     sb.append(prefix + Util.escapeString(ScriptInterpreter.iTerms.getString(aliasLookup(stringIndex)), false) + postfix);
-    Util.debug("appendAlias: sb = " + sb);
+    // Util.debug("appendAlias: sb = " + sb);
   }
 
   public Integer aliasLookup(int stringIndex) {

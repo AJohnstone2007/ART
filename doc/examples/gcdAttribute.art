@@ -31,7 +31,7 @@ e2 ::= INTEGER !!e2.v = INTEGER1.v; !!                  // Integer literal
 | '(' e1 !! e2.v = e11.v; !! ')'                        // Parenthesised expression 
        
 // Lexical rules
-ID <v:String>        ::= &ID !! ID.v = lexeme(); !!  
+ID <v::String>        ::= &ID !! ID.v = lexeme(); !!  
 INTEGER              ::= &INTEGER   !! INTEGER.v = Integer.parseInt(lexeme()); !!
 
 !generate actions 

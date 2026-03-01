@@ -53,7 +53,7 @@ public class TRRules implements DisplayInterface {
     if (!ScriptInterpreter.iTerms.hasSymbol(term, "!configuration"))
       Util.fatal("Unexpected term passed to TRRules.modifyConfiguration " + ScriptInterpreter.iTerms.toString(term));
 
-    Util.debug("Processing !configuration on " + ScriptInterpreter.iTerms.toString(term));
+    // Util.debug("Processing !configuration on " + ScriptInterpreter.iTerms.toString(term));
     int relation = ScriptInterpreter.iTerms.subterm(term, 0);
     int configurationElements = ScriptInterpreter.iTerms.subterm(term, 1);
     if (configurationMap.get(relation) == null) configurationMap.put(relation, new LinkedHashMap<>());
@@ -80,7 +80,7 @@ public class TRRules implements DisplayInterface {
   public int unelideConfiguration(int term, int relation, boolean useType) {
     // Util.debug("Uneliding: term before unelision is " + ScriptInterpreter.iTerms.toRawString(term));
     if (ScriptInterpreter.iTerms.hasSymbol(term, "trTuple")) {
-      // Util.debug("Already tup/led; returning");
+      // Util.debug("Already tupled; returning");
       return term;
     }
     if (configurationMap.get(relation) == null) {
@@ -98,8 +98,14 @@ public class TRRules implements DisplayInterface {
     // Now reconstitute the term, extracting field names from the map
     LinkedList<Integer> list = new LinkedList<>();
     list.add(theta);
-    for (var e : relationConfigurationElements.keySet())
+    for (var e : relationConfigurationElements.keySet()) {
+      switch (ScriptInterpreter.iTerms.termSymbolString(e)) {
+      case "__int32":
+        list.add(ScriptInterpreter.iTerms.findTerm(0));
+        break;
+      }
       list.add(relationConfigurationElements.get(e));
+    }
 
     int ret = ScriptInterpreter.iTerms.findTerm("trTuple", list);
     // Util.debug("Unelided term: " + ScriptInterpreter.iTerms.toRawString(ret));
@@ -112,16 +118,16 @@ public class TRRules implements DisplayInterface {
     // Util.debug("Processing trRule: " + ScriptTermInterpreter.iTerms.toString(term));
     int relation = ScriptInterpreter.iTerms.subterm(term, 1, 1, 1); // Modified 27/2/26 to retain trRelation nonterminal
     int constructorIndex = ScriptInterpreter.iTerms.termSymbolStringIndex((ScriptInterpreter.iTerms.subterm(term, 1, 1, 0, 0)));
-    Util.debug("Building TR rule " + ScriptInterpreter.iTerms.toString(term) + "\nwith relation " + ScriptInterpreter.iTerms.toString(relation)
-        + "\nand constructor " + ScriptInterpreter.iTerms.getString(constructorIndex));
+    // Util.debug("Building TR rule " + ScriptInterpreter.iTerms.toString(term) + "\nwith relation " + ScriptInterpreter.iTerms.toString(relation)
+    // + "\nand constructor " + ScriptInterpreter.iTerms.getString(constructorIndex));
     if (trScriptRules.get(relation) == null) trScriptRules.put(relation, new LinkedHashMap<>());
     Map<Integer, List<Integer>> map = trScriptRules.get(relation);
     if (map.get(constructorIndex) == null) map.put(constructorIndex, new LinkedList<>());
     map.get(constructorIndex).add(term);
-    Util.debug("Added rewrite rule " + ScriptInterpreter.iTerms.toRawString(term));
+    // Util.debug("Added rewrite rule " + ScriptInterpreter.iTerms.toRawString(term));
     if (defaultStartRelation == 0) {
       defaultStartRelation = relation;
-      Util.debug("Set start relation to " + ScriptInterpreter.iTerms.toRawString(relation));
+      // Util.debug("Set start relation to " + ScriptInterpreter.iTerms.toRawString(relation));
     }
     normalised = false;
   }
