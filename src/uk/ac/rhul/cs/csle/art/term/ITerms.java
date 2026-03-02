@@ -637,7 +637,7 @@ public final class ITerms {
     String rootSymbolString = termSymbolString(term);
     if (children.length == 0 || !rootSymbolString.startsWith("__")) return term; // Nothing to do
 
-    // Util.info("Evaluating " + toString(term));
+    Util.info("Evaluating " + toString(term));
 
     int termSymbolStringIndex = termSymbolStringIndex(term);
 

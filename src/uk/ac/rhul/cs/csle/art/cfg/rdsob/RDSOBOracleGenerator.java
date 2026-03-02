@@ -48,7 +48,7 @@ public class RDSOBOracleGenerator {
     } catch (FileNotFoundException e) {
       Util.fatal("Unable to open output file " + filename);
     }
-
+    cfgRules.normalise();
     text.println("import java.io.FileNotFoundException;import java.util.LinkedList;\n\nclass " + filename
         + " extends uk.ac.rhul.cs.csle.art.cfg.rdsob.AbstractRDSOB {\n");
 
@@ -83,7 +83,7 @@ public class RDSOBOracleGenerator {
               seenEpsilon = true;
               break;
             default:
-              Util.fatal("Unexpected CFGKind in RDSOBV4Generator parse function " + seq.cfgElement.cfgKind);
+              Util.fatal("Unexpected CFGKind in RDSOBOracle parse function " + seq.cfgElement.cfgKind);
             }
           }
           text.printf(" return true; ");
@@ -142,7 +142,7 @@ public class RDSOBOracleGenerator {
             case END: // nothing to do: just here to ensure that the final action is printed
               break;
             default:
-              Util.fatal("Unexpected CFGKind in RDSOBV4Generator semantics function " + seq.cfgElement.cfgKind);
+              Util.fatal("Unexpected CFGKind in RDSOBOracle semantics function " + seq.cfgElement.cfgKind);
             }
             printActions(seq);
           } while (seq.cfgElement.cfgKind != CFGElementKind.END);
@@ -184,7 +184,7 @@ public class RDSOBOracleGenerator {
     // case END: // nothing to do: just here to ensure that the final action is printed
     // break;
     // default:
-    // Util.fatal("Unexpected CFGKind in RDSOBV4Generator semantics function " + seq.elm.kind);
+    // Util.fatal("Unexpected CFGKind in RDSOBOracle semantics function " + seq.elm.kind);
     // }
     // // switch (seq.elm)
     // } while (seq.elm.kind != CFGKind.END);

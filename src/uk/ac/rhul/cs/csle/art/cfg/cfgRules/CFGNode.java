@@ -156,7 +156,7 @@ public class CFGNode {
   private void toStringActionsRec(StringBuilder sb, int actionAsTerm) {
     if (actionAsTerm == 0) return;
     if (ScriptInterpreter.iTerms.hasSymbol(actionAsTerm, "cfgNative")) {
-      sb.append(ScriptInterpreter.iTerms.toString(ScriptInterpreter.iTerms.subterm(actionAsTerm, 0)));
+      sb.append(ScriptInterpreter.iTerms.termSymbolString(ScriptInterpreter.iTerms.subterm(actionAsTerm, 0)));
       return;
     }
     for (int i = 0; i < ScriptInterpreter.iTerms.termArity(actionAsTerm); i++)
