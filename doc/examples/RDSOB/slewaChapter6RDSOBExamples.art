@@ -1,3 +1,4 @@
+
 ///////// Example 1 - a first RDSOB example: bx*@
 
 S ::= 'b' | 'a' X '@'
@@ -29,9 +30,9 @@ X ::= 'x' !! System.out.println("Found an x"); !! X | #
 
 ///////// Example 5 - add attributes and actions to count x's
 
-S<z:int> ::= 'b'  | 'a' X '@' !! System.out.println("Final x count: " + X1.xCount); !!
+S<z::int> ::= 'b'  | 'a' X '@' !! System.out.println("Final x count: " + X1.xCount); !!
 
-X<xCount:int> ::= 
+X<xCount::int> ::= 
   'x' !! System.out.println("Found an x"); !!  
   X   !! X.xCount = X1.xCount + 1; !! 
 | !! X.xCount = 0; !! #  
@@ -42,11 +43,11 @@ X<xCount:int> ::=
 
 S ::= integer !! System.out.println("Result: " + integer1.v); !!
 
-integer<v: int> ::= 
+integer<v:: int> ::= 
   digit      !! integer1.v = integer.v * 10 + digit1.v; !! integer !! integer.v = integer1.v; !!
 | digit      !! integer.v  = integer.v * 10 + digit1.v; !!
  
-digit<v:int> ::= 
+digit<v::int> ::= 
   '0' !! digit.v = 0; !!
 | '1' !! digit.v = 1; !!
 | '2' !! digit.v = 2; !!
@@ -64,7 +65,7 @@ digit<v:int> ::=
 
 S ::= integerB !! System.out.println("Result: " + integerB1.v); !!
 
-integerB<v:int> ::= 
+integerB<v::int> ::= 
   &INTEGER   !! integerB.v = Integer.parseInt(lexeme()); !!
 
 // test.str examples: 1, 2, 123
@@ -73,25 +74,25 @@ integerB<v:int> ::=
 
 S ::= e1 !! System.out.println("Result: " + e11.v); !!
 
-e1<v:int> ::= 
+e1<v::int> ::= 
   e2 '+' e1  !! e1.v = e21.v + e11.v; !!
 | e2 '-' e1  !! e1.v = e21.v - e11.v; !!
 | e2         !! e1.v = e21.v; !!
 
-e2<v:int> ::= 
+e2<v::int> ::= 
   e3 '*' e2  !! e2.v = e31.v * e21.v; !!
 | e3 '/' e2  !! e2.v = e31.v / e21.v; !!
 | e3         !! e2.v = e31.v; !!
 
-e3<v:int> ::= 
+e3<v::int> ::= 
   '(' e1 ')' !! e3.v = e11.v; !! 
 | integer    !! e3.v = integer1.v; !!
 
-integer<v: int> ::= 
+integer<v:: int> ::= 
   digit      !! integer1.v = integer.v * 10 + digit1.v; !! integer !! integer.v = integer1.v; !!
 | digit      !! integer.v  = integer.v * 10 + digit1.v; !!
  
-digit<v:int> ::= 
+digit<v::int> ::= 
   '0' !! digit.v = 0; !!
 | '1' !! digit.v = 1; !!
 | '2' !! digit.v = 2; !!
