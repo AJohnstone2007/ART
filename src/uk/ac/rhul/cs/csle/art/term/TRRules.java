@@ -78,14 +78,14 @@ public class TRRules implements DisplayInterface {
    *
    */
   public int unelideConfiguration(int term, int relation, boolean useType) {
-    Util.debug("Uneliding: term before unelision is " + ScriptInterpreter.iTerms.toRawString(term));
-    if (ScriptInterpreter.iTerms.hasSymbol(term, "trTuple")) {
+    // Util.debug("Uneliding: term before unelision is " + ScriptInterpreter.iTerms.toRawString(term));
+    if (ScriptInterpreter.iTerms.hasSymbol(term, "trTuple") || ScriptInterpreter.iTerms.hasSymbol(term, "trTopTuple")) {
       // Util.debug("Already tupled; returning");
       return term;
     }
     if (configurationMap.get(relation) == null) {
       Util.warning("Uneliding against relation " + ScriptInterpreter.iTerms.toRawString(relation) + " but no corresponding !configuration; skipping");
-      return term; // nothing to do
+      return ScriptInterpreter.iTerms.findTerm("trTopTuple", term); // normalise to derivation terms for non-tupled rules
     }
     // Util.debug("Uneliding against relation " + ScriptInterpreter.iTerms.toRawString(relation) + " " + ScriptInterpreter.iTerms.toRawString(term));
     int theta = ScriptInterpreter.iTerms.subterm(term);
@@ -358,6 +358,7 @@ public class TRRules implements DisplayInterface {
   /* End of variable and function mapping ****************************************************************************/
 
   int thetaFromConfiguration(int term) {
+    // Util.debug("thetaFromConfiguration() on " + ScriptInterpreter.iTerms.toRawString(term));
     return (ScriptInterpreter.iTerms.hasSymbol(term, "trTopTuple") || ScriptInterpreter.iTerms.hasSymbol(term, "trTuple"))
         ? ScriptInterpreter.iTerms.subterm(term, 0)
         : term;

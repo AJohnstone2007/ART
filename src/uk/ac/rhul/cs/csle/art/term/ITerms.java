@@ -518,8 +518,8 @@ public final class ITerms {
   }
 
   public boolean matchZeroSV(int closedTermIndex, int openTermIndex, int[] bindings) { // This matcher does not allow sequence
-    Util.debug(
-        "matchZeroSV() " + closedTermIndex + ":" + toRawString(closedTermIndex) + " against open term " + openTermIndex + ":" + toRawString(openTermIndex));
+    // Util.debug(
+    // "matchZeroSV() " + closedTermIndex + ":" + toRawString(closedTermIndex) + " against open term " + openTermIndex + ":" + toRawString(openTermIndex));
 
     if (isSequenceVariableTerm(openTermIndex)) Util.fatal("in matchZeroSV() right hand side must not contain sequence variables");
 

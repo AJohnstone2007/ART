@@ -1,351 +1,395 @@
-(* 20 February 2026 - bounded string examples for the SLE26 5-page paper *)
+(* 4 March 2026 - bounded string examples for the SLE26  *)
 
-(* Note, these all have an unnecessary configuration to work round a bug - a simplified version will appear in due course *)
-
-(* Uncomment exactly one example and run as   java -jar art.jar boundedStringExamples.art *)
+(* Uncomment exactly one example and run as java -jar art.jar boundedStringExamples.art *)
 
 (*****************************************************************************)
 
-(* 1. XCount example - big step reduction rules *)
+(* 1. Bounded string example - Attribute-Action with Java actions *)
 
 (*
-!configuration -> _sig::__map
+!interpreter attributeAction
+
+S <v::boolean> ::= I !! T1.b = I1.n; !! T !! S.v = T1.v; !! !! System.out.println("S.v = " + S.v); !!
+       
+T <v::boolean b::int> ::= X !! T.v = X1.c <= T.b; !!
+
+X <c::int> ::= 'x' X !! X.c = X1.c+1; !! | 'x' !! X.c = 1; !!
+
+I <n::int> ::= '1' !! I.n = 1; !! | '2' !! I.n = 2; !!  | '3' !! I.n = 3; !! 
+
+!generate actions 
+
+!try "3 xxx"
+!show 'sle3xxx.dot' full indexed derivationTerm
+!try "2 xxxx"
+!show 'sle2xxxx.dot' full indexed derivationTerm
+*)
+
+(*****************************************************************************)
+
+(* 2. Bounded string example - Attribute Grammar with Value equations *)
+(*
+(* Not yet runnable as Value equations are not being interpreted but can be used to provide typeset text for paper*)
+
+!interpreter attributeAction
+
+S ::= I T1.b = I1.n T S.v = T1.v
+       
+T ::= X T.v = __le(X1.c, T.b)
+
+X ::= 'x' X X.c=__add(X1.c, 1) | 'x' X.c = 1 
+
+I ::= '1' I.n=1 | '2' I.n=2 | '3' I.n=3
+
+!generate actions 
+!try "3 xxx"
+*)
+
+(*****************************************************************************)
+
+(* 3. xCount example - Attribute-Action with Java actions *)
+(* Not directly used in paper - used to check that the AG is correct *)
+(*
+!interpreter attributeAction
+//S ::= X !! System.out.println("X count is " + X1.c); !! // Uncomment to get print out of final result
+
+X <c::int> ::= 'x' X !! X.c = X1.c+1; !! | 'x' !! X.c = 1; !!
+
+I <v::int> ::= '1' !! I.v = 1; !! | '2' !! I.v = 2; !!  | '3' !! I.v = 3; !! 
+
+!generate actions 
+
+!try "xxx"
+!show 'slexxx.dot' full indexed derivationTerm
+*)
+
+(*****************************************************************************)
+(* 4. xCount example - Attribute Grammar with value equations *)
+(*
+!interpreter attributeAction
+
+X ::= 'x' X X.c=__add(X1.c, 1) | 'x' X.c = 1 
+
+I ::= '1' I.n=1 | '2' I.n=2 | '3' I.n=3
+
+!generate actions 
+
+!try "xxx"
+!try "xxxx"
+*)
+(*****************************************************************************)
+
+(* 5. XCount example - small step reduction rules *)
+
+(*
+(* Only used to generate tree figures *)
+!traceLevel 3
 X ::= 'x' | 'x' X
 
--Xbase  --- X(x),_sig -> 1,_sig
+-X1  --- X(x) -> 1
 
--Xintermediate
-_E,_sig -> _EP,_sig
+-X2
+_n |> __int32(_)
 --- 
-X(x, _E),_sig -> __add(_EP, 1),_sig 
+X(x, _n) -> __add(_n, 1)
+
+-X2R
+_E -> _EP
+--- 
+X(x, _E) -> X(x, _EP)
 
 !try "xxx"
 *)
 
 (*****************************************************************************)
 
-(* 2. XCount example - small step reduction rules *)
+(* 6. XCount example - big step reduction rules *)
+
 (*
-!configuration -> _sig::__map
+(* Not used in paper *)
 
 X ::= 'x' | 'x' X
 
--Xbase  --- X(x),_sig -> 1,_sig
+-X1  --- X(x) -> 1
 
--Xintermediate
-_n |> __int32(_)
+-X2
+_E -> _EP
 --- 
-X(x, _n),_sig -> __add(_n, 1),_sig
+X(x, _E) -> __add(_EP, 1)
 
--XintermediateResolution
-_E,_sig -> _EP,_sig
---- 
-X(x, _E),_sig -> X(x, _EP),_sig
-
-!try "xxxx"
+!try "xxx"
 *)
 
 (*****************************************************************************)
 
-(* 3. Bounded string example - big step reduction rules *)
+(* 7. Bounded string example - small step reduction rules *)
 
-(*
-S ::= __int32  T    // Start rule collects integer bound and passes to T
-T ::= X             // Test rule receives bound from S and evaluates X subtree, then compares
-X ::= 'x' | 'x' X   // X rule counts Xs as in example 1
-
-__int32 ::= &INTEGER // This generates terms of the form __int32(13) which is ART's way of describing a typed number
- 
- !configuration -> _sig::__map
- 
--Xbase  --- X(x),_sig -> 1,_sig
-
--Xintermediate
-_E,_sig -> _EP,_sig
---- 
-X(x, _E),_sig -> __add(_EP, 1),_sig 
-
--start 
-
-T(_n, _X), _sig -> _TP
---- S(_n, T(_X)), _sig -> _TP 
- 
--test 
-_X,_sig -> _XP,_sig 
----
-T(_n, _X),_sig -> __le(_XP ,_n)
- 
-!try "3 xxx"
-*)
-
-(*****************************************************************************)
-
-(* 4. Bounded string example - small step reduction rules *)
 (*
 !traceLevel 3
 S ::= __int32  T    // Start rule collects integer bound and passes to T
 T ::= X             // Test rule receives bound from S and evaluates X subtree, then compares
 X ::= 'x' | 'x' X   // X rule counts Xs as in example 1
 
-__int32 ::= &INTEGER // This generates terms of the form __int32(13) which is ART's way of describing a typed number
+__int32 ::= '1' | '2' | '3' // This generates terms of the form __int32(3) which is ART's way of describing a typed number
+  
+-top 
+--- S(_n, T( _E)) -> T(_n,  _E)
  
- !configuration -> _sig::__map
- 
--Xbase  --- X(x),_sig -> 1,_sig
-
--Xintermediate
-_n |> __int32(_)
---- 
-X(x, _n),_sig -> __add(_n, 1),_sig
-
--XintermediateResolution
-_E,_sig -> _EP,_sig
---- 
-X(x, _E),_sig -> X(x, _EP),_sig
-
--start 
-
-
---- S(_n, T(_X)), _sig -> T(_n, _X), _sig
- 
--test
+-tst
 _m |> __int32(_)
 ---
-T(_n, _m), _sig -> __le(_m ,_n), _sig
+T(_n, _m) -> __le(_m ,_n)
 
--testResolve
-_X,_sig -> _XP, _sig 
+-tstR
+ _E ->  _EP
 ---
-T(_n, _X),_sig -> T(_n, _XP),_sig
+T(_n,  _E) -> T(_n,  _EP)
  
-!try "3 xxx"
-*)
+-X1  --- X(x) -> 1
 
-(*****************************************************************************)
+-X2
+_n |> __int32(_)
+--- 
+X(x, _n) -> __add(_n, 1)
 
-(* 5. Bounded string example - Attribute-Action with Java actions *)
-
-(*
-!interpreter attributeAction
-
-S ::= 
-  __int32 !! T1.bound = __int321.v; !! 
-  T
-  !! System.out.println("String in bounds: " + T1.ok); !!
-       
-T <ok::boolean bound::int> ::= 
-  X !! T.ok = T.bound >= X1.count; !!
-
-X < count::int> ::= 
-  'x' X !! X.count = X1.count+1; !! 
-| !! X.count = 0; !! #
-
-__int32 <v::int> ::= &INTEGER !! __int32.v = Integer.parseInt(lexeme()); !!
-
-!generate actions 
+-X2R
+_E -> _EP
+--- 
+X(x, _E) -> X(x, _EP)
 
 !try "3 xxx"
 *)
 
 (*****************************************************************************)
 
-(* 5. Bounded string example - Attribute-Action with Value equations *)
-
-(* Not yet runnable as Value equations are not being interpreted *)
-
+(* 8. Bounded string example - big step reduction rules *)
 (*
-!interpreter attributeAction
+S ::= __int32  T    // Start rule collects integer bound and passes to T
+T ::= X             // Test rule receives bound from S and evaluates X subtree, then compares
+X ::= 'x' | 'x' X   // X rule counts Xs as in example 1
 
-S ::= __int32 T1.bound = __int321.v T S.dummy =__debug("String in bounds: " T1.ok)
-       
-T ::= X T.ok = __ge(T.bound X1.count)
+__int32 ::= '1' | '2' | '3' // This generates terms of the form __int32(3) which is ART's way of describing a typed number
+ 
+-top
+T(_n,  _E) -> _TP
+--- 
+S(_n, T( _E)) -> _TP 
+ 
+-tst 
+ _E ->  _EP 
+---
+T(_n,  _E) -> __le( _EP ,_n)
 
-X ::= 'x' X X.count = __add(X1.count 1) | X.count = 1  #
+-X1  --- X(x) -> 1
 
-__int32 ::= &INTEGER
-
-!generate actions 
+-X2
+_E -> _EP
+--- 
+X(x, _E) -> __add(_EP, 1) 
 
 !try "3 xxx"
 *)
-	
+
 (*****************************************************************************)
 
-(* 6. Bounded string example - big step modelling L-attributed evaluation *)
+(* 9. Bounded string example - modelling attribute evaluation by extending nonterminals: small step evaluation *)
 (*
+(* Not working ! *)
 !traceLevel 10
 
 S ::= __int32  T    // Start rule collects integer bound and passes to T
 T ::= X             // Test rule receives bound from S and evaluates X subtree, then compares
 X ::= 'x' | 'x' X   // X rule counts Xs as in example 1
 
-__int32 ::= &INTEGER // This generates terms of the form __int32(13) which is ART's way of describing a typed number
+__int32 ::= '1' | '2' | '3' // This generates terms of the form __int32(3) which is ART's way of describing a typed number
 
-!configuration -> _dummy::__map
+(* Phase 1 - extend derivation nodes with attribute arguments in one step *)
 
-// Phase 1 - rewrite tree to have the attributes from Example 4/5 
--SAttribute
-_n |> __int32(_)     _T -> _TP 
---- S(_n, _T), _D -> < S(_n, _TP), __empty >
+-SA
+_E -> _EP
+--- S(_b, _E) -> SP(_b, _EP, __empty)  // add attribute S.v
 
--TAttribute
-_X -> _XP
---- T(_X) -> <T(_XP), __empty, __empty>   // add attributes T.bound, T.ok
+-TA
+_E -> _EP
+--- T(_E) -> TP(_EP, __empty, __empty)  // add attributes T.b and T.v
 
--XBaseAttribute
---- X(x) -> <X(x), 1>  // add attribute X.count = 1, immediate evaluation
+-XA1
+--- X(x) -> XP(x, __empty)  // add attribute X.c
 
--XAttribute
-_X -> _XP
----X(x, _X) -> <X(x, _XP), __empty> // add attribute X.count
-
-// Phase 2 - evaluate attributes
-
--SEval
-< T(_X), _n, __empty > -> < T(_X), _, _ok> 
+-XA2
+_E -> _EP
 ---
-<S(_n, <T(_X), __empty, __empty>), __empty> -> <S(_n, <T(_X), _n, _ok>), _ok>
+X(x, _E) -> XP(x, _EP, __empty) // add attribute X.c
 
--TEval
-<X(_), __empty> -> <X(_), _count> 
+(* Phase 2 - evaluate the attributes in multiple steps *)
 ---
-<T(X(_X)), _n, __empty> -> <T(_X), _n, __le(_n, _count)> 
+SP(_b, TP(_E, __empty, __empty), __empty) -> TP(_E, _b, __empty)
 
--XEval
-<X(_), __empty> -> <X(_), _count>
----
-<X(x, X(_X)), __empty> -> <X(x, X(_X)), _count>
+-XE1  --- XP(x, __empty) -> XP(x, 1)
 
--XBaseEval
-<X(_), __empty> -> <X(_), _count>
----
-<X(x), 1> -> <X(x, X(_X)), _count>
+-XE2
+_n |> __int32(_)
+--- 
+X(x, _n) -> X(x, __add(_n, 1))
 
+-X2R
+_E -> _EP
+--- 
+X(x, _E) -> X(x, _EP)
+
+(* Phase 3 - once the top level attribute is a boolean, rewrite to that final boolean  value *)
+
+-P3 --- SP(_, _, _v) -> _v
 
 !try "3 x"
-
-!print rewriteTerm
+!try "3 xxx"
+!try "3 xxxx"
 *)
 
 (*****************************************************************************)
 
-(* 10. Scratchpad for xCount grammar *)
+(* 10. Bounded string - modelling attribute evaluation by extending nonterminals: big step evaluation *)
 (*
-!traceLevel 3
-
-X ::= 'x' | 'x' X
-
-(* Phase 1 - rewrite derivation tree nodes to be a tuple of the node and an attribute *)
-
--XAddAttribute1
---- X(x) -> <X(x), __empty>  // add attribute X.count
-
--XAddAttribute2
-_X -> _XP
----X(x, _X) -> <X(x, _XP), __empty> // add attribute X.count
-
-(* Phase 2 - evaluate the attributes *)
-
--XEvaluate1 // No need for recursion as we are at leaf level
----
-<X(x), __empty> -> <X(x), 1>  
-
--XEvaluate2
-<_X, _count> -> <_X, _countP> 
----
-<X(x, <_X, _count>), __empty> -> <X(x, <_X, _countP>), __add(_countP, 1)>  
-
-(* Phase 3 - once the top level attribute is an integer, rewrite to that final terminal value *)
--XFinal1 _count |> __int32(_) --- <X(_), _count> -> _count
--XFinal2 _count |> __int32(_) --- <X(_,_), _count> -> _count
-
-!try X(x)
-!try X(x,X(x))
-!try X(x,X(x,X(x)))
-
-
-(* Note that if we had sequence variables we would not need all the arity variants, and might move to: *)
-
-(*
--XAddAttribute --- X(_X* ) -> <X(_X* ), __empty>  // add attribute X.count regardless of X arity
--XFinal 
-_count |> __int32(_) 
---- 
-<X(_* ), _count> -> _count
-*)
-*)
-
-(*****************************************************************************)
-
-(* 11. Scratchpad for bounded string grammar *)
 !traceLevel 3
 
 S ::= __int32  T    // Start rule collects integer bound and passes to T
 T ::= X             // Test rule receives bound from S and evaluates X subtree, then compares
 X ::= 'x' | 'x' X   // X rule counts Xs as in example 1
-__int32 ::= &INTEGER // This generates terms of the form __int32(13) which is ART's way of describing a typed number
 
-(* !!! NOTE - since all attributed rules have <> at top level, better to make new constructor S--->SAttr(S, __empty) *)
+__int32 ::= '1' | '2' | '3' // This generates terms of the form __int32(3) which is ART's way of describing a typed number
 
-(* Phase 1 - rewrite derivation tree nodes to be a tuple of the node and an attribute *)
+(* Phase 1 - extend derivation nodes with attribute arguments in one step *)
 
--SAddAttribute
-_T -> _TP
---- S(_n, _T) -> SZ(_n, _TP, __empty)  // add attribute S.ok
+-SA
+_E -> _EP
+--- S(_b, _E) -> SP(_b, _EP, __empty)  // add attribute S.v
 
--TAddAttribute
-_X -> _XP
---- T(_X) -> TZ(_XP, __empty, __empty)  // add attributes T.bound and T.ok
+-TA
+_E -> _EP
+--- T(_E) -> TP(_EP, __empty, __empty)  // add attributes T.b and T.v
 
--XAddAttribute1
---- X(x) -> XZ(x, __empty)  // add attribute X.count
+-XA1
+--- X(x) -> XP(x, __empty)  // add attribute X.c
 
--XAddAttribute2
-_X -> _XP
----X(x, _X) -> XZ(x, _XP, __empty) // add attribute X.count
-
-
-(* Phase 2 - evaluate the attributes *)
--SEvaluate
-TZ(_X, _n, __empty) -> TZ(_X, _n, _ok)  
+-XA2
+_E -> _EP
 ---
-SZ(_n, TZ(_X, __empty, __empty), __empty) -> SZ(_n, TZ(_X, _n, _ok), _ok) 
+X(x, _E) -> XP(x, _EP, __empty) // add attribute X.c
 
-
--TEvaluateXArity1
-XZ(x, __empty) -> XZ(x, _count) 
+(* Phase 2 - evaluate the attributes in one step *)
+-SE
+TP(_E, _n, __empty) -> TP(_EP, _n, _v) 
 ---
-TZ(XZ(x, __empty), _bound, __empty) -> TZ(XZ(x, _count), _bound, __le(_count, _bound))
+SP(_n, TP( _E, __empty, __empty), __empty) -> SP(_n, TP( _EP, _n, _v), _v) 
 
--TEvaluateXArity2
-XZ(x, _X, __empty) -> XZ(x, _X, _count) 
+-TE1
+XP(x, __empty) -> XP(x, _c) 
 ---
-TZ(XZ(x, _X, __empty), _bound, __empty) -> TZ(XZ(x, _X, _count), _bound, __le(_count, _bound))
+TP(XP(x, __empty), _b, __empty) -> TP(XP(x, _c), _b, __le(_c, _b))
 
-
--XEvaluate1 // No need for recursion as we are at leaf level
+-TE2
+XP(x,  _E, __empty) -> XP(x,  _EP, _c) 
 ---
-XZ(x, __empty) -> XZ(x, 1)  
+TP(XP(x,  _E, __empty), _b, __empty) -> TP(XP(x,  _EP, _c), _b, __le(_c, _b))
 
--XEvaluate2A
-_X -> XZ(x, _count)
+-XE1 // No need for recursion as we are at leaf level
 ---
-XZ(x, _X, __empty) -> XZ(x, XZ(x, _count), __add(_count, 1))  
+XP(x, __empty) -> XP(x, 1)  
 
--XEvaluate2B
-_X -> XZ(x, _XP, _count)
+-XE2A
+ _E -> _EP _EP |> XP(x, _c)
 ---
-XZ(x, _X, __empty) -> XZ(x, XZ(x, _XP, _count), __add(_count, 1))  
+XP(x,  _E, __empty) -> XP(x, XP(x, _c), __add(_c, 1))  
+
+-XE2B
+ _E -> _EP _EP |> XP(x,  _EP, _c)
+---
+XP(x,  _E, __empty) -> XP(x, XP(x,  _EP, _c), __add(_c, 1))  
 
 
 (* Phase 3 - once the top level attribute is a boolean, rewrite to that final boolean  value *)
 
--SFinal1 _result |> __bool(_) --- SZ(_, _, _result) -> _result
+-P3 --- SP(_, _, _v) -> _v
 
-//!try "3 xxx"
+!try "3 x"
+!try "3 xxx"
+!try "3 xxxx"
+*)
 
-!try S(3, T(X(x)))
-!try S(0, T(X(x)))
-!try S(3, T(X(x, X(x))))
-!try S(3, T(X(x, X(x, X(x)))))
-!try S(3, T(X(x, X(x, X(x, X(x))))))
+(*****************************************************************************)
+
+(* 11. Bounded string - modelling attribute evaluation by tupling: big step evaluation *)
+
+!traceLevel 3
+
+S ::= __int32  T    // Start rule collects integer bound and passes to T
+T ::= X             // Test rule receives bound from S and evaluates X subtree, then compares
+X ::= 'x' | 'x' X   // X rule counts Xs as in example 1
+
+__int32 ::= '1' | '2' | '3' // This generates terms of the form __int32(3) which is ART's way of describing a typed number
+
+(* Phase 1 - extend derivation nodes with attribute arguments in one step *)
+
+-SA
+_E -> _EP
+--- S(_b, _E) -> < SP(_b, _EP), __empty >  // add attribute S.v
+
+-TA
+_E -> _EP
+--- T(_E) -> < TP(_EP), __empty, __empty>  // add attributes T.b and T.v
+
+-XA1
+--- X(x) -> < XP(x), __empty>  // add attribute X.c
+
+-XA2
+_E -> _EP
+---
+X(x, _E) -> < XP(x, _EP) __empty> // add attribute X.c
+
+(* Phase 2 - evaluate the attributes in one step *)
+-SE
+< TP(_E), _n, __empty> -> < TP(_EP), _n, _v> 
+---
+<SP(_n, <TP(_E), __empty, __empty>), __empty> -> <SP(_n, <TP(_EP), _n, _v>), _v> 
+
+-TE1
+<XP(x), __empty> -> <XP(x), _c> 
+---
+<TP(<XP(x), __empty>), _b, __empty> -> <TP(<XP(x), _c>), _b, __le(_c, _b)>
+
+-TE2
+<XP(x,  _E), __empty> -> <XP(x,  _EP), _c> 
+---
+<TP(<XP(x,  _E), __empty>), _b, __empty> -> <TP(<XP(x,  _EP), _c>), _b, __le(_c, _b)>
+
+-XE1 // No need for recursion as we are at leaf level
+---
+<XP(x), __empty> -> <XP(x), 1>  
+
+-XE2A
+_E -> _EP _EP |> <XP(x), _c>
+---
+<XP(x,  _E), __empty> -> <XP(x, <XP(x), _c>), __add(_c, 1)>  
+
+-XE2B
+ _E -> _EP _EP |> <XP(x,  _EP), _c>
+---
+<XP(x,  _E), __empty> -> <XP(x, <XP(x,  _EP), _c>), __add(_c, 1)>  
+
+
+(* Phase 3 - once the top level attribute is a boolean, rewrite to that final boolean  value *)
+
+-P3 --- < SP(_, _), _v> -> _v
+
+!try "3 x"
+!try "3 xxx"
+!try "3 xxxx"
+
+
+(*****************************************************************************)
+
+(* Output LaTeX rules for the paper *)
+
+!print 'artScript.tex' latex scriptTerm
+
+//!print raw scriptTerm
