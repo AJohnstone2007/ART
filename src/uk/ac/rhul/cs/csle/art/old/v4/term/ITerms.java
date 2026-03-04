@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 
 import uk.ac.rhul.cs.csle.art.old.v4.core.ARTUncheckedException;
+import uk.ac.rhul.cs.csle.art.util.Util;
 
 public abstract class ITerms {
   private final TermTraverserText tt = new TermTraverserText(this, "iTerms traverser"); // This is intended for debugging - show the term without any
@@ -470,8 +471,7 @@ public abstract class ITerms {
 
   public boolean matchZeroSV(int closedTermIndex, int openTermIndex, int[] bindings) { // This matcher does not allow sequence
                                                                                        // variables
-    // System.out
-    // .println("matchZeroSV() " + closedTermIndex + ":" + toString(closedTermIndex) + " against open term " + openTermIndex + ":" + toString(openTermIndex));
+    Util.debug("matchZeroSV() " + closedTermIndex + ":" + toString(closedTermIndex) + " against open term " + openTermIndex + ":" + toString(openTermIndex));
 
     if (isSequenceVariableTerm(openTermIndex)) throw new ARTUncheckedException("in matchZeroSV() right hand side must not contain sequence variables");
 

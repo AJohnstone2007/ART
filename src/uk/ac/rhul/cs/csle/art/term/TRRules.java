@@ -78,14 +78,14 @@ public class TRRules implements DisplayInterface {
    *
    */
   public int unelideConfiguration(int term, int relation, boolean useType) {
-    // Util.debug("Uneliding: term before unelision is " + ScriptInterpreter.iTerms.toRawString(term));
+    Util.debug("Uneliding: term before unelision is " + ScriptInterpreter.iTerms.toRawString(term));
     if (ScriptInterpreter.iTerms.hasSymbol(term, "trTuple")) {
       // Util.debug("Already tupled; returning");
       return term;
     }
     if (configurationMap.get(relation) == null) {
       Util.warning("Uneliding against relation " + ScriptInterpreter.iTerms.toRawString(relation) + " but no corresponding !configuration; skipping");
-      return term;
+      return term; // nothing to do
     }
     // Util.debug("Uneliding against relation " + ScriptInterpreter.iTerms.toRawString(relation) + " " + ScriptInterpreter.iTerms.toRawString(term));
     int theta = ScriptInterpreter.iTerms.subterm(term);
@@ -93,7 +93,7 @@ public class TRRules implements DisplayInterface {
     // Util.debug("Uneliding map is:");
     // for (var e : relationConfigurationElements.keySet())
     // Util.debug(ScriptInterpreter.iTerms.toRawString(e) + " |-> " + ScriptInterpreter.iTerms.toRawString(relationConfigurationElements.get(e)));
-    // Util.debug("nd of uneliding map");
+    // Util.debug("End of uneliding map");
 
     // Now reconstitute the term, extracting field names from the map
     LinkedList<Integer> list = new LinkedList<>();

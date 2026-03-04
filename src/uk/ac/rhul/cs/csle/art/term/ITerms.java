@@ -518,7 +518,8 @@ public final class ITerms {
   }
 
   public boolean matchZeroSV(int closedTermIndex, int openTermIndex, int[] bindings) { // This matcher does not allow sequence
-    // Util.debug("matchZeroSV() " + closedTermIndex + ":" + toString(closedTermIndex) + " against open term " + openTermIndex + ":" + toString(openTermIndex));
+    Util.debug(
+        "matchZeroSV() " + closedTermIndex + ":" + toRawString(closedTermIndex) + " against open term " + openTermIndex + ":" + toRawString(openTermIndex));
 
     if (isSequenceVariableTerm(openTermIndex)) Util.fatal("in matchZeroSV() right hand side must not contain sequence variables");
 
@@ -637,7 +638,7 @@ public final class ITerms {
     String rootSymbolString = termSymbolString(term);
     if (children.length == 0 || !rootSymbolString.startsWith("__")) return term; // Nothing to do
 
-    Util.info("Evaluating " + toString(term));
+    // Util.info("Evaluating " + toString(term));
 
     int termSymbolStringIndex = termSymbolStringIndex(term);
 
@@ -1650,13 +1651,13 @@ public final class ITerms {
     // Util.info("toDot on " + toString(term));
     try {
       dotOut = new PrintStream(new File(filename));
-      dotOut.println("digraph \"GSS\" {\n" + "node[fontname=Helvetica fontsize=9 shape=box height = 0 width = 0 margin= 0.04  color=gray]\n"
-          + "graph[ordering=out ranksep=0.1 rankdir=\"LR\"]\n" + "edge[arrowsize = 0.3  color=gray]");
+      dotOut.println("digraph \"Iterms.toDot()\" {\n" + "node[fontname=Helvetica fontsize=9 shape=box height = 0 width = 0 margin= 0.04  color=gray]\n"
+          + "graph[ordering=out ranksep=0.1]\n" + "edge[arrowsize = 0.3  color=gray]");
       toDotRec(term, dotOut);
       dotOut.println("}");
       dotOut.close();
     } catch (FileNotFoundException e) {
-      Util.info("Unable to write GSS visualisation to " + filename);
+      Util.info("Unable to write visualisation to " + filename);
     }
   }
 

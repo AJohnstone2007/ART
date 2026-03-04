@@ -939,7 +939,7 @@ private final   String scriptParserTermString = "rules(directive(!clear(chooseRu
 
     ret.addActionBreak("__bool", (Integer t) -> ret.appendAlias("", iTerms.termSymbolStringIndex(iTerms.subterm(t, 0)), ""), null, null);
     ret.addActionBreak("__int32", (Integer t) -> {
-      if (iTerms.termArity(t) > 0) ret.appendAlias("", iTerms.termSymbolStringIndex(iTerms.subterm(t, 0)), "");
+      ret.appendAlias("", iTerms.termSymbolStringIndex(iTerms.subterm(t, 0)), "");
     }, null, null);
     ret.addActionBreak("__real64", (Integer t) -> ret.appendAlias("", iTerms.termSymbolStringIndex(iTerms.subterm(t, 0)), ""), null, null);
     ret.addActionBreak("__char", (Integer t) -> ret.appendAlias("`", iTerms.termSymbolStringIndex(iTerms.subterm(t, 0)), ""), null, null);
@@ -1078,17 +1078,16 @@ private final   String scriptParserTermString = "rules(directive(!clear(chooseRu
     TermTraverserLaTeX ret = new TermTraverserLaTeX(iTerms, "iTerms default LaTeX traverser");
     // __map and __m require special treatment because they don't fit neatly pre/in/post string model, so we shall directly program the underlying actions
     // For __map, the preorder action tests the arity of the term, and appends {= instead of {
-    ret.addAction("__map", "\\artMap{", "", "}");
+    ret.addAction("__bool", (Integer t) -> ret.sb.append("{\\artCFGLiteralStyle " + typesetType("bool", t) + "}"), null, null);
     ret.addAction("__m", null, (Integer t) -> ret.sb.append("="), (Integer t) -> ret.sb.append(", "), null);
 
-    ret.addActionBreak("__bool", (Integer t) -> ret.sb.append("\\artBool{" + iTerms.termSymbolString(iTerms.subterm(t, 0)) + "}"), null, null);
-    ret.addActionBreak("__char", (Integer t) -> ret.sb.append("\\artChar{" + iTerms.termSymbolString(iTerms.subterm(t, 0)) + "}"), null, null);
-    ret.addActionBreak("__intAP", (Integer t) -> ret.sb.append("\\artIntAP{" + iTerms.termSymbolString(iTerms.subterm(t, 0)) + "}"), null, null);
-    ret.addActionBreak("__int32", (Integer t) -> ret.sb.append("\\artInt{" + iTerms.termSymbolString(iTerms.subterm(t, 0)) + "}"), null, null);
-    ret.addActionBreak("__realAP", (Integer t) -> ret.sb.append("\\artRealAP{" + iTerms.termSymbolString(iTerms.subterm(t, 0)) + "}"), null, null);
-    ret.addActionBreak("__real", (Integer t) -> ret.sb.append("\\artReal{" + iTerms.termSymbolString(iTerms.subterm(t, 0)) + "}"), null, null);
-    ret.addActionBreak("__string",
-        (Integer t) -> ret.append("\\artString{" + (iTerms.termArity(t) > 0 ? iTerms.termSymbolString(iTerms.subterm(t, 0)) : "") + "}"), null, null);
+    ret.addActionBreak("__bool", (Integer t) -> ret.sb.append("{\\artCFGLiteralStyle " + typesetType("bool", t) + "}"), null, null);
+    ret.addActionBreak("__char", (Integer t) -> ret.sb.append("{\\artCFGLiteralStyle " + typesetType("char", t) + "}"), null, null);
+    ret.addActionBreak("__intAP", (Integer t) -> ret.sb.append("{\\artCFGLiteralStyle " + typesetType("intAP", t) + "}"), null, null);
+    ret.addActionBreak("__int32", (Integer t) -> ret.sb.append("{\\artCFGLiteralStyle " + typesetType("int32", t) + "}"), null, null);
+    ret.addActionBreak("__realAP", (Integer t) -> ret.sb.append("{\\artCFGLiteralStyle " + typesetType("realAP", t) + "}"), null, null);
+    ret.addActionBreak("__real64", (Integer t) -> ret.sb.append("{\\artCFGLiteralStyle " + typesetType("real64", t) + "}"), null, null);
+    ret.addActionBreak("__string", (Integer t) -> ret.append("{\\artCFGLiteralStyle " + typesetType("string", t) + "}"), null, null);
 
     ret.addAction("__array", "\\artArray{", "}{", "}");
     ret.addAction("__a", null, ", ", null);
@@ -1118,36 +1117,39 @@ private final   String scriptParserTermString = "rules(directive(!clear(chooseRu
     ret.addEmptyAction("cfgSlot");
 
     ret.addAction("cfgRule", "\\[\\artCFGRuleStyle ", "", "\\]\n");
-    ret.addActionBreak("cfgLHS",
-        (Integer t) -> ret.append("{\\artLHSStyle " + texEscape(iTerms.getString(iTerms.termSymbolStringIndex(iTerms.subterm(t, 0)))) + "\\ \\artExpandsTo}"),
-        null, null);
+    ret.addAction("cfgLHS", "{\\artCFGLHSStyle ", null, "\\artExpandsTo}");
 
-    ret.addAction("cfgAttributeDeclarations", "\\artAttributeDeclarations{", null, "}");
-
-    ret.addAction("cfgAlts", null, "\\artSequenceSeperator", null);
-    ret.addAction("cfgSeq", null, "", null);
+    ret.addAction("cfgAlts", null, "\\artGap\\artCFGAltSeperator", null);
+    ret.addAction("cfgSeq", null, "\\artGap ", null);
     ret.addAction("cfgName", null, ":", null);
-    ret.addActionBreak("cfgNonterminal",
-        (Integer t) -> ret.append("\\artNonterminal{" + texEscape(iTerms.getString(iTerms.termSymbolStringIndex(iTerms.subterm(t, 0)))) + "}"), null, null);
+    ret.addActionBreak("cfgNonterminal", (
+
+        Integer t) -> ret.append("{\\artCFGNonterminalStyle " +
+
+            texEscape(iTerms.getString(iTerms.termSymbolStringIndex(iTerms.subterm(t, 0)))) + "}"),
+        null, null);
     ret.addActionBreak("cfgCaseInsensitiveTerminal",
-        (Integer t) -> ret.append("\\artCaseInsensitiveTerminal{" + texEscape(iTerms.getString(iTerms.termSymbolStringIndex(iTerms.subterm(t, 0)))) + "}"),
+        (Integer t) -> ret
+            .append("{\\artCFGCaseInsensitiveTerminalStyle\"" + texEscape(iTerms.getString(iTerms.termSymbolStringIndex(iTerms.subterm(t, 0)))) + "\"}"),
         null, null);
     ret.addActionBreak("cfgCaseSensitiveTerminal",
-        (Integer t) -> ret.append("\\artCaseSensitiveTerminal{" + texEscape(iTerms.getString(iTerms.termSymbolStringIndex(iTerms.subterm(t, 0)))) + "}"), null,
-        null);
+        (Integer t) -> ret
+            .append("{\\artCFGCaseSensitiveTerminalStyle " + texEscape(iTerms.getString(iTerms.termSymbolStringIndex(iTerms.subterm(t, 0)))) + "}"),
+        null, null);
     ret.addActionBreak("cfgCharacterTerminal",
-        (Integer t) -> ret.append("\\artCharacterTerminal{" + texEscape(iTerms.getString(iTerms.termSymbolStringIndex(iTerms.subterm(t, 0)))) + "}"), null,
-        null);
+        (Integer t) -> ret.append("{\\artCFGCharacterTerminalStyle`" + texEscape(iTerms.getString(iTerms.termSymbolStringIndex(iTerms.subterm(t, 0)))) + "}"),
+        null, null);
 
     ret.addActionBreak("cfgCharacterRangeTerminal",
-        (Integer t) -> ret.append("\\artCharacterRangeTerminal{" + texEscape(iTerms.getString(iTerms.termSymbolStringIndex(iTerms.subterm(t, 0, 0)))) + "}{"
-            + texEscape(iTerms.getString(iTerms.termSymbolStringIndex(iTerms.subterm(t, 0, 1)))) + "}"),
+        (Integer t) -> ret.append("{\\artCFGCharacterRangeTerminalStyle " + texEscape(iTerms.getString(iTerms.termSymbolStringIndex(iTerms.subterm(t, 0, 0))))
+            + ".." + texEscape(iTerms.getString(iTerms.termSymbolStringIndex(iTerms.subterm(t, 0, 1)))) + "}"),
         null, null);
 
     ret.addActionBreak("cfgBuiltinTerminal",
-        (Integer t) -> ret.append("\\artBuiltinTerminal{" + texEscape(iTerms.getString(iTerms.termSymbolStringIndex(iTerms.subterm(t, 0)))) + "}"), null, null);
+        (Integer t) -> ret.append("{\\artCFGBuiltinTerminalStyle\\&" + texEscape(iTerms.getString(iTerms.termSymbolStringIndex(iTerms.subterm(t, 0)))) + "}"),
+        null, null);
 
-    ret.addAction("cfgEpsilon", "\\artEpsilon", null, null);
+    ret.addAction("cfgEpsilon", "\\artCFGEpsilon ", null, null);
 
     ret.addAction("cfgDoFirst", "\\artDoFirst{", "}{", "}\n");
     ret.addAction("cfgPositive", "\\artPositive{", "}{", "}\n");
@@ -1161,11 +1163,11 @@ private final   String scriptParserTermString = "rules(directive(!clear(chooseRu
     ret.addAction("cfgTearNamed", "\\artTear{", "}{", "}");
     ret.addAction("cfgInsert", "\\artInsert{", null, "}");
 
-    ret.addAction("cfgAttributeDeclarations", "\\artAttributeDeclarations{", "}{", "}");
-    ret.addAction("cfgAttributeDeclaration", "\\artAttributeDeclaration{", "}{", "}");
-    ret.addAction("cfgAttribute", "\\artAttribute{", "}{", "}");
-    ret.addAction("cfgEquation", "\\artEquation{", "}{", "}");
-    ret.addActionBreak("cfgNative", (Integer t) -> ret.append("\\]\\[{\\ \\ \\ \\artActionColour\\verb@" + ret.childSymbolString(t, 0) + "@}"), null, null);
+    ret.addAction("cfgAttributeDeclarations", "{\\artCFGAttributeDeclarationStyle\\mathtt{\\langle", "\\artGap", "\\rangle}}");
+    ret.addAction("cfgAttributeDeclaration", "{\\artCFGAttributeDeclarationStyle", "::", "}");
+    ret.addAction("cfgAttribute", "{\\artCFGAttributeStyle ", ".", "}");
+    ret.addAction("cfgEquation", "{\\artCFGEquationStyle\\artGap\\mathtt{ ", " =", "}\\artGap}");
+    ret.addActionBreak("cfgNative", (Integer t) -> ret.append("{\\artCFGActionStyle\\verb@!!" + ret.childSymbolString(t, 0) + "!!@}"), null, null);
     ret.addAction("cfgAssignment", "\\artAssignment{", "}{", "}");
 
     // 2. Chooser pretty print controls
@@ -1181,29 +1183,31 @@ private final   String scriptParserTermString = "rules(directive(!clear(chooseRu
     ret.addActionBreak("choosePredefinedSet", (Integer t) -> ret.append(ret.childSymbolString(t, 0)), null, null);
 
     // 3. Term rewrite pretty print controls
-    ret.addAction("trRule", "\\artTRRule{", "}\n{", "} %close artTrRule\n");
-    ret.addAction("tr", "\\artTR{", "}\n{", "} %close artTr\n");
-    ret.addAction("trPremises", null, "\\artPremiseSpace", null);
-    ret.addActionBreak("trLabel", (Integer t) -> {
+    ret.addAction("trRule", "\\[\\artTRRuleStyle ", "\\quad\\quad", "\n\\]\n");
+    ret.addAction("tr", "\\frac{", "}{", "}");
+    ret.addAction("trPremises", null, "\\artGap ", null);
+    ret.addActionBreak("trLabel", (
+
+        Integer t) -> {
       if (iTerms.termArity(t) > 0) {
-        ret.append("\\artTRLabel{");
+        ret.append("{\\artTRLabelStyle ");
         ret.appendAlias(iTerms.termSymbolStringIndex(iTerms.subterm(t, 0)));
         ret.append("}");
       }
     }, null, null);
-    ret.addAction("trMatch", "\\artMatch{", "}{", "}\n");
-    ret.addAction("trTransition", "\\artTransition{", "}\n{", "} %close trTransition\n");
+    ret.addAction("trMatch", null, "\\triangleright ", null);
+    ret.addAction("trTransition", "", null, null);
     ret.addEmptyAction("trTopTuple");
-    ret.addAction("trTuple", "\\artTuple{", ", ", "}\n");
-    ret.addAction("directive", "\\artDirective{", " ", "}\n");
+    ret.addAction("trTuple", "\\langle ", ", ", "\\rangle ");
     ret.addActionBreak("trRelation",
-        (Integer t) -> ret.append("\\artRelation{" + iTerms.getString(ret.aliasLookup(iTerms.termSymbolStringIndex(iTerms.subterm(t, 0)))) + "}"), null, null);
+        (Integer t) -> ret.append("{\\artTRRelationStyle " + iTerms.getString(ret.aliasLookup(iTerms.termSymbolStringIndex(iTerms.subterm(t, 0)))) + "}"), null,
+        null);
 
     // 4. Directives
-    ret.addAction("directive", "\\artDirective{", " ", "}\n");
+    ret.addAction("directive", "\\[{\\artDirectiveStyle ", null, "}\\]\n");
     ret.addAction("typedIDs", null, "", null);
     ret.addAction("typedID", null, "::", null);
-    ret.addAction("artFile", "\\artFile{", " ", "}\n");
+    ret.addAction("artFile", "{\\artFileStyle\\textquotesingle", " ", "\\textquotesingle}");
     // ret.addActionBreak("directive", "", null, null); // Do not output directives in LaTeX mode
 
     // 5. Default action
@@ -1224,7 +1228,7 @@ private final   String scriptParserTermString = "rules(directive(!clear(chooseRu
   }
 
   public String typesetID(String s) {
-    // System.out.print("typesetID() formatting " + s);
+    // System.out.println("typesetID() formatting " + s);
 
     boolean hasIndex = false;
     int underscores = 0, index = 0, primes = 0, digits = 0, cc = 0;
@@ -1261,13 +1265,13 @@ private final   String scriptParserTermString = "rules(directive(!clear(chooseRu
     // Classify
     switch (underscores) {
     case 0:
-      ret = "\\artConstructor{" + ret + "}";
+      ret = "{\\artIDStyle " + ret + "}";
       break;
     case 1:
-      ret = "\\artVariable{" + ret + "}";
+      ret = "{\\artVariableStyle " + ret + "}";
       break;
     case 2:
-      ret = "\\artValue{" + ret + "}";
+      ret = "{\\artValueStyle " + ret + "}";
       break;
     default:
       Util.fatal("identifier " + s + " begins with three or more underscores");
@@ -1276,4 +1280,26 @@ private final   String scriptParserTermString = "rules(directive(!clear(chooseRu
     // Util.info(" to yield " + ret);
     return ret;
   }
+
+  public String typesetType(String type, int term) {
+    String child = null;
+    if (iTerms.termArity(term) > 0) child = iTerms.termSymbolString(iTerms.subterm(term, 0));
+
+    if (child == null) return "\\_\\_" + type;
+    if (child.equals("_")) return type + "(\\_)";
+    switch (type) {
+    case "real64", "int32":
+      return child;
+    case "realAP", "intAP":
+      return "\\&" + child;
+    case "string":
+      return "\"" + child + "\"";
+    case "array", "list", "set", "map":
+      return typesetID(type);
+
+    default:
+      return "???Type";
+    }
+  }
+
 }
