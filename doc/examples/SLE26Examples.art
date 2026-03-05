@@ -385,6 +385,47 @@ _E -> _EP _EP |> <XP(x), _c>
 !try "3 xxx"
 !try "3 xxxx"
 
+(*****************************************************************************)
+
+(* 12. Bounded string - modelling attribute evaluation eSOS style: big step evaluation *)
+
+!traceLevel 3
+
+S ::= __int32  T    // Start rule collects integer bound and passes to T
+T ::= X             // Test rule receives bound from S and evaluates X subtree, then compares
+X ::= 'x' | 'x' X   // X rule counts Xs as in example 1
+
+__int32 ::= '1' | '2' | '3' // This generates terms of the form __int32(3) which is ART's way of describing a typed number
+
+!configuration -> _tau::__map
+
+-S
+__get(_tau, xc) |> __empty   _E, __put(_tau, tb, _n) -> _EP, _tauP
+---
+S(_n, _E), _tau -> S(_n, _E), __put(_tauP, sv, __get(_tauP, tv))
+
+-T
+_E, _tau -> _EP, _tauP
+---
+T(_E), _tau -> T(_EP), __put(_tauP, tv, __le(__get(_tauP, xc), __get(_tauP, tb)))
+
+-X1
+---
+X(x), _tau -> X(x), __put(_tau, xc, 1) 
+
+-X2
+_E, _tau -> _EP, _tauP
+---
+X(x, _E), _tau -> X(x, _EP), __put(_tauP, xc, __add(__get(_tauP, xc), 1))
+
+-Z
+__get(_tau, sv) |> _sv   _sv |> __bool(_)
+--- S(_, _), _tau -> _sv
+
+!try "3 x"
+!try "3 xxx"
+!try "3 xxxx"
+
 
 (*****************************************************************************)
 

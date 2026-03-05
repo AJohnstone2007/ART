@@ -129,7 +129,7 @@ public class Rewriter {
       for (int i : cycleCheck.keySet())
         cycleCheck.get(i).clear();
       Util.trace(3, 0,
-          "Step " + ++rewriteStepCounter + " " + ScriptInterpreter.iTerms.toString(oldTerm, ScriptInterpreter.iTerms.plainTextTraverser, false, 4, null));
+          "Step " + ++rewriteStepCounter + " " + ScriptInterpreter.iTerms.toString(oldTerm, ScriptInterpreter.iTerms.plainTextTraverser, false, 10, null));
       newTerm = rewriteAttempt(oldTerm, relation, 1);
       if (tr.isTerminatingConfiguration(newTerm, relation) || newTerm == oldTerm /* nothing changed */) break;
       oldTerm = newTerm;
