@@ -1094,9 +1094,7 @@ public class ScriptInterpreter {
     ret.addEmptyAction("cfgSlot");
 
     ret.addAction("cfgRule", "\\[\\artCFGRuleStyle ", "", "\\]\n");
-    ret.addActionBreak("cfgLHS",
-        (Integer t) -> ret.append("{\\artGap\\artCFGNonterminalStyle " + texEscape(iTerms.getString(iTerms.termSymbolStringIndex(iTerms.subterm(t, 0)))) + "}"),
-        null, (Integer t) -> ret.append("\\artGap::="));
+    ret.addAction("cfgLHS", "", null, "\\artGap::=");
 
     ret.addAction("cfgAlts", null, "\\artGap\\artCFGAltSeperator", null);
     ret.addAction("cfgSeq", null, "", null);
