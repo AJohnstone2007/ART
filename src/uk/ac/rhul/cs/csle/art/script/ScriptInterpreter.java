@@ -1151,7 +1151,7 @@ public class ScriptInterpreter {
     ret.addAction("cfgEquation", "{\\artGap\\artCFGEquationStyle\\artGap\\mathtt{ ", " =", "}");
     ret.addActionBreak("cfgNative",
         (Integer t) -> ret
-            .append("\n\\]\\[{\\artGap\\artCFGActionStyle!\\hspace*{-0.1em}!\\verb@" + ret.childSymbolString(t, 0).strip() + "@!\\hspace*{-0.1em}!}\n"),
+            .append("\\]\n\\[{\\artGap\\artCFGActionStyle!\\hspace*{-0.1em}!\\verb@" + ret.childSymbolString(t, 0).strip() + "@!\\hspace*{-0.1em}!}\n"),
         null, null);
     ret.addAction("cfgAssignment", "\\artAssignment{", "}{", "}");
 
