@@ -15,14 +15,17 @@ public class Rewriter {
   private int rewriteStepCounter;
   private final Map<Integer, Set<Integer>> cycleCheck = new HashMap<>();
   private Map<Integer, Integer> variableMap;
+  private final int printDepth = 2;
 
   private int rewriteAttempt(int term, int relationTerm, int level) { // return rewritten term and set rewriteAttemptOutcome
 
     if (relationTerm == 0) Util.fatal("ESOS rewrite attempted on null relation");
 
     variableMap = tr.reverseVariableNamesByRule.get(term);
-    Util.trace(4, level, "Rewrite attempt " + ++rewriteAttemptCounter + ": " + ScriptInterpreter.iTerms.toString(term, variableMap) + " "
-        + ScriptInterpreter.iTerms.toString(relationTerm, variableMap));
+    Util.trace(4, level,
+        "Rewrite attempt " + ++rewriteAttemptCounter + ": "
+            + ScriptInterpreter.iTerms.toString(term, ScriptInterpreter.iTerms.plainTextTraverser, false, printDepth, variableMap) + " "
+            + ScriptInterpreter.iTerms.toString(relationTerm, variableMap));
     if (!cycleCheck.containsKey(relationTerm)) cycleCheck.put(relationTerm, new HashSet<Integer>());
     Set<Integer> cycleSet = cycleCheck.get(relationTerm);
     // if (cycleSet.contains(configuration)) throw new ARTExceptionFatal("cycle detected " +ScriptTermInterpreter.iTerms.toString(configuration)
@@ -103,7 +106,7 @@ public class Rewriter {
             }
             if (!ScriptInterpreter.iTerms.matchZeroSV(rewrittenTerm, ScriptInterpreter.iTerms.subterm(premise, 2), bindings)) continue nextRule;
           } else
-            Util.fatal("ESOS - unknown premise kind " + ScriptInterpreter.iTerms.toString(premise, variableMap));
+            Util.fatal("eSOS - unknown premise kind " + ScriptInterpreter.iTerms.toString(premise, variableMap));
         }
         Util.trace(7, level, ScriptInterpreter.iTerms.toString(ScriptInterpreter.iTerms.subterm(ruleLabel, 0), variableMap) + "bindings after premise "
             + (premiseNumber + 1) + " " + tr.bindingsToString(bindings, variableMap));
@@ -111,7 +114,8 @@ public class Rewriter {
 
       term = ScriptInterpreter.iTerms.substitute(bindings, rhs, 0);
       Util.trace(4, level, ScriptInterpreter.iTerms.toString(ScriptInterpreter.iTerms.subterm(ruleLabel, 0), variableMap) + "rewrites to "
-          + ScriptInterpreter.iTerms.toString(term, variableMap));
+          + ScriptInterpreter.iTerms.toString(term, ScriptInterpreter.iTerms.plainTextTraverser, false, printDepth, variableMap));
+
       return term;
     }
     // If we get here, then no rules succeeded
@@ -128,8 +132,8 @@ public class Rewriter {
     while (true) {
       for (int i : cycleCheck.keySet())
         cycleCheck.get(i).clear();
-      Util.trace(3, 0,
-          "Step " + ++rewriteStepCounter + " " + ScriptInterpreter.iTerms.toString(oldTerm, ScriptInterpreter.iTerms.plainTextTraverser, false, 10, null));
+      Util.trace(3, 0, "Step " + ++rewriteStepCounter + " "
+          + ScriptInterpreter.iTerms.toString(oldTerm, ScriptInterpreter.iTerms.plainTextTraverser, false, printDepth, null));
       newTerm = rewriteAttempt(oldTerm, relation, 1);
       if (tr.isTerminatingConfiguration(newTerm, relation) || newTerm == oldTerm /* nothing changed */) break;
       oldTerm = newTerm;

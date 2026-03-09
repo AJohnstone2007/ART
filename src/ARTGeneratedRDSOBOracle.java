@@ -7,29 +7,53 @@ boolean parse_S() {
 
   /* Nonterminal S, alternate 1 */
   inputIndex = iiAtEntry; oracleIndex = oiAtEntry; oracleSet(1);
-  if (match("a")) { return true; }
+  if (match("b")) { return true; }
 
   /* Nonterminal S, alternate 2 */
   inputIndex = iiAtEntry; oracleIndex = oiAtEntry; oracleSet(2);
-  if (match("b")) {
-  if (match("{")) {
-  if (match("x")) {
-  if (match("}")) { return true; }}}}
+  if (match("a")) {
+  if (parse_X()) {
+  if (match("@")) { return true; }}}
 
   return false;
+}
+
+boolean parse_X() {
+  int iiAtEntry = inputIndex, oiAtEntry = oracleIndex;
+
+  /* Nonterminal X, alternate 1 */
+  inputIndex = iiAtEntry; oracleIndex = oiAtEntry; oracleSet(1);
+  if (match("x")) {
+  if (parse_X()) { return true; }}
+
+  /* Nonterminal X, alternate 2 */
+  inputIndex = iiAtEntry; oracleIndex = oiAtEntry; oracleSet(2);
+  /* epsilon */  return true; 
 }
 
 void semantics_S() {
   switch(oracle[oracleIndex++]) {
     case 1:
-    match("a");
+    match("b");
     break;
 
     case 2:
-    match("b");
-    match("{");
+    match("a");
+    semantics_X();
+    match("@");
+    break;
+  }
+ }
+
+void semantics_X() {
+  switch(oracle[oracleIndex++]) {
+    case 1:
     match("x");
-    match("}");
+    semantics_X();
+    break;
+
+    case 2:
+    /* epsilon */
     break;
   }
  }

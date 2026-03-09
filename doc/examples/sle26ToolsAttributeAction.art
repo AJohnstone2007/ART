@@ -1,0 +1,37 @@
+(* gcdAttribute.art GCD in attribute-actions with native Java actions - version for SLE26 tools paper *)
+
+!interpreter attributeAction
+
+!support
+!! import java.util.Map; import java.util.HashMap; !!
+!! Map<String, Integer> variables = new HashMap<>(); !!
+
+statements ::= statement statements
+| statement !! System.out.println("Final variable map " + variables); !! 
+
+statement ::= 
+  id ':=' pred ';' !! variables.put(id1.v, pred1.v); !!     // assignment 
+| 'if' pred 'then' statement!< 'else' statement!<           // if statement 
+  !! if (pred1.v != 0) interpret(statement1); else interpret(statement2); !! 
+| 'while' pred!< 'do' statement!<                           // while statement 
+  !! interpret(pred1); while (pred1.v != 0) { interpret(statement1); interpret(pred1); } !! 
+
+pred ::= addOps !! pred.v = addOps1.v; !!
+| addOps '>'  addOps !! pred.v = addOps1.v >  addOps2.v ? 1 : 0; !! // Greater than 
+| addOps '!=' addOps !! pred.v = addOps1.v != addOps2.v ? 1 : 0; !! // Not equal to 
+
+addOps ::= operand !! addOps.v = operand1.v; !!  
+| addOps '-' operand !! addOps.v = addOps1.v - operand1.v; !!               // Subtract 
+
+operand ::=int32 !!operand.v = int321.v; !!                           // Integer literal 
+| id !! operand.v = variables.get(id1.v); !!                     // Variable access 
+| '(' addOps ')' !! operand.v = addOps1.v; !!                        // Parenthesised expression 
+       
+// Lexical rules
+id <v::String> ::= &ID !! id.v = lexeme(); !!  
+int32          ::= &INTEGER   !! int32.v = Integer.parseInt(lexeme()); !!
+
+!generate actions 
+!try "a := 6; b := 9; while a != b do if a > b then a := a - b; else b := b - a; gcd := a;"
+
+!print 'artScript.tex' latex full scriptTerm 
