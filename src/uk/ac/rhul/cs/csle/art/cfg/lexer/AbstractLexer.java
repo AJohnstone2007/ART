@@ -412,7 +412,7 @@ public abstract class AbstractLexer {
 
   private void artSkipEscapeSequence() {
     char control = getCh(); // Step over element
-    // Util.debug("skipEscapeSquence at " + inputIndex + ": " + peekCh());
+    Util.debug("skipEscapeSquence at " + inputIndex + ": " + peekCh());
     if (control == 'u') {
       getCh();
       getCh();
