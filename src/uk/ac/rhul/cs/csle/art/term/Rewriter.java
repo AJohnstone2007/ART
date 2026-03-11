@@ -48,7 +48,7 @@ public class Rewriter {
     }
 
     if (ruleList == null) {
-      Util.error("No rules in relation " + ScriptInterpreter.iTerms.toString(relationTerm, variableMap) + " for constructor "
+      Util.warning("No rules in relation " + ScriptInterpreter.iTerms.toString(relationTerm, variableMap) + " for constructor "
           + ScriptInterpreter.iTerms.termSymbolString(rootTheta));
       return term;
     }

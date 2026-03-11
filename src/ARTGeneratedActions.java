@@ -3,7 +3,7 @@ import uk.ac.rhul.cs.csle.art.interpret.AbstractActions;
 import uk.ac.rhul.cs.csle.art.interpret.AbstractAttributeBlock;
 import uk.ac.rhul.cs.csle.art.util.Util;
 public class ARTGeneratedActions extends AbstractActions {
-  public String name() { return "2026-03-09 23:03:19"; }
+  public String name() { return "2026-03-10 12:42:41"; }
 
   public class ART_C_I extends AbstractAttributeBlock {
     ART_C_I I = this; int n;
@@ -49,7 +49,7 @@ public class ARTGeneratedActions extends AbstractActions {
     public void action(int nodeNumber) {
       switch(nodeNumber){
       case 39: T1.b = I1.n;  break;
-      case 40: S.v = T1.v;  System.out.println("S.v = " + S.v);  break;
+      case 40: S.v = T1.v;  System.out.println("Hi Adrian S.v = " + S.v);  break;
       }
     }
   }

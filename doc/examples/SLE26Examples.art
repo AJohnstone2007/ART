@@ -5,7 +5,6 @@
 (*****************************************************************************)
 
 (* 1. Bounded string example - Attribute-Action with Java actions *)
-
 (*
 !interpreter attributeAction
 
@@ -48,7 +47,6 @@ I ::= '1' I.n=1 | '2' I.n=2 | '3' I.n=3
 (*****************************************************************************)
 
 (* 3. xCount example - Attribute-Action with Java actions *)
-(* Not directly used in paper - used to check that the AG is correct *)
 (*
 !interpreter attributeAction
 //S ::= X !! System.out.println("X count is " + X1.c); !! // Uncomment to get print out of final result
@@ -64,6 +62,7 @@ I <v::int> ::= '1' !! I.v = 1; !! | '2' !! I.v = 2; !!  | '3' !! I.v = 3; !!
 *)
 
 (*****************************************************************************)
+
 (* 4. xCount example - Attribute Grammar with value equations *)
 (*
 !interpreter attributeAction
@@ -77,11 +76,11 @@ I ::= '1' I.n=1 | '2' I.n=2 | '3' I.n=3
 !try "xxx"
 !try "xxxx"
 *)
+
 (*****************************************************************************)
 
-(*
 (* 5. XCount example - small step reduction rules *)
-
+(*
 !traceLevel 4
 X ::= 'x' | 'x' X
 
@@ -102,9 +101,8 @@ X(x, _E) -> X(x, _EP)
 
 (*****************************************************************************)
 
-(*
 (* 6. XCount example - big step reduction rules *)
-
+(*
 !traceLevel 4
 X ::= 'x' | 'x' X
 
@@ -120,9 +118,8 @@ X(x, _E) -> __add(_EP, 1)
 
 (*****************************************************************************)
 
-(*
 (* 7. Bounded string example - small step reduction rules *)
-
+(*
 !traceLevel 3
 S ::= __int32  T    // Start rule collects integer bound and passes to T
 T ::= X             // Test rule receives bound from S and evaluates X subtree, then compares
@@ -168,9 +165,8 @@ X(x, _E) -> X(x, _EP)
 *)
 
 (*****************************************************************************)
-(*
 (* 8. Bounded string example - big step reduction rules *)
-
+(*
 !traceLevel 2
 
 S ::= __int32  T    // Start rule collects integer bound and passes to T
@@ -211,6 +207,7 @@ X(x, _E) -> __add(_EP, 1)
 (*****************************************************************************)
 
 (* 9. Bounded string - modelling attribute evaluation by arity-extending nonterminals: big step evaluation *)
+(*
 
 !traceLevel 4
 
@@ -271,9 +268,10 @@ XP(x,  _E, __empty) -> XP(x, XP(x,  _EP, _c), __add(_c, 1))
 
 (* Phase 3 - once the top level attribute is a boolean, rewrite to that final boolean  value *)
 
-//-Z --- SP(_, _, _v) -> _v
+-Z --- SP(_, _, _v) -> _v
 
 !try "3 xxx"
+*)
 
 (*****************************************************************************)
 
@@ -389,7 +387,7 @@ __get(_tau, sv) |> _sv   _sv |> __bool(_)
 
 (*****************************************************************************)
 
-(* Output LaTeX rules for the paper *)
+(* Output LaTeX rules for the papers *)
 
 !print 'artScript.tex' latex scriptTerm
 

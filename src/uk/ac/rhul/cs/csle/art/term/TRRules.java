@@ -44,7 +44,7 @@ public class TRRules implements DisplayInterface {
   }
 
   public void addTerminal(int relation, int terminal) {
-    // Util.debug("Adding terminal " + ScriptInterpreter.iTerms.toString(terminal) + " in relation " + ScriptInterpreter.iTerms.toString(relation));
+    // Util.debug("Adding terminal " + ScriptInterpreter.iTerms.toRawString(terminal) + " in relation " + ScriptInterpreter.iTerms.toRawString(relation));
     if (rewriteTerminals.get(relation) == null) rewriteTerminals.put(relation, new HashSet<>());
     rewriteTerminals.get(relation).add(terminal);
   }
@@ -150,9 +150,18 @@ public class TRRules implements DisplayInterface {
 
   boolean isTerminatingConfiguration(int term, int relation) {
     int thetaRoot = thetaFromConfiguration(term);
-    Set<Integer> terminals = rewriteTerminals.get(relation);
-    return ScriptInterpreter.iTerms.isSpecialTerm(thetaRoot)
-        || (terminals != null && terminals.contains(ScriptInterpreter.iTerms.termSymbolStringIndex(thetaRoot)));
+    Set<Integer> terminals = rewriteTerminals.get(ScriptInterpreter.iTerms.subterm(relation, 0));
+    // Util.debug("isTerminatingConfiguration on " + ScriptInterpreter.iTerms.toRawString(term) + " against relation "
+    // + ScriptInterpreter.iTerms.toRawString(relation) + " with thetaRoot " + ScriptInterpreter.iTerms.toRawString(thetaRoot));
+    // if (terminals == null)
+    // Util.debug("Relation has empty terminal set");
+    // else {
+    // Util.debug("Relation has terminal set {");
+    // for (int t : terminals)
+    // Util.debug(ScriptInterpreter.iTerms.toRawString(t));
+    // Util.debug("}");
+    // }
+    return ScriptInterpreter.iTerms.isSpecialTerm(thetaRoot) || (terminals != null && terminals.contains(thetaRoot));
   }
 
   public void normalise() {

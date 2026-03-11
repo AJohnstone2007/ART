@@ -456,9 +456,12 @@ public class ScriptInterpreter {
       break;
 
     case "!terminal":
-      // Util.debug("Processing terminal directive: " + iTerms.toRawString(term));
-      for (int i = 0; i < iTerms.termArity(iTerms.subterm(term, 0, 1)); i++)
-        currentTRRules.addTerminal(iTerms.subterm(term, 0, 0, 0), iTerms.termSymbolStringIndex(iTerms.subterm(term, 0, 1, i)));
+      int relation = iTerms.subterm(term, 0, 0, 0);
+      int termBase = iTerms.subterm(term, 0, 1);
+      // Util.debug("Processing terminal directive: " + iTerms.toRawString(term) + " with relation " + iTerms.toRawString(relation) + " and term base "
+      // + iTerms.toRawString(termBase));
+      for (int i = 0; i < iTerms.termArity(termBase); i++)
+        currentTRRules.addTerminal(relation, iTerms.subterm(term, 0, 1, i));
       break;
 
     case "!try":
@@ -1146,7 +1149,7 @@ public class ScriptInterpreter {
     ret.addAction("cfgAttributeDeclarations", "{\\artCFGAttributeDeclarationStyle\\mathtt{\\langle", "\\artGap", "\\rangle}}");
     ret.addAction("cfgAttributeDeclaration", "{\\artCFGAttributeDeclarationStyle", "::", "}");
     ret.addAction("cfgAttribute", "{\\artCFGAttributeStyle ", ".", "}");
-    ret.addAction("cfgEquation", "{\\artGap\\artCFGEquationStyle\\artGap\\mathtt{ ", " =", "}");
+    ret.addAction("cfgEquation", "{\\artGap\\artCFGEquationStyle\\artGap\\mathtt{ ", " =", "}}");
     ret.addActionBreak("cfgNative",
         (Integer t) -> ret
             .append("\\]\n\\[{\\artGap\\artCFGActionStyle!\\hspace*{-0.1em}!\\verb@" + ret.childSymbolString(t, 0).strip() + "@!\\hspace*{-0.1em}!}\n"),

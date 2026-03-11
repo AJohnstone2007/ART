@@ -33,8 +33,8 @@ e2 ::= INTEGER !!e2.v = INTEGER1.v; !!                  // Integer literal
 | 'plugin' '(' STRING_SQ ',' e0 ')' !! e2.v = (int) plugin(STRING_SQ1.v, e01.v); !!
 
 // Lexical rules
-ID <v:String>        ::= &ID !! ID.v = lexeme(); !!  
-STRING_SQ <v:String> ::= &STRING_SQ !! STRING_SQ.v = lexemeCore().translateEscapes(); !!
+ID <v::String>        ::= &ID !! ID.v = lexeme(); !!  
+STRING_SQ <v::String> ::= &STRING_SQ !! STRING_SQ.v = lexeme().translateEscapes(); !!
 INTEGER              ::= &INTEGER   !! INTEGER.v = Integer.parseInt(lexeme()); !!
 
 //!generate actions 
