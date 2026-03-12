@@ -82,12 +82,12 @@ INTEGER<v::int>       ::= &INTEGER   !! INTEGER.v = Integer.parseInt(lexeme()); 
 //!generate actions
 //!interpreter attributeAction
 
-//!try "print('Result: ', (3+4)*2, '\n');"
+//!try "print('Result: ', (3+4)*2, '\\n');"
 //!try "x = 3;"
 
 
 !try "
-procedure sub { print(' Hello from a procedure\\n'); }
+procedure sub { print('Hello from a procedure\\n'); }
 
 x = 3;
 while x > 0 do { print('x is ', x, '\\n'); x = x -1; }
