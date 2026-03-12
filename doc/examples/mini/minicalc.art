@@ -52,5 +52,5 @@ INTEGER <v::int>      ::= &INTEGER   !! INTEGER.v = Integer.parseInt(lexeme()); 
 // !interpreter attributeAction
 
 
-!try "print('Result: ', 3+4);"
+!try "print('Result: ', 3+4, '\\n');"
 

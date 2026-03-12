@@ -48,4 +48,4 @@ e5 ::=
 STRING_SQ ::= &STRING_SQ
 INTEGER   ::= &INTEGER  
 
-!try "print('Result: ', 3+4);"
+!try "print('Result: ', 3+4, '\\n');"
