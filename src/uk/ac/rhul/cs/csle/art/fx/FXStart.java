@@ -44,13 +44,13 @@ public class FXStart extends Application {
       double windowWidth = screen.getWidth() / 3;
 
       var graphicsWindow = new GraphicsWindow(new Stage(), 2 * windowWidth - w10Vff, 0, windowWidth + 2 * w10Vff, screen.getHeight(), "ART visualiser",
-          new MenuBuilderARTGraphics(), 500.0);
+          new MenuBuilderARTIDEGraphics(), 500.0);
 
       var tryEditor = new EditorWithConsoleWindow(new Stage(), windowWidth - w10Vff, 0, windowWidth + 2 * w10Vff, screen.getHeight(),
-          "Source program: " + tryFilename, new MenuBuilderARTText(), tryContents);
+          "Source program: " + tryFilename, new MenuBuilderARTIDEText(), tryContents);
 
       var specEditor = new EditorWithConsoleWindow(new Stage(), -w10Vff, 0, windowWidth + 2 * w10Vff, screen.getHeight(), "ART specification: " + specFilename,
-          new MenuBuilderARTText(), specContents);
+          new MenuBuilderARTIDEText(), specContents);
     } else
       Util.fatal("Unexpected argument to FXStart " + ART.clargs[0]);
   }

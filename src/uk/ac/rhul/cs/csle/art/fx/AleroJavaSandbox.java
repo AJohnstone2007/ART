@@ -1,4 +1,4 @@
-package uk.ac.rhul.cs.csle.art.old.fx;
+package uk.ac.rhul.cs.csle.art.fx;
 
 import javafx.scene.image.Image;
 import javafx.scene.paint.PhongMaterial;
@@ -6,9 +6,10 @@ import javafx.scene.shape.CullFace;
 import javafx.scene.shape.DrawMode;
 import javafx.scene.shape.Mesh;
 import javafx.scene.shape.MeshView;
+import uk.ac.rhul.cs.csle.art.old.fx.PrintonOnSea;
 
-public class JavaSandbox {
-  public JavaSandbox() throws AleroException {
+public class AleroJavaSandbox {
+  public AleroJavaSandbox() throws AleroException {
 
     // Mesh mesh = new Cuboid(50, 60, 70);
     // Mesh mesh = new Tetrahedron(50, 50, 40);
@@ -56,6 +57,6 @@ public class JavaSandbox {
     material.setDiffuseMap(new Image("file:GERTank.png"));
     meshView.setMaterial(material);
     meshView.setCullFace(CullFace.NONE);
-    Alero.add(meshView);
+    Alero.addPart(meshView);
   }
 }

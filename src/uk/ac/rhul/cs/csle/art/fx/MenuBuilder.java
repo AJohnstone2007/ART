@@ -1,6 +1,5 @@
 package uk.ac.rhul.cs.csle.art.fx;
 
-import javafx.application.Platform;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
@@ -21,16 +20,7 @@ public abstract class MenuBuilder {
   }
 
   public void menuAction(String s) {
-    switch (s) {
-    case "_Run":
-
-      break;
-    case "E_xit":
-      Platform.exit();
-      break;
-    default:
-      System.err.println("Action " + s + " not yet implemented\n");
-    }
+    System.err.println("Deafault menu builder: no actions defined");
   }
 
 }

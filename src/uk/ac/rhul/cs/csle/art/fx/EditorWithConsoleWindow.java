@@ -63,7 +63,8 @@ public final class EditorWithConsoleWindow {
     menuStack.getChildren().addAll(menuBuilder.buildMenuBar(), splitPane);
 
     Scene scene = new Scene(menuStack);
-    scene.getStylesheets().add(EditorWithConsoleWindow.class.getResource("art-highlights.css").toExternalForm());
+    var resource = EditorWithConsoleWindow.class.getResource("art-highlights.css");
+    if (resource != null) scene.getStylesheets().add(resource.toExternalForm());
     stage.setScene(scene);
     stage.setTitle(title);
     stage.setX(x);
@@ -80,6 +81,10 @@ public final class EditorWithConsoleWindow {
 
   public void printConsole(String s) {
     console.appendText(s);
+  }
+
+  public void insertCode(String s) {
+    codeArea.appendText(s);
   }
 
   private StyleSpans<Collection<String>> computeHighlighting(String text) {
@@ -144,27 +149,5 @@ public final class EditorWithConsoleWindow {
         }
       }
     }
-  }
-
-  public void menuAction(String s) {
-    switch (s) {
-    case "_Run":
-      consoleln("Run");
-      break;
-    case "E_xit":
-      Platform.exit();
-      break;
-    default:
-      printConsole("Action " + s + " not yet implemented\n");
-    }
-  }
-
-  public void console(String str) {
-    printConsole(str);
-  }
-
-  public void consoleln(String str) {
-    printConsole(str);
-    printConsole("\n");
   }
 }

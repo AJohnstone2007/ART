@@ -30,7 +30,7 @@ public class ADLInterpreter {
   //
   // public ADLInterpreter(ITerms iTerms) {
   // this.iTerms = iTerms;
-  // ScriptTermInterpreter artScriptInterpreter = new ScriptTermInterpreter(iTerms);
+  // ScriptInterpreter artScriptInterpreter = new ScriptInterpreter(iTerms);
   // try {
   // artScriptInterpreter
   // .interpretARTScript(new String(getClass().getClassLoader().getResourceAsStream("uk/ac/rhul/cs/csle/alero/language/ADL0_Alero.art").readAllBytes()));

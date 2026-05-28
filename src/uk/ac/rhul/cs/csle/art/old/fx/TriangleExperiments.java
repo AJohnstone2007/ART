@@ -7,6 +7,8 @@ import javafx.scene.shape.DrawMode;
 import javafx.scene.shape.Mesh;
 import javafx.scene.shape.MeshView;
 import javafx.scene.shape.TriangleMesh;
+import uk.ac.rhul.cs.csle.art.fx.Alero;
+import uk.ac.rhul.cs.csle.art.fx.AleroException;
 import uk.ac.rhul.cs.csle.art.term.mesh.AleroMesh;
 
 /* This is a JavaFX demonstration of basic vector algrabra properties in 3D */
@@ -69,6 +71,6 @@ public class TriangleExperiments {
     material.setDiffuseColor(color);
     meshView.setMaterial(material);
     // meshView.setCullFace(CullFace.NONE);
-    Alero.add(meshView);
+    Alero.addPart(meshView);
   }
 }

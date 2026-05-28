@@ -4,7 +4,7 @@ import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.SeparatorMenuItem;
 
-public class MenuBuilderARTText extends MenuBuilder {
+public class MenuBuilderARTIDEText extends MenuBuilder {
   @Override
   public MenuBar buildMenuBar() {
     MenuBar menuBar = new MenuBar();

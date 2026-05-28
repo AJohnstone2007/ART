@@ -465,7 +465,7 @@ public class ScriptInterpreter {
       break;
 
     case "!try":
-      // Util.debug("processing try " + iTerms.toString(term));
+      Util.debug("processing try " + iTerms.toString(term));
       normaliseAll();
       if (iTerms.termSymbolString(iTerms.subterm(term, 0, 0)).equals("artFile")) // Parse contents of file
         try {

@@ -3,8 +3,10 @@ package uk.ac.rhul.cs.csle.art.term.mesh;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -171,11 +173,13 @@ public class AleroMesh extends TriangleMesh {
   }
 
   /*
-   * Read an ASCII or binary STL file collecting the set of vertices and facets so that we can make minimum size meshes
+   * File I/O
    *
+   * Read ASCII or binary STL file collecting the set of vertices and facets so that we can make minimum size meshes Write an ASCII or binary STL file
    */
   private boolean isASCII;
   private InputStream inputStream;
+  private FileOutputStream outputStream;
   private final byte[] buffer = new byte[80];
   private Scanner scanner;
   private Point pointA, pointB, pointC;
@@ -246,9 +250,65 @@ public class AleroMesh extends TriangleMesh {
     return ((0xFF & buffer[3]) << 24) | ((0xFF & buffer[2]) << 16) | ((0xFF & buffer[1]) << 8) | ((0xFF & buffer[0]));
   }
 
-  /*** Analysis routines ***/
+  public void toASCIIFile(String filename) throws FileNotFoundException {
+    toASCIIFile(new File(filename));
+  }
 
-  /*
+  public void toASCIIFile(File file) throws FileNotFoundException {
+    PrintStream ps = new PrintStream(file);
+    ps.println("solid"); // Intro string
+    ps.println(); // Skip model name
+
+    ObservableFloatArray p = getPoints();
+    for (int i = 0; i < p.size(); i += 3)
+      ps.println("<" + p.get(i) + "," + p.get(i + 1) + "," + p.get(i + 2) + ">");
+    ps.println("endsolid"); // Outro string
+  }
+
+  public void toBinaryFile(String filename) throws IOException {
+    toBinaryFile(new File(filename));
+  }
+
+  public void toBinaryFile(File file) throws IOException {
+    ObservableFloatArray p = getPoints();
+    outputStream = new FileOutputStream(file);
+    // Write empty header of 80 bytes
+    for (int i = 0; i < 20; i++)
+      writeInteger(0);
+    writeInteger(p.size() / 3); // Three points per triangle
+    for (int i = 0; i < p.size(); i++)
+      writeFloat(p.get(i));
+    outputStream.close();
+  }
+
+  private void writeFacetBinary(int facetIndex) throws IOException {
+    writeFloat(0);
+    writeFloat(0);
+    writeFloat(0); // Normal - setting to zero usually forces computation by receiving tool using left-hand rule
+
+    pointA = findVertex(readFloat(), readFloat(), readFloat());
+    pointB = findVertex(readFloat(), readFloat(), readFloat());
+    pointC = findVertex(readFloat(), readFloat(), readFloat());
+  }
+
+  private void writeFloat(float f) throws IOException { // Little endian float output as bytes
+    writeInteger(Float.floatToRawIntBits(f));
+  }
+
+  private void writeInteger(int i) throws IOException {
+    outputStream.write(i & 0xFF);
+    i >>>= 4;
+    outputStream.write(i & 0xFF);
+    i >>>= 4;
+    outputStream.write(i & 0xFF);
+    i >>>= 4;
+    outputStream.write(i & 0xFF);
+
+  }
+
+  /***
+   * Analysis routines **
+   *
    * Thoughts on analyses
    *
    * We already have an array of vertices that are sorted by x,y,z coordinates
@@ -545,7 +605,7 @@ public class AleroMesh extends TriangleMesh {
     }
   }
 
-  /* LOM stuff belowthis line */
+  /* LOM stuff below this line */
   /*
    * A LOM is a standard mesh, but organised so that we can easily locate connected triangles
    *
@@ -563,7 +623,7 @@ public class AleroMesh extends TriangleMesh {
 
   int ringVertexCount, extrusionVertexCount;
 
-  // Generate mesh from basePath extruded through extrurionPath with scaleFactors applied: no other transform allowed
+  // Generate mesh from basePath extruded through extrusionPath with scaleFactors applied: no other transform allowed
   public AleroMesh(float[] basePath, float[] extrusionPath) throws Exception {
     isLOM = true;
     ringVertexCount = basePath.length / 3;
