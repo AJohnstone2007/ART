@@ -207,7 +207,6 @@ public class PrintonOnSea {
   }
 
   public static void add(AleroMesh stlMesh) {
-    stlMesh.centreBoundingBox();
     System.out.println("Add mesh " + stlMesh.toStringFull());
     PhongMaterial material = new PhongMaterial(stlMesh.colour);
 

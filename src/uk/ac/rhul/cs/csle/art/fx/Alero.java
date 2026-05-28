@@ -40,6 +40,7 @@ public class Alero extends Application {
   private static GraphicsWindow gw;
   public static ITerms iTerms = new ITerms();
   public boolean recording = true;
+  private static AleroMesh currentMesh = null;
 
   @Override
   public void start(Stage primaryStage) {
@@ -186,7 +187,7 @@ public class Alero extends Application {
         // consoleln("Returned value " + adlInterpreter.adlInterpret(tw.codeArea.getText()).javaValue());
         // consoleln("Top level symbols " + adlInterpreter.topLevelSymbols);
       } catch (RuntimeException e) {
-        consoleln("Abend ");
+        consoleln("Abend");
         consoleln(e.getMessage());
       }
       break;
@@ -200,7 +201,12 @@ public class Alero extends Application {
       fileChooser.getExtensionFilters().addAll(new ExtensionFilter("Mesh Files (*.stl)", "*.stl"), new ExtensionFilter("All Files", "*.*"));
       file = fileChooser.showOpenDialog(textStage);
       if (file != null) {
-        stlImport(file);
+        try {
+          currentMesh = new AleroMesh(file);
+          addMesh(currentMesh);
+        } catch (Exception e) {
+          console("I/O error during STL import");
+        }
         consoleln("import(\"" + file.getPath() + "\")\n");
         codeln("import(\"" + file.getPath() + "\")\n");
       }
@@ -221,8 +227,31 @@ public class Alero extends Application {
       fileChooser.getExtensionFilters().addAll(new ExtensionFilter("Mesh Files (*.stl)", "*.stl"), new ExtensionFilter("All Files", "*.*"));
       file = fileChooser.showOpenDialog(textStage);
       if (file != null) {
-        stlImport(file);
+        try {
+          currentMesh = new AleroMesh(file);
+          addMesh(currentMesh);
+
+          currentMesh.toBinaryFile("normlised.stl");
+        } catch (Exception e) {
+          console("I/O error during normalise");
+        }
+        // stlMesh.computeBoundingBox();
+        // tw.printConsole("stl: loaded " + file.getName() + "\n");
+        // tw.printConsole("stl: bounding box (" + stlMesh.minX + ", " + stlMesh.minY + ", " + stlMesh.minZ + "), (" + stlMesh.maxX + ", " + stlMesh.maxY + ", "
+        // + stlMesh.maxZ + ")\n");
+        // double pointDensity = (stlMesh.getPoints().size()) / stlMesh.volume();
+        // tw.printConsole("stl: volume " + stlMesh.volume() + " contains " + stlMesh.getPoints().size() + " points at density " + pointDensity + "\n");
+        // if (pointDensity > 100) {
+        // tw.printConsole("stl: auto automatic rescaling from inches to mm");
+        // stlMesh.scale(25.4f, 25.4f, 25.4f);
+        // }
+        // stlMesh.centreBoundingBox();
+        // stlMesh.computeBoundingBox();
+        // tw.printConsole("stl: bounding box after rescale and centring (" + stlMesh.minX + ", " + stlMesh.minY + ", " + stlMesh.minZ + "), (" + stlMesh.maxX +
+        // ", "
+        // + stlMesh.maxY + ", " + stlMesh.maxZ + ")\n");
         consoleln("normalise(\"" + file.getPath() + "\")\n");
+
       }
       break;
     case "_JavaSandbox":
@@ -230,7 +259,6 @@ public class Alero extends Application {
       try {
         new AleroJavaSandbox();
       } catch (AleroException e) {
-        // TODO Auto-generated catch block
         e.printStackTrace();
       }
       break;
@@ -296,45 +324,13 @@ public class Alero extends Application {
     default:
       tw.printConsole("Action " + s + " not yet implemented\n");
     }
+
   }
 
-  public static void stl(String filename) {
-    stlImport(new File(filename));
-  }
+  public static void addMesh(AleroMesh mesh) {
+    PhongMaterial material = new PhongMaterial(mesh.colour);
 
-  public static void stlImport(File file) {
-    try {
-      if (file == null) return;
-      AleroMesh stlMesh = new AleroMesh(file);
-      stlMesh.computeBoundingBox();
-      tw.printConsole("stl: loaded " + file.getName() + "\n");
-      tw.printConsole("stl: bounding box (" + stlMesh.minX + ", " + stlMesh.minY + ", " + stlMesh.minZ + "), (" + stlMesh.maxX + ", " + stlMesh.maxY + ", "
-          + stlMesh.maxZ + ")\n");
-      double pointDensity = (stlMesh.getPoints().size()) / stlMesh.volume();
-      tw.printConsole("stl: volume " + stlMesh.volume() + " contains " + stlMesh.getPoints().size() + " points at density " + pointDensity + "\n");
-      if (pointDensity > 100) {
-        tw.printConsole("stl: auto automatic rescaling from inches to mm");
-        stlMesh.scale(25.4f, 25.4f, 25.4f);
-      }
-      stlMesh.centreBoundingBox();
-      stlMesh.computeBoundingBox();
-      tw.printConsole("stl: bounding box after rescale and centring (" + stlMesh.minX + ", " + stlMesh.minY + ", " + stlMesh.minZ + "), (" + stlMesh.maxX + ", "
-          + stlMesh.maxY + ", " + stlMesh.maxZ + ")\n");
-      addMesh(stlMesh);
-    } catch (RuntimeException e) {
-      consoleln(e.getMessage());
-    } catch (Exception e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    }
-  }
-
-  public static void addMesh(AleroMesh stlMesh) {
-    stlMesh.centreBoundingBox();
-    // System.out.println("Add mesh " + stlMesh.toStringFull());
-    PhongMaterial material = new PhongMaterial(stlMesh.colour);
-
-    MeshView meshView = new MeshView(stlMesh);
+    MeshView meshView = new MeshView(mesh);
 
     meshView.setMaterial(material);
 

@@ -20,6 +20,16 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.ObservableFaceArray;
 import javafx.scene.shape.TriangleMesh;
 
+/* Notes on our superclass TriangleMesh
+ *
+ * The default format for a mesh is VertexFormat.POINT_TEXCOORD which does not use normals.
+ *
+ * We have an integer array faces which has six integer elements per triangle as p0, t0, p1, t1, p2, t2
+ * where the pi are integer indixes into the points array and the ti are indices into the texCoords array
+ *
+ * We have a float array points in which a coordinate is stored as x, y, z
+ *
+ */
 public class AleroMesh extends TriangleMesh {
 
   public boolean isLOM = false;
@@ -94,8 +104,7 @@ public class AleroMesh extends TriangleMesh {
     if (isASCII)
       try {
         scanner = new Scanner(file);
-        scanner.next("solid"); // Skip the intro string
-        scanner.next(); // Skip model name
+        scanner.nextLine(); // Skip the "solid... " intro string
         while (scanner.hasNext("facet")) // Read all the facets
           readFacetASCII();
         scanner.next("endsolid");// Skip the outro string
@@ -164,10 +173,10 @@ public class AleroMesh extends TriangleMesh {
     ObservableIntegerArray f = getFaces();
     sb.append("AleroMesh(" + p.size() + " points, " + f.size() / 6 + " triangles\n");
     for (int i = 0; i < p.size(); i += 3)
-      sb.append("<" + p.get(i) + "," + p.get(i + 1) + "," + p.get(i + 2) + ">");
+      sb.append("<" + p.get(i) + "," + p.get(i + 1) + "," + p.get(i + 2) + ">\n");
 
     for (int i = 0; i < f.size(); i++)
-      sb.append(" " + i + ":" + f.get(i));
+      sb.append((i % 6 == 0 ? "\n" : "") + " " + i + ":" + f.get(i));
     sb.append(")");
     return sb.toString();
   }
@@ -255,14 +264,22 @@ public class AleroMesh extends TriangleMesh {
   }
 
   public void toASCIIFile(File file) throws FileNotFoundException {
-    PrintStream ps = new PrintStream(file);
-    ps.println("solid"); // Intro string
-    ps.println(); // Skip model name
-
+    ObservableFaceArray f = getFaces();
     ObservableFloatArray p = getPoints();
-    for (int i = 0; i < p.size(); i += 3)
-      ps.println("<" + p.get(i) + "," + p.get(i + 1) + "," + p.get(i + 2) + ">");
+    PrintStream ps = new PrintStream(file);
+
+    ps.println("solid Alero output"); // Intro string
+    for (int fi = 0; fi < f.size(); fi += 6) { // Each trianglar has three vertices interleaved with texture coords
+      ps.print("facet normal 0 0 0\nouter loop");
+      for (int v = 0; v < 6; v += 2) {
+        ps.print("\nvertex");
+        int base = f.get(fi + v) * 3;
+        ps.print(" " + p.get(base) + " " + p.get(base + 1) + " " + p.get(base + 2));
+      }
+      ps.println("\nendloop\nendfacet");
+    }
     ps.println("endsolid"); // Outro string
+    ps.close();
   }
 
   public void toBinaryFile(String filename) throws IOException {
@@ -270,14 +287,21 @@ public class AleroMesh extends TriangleMesh {
   }
 
   public void toBinaryFile(File file) throws IOException {
+    ObservableFaceArray f = getFaces();
     ObservableFloatArray p = getPoints();
     outputStream = new FileOutputStream(file);
-    // Write empty header of 80 bytes
-    for (int i = 0; i < 20; i++)
+
+    for (int i = 0; i < 20; i++) // Write empty header of 80 bytes
       writeInteger(0);
-    writeInteger(p.size() / 3); // Three points per triangle
-    for (int i = 0; i < p.size(); i++)
-      writeFloat(p.get(i));
+    writeInteger(f.size() / 6); // Six integers per triangle comprising p0, t0, p1, t1, p2, t2
+    for (int fi = 0; fi < f.size(); fi += 6) { // Each trianglar has three vertices interleaved with texture coords
+      for (int v = 0; v < 6; v += 2) {
+        int base = f.get(fi + v) * 3;
+        writeFloat(p.get(base));
+        writeFloat(p.get(base) + 1);
+        writeFloat(p.get(base) + 2);
+      }
+    }
     outputStream.close();
   }
 
