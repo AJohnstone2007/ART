@@ -247,7 +247,6 @@ public class AleroMesh extends TriangleMesh {
     pointB = findVertex(readFloat(), readFloat(), readFloat());
     pointC = findVertex(readFloat(), readFloat(), readFloat());
     inputStream.read(buffer, 0, 2); // Attributes - discard
-    System.err.println("Read facet " + pointA + ", " + pointB + ", " + pointC);
     findFace(new Face(pointA.number, pointB.number, pointC.number));
   }
 
@@ -287,7 +286,7 @@ public class AleroMesh extends TriangleMesh {
     toBinaryFile(new File(filename));
   }
 
-  public void toBinaryFile(File file) throws IOException {
+  public void toBinaryFile(File file) throws IOException { // This can be speeded up - use buffered output stream and writeFloatBuffer
     ObservableFaceArray f = getFaces();
     ObservableFloatArray p = getPoints();
     outputStream = new FileOutputStream(file);

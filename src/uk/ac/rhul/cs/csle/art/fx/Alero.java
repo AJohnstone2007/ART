@@ -41,6 +41,7 @@ public class Alero extends Application {
   public static ITerms iTerms = new ITerms();
   public boolean recording = true;
   private static AleroMesh currentMesh = null;
+  private static File workingDirectory = new File(System.getProperty("user.home"));
 
   @Override
   public void start(Stage primaryStage) {
@@ -197,24 +198,24 @@ public class Alero extends Application {
     case "_Import":
       fileChooser = new FileChooser();
       fileChooser.setTitle("Import mesh file");
-      fileChooser.setInitialDirectory(new File(System.getProperty("user.home")));
+      fileChooser.setInitialDirectory(workingDirectory);
       fileChooser.getExtensionFilters().addAll(new ExtensionFilter("Mesh Files (*.stl)", "*.stl"), new ExtensionFilter("All Files", "*.*"));
       file = fileChooser.showOpenDialog(textStage);
       if (file != null) {
+        consoleln("import(\"" + file.getPath() + "\")\n");
+        codeln("import(\"" + file.getPath() + "\")\n");
         try {
           currentMesh = new AleroMesh(file);
           addMesh(currentMesh);
         } catch (Exception e) {
           console("I/O error during STL import");
         }
-        consoleln("import(\"" + file.getPath() + "\")\n");
-        codeln("import(\"" + file.getPath() + "\")\n");
       }
       break;
     case "_Export":
       fileChooser = new FileChooser();
       fileChooser.setTitle("Normalise mesh file");
-      fileChooser.setInitialDirectory(new File(System.getProperty("user.home")));
+      fileChooser.setInitialDirectory(workingDirectory);
       fileChooser.getExtensionFilters().addAll(new ExtensionFilter("Mesh Files (*.stl)", "*.stl"), new ExtensionFilter("All Files", "*.*"));
       file = fileChooser.showOpenDialog(textStage);
       if (file != null) {
@@ -223,35 +224,38 @@ public class Alero extends Application {
     case "_Normalise":
       fileChooser = new FileChooser();
       fileChooser.setTitle("Normalise mesh file");
-      fileChooser.setInitialDirectory(new File(System.getProperty("user.home")));
+      fileChooser.setInitialDirectory(workingDirectory);
       fileChooser.getExtensionFilters().addAll(new ExtensionFilter("Mesh Files (*.stl)", "*.stl"), new ExtensionFilter("All Files", "*.*"));
       file = fileChooser.showOpenDialog(textStage);
       if (file != null) {
+        workingDirectory = file.getParentFile();
+        consoleln("normalise(\"" + file.getPath() + "\")\n");
+        codeln("normalise(\"" + file.getPath() + "\")\n");
         try {
           currentMesh = new AleroMesh(file);
           addMesh(currentMesh);
-
-          currentMesh.toBinaryFile("normalised.stl");
         } catch (Exception e) {
-          console("I/O error during normalise");
+          console("Normalise: file read or format error");
         }
-        // stlMesh.computeBoundingBox();
-        // tw.printConsole("stl: loaded " + file.getName() + "\n");
-        // tw.printConsole("stl: bounding box (" + stlMesh.minX + ", " + stlMesh.minY + ", " + stlMesh.minZ + "), (" + stlMesh.maxX + ", " + stlMesh.maxY + ", "
-        // + stlMesh.maxZ + ")\n");
-        // double pointDensity = (stlMesh.getPoints().size()) / stlMesh.volume();
-        // tw.printConsole("stl: volume " + stlMesh.volume() + " contains " + stlMesh.getPoints().size() + " points at density " + pointDensity + "\n");
-        // if (pointDensity > 100) {
-        // tw.printConsole("stl: auto automatic rescaling from inches to mm");
-        // stlMesh.scale(25.4f, 25.4f, 25.4f);
-        // }
-        // stlMesh.centreBoundingBox();
-        // stlMesh.computeBoundingBox();
-        // tw.printConsole("stl: bounding box after rescale and centring (" + stlMesh.minX + ", " + stlMesh.minY + ", " + stlMesh.minZ + "), (" + stlMesh.maxX +
-        // ", "
-        // + stlMesh.maxY + ", " + stlMesh.maxZ + ")\n");
-        consoleln("normalise(\"" + file.getPath() + "\")\n");
+        currentMesh.computeBoundingBox();
+        tw.printConsole("stl: bounding box (" + currentMesh.minX + ", " + currentMesh.minY + ", " + currentMesh.minZ + "), (" + currentMesh.maxX + ", "
+            + currentMesh.maxY + ", " + currentMesh.maxZ + ")\n");
+        double pointDensity = (currentMesh.getPoints().size()) / currentMesh.volume();
+        tw.printConsole("stl: volume " + currentMesh.volume() + " contains " + currentMesh.getPoints().size() + " points at density " + pointDensity + "\n");
+        if (pointDensity > 100) {
+          tw.printConsole("stl: auto automatic rescaling from inches to mm");
+          currentMesh.scale(25.4f, 25.4f, 25.4f);
+        }
+        currentMesh.centreBoundingBox();
+        currentMesh.computeBoundingBox();
+        tw.printConsole("stl: bounding box after rescale and centring (" + currentMesh.minX + ", " + currentMesh.minY + ", " + currentMesh.minZ + "), ("
+            + currentMesh.maxX + ", " + currentMesh.maxY + ", " + currentMesh.maxZ + ")\n");
 
+        try {
+          currentMesh.toBinaryFile(file.getPath() + ".nor");
+        } catch (IOException e) {
+          console("Normalise: file write error");
+        }
       }
       break;
     case "_JavaSandbox":
