@@ -231,7 +231,7 @@ public class Alero extends Application {
           currentMesh = new AleroMesh(file);
           addMesh(currentMesh);
 
-          currentMesh.toBinaryFile("normlised.stl");
+          currentMesh.toBinaryFile("normalised.stl");
         } catch (Exception e) {
           console("I/O error during normalise");
         }

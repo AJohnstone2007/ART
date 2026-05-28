@@ -247,6 +247,7 @@ public class AleroMesh extends TriangleMesh {
     pointB = findVertex(readFloat(), readFloat(), readFloat());
     pointC = findVertex(readFloat(), readFloat(), readFloat());
     inputStream.read(buffer, 0, 2); // Attributes - discard
+    System.err.println("Read facet " + pointA + ", " + pointB + ", " + pointC);
     findFace(new Face(pointA.number, pointB.number, pointC.number));
   }
 
@@ -291,43 +292,38 @@ public class AleroMesh extends TriangleMesh {
     ObservableFloatArray p = getPoints();
     outputStream = new FileOutputStream(file);
 
-    for (int i = 0; i < 20; i++) // Write empty header of 80 bytes
-      writeInteger(0);
+    for (int i = 0; i < 80; i++) // Write empty header of 80 bytes
+      writeByte(0x23);
     writeInteger(f.size() / 6); // Six integers per triangle comprising p0, t0, p1, t1, p2, t2
     for (int fi = 0; fi < f.size(); fi += 6) { // Each trianglar has three vertices interleaved with texture coords
+      writeFloat(0); // Normal - unused
+      writeFloat(0);
+      writeFloat(0);
       for (int v = 0; v < 6; v += 2) {
         int base = f.get(fi + v) * 3;
         writeFloat(p.get(base));
-        writeFloat(p.get(base) + 1);
-        writeFloat(p.get(base) + 2);
+        writeFloat(p.get(base + 1));
+        writeFloat(p.get(base + 2));
       }
+      writeByte(0); // Unused attributes
+      writeByte(0);
     }
     outputStream.close();
-  }
-
-  private void writeFacetBinary(int facetIndex) throws IOException {
-    writeFloat(0);
-    writeFloat(0);
-    writeFloat(0); // Normal - setting to zero usually forces computation by receiving tool using left-hand rule
-
-    pointA = findVertex(readFloat(), readFloat(), readFloat());
-    pointB = findVertex(readFloat(), readFloat(), readFloat());
-    pointC = findVertex(readFloat(), readFloat(), readFloat());
   }
 
   private void writeFloat(float f) throws IOException { // Little endian float output as bytes
     writeInteger(Float.floatToRawIntBits(f));
   }
 
-  private void writeInteger(int i) throws IOException {
-    outputStream.write(i & 0xFF);
-    i >>>= 4;
-    outputStream.write(i & 0xFF);
-    i >>>= 4;
-    outputStream.write(i & 0xFF);
-    i >>>= 4;
-    outputStream.write(i & 0xFF);
+  private void writeInteger(int i) throws IOException { // Little endian integer output
+    outputStream.write(0xFF & i);
+    outputStream.write(0xFF & (i >>> 8));
+    outputStream.write(0xFF & (i >>> 16));
+    outputStream.write(0xFF & (i >>> 24));
+  }
 
+  private void writeByte(int i) throws IOException {
+    outputStream.write(i);
   }
 
   /***
