@@ -162,7 +162,7 @@ public class TWESet extends AbstractLexicalisations {
       return;
     }
 
-    Util.warning("Running default lexical disambiguation");
+    // Util.warning("Running default lexical disambiguation");
 
     for (int i = 0; i < tweSlices.length; i++) {
       var slice = tweSlices[i];

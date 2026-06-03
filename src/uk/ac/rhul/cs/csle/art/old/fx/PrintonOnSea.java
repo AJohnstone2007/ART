@@ -5,10 +5,7 @@ import javafx.scene.Node;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.Box;
-import javafx.scene.shape.CullFace;
-import javafx.scene.shape.DrawMode;
-import javafx.scene.shape.MeshView;
-import uk.ac.rhul.cs.csle.art.term.mesh.AleroMesh;
+import uk.ac.rhul.cs.csle.art.fx.Alero;
 
 public class PrintonOnSea {
   double runningLineGap = fi(6, 0);
@@ -140,7 +137,7 @@ public class PrintonOnSea {
     Box ret = new Box(x, y, boardZ);
     ret.setMaterial(plywoodMaterial);
     ret.setTranslateZ(-boardZ);
-    // add(ret);
+    Alero.addShape3D(ret);
     return ret;
   }
 
@@ -184,7 +181,7 @@ public class PrintonOnSea {
     ret.setTranslateX(length / 2 + originX);
     ret.setTranslateY(originY);
 
-    // add(ret);
+    Alero.addShape3D(ret);
 
     return ret;
   }
@@ -204,19 +201,5 @@ public class PrintonOnSea {
     for (int i = -2; i < 2; i++)
       straightLBSCR(i * fi(30, 0), -gauge - runningLineGap, 0);
 
-  }
-
-  public static void add(AleroMesh stlMesh) {
-    System.out.println("Add mesh " + stlMesh.toStringFull());
-    PhongMaterial material = new PhongMaterial(stlMesh.colour);
-
-    MeshView meshView = new MeshView(stlMesh);
-
-    meshView.setMaterial(material);
-
-    // meshView.setCullFace(CullFace.NONE); // So we can see the backs of the triangles in case the winding order is incorrect - will render in black
-    meshView.setCullFace(CullFace.NONE);
-    meshView.setDrawMode(DrawMode.FILL);
-    // gw.meshGroup.getChildren().add(meshView);
   }
 }

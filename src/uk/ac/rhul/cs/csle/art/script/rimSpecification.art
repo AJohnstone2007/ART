@@ -1,0 +1,63 @@
+(* RiM - Rewriting In Miniature
+
+   This has been filleted from artSpecification.art 2026-6-1 
+   simple matching via |> is now included in relations, with a builtin axiom
+
+*)
+!whitespace &SIMPLE_WHITESPACE, &COMMENT_NEST_ART, &COMMENT_LINE_C 
+
+rules ::= rule rules^ | rule
+rule  ::= trRule^^ | directive^^   
+
+(* Term rewrite rules ********************************************************)
+trRule ::= trLabel tr
+trLabel ::= #^ | '-'^ ID  
+tr ::= trPremises '---'^ trTransition
+trPremises ::= #^ | trTransition trPremises^
+
+trTransition ::= trTopTuple trRelation trTopTuple
+trTopTuple ::= trTerm | trTuple^^ trTerm ','^ trTerms^
+trTuple ::= #^  
+trTerms ::= trTerm | trTerm ','^ trTerms^ | trTerm trTerms^ // comma is optional
+trTermFiles ::= trTerm | trTerm trTermFiles^ | artFile | artFile trTermFiles^ | artDepth | artDepth trTermFiles^
+
+artDepth ::= 'depth'^ __int32
+
+trTerm ::= ID^^ | IDSTAR^^ | ID^^ '('^ ')'^ | ID^^ '('^ trTerms^ ')'^ | trTuple^^ '<'^ trTerms^ '>'^
+
+trRelation ::= '->' | '=>' | '~>' | ':->' | ':=>' | ':~>' | '|>'
+
+(* Directives ****************************************************************)
+directive ::= directiveCarrier
+
+directiveCarrier ::=  
+  '!prompt'^^ | '!prompt'^^ &STRING_DQ
+| '!traceLevel'^^ __int32
+| '!errorLevel'^^ __int32
+
+| '!print'^^ trTermFiles^
+| '!show'^^ trTermFiles^
+
+| '!clear'^^ IDs^ | '!save'^^ ID ID | '!recall'^^ ID | '!convert'^^ IDs^
+
+| '!start'^^ cfgNonterminal // Set rewriter start relation
+
+| '!try'^^ artFile       | '!try'^^ artFile '='^ trTopTuple 
+| '!try'^^ trTopTuple | '!try'^^ trTopTuple '='^ trTopTuple
+
+artFile ::= &STRING_SQ
+
+IDs ::= ID | ID ','^ IDs^
+typedIDs ::= typedID | typedID ','^ typedIDs^
+typedID ::= ID '::'^ trTerm
+
+(* Lexical elements **********************************************************)
+
+ID ::= &ID^^
+IDSTAR ::= ID '*'^
+STRING_SQ ::= &STRING_SQ^^ 
+STRING_DQ ::= &STRING_DQ^^ 
+STRING_DOLLAR ::= &STRING_DOLLAR^^
+STRING_SHRIEK_SHRIEK ::= &STRING_SHRIEK_SHRIEK^^
+STRING_BRACE ::= &STRING_BRACE^^
+STRING_ANGLE_NEST ::= &STRING_ANGLE_NEST^^

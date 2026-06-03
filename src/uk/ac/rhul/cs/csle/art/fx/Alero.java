@@ -20,6 +20,8 @@ import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.CullFace;
 import javafx.scene.shape.DrawMode;
 import javafx.scene.shape.MeshView;
+import javafx.scene.shape.Shape3D;
+import javafx.scene.shape.TriangleMesh;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Screen;
@@ -259,7 +261,6 @@ public class Alero extends Application {
       }
       break;
     case "_JavaSandbox":
-      // new PrintonOnSea().createWorld();
       try {
         new AleroJavaSandbox();
       } catch (AleroException e) {
@@ -331,11 +332,12 @@ public class Alero extends Application {
 
   }
 
-  public static void addMesh(AleroMesh mesh) {
-    PhongMaterial material = new PhongMaterial(mesh.colour);
+  public static void addMesh(TriangleMesh mesh) {
+    addShape3D(new MeshView(mesh));
+  }
 
-    MeshView meshView = new MeshView(mesh);
-
+  public static void addShape3D(Shape3D meshView) {
+    PhongMaterial material = new PhongMaterial(Color.BLANCHEDALMOND);
     meshView.setMaterial(material);
 
     // meshView.setCullFace(CullFace.NONE); // So we can see the backs of the triangles in case the winding order is incorrect - will render in black

@@ -32,6 +32,7 @@ import uk.ac.rhul.cs.csle.art.choose.ChooseRules;
 import uk.ac.rhul.cs.csle.art.interpret.AbstractInterpreter;
 import uk.ac.rhul.cs.csle.art.interpret.ActionsGenerator;
 import uk.ac.rhul.cs.csle.art.interpret.AttributeActionInterpreter;
+import uk.ac.rhul.cs.csle.art.interpret.rigInterpreter;
 import uk.ac.rhul.cs.csle.art.term.ITerms;
 import uk.ac.rhul.cs.csle.art.term.Rewriter;
 import uk.ac.rhul.cs.csle.art.term.TRRules;
@@ -74,7 +75,7 @@ public class ScriptInterpreter {
   public static ChooseRules currentChooseRules = new ChooseRules();
   public static TRRules currentTRRules = new TRRules();
 
-  private int currentTryTerm = 0;
+  public static int currentTryTerm = 0;
   private final int currentIndexedTryTerm = 0;
   private int currentRewriteTerm = 0;
 
@@ -321,9 +322,12 @@ public class ScriptInterpreter {
       case "attributeaction":
         currentInterpreter = new AttributeActionInterpreter();
         break;
+      case "rig":
+        currentInterpreter = new rigInterpreter();
+        break;
       default:
-        Util.fatal(
-            "Unexpected !interpreter argument " + iTerms.toString(iTerms.subterm(term, 0, 0)) + "\nmust be one of (case insensitive): attributeAction esos\n");
+        Util.fatal("Unexpected !interpreter argument " + iTerms.toString(iTerms.subterm(term, 0, 0))
+            + "\nmust be one of (case insensitive): attributeAction esos rig\n");
       }
       break;
 
@@ -465,7 +469,7 @@ public class ScriptInterpreter {
       break;
 
     case "!try":
-      Util.debug("processing try " + iTerms.toString(term));
+      // Util.debug("processing try " + iTerms.toString(term));
       normaliseAll();
       if (iTerms.termSymbolString(iTerms.subterm(term, 0, 0)).equals("artFile")) // Parse contents of file
         try {

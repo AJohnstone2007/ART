@@ -16,7 +16,6 @@ import java.util.Set;
 
 import javafx.collections.ObservableFloatArray;
 import javafx.collections.ObservableIntegerArray;
-import javafx.scene.paint.Color;
 import javafx.scene.shape.ObservableFaceArray;
 import javafx.scene.shape.TriangleMesh;
 
@@ -33,7 +32,6 @@ import javafx.scene.shape.TriangleMesh;
 public class AleroMesh extends TriangleMesh {
 
   public boolean isLOM = false;
-  public Color colour = Color.BLANCHEDALMOND;
 
   public AleroMesh() {
   }
