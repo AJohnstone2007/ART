@@ -14,6 +14,12 @@ public class rigInterpreter extends AbstractInterpreter {
   ITerms it;
   // Rules are held as a map from relation to map from constructor symbol string index to ArrayList of rule terms
   Map<Integer /* relation term */, Map<Integer /* symbol string index */, ArrayList<Integer> /* rule term list */>> rules;
+  // We remember all rewrites to speed things up
+  // The memo table is a map from relation to map from term to set of terms
+  Map<Integer /* relation term */, Map<Integer /* start term */, Set<Integer> /* set of rewritten terms */>> memo;
+  int startRelation;
+  private int rewriteAttemptCounter;
+  private int matchRelationTerm;
 
   public rigInterpreter() {
     Util.trace(3, "Interpreter set to RiM (Rewriting in General)");
@@ -23,24 +29,27 @@ public class rigInterpreter extends AbstractInterpreter {
   public void interpret(AbstractParser parser) {
     this.parser = parser;
     it = ScriptInterpreter.iTerms; // Local reference to reduce typing
-
+    startRelation = 0;
+    rules = new HashMap<>();
+    memo = new HashMap<>();
+    matchRelationTerm = it.findTerm("|>");
     Util.info("RiG interpreting\n" + it.toString(ScriptInterpreter.currentTryTerm));
-
     interpretRec(ScriptInterpreter.currentTryTerm);
+    // printRules();
   }
 
   private void interpretRec(int term) {
-    rules = new HashMap<>();
     switch (it.termSymbolString(term)) {
-    case "!try": // perform rewrites
-      Util.info("Found !try: " + it.toString(term));
-      break;
     case "artRule":
       Util.info("Found rule: " + it.toString(term));
       addRule(term);
       break;
-
+    case "!try": // perform rewrites
+      Util.info("Found !try: " + it.toString(term));
+      stepper(it.subterm(term, 0), startRelation);
+      break;
     }
+
     int[] children = it.termChildren(term);
     for (int c = 0; c < children.length; c++) // recurse, left to right
       interpretRec(children[c]);
@@ -48,9 +57,10 @@ public class rigInterpreter extends AbstractInterpreter {
 
   private void addRule(int term) {
     Integer relation = it.subterm(term, 1, 1, 1);
+    if (startRelation == 0) startRelation = relation;
     Integer lhsConclusionRootSymbolStringIndex = it.termSymbolStringIndex(it.subterm(term, 1, 1, 0));
-
     Util.info("Adding new rule " + it.toString(relation) + "/" + it.getString(lhsConclusionRootSymbolStringIndex) + ": " + it.toString(term));
+
     if (rules.get(relation) == null) rules.put(relation, new HashMap<Integer, ArrayList<Integer>>());
     Map<Integer, ArrayList<Integer>> constructorMap = rules.get(relation);
     if (constructorMap.get(lhsConclusionRootSymbolStringIndex) == null) constructorMap.put(lhsConclusionRootSymbolStringIndex, new ArrayList<Integer>());
@@ -58,15 +68,99 @@ public class rigInterpreter extends AbstractInterpreter {
     activeRuleList.add(term);
   }
 
-  Map<Integer, Integer> match(int l, int r) {
-    return null;
+  private void printRules() {
+    Util.info("-- Rules");
+    for (var relation : rules.keySet())
+      for (var rootSymbol : rules.get(relation).keySet())
+        for (var rule : rules.get(relation).get(rootSymbol))
+          Util.info("Rule: " + it.toString(relation) + "/" + it.getString(rootSymbol) + ": " + it.toString(rule));
   }
 
-  int substitute(int term, Map<Integer, Integer> substition) {
-    return 0;
+  private int stepper(int term, int relation) {
+    int newTerm, oldTerm = term;
+    int rewriteStepCounter = rewriteAttemptCounter = 0;
+    while (true) {
+      newTerm = evaluate(oldTerm, relation, 1);
+      if (newTerm == oldTerm /* nothing changed */) break;
+      rewriteStepCounter++;
+      oldTerm = newTerm;
+    }
+    Util.trace(2, 0,
+        (isTerminatingConfiguration(newTerm, relation) ? "Normal termination on " : "Stuck on ") + it.toString(newTerm) + " after " + rewriteStepCounter
+            + " step" + (rewriteStepCounter == 1 ? "" : "s") + " and " + rewriteAttemptCounter + " rewrite attempt" + (rewriteAttemptCounter == 1 ? "" : "s"));
+    return newTerm;
+
   }
 
-  Set<Integer> evaluate(int term, int relation) {
-    return null;
+  private boolean isTerminatingConfiguration(int newTerm, int relation) {
+    // TODO Auto-generated method stub
+    return false;
+  }
+
+  int evaluate(int term, int relation, int level) {
+    Map<Integer, Integer> rho, rhoP;
+    int rootSymbolIndex = it.termSymbolStringIndex(term);
+    if (relation == matchRelationTerm) return term;
+    var compatibleRelation = rules.get(relation);
+    if (compatibleRelation == null) Util.error("No rules found for relation " + it.toString(relation));
+    var compatibleRules = rules.get(relation).get(rootSymbolIndex);
+    if (compatibleRules == null) Util.warning("No rules found for constructor " + it.getString(rootSymbolIndex) + " in relation " + it.toString(relation));
+
+    for (var rule : compatibleRules) {
+      Util.trace(3, "Rule " + it.toString(rule));
+      int label = it.subterm(rule, 0);
+      int[] premises = it.termChildren(it.subterm(rule, 1, 0));
+      int conclusionLHS = it.subterm(rule, 1, 1, 0);
+      int conclusionRHS = it.subterm(rule, 1, 1, 2);
+      Util.debug("Evaluate: trying rule -" + it.toString(label));
+      boolean thetaMatch = match(rho = new HashMap<Integer, Integer>(), term, conclusionLHS);
+      Util.debug("Theta match " + thetaMatch + " with bindings " + rho);
+    }
+    return term;
+  }
+
+  boolean match(Map<Integer, Integer> bindings, int closedTerm, int pattern) {
+    int closedSymbolIndex = it.termSymbolStringIndex(closedTerm);
+    String closedSymbolString = it.getString(closedSymbolIndex);
+    char closedSymbolPrefix = closedSymbolString.charAt(0);
+    if (closedSymbolPrefix == '_' || closedSymbolPrefix == '$') Util.fatal("match() - closed term has variable or function" + it.toString(closedTerm));
+
+    int patternSymbolIndex = it.termSymbolStringIndex(pattern);
+    String patternSymbolString = it.getString(patternSymbolIndex);
+    char patternSymbolPrefix = patternSymbolString.charAt(0);
+    if (patternSymbolPrefix == '$') Util.fatal("match() - pattern has function" + it.toString(pattern));
+
+    if (patternSymbolPrefix == '_') { // Process variable
+      Integer bound;
+      if ((bound = bindings.get(patternSymbolIndex)) != null) {
+        Util.warning("match() - pattern is nonlinear on " + patternSymbolString);
+        return bound == closedTerm;
+      }
+    }
+    if (closedSymbolIndex != patternSymbolIndex) return false; // nonvariable equality check
+
+    int[] closedChildren = it.termChildren(closedTerm); // recurse to children
+    int[] patternChildren = it.termChildren(pattern);
+
+    // Now just try non-star variables
+    if (closedChildren.length != patternChildren.length) return false;
+    for (int i = 0; i < closedChildren.length; i++)
+      if (!match(bindings, closedChildren[i], patternChildren[i])) return false;
+
+    return true;
+  }
+
+  int substitute(int pattern, Map<Integer, Integer> substitution) {
+    int patternSymbolIndex = it.termSymbolStringIndex(pattern);
+    String patternSymbolString = it.getString(patternSymbolIndex);
+
+    int[] children = it.termChildren(pattern);
+
+    if (patternSymbolString.charAt(0) == '_') return substitution.get(patternSymbolIndex);
+
+    for (int i = 0; i < children.length; i++)
+      children[i] = substitute(children[i], substitution);
+
+    return it.findTerm(it.termSymbolStringIndex(pattern), children);
   }
 }
