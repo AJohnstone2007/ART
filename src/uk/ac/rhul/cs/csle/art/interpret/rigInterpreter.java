@@ -2,6 +2,7 @@ package uk.ac.rhul.cs.csle.art.interpret;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -18,8 +19,10 @@ public class rigInterpreter extends AbstractInterpreter {
   // The memo table is a map from relation to map from term to set of terms
   Map<Integer /* relation term */, Map<Integer /* start term */, Set<Integer> /* set of rewritten terms */>> memo;
   int startRelation;
+  Set<Integer> terminalSymbols;
   private int rewriteAttemptCounter;
   private int matchRelationTerm;
+  private int artTupleSymbolIndex;
 
   public rigInterpreter() {
     Util.trace(3, "Interpreter set to RiM (Rewriting in General)");
@@ -33,9 +36,14 @@ public class rigInterpreter extends AbstractInterpreter {
     rules = new HashMap<>();
     memo = new HashMap<>();
     matchRelationTerm = it.findTerm("|>");
+    artTupleSymbolIndex = it.findString("artTuple");
+    terminalSymbols = new HashSet<>();
+    terminalSymbols.add(it.findString("int32"));
+    terminalSymbols.add(it.findString("real64"));
+    terminalSymbols.add(it.findString("string"));
     Util.info("RiG interpreting\n" + it.toString(ScriptInterpreter.currentTryTerm));
     interpretRec(ScriptInterpreter.currentTryTerm);
-    // printRules();
+    printRules();
   }
 
   private void interpretRec(int term) {
@@ -56,9 +64,9 @@ public class rigInterpreter extends AbstractInterpreter {
   }
 
   private void addRule(int term) {
-    Integer relation = it.subterm(term, 1, 1, 1);
+    Integer relation = it.subterm(term, 2, 1);
     if (startRelation == 0) startRelation = relation;
-    Integer lhsConclusionRootSymbolStringIndex = it.termSymbolStringIndex(it.subterm(term, 1, 1, 0));
+    Integer lhsConclusionRootSymbolStringIndex = it.termSymbolStringIndex(it.subterm(term, 2, 0));
     Util.info("Adding new rule " + it.toString(relation) + "/" + it.getString(lhsConclusionRootSymbolStringIndex) + ": " + it.toString(term));
 
     if (rules.get(relation) == null) rules.put(relation, new HashMap<Integer, ArrayList<Integer>>());
@@ -92,34 +100,53 @@ public class rigInterpreter extends AbstractInterpreter {
 
   }
 
-  private boolean isTerminatingConfiguration(int newTerm, int relation) {
-    // TODO Auto-generated method stub
-    return false;
+  private boolean isTerminatingConfiguration(int term, int relation) {
+    int thetaRoot = term;
+    int thetaRootSymbolIndex = it.termSymbolStringIndex(thetaRoot);
+    if (thetaRootSymbolIndex == artTupleSymbolIndex) { // Step down to first element of tuple
+      thetaRoot = it.subterm(thetaRoot, 0);
+      thetaRootSymbolIndex = it.termSymbolStringIndex(thetaRoot);
+    }
+    return terminalSymbols.contains(thetaRootSymbolIndex);
   }
 
   int evaluate(int term, int relation, int level) {
+    Util.info("evaluate() " + it.toString(term) + " under " + it.toString(relation) + " at level " + level);
     Map<Integer, Integer> rho, rhoP;
     int rootSymbolIndex = it.termSymbolStringIndex(term);
+    if (terminalSymbols.contains(rootSymbolIndex)) return term;
     if (relation == matchRelationTerm) return term;
     var compatibleRelation = rules.get(relation);
     if (compatibleRelation == null) Util.error("No rules found for relation " + it.toString(relation));
     var compatibleRules = rules.get(relation).get(rootSymbolIndex);
-    if (compatibleRules == null) Util.warning("No rules found for constructor " + it.getString(rootSymbolIndex) + " in relation " + it.toString(relation));
+    if (compatibleRules == null) {
+      Util.warning("No rules found for constructor " + it.getString(rootSymbolIndex) + " in relation " + it.toString(relation));
+      return term;
+    }
 
-    for (var rule : compatibleRules) {
+    nextRule: for (var rule : compatibleRules) {
       Util.trace(3, "Rule " + it.toString(rule));
       int label = it.subterm(rule, 0);
-      int[] premises = it.termChildren(it.subterm(rule, 1, 0));
-      int conclusionLHS = it.subterm(rule, 1, 1, 0);
-      int conclusionRHS = it.subterm(rule, 1, 1, 2);
+      int conclusionLHS = it.subterm(rule, 2, 0);
+      int conclusionRHS = it.subterm(rule, 2, 2);
       Util.debug("Evaluate: trying rule -" + it.toString(label));
       boolean thetaMatch = match(rho = new HashMap<Integer, Integer>(), term, conclusionLHS);
       Util.debug("Theta match " + thetaMatch + " with bindings " + rho);
+
+      int[] premises = it.termChildren(it.subterm(rule, 1));
+      for (int i = 0; i < premises.length; i++) {
+        int premiseLHS = it.subterm(premises[i], 0);
+        int premiseRelation = it.subterm(premises[i], 1);
+        int premiseRHS = it.subterm(premises[i], 2);
+        if (!match(rho, evaluate(substitute(premiseLHS, rho), premiseRelation, 1), substitute(premiseRHS, rho))) continue nextRule;
+      }
+      return substitute(conclusionRHS, rho);
     }
-    return term;
+    return 0;
   }
 
   boolean match(Map<Integer, Integer> bindings, int closedTerm, int pattern) {
+    Util.debug("match() closed term " + it.toString(closedTerm) + " pattern " + it.toString(pattern));
     int closedSymbolIndex = it.termSymbolStringIndex(closedTerm);
     String closedSymbolString = it.getString(closedSymbolIndex);
     char closedSymbolPrefix = closedSymbolString.charAt(0);
@@ -136,6 +163,8 @@ public class rigInterpreter extends AbstractInterpreter {
         Util.warning("match() - pattern is nonlinear on " + patternSymbolString);
         return bound == closedTerm;
       }
+      bindings.put(patternSymbolIndex, closedTerm);
+      return true;
     }
     if (closedSymbolIndex != patternSymbolIndex) return false; // nonvariable equality check
 
@@ -156,7 +185,10 @@ public class rigInterpreter extends AbstractInterpreter {
 
     int[] children = it.termChildren(pattern);
 
-    if (patternSymbolString.charAt(0) == '_') return substitution.get(patternSymbolIndex);
+    if (patternSymbolString.charAt(0) == '_') {
+      Integer replacement = substitution.get(patternSymbolIndex);
+      if (replacement != null) return replacement;
+    }
 
     for (int i = 0; i < children.length; i++)
       children[i] = substitute(children[i], substitution);

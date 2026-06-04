@@ -4,7 +4,6 @@ import java.util.ArrayList;
 
 import javafx.collections.ObservableFloatArray;
 import javafx.scene.shape.ObservableFaceArray;
-import javafx.scene.shape.TriangleMesh;
 
 public class CSG {
 
@@ -29,7 +28,7 @@ public class CSG {
     return sb.toString();
   }
 
-  public CSG(TriangleMesh mesh) { // Load the triangles from a triangle mesh as polygons
+  public CSG(AleroMesh mesh) { // Load the triangles from a triangle mesh as polygons
     this.polygons = new ArrayList<>();
     ObservableFaceArray faces = mesh.getFaces();
     ObservableFloatArray points = mesh.getPoints();

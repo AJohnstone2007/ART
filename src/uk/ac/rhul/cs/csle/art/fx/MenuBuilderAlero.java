@@ -125,7 +125,12 @@ public class MenuBuilderAlero extends MenuBuilder {
 
   @Override
   public void menuAction(String s) {
-    Alero.menuAction(s); // callback to main static method
+    try {
+      Alero.menuAction(s);
+    } catch (Exception e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    } // callback to main static method
   }
 
 }

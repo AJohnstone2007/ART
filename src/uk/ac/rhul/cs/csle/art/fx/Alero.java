@@ -26,6 +26,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
+import uk.ac.rhul.cs.csle.art.fx.sandbox.AleroJavaSandbox;
 import uk.ac.rhul.cs.csle.art.term.ITerms;
 import uk.ac.rhul.cs.csle.art.term.mesh.AleroMesh;
 
@@ -178,8 +179,10 @@ public class Alero extends Application {
    *
    * Menu despatcher
    *
+   * @throws Exception
+   *
    **********************************************************************************************************/
-  public static void menuAction(String s) {
+  public static void menuAction(String s) throws Exception {
     FileChooser fileChooser;
     File file;
     switch (s) {
@@ -343,7 +346,11 @@ public class Alero extends Application {
     // meshView.setCullFace(CullFace.NONE); // So we can see the backs of the triangles in case the winding order is incorrect - will render in black
     meshView.setCullFace(CullFace.NONE);
     meshView.setDrawMode(DrawMode.FILL);
-    gw.meshGroup.getChildren().add(meshView);
+    addNode(meshView);
+  }
+
+  public static void addNode(Node node) {
+    gw.meshGroup.getChildren().add(node);
   }
 
   public static void exit() {
