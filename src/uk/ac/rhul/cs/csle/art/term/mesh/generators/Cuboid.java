@@ -1,4 +1,6 @@
-package uk.ac.rhul.cs.csle.art.term.mesh;
+package uk.ac.rhul.cs.csle.art.term.mesh.generators;
+
+import uk.ac.rhul.cs.csle.art.term.mesh.AleroMesh;
 
 public class Cuboid extends AleroMesh {
   /*

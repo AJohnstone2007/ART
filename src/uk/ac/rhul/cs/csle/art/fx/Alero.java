@@ -43,7 +43,7 @@ public class Alero extends Application {
   private static GraphicsWindow gw;
   public static ITerms iTerms = new ITerms();
   public boolean recording = true;
-  private static AleroMesh currentMesh = null;
+  public static AleroMesh currentMesh = null;
   private static File workingDirectory = new File(System.getProperty("user.home"));
 
   @Override
@@ -207,6 +207,7 @@ public class Alero extends Application {
       fileChooser.getExtensionFilters().addAll(new ExtensionFilter("Mesh Files (*.stl)", "*.stl"), new ExtensionFilter("All Files", "*.*"));
       file = fileChooser.showOpenDialog(textStage);
       if (file != null) {
+        workingDirectory = file.getParentFile();
         consoleln("import(\"" + file.getPath() + "\")\n");
         codeln("import(\"" + file.getPath() + "\")\n");
         try {
@@ -219,11 +220,17 @@ public class Alero extends Application {
       break;
     case "_Export":
       fileChooser = new FileChooser();
-      fileChooser.setTitle("Normalise mesh file");
+      fileChooser.setTitle("Export mesh file");
       fileChooser.setInitialDirectory(workingDirectory);
       fileChooser.getExtensionFilters().addAll(new ExtensionFilter("Mesh Files (*.stl)", "*.stl"), new ExtensionFilter("All Files", "*.*"));
       file = fileChooser.showOpenDialog(textStage);
       if (file != null) {
+        workingDirectory = file.getParentFile();
+        try {
+          currentMesh.toBinaryFile(file.getPath());
+        } catch (IOException e) {
+          console("Export: file write error");
+        }
       }
       break;
     case "_Normalise":

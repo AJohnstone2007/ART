@@ -1,9 +1,10 @@
-package uk.ac.rhul.cs.csle.art.term.mesh;
+package uk.ac.rhul.cs.csle.art.term.mesh.csg;
 
 import java.util.ArrayList;
 
 import javafx.collections.ObservableFloatArray;
 import javafx.scene.shape.ObservableFaceArray;
+import uk.ac.rhul.cs.csle.art.term.mesh.AleroMesh;
 
 public class CSG {
 
@@ -12,10 +13,6 @@ public class CSG {
   CSG() {
     polygons = new ArrayList<>();
   }
-
-  // CSG(ArrayList<Polygon> polygons) {
-  // this.polygons = polygons;
-  // };
 
   @Override
   public String toString() {
@@ -29,7 +26,7 @@ public class CSG {
   }
 
   public CSG(AleroMesh mesh) { // Load the triangles from a triangle mesh as polygons
-    this.polygons = new ArrayList<>();
+    polygons = new ArrayList<>();
     ObservableFaceArray faces = mesh.getFaces();
     ObservableFloatArray points = mesh.getPoints();
     for (int f = 0; f < faces.size(); f += 6) { // Iterate over faces: each triangular face has three points and three texture coords, so step by 6

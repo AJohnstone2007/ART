@@ -1,12 +1,14 @@
-package uk.ac.rhul.cs.csle.art.term.mesh;
+package uk.ac.rhul.cs.csle.art.term.mesh.generators;
 
-public class Tetrahedron extends AleroMesh {
+import uk.ac.rhul.cs.csle.art.term.mesh.AleroMesh;
+
+public class Pyramid extends AleroMesh {
   /*
    * This is a mesh generator for a tetrahedron with the square face on the YZ plane, and texture coordinates set up so that the image is placed on the base,
    * and wrapped across all four angled faces
    */
 
-  public Tetrahedron(float x, float y, float z) {
+  public Pyramid(float x, float y, float z) {
     getPoints().addAll(-x / 2, -y / 2, -z / 2, // 0
         +x / 2, -y / 2, -z / 2, // 1
         +x / 2, +y / 2, -z / 2, // 2

@@ -58,14 +58,14 @@ public final class GraphicsWindow {
 
     PointLight pointLight = new PointLight();
     pointLight.setTranslateX(500);
-    pointLight.setTranslateY(-500);
+    pointLight.setTranslateY(0);
     pointLight.setTranslateZ(500);
     // pointLight.setRotate(45);
     root.getChildren().add(pointLight);
 
     pointLight = new PointLight();
     pointLight.setTranslateX(-500);
-    pointLight.setTranslateY(500);
+    pointLight.setTranslateY(0);
     pointLight.setTranslateZ(500);
     root.getChildren().add(pointLight);
 

@@ -1,4 +1,4 @@
-package uk.ac.rhul.cs.csle.art.term.mesh;
+package uk.ac.rhul.cs.csle.art.term.mesh.csg;
 
 public class Vertex { // This might just as well be point
   public Point pos;
@@ -31,9 +31,6 @@ public class Vertex { // This might just as well be point
   public Vertex clone() {
     return new Vertex(pos.clone());
   }
-
-  // public void flip() {
-  // }
 
   public Vertex interpolate(Vertex other, double t) {
     return new Vertex(pos.lerp(other.pos, t));

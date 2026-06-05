@@ -18,6 +18,9 @@ import javafx.collections.ObservableFloatArray;
 import javafx.collections.ObservableIntegerArray;
 import javafx.scene.shape.ObservableFaceArray;
 import javafx.scene.shape.TriangleMesh;
+import uk.ac.rhul.cs.csle.art.term.mesh.csg.CSG;
+import uk.ac.rhul.cs.csle.art.term.mesh.csg.Polygon;
+import uk.ac.rhul.cs.csle.art.term.mesh.csg.Vertex;
 
 /* Notes on our superclass TriangleMesh
  *
@@ -397,23 +400,29 @@ public class AleroMesh extends TriangleMesh {
 
   }
 
-  /*** Transformations hard wired into the points array - these are slow, but allow me to develop my understanding ***/
-  public void scale(float scaleX, float scaleY, float scaleZ) {
+  /***
+   * Transformations hard wired into the points array - these are slow, but allow me to develop my understanding
+   *
+   * @return
+   ***/
+  public AleroMesh scale(float scaleX, float scaleY, float scaleZ) {
     ObservableFloatArray p = getPoints();
     for (int i = 0; i < p.size(); i += 3) {
       p.set(i, p.get(i) * scaleX);
       p.set(i + 1, p.get(i + 1) * scaleY);
       p.set(i + 2, p.get(i + 2) * scaleZ);
     }
+    return this;
   }
 
-  public void translate(float offsetX, float offsetY, float offsetZ) {
+  public AleroMesh translate(float offsetX, float offsetY, float offsetZ) {
     ObservableFloatArray p = getPoints();
     for (int i = 0; i < p.size(); i += 3) {
       p.set(i, p.get(i) + offsetX);
       p.set(i + 1, p.get(i + 1) + offsetY);
       p.set(i + 2, p.get(i + 2) + offsetZ);
     }
+    return this;
   }
 
   //@formatter:off
@@ -437,8 +446,8 @@ public class AleroMesh extends TriangleMesh {
    *
    */
   //@formatter:on
-  public void rotateX(float theta) { // rotate around the X axis. When looking from the origin towards X+, positive angle implies clockwise rotation
-    if (theta == 0) return;
+  public AleroMesh rotateX(float theta) { // rotate around the X axis. When looking from the origin towards X+, positive angle implies clockwise rotation
+    if (theta == 0) return this;
     ObservableFloatArray p = getPoints();
     double thetaR = Math.toRadians(theta);
     float cosTheta = (float) Math.cos(thetaR);
@@ -452,10 +461,11 @@ public class AleroMesh extends TriangleMesh {
       p.set(yi, y * cosTheta - z * sinTheta); // y point
       p.set(zi, y * sinTheta + z * cosTheta); // z point
     }
+    return this;
   }
 
-  public void rotateY(float theta) { // rotate around the Y axis. When looking from the origin towards Y+, positive angle implies clockwise rotation
-    if (theta == 0) return;
+  public AleroMesh rotateY(float theta) { // rotate around the Y axis. When looking from the origin towards Y+, positive angle implies clockwise rotation
+    if (theta == 0) return this;
     ObservableFloatArray p = getPoints();
     double thetaR = Math.toRadians(theta);
     float cosTheta = (float) Math.cos(thetaR);
@@ -468,10 +478,11 @@ public class AleroMesh extends TriangleMesh {
       // y point unchanged
       p.set(zi, x * -sinTheta + z * cosTheta); // z point
     }
+    return this;
   }
 
-  public void rotateZ(float theta) { // rotate around the Z axis. When looking from the origin towards Z+, positive angle implies clockwise rotation
-    if (theta == 0) return;
+  public AleroMesh rotateZ(float theta) { // rotate around the Z axis. When looking from the origin towards Z+, positive angle implies clockwise rotation
+    if (theta == 0) return this;
     ObservableFloatArray p = getPoints();
     double thetaR = Math.toRadians(theta);
     float cosTheta = (float) Math.cos(thetaR);
@@ -484,6 +495,7 @@ public class AleroMesh extends TriangleMesh {
       p.set(yi, x * sinTheta + y * cosTheta); // y point
       // z point unchanged
     }
+    return this;
   }
 
   public float minX = Float.MAX_VALUE;

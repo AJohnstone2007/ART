@@ -1,4 +1,4 @@
-package uk.ac.rhul.cs.csle.art.term.mesh;
+package uk.ac.rhul.cs.csle.art.term.mesh.csg;
 
 public class Point {
   @Override
