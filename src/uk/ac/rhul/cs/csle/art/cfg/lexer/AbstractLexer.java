@@ -318,6 +318,13 @@ public abstract class AbstractLexer {
       getCh();
   }
 
+  protected void match_ID_ART() {
+    if (!(isAlpha(peekCh()) || peekCh() == '_' || peekCh() == '$')) return;
+    getCh(); // skip leading character
+    while (isAlphaOrDigit(peekCh()) || peekCh() == '_') // $ is only allowed at the beginning
+      getCh();
+  }
+
   protected void match_ID_AN() {
     if (!isAlpha(peekCh())) return;
     while (isAlphaOrDigit(peekCh()))

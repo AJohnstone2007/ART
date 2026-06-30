@@ -1,14 +1,10 @@
 package uk.ac.rhul.cs.csle.art.util.lexicalisations;
 
-import java.io.PrintStream;
-
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGElement;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGRules;
 import uk.ac.rhul.cs.csle.art.cfg.lexer.TWESetElement;
 import uk.ac.rhul.cs.csle.art.choose.ChooseRules;
-import uk.ac.rhul.cs.csle.art.term.TermTraverserText;
 import uk.ac.rhul.cs.csle.art.util.DisplayInterface;
-import uk.ac.rhul.cs.csle.art.util.statistics.Statistics;
 
 public abstract class AbstractLexicalisations implements DisplayInterface {
   public String inputString;
@@ -25,16 +21,6 @@ public abstract class AbstractLexicalisations implements DisplayInterface {
   public abstract long cardinality();
 
   public abstract boolean isDeterministic();
-
-  @Override
-  public abstract void print(PrintStream outputStream, TermTraverserText outputTraverser, boolean indexed, boolean full, boolean indented);
-
-  @Override
-  public abstract void show(PrintStream outputStream, TermTraverserText outputTraverser, boolean indexed, boolean full, boolean indented);
-
-  @Override
-  public abstract void statistics(Statistics currentstatistics, PrintStream outputStream, TermTraverserText outputTraverser, boolean indexed, boolean full,
-      boolean indented);
 
   public abstract String lexeme(CFGElement cfgElement, int leftExtent, int rightExtent);
 

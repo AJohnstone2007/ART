@@ -43,21 +43,9 @@ public class TasksGLL extends AbstractTasks {
   }
 
   @Override
-  public void print(PrintStream outputStream, TermTraverserText outputTraverser, boolean indexed, boolean full, boolean indented) {
+  public void print(PrintStream outputStream, TermTraverserText outputTraverser, boolean indexed, boolean full, boolean indent, int depthLimit) {
     for (var d : tasks)
       Util.info(d.toString());
-  }
-
-  @Override
-  public void show(PrintStream outputStream, TermTraverserText outputTraverser, boolean indexed, boolean full, boolean indented) {
-    // TODO Auto-generated method stub
-
-  }
-
-  @Override
-  public void statistics(Statistics currentstatistics, PrintStream outputStream, TermTraverserText outputTraverser, boolean indexed, boolean full,
-      boolean indented) {
-    // TODO Auto-generated method stub
   }
 
   @Override

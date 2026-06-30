@@ -40,7 +40,7 @@ public class AleroJavaSandbox {
 
   void showMesh(Mesh mesh) {
     MeshView meshView = new MeshView(mesh);
-    meshView.setDrawMode(DrawMode.FILL);
+    meshView.setDrawMode(DrawMode.LINE);
     PhongMaterial material = new PhongMaterial();
     material.setDiffuseMap(new Image("file:GERTank.png"));
     meshView.setMaterial(material);

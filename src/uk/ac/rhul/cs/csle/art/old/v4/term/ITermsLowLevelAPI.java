@@ -126,7 +126,7 @@ public final class ITermsLowLevelAPI extends ITerms {
     doneTermIndex = findTerm("__done");
     emptyTermIndex = findTerm("__empty");
 
-    valueBoolTrue = new __bool(true);
+   /* valueBoolTrue = new __bool(true);
     valueBoolFalse = new __bool(false);
     valueInt32Zero = new __int32(0, 0);
     valueInt32One = new __int32(1, 0);
@@ -138,7 +138,7 @@ public final class ITermsLowLevelAPI extends ITerms {
     valueDone = new __done();
     valueEmpty = new __empty();
     valueBlob = new __blob(emptyTermIndex);
-  }
+  */}
 
   abstract class ITermAPI {
     public abstract String getSymbolString();

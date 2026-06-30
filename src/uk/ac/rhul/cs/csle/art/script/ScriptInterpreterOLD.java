@@ -32,6 +32,7 @@ import uk.ac.rhul.cs.csle.art.choose.ChooseRules;
 import uk.ac.rhul.cs.csle.art.interpret.AbstractInterpreter;
 import uk.ac.rhul.cs.csle.art.interpret.ActionsGenerator;
 import uk.ac.rhul.cs.csle.art.interpret.AttributeActionInterpreter;
+import uk.ac.rhul.cs.csle.art.interpret.rigInterpreter;
 import uk.ac.rhul.cs.csle.art.term.ITerms;
 import uk.ac.rhul.cs.csle.art.term.Rewriter;
 import uk.ac.rhul.cs.csle.art.term.TRRules;
@@ -321,9 +322,9 @@ public class ScriptInterpreter {
       case "attributeaction":
         currentInterpreter = new AttributeActionInterpreter();
         break;
-      // case "rig":
-      // currentInterpreter = new rigInterpreter();
-      // break;
+      case "rig":
+        currentInterpreter = new rigInterpreter();
+        break;
       default:
         Util.fatal("Unexpected !interpreter argument " + iTerms.toString(iTerms.subterm(term, 0, 0))
             + "\nmust be one of (case insensitive): attributeAction esos rig\n");
@@ -588,7 +589,7 @@ public class ScriptInterpreter {
     String outputFilename = null;
     PrintStream outputStream = Util.console;
     TermTraverserText outputTraverser = iTerms.plainTextTraverser;
-    boolean full = false, indent = false, indexed = false;
+    boolean full = false, indented = false, indexed = false;
     int depthLimit = -1;
 
     // Util.debug("Processing display term [" + term + "] " + iTerms.toRawString(term));
@@ -619,13 +620,13 @@ public class ScriptInterpreter {
           break;
 
         default: // Not one of the special cases, so just print the term
-          outputStream.println(iTerms.toString(displayTerm, outputTraverser, indent, depthLimit));
+          outputStream.println(iTerms.toString(displayTerm, outputTraverser, indented, depthLimit));
         }
       } else {
         switch (displayElement) {
         // Terms with zero arity that should also appear as terms: these are all empty collections
         case "__array", "__list", "__set", "__map":
-          outputStream.println(iTerms.toString(displayTerm, outputTraverser, indent, depthLimit));
+          outputStream.println(iTerms.toString(displayTerm, outputTraverser, indented, depthLimit));
           break;
 
         // Print mode switches
@@ -647,7 +648,7 @@ public class ScriptInterpreter {
           break;
 
         case "indented":
-          indent = true;
+          indented = true;
           break;
 
         case "full":
@@ -661,9 +662,10 @@ public class ScriptInterpreter {
         // User structures
         case "allrules":
           if (isShow) {
-            currentCFGRules.show(outputStream, outputTraverser, indexed, full, indent, 0);
-            currentChooseRules.show(outputStream, outputTraverser, indexed, full, indent, 0);
-            currentTRRules.show(outputStream, outputTraverser, indexed, full, indent, 0);
+
+            currentCFGRules.show(outputStream, outputTraverser, indexed, full, indented);
+            currentChooseRules.show(outputStream, outputTraverser, indexed, full, indented);
+            currentTRRules.show(outputStream, outputTraverser, indexed, full, indented);
           } else
             outputStream.print(outputTraverser.toString(scriptDerivationTerm));
 
@@ -671,60 +673,60 @@ public class ScriptInterpreter {
 
         case "cfgrules":
           if (isShow)
-            currentCFGRules.show(outputStream, outputTraverser, indexed, full, indent, 0);
+            currentCFGRules.show(outputStream, outputTraverser, indexed, full, indented);
           else
-            currentCFGRules.print(outputStream, outputTraverser, indexed, full, indent, 0);
+            currentCFGRules.print(outputStream, outputTraverser, indexed, full, indented);
           break;
 
         case "cfgruleslexer":
           if (isShow)
-            currentCFGRules.cfgRulesLexer.show(outputStream, outputTraverser, indexed, full, indent, 0);
+            currentCFGRules.cfgRulesLexer.show(outputStream, outputTraverser, indexed, full, indented);
           else
-            currentCFGRules.cfgRulesLexer.print(outputStream, outputTraverser, indexed, full, indent, 0);
+            currentCFGRules.cfgRulesLexer.print(outputStream, outputTraverser, indexed, full, indented);
           break;
 
         case "cfgrulesparser":
           if (isShow)
-            currentCFGRules.cfgRulesParser.show(outputStream, outputTraverser, indexed, full, indent, 0);
+            currentCFGRules.cfgRulesParser.show(outputStream, outputTraverser, indexed, full, indented);
           else
-            currentCFGRules.cfgRulesParser.print(outputStream, outputTraverser, indexed, full, indent, 0);
+            currentCFGRules.cfgRulesParser.print(outputStream, outputTraverser, indexed, full, indented);
           break;
 
         case "chooserules":
           if (isShow)
-            currentChooseRules.show(outputStream, outputTraverser, indexed, full, indent, 0);
+            currentChooseRules.show(outputStream, outputTraverser, indexed, full, indented);
           else
-            currentChooseRules.print(outputStream, outputTraverser, indexed, full, indent, 0);
+            currentChooseRules.print(outputStream, outputTraverser, indexed, full, indented);
           break;
 
         case "trrules":
           if (isShow)
-            currentTRRules.show(outputStream, outputTraverser, indexed, full, indent, 0);
+            currentTRRules.show(outputStream, outputTraverser, indexed, full, indented);
           else
-            currentTRRules.print(outputStream, outputTraverser, indexed, full, indent, 0);
+            currentTRRules.print(outputStream, outputTraverser, indexed, full, indented);
           break;
 
         case "lexicalisations":
           if (isShow)
-            currentLexer.lexicalisations.show(outputStream, outputTraverser, indexed, full, indent, 0);
+            currentLexer.lexicalisations.show(outputStream, outputTraverser, indexed, full, indented);
           else
-            currentLexer.lexicalisations.print(outputStream, outputTraverser, indexed, full, indent, 0);
+            currentLexer.lexicalisations.print(outputStream, outputTraverser, indexed, full, indented);
           break;
 
         case "tasks":
           if (currentParser.tasks == null)
             Util.error("no current tasks to print");
           else if (isShow)
-            currentParser.tasks.show(outputStream, outputTraverser, indexed, full, indent, 0);
+            currentParser.tasks.show(outputStream, outputTraverser, indexed, full, indented);
           else
-            currentParser.tasks.print(outputStream, outputTraverser, indexed, full, indent, 0);
+            currentParser.tasks.print(outputStream, outputTraverser, indexed, full, indented);
           break;
 
         case "stacks":
           if (isShow)
-            currentParser.stacks.show(outputStream, outputTraverser, indexed, full, indent, 0);
+            currentParser.stacks.show(outputStream, outputTraverser, indexed, full, indented);
           else
-            currentParser.stacks.print(outputStream, outputTraverser, indexed, full, indent, 0);
+            currentParser.stacks.print(outputStream, outputTraverser, indexed, full, indented);
           break;
 
         case "derivations":
@@ -732,9 +734,9 @@ public class ScriptInterpreter {
             Util.error("!show/!print derivations - no derivations found");
           else {
             if (isShow)
-              currentParser.derivations.show(outputStream, outputTraverser, indexed, full, indent, 0);
+              currentParser.derivations.show(outputStream, outputTraverser, indexed, full, indented);
             else
-              currentParser.derivations.print(outputStream, outputTraverser, indexed, full, indent, 0);
+              currentParser.derivations.print(outputStream, outputTraverser, indexed, full, indented);
             break;
           }
 
@@ -762,7 +764,7 @@ public class ScriptInterpreter {
               } else
                 iTerms.toDot(trm, outputFilename);
             } else {
-              outputStream.println("derivation term: " + trm + "\n" + iTerms.toString(trm, outputTraverser, indent, depthLimit));
+              outputStream.println("derivation term: " + trm + "\n" + iTerms.toString(trm, outputTraverser, indented, depthLimit));
 
               if (scriptParserTerm == trm) Util.info("Bootstrap achieved: script parser term and current derivation term identical");
             }
@@ -777,7 +779,7 @@ public class ScriptInterpreter {
             } else
               iTerms.toDot(currentTryTerm, outputFilename);
           } else
-            outputStream.println("try term: " + currentTryTerm + "\n" + iTerms.toString(currentTryTerm, outputTraverser, indent, depthLimit));
+            outputStream.println("try term: " + currentTryTerm + "\n" + iTerms.toString(currentTryTerm, outputTraverser, indented, depthLimit));
 
           break;
 
@@ -789,41 +791,41 @@ public class ScriptInterpreter {
             } else
               iTerms.toDot(currentRewriteTerm, outputFilename);
           } else
-            outputStream.println("rewrite term: " + currentRewriteTerm + "\n" + iTerms.toString(currentRewriteTerm, outputTraverser, indent, depthLimit));
+            outputStream.println("rewrite term: " + currentRewriteTerm + "\n" + iTerms.toString(currentRewriteTerm, outputTraverser, indented, depthLimit));
 
           break;
 
         // Script structures
         case "scriptcfgrules":
           if (isShow)
-            scriptCFGRules.show(outputStream, outputTraverser, indexed, full, indent, 0);
+            scriptCFGRules.show(outputStream, outputTraverser, indexed, full, indented);
           else
-            scriptCFGRules.print(outputStream, outputTraverser, indexed, full, indent, 0);
+            scriptCFGRules.print(outputStream, outputTraverser, indexed, full, indented);
           break;
 
         case "scriptchooserules":
           if (isShow)
-            currentChooseRules.show(outputStream, outputTraverser, indexed, full, indent, 0);
+            currentChooseRules.show(outputStream, outputTraverser, indexed, full, indented);
           else
-            currentChooseRules.print(outputStream, outputTraverser, indexed, full, indent, 0);
+            currentChooseRules.print(outputStream, outputTraverser, indexed, full, indented);
           break;
 
         case "scriptlexicalisations":
           if (isShow)
-            scriptLexer.lexicalisations.show(outputStream, outputTraverser, indexed, full, indent, 0);
+            scriptLexer.lexicalisations.show(outputStream, outputTraverser, indexed, full, indented);
           else
-            scriptLexer.lexicalisations.print(outputStream, outputTraverser, indexed, full, indent, 0);
+            scriptLexer.lexicalisations.print(outputStream, outputTraverser, indexed, full, indented);
           break;
 
         case "scriptderivations":
           if (isShow)
-            scriptParser.derivations.show(outputStream, outputTraverser, indexed, full, indent, 0);
+            scriptParser.derivations.show(outputStream, outputTraverser, indexed, full, indented);
           else
-            scriptParser.derivations.print(outputStream, outputTraverser, indexed, full, indent, 0);
+            scriptParser.derivations.print(outputStream, outputTraverser, indexed, full, indented);
           break;
 
         case "scriptterm":
-          outputStream.println(iTerms.toString(scriptDerivationTerm, outputTraverser, indent, depthLimit));
+          outputStream.println(iTerms.toString(scriptDerivationTerm, outputTraverser, indented, depthLimit));
           break;
 
         // Statistics
@@ -833,9 +835,9 @@ public class ScriptInterpreter {
 
         case "statistics":
           if (isShow)
-            currentStatistics.show(outputStream, outputTraverser, indexed, full, indent, 0);
+            currentStatistics.show(outputStream, outputTraverser, indexed, full, indented);
           else
-            currentStatistics.print(outputStream, outputTraverser, indexed, full, indent, 0);
+            currentStatistics.print(outputStream, outputTraverser, indexed, full, indented);
           break;
 
         case "cardinalities":
@@ -843,11 +845,11 @@ public class ScriptInterpreter {
           break;
 
         case "paraterminals":
-          currentParser.derivations.printParaterminals(outputStream, outputTraverser, indexed, full, indent);
+          currentParser.derivations.printParaterminals(outputStream, outputTraverser, indexed, full, indented);
           break;
 
         case "parasentences":
-          currentParser.derivations.printParasentences(outputStream, outputTraverser, indexed, full, indent);
+          currentParser.derivations.printParasentences(outputStream, outputTraverser, indexed, full, indented);
           break;
 
         default:

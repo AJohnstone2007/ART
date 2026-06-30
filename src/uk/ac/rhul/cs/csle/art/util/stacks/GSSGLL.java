@@ -1,12 +1,10 @@
 package uk.ac.rhul.cs.csle.art.util.stacks;
 
-import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.Map;
 
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGRules;
-import uk.ac.rhul.cs.csle.art.term.TermTraverserText;
 import uk.ac.rhul.cs.csle.art.util.derivations.AbstractDerivationNode;
 import uk.ac.rhul.cs.csle.art.util.derivations.AbstractDerivations;
 import uk.ac.rhul.cs.csle.art.util.statistics.Statistics;
@@ -84,24 +82,4 @@ public class GSSGLL extends AbstractStacks {
   public void toDot() {
     new GSS2Dot(nodes, "gssV3.dot");
   }
-
-  @Override
-  public void print(PrintStream outputStream, TermTraverserText outputTraverser, boolean indexed, boolean full, boolean indented) {
-    // TODO Auto-generated method stub
-
-  }
-
-  @Override
-  public void show(PrintStream outputStream, TermTraverserText outputTraverser, boolean indexed, boolean full, boolean indented) {
-    // TODO Auto-generated method stub
-
-  }
-
-  @Override
-  public void statistics(Statistics currentstatistics, PrintStream outputStream, TermTraverserText outputTraverser, boolean indexed, boolean full,
-      boolean indented) {
-    // TODO Auto-generated method stub
-
-  }
-
 }

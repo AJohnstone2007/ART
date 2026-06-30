@@ -9,7 +9,6 @@ import uk.ac.rhul.cs.csle.art.cfg.lexer.TWESetElement;
 import uk.ac.rhul.cs.csle.art.choose.ChooseRules;
 import uk.ac.rhul.cs.csle.art.term.TermTraverserText;
 import uk.ac.rhul.cs.csle.art.util.Util;
-import uk.ac.rhul.cs.csle.art.util.statistics.Statistics;
 
 public class TWESet extends AbstractLexicalisations {
   public TWESet(String inputString, CFGRules cfgRules) {
@@ -63,7 +62,7 @@ public class TWESet extends AbstractLexicalisations {
   }
 
   @Override
-  public void print(PrintStream outputStream, TermTraverserText outputTraverser, boolean indexed, boolean full, boolean indented) {
+  public void print(PrintStream outputStream, TermTraverserText outputTraverser, boolean indexed, boolean full, boolean indent, int depthLimit) {
     if (tweSlices == null) {
       outputStream.println("Empty TWE set");
       return;
@@ -74,18 +73,6 @@ public class TWESet extends AbstractLexicalisations {
       for (int j = 0; j < tweSlices[i].length; j++)
         outputStream.println("Index " + i + ":  " + tweSlices[i][j] + "  " + lexeme(tweSlices[i][j]));
     }
-  }
-
-  @Override
-  public void show(PrintStream outputStream, TermTraverserText outputTraverser, boolean indexed, boolean full, boolean indented) {
-    // TODO Auto-generated method stub
-
-  }
-
-  @Override
-  public void statistics(Statistics currentstatistics, PrintStream outputStream, TermTraverserText outputTraverser, boolean indexed, boolean full,
-      boolean indented) {
-    // TODO Auto-generated method stub
   }
 
   /* Search tweSlices[leftExtent] for a TWE set elementthat matchs grammarNode */

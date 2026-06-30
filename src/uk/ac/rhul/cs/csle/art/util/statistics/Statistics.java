@@ -44,25 +44,12 @@ public class Statistics implements DisplayInterface {
   }
 
   @Override
-  public void print(PrintStream outputStream, TermTraverserText outputTraverser, boolean indexed, boolean full, boolean indented) {
+  public void print(PrintStream outputStream, TermTraverserText outputTraverser, boolean indexed, boolean full, boolean indent, int depthLimit) {
     for (var k : elements.keySet())
       outputStream.print(k + ",");
     outputStream.println();
     for (var k : elements.keySet())
       outputStream.print(elements.get(k) + ",");
-  }
-
-  @Override
-  public void show(PrintStream outputStream, TermTraverserText outputTraverser, boolean indexed, boolean full, boolean indented) {
-    // TODO Auto-generated method stub
-
-  }
-
-  @Override
-  public void statistics(Statistics currentstatistics, PrintStream outputStream, TermTraverserText outputTraverser, boolean indexed, boolean full,
-      boolean indented) {
-    // TODO Auto-generated method stub
-
   }
 
 }

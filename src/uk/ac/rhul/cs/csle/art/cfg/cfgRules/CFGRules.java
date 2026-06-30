@@ -19,7 +19,6 @@ import uk.ac.rhul.cs.csle.art.util.Util;
 import uk.ac.rhul.cs.csle.art.util.relation.AbstractRelation;
 import uk.ac.rhul.cs.csle.art.util.relation.Relation;
 import uk.ac.rhul.cs.csle.art.util.relation.RelationOrdered;
-import uk.ac.rhul.cs.csle.art.util.statistics.Statistics;
 
 public final class CFGRules implements DisplayInterface { // final to avoid this-escape
   // Fields set by the script interpreter that must be cloned
@@ -308,7 +307,10 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
       case TRM_BI:
         switch (e.str) {
         case "ID":
-          addCharacters("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz");
+          addCharacters("_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz");
+          break;
+        case "ART_ID":
+          addCharacters("$_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz");
           break;
         case "AP_INTEGER", "INTEGER":
           addCharacters("0123456789");
@@ -1149,7 +1151,7 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
   }
 
   @Override
-  public void print(PrintStream outputStream, TermTraverserText outputTraverser, boolean indexed, boolean full, boolean indented) {
+  public void print(PrintStream outputStream, TermTraverserText outputTraverser, boolean indexed, boolean full, boolean indent, int depthLimit) {
     normalise();
     outputStream.print("(* " + (isEmpty() ? "Empty " : "") + cfgRulesKind + " Context Free Grammar rules *)\n");
 
@@ -1312,7 +1314,7 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
   }
 
   @Override
-  public void show(PrintStream outputStream, TermTraverserText outputTraverser, boolean indexed, boolean full, boolean indented) {
+  public void show(PrintStream outputStream, TermTraverserText outputTraverser, boolean indexed, boolean full, boolean indent, int depthLimit) {
     normalise();
     outputStream.print("digraph \"Reference grammar\"\n" + "{\n" + "graph[ordering=out ranksep=0.1 rankdir=\"LR\"]\n"
         + "node[fontname=Helvetica fontsize=9 shape=box height = 0 width = 0 margin= 0.04 color=gray]\n"
@@ -1344,12 +1346,6 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
     if (cs.seq == null) return;
     outputStream.print("\"" + cs.num + "\"->\"" + cs.seq.num + "\"\n");
     toStringDotRec(outputStream, cs.seq);
-  }
-
-  @Override
-  public void statistics(Statistics currentstatistics, PrintStream outputStream, TermTraverserText outputTraverser, boolean indexed, boolean full,
-      boolean indented) {
-    // TODO Auto-generated method stub
   }
 
   public void addSignature(int term) {

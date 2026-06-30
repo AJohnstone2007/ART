@@ -111,6 +111,9 @@ public class LexerBaseLine extends AbstractLexer {
       case "ID":
         match_ID();
         break;
+      case "ART_ID":
+        match_ID_ART();
+        break;
       case "INTEGER":
         match_INTEGER();
         break;

@@ -358,7 +358,7 @@ public class SPPF extends AbstractDerivations {
   }
 
   @Override
-  public void print(PrintStream outputStream, TermTraverserText outputTraverser, boolean indexed, boolean full, boolean indented) {
+  public void print(PrintStream outputStream, TermTraverserText outputTraverser, boolean indexed, boolean full, boolean indent, int depthLimit) {
     for (var n : nodes.keySet()) {
       outputStream.println(n);
       for (var pn : n.packNodes) {
@@ -369,15 +369,8 @@ public class SPPF extends AbstractDerivations {
   }
 
   @Override
-  public void show(PrintStream outputStream, TermTraverserText outputTraverser, boolean indexed, boolean full, boolean indented) {
+  public void show(PrintStream outputStream, TermTraverserText outputTraverser, boolean indexed, boolean full, boolean indent, int depthLimit) {
     new SPPF2Dot(this, outputStream, indexed, full, true);
-  }
-
-  @Override
-  public void statistics(Statistics currentstatistics, PrintStream outputStream, TermTraverserText outputTraverser, boolean indexed, boolean full,
-      boolean indented) {
-    // TODO Auto-generated method stub
-
   }
 
   @Override

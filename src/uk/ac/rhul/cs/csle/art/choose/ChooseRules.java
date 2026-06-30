@@ -12,7 +12,6 @@ import uk.ac.rhul.cs.csle.art.term.TermTraverserText;
 import uk.ac.rhul.cs.csle.art.util.DisplayInterface;
 import uk.ac.rhul.cs.csle.art.util.Util;
 import uk.ac.rhul.cs.csle.art.util.relation.Relation;
-import uk.ac.rhul.cs.csle.art.util.statistics.Statistics;
 
 public class ChooseRules implements DisplayInterface {
   private final Set<Integer> lexicalTerms;
@@ -264,27 +263,13 @@ public class ChooseRules implements DisplayInterface {
   }
 
   @Override
-  public void print(PrintStream outputStream, TermTraverserText outputTraverser, boolean indexed, boolean full, boolean indented) {
+  public void print(PrintStream outputStream, TermTraverserText outputTraverser, boolean indexed, boolean full, boolean indent, int depthLimit) {
     normalise();
-    printLexicalRelation(lexicalHigher, ">", outputStream, outputTraverser, indexed, full, indented);
-    printDerivationRelation(derivationHigher, ">", outputStream, outputTraverser, indexed, full, indented);
-    printLexicalRelation(lexicalLonger, ">>", outputStream, outputTraverser, indexed, full, indented);
-    printDerivationRelation(derivationLonger, ">>", outputStream, outputTraverser, indexed, full, indented);
-    printLexicalRelation(lexicalShorter, "<<", outputStream, outputTraverser, indexed, full, indented);
-    printDerivationRelation(derivationShorter, "<<", outputStream, outputTraverser, indexed, full, indented);
-  }
-
-  @Override
-  public void show(PrintStream outputStream, TermTraverserText outputTraverser, boolean indexed, boolean full, boolean indented) {
-    normalise();
-    // TODO Auto-generated method stub
-
-  }
-
-  @Override
-  public void statistics(Statistics currentstatistics, PrintStream outputStream, TermTraverserText outputTraverser, boolean indexed, boolean full,
-      boolean indented) {
-    // TODO Auto-generated method stub
-
+    printLexicalRelation(lexicalHigher, ">", outputStream, outputTraverser, indexed, full, indent);
+    printDerivationRelation(derivationHigher, ">", outputStream, outputTraverser, indexed, full, indent);
+    printLexicalRelation(lexicalLonger, ">>", outputStream, outputTraverser, indexed, full, indent);
+    printDerivationRelation(derivationLonger, ">>", outputStream, outputTraverser, indexed, full, indent);
+    printLexicalRelation(lexicalShorter, "<<", outputStream, outputTraverser, indexed, full, indent);
+    printDerivationRelation(derivationShorter, "<<", outputStream, outputTraverser, indexed, full, indent);
   }
 }

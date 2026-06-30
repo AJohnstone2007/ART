@@ -81,19 +81,6 @@ public class SPPFDummyForRecognisers extends AbstractDerivations {
   }
 
   @Override
-  public void print(PrintStream outputStream, TermTraverserText outputTraverser, boolean indexed, boolean full, boolean indented) {
-  }
-
-  @Override
-  public void show(PrintStream outputStream, TermTraverserText outputTraverser, boolean indexed, boolean full, boolean indented) {
-  }
-
-  @Override
-  public void statistics(Statistics currentstatistics, PrintStream outputStream, TermTraverserText outputTraverser, boolean indexed, boolean full,
-      boolean indented) {
-  }
-
-  @Override
   public long bsrCardinality() {
     return -1;
   }
@@ -101,5 +88,9 @@ public class SPPFDummyForRecognisers extends AbstractDerivations {
   @Override
   public long symbolCardinality() {
     return -1;
+  }
+
+  @Override
+  public void print(PrintStream outputStream, TermTraverserText outputTraverser, boolean indent) {
   }
 }

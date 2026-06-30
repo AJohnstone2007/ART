@@ -12,7 +12,6 @@ import java.util.Set;
 import uk.ac.rhul.cs.csle.art.script.ScriptInterpreter;
 import uk.ac.rhul.cs.csle.art.util.DisplayInterface;
 import uk.ac.rhul.cs.csle.art.util.Util;
-import uk.ac.rhul.cs.csle.art.util.statistics.Statistics;
 
 public class TRRules implements DisplayInterface {
   // Fields that need to be cloned
@@ -378,27 +377,13 @@ public class TRRules implements DisplayInterface {
   }
 
   @Override
-  public void print(PrintStream outputStream, TermTraverserText outputTraverser, boolean indexed, boolean full, boolean indented) {
+  public void print(PrintStream outputStream, TermTraverserText outputTraverser, boolean indexed, boolean full, boolean indent, int depthLimit) {
     normalise();
     StringBuilder sb = new StringBuilder();
     for (int relation : trRules.keySet())
       for (int constructor : trRules.get(relation).keySet())
         for (int rule : trRules.get(relation).get(constructor))
           outputStream.println(outputTraverser.toString(rule, reverseVariableNamesByRule.get(rule)));
-  }
-
-  @Override
-  public void show(PrintStream outputStream, TermTraverserText outputTraverser, boolean indexed, boolean full, boolean indented) {
-    normalise();
-    // TODO Auto-generated method stub
-
-  }
-
-  @Override
-  public void statistics(Statistics currentstatistics, PrintStream outputStream, TermTraverserText outputTraverser, boolean indexed, boolean full,
-      boolean indented) {
-    // TODO Auto-generated method stub
-
   }
 
 }
