@@ -1,4 +1,4 @@
-(* ART` script grammar rules - mostly suitable for RDSOB parsers: No left recursive rules; Alterates in decreasing length order;   directive at end of each rule *)
+(* ART script grammar rules - mostly suitable for RDSOB parsers: No left recursive rules; Alterates in decreasing length order;   directive at end of each rule *)
 !clear chooseRules  // remove default lexical choice
 //!parser rdsobFunction // Uncomment this line to try bootstrapping with Recursive Descent Singleton Ordered Backtracking parser instead of default GLL parser
 !whitespace &SIMPLE_WHITESPACE, &COMMENT_NEST_ART, &COMMENT_LINE_C 
@@ -12,7 +12,7 @@
 trTermFiles ::= artDepth trTermFiles . > trTermFiles ::= trTerm trTermFiles .
 
 rules ::= rule rules^ | rule
-rule  ::= cfgRule^^ | trRule^^ | chooseRule^^ | directive^^   
+rule  ::= cfgRule^^ | chooseRule^^ | signature^^ | trRule^^ | directive^^   
 
 (* Context Free Grammar rules ************************************************)
 cfgRule  ::= cfgLHS '::='^ cfgAlts
@@ -45,7 +45,7 @@ cfgPrim ::=
   cfgNonterminal^^ | cfgCaseSensitiveTerminal^^| cfgCaseInsensitiveTerminal^^ | cfgBuiltinTerminal^^ | cfgBuiltinNoWSTerminal^^ 
 | cfgCharacterTerminal^^ | cfgCharacterSetTerminal^^| cfgCharacterAntiSetTerminal^^ | cfgCharacterOutOfBand^^ | cfgStartOfString^^
   
-  cfgNonterminal ::= ID | STRING_DOLLAR
+  cfgNonterminal ::= ID 
   cfgCaseSensitiveTerminal ::= STRING_SQ
   cfgCaseInsensitiveTerminal ::= STRING_DQ
   cfgBuiltinTerminal ::= '&'^ ID
@@ -72,40 +72,6 @@ cfgExpression ::= __bool^^ | __intAP^^ | __int32^^ | __realAP^^ | __real64^^ | _
 
 cfgSeq ::= #^   // Dirty trick: both cfgAlt and cfgAltNoAction promote cfgSeq to achieve gather operation
 cfgSlot ::= #^  
-
-(* Term rewrite rules ********************************************************)
-trRule ::= trLabel tr
-trLabel ::= #^ | '-'^ ID  
-tr ::= trPremises '---'^ trTransition
-trPremises ::= #^ | trMatch trPremises^ | trTransition trPremises^
-trMatch ::= trTopTuple '|>'^ trTopTuple
-
-trTransition ::= trTopTuple trRelation trTopTuple
-trTopTuple ::= trTerm | trTuple^^ trTerm ','^ trTerms^
-trTuple ::= #^  
-trTerms ::= trTerm | trTerm ','^ trTerms^ | trTerm trTerms^ // comma is optional
-trTermFiles ::= trTerm | trTerm trTermFiles^ | artFile | artFile trTermFiles^ | artDepth | artDepth trTermFiles^
-
-artDepth ::= 'depth'^ __int32
-
-trTerm ::= 
-  __bool^^ | __char^^ | __intAP^^ | __int32^^ | __realAP^^ | __real64^^ | __string^^  // lexical from builtins - see below  
-| __array^^ | __list^^ | __set^^ | __map^^ 
-| ID^^ | IDSTAR^^ | ID^^ '('^ ')'^ | ID^^ '('^ trTerms^ ')'^ | trTuple^^ '<'^ trTerms^ '>'^
-
-__array ::= '['^  __int32 '|'^ ']'^ | '['^ __int32 '|'^ __a ']'^
-__a ::= trTerm | trTerm ','^ __a | trTerm __a // comma is optional
-
-__list ::= '['^ ']'^ | '['^ __l ']'^
-__l ::= trTerm | trTerm ','^ __l | trTerm __l // comma is optional
-
-__set  ::= '{'^ '}'^ | '{'^ __s '}'^ 
-__s ::= trTerm | trTerm ','^ __s | trTerm __s // comma is optional
-
-__map  ::= '{'^ '='^ '}'^  |'{'^ __m '}'^  // Note ugly empty map syntax
-__m ::= trTerm '='^ trTerm | trTerm '='^ trTerm ','^ __m | trTerm '='^ trTerm __m // comma is optional
-
-trRelation ::= '->' | '=>' | '~>' | ':->' | ':=>' | ':~>'  
 
 (* Choose rules ***************************************************************)
 chooseRule ::= chooseDerivation^^ | chooseLexical^^ 
@@ -145,6 +111,44 @@ chooseShorter ::= '<<'^
 chooseAdd ::= '+'^
 chooseRemove ::= '-'^
 
+(* Signatures ****************************************************************)
+signature ::= sigBase trRelation ID cfgNative
+sigBase ::= ID^^ '('^ IDs^ ')'^
+
+(* Term rewrite rules ********************************************************)
+trRule ::= trLabel tr
+trLabel ::= #^ | '-'^ ID  
+tr ::= trPremises '---'^ trTransition
+trPremises ::= #^ | trMatch trPremises^ | trTransition trPremises^
+trMatch ::= trTopTuple '|>'^ trTopTuple
+
+trTransition ::= trTopTuple trRelation trTopTuple
+trTopTuple ::= trTerm | trTuple^^ trTerm ','^ trTerms^
+trTuple ::= #^  
+trTerms ::= trTerm | trTerm ','^ trTerms^ | trTerm trTerms^ // comma is optional
+trTermFiles ::= trTerm | trTerm trTermFiles^ | artFile | artFile trTermFiles^ | artDepth | artDepth trTermFiles^
+
+artDepth ::= 'depth'^ __int32
+
+trTerm ::= 
+  __bool^^ | __char^^ | __intAP^^ | __int32^^ | __realAP^^ | __real64^^ | __string^^  // lexical from builtins - see below  
+| __array^^ | __list^^ | __set^^ | __map^^ 
+| ID^^ | IDSTAR^^ | ID^^ '('^ ')'^ | ID^^ '('^ trTerms^ ')'^ | trTuple^^ '<'^ trTerms^ '>'^
+
+__array ::= '['^  __int32 '|'^ ']'^ | '['^ __int32 '|'^ __a ']'^
+__a ::= trTerm | trTerm ','^ __a | trTerm __a // comma is optional
+
+__list ::= '['^ ']'^ | '['^ __l ']'^
+__l ::= trTerm | trTerm ','^ __l | trTerm __l // comma is optional
+
+__set  ::= '{'^ '}'^ | '{'^ __s '}'^ 
+__s ::= trTerm | trTerm ','^ __s | trTerm __s // comma is optional
+
+__map  ::= '{'^ '='^ '}'^  |'{'^ __m '}'^  // Note ugly empty map syntax
+__m ::= trTerm '='^ trTerm | trTerm '='^ trTerm ','^ __m | trTerm '='^ trTerm __m // comma is optional
+
+trRelation ::= '->' | '=>' | '~>' | ':->' | ':=>' | ':~>'  
+
 (* Directives ****************************************************************)
 directive ::= directiveCarrier
 
@@ -162,14 +166,14 @@ directiveCarrier ::=
 | '!token'^^ cfgPrims^
 | '!whitespace'^^ cfgPrims^
 | '!paraterminal'^^ paraterminalElements^
+| '!support'^^ cfgNative cfgNative 
 
 | '!configuration'^^ trRelation typedIDs
-| '!signature'^^ signatures
-| '!terminal'^^ trRelation trTerms
+| '!sort'^^ sorts^
+| '!normal'^^ trRelation trTerms
 
 | '!lexer'^^ ID | '!parser'^^ ID | '!interpreter'^^ ID 
 | '!generate'^^ __int32 ID | '!generate'^^ ID  
-| '!support'^^ cfgNative cfgNative 
 | '!mode'^^ modes^  
 
 | '!start'^^ cfgNonterminal | '!start'^^ trRelation // Set parser start nonterminal or rewriter start relation
@@ -177,14 +181,14 @@ directiveCarrier ::=
 | '!try'^^ artFile       | '!try'^^ artFile '='^ trTopTuple 
 | '!try'^^ trTopTuple | '!try'^^ trTopTuple '='^ trTopTuple
 
-(* Research features *)
+(* Research features - fold into artArgs *)
 | '!deleteTokens'^^ __int32 | '!swapTokens'^^ __int32 
 | '!sppfBreakCycles'^^ | '!sppfBreakCyclesRelation'^^
 
 artFile ::= &STRING_SQ
-
-signatures ::= signature | signature signatures
-signature ::= ID '('^ typedIDs ')'^ '::'^ trTerm
+sorts ::= sort | sort sorts^
+sort ::= ID^^ | ID^^ '('^ sortAlts^ ')'^
+sortAlts ::= ID | ID '|'^ sortAlts^
 
 IDs ::= ID | ID ','^ IDs^
 typedIDs ::= typedID | typedID ','^ typedIDs^
@@ -214,7 +218,6 @@ ID ::= &ID^^
 IDSTAR ::= ID '*'^
 STRING_SQ ::= &STRING_SQ^^ 
 STRING_DQ ::= &STRING_DQ^^ 
-STRING_DOLLAR ::= &STRING_DOLLAR^^
 STRING_SHRIEK_SHRIEK ::= &STRING_SHRIEK_SHRIEK^^
 STRING_BRACE ::= &STRING_BRACE^^
 STRING_ANGLE_NEST ::= &STRING_ANGLE_NEST^^
