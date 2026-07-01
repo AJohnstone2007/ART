@@ -157,10 +157,13 @@ directiveCarrier ::=
 | '!traceLevel'^^ __int32
 | '!errorLevel'^^ __int32
 
-| '!print'^^ trTermFiles^
-| '!show'^^ trTermFiles^
-
 | '!clear'^^ IDs^ | '!save'^^ ID ID | '!recall'^^ ID | '!convert'^^ IDs^
+
+| '!lexer'^^ ID | '!parser'^^ ID | '!interpreter'^^ ID | '!generate'^^ __int32 ID | '!generate'^^ ID  
+
+| '!print'^^ trTermFiles^ | '!show'^^ trTermFiles^
+
+| '!start'^^ cfgNonterminal | '!start'^^ trRelation // Set parser start nonterminal or rewriter start relation
 
 | '!characterSet'^^ cfgCharacterSetTerminal
 | '!token'^^ cfgPrims^
@@ -171,12 +174,6 @@ directiveCarrier ::=
 | '!configuration'^^ trRelation typedIDs
 | '!sort'^^ sorts^
 | '!normal'^^ trRelation trTerms
-
-| '!lexer'^^ ID | '!parser'^^ ID | '!interpreter'^^ ID 
-| '!generate'^^ __int32 ID | '!generate'^^ ID  
-| '!mode'^^ modes^  
-
-| '!start'^^ cfgNonterminal | '!start'^^ trRelation // Set parser start nonterminal or rewriter start relation
 
 | '!try'^^ artFile       | '!try'^^ artFile '='^ trTopTuple 
 | '!try'^^ trTopTuple | '!try'^^ trTopTuple '='^ trTopTuple
@@ -194,13 +191,14 @@ IDs ::= ID | ID ','^ IDs^
 typedIDs ::= typedID | typedID ','^ typedIDs^
 typedID ::= ID '::'^ trTerm
 
-modes ::= mode^ | mode^ ','^ modes^ 
+artArgs ::= artArg^ | artArg^ ','^ artArgs^ 
 
-mode ::= modeSimpleAdd | modeSimpleRemove | modeNumeric
+artArg ::= artArgTrue | artArgFalse | artArgInt | artArgFile
 
-modeSimpleAdd ::= ID
-modeSimpleRemove ::= 'not'^ ID
-modeNumeric ::= ID  __int32
+artArgTrue ::= ID
+artArgFalse ::= 'not'^ ID
+artArgInt ::= ID  __int32
+artArgFile ::= &STRING_SQ
 
 paraterminalElements ::= paraterminalElement | paraterminalElement ','^ paraterminalElements^
 paraterminalElement  ::= cfgNonterminal^^
