@@ -10,6 +10,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import uk.ac.rhul.cs.csle.art.cfg.AbstractParser;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGElement;
@@ -34,6 +35,7 @@ import uk.ac.rhul.cs.csle.art.interpret.ActionsGenerator;
 import uk.ac.rhul.cs.csle.art.interpret.AttributeActionInterpreter;
 import uk.ac.rhul.cs.csle.art.term.ITerms;
 import uk.ac.rhul.cs.csle.art.term.Rewriter;
+import uk.ac.rhul.cs.csle.art.term.Signatures;
 import uk.ac.rhul.cs.csle.art.term.TRRules;
 import uk.ac.rhul.cs.csle.art.term.TermTraverser;
 import uk.ac.rhul.cs.csle.art.term.TermTraverserLaTeX;
@@ -57,15 +59,51 @@ public class ScriptInterpreter {
   private final   String scriptParserTermString = "rules(directive(!clear(chooseRules)), directive(!whitespace(cfgBuiltinTerminal(SIMPLE_WHITESPACE), cfgBuiltinTerminal(COMMENT_NEST_ART), cfgBuiltinTerminal(COMMENT_LINE_C))), chooseLexical(chooseExpr(cfgCaseSensitiveTerminal(true)), chooseHigher, chooseExpr(cfgBuiltinTerminal(ID))), chooseLexical(chooseExpr(cfgCaseSensitiveTerminal(false)), chooseHigher, chooseExpr(cfgBuiltinTerminal(ID))), chooseDerivation(chooseDerivationProduction(cfgNonterminal(trTermFiles), cfgNonterminal(artDepth), cfgNonterminal(trTermFiles), .), chooseHigher, chooseDerivationProduction(cfgNonterminal(trTermFiles), cfgNonterminal(trTerm), cfgNonterminal(trTermFiles), .)), cfgRule(cfgLHS(rules), cfgAlts(cfgSeq(cfgSlot, cfgNonterminal(rule), cfgSlot, cfgFoldUnder(cfgNonterminal(rules)), cfgSlot), cfgSeq(cfgSlot, cfgNonterminal(rule), cfgSlot))), cfgRule(cfgLHS(rule), cfgAlts(cfgSeq(cfgSlot, cfgFoldOver(cfgNonterminal(cfgRule)), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgNonterminal(chooseRule)), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgNonterminal(signature)), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgNonterminal(trRule)), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgNonterminal(directive)), cfgSlot))), cfgRule(cfgLHS(cfgRule), cfgAlts(cfgSeq(cfgSlot, cfgNonterminal(cfgLHS), cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(\\:\\:=)), cfgSlot, cfgNonterminal(cfgAlts), cfgSlot))), cfgRule(cfgLHS(cfgLHS), cfgAlts(cfgSeq(cfgSlot, cfgNonterminal(ID), cfgSlot), cfgSeq(cfgSlot, cfgNonterminal(ID), cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(<)), cfgSlot, cfgNonterminal(cfgAttributeDeclarations), cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(>)), cfgSlot))), cfgRule(cfgLHS(cfgAttributeDeclarations), cfgAlts(cfgSeq(cfgSlot, cfgNonterminal(cfgAttributeDeclaration), cfgSlot), cfgSeq(cfgSlot, cfgNonterminal(cfgAttributeDeclaration), cfgSlot, cfgFoldUnder(cfgNonterminal(cfgAttributeDeclarations)), cfgSlot))), cfgRule(cfgLHS(cfgAttributeDeclaration), cfgAlts(cfgSeq(cfgSlot, cfgNonterminal(ID), cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(\\:\\:)), cfgSlot, cfgNonterminal(ID), cfgSlot), cfgSeq(cfgSlot, cfgNonterminal(ID), cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(\\:\\:)), cfgSlot, cfgNonterminal(ID), cfgSlot, cfgNonterminal(STRING_ANGLE_NEST), cfgSlot))), cfgRule(cfgLHS(cfgAlts), cfgAlts(cfgSeq(cfgSlot, cfgNonterminal(cfgAlt), cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(|)), cfgSlot, cfgFoldUnder(cfgNonterminal(cfgAlts)), cfgSlot), cfgSeq(cfgSlot, cfgNonterminal(cfgAlt), cfgSlot))), cfgRule(cfgLHS(cfgAlt), cfgAlts(cfgSeq(cfgSlot, cfgFoldOver(cfgNonterminal(cfgSeq)), cfgSlot, cfgNonterminal(cfgActions), cfgSlot, cfgNonterminal(cfgEpsilonCarrier), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgNonterminal(cfgSeq)), cfgSlot, cfgNonterminal(cfgActions), cfgSlot, cfgNonterminal(cfgEpsilon), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgNonterminal(cfgSeq)), cfgSlot, cfgFoldUnder(cfgNonterminal(cfgElems)), cfgSlot, cfgNonterminal(cfgActions), cfgSlot))), cfgRule(cfgLHS(cfgEpsilonCarrier), cfgAlts(cfgSeq(cfgSlot, cfgNonterminal(cfgEpsilon), cfgSlot, cfgFoldOver(cfgNonterminal(cfgAnnotation)), cfgSlot))), cfgRule(cfgLHS(cfgEpsilon), cfgAlts(cfgSeq(cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(#)), cfgSlot))), cfgRule(cfgLHS(cfgAltNoAction), cfgAlts(cfgSeq(cfgSlot, cfgFoldOver(cfgNonterminal(cfgSeq)), cfgSlot, cfgNonterminal(cfgSlot), cfgSlot, cfgNonterminal(cfgName), cfgSlot, cfgNonterminal(cfgSlot), cfgSlot))), cfgRule(cfgLHS(cfgElems), cfgAlts(cfgSeq(cfgSlot, cfgNonterminal(cfgActions), cfgSlot, cfgNonterminal(cfgExtended), cfgSlot, cfgFoldUnder(cfgNonterminal(cfgElems)), cfgSlot), cfgSeq(cfgSlot, cfgNonterminal(cfgActions), cfgSlot, cfgNonterminal(cfgExtended), cfgSlot))), cfgRule(cfgLHS(cfgExtended), cfgAlts(cfgSeq(cfgSlot, cfgNonterminal(cfgName), cfgSlot, cfgFoldOver(cfgNonterminal(cfgAnnotation)), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgNonterminal(cfgName)), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgNonterminal(cfgOptional)), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgNonterminal(cfgKleene)), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgNonterminal(cfgPositive)), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgNonterminal(cfgDoFirst)), cfgSlot))), cfgRule(cfgLHS(cfgAnnotation), cfgAlts(cfgSeq(cfgSlot, cfgFoldOver(cfgNonterminal(cfgFoldUnder)), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgNonterminal(cfgFoldOver)), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgNonterminal(cfgFoldTear)), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgNonterminal(cfgFoldTearNamed)), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgNonterminal(cfgDelay)), cfgSlot))), cfgRule(cfgLHS(cfgFoldUnder), cfgAlts(cfgSeq(cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(^)), cfgSlot))), cfgRule(cfgLHS(cfgFoldOver), cfgAlts(cfgSeq(cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(^^)), cfgSlot))), cfgRule(cfgLHS(cfgFoldTear), cfgAlts(cfgSeq(cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(^^^)), cfgSlot))), cfgRule(cfgLHS(cfgFoldTearNamed), cfgAlts(cfgSeq(cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(^^^)), cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(\\:)), cfgSlot, cfgNonterminal(ID), cfgSlot))), cfgRule(cfgLHS(cfgDelay), cfgAlts(cfgSeq(cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(!<)), cfgSlot))), cfgRule(cfgLHS(cfgDoFirst), cfgAlts(cfgSeq(cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(\\()), cfgSlot, cfgNonterminal(cfgAlts), cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(\\))), cfgSlot))), cfgRule(cfgLHS(cfgOptional), cfgAlts(cfgSeq(cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(\\()), cfgSlot, cfgNonterminal(cfgAlts), cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(\\))), cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(?)), cfgSlot), cfgSeq(cfgSlot, cfgNonterminal(cfgAltNoAction), cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(?)), cfgSlot))), cfgRule(cfgLHS(cfgPositive), cfgAlts(cfgSeq(cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(\\()), cfgSlot, cfgNonterminal(cfgAlts), cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(\\))), cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(+)), cfgSlot), cfgSeq(cfgSlot, cfgNonterminal(cfgAltNoAction), cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(+)), cfgSlot))), cfgRule(cfgLHS(cfgKleene), cfgAlts(cfgSeq(cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(\\()), cfgSlot, cfgNonterminal(cfgAlts), cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(\\))), cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(*)), cfgSlot), cfgSeq(cfgSlot, cfgNonterminal(cfgAltNoAction), cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(*)), cfgSlot))), cfgRule(cfgLHS(cfgName), cfgAlts(cfgSeq(cfgSlot, cfgFoldOver(cfgNonterminal(cfgPrim)), cfgSlot), cfgSeq(cfgSlot, cfgNonterminal(cfgPrim), cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(\\:)), cfgSlot, cfgNonterminal(ID), cfgSlot))), cfgRule(cfgLHS(cfgPrim), cfgAlts(cfgSeq(cfgSlot, cfgFoldOver(cfgNonterminal(cfgNonterminal)), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgNonterminal(cfgCaseSensitiveTerminal)), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgNonterminal(cfgCaseInsensitiveTerminal)), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgNonterminal(cfgBuiltinTerminal)), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgNonterminal(cfgBuiltinNoWSTerminal)), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgNonterminal(cfgCharacterTerminal)), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgNonterminal(cfgCharacterSetTerminal)), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgNonterminal(cfgCharacterAntiSetTerminal)), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgNonterminal(cfgCharacterOutOfBand)), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgNonterminal(cfgStartOfString)), cfgSlot))), cfgRule(cfgLHS(cfgNonterminal), cfgAlts(cfgSeq(cfgSlot, cfgNonterminal(ID), cfgSlot))), cfgRule(cfgLHS(cfgCaseSensitiveTerminal), cfgAlts(cfgSeq(cfgSlot, cfgNonterminal(STRING_SQ), cfgSlot))), cfgRule(cfgLHS(cfgCaseInsensitiveTerminal), cfgAlts(cfgSeq(cfgSlot, cfgNonterminal(STRING_DQ), cfgSlot))), cfgRule(cfgLHS(cfgBuiltinTerminal), cfgAlts(cfgSeq(cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(&)), cfgSlot, cfgNonterminal(ID), cfgSlot))), cfgRule(cfgLHS(cfgBuiltinNoWSTerminal), cfgAlts(cfgSeq(cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(&&)), cfgSlot, cfgNonterminal(ID), cfgSlot))), cfgRule(cfgLHS(cfgCharacterTerminal), cfgAlts(cfgSeq(cfgSlot, cfgNonterminal(CHAR_BQ), cfgSlot))), cfgRule(cfgLHS(cfgCharacterSetTerminal), cfgAlts(cfgSeq(cfgSlot, cfgNonterminal(STRING_BRACE), cfgSlot))), cfgRule(cfgLHS(cfgCharacterAntiSetTerminal), cfgAlts(cfgSeq(cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(~)), cfgSlot, cfgNonterminal(STRING_BRACE), cfgSlot))), cfgRule(cfgLHS(cfgCharacterOutOfBand), cfgAlts(cfgSeq(cfgSlot, cfgCaseSensitiveTerminal(~!{}), cfgSlot))), cfgRule(cfgLHS(cfgStartOfString), cfgAlts(cfgSeq(cfgSlot, cfgCaseSensitiveTerminal(!$$), cfgSlot))), cfgRule(cfgLHS(cfgPrims), cfgAlts(cfgSeq(cfgSlot, cfgNonterminal(cfgPrim), cfgSlot), cfgSeq(cfgSlot, cfgNonterminal(cfgPrim), cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(\\,)), cfgSlot, cfgFoldUnder(cfgNonterminal(cfgPrims)), cfgSlot))), cfgRule(cfgLHS(cfgActions), cfgAlts(cfgSeq(cfgSlot, cfgFoldOver(cfgNonterminal(cfgSlot)), cfgSlot, cfgFoldUnder(cfgNonterminal(cfgActionSeq)), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgNonterminal(cfgSlot)), cfgSlot))), cfgRule(cfgLHS(cfgActionSeq), cfgAlts(cfgSeq(cfgSlot, cfgNonterminal(cfgAction), cfgSlot, cfgFoldUnder(cfgNonterminal(cfgActionSeq)), cfgSlot), cfgSeq(cfgSlot, cfgNonterminal(cfgAction), cfgSlot))), cfgRule(cfgLHS(cfgAction), cfgAlts(cfgSeq(cfgSlot, cfgFoldOver(cfgNonterminal(cfgEquation)), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgNonterminal(cfgAssignment)), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgNonterminal(cfgNative)), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgNonterminal(cfgInsert)), cfgSlot))), cfgRule(cfgLHS(cfgEquation), cfgAlts(cfgSeq(cfgSlot, cfgNonterminal(cfgAttribute), cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(=)), cfgSlot, cfgNonterminal(cfgExpression), cfgSlot))), cfgRule(cfgLHS(cfgAssignment), cfgAlts(cfgSeq(cfgSlot, cfgNonterminal(cfgAttribute), cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(\\:=)), cfgSlot, cfgNonterminal(cfgExpression), cfgSlot))), cfgRule(cfgLHS(cfgNative), cfgAlts(cfgSeq(cfgSlot, cfgNonterminal(STRING_SHRIEK_SHRIEK), cfgSlot))), cfgRule(cfgLHS(cfgInsert), cfgAlts(cfgSeq(cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(^+\\:)), cfgSlot, cfgNonterminal(ID), cfgSlot))), cfgRule(cfgLHS(cfgAttribute), cfgAlts(cfgSeq(cfgSlot, cfgNonterminal(ID), cfgSlot), cfgSeq(cfgSlot, cfgNonterminal(ID), cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(.)), cfgSlot, cfgNonterminal(ID), cfgSlot))), cfgRule(cfgLHS(cfgExpressionList), cfgAlts(cfgSeq(cfgSlot, cfgNonterminal(cfgExpression), cfgSlot), cfgSeq(cfgSlot, cfgNonterminal(cfgExpression), cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(\\,)), cfgSlot, cfgFoldUnder(cfgNonterminal(cfgExpressionList)), cfgSlot))), cfgRule(cfgLHS(cfgExpression), cfgAlts(cfgSeq(cfgSlot, cfgFoldOver(cfgNonterminal(__bool)), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgNonterminal(__intAP)), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgNonterminal(__int32)), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgNonterminal(__realAP)), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgNonterminal(__real64)), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgNonterminal(__string)), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgNonterminal(__char)), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgNonterminal(cfgAttribute)), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgNonterminal(ID)), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgNonterminal(ID)), cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(\\()), cfgSlot, cfgFoldUnder(cfgNonterminal(cfgExpressionList)), cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(\\))), cfgSlot))), cfgRule(cfgLHS(cfgSeq), cfgAlts(cfgSeq(cfgSlot, cfgFoldUnder(cfgEpsilon)))), cfgRule(cfgLHS(cfgSlot), cfgAlts(cfgSeq(cfgSlot, cfgFoldUnder(cfgEpsilon)))), cfgRule(cfgLHS(chooseRule), cfgAlts(cfgSeq(cfgSlot, cfgFoldOver(cfgNonterminal(chooseDerivation)), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgNonterminal(chooseLexical)), cfgSlot))), cfgRule(cfgLHS(chooseDerivation), cfgAlts(cfgSeq(cfgSlot, cfgNonterminal(chooseDerivationProduction), cfgSlot, cfgNonterminal(chooserOp), cfgSlot, cfgNonterminal(chooseDerivationProduction), cfgSlot))), cfgRule(cfgLHS(chooseDerivationProduction), cfgAlts(cfgSeq(cfgSlot, cfgNonterminal(cfgNonterminal), cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(\\:\\:=)), cfgSlot, cfgFoldUnder(cfgNonterminal(chooseEpsilonRHS)), cfgSlot), cfgSeq(cfgSlot, cfgNonterminal(cfgNonterminal), cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(\\:\\:=)), cfgSlot, cfgFoldUnder(cfgNonterminal(chooseDerivationProductionRHS)), cfgSlot))), cfgRule(cfgLHS(chooseEpsilonRHS), cfgAlts(cfgSeq(cfgSlot, cfgNonterminal(cfgEpsilon), cfgSlot), cfgSeq(cfgSlot, cfgCaseSensitiveTerminal(.), cfgSlot, cfgNonterminal(cfgEpsilon), cfgSlot), cfgSeq(cfgSlot, cfgNonterminal(cfgEpsilon), cfgSlot, cfgCaseSensitiveTerminal(.), cfgSlot))), cfgRule(cfgLHS(chooseDerivationProductionRHS), cfgAlts(cfgSeq(cfgSlot, cfgNonterminal(cfgPrim), cfgSlot), cfgSeq(cfgSlot, cfgCaseSensitiveTerminal(.), cfgSlot), cfgSeq(cfgSlot, cfgNonterminal(cfgPrim), cfgSlot, cfgFoldUnder(cfgNonterminal(chooseDerivationProductionRHS)), cfgSlot), cfgSeq(cfgSlot, cfgCaseSensitiveTerminal(.), cfgSlot, cfgFoldUnder(cfgNonterminal(chooseDerivationProductionRHS)), cfgSlot))), cfgRule(cfgLHS(chooseLexical), cfgAlts(cfgSeq(cfgSlot, cfgNonterminal(chooseExpr), cfgSlot, cfgNonterminal(chooserOp), cfgSlot, cfgNonterminal(chooseExpr), cfgSlot))), cfgRule(cfgLHS(chooseExpr), cfgAlts(cfgSeq(cfgSlot, cfgFoldUnder(cfgNonterminal(chooseElement)), cfgSlot), cfgSeq(cfgSlot, cfgFoldUnder(cfgNonterminal(chooseElement)), cfgSlot, cfgFoldUnder(cfgNonterminal(chooseExprTail)), cfgSlot), cfgSeq(cfgSlot, cfgNonterminal(chooseSet), cfgSlot), cfgSeq(cfgSlot, cfgNonterminal(chooseSet), cfgSlot, cfgFoldUnder(cfgNonterminal(chooseExprTail)), cfgSlot))), cfgRule(cfgLHS(chooseExprTail), cfgAlts(cfgSeq(cfgSlot, cfgNonterminal(chooseCarrier), cfgSlot), cfgSeq(cfgSlot, cfgNonterminal(chooseCarrier), cfgSlot, cfgFoldUnder(cfgNonterminal(chooseExprTail)), cfgSlot))), cfgRule(cfgLHS(chooseCarrier), cfgAlts(cfgSeq(cfgSlot, cfgFoldOver(cfgNonterminal(chooseAdd)), cfgSlot, cfgFoldUnder(cfgNonterminal(chooseElement)), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgNonterminal(chooseRemove)), cfgSlot, cfgFoldUnder(cfgNonterminal(chooseElement)), cfgSlot))), cfgRule(cfgLHS(chooseElement), cfgAlts(cfgSeq(cfgSlot, cfgNonterminal(cfgNonterminal), cfgSlot), cfgSeq(cfgSlot, cfgNonterminal(cfgCharacterTerminal), cfgSlot), cfgSeq(cfgSlot, cfgNonterminal(cfgBuiltinTerminal), cfgSlot), cfgSeq(cfgSlot, cfgNonterminal(cfgCaseInsensitiveTerminal), cfgSlot), cfgSeq(cfgSlot, cfgNonterminal(cfgCaseSensitiveTerminal), cfgSlot))), cfgRule(cfgLHS(chooseSet), cfgAlts(cfgSeq(cfgSlot, cfgCaseSensitiveTerminal(anyCharacterTerminal), cfgSlot), cfgSeq(cfgSlot, cfgCaseSensitiveTerminal(anyBuiltinTerminal), cfgSlot), cfgSeq(cfgSlot, cfgCaseSensitiveTerminal(anyCaseSensitiveTerminal), cfgSlot), cfgSeq(cfgSlot, cfgCaseSensitiveTerminal(anyCaseInsensitiveTerminal), cfgSlot), cfgSeq(cfgSlot, cfgCaseSensitiveTerminal(anyTerminal), cfgSlot), cfgSeq(cfgSlot, cfgCaseSensitiveTerminal(anyParaterminal), cfgSlot), cfgSeq(cfgSlot, cfgCaseSensitiveTerminal(anyNonterminal), cfgSlot), cfgSeq(cfgSlot, cfgCaseSensitiveTerminal(anySlot), cfgSlot))), cfgRule(cfgLHS(chooserOp), cfgAlts(cfgSeq(cfgSlot, cfgFoldOver(cfgNonterminal(chooseHigher)), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgNonterminal(chooseLower)), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgNonterminal(chooseLonger)), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgNonterminal(chooseShorter)), cfgSlot))), cfgRule(cfgLHS(chooseHigher), cfgAlts(cfgSeq(cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(>)), cfgSlot))), cfgRule(cfgLHS(chooseLower), cfgAlts(cfgSeq(cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(<)), cfgSlot))), cfgRule(cfgLHS(chooseLonger), cfgAlts(cfgSeq(cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(>>)), cfgSlot))), cfgRule(cfgLHS(chooseShorter), cfgAlts(cfgSeq(cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(<<)), cfgSlot))), cfgRule(cfgLHS(chooseAdd), cfgAlts(cfgSeq(cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(+)), cfgSlot))), cfgRule(cfgLHS(chooseRemove), cfgAlts(cfgSeq(cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(-)), cfgSlot))), cfgRule(cfgLHS(signature), cfgAlts(cfgSeq(cfgSlot, cfgNonterminal(sigBase), cfgSlot, cfgNonterminal(trRelation), cfgSlot, cfgNonterminal(ID), cfgSlot, cfgNonterminal(cfgNative), cfgSlot))), cfgRule(cfgLHS(sigBase), cfgAlts(cfgSeq(cfgSlot, cfgFoldOver(cfgNonterminal(ID)), cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(\\()), cfgSlot, cfgFoldUnder(cfgNonterminal(IDs)), cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(\\))), cfgSlot))), cfgRule(cfgLHS(trRule), cfgAlts(cfgSeq(cfgSlot, cfgNonterminal(trLabel), cfgSlot, cfgNonterminal(tr), cfgSlot))), cfgRule(cfgLHS(trLabel), cfgAlts(cfgSeq(cfgSlot, cfgFoldUnder(cfgEpsilon)), cfgSeq(cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(-)), cfgSlot, cfgNonterminal(ID), cfgSlot))), cfgRule(cfgLHS(tr), cfgAlts(cfgSeq(cfgSlot, cfgNonterminal(trPremises), cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(---)), cfgSlot, cfgNonterminal(trTransition), cfgSlot))), cfgRule(cfgLHS(trPremises), cfgAlts(cfgSeq(cfgSlot, cfgFoldUnder(cfgEpsilon)), cfgSeq(cfgSlot, cfgNonterminal(trMatch), cfgSlot, cfgFoldUnder(cfgNonterminal(trPremises)), cfgSlot), cfgSeq(cfgSlot, cfgNonterminal(trTransition), cfgSlot, cfgFoldUnder(cfgNonterminal(trPremises)), cfgSlot))), cfgRule(cfgLHS(trMatch), cfgAlts(cfgSeq(cfgSlot, cfgNonterminal(trTopTuple), cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(|>)), cfgSlot, cfgNonterminal(trTopTuple), cfgSlot))), cfgRule(cfgLHS(trTransition), cfgAlts(cfgSeq(cfgSlot, cfgNonterminal(trTopTuple), cfgSlot, cfgNonterminal(trRelation), cfgSlot, cfgNonterminal(trTopTuple), cfgSlot))), cfgRule(cfgLHS(trTopTuple), cfgAlts(cfgSeq(cfgSlot, cfgNonterminal(trTerm), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgNonterminal(trTuple)), cfgSlot, cfgNonterminal(trTerm), cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(\\,)), cfgSlot, cfgFoldUnder(cfgNonterminal(trTerms)), cfgSlot))), cfgRule(cfgLHS(trTuple), cfgAlts(cfgSeq(cfgSlot, cfgFoldUnder(cfgEpsilon)))), cfgRule(cfgLHS(trTerms), cfgAlts(cfgSeq(cfgSlot, cfgNonterminal(trTerm), cfgSlot), cfgSeq(cfgSlot, cfgNonterminal(trTerm), cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(\\,)), cfgSlot, cfgFoldUnder(cfgNonterminal(trTerms)), cfgSlot), cfgSeq(cfgSlot, cfgNonterminal(trTerm), cfgSlot, cfgFoldUnder(cfgNonterminal(trTerms)), cfgSlot))), cfgRule(cfgLHS(trTermFiles), cfgAlts(cfgSeq(cfgSlot, cfgNonterminal(trTerm), cfgSlot), cfgSeq(cfgSlot, cfgNonterminal(trTerm), cfgSlot, cfgFoldUnder(cfgNonterminal(trTermFiles)), cfgSlot), cfgSeq(cfgSlot, cfgNonterminal(artFile), cfgSlot), cfgSeq(cfgSlot, cfgNonterminal(artFile), cfgSlot, cfgFoldUnder(cfgNonterminal(trTermFiles)), cfgSlot), cfgSeq(cfgSlot, cfgNonterminal(artDepth), cfgSlot), cfgSeq(cfgSlot, cfgNonterminal(artDepth), cfgSlot, cfgFoldUnder(cfgNonterminal(trTermFiles)), cfgSlot))), cfgRule(cfgLHS(artDepth), cfgAlts(cfgSeq(cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(depth)), cfgSlot, cfgNonterminal(__int32), cfgSlot))), cfgRule(cfgLHS(trTerm), cfgAlts(cfgSeq(cfgSlot, cfgFoldOver(cfgNonterminal(__bool)), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgNonterminal(__char)), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgNonterminal(__intAP)), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgNonterminal(__int32)), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgNonterminal(__realAP)), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgNonterminal(__real64)), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgNonterminal(__string)), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgNonterminal(__array)), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgNonterminal(__list)), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgNonterminal(__set)), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgNonterminal(__map)), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgNonterminal(ID)), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgNonterminal(IDSTAR)), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgNonterminal(ID)), cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(\\()), cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(\\))), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgNonterminal(ID)), cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(\\()), cfgSlot, cfgFoldUnder(cfgNonterminal(trTerms)), cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(\\))), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgNonterminal(trTuple)), cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(<)), cfgSlot, cfgFoldUnder(cfgNonterminal(trTerms)), cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(>)), cfgSlot))), cfgRule(cfgLHS(__array), cfgAlts(cfgSeq(cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal([)), cfgSlot, cfgNonterminal(__int32), cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(|)), cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(])), cfgSlot), cfgSeq(cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal([)), cfgSlot, cfgNonterminal(__int32), cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(|)), cfgSlot, cfgNonterminal(__a), cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(])), cfgSlot))), cfgRule(cfgLHS(__a), cfgAlts(cfgSeq(cfgSlot, cfgNonterminal(trTerm), cfgSlot), cfgSeq(cfgSlot, cfgNonterminal(trTerm), cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(\\,)), cfgSlot, cfgNonterminal(__a), cfgSlot), cfgSeq(cfgSlot, cfgNonterminal(trTerm), cfgSlot, cfgNonterminal(__a), cfgSlot))), cfgRule(cfgLHS(__list), cfgAlts(cfgSeq(cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal([)), cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(])), cfgSlot), cfgSeq(cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal([)), cfgSlot, cfgNonterminal(__l), cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(])), cfgSlot))), cfgRule(cfgLHS(__l), cfgAlts(cfgSeq(cfgSlot, cfgNonterminal(trTerm), cfgSlot), cfgSeq(cfgSlot, cfgNonterminal(trTerm), cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(\\,)), cfgSlot, cfgNonterminal(__l), cfgSlot), cfgSeq(cfgSlot, cfgNonterminal(trTerm), cfgSlot, cfgNonterminal(__l), cfgSlot))), cfgRule(cfgLHS(__set), cfgAlts(cfgSeq(cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal({)), cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(})), cfgSlot), cfgSeq(cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal({)), cfgSlot, cfgNonterminal(__s), cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(})), cfgSlot))), cfgRule(cfgLHS(__s), cfgAlts(cfgSeq(cfgSlot, cfgNonterminal(trTerm), cfgSlot), cfgSeq(cfgSlot, cfgNonterminal(trTerm), cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(\\,)), cfgSlot, cfgNonterminal(__s), cfgSlot), cfgSeq(cfgSlot, cfgNonterminal(trTerm), cfgSlot, cfgNonterminal(__s), cfgSlot))), cfgRule(cfgLHS(__map), cfgAlts(cfgSeq(cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal({)), cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(=)), cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(})), cfgSlot), cfgSeq(cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal({)), cfgSlot, cfgNonterminal(__m), cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(})), cfgSlot))), cfgRule(cfgLHS(__m), cfgAlts(cfgSeq(cfgSlot, cfgNonterminal(trTerm), cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(=)), cfgSlot, cfgNonterminal(trTerm), cfgSlot), cfgSeq(cfgSlot, cfgNonterminal(trTerm), cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(=)), cfgSlot, cfgNonterminal(trTerm), cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(\\,)), cfgSlot, cfgNonterminal(__m), cfgSlot), cfgSeq(cfgSlot, cfgNonterminal(trTerm), cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(=)), cfgSlot, cfgNonterminal(trTerm), cfgSlot, cfgNonterminal(__m), cfgSlot))), cfgRule(cfgLHS(trRelation), cfgAlts(cfgSeq(cfgSlot, cfgCaseSensitiveTerminal(->), cfgSlot), cfgSeq(cfgSlot, cfgCaseSensitiveTerminal(=>), cfgSlot), cfgSeq(cfgSlot, cfgCaseSensitiveTerminal(~>), cfgSlot), cfgSeq(cfgSlot, cfgCaseSensitiveTerminal(\\:->), cfgSlot), cfgSeq(cfgSlot, cfgCaseSensitiveTerminal(\\:=>), cfgSlot), cfgSeq(cfgSlot, cfgCaseSensitiveTerminal(\\:~>), cfgSlot))), cfgRule(cfgLHS(directive), cfgAlts(cfgSeq(cfgSlot, cfgNonterminal(directiveCarrier), cfgSlot))), cfgRule(cfgLHS(directiveCarrier), cfgAlts(cfgSeq(cfgSlot, cfgFoldOver(cfgCaseSensitiveTerminal(!prompt)), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgCaseSensitiveTerminal(!prompt)), cfgSlot, cfgBuiltinTerminal(STRING_DQ), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgCaseSensitiveTerminal(!traceLevel)), cfgSlot, cfgNonterminal(__int32), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgCaseSensitiveTerminal(!errorLevel)), cfgSlot, cfgNonterminal(__int32), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgCaseSensitiveTerminal(!clear)), cfgSlot, cfgFoldUnder(cfgNonterminal(IDs)), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgCaseSensitiveTerminal(!save)), cfgSlot, cfgNonterminal(ID), cfgSlot, cfgFoldUnder(cfgNonterminal(artArgs)), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgCaseSensitiveTerminal(!recall)), cfgSlot, cfgNonterminal(ID), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgCaseSensitiveTerminal(!convert)), cfgSlot, cfgFoldUnder(cfgNonterminal(artArgs)), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgCaseSensitiveTerminal(!lexer)), cfgSlot, cfgFoldUnder(cfgNonterminal(artArgs)), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgCaseSensitiveTerminal(!parser)), cfgSlot, cfgFoldUnder(cfgNonterminal(artArgs)), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgCaseSensitiveTerminal(!interpreter)), cfgSlot, cfgFoldUnder(cfgNonterminal(artArgs)), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgCaseSensitiveTerminal(!generate)), cfgSlot, cfgFoldUnder(cfgNonterminal(artArgs)), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgCaseSensitiveTerminal(!print)), cfgSlot, cfgFoldUnder(cfgNonterminal(trTermFiles)), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgCaseSensitiveTerminal(!show)), cfgSlot, cfgFoldUnder(cfgNonterminal(artArgs)), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgCaseSensitiveTerminal(!start)), cfgSlot, cfgNonterminal(cfgNonterminal), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgCaseSensitiveTerminal(!start)), cfgSlot, cfgNonterminal(trRelation), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgCaseSensitiveTerminal(!characterSet)), cfgSlot, cfgNonterminal(cfgCharacterSetTerminal), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgCaseSensitiveTerminal(!token)), cfgSlot, cfgFoldUnder(cfgNonterminal(cfgPrims)), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgCaseSensitiveTerminal(!whitespace)), cfgSlot, cfgFoldUnder(cfgNonterminal(cfgPrims)), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgCaseSensitiveTerminal(!paraterminal)), cfgSlot, cfgFoldUnder(cfgNonterminal(paraterminalElements)), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgCaseSensitiveTerminal(!support)), cfgSlot, cfgNonterminal(cfgNative), cfgSlot, cfgNonterminal(cfgNative), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgCaseSensitiveTerminal(!configuration)), cfgSlot, cfgNonterminal(trRelation), cfgSlot, cfgNonterminal(typedIDs), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgCaseSensitiveTerminal(!sort)), cfgSlot, cfgFoldUnder(cfgNonterminal(sorts)), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgCaseSensitiveTerminal(!normal)), cfgSlot, cfgNonterminal(trRelation), cfgSlot, cfgNonterminal(trTerms), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgCaseSensitiveTerminal(!try)), cfgSlot, cfgNonterminal(artFile), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgCaseSensitiveTerminal(!try)), cfgSlot, cfgNonterminal(artFile), cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(=)), cfgSlot, cfgNonterminal(trTopTuple), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgCaseSensitiveTerminal(!try)), cfgSlot, cfgNonterminal(trTopTuple), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgCaseSensitiveTerminal(!try)), cfgSlot, cfgNonterminal(trTopTuple), cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(=)), cfgSlot, cfgNonterminal(trTopTuple), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgCaseSensitiveTerminal(!deleteTokens)), cfgSlot, cfgNonterminal(__int32), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgCaseSensitiveTerminal(!swapTokens)), cfgSlot, cfgNonterminal(__int32), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgCaseSensitiveTerminal(!sppfBreakCycles)), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgCaseSensitiveTerminal(!sppfBreakCyclesRelation)), cfgSlot))), cfgRule(cfgLHS(artFile), cfgAlts(cfgSeq(cfgSlot, cfgBuiltinTerminal(STRING_SQ), cfgSlot))), cfgRule(cfgLHS(sorts), cfgAlts(cfgSeq(cfgSlot, cfgNonterminal(sort), cfgSlot), cfgSeq(cfgSlot, cfgNonterminal(sort), cfgSlot, cfgFoldUnder(cfgNonterminal(sorts)), cfgSlot))), cfgRule(cfgLHS(sort), cfgAlts(cfgSeq(cfgSlot, cfgFoldOver(cfgNonterminal(ID)), cfgSlot), cfgSeq(cfgSlot, cfgFoldOver(cfgNonterminal(ID)), cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(\\()), cfgSlot, cfgFoldUnder(cfgNonterminal(sortAlts)), cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(\\))), cfgSlot))), cfgRule(cfgLHS(sortAlts), cfgAlts(cfgSeq(cfgSlot, cfgNonterminal(ID), cfgSlot), cfgSeq(cfgSlot, cfgNonterminal(ID), cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(|)), cfgSlot, cfgFoldUnder(cfgNonterminal(sortAlts)), cfgSlot))), cfgRule(cfgLHS(IDs), cfgAlts(cfgSeq(cfgSlot, cfgNonterminal(ID), cfgSlot), cfgSeq(cfgSlot, cfgNonterminal(ID), cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(\\,)), cfgSlot, cfgFoldUnder(cfgNonterminal(IDs)), cfgSlot))), cfgRule(cfgLHS(typedIDs), cfgAlts(cfgSeq(cfgSlot, cfgNonterminal(typedID), cfgSlot), cfgSeq(cfgSlot, cfgNonterminal(typedID), cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(\\,)), cfgSlot, cfgFoldUnder(cfgNonterminal(typedIDs)), cfgSlot))), cfgRule(cfgLHS(typedID), cfgAlts(cfgSeq(cfgSlot, cfgNonterminal(ID), cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(\\:\\:)), cfgSlot, cfgNonterminal(trTerm), cfgSlot))), cfgRule(cfgLHS(artArgs), cfgAlts(cfgSeq(cfgSlot, cfgFoldUnder(cfgNonterminal(artArg)), cfgSlot), cfgSeq(cfgSlot, cfgFoldUnder(cfgNonterminal(artArg)), cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(\\,)), cfgSlot, cfgFoldUnder(cfgNonterminal(artArgs)), cfgSlot))), cfgRule(cfgLHS(artArg), cfgAlts(cfgSeq(cfgSlot, cfgNonterminal(artArgTrue), cfgSlot), cfgSeq(cfgSlot, cfgNonterminal(artArgFalse), cfgSlot), cfgSeq(cfgSlot, cfgNonterminal(artArgInt), cfgSlot), cfgSeq(cfgSlot, cfgNonterminal(artArgFile), cfgSlot), cfgSeq(cfgSlot, cfgNonterminal(artArgString), cfgSlot))), cfgRule(cfgLHS(artArgTrue), cfgAlts(cfgSeq(cfgSlot, cfgNonterminal(ID), cfgSlot))), cfgRule(cfgLHS(artArgFalse), cfgAlts(cfgSeq(cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(not)), cfgSlot, cfgNonterminal(ID), cfgSlot))), cfgRule(cfgLHS(artArgInt), cfgAlts(cfgSeq(cfgSlot, cfgNonterminal(ID), cfgSlot, cfgNonterminal(__int32), cfgSlot))), cfgRule(cfgLHS(artArgFile), cfgAlts(cfgSeq(cfgSlot, cfgNonterminal(STRING_SQ), cfgSlot))), cfgRule(cfgLHS(artArgString), cfgAlts(cfgSeq(cfgSlot, cfgNonterminal(STRING_DQ), cfgSlot))), cfgRule(cfgLHS(paraterminalElements), cfgAlts(cfgSeq(cfgSlot, cfgNonterminal(paraterminalElement), cfgSlot), cfgSeq(cfgSlot, cfgNonterminal(paraterminalElement), cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(\\,)), cfgSlot, cfgFoldUnder(cfgNonterminal(paraterminalElements)), cfgSlot))), cfgRule(cfgLHS(paraterminalElement), cfgAlts(cfgSeq(cfgSlot, cfgFoldOver(cfgNonterminal(cfgNonterminal)), cfgSlot))), cfgRule(cfgLHS(__bool), cfgAlts(cfgSeq(cfgSlot, cfgCaseSensitiveTerminal(true), cfgSlot), cfgSeq(cfgSlot, cfgCaseSensitiveTerminal(false), cfgSlot))), cfgRule(cfgLHS(__char), cfgAlts(cfgSeq(cfgSlot, cfgBuiltinTerminal(CHAR_BQ), cfgSlot))), cfgRule(cfgLHS(__intAP), cfgAlts(cfgSeq(cfgSlot, cfgBuiltinTerminal(AP_INTEGER), cfgSlot))), cfgRule(cfgLHS(__int32), cfgAlts(cfgSeq(cfgSlot, cfgBuiltinTerminal(SIGNED_INTEGER), cfgSlot))), cfgRule(cfgLHS(__realAP), cfgAlts(cfgSeq(cfgSlot, cfgBuiltinTerminal(AP_REAL), cfgSlot))), cfgRule(cfgLHS(__real64), cfgAlts(cfgSeq(cfgSlot, cfgBuiltinTerminal(SIGNED_REAL), cfgSlot))), cfgRule(cfgLHS(__string), cfgAlts(cfgSeq(cfgSlot, cfgBuiltinTerminal(STRING_DQ), cfgSlot))), cfgRule(cfgLHS(ID), cfgAlts(cfgSeq(cfgSlot, cfgFoldOver(cfgBuiltinTerminal(ART_ID)), cfgSlot))), cfgRule(cfgLHS(IDSTAR), cfgAlts(cfgSeq(cfgSlot, cfgNonterminal(ID), cfgSlot, cfgFoldUnder(cfgCaseSensitiveTerminal(*)), cfgSlot))), cfgRule(cfgLHS(STRING_SQ), cfgAlts(cfgSeq(cfgSlot, cfgFoldOver(cfgBuiltinTerminal(STRING_SQ)), cfgSlot))), cfgRule(cfgLHS(STRING_DQ), cfgAlts(cfgSeq(cfgSlot, cfgFoldOver(cfgBuiltinTerminal(STRING_DQ)), cfgSlot))), cfgRule(cfgLHS(STRING_SHRIEK_SHRIEK), cfgAlts(cfgSeq(cfgSlot, cfgFoldOver(cfgBuiltinTerminal(STRING_SHRIEK_SHRIEK)), cfgSlot))), cfgRule(cfgLHS(STRING_BRACE), cfgAlts(cfgSeq(cfgSlot, cfgFoldOver(cfgBuiltinTerminal(STRING_BRACE)), cfgSlot))), cfgRule(cfgLHS(STRING_ANGLE_NEST), cfgAlts(cfgSeq(cfgSlot, cfgFoldOver(cfgBuiltinTerminal(STRING_ANGLE_NEST)), cfgSlot))), cfgRule(cfgLHS(CHAR_BQ), cfgAlts(cfgSeq(cfgSlot, cfgFoldOver(cfgBuiltinTerminal(CHAR_BQ)), cfgSlot))))";
   //@formatter:on
 
-  private final AbstractParser scriptParser = new GLLBaseLine(true);
-  private final AbstractLexer scriptLexer = new LexerBaseLine();
-  public static CFGRules scriptCFGRules;
-  private static ChooseRules scriptChooseRules;
-  private int scriptParserTerm; // This received the derivation from scriptParser
-  private final Map<String, ScriptValue> scriptVariables = new HashMap<>();
+  /* 1. Script engine data **********************************************************************/
+  private final Scanner keyboard = new Scanner(System.in); // For !prompt
+
+  private final AbstractParser scriptParser = new GLLBaseLine(true); // The script parser: note GLL not MGLL at the moment
+  private final AbstractLexer scriptLexer = new LexerBaseLine(); // Standard lexer with builtins but NOT paraterminals
+  private final Map<Integer, Map<Integer, Consumer<Integer>>> directiveParameters = new HashMap<>(); // Map of directiveStringIndex to Map of
+                                                                                                     // directiveParamaterName to ter
+  public static CFGRules scriptCFGRules; // The rules built by parsing the user script
+  private static ChooseRules scriptChooseRules; // The rules built by parsing the user script
+  private int scriptParserTerm; // The derivation from scriptParser
+  private final Map<String, ScriptValue> scriptVariables = new HashMap<>(); // Save and restore symbol table
   private int scriptDerivationTerm = 0;
   private TermTraverser scriptTraverser;
 
+  /* 2. Valid modes - note: must use lower case in these declarations ****************************/
+  //@formatter:off
+  private enum ConvertModes {bnfleft, bnfright, cfgcharacter, characterinline, injectinstance, injectproduction, absorb};
+
+  private enum LexerModes {dfa, baseline, gll, dead, priority, longer, shorter};
+
+  private enum SaveModes {cfgrules, chooserules, signatures, trrules};
+
+  private enum ParserModes {
+    algx, brnglr, cnp, earley, earley2007, gll, lcnp, mgll, rdsob, rnglr,
+    recogniser, compactderivations,
+    api, table, hashpool, baseline, modal,
+    tasklifo, taskfifo, tasklimit, taskreport,
+    productionlookahead, mglllookahead, returnlookahead,
+    priority, longer, shorter, cyclebreak,
+    stopafterlexer, stopafterparser, stopafterderivation
+  };
+
+  private enum InterpreterModes {esos, actionattribute};
+
+  private enum DisplayModes {
+    cfgrules, chooserules, signatures, trrules,
+    tokens, stacks, derivations, tasks,
+    term, scriptterm,
+    raw, plain, latex, css,
+    indent, full, file, depth,
+  };
+
+  //@formatter:on
+
+  /* 3. Current script data structures ***********************************************************/
   private final Set<String> validModes = Set.of("recogniser", "hashpool", "mgll", "tasklifo", "taskfifo", "productionlookahead", "mglllookahead",
       "returnlookahead", "compactderivations", "stopafterlexer", "stopafterparser", "stopafterderivation", "tasklimit", "taskreport");
 
@@ -77,6 +115,7 @@ public class ScriptInterpreter {
 
   public static CFGRules currentCFGRules; // scriptTraverser builds CFG rules into this grammar
   public static ChooseRules currentChooseRules = new ChooseRules();
+  public static Signatures currentSignatures = new Signatures();
   public static TRRules currentTRRules = new TRRules();
 
   public static int currentTryTerm = 0;
@@ -90,11 +129,10 @@ public class ScriptInterpreter {
   public static int currentTaskLimit = 0;
   public static int currentTaskReport = 0;
 
-  Scanner keyboard = new Scanner(System.in);
-
   int successfulTests = 0;
   int failedTests = 0;
 
+  /* 4. Script interpreter ***********************************************************************/
   public ScriptInterpreter(String scriptString) {
     iTerms.plainTextTraverser = initialisePlainTextTraverser(); // Set up plain pretty printer actions
     iTerms.latexTraverser = initialiseLaTeXTraverser(); // Set up LaTeX pretty printer actions
@@ -140,14 +178,17 @@ public class ScriptInterpreter {
     if (successfulTests != 0 || failedTests != 0) Util.trace(3, "Successful tests: " + successfulTests + "; failed tests " + failedTests);
   }
 
+  /* 5. Normalisation ****************************************************************************/
   private void normaliseAll() {
     currentCFGRules.normalise();
     currentChooseRules.normalise();
     currentTRRules.normalise();
   }
 
-  private TermTraverserText initialiseScriptTraverser() {
-    TermTraverserText ret = new TermTraverserText(iTerms, "ART Script traverser");
+  /* 6. Script traverser which builds script rules from a derivation produced by scriptParser using scriptParserTermString ******************/
+  private TermTraverser initialiseScriptTraverser() {
+    // TermTraverserText ret = new TermTraverserText(iTerms, "ART Script traverser");
+    TermTraverser ret = new TermTraverser("ART Script traverser");
 
     ret.addActionBreak("directive", (Integer t) -> directiveAction(t), null, null);
 
@@ -184,7 +225,8 @@ public class ScriptInterpreter {
     ret.addActionBreak("chooseDerivation", (Integer t) -> currentChooseRules.addDerivationChooseRule(t), null, null);
     ret.addActionBreak("chooseLexical", (Integer t) -> currentChooseRules.addLexicalChooseRule(t), null, null);
 
-    ret.addAction("trRule", (Integer t) -> currentTRRules.buildTRRule(t), null, null);
+    ret.addActionBreak("signature", (Integer t) -> currentSignatures.buildSignature(t), null, null);
+    ret.addAction("trRule", (Integer t) -> currentTRRules.buildTRRule(t), null, null); // Should be addActionBreak, surely
     return ret;
   }
 
@@ -196,8 +238,9 @@ public class ScriptInterpreter {
     return Util.unescapeString(iTerms.termSymbolString(iTerms.subterm(t, 1)));
   }
 
+  /* 7. Actions for directives *********************************************************************/
   private void directiveAction(int term) {
-    Util.debug("Evaluating directive " + iTerms.toString(iTerms.subterm(term, 0)));
+    // Util.debug("Evaluating directive " + iTerms.toString(iTerms.subterm(term, 0)));
     int operationTerm = iTerms.subterm(term, 0);
     String operationTermString = iTerms.termSymbolString(operationTerm);
     switch (operationTermString) {
@@ -208,10 +251,6 @@ public class ScriptInterpreter {
       else
         System.out.print("\n" + iTerms.termSymbolString(iTerms.subterm(term, 0, 0)));
       keyboard.nextLine();
-      break;
-
-    case "!print", "!show":
-      processDisplayElements(operationTerm);
       break;
 
     case "!traceLevel":
@@ -255,6 +294,42 @@ public class ScriptInterpreter {
           Util.fatal("Unknown !clear argument " + argument + "\nmust be one of (case insensitive): allRules cfgRules choseRulesrewriteRules whitespace mode");
         }
       }
+      break;
+
+    case "!save": {
+      String id = iTerms.termSymbolString(iTerms.subterm(term, 0, 1));
+      switch (iTerms.termSymbolString(iTerms.subterm(term, 0, 0)).toLowerCase()) {
+      case "cfgrules":
+        scriptVariables.put(id, new ScriptValueCFGRules(currentCFGRules));
+        break;
+      case "trrules":
+        scriptVariables.put(id, new ScriptValueTRRules(currentTRRules));
+        break;
+      case "chooserules":
+        scriptVariables.put(id, new ScriptValueChooseRules(currentChooseRules));
+        break;
+      case "term":
+        scriptVariables.put(id, new ScriptValueTerm(currentRewriteTerm));
+        break;
+      default:
+        Util.fatal("Unknown !save argument " + iTerms.termSymbolString(iTerms.subterm(term, 0, 0))
+            + "\nmust be one of (case insensitive): cfgRules chooseRules signatures trRules term");
+      }
+    }
+      break;
+
+    case "!recall": {
+      String id = iTerms.termSymbolString(iTerms.subterm(term, 0, 0));
+      switch (scriptVariables.get(id)) {
+      case null -> Util.error("unknown script variable " + id);
+
+      case ScriptValueCFGRules v -> currentCFGRules = v.payload;
+      case ScriptValueTRRules v -> currentTRRules = v.payload;
+      case ScriptValueChooseRules v -> currentChooseRules = v.payload;
+
+      default -> Util.fatal("Unexpected !recall value type: " + scriptVariables.get(id).getClass().getSimpleName());
+      }
+    }
       break;
 
     case "!lexer":
@@ -512,40 +587,8 @@ public class ScriptInterpreter {
       if (currentTryTerm != 0 && currentInterpreter != null) currentInterpreter.interpret(currentParser);
       break;
 
-    case "!save": {
-      String id = iTerms.termSymbolString(iTerms.subterm(term, 0, 1));
-      switch (iTerms.termSymbolString(iTerms.subterm(term, 0, 0)).toLowerCase()) {
-      case "cfgrules":
-        scriptVariables.put(id, new ScriptValueCFGRules(currentCFGRules));
-        break;
-      case "trrules":
-        scriptVariables.put(id, new ScriptValueTRRules(currentTRRules));
-        break;
-      case "chooserules":
-        scriptVariables.put(id, new ScriptValueChooseRules(currentChooseRules));
-        break;
-      case "term":
-        scriptVariables.put(id, new ScriptValueTerm(currentRewriteTerm));
-        break;
-      default:
-        Util.fatal("Unknown !save argument " + iTerms.termSymbolString(iTerms.subterm(term, 0, 0))
-            + "\nmust be one of (case insensitive): cfgRules trRules  chooseRules  term");
-      }
-    }
-      break;
-
-    case "!recall": {
-      String id = iTerms.termSymbolString(iTerms.subterm(term, 0, 0));
-      switch (scriptVariables.get(id)) {
-      case null -> Util.error("unknown script variable " + id);
-
-      case ScriptValueCFGRules v -> currentCFGRules = v.payload;
-      case ScriptValueTRRules v -> currentTRRules = v.payload;
-      case ScriptValueChooseRules v -> currentChooseRules = v.payload;
-
-      default -> Util.fatal("Unexpected !recall value type: " + scriptVariables.get(id).getClass().getSimpleName());
-      }
-    }
+    case "!print", "!show":
+      processDisplayElements(operationTerm);
       break;
 
     /* Undocumented research features */
@@ -589,12 +632,13 @@ public class ScriptInterpreter {
 
   }
 
+  /* 8. Sub-actions for !print and !show ***********************************************************/
   private void processDisplayElements(int term) {
     boolean isShow = iTerms.hasSymbol(term, "!show");
     String outputFilename = null;
     PrintStream outputStream = Util.console;
     TermTraverserText outputTraverser = iTerms.plainTextTraverser;
-    boolean full = false, indent = false, indexed = false;
+    boolean full = false, indented = false, indexed = false;
     int depthLimit = -1;
 
     // Util.debug("Processing display term [" + term + "] " + iTerms.toRawString(term));
@@ -625,13 +669,13 @@ public class ScriptInterpreter {
           break;
 
         default: // Not one of the special cases, so just print the term
-          outputStream.println(iTerms.toString(displayTerm, outputTraverser, indent, depthLimit));
+          outputStream.println(iTerms.toString(displayTerm, outputTraverser, indented, depthLimit));
         }
       } else {
         switch (displayElement) {
         // Terms with zero arity that should also appear as terms: these are all empty collections
         case "__array", "__list", "__set", "__map":
-          outputStream.println(iTerms.toString(displayTerm, outputTraverser, indent, depthLimit));
+          outputStream.println(iTerms.toString(displayTerm, outputTraverser, indented, depthLimit));
           break;
 
         // Print mode switches
@@ -653,7 +697,7 @@ public class ScriptInterpreter {
           break;
 
         case "indented":
-          indent = true;
+          indented = true;
           break;
 
         case "full":
@@ -667,9 +711,10 @@ public class ScriptInterpreter {
         // User structures
         case "allrules":
           if (isShow) {
-            currentCFGRules.show(outputStream, outputTraverser, indexed, full, indent, 0);
-            currentChooseRules.show(outputStream, outputTraverser, indexed, full, indent, 0);
-            currentTRRules.show(outputStream, outputTraverser, indexed, full, indent, 0);
+            currentCFGRules.show(outputStream, outputTraverser, indexed, full, indented, 0);
+            currentChooseRules.show(outputStream, outputTraverser, indexed, full, indented, 0);
+            currentSignatures.show(outputStream, outputTraverser, indexed, full, indented, 0);
+            currentTRRules.show(outputStream, outputTraverser, indexed, full, indented, 0);
           } else
             outputStream.print(outputTraverser.toString(scriptDerivationTerm));
 
@@ -677,60 +722,60 @@ public class ScriptInterpreter {
 
         case "cfgrules":
           if (isShow)
-            currentCFGRules.show(outputStream, outputTraverser, indexed, full, indent, 0);
+            currentCFGRules.show(outputStream, outputTraverser, indexed, full, indented, 0);
           else
-            currentCFGRules.print(outputStream, outputTraverser, indexed, full, indent, 0);
+            currentCFGRules.print(outputStream, outputTraverser, indexed, full, indented, 0);
           break;
 
         case "cfgruleslexer":
           if (isShow)
-            currentCFGRules.cfgRulesLexer.show(outputStream, outputTraverser, indexed, full, indent, 0);
+            currentCFGRules.cfgRulesLexer.show(outputStream, outputTraverser, indexed, full, indented, 0);
           else
-            currentCFGRules.cfgRulesLexer.print(outputStream, outputTraverser, indexed, full, indent, 0);
+            currentCFGRules.cfgRulesLexer.print(outputStream, outputTraverser, indexed, full, indented, 0);
           break;
 
         case "cfgrulesparser":
           if (isShow)
-            currentCFGRules.cfgRulesParser.show(outputStream, outputTraverser, indexed, full, indent, 0);
+            currentCFGRules.cfgRulesParser.show(outputStream, outputTraverser, indexed, full, indented, 0);
           else
-            currentCFGRules.cfgRulesParser.print(outputStream, outputTraverser, indexed, full, indent, 0);
+            currentCFGRules.cfgRulesParser.print(outputStream, outputTraverser, indexed, full, indented, 0);
           break;
 
         case "chooserules":
           if (isShow)
-            currentChooseRules.show(outputStream, outputTraverser, indexed, full, indent, 0);
+            currentChooseRules.show(outputStream, outputTraverser, indexed, full, indented, 0);
           else
-            currentChooseRules.print(outputStream, outputTraverser, indexed, full, indent, 0);
+            currentChooseRules.print(outputStream, outputTraverser, indexed, full, indented, 0);
           break;
 
         case "trrules":
           if (isShow)
-            currentTRRules.show(outputStream, outputTraverser, indexed, full, indent, 0);
+            currentTRRules.show(outputStream, outputTraverser, indexed, full, indented, 0);
           else
-            currentTRRules.print(outputStream, outputTraverser, indexed, full, indent, 0);
+            currentTRRules.print(outputStream, outputTraverser, indexed, full, indented, 0);
           break;
 
         case "lexicalisations":
           if (isShow)
-            currentLexer.lexicalisations.show(outputStream, outputTraverser, indexed, full, indent, 0);
+            currentLexer.lexicalisations.show(outputStream, outputTraverser, indexed, full, indented, 0);
           else
-            currentLexer.lexicalisations.print(outputStream, outputTraverser, indexed, full, indent, 0);
+            currentLexer.lexicalisations.print(outputStream, outputTraverser, indexed, full, indented, 0);
           break;
 
         case "tasks":
           if (currentParser.tasks == null)
             Util.error("no current tasks to print");
           else if (isShow)
-            currentParser.tasks.show(outputStream, outputTraverser, indexed, full, indent, 0);
+            currentParser.tasks.show(outputStream, outputTraverser, indexed, full, indented, 0);
           else
-            currentParser.tasks.print(outputStream, outputTraverser, indexed, full, indent, 0);
+            currentParser.tasks.print(outputStream, outputTraverser, indexed, full, indented, 0);
           break;
 
         case "stacks":
           if (isShow)
-            currentParser.stacks.show(outputStream, outputTraverser, indexed, full, indent, 0);
+            currentParser.stacks.show(outputStream, outputTraverser, indexed, full, indented, 0);
           else
-            currentParser.stacks.print(outputStream, outputTraverser, indexed, full, indent, 0);
+            currentParser.stacks.print(outputStream, outputTraverser, indexed, full, indented, 0);
           break;
 
         case "derivations":
@@ -738,9 +783,9 @@ public class ScriptInterpreter {
             Util.error("!show/!print derivations - no derivations found");
           else {
             if (isShow)
-              currentParser.derivations.show(outputStream, outputTraverser, indexed, full, indent, 0);
+              currentParser.derivations.show(outputStream, outputTraverser, indexed, full, indented, 0);
             else
-              currentParser.derivations.print(outputStream, outputTraverser, indexed, full, indent, 0);
+              currentParser.derivations.print(outputStream, outputTraverser, indexed, full, indented, 0);
             break;
           }
 
@@ -768,7 +813,7 @@ public class ScriptInterpreter {
               } else
                 iTerms.toDot(trm, outputFilename);
             } else {
-              outputStream.println("derivation term: " + trm + "\n" + iTerms.toString(trm, outputTraverser, indent, depthLimit));
+              outputStream.println("derivation term: " + trm + "\n" + iTerms.toString(trm, outputTraverser, indented, depthLimit));
 
               if (scriptParserTerm == trm) Util.info("Bootstrap achieved: script parser term and current derivation term identical");
             }
@@ -783,7 +828,7 @@ public class ScriptInterpreter {
             } else
               iTerms.toDot(currentTryTerm, outputFilename);
           } else
-            outputStream.println("try term: " + currentTryTerm + "\n" + iTerms.toString(currentTryTerm, outputTraverser, indent, depthLimit));
+            outputStream.println("try term: " + currentTryTerm + "\n" + iTerms.toString(currentTryTerm, outputTraverser, indented, depthLimit));
 
           break;
 
@@ -795,41 +840,41 @@ public class ScriptInterpreter {
             } else
               iTerms.toDot(currentRewriteTerm, outputFilename);
           } else
-            outputStream.println("rewrite term: " + currentRewriteTerm + "\n" + iTerms.toString(currentRewriteTerm, outputTraverser, indent, depthLimit));
+            outputStream.println("rewrite term: " + currentRewriteTerm + "\n" + iTerms.toString(currentRewriteTerm, outputTraverser, indented, depthLimit));
 
           break;
 
         // Script structures
         case "scriptcfgrules":
           if (isShow)
-            scriptCFGRules.show(outputStream, outputTraverser, indexed, full, indent, 0);
+            scriptCFGRules.show(outputStream, outputTraverser, indexed, full, indented, 0);
           else
-            scriptCFGRules.print(outputStream, outputTraverser, indexed, full, indent, 0);
+            scriptCFGRules.print(outputStream, outputTraverser, indexed, full, indented, 0);
           break;
 
         case "scriptchooserules":
           if (isShow)
-            currentChooseRules.show(outputStream, outputTraverser, indexed, full, indent, 0);
+            currentChooseRules.show(outputStream, outputTraverser, indexed, full, indented, 0);
           else
-            currentChooseRules.print(outputStream, outputTraverser, indexed, full, indent, 0);
+            currentChooseRules.print(outputStream, outputTraverser, indexed, full, indented, 0);
           break;
 
         case "scriptlexicalisations":
           if (isShow)
-            scriptLexer.lexicalisations.show(outputStream, outputTraverser, indexed, full, indent, 0);
+            scriptLexer.lexicalisations.show(outputStream, outputTraverser, indexed, full, indented, 0);
           else
-            scriptLexer.lexicalisations.print(outputStream, outputTraverser, indexed, full, indent, 0);
+            scriptLexer.lexicalisations.print(outputStream, outputTraverser, indexed, full, indented, 0);
           break;
 
         case "scriptderivations":
           if (isShow)
-            scriptParser.derivations.show(outputStream, outputTraverser, indexed, full, indent, 0);
+            scriptParser.derivations.show(outputStream, outputTraverser, indexed, full, indented, 0);
           else
-            scriptParser.derivations.print(outputStream, outputTraverser, indexed, full, indent, 0);
+            scriptParser.derivations.print(outputStream, outputTraverser, indexed, full, indented, 0);
           break;
 
         case "scriptterm":
-          outputStream.println(iTerms.toString(scriptDerivationTerm, outputTraverser, indent, depthLimit));
+          outputStream.println(iTerms.toString(scriptDerivationTerm, outputTraverser, indented, depthLimit));
           break;
 
         // Statistics
@@ -839,9 +884,9 @@ public class ScriptInterpreter {
 
         case "statistics":
           if (isShow)
-            currentStatistics.show(outputStream, outputTraverser, indexed, full, indent, 0);
+            currentStatistics.show(outputStream, outputTraverser, indexed, full, indented, 0);
           else
-            currentStatistics.print(outputStream, outputTraverser, indexed, full, indent, 0);
+            currentStatistics.print(outputStream, outputTraverser, indexed, full, indented, 0);
           break;
 
         case "cardinalities":
@@ -849,11 +894,11 @@ public class ScriptInterpreter {
           break;
 
         case "paraterminals":
-          currentParser.derivations.printParaterminals(outputStream, outputTraverser, indexed, full, indent);
+          currentParser.derivations.printParaterminals(outputStream, outputTraverser, indexed, full, indented);
           break;
 
         case "parasentences":
-          currentParser.derivations.printParasentences(outputStream, outputTraverser, indexed, full, indent);
+          currentParser.derivations.printParasentences(outputStream, outputTraverser, indexed, full, indented);
           break;
 
         default:
@@ -869,6 +914,7 @@ public class ScriptInterpreter {
     if (outputStream != Util.console) outputStream.close();
   }
 
+  /* 10. Element finder ****************************************************************************/
   public static CFGElement findCFGElement(int term) {
     // Util.debug("findCFGElement on " + iTerms.toRawString(term));
     switch (iTerms.termSymbolString(term)) {
@@ -895,6 +941,7 @@ public class ScriptInterpreter {
     }
   }
 
+  /* 11. Try processing ****************************************************************************/
   private void tryParse(String inputString) {
     currentStatistics = new Statistics();
     currentStatistics.setBaseTime();
@@ -936,6 +983,7 @@ public class ScriptInterpreter {
 
   }
 
+  /* 12. PLAIN text traverser set up for console messages ******************************************/
   private TermTraverserText initialisePlainTextTraverser() {
     TermTraverserText ret = new TermTraverserText(iTerms, "iTerms default plain text traverser");
 
@@ -1006,7 +1054,7 @@ public class ScriptInterpreter {
     ret.addAction("cfgAttribute", null, ".", null);
     ret.addAction("cfgEquation", "\n", " = ", null);
     ret.addAction("cfgAssignment", "\n", " := ", null);
-    ret.addAction("cfgNative", "\n!!", null, "!!");
+    ret.addAction("cfgNative", "!!", null, "!!");
 
     // 2. Chooser pretty print controls
     ret.addEmptyAction("chooseElement");
@@ -1048,18 +1096,7 @@ public class ScriptInterpreter {
     return ret;
   }
 
-  private String texEscape(String s) {
-    StringBuilder sb = new StringBuilder();
-    for (int i = 0; i < s.length(); i++) {
-      switch (s.charAt(i)) {
-      case '_', '$', '^', '%', '\\':
-        sb.append('\\');
-      }
-      sb.append(s.charAt(i));
-    }
-    return sb.toString();
-  }
-
+  /* 12. LaTeX text traverser set up and typesetting support functions ***************************/
   /* 1 March 2026 - new LaTeX regime: each element is in a { } scope with artXStyle command. Every rule is printed within a \[ \] maths mode */
   private TermTraverserLaTeX initialiseLaTeXTraverser() {
     TermTraverserLaTeX ret = new TermTraverserLaTeX(iTerms, "iTerms default LaTeX traverser");
@@ -1306,6 +1343,18 @@ public class ScriptInterpreter {
     default:
       return "???Type";
     }
+  }
+
+  private String texEscape(String s) {
+    StringBuilder sb = new StringBuilder();
+    for (int i = 0; i < s.length(); i++) {
+      switch (s.charAt(i)) {
+      case '_', '$', '^', '%', '\\':
+        sb.append('\\');
+      }
+      sb.append(s.charAt(i));
+    }
+    return sb.toString();
   }
 
 }
