@@ -159,7 +159,7 @@ directiveCarrier ::=
 
 | '!clear'^^ artArgs | '!save'^^ ID artArgs | '!recall'^^ ID | '!convert'^^ artArgs
 
-| '!lexer'^^ artArgs | '!parser'^^ artArgs | '!interpreter'^^ artArgs '!generate'^ artArgs
+| '!lexer'^^ artArgs | '!parser'^^ artArgs | '!interpreter'^^ artArgs | '!generate'^^ artArgs
 
 | '!print'^^ artArgs | '!show'^^ artArgs
 

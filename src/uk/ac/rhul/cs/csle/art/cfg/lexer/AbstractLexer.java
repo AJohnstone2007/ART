@@ -320,9 +320,9 @@ public abstract class AbstractLexer {
 
   protected void match_ID_ART() {
     if (!(isAlpha(peekCh()) || peekCh() == '_' || peekCh() == '$')) return;
-    getCh(); // skip leading character
-    while (isAlphaOrDigit(peekCh()) || peekCh() == '_') // $ is only allowed at the beginning
+    do {
       getCh();
+    } while (isAlphaOrDigit(peekCh()) || peekCh() == '_');
   }
 
   protected void match_ID_AN() {

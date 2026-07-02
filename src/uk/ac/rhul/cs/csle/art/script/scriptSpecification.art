@@ -157,11 +157,11 @@ directiveCarrier ::=
 | '!traceLevel'^^ __int32
 | '!errorLevel'^^ __int32
 
-| '!clear'^^ IDs^ | '!save'^^ ID ID | '!recall'^^ ID | '!convert'^^ IDs^
+| '!clear'^^ IDs^ | '!save'^^ ID artArgs^ | '!recall'^^ ID | '!convert'^^ artArgs^
 
-| '!lexer'^^ ID | '!parser'^^ ID | '!interpreter'^^ ID | '!generate'^^ __int32 ID | '!generate'^^ ID  
+| '!lexer'^^ artArgs^ | '!parser'^^ artArgs^ | '!interpreter'^^ artArgs^ | '!generate'^^ artArgs^  
 
-| '!print'^^ trTermFiles^ | '!show'^^ trTermFiles^
+| '!print'^^ trTermFiles^ | '!show'^^ artArgs^
 
 | '!start'^^ cfgNonterminal | '!start'^^ trRelation // Set parser start nonterminal or rewriter start relation
 
@@ -193,12 +193,13 @@ typedID ::= ID '::'^ trTerm
 
 artArgs ::= artArg^ | artArg^ ','^ artArgs^ 
 
-artArg ::= artArgTrue | artArgFalse | artArgInt | artArgFile
+artArg ::= artArgTrue | artArgFalse | artArgInt | artArgFile | artArgString
 
 artArgTrue ::= ID
 artArgFalse ::= 'not'^ ID
 artArgInt ::= ID  __int32
-artArgFile ::= &STRING_SQ
+artArgFile ::= STRING_SQ
+artArgString ::= STRING_DQ
 
 paraterminalElements ::= paraterminalElement | paraterminalElement ','^ paraterminalElements^
 paraterminalElement  ::= cfgNonterminal^^
@@ -212,7 +213,7 @@ __realAP ::= &AP_REAL
 __real64 ::= &SIGNED_REAL 
 __string ::= &STRING_DQ
 
-ID ::= &ID^^
+ID ::= &ART_ID^^
 IDSTAR ::= ID '*'^
 STRING_SQ ::= &STRING_SQ^^ 
 STRING_DQ ::= &STRING_DQ^^ 
