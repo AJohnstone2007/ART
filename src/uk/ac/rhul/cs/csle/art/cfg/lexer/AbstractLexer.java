@@ -14,6 +14,10 @@ public abstract class AbstractLexer {
   protected int inputIndex, lexemeStart, lexemeEnd, whitespacePrefix;
   protected char[] inputAsCharArray;
   public Map<CFGElement, CFGElement> uobs, uibs;
+  public boolean tweSuppressDeadPath;
+  public boolean tweChoosePriority;
+  public boolean tweChooseLongest;
+  public boolean tweChooseShortest;
 
   public abstract AbstractLexicalisations lex(String userString, CFGRules cfgRules);
 

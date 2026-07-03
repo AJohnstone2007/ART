@@ -33,6 +33,7 @@ import uk.ac.rhul.cs.csle.art.choose.ChooseRules;
 import uk.ac.rhul.cs.csle.art.interpret.AbstractInterpreter;
 import uk.ac.rhul.cs.csle.art.interpret.ActionsGenerator;
 import uk.ac.rhul.cs.csle.art.interpret.AttributeActionInterpreter;
+import uk.ac.rhul.cs.csle.art.interpret.RIGInterpreter;
 import uk.ac.rhul.cs.csle.art.term.ITerms;
 import uk.ac.rhul.cs.csle.art.term.Rewriter;
 import uk.ac.rhul.cs.csle.art.term.Signatures;
@@ -64,8 +65,8 @@ public class ScriptInterpreter {
 
   private final AbstractParser scriptParser = new GLLBaseLine(true); // The script parser: note GLL not MGLL at the moment
   private final AbstractLexer scriptLexer = new LexerBaseLine(); // Standard lexer with builtins but NOT paraterminals
-  private final Map<Integer, Map<Integer, Consumer<Integer>>> directiveParameters = new HashMap<>(); // Map of directiveStringIndex to Map of
-                                                                                                     // directiveParamaterName to ter
+  private final Map<Integer, Map<Integer, Map<Integer, Consumer<Integer>>>> directiveParameters = new HashMap<>(); // Map of directiveStringIndex to Map of
+  // directiveParamaterName to ter
   public static CFGRules scriptCFGRules; // The rules built by parsing the user script
   private static ChooseRules scriptChooseRules; // The rules built by parsing the user script
   private int scriptParserTerm; // The derivation from scriptParser
@@ -73,11 +74,78 @@ public class ScriptInterpreter {
   private int scriptDerivationTerm = 0;
   private TermTraverser scriptTraverser;
 
-  /* 2. Valid modes - note: must use lower case in these declarations ****************************/
+  /* 2. Directive parameter handling - note: must use lower case for names ****************************/
+
+  private void processDirectiveArguments(int term, Map<Integer, Map<Integer, Consumer<Integer>>> kindMap) {
+    Util.debug("Processing directive arguments " + iTerms.toString(iTerms.subterm(term, 0)));
+    Map<Integer, Consumer<Integer>> nameMap;
+
+    for (int i = 0; i < iTerms.termArity(term); i++) {
+      int arg = iTerms.subterm(term, 0, i);
+      Util.debug("Processing argument " + i + ": " + iTerms.toString(arg));
+      int kind = iTerms.termSymbolStringIndex(arg);
+
+      // Kinds such as artArgFile and artArgString have name map of zero
+
+      if ((nameMap = kindMap.get(kind)) != null) {
+        if (nameMap.get(0) != null) {
+          nameMap.get(0).accept(arg);
+          return;
+        }
+
+        int name = iTerms.findString(iTerms.termSymbolString(iTerms.subterm(arg, 0)).toLowerCase());
+        if (nameMap.get(name) != null) {
+          nameMap.get(name).accept(arg);
+          return;
+        }
+      }
+      Util.error("In directive " + iTerms.toString(iTerms.subterm(term, 0)) + ", invalid argument " + iTerms.toString((arg)));
+    }
+  }
+
+  private void addDirectiveParameter(String directive, String kind, String name, Consumer<Integer> action) {
+    Integer directiveIndex = iTerms.findString(directive);
+    Integer kindIndex = iTerms.findString(kind);
+    Integer nameIndex = iTerms.findString(name);
+
+    if (directiveParameters.get(directiveIndex) == null) directiveParameters.put(directiveIndex, new HashMap<>());
+    var kindMap = directiveParameters.get(directiveIndex);
+
+    if (kindMap.get(kindIndex) == null) kindMap.put(kindIndex, new HashMap<>());
+    var nameMap = kindMap.get(kindIndex);
+
+    if (nameMap.get(nameIndex) != null) Util.fatal("internal error - doubly defined directive parameter");
+    nameMap.put(nameIndex, action);
+  }
+
+  void initialiseDirectiveParameters() {
+    // addDirectiveParameter("!clear", "artArgTrue", "whitespace", (Integer t) -> {
+    // currentCFGRules.seenWhitespaceDirective = true;
+    // currentCFGRules.whitespaces.clear();
+    // });
+
+    // addDirectiveParameter("!lexer", "artArgTrue", "dfa", (Integer t) -> currentLexer = new lexerDFA());
+    addDirectiveParameter("!lexer", "artArgTrue", "baseline", (Integer t) -> {
+      currentLexer = new LexerBaseLine();
+      Util.info("Set current lexer to BaseLine");
+    });
+    // addDirectiveParameter("!lexer", "artArgTrue", "gll", (Integer t) -> currentLexer = new lexerGLL());
+    addDirectiveParameter("!lexer", "artArgTrue", "dead", (Integer t) -> currentLexer.tweSuppressDeadPath = true);
+    addDirectiveParameter("!lexer", "artArgTrue", "priority", (Integer t) -> currentLexer.tweChoosePriority = true);
+    addDirectiveParameter("!lexer", "artArgTrue", "longer", (Integer t) -> currentLexer.tweChooseLongest = true);
+    addDirectiveParameter("!lexer", "artArgTrue", "shorter", (Integer t) -> currentLexer.tweChooseShortest = true);
+    addDirectiveParameter("!lexer", "artArgFalse", "dead", (Integer t) -> currentLexer.tweSuppressDeadPath = false);
+    addDirectiveParameter("!lexer", "artArgFalse", "priority", (Integer t) -> currentLexer.tweChoosePriority = false);
+    addDirectiveParameter("!lexer", "artArgFalse", "longer", (Integer t) -> currentLexer.tweChooseLongest = false);
+    addDirectiveParameter("!lexer", "artArgFalse", "shorter", (Integer t) -> currentLexer.tweChooseShortest = false);
+
+    addDirectiveParameter("!interpreter", "artArgTrue", "esos", (Integer t) -> currentInterpreter = null /* improve this */);
+    addDirectiveParameter("!interpreter", "artArgTrue", "attributeaction", (Integer t) -> currentInterpreter = new AttributeActionInterpreter());
+    addDirectiveParameter("!interpreter", "artArgTrue", "rig", (Integer t) -> currentInterpreter = new RIGInterpreter());
+  }
+
   //@formatter:off
   private enum ConvertModes {bnfleft, bnfright, cfgcharacter, characterinline, injectinstance, injectproduction, absorb};
-
-  private enum LexerModes {dfa, baseline, gll, dead, priority, longer, shorter};
 
   private enum SaveModes {cfgrules, chooserules, signatures, trrules};
 
@@ -134,6 +202,7 @@ public class ScriptInterpreter {
 
   /* 4. Script interpreter ***********************************************************************/
   public ScriptInterpreter(String scriptString) {
+    initialiseDirectiveParameters();
     iTerms.plainTextTraverser = initialisePlainTextTraverser(); // Set up plain pretty printer actions
     iTerms.latexTraverser = initialiseLaTeXTraverser(); // Set up LaTeX pretty printer actions
     scriptTraverser = initialiseScriptTraverser(); // Set up script interpetation actions
@@ -240,10 +309,18 @@ public class ScriptInterpreter {
 
   /* 7. Actions for directives *********************************************************************/
   private void directiveAction(int term) {
-    // Util.debug("Evaluating directive " + iTerms.toString(iTerms.subterm(term, 0)));
+    Util.debug("Evaluating directive " + iTerms.toString(iTerms.subterm(term, 0)));
     int operationTerm = iTerms.subterm(term, 0);
-    String operationTermString = iTerms.termSymbolString(operationTerm);
-    switch (operationTermString) {
+    int operationStringIndex = iTerms.termSymbolStringIndex(operationTerm);
+    String operationString = iTerms.termSymbolString(operationTerm);
+
+    var kindMap = directiveParameters.get(operationStringIndex);
+    if (kindMap != null) {
+      processDirectiveArguments(term, kindMap);
+      return;
+    }
+
+    switch (operationString) {
 
     case "!prompt":
       if (iTerms.termArity(iTerms.subterm(term, 0)) == 0)
@@ -402,9 +479,9 @@ public class ScriptInterpreter {
       case "attributeaction":
         currentInterpreter = new AttributeActionInterpreter();
         break;
-      // case "rig":
-      // currentInterpreter = new rigInterpreter();
-      // break;
+      case "rig":
+        currentInterpreter = new RIGInterpreter();
+        break;
       default:
         Util.fatal("Unexpected !interpreter argument " + iTerms.toString(iTerms.subterm(term, 0, 0))
             + "\nmust be one of (case insensitive): attributeAction esos rig\n");
