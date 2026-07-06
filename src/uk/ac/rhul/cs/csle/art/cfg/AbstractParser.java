@@ -16,6 +16,20 @@ public abstract class AbstractParser {
   public AbstractStacks stacks;
   public AbstractDerivations derivations;
   protected int inputIndex; // Current input index
+  public boolean breakCycles = false;
+  public boolean breakCyclesRelation = false;
+  public boolean choosePriority = false;
+  public boolean chooseLongest = false;
+  public boolean chooseShortest = false;
+
+  public boolean recogniser = false;
+  public boolean compactderivations = false;
+  public boolean tasklifo = false;
+  public boolean taskfifo = false;
+  public int tasklimit = 0;
+  public boolean productionlookahead = false;
+  public boolean mglllookahead = false;
+  public boolean returnlookahead = false;
 
   public abstract void parse(AbstractLexicalisations lexicalisations);
 

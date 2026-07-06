@@ -178,10 +178,6 @@ directiveCarrier ::=
 | '!try'^^ artFile       | '!try'^^ artFile '='^ trTopTuple 
 | '!try'^^ trTopTuple | '!try'^^ trTopTuple '='^ trTopTuple
 
-(* Research features - fold into artArgs *)
-| '!deleteTokens'^^ __int32 | '!swapTokens'^^ __int32 
-| '!sppfBreakCycles'^^ | '!sppfBreakCyclesRelation'^^
-
 artFile ::= &STRING_SQ
 sorts ::= sort | sort sorts^
 sort ::= ID^^ | ID^^ '('^ sortAlts^ ')'^
