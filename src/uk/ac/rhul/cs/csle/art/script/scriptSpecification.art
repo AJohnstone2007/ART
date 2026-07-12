@@ -189,13 +189,13 @@ typedID ::= ID '::'^ trTerm
 
 artArgs ::= artArg^ | artArg^ ','^ artArgs^ 
 
-artArg ::= artArgTrue | artArgFalse | artArgInt | artArgFile | artArgString
+artArg ::= artArgBoolean | artArgInt | artArgFile | artArgString
 
-artArgTrue ::= ID
-artArgFalse ::= 'not'^ ID
+artArgBoolean ::= ID | 'not'^ ID artDummy
 artArgInt ::= ID  __int32
 artArgFile ::= STRING_SQ
 artArgString ::= STRING_DQ
+artDummy ::= #^
 
 paraterminalElements ::= paraterminalElement | paraterminalElement ','^ paraterminalElements^
 paraterminalElement  ::= cfgNonterminal^^

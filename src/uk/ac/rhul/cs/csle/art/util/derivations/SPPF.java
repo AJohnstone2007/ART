@@ -55,7 +55,7 @@ public class SPPF extends AbstractDerivations {
 
     if (gn == null) return rightNode;
 
-    if (ScriptInterpreter.currentModes.contains("compactderivations") && lexicalisations.cfgRules.secondSlots.contains(gn)) {
+    if (ScriptInterpreter.currentParser.compactDerivations && lexicalisations.cfgRules.secondSlots.contains(gn)) {
       // Util.debug("sppf.extend grammar node is second node - returning rightNode");
       return rightNode;
     }

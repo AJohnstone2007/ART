@@ -36,7 +36,7 @@ public class GLLModal extends AbstractParser {
     // this.lexer = lexer;
     tasks = new TasksGLL();
     stacks = new GSSGLL(lexicalisations.cfgRules);
-    derivations = ScriptInterpreter.currentModes.contains("recogniser") ? new SPPFDummyForRecognisers(lexicalisations) : new SPPF(lexicalisations);
+    derivations = ScriptInterpreter.currentParser.modeRecogniser ? new SPPFDummyForRecognisers(lexicalisations) : new SPPF(lexicalisations);
     tasksProcessed = 0;
 
     inputIndex = 0;
@@ -61,8 +61,8 @@ public class GLLModal extends AbstractParser {
           if (slice == null) continue nextTask;// Nothing to do for empty TWE slices
           for (int sliceIndex = 0; sliceIndex < slice.length; sliceIndex++) // Iterate over the TWE set elements in this slice
             if (!slice[sliceIndex].suppressed && matchTerminal(slice[sliceIndex].cfgElement)) { // Ignore suppressed TWE set elements
-              // Util.debug("Matched " + cfgNode.toStringAsProduction());
-              if (ScriptInterpreter.currentModes.contains("mgll")) // MGLL only: create continuation task descriptors for all subsequent matches in this slice
+              Util.debug("Matched " + cfgNode.toStringAsProduction());
+              if (ScriptInterpreter.currentParser.modeMGLL) // MGLL only: create continuation task descriptors for all subsequent matches in this slice
                 for (int restOfIndex = sliceIndex + 1; restOfIndex < slice.length; restOfIndex++)
                 if (!slice[restOfIndex].suppressed && matchTerminal(slice[restOfIndex].cfgElement))
                   tasks.queue(slice[restOfIndex].rightExtent, cfgNode.seq, stackNode, updateDerivation(slice[restOfIndex].rightExtent));
@@ -77,7 +77,7 @@ public class GLLModal extends AbstractParser {
           call(cfgNode);
           continue nextTask;
         case END:
-          if (lookaheadFollow("returnlookahead", cfgNode.seq.cfgElement)) retrn();
+          /* if (returnLookahead && lookaheadFollow(cfgNode.seq.cfgElement)) */ retrn();
           continue nextTask;
 
         case OPT:
@@ -156,7 +156,7 @@ public class GLLModal extends AbstractParser {
   }
 
   private boolean lookaheadInstanceFirst(String mode, CFGNode cfgNode) {
-    if (!ScriptInterpreter.currentModes.contains(mode)) return true;
+    // if (!ScriptInterpreter.currentModes.contains(mode)) return true;
 
     var set = lexicalisations.cfgRules.instanceFirst.get(cfgNode);
     var slice = lexicalisations.getSlice(inputIndex);
@@ -175,9 +175,7 @@ public class GLLModal extends AbstractParser {
     return false;
   }
 
-  private boolean lookaheadFollow(String mode, CFGElement cfgElement) {
-    if (!ScriptInterpreter.currentModes.contains(mode)) return true;
-
+  private boolean lookaheadFollow(CFGElement cfgElement) {
     var set = lexicalisations.cfgRules.follow.get(cfgElement);
     var slice = lexicalisations.getSlice(inputIndex);
     // Util.debug("lookaheadFollow() on element " + cfgElement + " with set " + set + " and slice ");
@@ -209,12 +207,7 @@ public class GLLModal extends AbstractParser {
 
   @Override
   protected String name() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("GLLModal( ");
-    for (var m : ScriptInterpreter.currentModes)
-      sb.append(m + " ");
-    sb.append(")");
-    return sb.toString();
+    return "GLLModal";
   }
 
 }

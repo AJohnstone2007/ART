@@ -22,14 +22,15 @@ public abstract class AbstractParser {
   public boolean chooseLongest = false;
   public boolean chooseShortest = false;
 
-  public boolean recogniser = false;
-  public boolean compactderivations = false;
+  public boolean modeMGLL = false;
+  public boolean modeRecogniser = false;
+  public boolean compactDerivations = false;
   public boolean tasklifo = false;
   public boolean taskfifo = false;
   public int tasklimit = 0;
-  public boolean productionlookahead = false;
-  public boolean mglllookahead = false;
-  public boolean returnlookahead = false;
+  public boolean productionLookahead = false;
+  public boolean mgllLookahead = false;
+  public boolean returnLookahead = false;
 
   public abstract void parse(AbstractLexicalisations lexicalisations);
 
