@@ -296,6 +296,10 @@ public class ScriptInterpreter {
       currentInterpreter = new RIGInterpreter();
       Util.info("Interpreter set to RIG");
     });
+
+    addDirectiveParameter("!generate", "artArgBoolean", "actions",
+        (Integer t) -> new ActionsGenerator(currentCFGRules, currentCFGRules.filePrelude, currentCFGRules.classPrelude));
+
   }
 
   private boolean argBool(Integer t) {
@@ -427,17 +431,6 @@ public class ScriptInterpreter {
       }
         break;
 
-      case "!lexer":
-        switch (iTerms.termSymbolString(iTerms.subterm(term, 0, 0)).toLowerCase()) {
-        case "baseline":
-          currentLexer = new LexerBaseLine();
-          break;
-        default:
-          Util.fatal(
-              "Unexpected !lexer argument " + iTerms.toString(iTerms.subterm(term, 0, 0)) + "\nmust be one of (case insensitive): baseline  gllRecogniser\n");
-        }
-        break;
-
       case "!parser":
         switch (iTerms.termSymbolString(iTerms.subterm(term, 0, 0)).toLowerCase()) {
         case "algx":
@@ -521,9 +514,6 @@ public class ScriptInterpreter {
           break;
         case "rdsoboracle":
           new RDSOBOracleGenerator(currentCFGRules);
-          break;
-        case "actions":
-          if (iTerms.termArity(iTerms.subterm(term, 0)) == 1) new ActionsGenerator(currentCFGRules, currentCFGRules.filePrelude, currentCFGRules.classPrelude);
           break;
         case "__int32": { // sentence and sentential forms generator
           int count = iTerms.termToJavaInteger(iTerms.subterm(term, 0, 0));
