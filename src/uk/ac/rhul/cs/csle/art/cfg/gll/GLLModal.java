@@ -61,7 +61,7 @@ public class GLLModal extends AbstractParser {
           if (slice == null) continue nextTask;// Nothing to do for empty TWE slices
           for (int sliceIndex = 0; sliceIndex < slice.length; sliceIndex++) // Iterate over the TWE set elements in this slice
             if (!slice[sliceIndex].suppressed && matchTerminal(slice[sliceIndex].cfgElement)) { // Ignore suppressed TWE set elements
-              Util.debug("Matched " + cfgNode.toStringAsProduction());
+              // Util.debug("Matched " + cfgNode.toStringAsProduction());
               if (ScriptInterpreter.currentParser.modeMGLL) // MGLL only: create continuation task descriptors for all subsequent matches in this slice
                 for (int restOfIndex = sliceIndex + 1; restOfIndex < slice.length; restOfIndex++)
                 if (!slice[restOfIndex].suppressed && matchTerminal(slice[restOfIndex].cfgElement))
@@ -119,7 +119,7 @@ public class GLLModal extends AbstractParser {
 
   private void queueProductionTasks() {
     for (CFGNode production = cfgNode; production != null; production = production.alt)
-      if (lookaheadInstanceFirst("productionlookahead", production.seq)) tasks.queue(inputIndex, production.seq, stackNode, derivationNode);
+      /* if (lookaheadInstanceFirst("productionlookahead", production.seq)) */ tasks.queue(inputIndex, production.seq, stackNode, derivationNode);
   }
 
   private boolean nextTask() {
@@ -140,7 +140,7 @@ public class GLLModal extends AbstractParser {
   private void call(CFGNode cfgNode) {
     var newStackNode = stacks.push(derivations, tasks, inputIndex, cfgNode, stackNode, derivationNode);
     for (CFGNode p = lexicalisations.cfgRules.elementToRulesNodeMap.get(cfgNode.cfgElement).alt; p != null; p = p.alt)
-      if (lookaheadInstanceFirst("productionlookahead", p.seq)) tasks.queue(inputIndex, p.seq, newStackNode, null);
+      /* if (lookaheadInstanceFirst("productionlookahead", p.seq)) */ tasks.queue(inputIndex, p.seq, newStackNode, null);
   }
 
   private void retrn() {

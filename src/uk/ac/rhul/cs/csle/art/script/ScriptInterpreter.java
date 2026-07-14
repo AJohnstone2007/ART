@@ -66,8 +66,7 @@ public class ScriptInterpreter {
 
   private final AbstractParser scriptParser = new GLLBaseLine(true); // The script parser: note GLL not MGLL at the moment
   private final AbstractLexer scriptLexer = new LexerBaseLine(); // Standard lexer with builtins but NOT paraterminals
-  private final Map<Integer, Map<Integer, Map<Integer, Consumer<Integer>>>> directiveParameters = new HashMap<>(); // Map of directiveStringIndex to Map of
-  // directiveParamaterName to ter
+  private final Map<Integer, Map<Integer, Map<Integer, Consumer<Integer>>>> directiveParameters = new HashMap<>();
   public static CFGRules scriptCFGRules; // The rules built by parsing the user script
   private static ChooseRules scriptChooseRules; // The rules built by parsing the user script
   private int scriptParserTerm; // The derivation from scriptParser
@@ -75,34 +74,31 @@ public class ScriptInterpreter {
   private int scriptDerivationTerm = 0;
   private TermTraverser scriptTraverser;
 
-  /* 2. Directive parameter handling - note: must use lower case for names ****************************/
-
+  /* 2. Directive parameter handling - note: must use lower case for argument names ****************************/
   private void processDirectiveArguments(int term, Map<Integer, Map<Integer, Consumer<Integer>>> kindMap) {
-    Util.debug("Processing directive arguments " + iTerms.toString(iTerms.subterm(term, 0)));
-    Map<Integer, Consumer<Integer>> nameMap;
+    // Util.debug("Processing directive arguments " + iTerms.toRawString(iTerms.subterm(term, 0)) + " against map " + kindMap);
 
     for (int i = 0; i < iTerms.termArity(term); i++) {
       int arg = iTerms.subterm(term, 0, i);
-      Util.debug("Processing argument " + i + ": " + iTerms.toString(arg));
+      // Util.debug("Processing argument " + i + ": " + iTerms.toString(arg));
       int kind = iTerms.termSymbolStringIndex(arg);
 
-      // Kinds such as artArgFile and artArgString have name map of zero
+      Map<Integer, Consumer<Integer>> argumentNameMap = kindMap.get(kind);
 
-      if ((nameMap = kindMap.get(kind)) != null) {
-        if (nameMap.get(0) != null) {
-          nameMap.get(0).accept(arg);
-          return;
-        }
-
-        int name = iTerms.findString(iTerms.termSymbolString(iTerms.subterm(arg, 0)).toLowerCase());
-        if (nameMap.get(name) != null) {
-          nameMap.get(name).accept(arg);
-          return;
-        }
+      if (argumentNameMap.get(0) != null) // artArgFile and artArgString map zero to the action
+        argumentNameMap.get(0).accept(arg);
+      else {
+        String argumentNameString = iTerms.termSymbolString(iTerms.subterm(arg, 0)).toLowerCase();
+        var action = argumentNameMap.get(argumentNameString);
+        if (action == null)
+          Util.error("In directive " + iTerms.toString(iTerms.subterm(term, 0)) + ", invalid argument " + iTerms.toString((arg)));
+        else
+          action.accept(arg);
       }
-      Util.error("In directive " + iTerms.toString(iTerms.subterm(term, 0)) + ", invalid argument " + iTerms.toString((arg)));
     }
   }
+
+  // load directiveParameters as: Map of directiveStringIndex to Map of directiveKindStringIndex to Map of argumentNameStringIndex to action
 
   private void addDirectiveParameter(String directive, String kind, String name, Consumer<Integer> action) {
     Integer directiveIndex = iTerms.findString(directive);
@@ -120,11 +116,16 @@ public class ScriptInterpreter {
   }
 
   void initialiseDirectiveParameters() {
-    addDirectiveParameter("!clear", "artArgBoolean", "whitespace", (Integer t) -> {
-      currentCFGRules.seenWhitespaceDirective = true;
-      currentCFGRules.whitespaces.clear();
-    });
-
+    // addDirectiveParameter("!clear", "artArgBoolean", "whitespace", (Integer t) -> {
+    // currentCFGRules.seenWhitespaceDirective = true;
+    // currentCFGRules.whitespaces.clear();
+    // });
+    //
+    // addDirectiveParameter("!clear", "artArgBoolean", "chooseRules", (Integer t) -> {
+    // seenChooseRule = true;
+    // currentChooseRules = new ChooseRules();
+    // });
+    //
     addDirectiveParameter("!lexer", "artArgBoolean", "dfa", (Integer t) -> currentLexer = new LexerDFA());
     addDirectiveParameter("!lexer", "artArgBoolean", "baseline", (Integer t) -> {
       currentLexer = new LexerBaseLine();
@@ -313,330 +314,329 @@ public class ScriptInterpreter {
 
   /* 7. Actions for directives *********************************************************************/
   private void directiveAction(int term) {
-    Util.debug("Evaluating directive " + iTerms.toString(iTerms.subterm(term, 0)));
-    int operationTerm = iTerms.subterm(term, 0);
-    int operationStringIndex = iTerms.termSymbolStringIndex(operationTerm);
-    String operationString = iTerms.termSymbolString(operationTerm);
+    // Util.debug("directiveAction: " + iTerms.toRawString(term));
+    int directiveNameTerm = iTerms.subterm(term, 0);
 
-    var kindMap = directiveParameters.get(operationStringIndex);
-    if (kindMap != null) {
+    var kindMap = directiveParameters.get(iTerms.termSymbolStringIndex(directiveNameTerm));
+    if (kindMap != null) // If we have an entry in the directiveParameters map, then process the arguments otherwise fall through to classical switch statement
       processDirectiveArguments(term, kindMap);
-      return;
-    }
+    else {
+      // Util.debug("directiveAction: no table entry so running old style switch");
 
-    switch (operationString) {
+      switch (iTerms.termSymbolString(directiveNameTerm)) {
 
-    case "!prompt":
-      if (iTerms.termArity(iTerms.subterm(term, 0)) == 0)
-        System.out.print("\n*** Press return to continue");
-      else
-        System.out.print("\n" + iTerms.termSymbolString(iTerms.subterm(term, 0, 0)));
-      keyboard.nextLine();
-      break;
+      case "!prompt":
+        if (iTerms.termArity(iTerms.subterm(term, 0)) == 0)
+          System.out.print("\n*** Press return to continue");
+        else
+          System.out.print("\n" + iTerms.termSymbolString(iTerms.subterm(term, 0, 0)));
+        keyboard.nextLine();
+        break;
 
-    case "!traceLevel":
-      Util.traceLevel = iTerms.termToJavaInteger(iTerms.subterm(term, 0, 0));
-      // Util.debug("Trace level set to " + Util.traceLevel);
-      break;
+      case "!traceLevel":
+        Util.traceLevel = iTerms.termToJavaInteger(iTerms.subterm(term, 0, 0));
+        // Util.debug("Trace level set to " + Util.traceLevel);
+        break;
 
-    case "!errorLevel":
-      Util.errorLevel = iTerms.termToJavaInteger(iTerms.subterm(term, 0, 0));
-      // Util.debug("Error level set to " + Util.traceLevel);
-      break;
+      case "!errorLevel":
+        Util.errorLevel = iTerms.termToJavaInteger(iTerms.subterm(term, 0, 0));
+        // Util.debug("Error level set to " + Util.traceLevel);
+        break;
 
-    case "!clear":
-      for (int i = 0; i < iTerms.termArity(iTerms.subterm(term, 0)); i++) {
-        String argument = iTerms.termSymbolString(iTerms.subterm(term, 0, i)).toLowerCase();
-        // Util.debug("Processing !clear " + argument);
-        switch (argument) {
-        case "allrules":
-          currentCFGRules = new CFGRules(CFGRulesKind.USER);
-          currentChooseRules = new ChooseRules();
-          currentTRRules = new TRRules();
-          break;
+      case "!clear":
+        for (int i = 0; i < iTerms.termArity(iTerms.subterm(term, 0)); i++) {
+          String argument = iTerms.termSymbolString(iTerms.subterm(term, 0, i)).toLowerCase();
+          // Util.debug("Processing !clear " + argument);
+          switch (argument) {
+          case "allrules":
+            currentCFGRules = new CFGRules(CFGRulesKind.USER);
+            currentChooseRules = new ChooseRules();
+            currentTRRules = new TRRules();
+            break;
+          case "cfgrules":
+            currentCFGRules = new CFGRules(CFGRulesKind.USER);
+            break;
+          case "chooserules":
+            seenChooseRule = true;
+            currentChooseRules = new ChooseRules();
+            break;
+          case "trrules":
+            currentTRRules = new TRRules();
+            break;
+          case "statistics":
+            currentStatistics = new Statistics();
+            break;
+          case "whitespace":
+            currentCFGRules.seenWhitespaceDirective = true;
+            currentCFGRules.whitespaces.clear();
+            break;
+          default:
+            Util.fatal("Unknown !clear argument " + argument + "\nmust be one of (case insensitive): allRules cfgRules choseRulesrewriteRules whitespace mode");
+          }
+        }
+        break;
+
+      case "!save": {
+        String id = iTerms.termSymbolString(iTerms.subterm(term, 0, 1));
+        switch (iTerms.termSymbolString(iTerms.subterm(term, 0, 0)).toLowerCase()) {
         case "cfgrules":
-          currentCFGRules = new CFGRules(CFGRulesKind.USER);
-          break;
-        case "chooserules":
-          seenChooseRule = true;
-          currentChooseRules = new ChooseRules();
+          scriptVariables.put(id, new ScriptValueCFGRules(currentCFGRules));
           break;
         case "trrules":
-          currentTRRules = new TRRules();
+          scriptVariables.put(id, new ScriptValueTRRules(currentTRRules));
           break;
-        case "statistics":
-          currentStatistics = new Statistics();
+        case "chooserules":
+          scriptVariables.put(id, new ScriptValueChooseRules(currentChooseRules));
           break;
-        case "whitespace":
-          currentCFGRules.seenWhitespaceDirective = true;
-          currentCFGRules.whitespaces.clear();
-          break;
-        default:
-          Util.fatal("Unknown !clear argument " + argument + "\nmust be one of (case insensitive): allRules cfgRules choseRulesrewriteRules whitespace mode");
-        }
-      }
-      break;
-
-    case "!save": {
-      String id = iTerms.termSymbolString(iTerms.subterm(term, 0, 1));
-      switch (iTerms.termSymbolString(iTerms.subterm(term, 0, 0)).toLowerCase()) {
-      case "cfgrules":
-        scriptVariables.put(id, new ScriptValueCFGRules(currentCFGRules));
-        break;
-      case "trrules":
-        scriptVariables.put(id, new ScriptValueTRRules(currentTRRules));
-        break;
-      case "chooserules":
-        scriptVariables.put(id, new ScriptValueChooseRules(currentChooseRules));
-        break;
-      case "term":
-        scriptVariables.put(id, new ScriptValueTerm(currentRewriteTerm));
-        break;
-      default:
-        Util.fatal("Unknown !save argument " + iTerms.termSymbolString(iTerms.subterm(term, 0, 0))
-            + "\nmust be one of (case insensitive): cfgRules chooseRules signatures trRules term");
-      }
-    }
-      break;
-
-    case "!recall": {
-      String id = iTerms.termSymbolString(iTerms.subterm(term, 0, 0));
-      switch (scriptVariables.get(id)) {
-      case null -> Util.error("unknown script variable " + id);
-
-      case ScriptValueCFGRules v -> currentCFGRules = v.payload;
-      case ScriptValueTRRules v -> currentTRRules = v.payload;
-      case ScriptValueChooseRules v -> currentChooseRules = v.payload;
-
-      default -> Util.fatal("Unexpected !recall value type: " + scriptVariables.get(id).getClass().getSimpleName());
-      }
-    }
-      break;
-
-    case "!lexer":
-      switch (iTerms.termSymbolString(iTerms.subterm(term, 0, 0)).toLowerCase()) {
-      case "baseline":
-        currentLexer = new LexerBaseLine();
-        break;
-      default:
-        Util.fatal(
-            "Unexpected !lexer argument " + iTerms.toString(iTerms.subterm(term, 0, 0)) + "\nmust be one of (case insensitive): baseline  gllRecogniser\n");
-      }
-      break;
-
-    case "!parser":
-      switch (iTerms.termSymbolString(iTerms.subterm(term, 0, 0)).toLowerCase()) {
-      case "algx":
-        currentParser = new AlgX();
-        break;
-      case "cyk":
-        currentParser = new CYK();
-        break;
-      case "rdsobfunction":
-        currentParser = new RDSOBFunction();
-        break;
-      case "rdsobexplicitstack":
-        currentParser = new RDSOBExplicitStack();
-        break;
-
-      case "gllhashpool":
-        currentParser = new GLLHashPool();
-        break;
-      case "gllBaseline":
-        currentParser = new GLLBaseLine(false);
-        break;
-      case "mgllBaseline":
-        currentParser = new GLLBaseLine(true);
-        break;
-      case "gllmodal":
-        currentParser = new GLLModal();
-        break;
-
-      default:
-        Util.fatal("Unexpected !parser argument " + iTerms.toString(iTerms.subterm(term, 0, 0))
-            + "\nmust be one of (case insensitive): algx cyk gll mgll rdsobfunction rdsobexplicitstack");
-      }
-      break;
-
-    case "!convert":
-      switch (iTerms.termSymbolString(iTerms.subterm(term, 0, 0)).toLowerCase()) {
-      case "cfgcharacterinline":
-        currentCFGRules = new CFGRules(currentCFGRules, CFGRulesKind.USER, true, false, false, false);
-        break;
-      case "cfgcharacter":
-        currentCFGRules = new CFGRules(currentCFGRules, CFGRulesKind.USER, true, true, false, false);
-        break;
-      case "cfgbnfleft":
-        currentCFGRules = new CFGRules(currentCFGRules, CFGRulesKind.USER, false, false, true, false);
-        break;
-      case "cfgbnfright":
-        currentCFGRules = new CFGRules(currentCFGRules, CFGRulesKind.USER, false, false, false, true);
-        break;
-      default:
-        Util.fatal("Unexpected !convert argument " + iTerms.toString(iTerms.subterm(term, 0, 0))
-            + "\nmust be one of (case insensitive): cfgCharacter cfgCharacterInline cfgbnfLeft cfgbnfRight\n");
-      }
-      break;
-
-    case "!characters":
-      for (var c : iTerms.termSymbolString(iTerms.subterm(term, 0, 0, 0)).toCharArray())
-        currentCFGRules.characterSet.add(c);
-      break;
-
-    case "!whitespace":
-      currentCFGRules.whitespaces.clear();
-      currentCFGRules.seenWhitespaceDirective = true;
-      for (int i = 0; i < iTerms.termArity(iTerms.subterm(term, 0)); i++)
-        currentCFGRules.whitespaces.add(findCFGElement(iTerms.subterm(term, 0, i)));
-      break;
-
-    case "!token":
-      for (int i = 0; i < iTerms.termArity(iTerms.subterm(term, 0)); i++)
-        currentCFGRules.declaredAsTokens.add(findCFGElement(iTerms.subterm(term, 0, i)));
-      break;
-
-    case "!paraterminal":
-      for (int i = 0; i < iTerms.termArity(iTerms.subterm(term, 0)); i++)
-        currentCFGRules.paraterminals.add(findCFGElement(iTerms.subterm(term, 0, i)));
-      break;
-
-    case "!generate":
-      switch (iTerms.termSymbolString(iTerms.subterm(term, 0, 0)).toLowerCase()) {
-      case "rdsob":
-        new RDSOBGenerator(currentCFGRules, "ARTGeneratedRDSOB");
-        break;
-      case "rdsoboracle":
-        new RDSOBOracleGenerator(currentCFGRules);
-        break;
-      case "actions":
-        if (iTerms.termArity(iTerms.subterm(term, 0)) == 1) new ActionsGenerator(currentCFGRules, currentCFGRules.filePrelude, currentCFGRules.classPrelude);
-        break;
-      case "__int32": { // sentence and sentential forms generator
-        int count = iTerms.termToJavaInteger(iTerms.subterm(term, 0, 0));
-        switch (iTerms.termSymbolString(iTerms.subterm(term, 0, 1)).toLowerCase()) {
-        case "sentences":
-          currentCFGRules.generate(count, true);
-          break;
-        case "sententialforms":
-          currentCFGRules.generate(count, false);
+        case "term":
+          scriptVariables.put(id, new ScriptValueTerm(currentRewriteTerm));
           break;
         default:
-          Util.fatal("Unexpected !generate <n> argument " + iTerms.toString(iTerms.subterm(term, 0, 0))
-              + "\nmust be one of (case insensitive)\nsentences\nsententialforms");
+          Util.fatal("Unknown !save argument " + iTerms.termSymbolString(iTerms.subterm(term, 0, 0))
+              + "\nmust be one of (case insensitive): cfgRules chooseRules signatures trRules term");
+        }
+      }
+        break;
+
+      case "!recall": {
+        String id = iTerms.termSymbolString(iTerms.subterm(term, 0, 0));
+        switch (scriptVariables.get(id)) {
+        case null -> Util.error("unknown script variable " + id);
+
+        case ScriptValueCFGRules v -> currentCFGRules = v.payload;
+        case ScriptValueTRRules v -> currentTRRules = v.payload;
+        case ScriptValueChooseRules v -> currentChooseRules = v.payload;
+
+        default -> Util.fatal("Unexpected !recall value type: " + scriptVariables.get(id).getClass().getSimpleName());
+        }
+      }
+        break;
+
+      case "!lexer":
+        switch (iTerms.termSymbolString(iTerms.subterm(term, 0, 0)).toLowerCase()) {
+        case "baseline":
+          currentLexer = new LexerBaseLine();
           break;
+        default:
+          Util.fatal(
+              "Unexpected !lexer argument " + iTerms.toString(iTerms.subterm(term, 0, 0)) + "\nmust be one of (case insensitive): baseline  gllRecogniser\n");
         }
         break;
-      }
-      default:
-        Util.fatal("Unexpected !generate argument " + iTerms.toString(iTerms.subterm(term, 0, 0))
-            + "\nmust be one of (case insensitive)\nrdsob\nactions\n<count> sentences\n<count< sententialforms");
-        break;
-      }
-      break;
 
-    case "!support":
-      currentCFGRules.filePrelude = iTerms.termSymbolString(iTerms.subterm(term, 0, 0, 0));
-      currentCFGRules.classPrelude = iTerms.termSymbolString(iTerms.subterm(term, 0, 1, 0));
-      break;
+      case "!parser":
+        switch (iTerms.termSymbolString(iTerms.subterm(term, 0, 0)).toLowerCase()) {
+        case "algx":
+          currentParser = new AlgX();
+          break;
+        case "cyk":
+          currentParser = new CYK();
+          break;
+        case "rdsobfunction":
+          currentParser = new RDSOBFunction();
+          break;
+        case "rdsobexplicitstack":
+          currentParser = new RDSOBExplicitStack();
+          break;
 
-    case "!start":
-      break;
+        case "gllhashpool":
+          currentParser = new GLLHashPool();
+          break;
+        case "gllBaseline":
+          currentParser = new GLLBaseLine(false);
+          break;
+        case "mgllBaseline":
+          currentParser = new GLLBaseLine(true);
+          break;
+        case "gllmodal":
+          currentParser = new GLLModal();
+          break;
 
-    case "!configuration":
-      currentTRRules.modifyConfiguration(iTerms.subterm(term, 0));
-      break;
-
-    case "!signature":
-      for (int i = 0; i < iTerms.termArity(iTerms.subterm(term)); i++)
-        currentCFGRules.addSignature(iTerms.subterm(term, i));
-      break;
-
-    case "!normal":
-      int relation = iTerms.subterm(term, 0, 0, 0);
-      int termBase = iTerms.subterm(term, 0, 1);
-      // Util.debug("Processing terminal directive: " + iTerms.toRawString(term) + " with relation " + iTerms.toRawString(relation) + " and term base "
-      // + iTerms.toRawString(termBase));
-      for (int i = 0; i < iTerms.termArity(termBase); i++)
-        currentTRRules.addTerminal(relation, iTerms.subterm(term, 0, 1, i));
-      break;
-
-    case "!try":
-      // Util.debug("processing try " + iTerms.toString(term));
-      normaliseAll();
-      if (iTerms.termSymbolString(iTerms.subterm(term, 0, 0)).equals("artFile")) // Parse contents of file
-        try {
-          String filename = iTerms.termSymbolString(iTerms.subterm(term, 0, 0, 0));
-          // Util.info("Attempting to open file " + filename);
-          tryParse(Files.readString(Paths.get(filename)));
-        } catch (IOException e) {
-          Util.fatal("Unable to open try file; skipping " + iTerms.toString(term));
+        default:
+          Util.fatal("Unexpected !parser argument " + iTerms.toString(iTerms.subterm(term, 0, 0))
+              + "\nmust be one of (case insensitive): algx cyk gll mgll rdsobfunction rdsobexplicitstack");
         }
-      else if (iTerms.termSymbolString(iTerms.subterm(term, 0, 0, 0)).equals("__string")) // Parse literal string
-        tryParse(Util.unescapeString(iTerms.termSymbolString(iTerms.subterm(term, 0, 0, 0, 0))));
-      else
-        currentTryTerm = iTerms.subterm(term, 0, 0); // No parsing - process term directly
+        break;
 
-      if (currentTryTerm != 0 && currentTRRules.defaultStartRelation != 0) {// if there is a term and some rules
-        // if (!iTerms.hasSymbol(currentDerivationTerm, "trTopTuple")) currentDerivationTerm = iTerms.findTerm("trTopTuple", currentDerivationTerm); // augment
-        currentTryTerm = currentTRRules.unelideConfiguration(currentTryTerm, currentTRRules.defaultStartRelation, true);
+      case "!convert":
+        switch (iTerms.termSymbolString(iTerms.subterm(term, 0, 0)).toLowerCase()) {
+        case "cfgcharacterinline":
+          currentCFGRules = new CFGRules(currentCFGRules, CFGRulesKind.USER, true, false, false, false);
+          break;
+        case "cfgcharacter":
+          currentCFGRules = new CFGRules(currentCFGRules, CFGRulesKind.USER, true, true, false, false);
+          break;
+        case "cfgbnfleft":
+          currentCFGRules = new CFGRules(currentCFGRules, CFGRulesKind.USER, false, false, true, false);
+          break;
+        case "cfgbnfright":
+          currentCFGRules = new CFGRules(currentCFGRules, CFGRulesKind.USER, false, false, false, true);
+          break;
+        default:
+          Util.fatal("Unexpected !convert argument " + iTerms.toString(iTerms.subterm(term, 0, 0))
+              + "\nmust be one of (case insensitive): cfgCharacter cfgCharacterInline cfgbnfLeft cfgbnfRight\n");
+        }
+        break;
 
-        currentRewriteTerm = currentRewriter.rewrite(currentTryTerm, currentTRRules); // Run the rewriter
-        if (iTerms.termArity(iTerms.subterm(term, 0)) == 2) // There was a test term
-          if (currentRewriteTerm == iTerms.subterm(term, 0, 1)) {
-            Util.trace(3, "Successful test");
-            successfulTests++;
-          } else {
-            Util.trace(3, "Failed test: expected " + iTerms.plainTextTraverser.toString(iTerms.subterm(term, 0, 1)));
-            failedTests++;
+      case "!characters":
+        for (var c : iTerms.termSymbolString(iTerms.subterm(term, 0, 0, 0)).toCharArray())
+          currentCFGRules.characterSet.add(c);
+        break;
+
+      case "!whitespace":
+        currentCFGRules.whitespaces.clear();
+        currentCFGRules.seenWhitespaceDirective = true;
+        for (int i = 0; i < iTerms.termArity(iTerms.subterm(term, 0)); i++)
+          currentCFGRules.whitespaces.add(findCFGElement(iTerms.subterm(term, 0, i)));
+        break;
+
+      case "!token":
+        for (int i = 0; i < iTerms.termArity(iTerms.subterm(term, 0)); i++)
+          currentCFGRules.declaredAsTokens.add(findCFGElement(iTerms.subterm(term, 0, i)));
+        break;
+
+      case "!paraterminal":
+        for (int i = 0; i < iTerms.termArity(iTerms.subterm(term, 0)); i++)
+          currentCFGRules.paraterminals.add(findCFGElement(iTerms.subterm(term, 0, i)));
+        break;
+
+      case "!generate":
+        switch (iTerms.termSymbolString(iTerms.subterm(term, 0, 0)).toLowerCase()) {
+        case "rdsob":
+          new RDSOBGenerator(currentCFGRules, "ARTGeneratedRDSOB");
+          break;
+        case "rdsoboracle":
+          new RDSOBOracleGenerator(currentCFGRules);
+          break;
+        case "actions":
+          if (iTerms.termArity(iTerms.subterm(term, 0)) == 1) new ActionsGenerator(currentCFGRules, currentCFGRules.filePrelude, currentCFGRules.classPrelude);
+          break;
+        case "__int32": { // sentence and sentential forms generator
+          int count = iTerms.termToJavaInteger(iTerms.subterm(term, 0, 0));
+          switch (iTerms.termSymbolString(iTerms.subterm(term, 0, 1)).toLowerCase()) {
+          case "sentences":
+            currentCFGRules.generate(count, true);
+            break;
+          case "sententialforms":
+            currentCFGRules.generate(count, false);
+            break;
+          default:
+            Util.fatal("Unexpected !generate <n> argument " + iTerms.toString(iTerms.subterm(term, 0, 0))
+                + "\nmust be one of (case insensitive)\nsentences\nsententialforms");
+            break;
           }
-      }
-
-      if (currentTryTerm != 0 && currentInterpreter != null) currentInterpreter.interpret(currentParser);
-      break;
-
-    case "!print", "!show":
-      processDisplayElements(operationTerm);
-      break;
-
-    /* Undocumented research features */
-    case "!deletetokens":
-      currentLexer.lexicalisations.deleteTokenCount = iTerms.termToJavaInteger(iTerms.subterm(term, 0, 0));
-      break;
-
-    case "!swaptokens":
-      currentLexer.lexicalisations.swapTokenCount = iTerms.termToJavaInteger(iTerms.subterm(term, 0, 0));
-      break;
-
-    case "!sppfBreakCycles": {
-      boolean trace = false;
-      boolean statistics = false;
-      boolean counts = false;
-      for (int i = 0; i < iTerms.termArity(iTerms.subterm(term, 0)); i++)
-        switch (iTerms.termSymbolString(iTerms.subterm(term, 0, i))) {
-        case "trace":
-          trace = true;
           break;
-        case "counts":
-          counts = true;
-          break;
-        case "statistics":
-          statistics = true;
-          break;
-        default:
-          Util.fatal("Unknown !sppfBreakCycles argument " + iTerms.termSymbolString(iTerms.subterm(term, 0, i)));
         }
-      currentParser.derivations.breakCycles(trace, counts, statistics);
+        default:
+          Util.fatal("Unexpected !generate argument " + iTerms.toString(iTerms.subterm(term, 0, 0))
+              + "\nmust be one of (case insensitive)\nrdsob\nactions\n<count> sentences\n<count< sententialforms");
+          break;
+        }
+        break;
+
+      case "!support":
+        currentCFGRules.filePrelude = iTerms.termSymbolString(iTerms.subterm(term, 0, 0, 0));
+        currentCFGRules.classPrelude = iTerms.termSymbolString(iTerms.subterm(term, 0, 1, 0));
+        break;
+
+      case "!start":
+        break;
+
+      case "!configuration":
+        currentTRRules.modifyConfiguration(iTerms.subterm(term, 0));
+        break;
+
+      case "!signature":
+        for (int i = 0; i < iTerms.termArity(iTerms.subterm(term)); i++)
+          currentCFGRules.addSignature(iTerms.subterm(term, i));
+        break;
+
+      case "!normal":
+        int relation = iTerms.subterm(term, 0, 0, 0);
+        int termBase = iTerms.subterm(term, 0, 1);
+        // Util.debug("Processing terminal directive: " + iTerms.toRawString(term) + " with relation " + iTerms.toRawString(relation) + " and term base "
+        // + iTerms.toRawString(termBase));
+        for (int i = 0; i < iTerms.termArity(termBase); i++)
+          currentTRRules.addTerminal(relation, iTerms.subterm(term, 0, 1, i));
+        break;
+
+      case "!try":
+        // Util.debug("processing try " + iTerms.toString(term));
+        normaliseAll();
+        if (iTerms.termSymbolString(iTerms.subterm(term, 0, 0)).equals("artFile")) // Parse contents of file
+          try {
+            String filename = iTerms.termSymbolString(iTerms.subterm(term, 0, 0, 0));
+            // Util.info("Attempting to open file " + filename);
+            tryParse(Files.readString(Paths.get(filename)));
+          } catch (IOException e) {
+            Util.fatal("Unable to open try file; skipping " + iTerms.toString(term));
+          }
+        else if (iTerms.termSymbolString(iTerms.subterm(term, 0, 0, 0)).equals("__string")) // Parse literal string
+          tryParse(Util.unescapeString(iTerms.termSymbolString(iTerms.subterm(term, 0, 0, 0, 0))));
+        else
+          currentTryTerm = iTerms.subterm(term, 0, 0); // No parsing - process term directly
+
+        if (currentTryTerm != 0 && currentTRRules.defaultStartRelation != 0) {// if there is a term and some rules
+          // if (!iTerms.hasSymbol(currentDerivationTerm, "trTopTuple")) currentDerivationTerm = iTerms.findTerm("trTopTuple", currentDerivationTerm); //
+          // augment
+          currentTryTerm = currentTRRules.unelideConfiguration(currentTryTerm, currentTRRules.defaultStartRelation, true);
+
+          currentRewriteTerm = currentRewriter.rewrite(currentTryTerm, currentTRRules); // Run the rewriter
+          if (iTerms.termArity(iTerms.subterm(term, 0)) == 2) // There was a test term
+            if (currentRewriteTerm == iTerms.subterm(term, 0, 1)) {
+              Util.trace(3, "Successful test");
+              successfulTests++;
+            } else {
+              Util.trace(3, "Failed test: expected " + iTerms.plainTextTraverser.toString(iTerms.subterm(term, 0, 1)));
+              failedTests++;
+            }
+        }
+
+        if (currentTryTerm != 0 && currentInterpreter != null) currentInterpreter.interpret(currentParser);
+        break;
+
+      case "!print", "!show":
+        processDisplayElements(directiveNameTerm);
+        break;
+
+      /* Undocumented research features */
+      case "!deletetokens":
+        currentLexer.lexicalisations.deleteTokenCount = iTerms.termToJavaInteger(iTerms.subterm(term, 0, 0));
+        break;
+
+      case "!swaptokens":
+        currentLexer.lexicalisations.swapTokenCount = iTerms.termToJavaInteger(iTerms.subterm(term, 0, 0));
+        break;
+
+      case "!sppfBreakCycles": {
+        boolean trace = false;
+        boolean statistics = false;
+        boolean counts = false;
+        for (int i = 0; i < iTerms.termArity(iTerms.subterm(term, 0)); i++)
+          switch (iTerms.termSymbolString(iTerms.subterm(term, 0, i))) {
+          case "trace":
+            trace = true;
+            break;
+          case "counts":
+            counts = true;
+            break;
+          case "statistics":
+            statistics = true;
+            break;
+          default:
+            Util.fatal("Unknown !sppfBreakCycles argument " + iTerms.termSymbolString(iTerms.subterm(term, 0, i)));
+          }
+        currentParser.derivations.breakCycles(trace, counts, statistics);
+      }
+        break;
+
+      case "!sppfBreakCyclesRelation":
+        currentParser.derivations.breakCyclesRelation();
+        break;
+
+      default:
+        Util.error("Unimplemented directive " + iTerms.toString(iTerms.subterm(term, 0)));
+      }
     }
-      break;
-
-    case "!sppfBreakCyclesRelation":
-      currentParser.derivations.breakCyclesRelation();
-      break;
-
-    default:
-      Util.error("Unimplemented directive " + iTerms.toString(iTerms.subterm(term, 0)));
-    }
-
   }
 
   /* 8. Sub-actions for !print and !show ***********************************************************/
