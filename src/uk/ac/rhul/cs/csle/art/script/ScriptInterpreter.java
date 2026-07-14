@@ -74,112 +74,6 @@ public class ScriptInterpreter {
   private int scriptDerivationTerm = 0;
   private TermTraverser scriptTraverser;
 
-  /* 2. Directive parameter handling - note: must use lower case for argument names ****************************/
-  private void processDirectiveArguments(int term, Map<Integer, Map<Integer, Consumer<Integer>>> kindMap) {
-    // Util.debug("Processing directive arguments " + iTerms.toRawString(iTerms.subterm(term, 0)) + " against map " + kindMap);
-
-    for (int i = 0; i < iTerms.termArity(term); i++) {
-      int arg = iTerms.subterm(term, 0, i);
-      // Util.debug("Processing argument " + i + ": " + iTerms.toString(arg));
-      int kind = iTerms.termSymbolStringIndex(arg);
-
-      Map<Integer, Consumer<Integer>> argumentNameMap = kindMap.get(kind);
-
-      if (argumentNameMap.get(0) != null) // artArgFile and artArgString map zero to the action
-        argumentNameMap.get(0).accept(arg);
-      else {
-        String argumentNameString = iTerms.termSymbolString(iTerms.subterm(arg, 0)).toLowerCase();
-        var action = argumentNameMap.get(argumentNameString);
-        if (action == null)
-          Util.error("In directive " + iTerms.toString(iTerms.subterm(term, 0)) + ", invalid argument " + iTerms.toString((arg)));
-        else
-          action.accept(arg);
-      }
-    }
-  }
-
-  // load directiveParameters as: Map of directiveStringIndex to Map of directiveKindStringIndex to Map of argumentNameStringIndex to action
-
-  private void addDirectiveParameter(String directive, String kind, String name, Consumer<Integer> action) {
-    Integer directiveIndex = iTerms.findString(directive);
-    Integer kindIndex = iTerms.findString(kind);
-    Integer nameIndex = iTerms.findString(name);
-
-    if (directiveParameters.get(directiveIndex) == null) directiveParameters.put(directiveIndex, new HashMap<>());
-    var kindMap = directiveParameters.get(directiveIndex);
-
-    if (kindMap.get(kindIndex) == null) kindMap.put(kindIndex, new HashMap<>());
-    var nameMap = kindMap.get(kindIndex);
-
-    if (nameMap.get(nameIndex) != null) Util.fatal("internal error - doubly defined directive parameter");
-    nameMap.put(nameIndex, action);
-  }
-
-  void initialiseDirectiveParameters() {
-    // addDirectiveParameter("!clear", "artArgBoolean", "whitespace", (Integer t) -> {
-    // currentCFGRules.seenWhitespaceDirective = true;
-    // currentCFGRules.whitespaces.clear();
-    // });
-    //
-    // addDirectiveParameter("!clear", "artArgBoolean", "chooseRules", (Integer t) -> {
-    // seenChooseRule = true;
-    // currentChooseRules = new ChooseRules();
-    // });
-    //
-    addDirectiveParameter("!lexer", "artArgBoolean", "dfa", (Integer t) -> currentLexer = new LexerDFA());
-    addDirectiveParameter("!lexer", "artArgBoolean", "baseline", (Integer t) -> {
-      currentLexer = new LexerBaseLine();
-      Util.info("Set current lexer to BaseLine");
-    });
-    addDirectiveParameter("!lexer", "artArgBoolean", "gll", (Integer t) -> currentLexer = new LexerGLL());
-    addDirectiveParameter("!lexer", "artArgBoolean", "dead", (Integer t) -> currentLexer.suppressDeadPath = argBool(t));
-    addDirectiveParameter("!lexer", "artArgBoolean", "priority", (Integer t) -> currentLexer.choosePriority = argBool(t));
-    addDirectiveParameter("!lexer", "artArgBoolean", "longer", (Integer t) -> currentLexer.chooseLongest = argBool(t));
-    addDirectiveParameter("!lexer", "artArgBoolean", "shorter", (Integer t) -> currentLexer.chooseShortest = argBool(t));
-    addDirectiveParameter("!lexer", "artArgInt", "deleteTokens", (Integer t) -> currentLexer.deleteTokens = argInt(t));
-    addDirectiveParameter("!lexer", "artArgInt", "swapTokens", (Integer t) -> currentLexer.swapTokens = argInt(t));
-
-    addDirectiveParameter("!parser", "artArgBoolean", "priority", (Integer t) -> currentParser.choosePriority = argBool(t));
-    addDirectiveParameter("!parser", "artArgBoolean", "longer", (Integer t) -> currentParser.chooseLongest = argBool(t));
-    addDirectiveParameter("!parser", "artArgBoolean", "shorter", (Integer t) -> currentParser.chooseShortest = argBool(t));
-    addDirectiveParameter("!parser", "artArgBoolean", "breakCycles", (Integer t) -> currentParser.breakCycles = argBool(t));
-    addDirectiveParameter("!parser", "artArgBoolean", "breakCyclesRelation", (Integer t) -> currentParser.breakCyclesRelation = argBool(t));
-
-    addDirectiveParameter("!interpreter", "artArgBoolean", "esos", (Integer t) -> currentInterpreter = null /* improve this */);
-    addDirectiveParameter("!interpreter", "artArgBoolean", "attributeaction", (Integer t) -> currentInterpreter = new AttributeActionInterpreter());
-    addDirectiveParameter("!interpreter", "artArgBoolean", "rig", (Integer t) -> currentInterpreter = new RIGInterpreter());
-  }
-
-  private boolean argBool(Integer t) {
-    // TODO Auto-generated method stub
-    return false;
-  }
-
-  private int argInt(Integer t) {
-    // TODO Auto-generated method stub
-    return 0;
-  }
-
-  //@formatter:off
-  private enum ConvertModes {bnfleft, bnfright, cfgcharacter, characterinline, injectinstance, injectproduction, absorb};
-
-  private enum SaveModes {cfgrules, chooserules, signatures, trrules};
-
-  private enum ParserModes {
-    algx, brnglr, cnp, earley, earley2007, gll, lcnp, mgll, rdsob, rnglr,
-
-  };
-
-  private enum DisplayModes {
-    cfgrules, chooserules, signatures, trrules,
-    tokens, stacks, derivations, tasks,
-    term, scriptterm,
-    raw, plain, latex, css,
-    indent, full, file, depth,
-  };
-
-  //@formatter:on
-
   /* 3. Current script data structures ***********************************************************/
   public static AbstractLexer currentLexer = new LexerBaseLine();
   public static AbstractParser currentParser = new GLLModal();
@@ -313,6 +207,119 @@ public class ScriptInterpreter {
   }
 
   /* 7. Actions for directives *********************************************************************/
+  /* 2. Directive parameter handling - note: must use lower case for argument names ****************************/
+  private void processDirectiveArguments(int term, Map<Integer, Map<Integer, Consumer<Integer>>> kindMap) {
+    // Util.debug("Processing directive arguments " + iTerms.toRawString(iTerms.subterm(term, 0)) + " against map " + kindMap);
+
+    for (int i = 0; i < iTerms.termArity(term); i++) {
+      int arg = iTerms.subterm(term, 0, i);
+      Util.debug("Processing argument " + i + ": " + iTerms.toRawString(arg));
+      int kind = iTerms.termSymbolStringIndex(arg);
+
+      Map<Integer, Consumer<Integer>> argumentNameMap = kindMap.get(kind);
+
+      if (argumentNameMap.get(0) != null) // artArgFile and artArgString map zero to the action
+        argumentNameMap.get(0).accept(arg);
+      else {
+        String argumentNameString = iTerms.termSymbolString(iTerms.subterm(arg, 0)).toLowerCase();
+        var action = argumentNameMap.get(iTerms.findString(argumentNameString));
+        if (action == null)
+          Util.error("In directive " + iTerms.toString(iTerms.subterm(term, 0)) + ", invalid argument " + argumentNameString);
+        else
+          action.accept(arg);
+      }
+    }
+  }
+
+  // load directiveParameters as: Map of directiveStringIndex to Map of directiveKindStringIndex to Map of argumentNameStringIndex to action
+
+  private void addDirectiveParameter(String directive, String kind, String name, Consumer<Integer> action) {
+    Integer directiveIndex = iTerms.findString(directive);
+    Integer kindIndex = iTerms.findString(kind);
+    Integer nameIndex = iTerms.findString(name);
+
+    if (directiveParameters.get(directiveIndex) == null) directiveParameters.put(directiveIndex, new HashMap<>());
+    var kindMap = directiveParameters.get(directiveIndex);
+
+    if (kindMap.get(kindIndex) == null) kindMap.put(kindIndex, new HashMap<>());
+    var nameMap = kindMap.get(kindIndex);
+
+    if (nameMap.get(nameIndex) != null) Util.fatal("internal error - doubly defined directive parameter");
+    nameMap.put(nameIndex, action);
+  }
+
+  void initialiseDirectiveParameters() {
+    // addDirectiveParameter("!clear", "artArgBoolean", "whitespace", (Integer t) -> {
+    // currentCFGRules.seenWhitespaceDirective = true;
+    // currentCFGRules.whitespaces.clear();
+    // });
+    //
+    // addDirectiveParameter("!clear", "artArgBoolean", "chooseRules", (Integer t) -> {
+    // seenChooseRule = true;
+    // currentChooseRules = new ChooseRules();
+    // });
+    //
+    addDirectiveParameter("!lexer", "artArgBoolean", "dfa", (Integer t) -> currentLexer = new LexerDFA());
+    addDirectiveParameter("!lexer", "artArgBoolean", "baseline", (Integer t) -> {
+      currentLexer = new LexerBaseLine();
+      Util.info("Set current lexer to BaseLine");
+    });
+    addDirectiveParameter("!lexer", "artArgBoolean", "gll", (Integer t) -> currentLexer = new LexerGLL());
+    addDirectiveParameter("!lexer", "artArgBoolean", "dead", (Integer t) -> currentLexer.suppressDeadPath = argBool(t));
+    addDirectiveParameter("!lexer", "artArgBoolean", "priority", (Integer t) -> currentLexer.choosePriority = argBool(t));
+    addDirectiveParameter("!lexer", "artArgBoolean", "longer", (Integer t) -> currentLexer.chooseLongest = argBool(t));
+    addDirectiveParameter("!lexer", "artArgBoolean", "shorter", (Integer t) -> currentLexer.chooseShortest = argBool(t));
+    addDirectiveParameter("!lexer", "artArgInt", "deleteTokens", (Integer t) -> currentLexer.deleteTokens = argInt(t));
+    addDirectiveParameter("!lexer", "artArgInt", "swapTokens", (Integer t) -> currentLexer.swapTokens = argInt(t));
+
+    // algx, brnglr, cnp, earley, earley2007, gll, lcnp, mgll, rdsob, rnglr,
+
+    addDirectiveParameter("!parser", "artArgBoolean", "baseline", (Integer t) -> {
+      currentParser = new GLLBaseLine(false);
+      Util.info("Parser set to baseline");
+    });
+
+    addDirectiveParameter("!parser", "artArgBoolean", "priority", (Integer t) -> currentParser.choosePriority = argBool(t));
+    addDirectiveParameter("!parser", "artArgBoolean", "longer", (Integer t) -> currentParser.chooseLongest = argBool(t));
+    addDirectiveParameter("!parser", "artArgBoolean", "shorter", (Integer t) -> currentParser.chooseShortest = argBool(t));
+    addDirectiveParameter("!parser", "artArgBoolean", "breakCycles", (Integer t) -> currentParser.breakCycles = argBool(t));
+    addDirectiveParameter("!parser", "artArgBoolean", "breakCyclesRelation", (Integer t) -> currentParser.breakCyclesRelation = argBool(t));
+
+    addDirectiveParameter("!interpreter", "artArgBoolean", "esos", (Integer t) -> currentInterpreter = null /* improve this */);
+    addDirectiveParameter("!interpreter", "artArgBoolean", "attributeaction", (Integer t) -> currentInterpreter = new AttributeActionInterpreter());
+    addDirectiveParameter("!interpreter", "artArgBoolean", "rig", (Integer t) -> currentInterpreter = new RIGInterpreter());
+  }
+
+  private boolean argBool(Integer t) {
+    // TODO Auto-generated method stub
+    return false;
+  }
+
+  private int argInt(Integer t) {
+    // TODO Auto-generated method stub
+    return 0;
+  }
+
+  //@formatter:off
+  private enum ConvertModes {bnfleft, bnfright, cfgcharacter, characterinline, injectinstance, injectproduction, absorb};
+
+  private enum SaveModes {cfgrules, chooserules, signatures, trrules};
+
+  private enum ParserModes {
+    algx, brnglr, cnp, earley, earley2007, gll, lcnp, mgll, rdsob, rnglr,
+
+  };
+
+  private enum DisplayModes {
+    cfgrules, chooserules, signatures, trrules,
+    tokens, stacks, derivations, tasks,
+    term, scriptterm,
+    raw, plain, latex, css,
+    indent, full, file, depth,
+  };
+
+  //@formatter:on
+
   private void directiveAction(int term) {
     // Util.debug("directiveAction: " + iTerms.toRawString(term));
     int directiveNameTerm = iTerms.subterm(term, 0);
