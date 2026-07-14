@@ -207,13 +207,12 @@ public class ScriptInterpreter {
   }
 
   /* 7. Actions for directives *********************************************************************/
-  /* 2. Directive parameter handling - note: must use lower case for argument names ****************************/
   private void processDirectiveArguments(int term, Map<Integer, Map<Integer, Consumer<Integer>>> kindMap) {
     // Util.debug("Processing directive arguments " + iTerms.toRawString(iTerms.subterm(term, 0)) + " against map " + kindMap);
 
     for (int i = 0; i < iTerms.termArity(term); i++) {
       int arg = iTerms.subterm(term, 0, i);
-      Util.debug("Processing argument " + i + ": " + iTerms.toRawString(arg));
+      // Util.debug("Processing argument " + i + ": " + iTerms.toRawString(arg));
       int kind = iTerms.termSymbolStringIndex(arg);
 
       Map<Integer, Consumer<Integer>> argumentNameMap = kindMap.get(kind);
@@ -231,8 +230,7 @@ public class ScriptInterpreter {
     }
   }
 
-  // load directiveParameters as: Map of directiveStringIndex to Map of directiveKindStringIndex to Map of argumentNameStringIndex to action
-
+  // Directive parameter handling - note: must use lower case for argument names
   private void addDirectiveParameter(String directive, String kind, String name, Consumer<Integer> action) {
     Integer directiveIndex = iTerms.findString(directive);
     Integer kindIndex = iTerms.findString(kind);
@@ -276,7 +274,7 @@ public class ScriptInterpreter {
 
     addDirectiveParameter("!parser", "artArgBoolean", "baseline", (Integer t) -> {
       currentParser = new GLLBaseLine(false);
-      Util.info("Parser set to baseline");
+      Util.info("Parser set to Baseline");
     });
 
     addDirectiveParameter("!parser", "artArgBoolean", "priority", (Integer t) -> currentParser.choosePriority = argBool(t));
@@ -285,9 +283,19 @@ public class ScriptInterpreter {
     addDirectiveParameter("!parser", "artArgBoolean", "breakCycles", (Integer t) -> currentParser.breakCycles = argBool(t));
     addDirectiveParameter("!parser", "artArgBoolean", "breakCyclesRelation", (Integer t) -> currentParser.breakCyclesRelation = argBool(t));
 
-    addDirectiveParameter("!interpreter", "artArgBoolean", "esos", (Integer t) -> currentInterpreter = null /* improve this */);
-    addDirectiveParameter("!interpreter", "artArgBoolean", "attributeaction", (Integer t) -> currentInterpreter = new AttributeActionInterpreter());
-    addDirectiveParameter("!interpreter", "artArgBoolean", "rig", (Integer t) -> currentInterpreter = new RIGInterpreter());
+    addDirectiveParameter("!interpreter", "artArgBoolean", "esos", (Integer t) -> {
+      currentInterpreter = null; // improve this
+      Util.info("Interpreter set to eSOS");
+    });
+
+    addDirectiveParameter("!interpreter", "artArgBoolean", "attributeaction", (Integer t) -> {
+      currentInterpreter = new AttributeActionInterpreter();
+      Util.info("Interpreter set to AttributeAction");
+    });
+    addDirectiveParameter("!interpreter", "artArgBoolean", "rig", (Integer t) -> {
+      currentInterpreter = new RIGInterpreter();
+      Util.info("Interpreter set to RIG");
+    });
   }
 
   private boolean argBool(Integer t) {
