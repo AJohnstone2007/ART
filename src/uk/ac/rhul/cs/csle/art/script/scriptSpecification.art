@@ -154,10 +154,9 @@ directive ::= directiveCarrier
 
 directiveCarrier ::=  
   '!prompt'^^ | '!prompt'^^ &STRING_DQ
-| '!traceLevel'^^ __int32
-| '!errorLevel'^^ __int32
+| '!set'^^ artArgs^
 
-| '!clear'^^ IDs^ | '!save'^^ ID artArgs^ | '!recall'^^ ID | '!convert'^^ artArgs^
+| '!clear'^^ artArgs^ | '!save'^^ ID artArgs^ | '!recall'^^ ID | '!convert'^^ artArgs^
 
 | '!lexer'^^ artArgs^ | '!parser'^^ artArgs^ | '!interpreter'^^ artArgs^ | '!generate'^^ artArgs^  
 

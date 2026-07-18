@@ -360,7 +360,32 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
         case "STRING_DQ":
           addCharacters("\"\\");
           break;
-        case "SML_CHAR", "SML_INT", "SML_REAL", "SML_STRID", "SML_STRING", "SML_SYMID", "SML_TYVAR", "SML_WORD":
+        case "SML_CHAR":
+          Util.warning("Found SML builtin " + e.str + " whilst extending character set - ignoring");
+          break;
+        case "SML_INT":
+          Util.warning("Found SML builtin " + e.str + " whilst extending character set - ignoring");
+          break;
+        case "SML_REAL":
+          Util.warning("Found SML builtin " + e.str + " whilst extending character set - ignoring");
+          break;
+        case "SML_STRID":
+          Util.warning("Found SML builtin " + e.str + " whilst extending character set - ignoring");
+          break;
+        case "SML_STRING":
+          Util.warning("Found SML builtin " + e.str + " whilst extending character set - ignoring");
+          break;
+        case "SML_SYMID":
+          Util.warning("Found SML builtin " + e.str + " whilst extending character set - ignoring");
+          break;
+        case "SML_TYVAR":
+          Util.warning("Found SML builtin " + e.str + " whilst extending character set - ignoring");
+          break;
+        case "SML_WORD":
+          Util.warning("Found SML builtin " + e.str + " whilst extending character set - ignoring");
+          break;
+        case "SML_COMMENT":
+          Util.warning("Found SML builtin " + e.str + " whilst extending character set - ignoring");
           break;
         default:
           Util.fatal("Character set update found unexpected built in " + e);
