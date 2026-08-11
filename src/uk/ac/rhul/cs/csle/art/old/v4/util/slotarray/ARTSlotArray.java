@@ -110,7 +110,7 @@ public class ARTSlotArray {
         if (symbolJavaStrings != null) {
           symbolJavaStrings[n.getElementNumber()] = n.toString();
           slotRightSymbols[n.getElementNumber()] = 0;
-          slotFirstSetAddresses[n.getElementNumber()] = grammar.getMergedSets().get(n.first); // lookup merged set number for the first set, and load to
+          slotFirstSetAddresses[n.getElementNumber()] = grammar.getMergedSets().get(n.getFirst()); // lookup merged set number for the first set, and load to
           // firstSetAddresses for this nonterminal
           nonterminalFollowSetAddresses[n.getElementNumber()] = grammar.getMergedSets().get(n.follow); // similarly for follow
         }
@@ -137,8 +137,8 @@ public class ARTSlotArray {
               slotLHSSymbols[slotNumber] = n.getElementNumber();
               symbolJavaStrings[slotNumber] = i.toGrammarString(".");
               prefixLengths[slotNumber] = i.getPrefixLength();
-              slotFirstSetAddresses[slotNumber] = grammar.getMergedSets().get(i.first);
-              slotGuardSetAddresses[slotNumber] = grammar.getMergedSets().get(i.guard);
+              slotFirstSetAddresses[slotNumber] = grammar.getMergedSets().get(i.getFirst());
+              slotGuardSetAddresses[slotNumber] = grammar.getMergedSets().get(i.getGuard());
               // Now do the payload - this looks odd; surely only for terminals?
               if (i.getSibling().getPayload() != null) {
                 int payloadNumber = i.getSibling().getPayload().getElementNumber();
@@ -159,8 +159,8 @@ public class ARTSlotArray {
               slotRightSymbols[slotNumber] = 0; // sentinel at end of production
               slotLHSSymbols[slotNumber] = n.getElementNumber();
               symbolJavaStrings[slotNumber] = i.toGrammarString(".");
-              slotFirstSetAddresses[slotNumber] = grammar.getMergedSets().get(i.first);
-              slotGuardSetAddresses[slotNumber] = grammar.getMergedSets().get(i.guard);
+              slotFirstSetAddresses[slotNumber] = grammar.getMergedSets().get(i.getFirst());
+              slotGuardSetAddresses[slotNumber] = grammar.getMergedSets().get(i.getGuard());
             }
             slotNumber++;
           }

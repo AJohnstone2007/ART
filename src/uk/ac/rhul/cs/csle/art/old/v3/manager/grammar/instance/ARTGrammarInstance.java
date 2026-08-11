@@ -13,9 +13,9 @@ import uk.ac.rhul.cs.csle.art.old.v4.util.text.ARTText;
 
 public class ARTGrammarInstance extends ARTTreeVertexDoublyLinked implements Comparable<ARTGrammarInstance> {
 
-  public final Set<ARTGrammarElement> first = new TreeSet<ARTGrammarElement>();
-  public final Set<ARTGrammarElement> follow = new TreeSet<ARTGrammarElement>();
-  public final Set<ARTGrammarElement> guard = new TreeSet<ARTGrammarElement>();
+  private final Set<ARTGrammarElement> first = new TreeSet<ARTGrammarElement>();
+  private final Set<ARTGrammarElement> follow = new TreeSet<ARTGrammarElement>();
+  private final Set<ARTGrammarElement> guard = new TreeSet<ARTGrammarElement>();
 
   public ARTFold fold = ARTFold.EMPTY; // Fold operator attached to this instance node
   public int instanceNumberWithinProduction; // instance number for this element in a production to generate attribute name
@@ -128,9 +128,9 @@ public class ARTGrammarInstance extends ARTTreeVertexDoublyLinked implements Com
         + toRefEnumString(getProductionL(), "productionL") + "\nprefixLength: " + prefixLength + toRefEnumString(niL, "niL") + toRefEnumString(aL, "aL")
         + toRefEnumString(nL, "nL") + toRefEnumString(pL, "pL") + toRefEnumString(lrL, "lrL") + toRefEnumString(erL, "erL") + toRefEnumString(ssL, "ssL");
 
-    if (!first.isEmpty()) ret += "\nfirst: " + first;
-    if (!follow.isEmpty()) ret += "\nfollow: " + follow;
-    if (!guard.isEmpty()) ret += "\nguard: " + guard;
+    if (!getFirst().isEmpty()) ret += "\nfirst: " + getFirst();
+    if (!getFollow().isEmpty()) ret += "\nfollow: " + getFollow();
+    if (!getGuard().isEmpty()) ret += "\nguard: " + getGuard();
 
     ret += "\nleftSibling: " + (leftSibling == null ? "null" : leftSibling.getKey());
     ret += "\nrightSibling: " + (sibling == null ? "null" : sibling.getKey());
@@ -333,5 +333,17 @@ public class ARTGrammarInstance extends ARTTreeVertexDoublyLinked implements Com
     if (this instanceof ARTGrammarInstanceEpsilon) return "#";
     if (payload != null) return payload.toString();
     return "???";
+  }
+
+  public Set<ARTGrammarElement> getGuard() {
+    return guard;
+  }
+
+  public Set<ARTGrammarElement> getFollow() {
+    return follow;
+  }
+
+  public Set<ARTGrammarElement> getFirst() {
+    return first;
   }
 }

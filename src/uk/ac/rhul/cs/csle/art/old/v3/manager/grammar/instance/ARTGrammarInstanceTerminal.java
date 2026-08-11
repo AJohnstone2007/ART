@@ -6,7 +6,7 @@ public class ARTGrammarInstanceTerminal extends ARTGrammarInstance {
 
   public ARTGrammarInstanceTerminal(int key, ARTGrammarElementTerminal payload) {
     super(key, payload);
-    first.add(payload); // compute first set
+    getFirst().add(payload); // compute first set
   }
 
   @Override

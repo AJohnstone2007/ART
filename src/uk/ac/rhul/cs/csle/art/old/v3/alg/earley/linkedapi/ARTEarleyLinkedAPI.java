@@ -159,7 +159,7 @@ public class ARTEarleyLinkedAPI extends ARTParserBase {
     // if α = a1 α′ add (S ::= ·α, 0, null) to Q′ }
     for (ARTGrammarInstance p : artGrammar.getDefaultStartNonterminal().getProductions()) {
       {
-        if (!p.getChild().guard.contains(input.get(1))) continue;
+        if (!p.getChild().getGuard().contains(input.get(1))) continue;
         if (inSigmaN(p))
           setAdd(eSets.get(0), new ARTEarleyItem((ARTGrammarInstanceSlot) p.getChild(), 0, null));
         else
@@ -196,7 +196,7 @@ public class ARTEarleyLinkedAPI extends ARTParserBase {
           // for all (C ::= δ) ∈ P {
           for (ARTGrammarInstanceCat p : ((ARTGrammarElementNonterminal) c.getPayload()).getProductions()) {
             ARTGrammarInstanceSlot deltaSlot = (ARTGrammarInstanceSlot) p.getChild();
-            if (!deltaSlot.guard.contains(input.get(i + 1))) continue;
+            if (!deltaSlot.getGuard().contains(input.get(i + 1))) continue;
             // if δ ∈ ΣN and (C ::= ·δ, i, null) ! ∈ Ei {
             ARTEarleyItem eSetCandidate1 = new ARTEarleyItem(deltaSlot, i, null);
             if (inSigmaN(deltaSlot)) {
@@ -212,7 +212,7 @@ public class ARTEarleyLinkedAPI extends ARTParserBase {
           // if ((C, v) ∈ H) {
           ARTEarleySPPFNode v;
           ARTGrammarInstanceSlot betaSlot = (ARTGrammarInstanceSlot) lambda.slot.getSibling().getSibling();
-          if ((v = hMap.get(c.getPayload())) != null && betaSlot.guard.contains(input.get(i + 1))) {
+          if ((v = hMap.get(c.getPayload())) != null && betaSlot.getGuard().contains(input.get(i + 1))) {
             // let y = MAKE_NODE(B ::= αC · β, h, i, w, v, V)
             ARTEarleySPPFNode y = makeNode(betaSlot, h, i, w, v, vMap);
             ARTEarleyItem eSetCandidate2 = new ARTEarleyItem(betaSlot, h, y);
@@ -256,7 +256,7 @@ public class ARTEarleyLinkedAPI extends ARTParserBase {
               int k = e.i;
               ARTEarleySPPFNode z = e.sppfNode;
               ARTGrammarInstanceSlot deltaPreSlot = (ARTGrammarInstanceSlot) e.slot.getSibling().getSibling();
-              if (!deltaPreSlot.guard.contains(input.get(i + 1))) continue;
+              if (!deltaPreSlot.getGuard().contains(input.get(i + 1))) continue;
               ARTEarleySPPFNode y = makeNode(deltaPreSlot, k, i, z, w, vMap);
               // if δ ∈ ΣN and (A ::= τ D · δ, k, y) ! ∈ Ei {
               ARTEarleyItem candidateItem = new ARTEarleyItem(deltaPreSlot, k, y);
@@ -290,7 +290,7 @@ public class ARTEarleyLinkedAPI extends ARTParserBase {
           ARTEarleySPPFNode w = lambda.sppfNode;
           // let y = MAKE_NODE(B ::= α ai+1 · β, h, i + 1, w, v, V)
           ARTGrammarInstanceSlot preBetaSlot = (ARTGrammarInstanceSlot) postAlphaSlot.getSibling().getSibling();
-          if (!preBetaSlot.guard.contains(input.get(i + 2))) continue;
+          if (!preBetaSlot.getGuard().contains(input.get(i + 2))) continue;
           ARTEarleySPPFNode y = makeNode(preBetaSlot, h, i + 1, w, v, vMap);
           // if β ∈ ΣN { add (B ::= α ai+1 · β, h, y) to Ei+1 }
           ARTEarleyItem candidateItem = new ARTEarleyItem(preBetaSlot, h, y);

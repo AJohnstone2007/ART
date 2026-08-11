@@ -18,7 +18,7 @@ public class ARTGrammarElementNonterminal extends ARTGrammarElement {
   protected List<ARTGrammarInstanceCat> productions = new ArrayList<ARTGrammarInstanceCat>();
   protected Set<ARTGrammarElementAttribute> attributes = new HashSet<ARTGrammarElementAttribute>();
 
-  public final Set<ARTGrammarElement> first = new HashSet<ARTGrammarElement>();
+  private final Set<ARTGrammarElement> first = new HashSet<ARTGrammarElement>();
   public final Set<ARTGrammarElement> follow = new HashSet<ARTGrammarElement>();
 
   protected boolean used = false;
@@ -177,5 +177,9 @@ public class ARTGrammarElementNonterminal extends ARTGrammarElement {
     if (moduleCompare != 0) return moduleCompare;
 
     return id.compareTo(((ARTGrammarElementNonterminal) that).id);
+  }
+
+  public Set<ARTGrammarElement> getFirst() {
+    return first;
   }
 }

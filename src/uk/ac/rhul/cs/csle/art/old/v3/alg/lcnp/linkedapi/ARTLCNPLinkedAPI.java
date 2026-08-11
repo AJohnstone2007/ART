@@ -77,8 +77,8 @@ public class ARTLCNPLinkedAPI extends ARTParserBase {
 
   Set<ARTGrammarElement> predict(ARTGrammarInstanceSlot beta, ARTGrammarElementNonterminal X) {
     if (artTrace) artTraceText.println(
-        "predict(" + X + ", " + beta.toGrammarString(".") + ") with first(beta) = " + beta.first + " and follow(X) = " + X.follow + " returns " + beta.guard);
-    return beta.guard;
+        "predict(" + X + ", " + beta.toGrammarString(".") + ") with first(beta) = " + beta.getFirst() + " and follow(X) = " + X.follow + " returns " + beta.getGuard());
+    return beta.getGuard();
   }
 
   Set<Integer> lexLKH(int i, ARTGrammarElementTerminal t, ARTGrammarInstanceSlot beta, ARTGrammarElementNonterminal X) { // Note I is assummed global - it's
@@ -129,7 +129,7 @@ public class ARTLCNPLinkedAPI extends ARTParserBase {
     if (!kSet.contains(j)) {
       kSet.add(j);
       for (ARTCRFLeafNode v : crfNodePayload.getleafSet()) {
-        if (valid(j, v.getSlot().guard)) {
+        if (valid(j, v.getSlot().getGuard())) {
           dscAdd(v.getSlot(), v.getH(), j);
           bsrAdd(v.getSlot(), v.getH(), k, j);
         }
@@ -160,7 +160,7 @@ public class ARTLCNPLinkedAPI extends ARTParserBase {
         children.add(u);
         for (Integer h : crfNodePayload.getPopSetPartition()) {
           if (artTrace) artTraceText.println("Contingent PP actions for cluster node " + v + " index = " + h);
-          if (valid(h, L.guard)) {
+          if (valid(h, L.getGuard())) {
             dscAdd(L, i, h);
             bsrAdd(L, i, j, h);
           }
@@ -184,7 +184,7 @@ public class ARTLCNPLinkedAPI extends ARTParserBase {
   }
 
   void processEoC(ARTGrammarInstanceSlot slot) {
-    if (lex(cI, slot.getLhsL().follow)) rtn((ARTGrammarElementNonterminal) slot.getLhsL().getPayload(), cU, cI);
+    if (lex(cI, slot.getLhsL().getFollow())) rtn((ARTGrammarElementNonterminal) slot.getLhsL().getPayload(), cU, cI);
   }
 
   void processCat(ARTGrammarInstanceSlot slot) {
@@ -319,7 +319,7 @@ public class ARTLCNPLinkedAPI extends ARTParserBase {
       upsilon.add(new ARTBSR(artSlot.getProductionL(), cI, cI, cI)); // doesn't need to be mapped because it is a cat representing a production, not a slot
       // representing a prefix
       bsrFinds++;
-      if (lex(cI, artSlot.getLhsL().follow)) rtn((ARTGrammarElementNonterminal) artSlot.getLhsL().getPayload(), cU, cI);
+      if (lex(cI, artSlot.getLhsL().getFollow())) rtn((ARTGrammarElementNonterminal) artSlot.getLhsL().getPayload(), cU, cI);
     } else // production template
     // Initial slot => cat
     if (artSlot.getLeftSibling() == null) {// We are the first slot in a production

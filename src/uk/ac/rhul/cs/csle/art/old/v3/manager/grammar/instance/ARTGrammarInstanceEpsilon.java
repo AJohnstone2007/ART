@@ -6,7 +6,7 @@ public class ARTGrammarInstanceEpsilon extends ARTGrammarInstance {
 
   public ARTGrammarInstanceEpsilon(int key, ARTGrammarElement payload) {
     super(key, null);
-    first.add(payload);
+    getFirst().add(payload);
   }
 
   @Override

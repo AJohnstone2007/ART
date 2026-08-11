@@ -323,7 +323,7 @@ public class ARTGLLGenerator {
         ARTGrammarInstance grandChildNode = childNode.getChild();
 
         if (!directives.b("suppressProductionGuard")) {
-          gt.ifInSet("ARTSet" + grammar.getMergedSets().get(grandChildNode.guard), gt.inputAccessToken());
+          gt.ifInSet("ARTSet" + grammar.getMergedSets().get(grandChildNode.getGuard()), gt.inputAccessToken());
           gt.newLine();
           gt.indentUp();
         }
@@ -356,7 +356,7 @@ public class ARTGLLGenerator {
 
         if (!(directives.b("predictivePops") && iftNode.isPostPredictivePop)) {
           if (!directives.b("suppressPopGuard")) {
-            gt.ifNotInSet("ARTSet" + grammar.getMergedSets().get(iftNode.follow), gt.inputAccessToken());
+            gt.ifNotInSet("ARTSet" + grammar.getMergedSets().get(iftNode.getFollow()), gt.inputAccessToken());
             jumpSelect("ARTX_DESPATCH");
           }
 
@@ -408,7 +408,7 @@ public class ARTGLLGenerator {
       if (directives.algorithmMode() == ARTModeAlgorithm.mgllGeneratorPool) { // MGLL variannt
         gt.forSuccessorPair();
         gt.newLine();
-        gt.ifInSet("ARTSet" + grammar.getMergedSets().get(iftNode.erL.guard), gt.inputSuccessorReferenceToken());
+        gt.ifInSet("ARTSet" + grammar.getMergedSets().get(iftNode.erL.getGuard()), gt.inputSuccessorReferenceToken());
         gt.blockOpen();
         gt.indentUp();
         gt.newLine();
@@ -509,7 +509,7 @@ public class ARTGLLGenerator {
     else if (iftNode instanceof ARTGrammarInstanceOptional) {
       ARTGrammarInstance childNode = iftNode.getChild();
 
-      if (childNode.first.contains(grammar.getEpsilon())) {
+      if (childNode.getFirst().contains(grammar.getEpsilon())) {
         optionalNullableTemplateCount++;
 
         boolean TEMPLATE2016 = true;
@@ -519,7 +519,7 @@ public class ARTGLLGenerator {
 
           gt.indent();
           gt.comment(" Optional, nullable body template start (2016 version)");
-          gt.ifInSet("ARTSet" + grammar.getMergedSets().get(iftNode.getSibling().guard), gt.inputAccessToken());
+          gt.ifInSet("ARTSet" + grammar.getMergedSets().get(iftNode.getSibling().getGuard()), gt.inputAccessToken());
           gt.blockOpen();
           iftNode.erL.toEnumString("L");
 
@@ -538,7 +538,7 @@ public class ARTGLLGenerator {
           iftNode.isRELabel = true;
           gt.blockClose();
 
-          gt.ifNotInSet("ARTSet" + grammar.getMergedSets().get(childNode.guard), gt.inputAccessToken());
+          gt.ifNotInSet("ARTSet" + grammar.getMergedSets().get(childNode.getGuard()), gt.inputAccessToken());
           jumpSelect("ARTX_DESPATCH");
 
           writeCodeGLLRec(childNode, lastLHSNode);
@@ -559,7 +559,7 @@ public class ARTGLLGenerator {
         } else {
           gt.indent();
           gt.comment(" Optional, nullable body template start ");
-          gt.ifInSet("ARTSet" + grammar.getMergedSets().get(iftNode.getSibling().guard), gt.inputAccessToken());
+          gt.ifInSet("ARTSet" + grammar.getMergedSets().get(iftNode.getSibling().getGuard()), gt.inputAccessToken());
           gt.blockOpen();
           if (mgllOrGllGeneratorPool) gt.functionAssignCall("artCurrentSPPFRightChildNode", "artFindSPPFEpsilon", "artCurrentInputPairIndex");
           iftNode.erL.isSPPFLabel = true;
@@ -573,7 +573,7 @@ public class ARTGLLGenerator {
           }
           gt.blockClose();
 
-          gt.ifNotInSet("ARTSet" + grammar.getMergedSets().get(childNode.guard), gt.inputAccessToken());
+          gt.ifNotInSet("ARTSet" + grammar.getMergedSets().get(childNode.getGuard()), gt.inputAccessToken());
           jumpSelect("ARTX_DESPATCH");
 
           writeCodeGLLRec(childNode, lastLHSNode);
@@ -606,7 +606,7 @@ public class ARTGLLGenerator {
 
         gt.indent();
         gt.comment(" Optional, non-nullable body template start ");
-        gt.ifInSet("ARTSet" + grammar.getMergedSets().get(iftNode.getSibling().guard), gt.inputAccessToken());
+        gt.ifInSet("ARTSet" + grammar.getMergedSets().get(iftNode.getSibling().getGuard()), gt.inputAccessToken());
         gt.blockOpen();
         if (mgllOrGllGeneratorPool) gt.functionAssignCall("artCurrentSPPFRightChildNode", "artFindSPPFEpsilon", "artCurrentInputPairIndex");
         iftNode.erL.isSPPFLabel = true;
@@ -614,7 +614,7 @@ public class ARTGLLGenerator {
           gt.functionAssignCall("artTemporarySPPFNode", "artFindSPPF", iftNode.erL.toEnumString("L"), "artCurrentSPPFNode", "artCurrentSPPFRightChildNode");
         gt.functionCall(findDescriptorSelect(), iftNode.erL.toEnumString("L"), "artCurrentGSSNode", "artCurrentInputPairIndex", "artTemporarySPPFNode");
         gt.blockClose();
-        gt.ifNotInSet("ARTSet" + grammar.getMergedSets().get(childNode.guard), gt.inputAccessToken());
+        gt.ifNotInSet("ARTSet" + grammar.getMergedSets().get(childNode.getGuard()), gt.inputAccessToken());
         jumpSelect("ARTX_DESPATCH");
         writeCodeGLLRec(childNode, lastLHSNode);
         iftNode.erL.isCodeLabel = true;
@@ -634,7 +634,7 @@ public class ARTGLLGenerator {
      */
     else if (iftNode instanceof ARTGrammarInstancePositiveClosure) {
       ARTGrammarInstance childNode = iftNode.getChild();
-      if (!childNode.first.contains(grammar.getEpsilon())) {
+      if (!childNode.getFirst().contains(grammar.getEpsilon())) {
         positiveNonNullableTemplateCount++;
 
         gt.indent();
@@ -645,11 +645,11 @@ public class ARTGLLGenerator {
         if (mgllOrGllGeneratorPool) gt.assign("artCurrentSPPFNode", "artDummySPPFNode");
         parserBlockOpenSelect(iftNode.toEnumString("C"), null);
         iftNode.isClosureLabel = true;
-        if (!childNode.first.contains(grammar.getEpsilon())) {
-          gt.ifNotInSet("ARTSet" + grammar.getMergedSets().get(childNode.guard), gt.inputAccessToken());
+        if (!childNode.getFirst().contains(grammar.getEpsilon())) {
+          gt.ifNotInSet("ARTSet" + grammar.getMergedSets().get(childNode.getGuard()), gt.inputAccessToken());
           jumpSelect("ARTX_DESPATCH");
           writeCodeGLLRec(childNode, lastLHSNode);
-          gt.ifInSet("ARTSet" + grammar.getMergedSets().get(iftNode.getSibling().guard), gt.inputAccessToken());
+          gt.ifInSet("ARTSet" + grammar.getMergedSets().get(iftNode.getSibling().getGuard()), gt.inputAccessToken());
           popSel("unimplementedEBNFClusteredDescriptor");
           gt.indent();
           jumpSelect(iftNode.toEnumString("C"));
@@ -689,7 +689,7 @@ public class ARTGLLGenerator {
         jumpSelect("ARTX_DESPATCH");
 
         // if not testSelect(I[c_I], L_s) goto despatch
-        gt.ifNotInSet("ARTSet" + grammar.getMergedSets().get(childNode.guard), gt.inputAccessToken());
+        gt.ifNotInSet("ARTSet" + grammar.getMergedSets().get(childNode.getGuard()), gt.inputAccessToken());
         jumpSelect("ARTX_DESPATCH");
 
         // code(s)
@@ -697,7 +697,7 @@ public class ARTGLLGenerator {
 
         // if testSelect(I[c_I], E_r) pop(c_U, c_I, c_N)
         // goto C_r
-        gt.ifInSet("ARTSet" + grammar.getMergedSets().get(iftNode.getSibling().guard), gt.inputAccessToken());
+        gt.ifInSet("ARTSet" + grammar.getMergedSets().get(iftNode.getSibling().getGuard()), gt.inputAccessToken());
         popSel("unimplementedEBNFClusteredDescriptor");
         gt.indent();
         jumpSelect(iftNode.toEnumString("C"));
@@ -739,7 +739,7 @@ public class ARTGLLGenerator {
 
     {
       ARTGrammarInstance childNode = iftNode.getChild();
-      if (!childNode.first.contains(grammar.getEpsilon())) {
+      if (!childNode.getFirst().contains(grammar.getEpsilon())) {
         kleeneNonNullableTemplateCount++;
 
         gt.indent();
@@ -747,7 +747,7 @@ public class ARTGLLGenerator {
 
         iftNode.erL.isCodeLabel = true;
         findGSSSelect(iftNode);
-        gt.ifInSet("ARTSet" + grammar.getMergedSets().get(iftNode.getSibling().guard), gt.inputAccessToken());
+        gt.ifInSet("ARTSet" + grammar.getMergedSets().get(iftNode.getSibling().getGuard()), gt.inputAccessToken());
         gt.blockOpen();
         if (mgllOrGllGeneratorPool) gt.functionAssignCall("artCurrentSPPFNode", "artFindSPPFEpsilon", "artCurrentInputPairIndex");
         popSel("unimplementedEBNFClusteredDescriptor");
@@ -755,10 +755,10 @@ public class ARTGLLGenerator {
         if (mgllOrGllGeneratorPool) gt.assign("artCurrentSPPFNode", "artDummySPPFNode");
         parserBlockOpenSelect(iftNode.toEnumString("C"), "L");
         iftNode.isClosureLabel = true;
-        gt.ifNotInSet("ARTSet" + grammar.getMergedSets().get(childNode.guard), gt.inputAccessToken());
+        gt.ifNotInSet("ARTSet" + grammar.getMergedSets().get(childNode.getGuard()), gt.inputAccessToken());
         jumpSelect("ARTX_DESPATCH");
         writeCodeGLLRec(childNode, lastLHSNode);
-        gt.ifInSet("ARTSet" + grammar.getMergedSets().get(iftNode.getSibling().guard), gt.inputAccessToken());
+        gt.ifInSet("ARTSet" + grammar.getMergedSets().get(iftNode.getSibling().getGuard()), gt.inputAccessToken());
         popSel("unimplementedEBNFClusteredDescriptor");
         gt.indent();
         jumpSelect(iftNode.toEnumString("C"));
@@ -801,14 +801,14 @@ public class ARTGLLGenerator {
         jumpSelect("ARTX_DESPATCH");
 
         // if not testSelect(I[c_I], L_s) goto despatch
-        gt.ifNotInSet("ARTSet" + grammar.getMergedSets().get(childNode.guard), gt.inputAccessToken());
+        gt.ifNotInSet("ARTSet" + grammar.getMergedSets().get(childNode.getGuard()), gt.inputAccessToken());
         jumpSelect("ARTX_DESPATCH");
 
         // code(s)
         writeCodeGLLRec(childNode, lastLHSNode);
 
         // if testSelect(I[c_I], E_r) pop(c_U, c_I, c_N)
-        gt.ifInSet("ARTSet" + grammar.getMergedSets().get(iftNode.getSibling().guard), gt.inputAccessToken());
+        gt.ifInSet("ARTSet" + grammar.getMergedSets().get(iftNode.getSibling().getGuard()), gt.inputAccessToken());
         popSel("unimplementedEBNFClusteredDescriptor");
 
         // goto C_r
@@ -838,7 +838,7 @@ public class ARTGLLGenerator {
       for (ARTGrammarInstance childNode = iftNode.getChild(); childNode != null; childNode = childNode.getSibling()) {
         if (directives.b("predictivePops") && childNode.isPredictivePop) {
           if (!directives.b("suppressPopGuard")) {
-            gt.ifNotInSet("ARTSet" + grammar.getMergedSets().get(childNode.guard), gt.inputAccessToken());
+            gt.ifNotInSet("ARTSet" + grammar.getMergedSets().get(childNode.getGuard()), gt.inputAccessToken());
             jumpSelect("ARTX_DESPATCH");
           }
 
@@ -869,7 +869,7 @@ public class ARTGLLGenerator {
       for (ARTGrammarInstance childNode = iftNode.getChild(); childNode != null; childNode = childNode.getSibling()) {
         ARTGrammarInstance firstPosNode = grammar.leftmostElementRec(childNode);
 
-        gt.ifInSet("ARTSet" + grammar.getMergedSets().get(firstPosNode.guard), gt.inputAccessToken());
+        gt.ifInSet("ARTSet" + grammar.getMergedSets().get(firstPosNode.getGuard()), gt.inputAccessToken());
         gt.functionCall(findDescriptorSelect(), firstPosNode.toEnumString("L"), "artCurrentGSSNode", "artCurrentInputPairIndex", "artCurrentSPPFNode");
         firstPosNode.isCodeLabel = firstPosNode.isSPPFLabel = true; /* Error? Shouldn't this be isSPPFLabel */
       }
@@ -905,7 +905,7 @@ public class ARTGLLGenerator {
     else if (iftNode instanceof ARTGrammarInstanceSlot) {
       if (iftNode.isSlotSelector) {
 
-        gt.ifNotInSet("ARTSet" + grammar.getMergedSets().get(iftNode.guard), gt.inputAccessToken());
+        gt.ifNotInSet("ARTSet" + grammar.getMergedSets().get(iftNode.getGuard()), gt.inputAccessToken());
         jumpSelect("ARTX_DESPATCH");
       }
     }

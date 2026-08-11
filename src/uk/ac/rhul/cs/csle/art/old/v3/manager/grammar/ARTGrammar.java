@@ -1030,7 +1030,7 @@ public final class ARTGrammar {
       }
       // End of refinement
 
-      if (!(twins && node.first.contains(epsilon))) node.getSibling().isFiR = true;
+      if (!(twins && node.getFirst().contains(epsilon))) node.getSibling().isFiR = true;
     }
 
     else if (node instanceof ARTGrammarInstanceTerminal)
@@ -1068,9 +1068,9 @@ public final class ARTGrammar {
   }
 
   private void computeMergedSets(ARTGrammarInstance instance) {
-    mergeSet(instance.first);
-    mergeSet(instance.follow);
-    mergeSet(instance.guard);
+    mergeSet(instance.getFirst());
+    mergeSet(instance.getFollow());
+    mergeSet(instance.getGuard());
 
     for (ARTGrammarInstance tmp = instance.getChild(); tmp != null; tmp = tmp.getSibling())
       computeMergedSets(tmp);
@@ -1137,61 +1137,61 @@ public final class ARTGrammar {
     }
 
     else if (node instanceof ARTGrammarInstanceLHS) {
-      changed |= node.follow.addAll(((ARTGrammarElementNonterminal) node.getPayload()).follow);
+      changed |= node.getFollow().addAll(((ARTGrammarElementNonterminal) node.getPayload()).follow);
       for (ARTGrammarInstance tmp = node.getChild(); tmp != null; tmp = tmp.getSibling())
-        changed |= node.first.addAll(tmp.first);
+        changed |= node.getFirst().addAll(tmp.getFirst());
 
-      changed |= (((ARTGrammarElementNonterminal) node.getPayload()).first).addAll(node.first);
+      changed |= (((ARTGrammarElementNonterminal) node.getPayload()).getFirst()).addAll(node.getFirst());
     }
 
     else if (node instanceof ARTGrammarInstanceAlt) {
       for (ARTGrammarInstance tmp = node.getChild(); tmp != null; tmp = tmp.getSibling())
-        changed |= node.first.addAll(tmp.first);
+        changed |= node.getFirst().addAll(tmp.getFirst());
     }
 
     else if (node instanceof ARTGrammarInstanceCat) {
       // Walk the children of a cat node until we find a non-nullable symbol skipping slot nodes
       for (ARTGrammarInstance child = node.getChild().getSibling(); child != null; child = child.getSibling().getSibling()) {
-        HashSet<ARTGrammarElement> tmp = new HashSet<ARTGrammarElement>(child.first);
+        HashSet<ARTGrammarElement> tmp = new HashSet<ARTGrammarElement>(child.getFirst());
         if (child.getSibling().getSibling() != null) tmp.remove(epsilon);
 
-        changed |= node.first.addAll(tmp);
-        if (!child.first.contains(epsilon)) break;
+        changed |= node.getFirst().addAll(tmp);
+        if (!child.getFirst().contains(epsilon)) break;
       }
     }
 
     else if (node instanceof ARTGrammarInstanceSlot) {
       if (node.getSibling() == null) { // \beta is \epsilon
         if (newBracketNode == null)
-          changed |= node.first.add(epsilon);
+          changed |= node.getFirst().add(epsilon);
         else {
-          changed |= node.first.addAll(newBracketNode.getSibling().first); // fold in follow for this bracket
+          changed |= node.getFirst().addAll(newBracketNode.getSibling().getFirst()); // fold in follow for this bracket
           if (newBracketNode instanceof ARTGrammarInstanceKleeneClosure || newBracketNode instanceof ARTGrammarInstancePositiveClosure)
-            changed |= node.first.addAll(newBracketNode.first);
+            changed |= node.getFirst().addAll(newBracketNode.getFirst());
         }
       } else { // \beta is not epsilon so there will be an X (a terminal or a nonterminal) following, then another pos slot
-        HashSet<ARTGrammarElement> tmp = new HashSet<ARTGrammarElement>(node.getSibling().first);
+        HashSet<ARTGrammarElement> tmp = new HashSet<ARTGrammarElement>(node.getSibling().getFirst());
         tmp.remove(epsilon);
 
-        changed |= node.first.addAll(tmp);
+        changed |= node.getFirst().addAll(tmp);
 
-        if (node.getSibling().first.contains(epsilon)) changed |= node.first.addAll(node.getSibling().getSibling().first); // bring over first (alpha X . beta)
+        if (node.getSibling().getFirst().contains(epsilon)) changed |= node.getFirst().addAll(node.getSibling().getSibling().getFirst()); // bring over first (alpha X . beta)
       }
 
       // Guard set computation for slots
-      HashSet<ARTGrammarElement> tmp = new HashSet<ARTGrammarElement>(node.first);
+      HashSet<ARTGrammarElement> tmp = new HashSet<ARTGrammarElement>(node.getFirst());
       if (tmp.contains(epsilon)) if (newBracketNode == null)
         tmp.addAll(lhs.follow);
       else {
-        tmp.addAll(newBracketNode.getSibling().guard);
+        tmp.addAll(newBracketNode.getSibling().getGuard());
         // For loops, we need the first of the body as well
         if (newBracketNode instanceof ARTGrammarInstanceKleeneClosure || newBracketNode instanceof ARTGrammarInstancePositiveClosure)
-          tmp.addAll(newBracketNode.guard);
+          tmp.addAll(newBracketNode.getGuard());
       }
 
       tmp.remove(epsilon);
 
-      changed |= node.guard.addAll(tmp);
+      changed |= node.getGuard().addAll(tmp);
 
       return changed; // Do not recurse into actions!
     }
@@ -1199,26 +1199,26 @@ public final class ARTGrammar {
     else if (node instanceof ARTGrammarInstanceNonterminal) {
       ARTGrammarElementNonterminal nonterminal = (ARTGrammarElementNonterminal) node.getPayload();
 
-      changed |= node.first.addAll(nonterminal.first);
+      changed |= node.getFirst().addAll(nonterminal.getFirst());
 
       HashSet<ARTGrammarElement> tmp = new HashSet<ARTGrammarElement>();
-      tmp.addAll(node.getSibling().first);
+      tmp.addAll(node.getSibling().getFirst());
       tmp.remove(epsilon);
 
-      changed |= node.follow.addAll(tmp);
+      changed |= node.getFollow().addAll(tmp);
 
-      if (node.getSibling().first.contains(epsilon)) // are we at the end of a rule?
+      if (node.getSibling().getFirst().contains(epsilon)) // are we at the end of a rule?
         if (newBracketNode == null)
-        changed |= node.follow.addAll(lhs.follow);
+        changed |= node.getFollow().addAll(lhs.follow);
         else {
-          HashSet<ARTGrammarElement> tmp1 = new HashSet<ARTGrammarElement>(newBracketNode.getSibling().first);
-          tmp1.addAll(newBracketNode.getSibling().guard); // Added 8/3/24 to ensure follow set comes down
+          HashSet<ARTGrammarElement> tmp1 = new HashSet<ARTGrammarElement>(newBracketNode.getSibling().getFirst());
+          tmp1.addAll(newBracketNode.getSibling().getGuard()); // Added 8/3/24 to ensure follow set comes down
           tmp1.remove(epsilon);
-          changed |= node.follow.addAll(tmp1); // fold in follow for this bracket
+          changed |= node.getFollow().addAll(tmp1); // fold in follow for this bracket
         }
 
       // This is the only place where nonterminal follows are updated
-      changed |= nonterminal.follow.addAll(node.follow);
+      changed |= nonterminal.follow.addAll(node.getFollow());
     }
 
     else if (node instanceof ARTGrammarInstanceTerminal)
@@ -1229,14 +1229,14 @@ public final class ARTGrammar {
 
     else if (node instanceof ARTGrammarInstanceDoFirst || node instanceof ARTGrammarInstanceOptional || node instanceof ARTGrammarInstancePositiveClosure
         || node instanceof ARTGrammarInstanceKleeneClosure) {
-      changed |= node.first.addAll(node.getChild().first);
-      if (node instanceof ARTGrammarInstanceOptional || node instanceof ARTGrammarInstanceKleeneClosure) changed |= node.first.add(epsilon);
+      changed |= node.getFirst().addAll(node.getChild().getFirst());
+      if (node instanceof ARTGrammarInstanceOptional || node instanceof ARTGrammarInstanceKleeneClosure) changed |= node.getFirst().add(epsilon);
       if (!(node instanceof ARTGrammarInstanceDoFirst)) {// Do not compute for ( for consistency with V2 although the template does not use them
-        HashSet<ARTGrammarElement> tmp = new HashSet<ARTGrammarElement>(node.getChild().first);
-        if (tmp.contains(epsilon)) tmp.addAll(node.getSibling().guard);
+        HashSet<ARTGrammarElement> tmp = new HashSet<ARTGrammarElement>(node.getChild().getFirst());
+        if (tmp.contains(epsilon)) tmp.addAll(node.getSibling().getGuard());
 
         tmp.remove(epsilon);
-        changed |= node.getChild().guard.addAll(tmp);
+        changed |= node.getChild().getGuard().addAll(tmp);
 
       }
     }
@@ -1962,7 +1962,7 @@ public final class ARTGrammar {
       builder.append("\nN ");
       builder.append(n.getId());
       builder.append(" first={");
-      builder.append(n.first);
+      builder.append(n.getFirst());
       builder.append("} follow={");
       builder.append(n.follow);
       builder.append("}");

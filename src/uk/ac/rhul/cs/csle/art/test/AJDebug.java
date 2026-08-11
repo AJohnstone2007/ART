@@ -95,7 +95,7 @@ public final class AJDebug {
       CFGElement v5Nonterminal = grammarV5.elements.get(new CFGElement(CFGElementKind.NONTERMINAL, v3Nonterminal.getId()));
 
       Set<String> v3FirstSet = new TreeSet<>(), v5FirstSet = new TreeSet<>();
-      for (var f : v3Nonterminal.first)
+      for (var f : v3Nonterminal.getFirst())
         v3FirstSet.add(f.toString());
 
       for (var f : grammarV5.first.get(v5Nonterminal))
@@ -210,9 +210,9 @@ public final class AJDebug {
     // Note: replaceAll on \s takes out whitespace
     if (v3 instanceof ARTGrammarInstanceSlot) {
       var key = v3.toGrammarString(".").replaceAll("\\s", "");
-      v3InstanceFirsts.put(key, new TreeSet<>(v3.first));
-      v3InstanceGuards.put(key, new TreeSet<>(v3.guard));
-      v3InstanceFollows.put(key, new TreeSet<>(v3.follow));
+      v3InstanceFirsts.put(key, new TreeSet<>(v3.getFirst()));
+      v3InstanceGuards.put(key, new TreeSet<>(v3.getGuard()));
+      v3InstanceFollows.put(key, new TreeSet<>(v3.getFollow()));
     }
     v5v3RegressionGatherV3InstanceSetsRec(v3.getChild());
     v5v3RegressionGatherV3InstanceSetsRec(v3.getSibling());
