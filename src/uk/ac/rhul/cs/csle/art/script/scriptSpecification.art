@@ -65,7 +65,7 @@ cfgEquation ::= cfgAttribute '='^ cfgExpression
 cfgAssignment ::= cfgAttribute ':='^ cfgExpression
 cfgNative ::= STRING_SHRIEK_SHRIEK
 cfgInsert ::= '^+:'^ ID  
-cfgAttribute ::= ID | ID '.'^ ID   
+cfgAttribute ::= ID '.'^ ID   
 
 cfgExpressionList ::= cfgExpression | cfgExpression ','^ cfgExpressionList^
 cfgExpression ::= __bool^^ | __intAP^^ | __int32^^ | __realAP^^ | __real64^^ | __string^^ | __char^^ | cfgAttribute^^ | ID^^ | ID^^ '('^  cfgExpressionList^ ')'^

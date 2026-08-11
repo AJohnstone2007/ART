@@ -55,9 +55,9 @@ public class ARTCNPLinkedAPI extends ARTParserBase {
   }
 
   protected boolean testSelect(ARTGrammarElementTerminal b, ARTGrammarElementNonterminal X, ARTGrammarInstanceSlot alpha) {
-    if (artTrace > 0) artTraceText.println(
-        "testSelect(" + b + ", " + X + ", " + alpha.toGrammarString(".") + ") with first(alpha) = " + alpha.getFirst() + " and follow(X) = " + X.getFollow());
-    return alpha.getFirst().contains(b) || (alpha.getFirst().contains(artGrammar.getEpsilon()) && X.getFollow().contains(b));
+    if (artTrace > 0) artTraceText
+        .println("testSelect(" + b + ", " + X + ", " + alpha.toGrammarString(".") + ") with first(alpha) = " + alpha.first + " and follow(X) = " + X.follow);
+    return alpha.first.contains(b) || (alpha.first.contains(artGrammar.getEpsilon()) && X.follow.contains(b));
   }
 
   protected void dscAdd(ARTGrammarInstanceSlot slot, int k, int i) {
@@ -133,7 +133,7 @@ public class ARTCNPLinkedAPI extends ARTParserBase {
   }
 
   void processEoC(ARTGrammarInstanceSlot slot) {
-    if (slot.getLhsL().getFollow().contains(input.get(cI))) rtn((ARTGrammarElementNonterminal) slot.getLhsL().getPayload(), cU, cI);
+    if (slot.getLhsL().follow.contains(input.get(cI))) rtn((ARTGrammarElementNonterminal) slot.getLhsL().getPayload(), cU, cI);
   }
 
   void processCat(ARTGrammarInstanceSlot slot) {
@@ -262,7 +262,7 @@ public class ARTCNPLinkedAPI extends ARTParserBase {
       upsilon.add(new ARTBSR(artSlot.getProductionL(), cI, cI, cI)); // doesn't need to be mapped because it is a cat representing a production, not a slot
       // representing a prefix
       bsrFinds++;
-      if (artSlot.getLhsL().getFollow().contains(input.get(cI))) rtn((ARTGrammarElementNonterminal) artSlot.getLhsL().getPayload(), cU, cI);
+      if (artSlot.getLhsL().follow.contains(input.get(cI))) rtn((ARTGrammarElementNonterminal) artSlot.getLhsL().getPayload(), cU, cI);
     } else
     // Initial slot => cat
     if (artSlot.getLeftSibling() == null) {// We are the first slot in a production

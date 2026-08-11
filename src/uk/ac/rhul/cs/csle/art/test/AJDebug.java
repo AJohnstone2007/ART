@@ -95,7 +95,7 @@ public final class AJDebug {
       CFGElement v5Nonterminal = grammarV5.elements.get(new CFGElement(CFGElementKind.NONTERMINAL, v3Nonterminal.getId()));
 
       Set<String> v3FirstSet = new TreeSet<>(), v5FirstSet = new TreeSet<>();
-      for (var f : v3Nonterminal.getFirst())
+      for (var f : v3Nonterminal.first)
         v3FirstSet.add(f.toString());
 
       for (var f : grammarV5.first.get(v5Nonterminal))
@@ -106,7 +106,7 @@ public final class AJDebug {
       Util.info("First " + (goodFirst ? "" : "mis") + "match for " + v3Nonterminal + " V3: " + v3FirstSet + " V5: " + v5FirstSet);
 
       Set<String> v3FollowSet = new TreeSet<>(), v5FollowSet = new TreeSet<>();
-      for (var f : v3Nonterminal.getFollow())
+      for (var f : v3Nonterminal.follow)
         v3FollowSet.add(f.toString());
 
       for (var f : grammarV5.follow.get(v5Nonterminal))
@@ -119,7 +119,7 @@ public final class AJDebug {
     }
 
     // Now work through instance sets
-    v5v3RegressionGatherV3FirstAndFollowInstanceSetsRec((ARTGrammarInstance) grammarV3.getInstanceTree().getRoot());
+    v5v3RegressionGatherV3InstanceSetsRec((ARTGrammarInstance) grammarV3.getInstanceTree().getRoot());
     good &= v5v3RegressionCheckFirstAndFollowInstanceSets(grammarV5, artV3);
     return good;
   }
@@ -142,12 +142,14 @@ public final class AJDebug {
     // Util.debug("v5v3RegressionCheckFirstAndFollowInstanceSetsRec at " + v5.toStringDot());
     boolean good = true;
     String key = v5.toStringAsProduction().replaceAll("\\s", "");
-    Set<ARTGrammarElement> v3InstanceFirst = v3InstanceFirsts.get(key), v3InstanceFollow = v3InstanceFollows.get(key);
-    Set<CFGElement> v5InstanceFirst = grammarV5.instanceFirst.get(v5), v5InstanceFollow = grammarV5.instanceFollow.get(v5);
+    Set<ARTGrammarElement> v3InstanceFirst = v3InstanceFirsts.get(key), v3InstanceGuard = v3InstanceGuards.get(key),
+        v3InstanceFollow = v3InstanceFollows.get(key);
+    Set<CFGElement> v5InstanceFirst = grammarV5.instanceFirst.get(v5), v5InstanceGuard = grammarV5.instanceGuard.get(v5),
+        v5InstanceFollow = grammarV5.instanceFollow.get(v5);
 
     if (!scaffoldingKinds.contains(v5.cfgElement.cfgKind)) {
       if (v3InstanceFirsts.get(key) == null) {
-        Util.info(" v3 key is missing");
+        Util.info(" v3 key is missing: " + key);
         return false;
       }
 
@@ -163,6 +165,18 @@ public final class AJDebug {
 
       Util.info("Instance first " + (goodFirst ? "" : "mis") + "match at " + key + " V3: " + v3FirstSet + " V5: " + v5FirstSet);
 
+      Set<String> v3GuardSet = new TreeSet<>(), v5GuardSet = new TreeSet<>();
+      for (var f : v3InstanceGuard)
+        v3GuardSet.add(f.toString());
+
+      for (var f : v5InstanceGuard)
+        v5GuardSet.add(f.toString());
+
+      boolean goodGuard = v3GuardSet.equals(v5GuardSet);
+      good &= goodGuard;
+
+      Util.info("Instance Guard " + (goodGuard ? "" : "mis") + "match at " + key + " V3: " + v3GuardSet + " V5: " + v5GuardSet);
+
       Set<String> v3FollowSet = new TreeSet<>(), v5FollowSet = new TreeSet<>();
       for (var f : v3InstanceFollow)
         v3FollowSet.add(f.toString());
@@ -177,6 +191,7 @@ public final class AJDebug {
 
       if (v5.cfgElement.cfgKind == CFGElementKind.END) return good;
     }
+
     good &= v5v3RegressionCheckFirstAndFollowInstanceSetsRec(v5.seq, artV3);
     good &= v5v3RegressionCheckFirstAndFollowInstanceSetsRec(v5.alt, artV3);
 
@@ -185,19 +200,21 @@ public final class AJDebug {
 
   Map<String, TreeSet<ARTGrammarElement>> v3InstanceFirsts = new HashMap<>();
   Map<String, TreeSet<ARTGrammarElement>> v3InstanceFollows = new HashMap<>();
+  Map<String, TreeSet<ARTGrammarElement>> v3InstanceGuards = new HashMap<>();
   Set<String> checked = new HashSet<>();
 
-  void v5v3RegressionGatherV3FirstAndFollowInstanceSetsRec(ARTGrammarInstance v3) {
+  void v5v3RegressionGatherV3InstanceSetsRec(ARTGrammarInstance v3) {
     if (v3 == null) return;
-    // Util.info(
-    // "v5v3RegressionGatherV3FirstAndFollowInstanceSetsRec at [" + v3.getKey() + "] " + v3.toGrammarString() + " first=" + v3.first + " follow=" + v3.follow);
+    // Util.debug("v5v3RegressionGatherV3InstanceSetsRec at [" + v3.getKey() + "] " + v3.toGrammarString(".") + " first=" + v3.getFirst()
+    // + " follow=" + v3.getFollow());
+    // Note: replaceAll on \s takes out whitespace
     if (v3 instanceof ARTGrammarInstanceSlot) {
-      v3InstanceFirsts.put(v3.toGrammarString(".").replaceAll("\\s", ""), new TreeSet<>(v3.first)); // (v3.getSibling() == null ? v3.first :
-                                                                                                    // v3.getSibling().first));
-      v3InstanceFollows.put(v3.toGrammarString(".").replaceAll("\\s", ""), new TreeSet<>(v3.getSibling() == null ? v3.follow : v3.getSibling().follow));
+      var key = v3.toGrammarString(".").replaceAll("\\s", "");
+      v3InstanceFirsts.put(key, new TreeSet<>(v3.first));
+      v3InstanceGuards.put(key, new TreeSet<>(v3.guard));
+      v3InstanceFollows.put(key, new TreeSet<>(v3.follow));
     }
-    v5v3RegressionGatherV3FirstAndFollowInstanceSetsRec(v3.getChild());
-    v5v3RegressionGatherV3FirstAndFollowInstanceSetsRec(v3.getSibling());
+    v5v3RegressionGatherV3InstanceSetsRec(v3.getChild());
+    v5v3RegressionGatherV3InstanceSetsRec(v3.getSibling());
   }
-
 }

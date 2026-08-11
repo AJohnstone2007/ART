@@ -139,7 +139,7 @@ public final class ARTEarleyTableDataLinked {
             ret.add((ARTGrammarInstanceSlot) e);
           else if (e instanceof ARTGrammarInstanceNonterminal) {
             extendNonterminalWorkSet((ARTGrammarElementNonterminal) e.getPayload());
-            if (!(e.getFirst().contains(epsilon))) break;
+            if (!(e.first.contains(epsilon))) break;
           } else
             break;
         }
@@ -157,7 +157,7 @@ public final class ARTEarleyTableDataLinked {
 
           if (e instanceof ARTGrammarInstanceSlot)
             ret.add((ARTGrammarInstanceSlot) e);
-          else if (!(e instanceof ARTGrammarInstanceNonterminal && e.getFirst().contains(epsilon))) break;
+          else if (!(e instanceof ARTGrammarInstanceNonterminal && e.first.contains(epsilon))) break;
         }
       }
     }

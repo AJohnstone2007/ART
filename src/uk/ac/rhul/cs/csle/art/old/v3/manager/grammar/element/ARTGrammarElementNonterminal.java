@@ -18,8 +18,8 @@ public class ARTGrammarElementNonterminal extends ARTGrammarElement {
   protected List<ARTGrammarInstanceCat> productions = new ArrayList<ARTGrammarInstanceCat>();
   protected Set<ARTGrammarElementAttribute> attributes = new HashSet<ARTGrammarElementAttribute>();
 
-  protected Set<ARTGrammarElement> first = new HashSet<ARTGrammarElement>();
-  protected Set<ARTGrammarElement> follow = new HashSet<ARTGrammarElement>();
+  public final Set<ARTGrammarElement> first = new HashSet<ARTGrammarElement>();
+  public final Set<ARTGrammarElement> follow = new HashSet<ARTGrammarElement>();
 
   protected boolean used = false;
   protected boolean defined = false;
@@ -80,23 +80,6 @@ public class ARTGrammarElementNonterminal extends ARTGrammarElement {
 
   public void setAttributes(Set<ARTGrammarElementAttribute> attributes) {
     this.attributes = attributes;
-  }
-
-  public Set<ARTGrammarElement> getFirst() {
-    return first;
-  }
-
-  public void setFirst(Set<ARTGrammarElement> first) {
-    this.first = first;
-  }
-
-  public Set<ARTGrammarElement> getFollow() {
-
-    return follow;
-  }
-
-  public void setFollow(Set<ARTGrammarElement> follow) {
-    this.follow = follow;
   }
 
   public boolean isUsed() {

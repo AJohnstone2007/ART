@@ -99,6 +99,7 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
   public final AbstractRelation<CFGElement, CFGElement> follow = new Relation<>();
 
   public final AbstractRelation<CFGNode, CFGElement> instanceFirst = new Relation<>(); // definition?
+  public final AbstractRelation<CFGNode, CFGElement> instanceGuard = new Relation<>(); // definition?
   public final AbstractRelation<CFGNode, CFGElement> instanceFollow = new Relation<>(); // definition?
 
   public final Set<CFGNode> initialSlots = new HashSet<>(); // { X ::= \alpha . \beta} | \alpha = \epsilon }

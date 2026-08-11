@@ -17,14 +17,6 @@ public class ARTGrammarInstance extends ARTTreeVertexDoublyLinked implements Com
   public final Set<ARTGrammarElement> follow = new TreeSet<ARTGrammarElement>();
   public final Set<ARTGrammarElement> guard = new TreeSet<ARTGrammarElement>();
 
-  public Set<ARTGrammarElement> getFirst() {
-    return first;
-  }
-
-  public Set<ARTGrammarElement> getFollow() {
-    return follow;
-  }
-
   public ARTFold fold = ARTFold.EMPTY; // Fold operator attached to this instance node
   public int instanceNumberWithinProduction; // instance number for this element in a production to generate attribute name
   public String instanceName; // For a nonterminal with attributes or a names terminal, the instance name
@@ -138,7 +130,7 @@ public class ARTGrammarInstance extends ARTTreeVertexDoublyLinked implements Com
 
     if (!first.isEmpty()) ret += "\nfirst: " + first;
     if (!follow.isEmpty()) ret += "\nfollow: " + follow;
-    if (!getGuard().isEmpty()) ret += "\nguard: " + getGuard();
+    if (!guard.isEmpty()) ret += "\nguard: " + guard;
 
     ret += "\nleftSibling: " + (leftSibling == null ? "null" : leftSibling.getKey());
     ret += "\nrightSibling: " + (sibling == null ? "null" : sibling.getKey());
@@ -341,9 +333,5 @@ public class ARTGrammarInstance extends ARTTreeVertexDoublyLinked implements Com
     if (this instanceof ARTGrammarInstanceEpsilon) return "#";
     if (payload != null) return payload.toString();
     return "???";
-  }
-
-  public Set<ARTGrammarElement> getGuard() {
-    return guard;
   }
 }

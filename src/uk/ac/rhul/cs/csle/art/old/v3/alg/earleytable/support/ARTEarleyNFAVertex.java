@@ -123,7 +123,7 @@ public class ARTEarleyNFAVertex {
     else {
       if (payload instanceof ARTGrammarElementNonterminal) {
         // System.err.print("First set is " + ((ARTGrammarElementNonterminal) payload).first);
-        ret = ((ARTGrammarElementNonterminal) payload).getFirst().contains(epsilon);
+        ret = ((ARTGrammarElementNonterminal) payload).first.contains(epsilon);
       } else
         ret = false;
     }
@@ -235,7 +235,7 @@ public class ARTEarleyNFAVertex {
       // RED(x)
       if (xInstanceNode == null) {
         ARTGrammarElementNonterminal lhs = (ARTGrammarElementNonterminal) slot.getLhsL().getPayload();
-        for (ARTGrammarElement e : lhs.getFollow())
+        for (ARTGrammarElement e : lhs.follow)
           if (e instanceof ARTGrammarElementEoS) {
             if (redSetMap.get(epsilon) == null) redSetMap.put(epsilon, new HashSet<ARTGrammarElement>());
             redSetMap.get(epsilon).add(lhs);
@@ -262,7 +262,7 @@ public class ARTEarleyNFAVertex {
 
     // Now compute select set
     for (ARTGrammarInstanceSlot s : label)
-      getSelect().addAll(s.getGuard());
+      getSelect().addAll(s.guard);
 
     // Now compute rLHS set
     for (ARTGrammarInstanceSlot s : label)
