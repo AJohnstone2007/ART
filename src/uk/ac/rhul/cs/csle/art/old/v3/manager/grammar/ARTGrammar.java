@@ -412,7 +412,7 @@ public final class ARTGrammar {
       newParaterminal = n;
     }
 
-    if (n.getProductions().isEmpty()) Util.error("Nonterminal " + n + " has no productions");
+    if (!paraterminals.contains(n) && n.getProductions().isEmpty()) Util.error("Nonterminal " + n + " has no productions");
 
     for (ARTGrammarInstanceCat p : n.getProductions())
       artReachabilityAnalysisRec(p, lexerReachable, parserReachable, newParaterminal, visited, n);
@@ -1789,7 +1789,9 @@ public final class ARTGrammar {
 
     // Print productions
     for (ARTGrammarElement e : elements) {
+      if ((characterGrammar || lexerGrammar) && parseGrammarCharacterTerminals.contains(e)) pp.println("\n" + e.toParaterminalString() + " ::= " + e);
       if (e instanceof ARTGrammarElementNonterminal) {
+
         ARTGrammarElementNonterminal n = (ARTGrammarElementNonterminal) e;
 
         if (n.lhsInstance != null) {
