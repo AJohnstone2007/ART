@@ -63,6 +63,7 @@ import uk.ac.rhul.cs.csle.art.old.v4.util.bitset.ARTBitSet;
 import uk.ac.rhul.cs.csle.art.old.v4.util.graph.ARTTree;
 import uk.ac.rhul.cs.csle.art.old.v4.util.text.ARTText;
 import uk.ac.rhul.cs.csle.art.old.v4.util.text.ARTTextHandlerFile;
+import uk.ac.rhul.cs.csle.art.util.Util;
 
 public final class ARTGrammar {
   private final ARTManager artManager;
@@ -81,6 +82,7 @@ public final class ARTGrammar {
   private final Set<ARTGrammarElementNonterminal> paraterminals = new HashSet<>();
   private final Set<ARTGrammarElementNonterminal> usedNonterminals = new HashSet<>();
   private final Map<ARTGrammarElementNonterminal, String> paraterminalAliases = new HashMap<>();
+  private final Set<ARTGrammarElementTerminalCharacter> parseGrammarCharacterTerminals = new HashSet<>();
   Set<ARTGrammarElement> parserReachable = new TreeSet<>();
   Set<ARTGrammarElement> lexerReachable = new TreeSet<>();
   Set<ARTGrammarElement> injectInstanceReachable = new TreeSet<>();
@@ -432,8 +434,12 @@ public final class ARTGrammar {
       if (paraterminal != null && !(instance.getPayload() instanceof ARTGrammarElementTerminalCharacter))
         throw new ARTUncheckedException("found instance of non-character terminal " + instance.toSymbolString() + " under paraterminal " + paraterminal);
 
-      // if (paraterminal == null && instance.getPayload() instanceof ARTGrammarElementTerminalCharacter) System.out.println("Warning:"
-      // + "found instance of character terminal " + instance.toSymbolString() + " in nonterminal " + mostRecentLHS + " that is not under a paraterminal");
+      if (paraterminal == null && instance.getPayload() instanceof ARTGrammarElementTerminalCharacter) {
+        if (!parseGrammarCharacterTerminals.contains(instance.getPayload())) {
+          Util.warning("found character terminal " + instance.toSymbolString() + " on RHS of nonterminal " + mostRecentLHS);
+          parseGrammarCharacterTerminals.add((ARTGrammarElementTerminalCharacter) instance.getPayload());
+        }
+      }
     }
 
     if (instance instanceof ARTGrammarInstanceNonterminal)
@@ -772,7 +778,7 @@ public final class ARTGrammar {
       ARTChooserSet chooserSet = findChooserSet(chooserSetID);
 
       for (String expression : chooseExpressionList) {
-        // System.out.println("Evaluating chooser expression:" + expression);
+        System.out.println("Evaluating chooser expression:" + expression);
 
         int root = iTerms.findTerm(expression);
 
@@ -1175,7 +1181,8 @@ public final class ARTGrammar {
 
         changed |= node.getFirst().addAll(tmp);
 
-        if (node.getSibling().getFirst().contains(epsilon)) changed |= node.getFirst().addAll(node.getSibling().getSibling().getFirst()); // bring over first (alpha X . beta)
+        if (node.getSibling().getFirst().contains(epsilon)) changed |= node.getFirst().addAll(node.getSibling().getSibling().getFirst()); // bring over first
+                                                                                                                                          // (alpha X . beta)
       }
 
       // Guard set computation for slots
@@ -1732,13 +1739,14 @@ public final class ARTGrammar {
 
     if (lexerGrammar || parserGrammar) {
       first = true;
-      pp.print("\n!paraterminal\n");
 
       for (ARTGrammarElement e : elements)
-        if (e instanceof ARTGrammarElementTerminalCaseSensitive || e instanceof ARTGrammarElementTerminalCaseInsensitive || paraterminals.contains(e)) {
-          if (first)
+        if (parseGrammarCharacterTerminals.contains(e) || e instanceof ARTGrammarElementTerminalCaseSensitive
+            || e instanceof ARTGrammarElementTerminalCaseInsensitive || paraterminals.contains(e)) {
+          if (first) {
+            pp.print("\n!paraterminal\n");
             first = false;
-          else
+          } else
             pp.print(",\n");
           pp.print(" " + e.toParaterminalString());
           if (e instanceof ARTGrammarElementTerminal) pp.print(" = \"" + ((ARTGrammarElementTerminal) e).getId() + "\"");
@@ -1767,7 +1775,8 @@ public final class ARTGrammar {
       pp.print("\n\n!start ARTLexerStart\n\nARTLexerStart ::=\n (");
       first = true;
       for (ARTGrammarElement e : elements)
-        if (e instanceof ARTGrammarElementTerminalCaseSensitive || e instanceof ARTGrammarElementTerminalCaseInsensitive || paraterminals.contains(e)) {
+        if (parseGrammarCharacterTerminals.contains(e) || e instanceof ARTGrammarElementTerminalCaseSensitive
+            || e instanceof ARTGrammarElementTerminalCaseInsensitive || paraterminals.contains(e)) {
           if (first)
             first = false;
           else

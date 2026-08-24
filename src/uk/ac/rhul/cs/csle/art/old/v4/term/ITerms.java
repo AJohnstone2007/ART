@@ -497,8 +497,8 @@ public abstract class ITerms {
 
     // Postorder substitution so substitute children first
 
-    // System.out.println(level + " Substitute " + toString(openTermIndex) + " with bindings {" + toStringBindings(bindings) + "}");
-    // System.out.println(level + " Open term is " + toString(openTermIndex));
+    System.out.println(level + " Substitute " + toString(openTermIndex) + " with bindings {" + toStringBindings(bindings) + "}");
+    System.out.println(level + " Open term is " + toString(openTermIndex));
     int arity = getTermArity(openTermIndex);
     // System.out.println(level + " Arity is " + arity);
 
@@ -512,7 +512,7 @@ public abstract class ITerms {
         newArity++;
     }
 
-    // System.out.println(level + " After substitution, open term is " + toString(openTermIndex));
+    System.out.println(level + " After substitution, open term is " + toString(openTermIndex));
 
     // if (newArity != arity) {// There were sequence variable bindings, so we must promote the children of the sequences
     // int[] newChildren = new int[newArity];
@@ -543,7 +543,7 @@ public abstract class ITerms {
     else
       ret = findTerm(getTermSymbolIndex(openTermIndex), children);
 
-    // System.out.println("Substitute " + toString(openTermIndex) + " with bindings " + toStringBindings(bindings) + " returns " + toString(ret));
+    System.out.println("Substitute " + toString(openTermIndex) + " with bindings " + toStringBindings(bindings) + " returns " + toString(ret));
     return ret;
   }
 
@@ -677,8 +677,8 @@ public abstract class ITerms {
     if (arity > 1) r = valueFromTerm(children[1]);
     if (arity > 2) rr = valueFromTerm(children[2]);
 
-    // System.out.println("Evaluating term " + toString(term) + " with l = " + l.toCanonicalString() + " and r = " + r.toCanonicalString() + " and rr = "
-    // + rr.toCanonicalString());
+    System.out.println("Evaluating term " + toString(term));
+    // + " with l = " + l.toString() + " and r = " + r.toString() + " and rr = " + rr.toString());
     if (arity == 0)
       throw new ARTUncheckedException("Unknown arity-zero function " + rootSymbolString);
     else if (arity == 1)
@@ -896,6 +896,8 @@ public abstract class ITerms {
     case __real64StringIndex:
       arityCheck(term, 1);
       return new __real64(term);
+    case __setStringIndex:
+      return new __set(term);
     case __stringStringIndex:
       arityCheck(term, 1);
       return new __string(term);

@@ -27,6 +27,7 @@ import uk.ac.rhul.cs.csle.art.old.v4.util.slotarray.ARTSlotArray;
 import uk.ac.rhul.cs.csle.art.old.v4.util.text.ARTText;
 import uk.ac.rhul.cs.csle.art.old.v4.util.text.ARTTextHandlerFile;
 import uk.ac.rhul.cs.csle.art.old.v4.util.text.ARTTextHandlerString;
+import uk.ac.rhul.cs.csle.art.util.Util;
 
 public final class ARTV3 {
   public ARTManager artManager = new ARTManager();
@@ -48,7 +49,11 @@ public final class ARTV3 {
         sb.append(arg + "\n");
     }
     artManager.parseARTSpecification(sb.toString());
-    runFromDirectives();
+    try {
+      runFromDirectives();
+    } catch (ARTUncheckedException e) {
+      Util.fatal(e.getMessage());
+    }
   }
 
   // This constructor used by AJDebug for regression testing

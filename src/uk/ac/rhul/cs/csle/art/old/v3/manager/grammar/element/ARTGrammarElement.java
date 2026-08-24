@@ -1,5 +1,7 @@
 package uk.ac.rhul.cs.csle.art.old.v3.manager.grammar.element;
 
+import uk.ac.rhul.cs.csle.art.util.Util;
+
 public abstract class ARTGrammarElement implements Comparable<ARTGrammarElement> {
   private int elementNumber;
 
@@ -16,6 +18,7 @@ public abstract class ARTGrammarElement implements Comparable<ARTGrammarElement>
   abstract public String toEnumerationString(String prefix);
 
   public String toParaterminalString() {
+    if (this instanceof ARTGrammarElementTerminalCharacter) return "ART_CHP_" + Util.toIdentifier(toString().substring(1));
     return toString();
   }
 
