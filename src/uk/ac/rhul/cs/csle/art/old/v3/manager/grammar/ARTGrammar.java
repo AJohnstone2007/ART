@@ -412,6 +412,8 @@ public final class ARTGrammar {
       newParaterminal = n;
     }
 
+    if (n.getProductions().isEmpty()) Util.error("Nonterminal " + n + " has no productions");
+
     for (ARTGrammarInstanceCat p : n.getProductions())
       artReachabilityAnalysisRec(p, lexerReachable, parserReachable, newParaterminal, visited, n);
 
@@ -811,8 +813,7 @@ public final class ARTGrammar {
     // System.out.println("Paraterminals " + paraterminals);
 
     for (ARTGrammarElementNonterminal n : nonterminals)
-      if (n.getProductions().isEmpty() && usedNonterminals.contains(n))
-        if (!paraterminals.contains(n)) System.out.println("*** Warning - undefined nonterminal " + n);
+      if (n.getProductions().isEmpty() && usedNonterminals.contains(n)) if (!paraterminals.contains(n)) Util.error("undefined nonterminal " + n);
   }
 
   private boolean computeAttributesRec(ARTGrammarInstance instance, ARTGrammarInstance parentInstance, ARTGrammarInstanceLHS LHSInstance,
