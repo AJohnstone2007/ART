@@ -1730,11 +1730,13 @@ public final class ARTGrammar {
       pp.println("!element");
       // Now output all of the elements that are not case(in)sensitives
       for (ARTGrammarElement e : elements)
-        if (parseGrammarCharacterTerminals.contains(e) || e instanceof ARTGrammarElementTerminalCaseSensitive
-            || e instanceof ARTGrammarElementTerminalCaseInsensitive)
+        if (e instanceof ARTGrammarElementTerminalCaseSensitive || e instanceof ARTGrammarElementTerminalCaseInsensitive)
           pp.println(" " + e.toParaterminalString() + ",");
-        else
+        else {
           pp.println(" " + e.toString() + ",");
+          if (parseGrammarCharacterTerminals.contains(e)) // additional output as paraterminal
+            pp.println(" " + e.toParaterminalString() + ",");
+        }
 
       pp.println(" ARTLexerStart");
     }
