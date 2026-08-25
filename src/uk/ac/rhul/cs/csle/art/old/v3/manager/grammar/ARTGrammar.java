@@ -1730,7 +1730,8 @@ public final class ARTGrammar {
       pp.println("!element");
       // Now output all of the elements that are not case(in)sensitives
       for (ARTGrammarElement e : elements)
-        if (e instanceof ARTGrammarElementTerminalCaseSensitive || e instanceof ARTGrammarElementTerminalCaseInsensitive)
+        if (parseGrammarCharacterTerminals.contains(e) || e instanceof ARTGrammarElementTerminalCaseSensitive
+            || e instanceof ARTGrammarElementTerminalCaseInsensitive)
           pp.println(" " + e.toParaterminalString() + ",");
         else
           pp.println(" " + e.toString() + ",");
