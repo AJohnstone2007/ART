@@ -417,7 +417,7 @@ public final class ARTGrammar {
     for (ARTGrammarInstanceCat p : n.getProductions())
       artReachabilityAnalysisRec(p, lexerReachable, parserReachable, newParaterminal, visited, n);
 
-    // visited.remove(n);
+    visited.remove(n);
   }
 
   private void artReachabilityAnalysisRec(ARTGrammarInstance instance, Set<ARTGrammarElement> lexerReachable, Set<ARTGrammarElement> parserReachable,
@@ -1681,6 +1681,7 @@ public final class ARTGrammar {
   public void prettyPrint(String filename, boolean characterGrammar, boolean lexerGrammar, boolean parserGrammar, boolean prettyGrammar, boolean tokenGrammar) {
     ARTText pp = new ARTText(new ARTTextHandlerFile(filename));
     boolean first;
+    Util.debug("Declared paraterminals: " + paraterminals + "\nParser reachable " + parserReachable + "\nLexer reachable " + lexerReachable);
 
     if (characterGrammar)
       pp.println("(* Character grammar *)\n!paraterminal dummy // Switch off automatic whitespace");
