@@ -1753,7 +1753,7 @@ public final class ARTGrammar {
           } else
             pp.print(",\n");
           pp.print(" " + e.toParaterminalString());
-          if (e instanceof ARTGrammarElementTerminal) pp.print(" = \"" + ((ARTGrammarElementTerminal) e).getId() + "\"");
+          // if (e instanceof ARTGrammarElementTerminal) pp.print(" (* " + ((ARTGrammarElementTerminal) e).getId() + "*)");
         }
     }
 
