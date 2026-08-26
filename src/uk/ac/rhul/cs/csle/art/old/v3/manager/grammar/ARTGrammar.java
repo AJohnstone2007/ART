@@ -438,7 +438,7 @@ public final class ARTGrammar {
 
       if (paraterminal == null && instance.getPayload() instanceof ARTGrammarElementTerminalCharacter) {
         if (!parseGrammarCharacterTerminals.contains(instance.getPayload())) {
-          Util.warning("found character terminal " + instance.toSymbolString() + " on RHS of nonterminal " + mostRecentLHS);
+          // Util.warning("found character terminal " + instance.toSymbolString() + " on RHS of nonterminal " + mostRecentLHS);
           parseGrammarCharacterTerminals.add((ARTGrammarElementTerminalCharacter) instance.getPayload());
         }
       }
