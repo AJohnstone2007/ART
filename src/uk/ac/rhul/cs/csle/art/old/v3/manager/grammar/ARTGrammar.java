@@ -1681,7 +1681,7 @@ public final class ARTGrammar {
   public void prettyPrint(String filename, boolean characterGrammar, boolean lexerGrammar, boolean parserGrammar, boolean prettyGrammar, boolean tokenGrammar) {
     ARTText pp = new ARTText(new ARTTextHandlerFile(filename));
     boolean first;
-    Util.debug("Declared paraterminals: " + paraterminals + "\nParser reachable " + parserReachable + "\nLexer reachable " + lexerReachable);
+    // Util.debug("Declared paraterminals: " + paraterminals + "\nParser reachable " + parserReachable + "\nLexer reachable " + lexerReachable);
 
     if (characterGrammar)
       pp.println("(* Character grammar *)\n!paraterminal dummy // Switch off automatic whitespace");
