@@ -417,7 +417,7 @@ public final class ARTGrammar {
     for (ARTGrammarInstanceCat p : n.getProductions())
       artReachabilityAnalysisRec(p, lexerReachable, parserReachable, newParaterminal, visited, n);
 
-    // visited.remove(n);
+    visited.remove(n);
   }
 
   private void artReachabilityAnalysisRec(ARTGrammarInstance instance, Set<ARTGrammarElement> lexerReachable, Set<ARTGrammarElement> parserReachable,
