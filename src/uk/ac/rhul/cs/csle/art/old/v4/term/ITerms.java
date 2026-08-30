@@ -497,8 +497,8 @@ public abstract class ITerms {
 
     // Postorder substitution so substitute children first
 
-    System.out.println(level + " Substitute " + toString(openTermIndex) + " with bindings {" + toStringBindings(bindings) + "}");
-    System.out.println(level + " Open term is " + toString(openTermIndex));
+    // System.out.println(level + " Substitute " + toString(openTermIndex) + " with bindings {" + toStringBindings(bindings) + "}");
+    // System.out.println(level + " Open term is " + toString(openTermIndex));
     int arity = getTermArity(openTermIndex);
     // System.out.println(level + " Arity is " + arity);
 
@@ -512,7 +512,7 @@ public abstract class ITerms {
         newArity++;
     }
 
-    System.out.println(level + " After substitution, open term is " + toString(openTermIndex));
+    // System.out.println(level + " After substitution, open term is " + toString(openTermIndex));
 
     // if (newArity != arity) {// There were sequence variable bindings, so we must promote the children of the sequences
     // int[] newChildren = new int[newArity];
@@ -543,7 +543,7 @@ public abstract class ITerms {
     else
       ret = findTerm(getTermSymbolIndex(openTermIndex), children);
 
-    System.out.println("Substitute " + toString(openTermIndex) + " with bindings " + toStringBindings(bindings) + " returns " + toString(ret));
+    // System.out.println("Substitute " + toString(openTermIndex) + " with bindings " + toStringBindings(bindings) + " returns " + toString(ret));
     return ret;
   }
 
