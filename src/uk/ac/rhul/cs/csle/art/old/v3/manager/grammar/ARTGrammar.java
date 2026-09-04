@@ -64,6 +64,7 @@ import uk.ac.rhul.cs.csle.art.old.v4.util.graph.ARTTree;
 import uk.ac.rhul.cs.csle.art.old.v4.util.text.ARTText;
 import uk.ac.rhul.cs.csle.art.old.v4.util.text.ARTTextHandlerFile;
 import uk.ac.rhul.cs.csle.art.util.Util;
+import uk.ac.rhul.cs.csle.art.util.relation.Relation;
 
 public final class ARTGrammar {
   private final ARTManager artManager;
@@ -83,6 +84,8 @@ public final class ARTGrammar {
   private final Set<ARTGrammarElementNonterminal> usedNonterminals = new HashSet<>();
   private final Map<ARTGrammarElementNonterminal, String> paraterminalAliases = new HashMap<>();
   private final Set<ARTGrammarElementTerminalCharacter> parseGrammarCharacterTerminals = new HashSet<>();
+  Relation<ARTGrammarElement, ARTGrammarElement> parserReachableRelation = new Relation<>();
+  Relation<ARTGrammarElement, ARTGrammarElement> lexerReachableRelation = new Relation<>();
   Set<ARTGrammarElement> parserReachable = new TreeSet<>();
   Set<ARTGrammarElement> lexerReachable = new TreeSet<>();
   Set<ARTGrammarElement> injectInstanceReachable = new TreeSet<>();
@@ -254,7 +257,9 @@ public final class ARTGrammar {
      */
 
     // Main root - standard lexerReachable and parseReachable
-    artReachabilityAnalysisRec(this.getDefaultStartNonterminal(), lexerReachable, parserReachable, null, visited);
+    old_artReachabilityAnalysisRec(this.getDefaultStartNonterminal(), lexerReachable, parserReachable, null, visited);
+
+    artComputeReachability();
 
     // Set up injection strings
     injectProductionString = ARTV3Module.getInjectProductionString();
@@ -264,7 +269,7 @@ public final class ARTGrammar {
       if (n.getProductions() != null) {
         visited = new HashSet<>();
         // production insertion must be under a paraterminal (use n) so no need for a parserReachable
-        artReachabilityAnalysisRec(n, lexerReachable, null, n, visited);
+        old_artReachabilityAnalysisRec(n, lexerReachable, null, n, visited);
         injectProductionString = n.getProductions().get(0).toGrammarSlotStringRec(null, "", "", false, false, "", "", null, false);
       }
     }
@@ -274,14 +279,14 @@ public final class ARTGrammar {
       if (n.getProductions() != null) {
         visited = new HashSet<>();
         // Compute injectInstance reachability
-        artReachabilityAnalysisRec(n, injectInstanceReachable, injectInstanceReachable, null, visited);
+        old_artReachabilityAnalysisRec(n, injectInstanceReachable, injectInstanceReachable, null, visited);
         injectInstanceError.addAll(injectInstanceReachable);
         injectInstanceError.retainAll(parserReachable);
         injectInstanceError.retainAll(nonterminals);
         visited = new HashSet<>();
 
         // Fold instance reachability in
-        artReachabilityAnalysisRec(n, lexerReachable, parserReachable, null, visited);
+        old_artReachabilityAnalysisRec(n, lexerReachable, parserReachable, null, visited);
         injectInstanceString = n.getProductions().get(0).toGrammarSlotStringRec(null, "", "", false, false, "", "", null, false);
       }
     }
@@ -322,11 +327,44 @@ public final class ARTGrammar {
       extendDerivationChoiceRelation(chooserDerivationLonger, ARTV3Module, t, ARTV3Module.getDerivationLonger().get(t));
     }
 
+    Relation<ARTGrammarElement, ARTGrammarElement> reachable;
     for (ARTValueTerm t : ARTV3Module.getDerivationShorter().keySet()) {
       // System.out.println("Processing derivation chooser " + chooserTermToString(t) + " << " + artModule.getDerivationShorter().get(t));
       extendDerivationChoiceRelation(chooserDerivationShorter, ARTV3Module, t, ARTV3Module.getDerivationShorter().get(t));
     }
     // System.out.println(this);
+  }
+
+  private void artComputeReachability() {
+    for (var n : nonterminals)
+      for (ARTGrammarInstance instance : n.getProductions()) {
+        if (!paraterminals.contains(n)) addImmediateReachableNonterminalsRec(parserReachableRelation, n, instance);
+        addImmediateReachableNonterminalsRec(lexerReachableRelation, n, instance);
+      }
+
+    parserReachableRelation.transitiveClosure();
+    lexerReachableRelation.transitiveClosure();
+
+    // Test paraterminals for illegal reaching of paraterminals
+    for (var n : paraterminals) {
+
+      var pt = new HashSet(paraterminals);
+      pt.retainAll(lexerReachableRelation.get(n));
+      if (!pt.isEmpty()) Util.error("intra-paraterminal reachability: paraterminal " + n + " reaches " + pt);
+    }
+
+    Util.debug("Parser reachable relation:\n" + parserReachableRelation);
+    Util.debug("Lexer reachable relation:\n" + lexerReachableRelation);
+  }
+
+  private void addImmediateReachableNonterminalsRec(Relation<ARTGrammarElement, ARTGrammarElement> relation, ARTGrammarElementNonterminal n,
+      ARTGrammarInstance instance) {
+    // Util.debug("At " + instance);
+    if (instance == null) return;
+    if (instance instanceof ARTGrammarInstanceNonterminal) relation.add(n, instance.getPayload());
+
+    addImmediateReachableNonterminalsRec(relation, n, instance.getChild());
+    addImmediateReachableNonterminalsRec(relation, n, instance.getSibling());
   }
 
   ITerms iTerms = new ITermsLowLevelAPI();
@@ -394,7 +432,7 @@ public final class ARTGrammar {
     return chooserSets.get(id);
   }
 
-  private void artReachabilityAnalysisRec(ARTGrammarElementNonterminal n, Set<ARTGrammarElement> lexerReachable, Set<ARTGrammarElement> parserReachable,
+  private void old_artReachabilityAnalysisRec(ARTGrammarElementNonterminal n, Set<ARTGrammarElement> lexerReachable, Set<ARTGrammarElement> parserReachable,
       ARTGrammarElementNonterminal paraterminal, Set<ARTGrammarElement> visited) {
 
     if (visited.contains(n)) return;
@@ -445,7 +483,7 @@ public final class ARTGrammar {
     }
 
     if (instance instanceof ARTGrammarInstanceNonterminal)
-      artReachabilityAnalysisRec((ARTGrammarElementNonterminal) instance.getPayload(), lexerReachable, parserReachable, paraterminal, visited);
+      old_artReachabilityAnalysisRec((ARTGrammarElementNonterminal) instance.getPayload(), lexerReachable, parserReachable, paraterminal, visited);
 
     artReachabilityAnalysisRec(instance.getChild(), lexerReachable, parserReachable, paraterminal, visited, mostRecentLHS);
     artReachabilityAnalysisRec(instance.getSibling(), lexerReachable, parserReachable, paraterminal, visited, mostRecentLHS);
