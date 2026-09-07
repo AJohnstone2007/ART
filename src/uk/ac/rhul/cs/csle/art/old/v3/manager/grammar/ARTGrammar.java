@@ -251,17 +251,40 @@ public final class ARTGrammar {
      *
      * We have three roots to consider: the start symbol of the grammar; ART_InjectProduction; and ART_InjectInstance
      *
-     *
+     * Currently the Sep 2026 code does not do injections but that is easy to add if necesarry
      *
      *
      */
 
     // Main root - standard lexerReachable and parseReachable
-    old_artReachabilityAnalysisRec(this.getDefaultStartNonterminal(), lexerReachable, parserReachable, null, visited);
-
     artComputeReachability();
 
-    // Set up injection strings
+    // This next section if for reachbility regression testing - uncomment if you wnat to check against pre-Septermber 2026 calculations
+    // old_artReachabilityAnalysisRec(this.getDefaultStartNonterminal(), lexerReachable, parserReachable, null, visited);
+    //
+    // Util.debug("Parser reachable relation:\n" + parserReachableRelation);
+    // Util.debug("Lexer reachable relation:\n" + lexerReachableRelation);
+    //
+    // Util.debug("Old style parser grammar reachable elements (cardinality " + parserReachable.size() + "):\n" + parserReachable);
+    // Util.debug("New style parser grammar reachable elements: (cardinality " + parserReachableRelation.get(defaultStartNonterminal).size() + "):\n"
+    // + parserReachableRelation.get(defaultStartNonterminal));
+    // Util.regressionCompare("Old style parser reachable", parserReachable, "New style parser reachable",
+    // parserReachableRelation.get(defaultStartNonterminal));
+    //
+    // Util.debug("Old style lexer grammar reachable elements (cardinality " + lexerReachable.size() + "):\n" + lexerReachable);
+    HashSet<ARTGrammarElement> tmp = new HashSet<>();
+    for (var e : paraterminals)
+      tmp.addAll(lexerReachableRelation.get(e));
+    for (var e : terminals)
+      if (e instanceof ARTGrammarElementTerminalCharacter) tmp.add(e);
+    // Util.debug("New style lexer grammar reachable elements " + tmp.size() + "):\n" + tmp);
+    // Util.regressionCompare("Old style lexer reachable", lexerReachable, "New style lexer reachable", tmp);
+
+    parserReachable = parserReachableRelation.get(defaultStartNonterminal);
+    parserReachable.add(defaultStartNonterminal);
+    lexerReachable = tmp;
+
+    // Set up injection strings - not done in Sep 2026!
     injectProductionString = ARTV3Module.getInjectProductionString();
     if (nonterminals.contains(new ARTGrammarElementNonterminal(ARTV3Module, "ART_InjectProduction"))) {
       useDefaultInjectProductionString = false;
@@ -352,16 +375,15 @@ public final class ARTGrammar {
       pt.retainAll(lexerReachableRelation.get(n));
       if (!pt.isEmpty()) Util.error("intra-paraterminal reachability: paraterminal " + n + " reaches " + pt);
     }
-
-    Util.debug("Parser reachable relation:\n" + parserReachableRelation);
-    Util.debug("Lexer reachable relation:\n" + lexerReachableRelation);
   }
 
   private void addImmediateReachableNonterminalsRec(Relation<ARTGrammarElement, ARTGrammarElement> relation, ARTGrammarElementNonterminal n,
       ARTGrammarInstance instance) {
     // Util.debug("At " + instance);
     if (instance == null) return;
-    if (instance instanceof ARTGrammarInstanceNonterminal) relation.add(n, instance.getPayload());
+    var payLoad = instance.getPayload();
+    if (payLoad != null && (payLoad instanceof ARTGrammarElementNonterminal || payLoad instanceof ARTGrammarElementTerminalCaseSensitive))
+      relation.add(n, instance.getPayload());
 
     addImmediateReachableNonterminalsRec(relation, n, instance.getChild());
     addImmediateReachableNonterminalsRec(relation, n, instance.getSibling());
@@ -1773,7 +1795,7 @@ public final class ARTGrammar {
           pp.println(" " + e.toParaterminalString() + ",");
         else {
           pp.println(" " + e.toString() + ",");
-          if (parseGrammarCharacterTerminals.contains(e)) // additional output as paraterminal
+          if (e instanceof ARTGrammarElementTerminalCharacter) // additional output as paraterminal
             pp.println(" " + e.toParaterminalString() + ",");
         }
 
@@ -1784,7 +1806,7 @@ public final class ARTGrammar {
       first = true;
 
       for (ARTGrammarElement e : elements)
-        if (parseGrammarCharacterTerminals.contains(e) || e instanceof ARTGrammarElementTerminalCaseSensitive
+        if (e instanceof ARTGrammarElementTerminalCharacter || e instanceof ARTGrammarElementTerminalCaseSensitive
             || e instanceof ARTGrammarElementTerminalCaseInsensitive || paraterminals.contains(e)) {
           if (first) {
             pp.print("\n!paraterminal\n");
@@ -1818,7 +1840,7 @@ public final class ARTGrammar {
       pp.print("\n\n!start ARTLexerStart\n\nARTLexerStart ::=\n (");
       first = true;
       for (ARTGrammarElement e : elements)
-        if (parseGrammarCharacterTerminals.contains(e) || e instanceof ARTGrammarElementTerminalCaseSensitive
+        if (e instanceof ARTGrammarElementTerminalCharacter || e instanceof ARTGrammarElementTerminalCaseSensitive
             || e instanceof ARTGrammarElementTerminalCaseInsensitive || paraterminals.contains(e)) {
           if (first)
             first = false;
@@ -1846,13 +1868,20 @@ public final class ARTGrammar {
         }
       }
 
-      if ((characterGrammar || lexerGrammar)
-          && (e instanceof ARTGrammarElementTerminalCaseSensitive || e instanceof ARTGrammarElementTerminalCaseInsensitive)) {
+      if ((characterGrammar || lexerGrammar) && (e instanceof ARTGrammarElementTerminalCaseSensitive)) {
         pp.print("\n" + e.toParaterminalString() + " ::=");
         String id = e.toString();
         for (int i = 1; i < id.length() - 1; i++)
           pp.print(" `" + id.charAt(i));
         pp.println(" " + injectProductionString);
+      }
+
+      if ((characterGrammar || lexerGrammar) && (e instanceof ARTGrammarElementTerminalCharacter)) {
+        pp.print("\n" + e.toParaterminalString() + " ::=");
+        String id = ((ARTGrammarElementTerminalCharacter) e).getId();
+        for (int i = 0; i < id.length(); i++)
+          pp.print(" `" + Util.escapeString(id.substring(i, i + 1)));
+        pp.println();
       }
 
     }

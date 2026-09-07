@@ -3,6 +3,9 @@ package uk.ac.rhul.cs.csle.art.util;
 import java.io.PrintStream;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Set;
+
+import uk.ac.rhul.cs.csle.art.old.v3.manager.grammar.element.ARTGrammarElement;
 
 public class Util {
   public static PrintStream console = System.out;
@@ -337,5 +340,13 @@ public class Util {
         return true;
       }
     return false;
+  }
+
+  public static void regressionCompare(String leftSetName, Set<ARTGrammarElement> leftSet, String rightSetName, Set<ARTGrammarElement> rightSet) {
+    // debug("Comparing " + leftSet + " with " + rightSet);
+    for (var o : leftSet)
+      if (!rightSet.contains(o)) info("Regression: " + leftSetName + " has extra " + o);
+    for (var o : rightSet)
+      if (!leftSet.contains(o)) info("Regression: " + rightSetName + " has extra " + o);
   }
 }

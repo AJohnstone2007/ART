@@ -2,7 +2,7 @@ package uk.ac.rhul.cs.csle.art.old.v3.manager.grammar.element;
 
 public abstract class ARTGrammarElementTerminal extends ARTGrammarElement {
 
-  protected final String id;
+  public final String id;
 
   public String getId() {
     return id;
