@@ -235,7 +235,7 @@ public class ARTEarleyNFAVertex {
       // RED(x)
       if (xInstanceNode == null) {
         ARTGrammarElementNonterminal lhs = (ARTGrammarElementNonterminal) slot.getLhsL().getPayload();
-        for (ARTGrammarElement e : lhs.follow)
+        for (ARTGrammarElement e : lhs.getFollow())
           if (e instanceof ARTGrammarElementEoS) {
             if (redSetMap.get(epsilon) == null) redSetMap.put(epsilon, new HashSet<ARTGrammarElement>());
             redSetMap.get(epsilon).add(lhs);

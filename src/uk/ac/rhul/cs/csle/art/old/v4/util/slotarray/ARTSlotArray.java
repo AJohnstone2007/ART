@@ -112,7 +112,7 @@ public class ARTSlotArray {
           slotRightSymbols[n.getElementNumber()] = 0;
           slotFirstSetAddresses[n.getElementNumber()] = grammar.getMergedSets().get(n.getFirst()); // lookup merged set number for the first set, and load to
           // firstSetAddresses for this nonterminal
-          nonterminalFollowSetAddresses[n.getElementNumber()] = grammar.getMergedSets().get(n.follow); // similarly for follow
+          nonterminalFollowSetAddresses[n.getElementNumber()] = grammar.getMergedSets().get(n.getFollow()); // similarly for follow
         }
         slotIndex[n.getElementNumber()] = new int[n.getProductions().size() + 1];
         // Process the production p in n

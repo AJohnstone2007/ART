@@ -77,7 +77,7 @@ public class ARTLCNPLinkedAPI extends ARTParserBase {
 
   Set<ARTGrammarElement> predict(ARTGrammarInstanceSlot beta, ARTGrammarElementNonterminal X) {
     if (artTrace) artTraceText.println(
-        "predict(" + X + ", " + beta.toGrammarString(".") + ") with first(beta) = " + beta.getFirst() + " and follow(X) = " + X.follow + " returns " + beta.getGuard());
+        "predict(" + X + ", " + beta.toGrammarString(".") + ") with first(beta) = " + beta.getFirst() + " and follow(X) = " + X.getFollow() + " returns " + beta.getGuard());
     return beta.getGuard();
   }
 

@@ -784,9 +784,9 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
         if (lhs.cfgKind == CFGElementKind.NONTERMINAL) {
           CFGNode topNode = elementToRulesNodeMap.get(lhs);
           if (topNode == null) continue;
-          // Util.info("Visiting top node " + topNode.num + ":" + topNode);
+          // Util.debug("Visiting top node " + topNode.num + ":" + topNode);
           for (CFGNode altNode = topNode.alt; altNode != null; altNode = altNode.alt) {
-            // Util.info("Visiting alt node " + altNode.num + ":" + altNode);
+            // Util.debug("Visiting alt node " + altNode.num + ":" + altNode);
             CFGNode seqNode = altNode.seq;
             while (true) {
               changed |= instanceFollow.addAll(seqNode, removeEpsilon(instanceFirst.get(seqNode.seq)));

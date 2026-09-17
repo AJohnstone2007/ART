@@ -106,7 +106,7 @@ public final class AJDebug {
       Util.info("First " + (goodFirst ? "" : "mis") + "match for " + v3Nonterminal + " V3: " + v3FirstSet + " V5: " + v5FirstSet);
 
       Set<String> v3FollowSet = new TreeSet<>(), v5FollowSet = new TreeSet<>();
-      for (var f : v3Nonterminal.follow)
+      for (var f : v3Nonterminal.getFollow())
         v3FollowSet.add(f.toString());
 
       for (var f : grammarV5.follow.get(v5Nonterminal))

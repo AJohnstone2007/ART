@@ -56,8 +56,8 @@ public class ARTCNPLinkedAPI extends ARTParserBase {
 
   protected boolean testSelect(ARTGrammarElementTerminal b, ARTGrammarElementNonterminal X, ARTGrammarInstanceSlot alpha) {
     if (artTrace > 0) artTraceText
-        .println("testSelect(" + b + ", " + X + ", " + alpha.toGrammarString(".") + ") with first(alpha) = " + alpha.getFirst() + " and follow(X) = " + X.follow);
-    return alpha.getFirst().contains(b) || (alpha.getFirst().contains(artGrammar.getEpsilon()) && X.follow.contains(b));
+        .println("testSelect(" + b + ", " + X + ", " + alpha.toGrammarString(".") + ") with first(alpha) = " + alpha.getFirst() + " and follow(X) = " + X.getFollow());
+    return alpha.getFirst().contains(b) || (alpha.getFirst().contains(artGrammar.getEpsilon()) && X.getFollow().contains(b));
   }
 
   protected void dscAdd(ARTGrammarInstanceSlot slot, int k, int i) {

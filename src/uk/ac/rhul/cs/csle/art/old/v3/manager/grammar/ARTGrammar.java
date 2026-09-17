@@ -679,9 +679,9 @@ public final class ARTGrammar {
     // 1 Adding EoS to nonterminal follow sets
     if (isEOSFollow) {
       for (ARTGrammarElementNonterminal n : nonterminals)
-        n.follow.add(eoS);
+        n.getFollow().add(eoS);
     } else
-      start.follow.add(eoS);
+      start.getFollow().add(eoS);
 
     // 2 first and follow set computations
     while (changed) {
@@ -1204,7 +1204,7 @@ public final class ARTGrammar {
     }
 
     else if (node instanceof ARTGrammarInstanceLHS) {
-      changed |= node.getFollow().addAll(((ARTGrammarElementNonterminal) node.getPayload()).follow);
+      changed |= node.getFollow().addAll(((ARTGrammarElementNonterminal) node.getPayload()).getFollow());
       for (ARTGrammarInstance tmp = node.getChild(); tmp != null; tmp = tmp.getSibling())
         changed |= node.getFirst().addAll(tmp.getFirst());
 
@@ -1249,7 +1249,7 @@ public final class ARTGrammar {
       // Guard set computation for slots
       HashSet<ARTGrammarElement> tmp = new HashSet<ARTGrammarElement>(node.getFirst());
       if (tmp.contains(epsilon)) if (newBracketNode == null)
-        tmp.addAll(lhs.follow);
+        tmp.addAll(lhs.getFollow());
       else {
         tmp.addAll(newBracketNode.getSibling().getGuard());
         // For loops, we need the first of the body as well
@@ -1277,7 +1277,7 @@ public final class ARTGrammar {
 
       if (node.getSibling().getFirst().contains(epsilon)) // are we at the end of a rule?
         if (newBracketNode == null)
-        changed |= node.getFollow().addAll(lhs.follow);
+        changed |= node.getFollow().addAll(lhs.getFollow());
         else {
           HashSet<ARTGrammarElement> tmp1 = new HashSet<ARTGrammarElement>(newBracketNode.getSibling().getFirst());
           tmp1.addAll(newBracketNode.getSibling().getGuard()); // Added 8/3/24 to ensure follow set comes down
@@ -1286,7 +1286,7 @@ public final class ARTGrammar {
         }
 
       // This is the only place where nonterminal follows are updated
-      changed |= nonterminal.follow.addAll(node.getFollow());
+      changed |= nonterminal.getFollow().addAll(node.getFollow());
     }
 
     else if (node instanceof ARTGrammarInstanceTerminal)
@@ -2047,7 +2047,7 @@ public final class ARTGrammar {
       builder.append(" first={");
       builder.append(n.getFirst());
       builder.append("} follow={");
-      builder.append(n.follow);
+      builder.append(n.getFollow());
       builder.append("}");
     }
     return builder.toString();

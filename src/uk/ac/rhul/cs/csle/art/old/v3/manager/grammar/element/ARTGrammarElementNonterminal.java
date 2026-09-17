@@ -19,7 +19,7 @@ public class ARTGrammarElementNonterminal extends ARTGrammarElement {
   protected Set<ARTGrammarElementAttribute> attributes = new HashSet<ARTGrammarElementAttribute>();
 
   private final Set<ARTGrammarElement> first = new HashSet<ARTGrammarElement>();
-  public final Set<ARTGrammarElement> follow = new HashSet<ARTGrammarElement>();
+  private final Set<ARTGrammarElement> follow = new HashSet<ARTGrammarElement>();
 
   protected boolean used = false;
   protected boolean defined = false;
@@ -181,5 +181,9 @@ public class ARTGrammarElementNonterminal extends ARTGrammarElement {
 
   public Set<ARTGrammarElement> getFirst() {
     return first;
+  }
+
+  public Set<ARTGrammarElement> getFollow() {
+    return follow;
   }
 }
