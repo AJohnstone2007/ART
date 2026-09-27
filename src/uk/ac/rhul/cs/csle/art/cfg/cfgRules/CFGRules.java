@@ -511,7 +511,7 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
   private void computeFirstFollowGuardSets() {
     for (var n : elementToRulesNodeMap.keySet())
       if (n.cfgKind == CFGElementKind.NONTERMINAL) {
-        Util.debug("Nonterminal: " + n);
+        // Util.debug("Nonterminal: " + n);
         // computeFirstFollowGuardSetsRec(elementToRulesNodeMap.get(n));
       }
   }

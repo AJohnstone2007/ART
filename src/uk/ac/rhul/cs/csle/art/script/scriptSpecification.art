@@ -9,8 +9,6 @@
 'false' > &ID
 // > &ID
 
-trTermFiles ::= artDepth trTermFiles . > trTermFiles ::= trTerm trTermFiles .
-
 rules ::= rule rules^ | rule
 rule  ::= cfgRule^^ | chooseRule^^ | signature^^ | trRule^^ | directive^^   
 
@@ -126,9 +124,6 @@ trTransition ::= trTopTuple trRelation trTopTuple
 trTopTuple ::= trTerm | trTuple^^ trTerm ','^ trTerms^
 trTuple ::= #^  
 trTerms ::= trTerm | trTerm ','^ trTerms^ | trTerm trTerms^ // comma is optional
-trTermFiles ::= trTerm | trTerm trTermFiles^ | artFile | artFile trTermFiles^ | artDepth | artDepth trTermFiles^
-
-artDepth ::= 'depth'^ __int32
 
 trTerm ::= 
   __bool^^ | __char^^ | __intAP^^ | __int32^^ | __realAP^^ | __real64^^ | __string^^  // lexical from builtins - see below  
@@ -160,7 +155,7 @@ directiveCarrier ::=
 
 | '!lexer'^^ artArgs^ | '!parser'^^ artArgs^ | '!interpreter'^^ artArgs^ | '!generate'^^ artArgs^  
 
-| '!print'^^ trTermFiles^ | '!show'^^ artArgs^
+| '!print'^^ artArgs^| '!show'^^ artArgs^
 
 | '!start'^^ cfgNonterminal | '!start'^^ trRelation // Set parser start nonterminal or rewriter start relation
 
@@ -188,12 +183,13 @@ typedID ::= ID '::'^ trTerm
 
 artArgs ::= artArg^ | artArg^ ','^ artArgs^ 
 
-artArg ::= artArgBoolean | artArgInt | artArgFile | artArgString
+artArg ::= artArgBoolean | artArgInt | artArgFile | artArgString | artArgTerm
 
 artArgBoolean ::= ID | 'not'^ ID artDummy
 artArgInt ::= ID  __int32
 artArgFile ::= STRING_SQ
 artArgString ::= STRING_DQ
+artArgTerm ::= '(' trTerm ')'
 artDummy ::= #^
 
 paraterminalElements ::= paraterminalElement | paraterminalElement ','^ paraterminalElements^
