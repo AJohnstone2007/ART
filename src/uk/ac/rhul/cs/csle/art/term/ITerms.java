@@ -1646,19 +1646,21 @@ public final class ITerms {
   }
 
   public void toDot(int term, String filename) {
-    if (term == 0) return;
-    PrintStream dotOut;
-    // Util.info("toDot on " + toString(term));
     try {
-      dotOut = new PrintStream(new File(filename));
-      dotOut.println("digraph \"Iterms.toDot()\" {\n" + "node[fontname=Helvetica fontsize=9 shape=box height = 0 width = 0 margin= 0.04  color=gray]\n"
-          + "graph[ordering=out ranksep=0.1]\n" + "edge[arrowsize = 0.3  color=gray]");
-      toDotRec(term, dotOut);
-      dotOut.println("}");
-      dotOut.close();
+      toDot(term, new PrintStream(new File(filename)));
     } catch (FileNotFoundException e) {
       Util.info("Unable to write visualisation to " + filename);
     }
+  }
+
+  public void toDot(int term, PrintStream dotOut) {
+    if (term == 0) return;
+    // Util.info("toDot on " + toString(term));
+    dotOut.println("digraph \"Iterms.toDot()\" {\n" + "node[fontname=Helvetica fontsize=9 shape=box height = 0 width = 0 margin= 0.04  color=gray]\n"
+        + "graph[ordering=out ranksep=0.1]\n" + "edge[arrowsize = 0.3  color=gray]");
+    toDotRec(term, dotOut);
+    dotOut.println("}");
+    dotOut.close();
   }
 
   private void toDotRec(int term, PrintStream dotOut) {
@@ -1670,4 +1672,5 @@ public final class ITerms {
       toDotRec(subterm(term, i), dotOut);
     }
   }
+
 }

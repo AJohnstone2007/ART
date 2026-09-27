@@ -557,50 +557,24 @@ public class ScriptInterpreter {
   /* 8. Sub-actions for !print and !show ***********************************************************/
   private void processDisplayElements(int term) {
     boolean isShow = iTerms.hasSymbol(term, "!show");
-    String outputFilename = null;
     PrintStream outputStream = Util.console;
     TermTraverserText outputTraverser = iTerms.plainTextTraverser;
     boolean full = false, indented = false, indexed = false;
     int depthLimit = -1;
 
-    // Util.debug("Processing display term [" + term + "] " + iTerms.toRawString(term));
+    Util.debug("Processing display term [" + term + "] " + iTerms.toRawString(term));
 
     for (int i = 0; i < iTerms.termArity(iTerms.subterm(term)); i++) {
-      int displayTerm = iTerms.subterm(term, i);
-      String displayElement = iTerms.termSymbolString(displayTerm).toLowerCase();
+      String type = iTerms.termSymbolString(iTerms.subterm(term, i));
+      int keyNode = iTerms.subterm(term, i, 0);
+      String keyString = iTerms.termSymbolString(keyNode);
+      String keyStringLC = keyString.toLowerCase();
 
-      if (iTerms.termArity(displayTerm) > 0) { // Special case terms with children
-        switch (displayElement) {
-        case "__string":// Top level strings are simply printed as messages, regardless of print mode
-          outputStream.println(Util.unescapeString(iTerms.termSymbolString(iTerms.subterm(displayTerm, 0))));
-          break;
-
-        case "artfile": // 'myfile' syntax
-          outputFilename = iTerms.termSymbolString(iTerms.subterm(term, i, 0));
-          Util.info("Redirecting output to file " + outputFilename);
-          try {
-            if (outputStream != Util.console) outputStream.close();
-            outputStream = new PrintStream(outputFilename);
-          } catch (FileNotFoundException e) {
-            Util.error("Unable to open file " + outputFilename + " for output");
-          }
-          break;
-
-        case "artdepth": // depth syntax
-          depthLimit = iTerms.termToJavaInteger(iTerms.subterm(term, i, 0));
-          break;
-
-        default: // Not one of the special cases, so just print the term
-          outputStream.println(iTerms.toString(displayTerm, outputTraverser, indented, depthLimit));
-        }
-      } else {
-        switch (displayElement) {
-        // Terms with zero arity that should also appear as terms: these are all empty collections
-        case "__array", "__list", "__set", "__map":
-          outputStream.println(iTerms.toString(displayTerm, outputTraverser, indented, depthLimit));
-          break;
-
-        // Print mode switches
+      switch (type) {
+      case "artArgBoolean": {
+        boolean enable = iTerms.termArity(iTerms.subterm(term, i)) == 1; // Has dummy second child from not
+        Util.debug("Boolean display argument " + keyStringLC + ": " + enable);
+        switch (keyStringLC) {
         case "raw":
           outputTraverser = iTerms.rawTextTraverser;
           break;
@@ -728,42 +702,27 @@ public class ScriptInterpreter {
             Util.error("!show/!print derivationTerm - no derivations found");
           else {
             int trm = indexed ? currentParser.derivations.derivationAsInterpeterTerm(full) : currentParser.derivations.derivationAsTerm();
-            if (isShow) {
-              if (outputFilename == null) {
-                Util.error("no output file specified for !show derivationTerm");
-                return;
-              } else
-                iTerms.toDot(trm, outputFilename);
-            } else {
+            if (isShow)
+              iTerms.toDot(trm, outputStream);
+            else
               outputStream.println("derivation term: " + trm + "\n" + iTerms.toString(trm, outputTraverser, indented, depthLimit));
 
-              if (scriptParserTerm == trm) Util.info("Bootstrap achieved: script parser term and current derivation term identical");
-            }
+            if (scriptParserTerm == trm) Util.info("Bootstrap achieved: script parser term and current derivation term identical");
           }
           break;
 
         case "tryterm":
-          if (isShow) {
-            if (outputFilename == null) {
-              Util.error("no output file specified for !show tryTerm");
-              return;
-            } else
-              iTerms.toDot(currentTryTerm, outputFilename);
-          } else
+          if (isShow)
+            iTerms.toDot(currentTryTerm, outputStream);
+          else
             outputStream.println("try term: " + currentTryTerm + "\n" + iTerms.toString(currentTryTerm, outputTraverser, indented, depthLimit));
-
           break;
 
         case "rewriteterm":
-          if (isShow) {
-            if (outputFilename == null) {
-              Util.error("no output file specified for !show rewriteTerm");
-              return;
-            } else
-              iTerms.toDot(currentRewriteTerm, outputFilename);
-          } else
+          if (isShow)
+            iTerms.toDot(currentRewriteTerm, outputStream);
+          else
             outputStream.println("rewrite term: " + currentRewriteTerm + "\n" + iTerms.toString(currentRewriteTerm, outputTraverser, indented, depthLimit));
-
           break;
 
         // Script structures
@@ -822,18 +781,51 @@ public class ScriptInterpreter {
         case "parasentences":
           currentParser.derivations.printParasentences(outputStream, outputTraverser, indexed, full, indented);
           break;
-
         default:
-          Util.error("Ignoring " + (isShow ? "!show" : "!print") + " argument: " + displayElement
-              + "\n   Must be a double-quoted string, a single quoted file name, a term or one of (case insensitive):\n"
-              + "     raw plain latex css full indented depth n\n" + "     cfgRules cfgRulesLexer cfgRulesParser chooseRules trRules\n"
-              + "     lexicalisations tasks stacks derivations ambiguities tryTerm\n"
-              + "     scriptCFGRules scriptChooseRules scriptLexicalisations scriptDerivations scriptTerm\n"
-              + "     version statistics cardinalities paraterminals parasentences\n");
+          Util.error("Ignoring " + (isShow ? "!show" : "!print") + " argument: " + keyString
+              + "\n Must be a double-quoted string, a single quoted file name, a term or one of (case insensitive):\n"
+              + " raw plain latex css full indented depth n\n" + " cfgRules cfgRulesLexer cfgRulesParser chooseRules trRules\n"
+              + " lexicalisations tasks stacks derivations ambiguities tryTerm\n"
+              + " scriptCFGRules scriptChooseRules scriptLexicalisations scriptDerivations scriptTerm\n"
+              + " version statistics cardinalities paraterminals parasentences\n");
         }
+      }
+        break;
+
+      case "artArgInt": {
+        Util.debug("Integer display argument " + keyStringLC + ": ");
+        switch (keyStringLC) {
+        case "depth": // depth syntax
+          depthLimit = iTerms.termToJavaInteger(iTerms.subterm(term, i, 1));
+          break;
+        default:
+          Util.error("Unrecognised integer argument key: " + keyStringLC);
+        }
+      }
+        break;
+
+      case "artArgFile": {
+        Util.debug("File display argument " + keyString);
+        Util.info("Redirecting output to file " + keyString);
+        try {
+          if (outputStream != Util.console) outputStream.close();
+          outputStream = new PrintStream(keyString);
+        } catch (FileNotFoundException e) {
+          Util.error("Unable to open file " + keyString + " for output");
+        }
+      }
+        break;
+
+      case "artArgString":
+        Util.debug("String display argument " + keyString);
+        outputStream.println(Util.unescapeString(keyString));
+        break;
+      default: // Not a typed argument, so just print the term
+        outputStream.println(iTerms.toString(iTerms.subterm(term, 0, i), outputTraverser, indented, depthLimit));
       }
     }
     if (outputStream != Util.console) outputStream.close();
+
   }
 
   /* 10. Element finder ****************************************************************************/

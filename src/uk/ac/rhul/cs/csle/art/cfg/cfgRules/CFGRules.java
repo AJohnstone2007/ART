@@ -99,7 +99,7 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
   public final AbstractRelation<CFGElement, CFGElement> follow = new Relation<>();
 
   public final AbstractRelation<CFGNode, CFGElement> instanceFirst = new Relation<>(); // definition?
-  public final AbstractRelation<CFGNode, CFGElement> instanceGuard = new Relation<>(); // definition?
+  public final AbstractRelation<CFGNode, CFGElement> instanceGuard = new Relation<>(); // static version of Elizabeth's testSelect
   public final AbstractRelation<CFGNode, CFGElement> instanceFollow = new Relation<>(); // definition?
 
   public final Set<CFGNode> initialSlots = new HashSet<>(); // { X ::= \alpha . \beta} | \alpha = \epsilon }
@@ -430,16 +430,19 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
     computeReachabilities();
 
     // Check kindof nonterminals
-    computeAndCheckNonterminalSets();
+    computeAndCheckParaterminalSets();
 
     // First and follow sets
-    if (startNonterminal != null) follow.add(startNonterminal, endOfStringElement);
-    for (CFGElement ge : elements.keySet())
-      if (selfFirst.contains(ge.cfgKind)) first.add(ge, ge);
-    computeFirstSetsAndNullablePrefixes();
-    computeNullableSuffixesAndCyclic();
-    computeFollowSets();
-    computeCyclicSlots();//
+    // if (startNonterminal != null) follow.add(startNonterminal, endOfStringElement);
+    // for (CFGElement ge : elements.keySet())
+    // if (selfFirst.contains(ge.cfgKind)) first.add(ge, ge);
+    // computeFirstSetsAndNullablePrefixes();
+    // computeNullableSuffixesAndCyclic();
+    // computeFollowSets();
+
+    computeFirstFollowGuardSets();
+
+    computeCyclicSlots();
 
     // Collect attributes
     for (CFGElement e : elements.keySet()) {
@@ -503,6 +506,22 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
     // cfgRulesParser.normalise(); // recurse only once for the parser grammar
     // subGrammarConsistencyCheck();
     // }
+  }
+
+  private void computeFirstFollowGuardSets() {
+    for (var n : elementToRulesNodeMap.keySet())
+      if (n.cfgKind == CFGElementKind.NONTERMINAL) {
+        Util.debug("Nonterminal: " + n);
+        // computeFirstFollowGuardSetsRec(elementToRulesNodeMap.get(n));
+      }
+  }
+
+  private void computeFirstFollowGuardSetsRec(CFGNode node) {
+    if (node == null) return;
+    Util.debug("computeFirstFollowGuardSetsRec(): " + node);
+
+    computeFirstFollowGuardSetsRec(node.alt);
+    computeFirstFollowGuardSetsRec(node.seq);
   }
 
   private void computeLHSOf(CFGElement lhs, CFGNode cfgNode, CFGNode topNode) {
@@ -585,7 +604,7 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
    * lexerNonterminals are nonterminals reachable from every reachable paraterminal, including paraterminals
    */
 
-  private void computeAndCheckNonterminalSets() {
+  private void computeAndCheckParaterminalSets() {
     if (startNonterminal == null) return; // empty grammar
     parserNonterminals.addAll(reachableNonterminalsPara.get(startNonterminal));
     parserNonterminals.add(startNonterminal);
