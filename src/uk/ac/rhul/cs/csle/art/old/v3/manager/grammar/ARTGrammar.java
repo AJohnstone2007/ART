@@ -371,7 +371,7 @@ public final class ARTGrammar {
     // Test paraterminals for illegal reaching of paraterminals
     for (var n : paraterminals) {
 
-      var pt = new HashSet(paraterminals);
+      var pt = new HashSet<>(paraterminals);
       pt.retainAll(lexerReachableRelation.get(n));
       if (!pt.isEmpty()) Util.error("intra-paraterminal reachability: paraterminal " + n + " reaches " + pt);
     }

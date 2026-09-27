@@ -189,7 +189,7 @@ artArgBoolean ::= ID | 'not'^ ID artDummy
 artArgInt ::= ID  __int32
 artArgFile ::= STRING_SQ
 artArgString ::= STRING_DQ
-artArgTerm ::= '(' trTerm ')'
+artArgTerm ::= '('^ trTerm ')'^
 artDummy ::= #^
 
 paraterminalElements ::= paraterminalElement | paraterminalElement ','^ paraterminalElements^
