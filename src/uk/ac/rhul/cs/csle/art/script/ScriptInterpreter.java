@@ -820,11 +820,17 @@ public class ScriptInterpreter {
         break;
 
       case "artArgString":
-        Util.debug("String display argument " + keyString);
+        // Util.debug("String display argument " + keyString);
         outputStream.println(Util.unescapeString(keyString));
         break;
+
+      case "artArgTerm":
+        Util.debug("Term display argument " + iTerms.toRawString(keyNode));
+        outputStream.println(iTerms.toString(keyNode, outputTraverser, indented, depthLimit));
+        break;
+
       default: // Not a typed argument, so just print the term
-        outputStream.println(iTerms.toString(iTerms.subterm(term, 0, i), outputTraverser, indented, depthLimit));
+        Util.error("In print/show, unknown argument type " + type);
       }
     }
     if (outputStream != Util.console) outputStream.close();
