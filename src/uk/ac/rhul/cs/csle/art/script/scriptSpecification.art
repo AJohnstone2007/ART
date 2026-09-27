@@ -181,7 +181,7 @@ IDs ::= ID | ID ','^ IDs^
 typedIDs ::= typedID | typedID ','^ typedIDs^
 typedID ::= ID '::'^ trTerm
 
-artArgs ::= artArg^ | artArg^ ','^ artArgs^ 
+artArgs ::= artArg^ | artArg^ (*','^*) artArgs^ 
 
 artArg ::= artArgBoolean | artArgInt | artArgFile | artArgString | artArgTerm
 
