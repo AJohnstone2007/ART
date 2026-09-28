@@ -518,9 +518,38 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
 
   private void computeFirstFollowGuardSetsRec(CFGNode node) {
     // Util.debug("computeFirstFollowGuardSetsRec() at node: " + node.num + " - " + node.toString());
+    switch (node.cfgElement.cfgKind) {
+    case EPSILON:
+      break;
+    case TRM_CS:
+      break;
+    case TRM_CI:
+      break;
+    case TRM_BI:
+      break;
+    case TRM_CH:
+      break;
+    case NONTERMINAL:
+      break;
+    case ALT:
+      break;
+    case END:
+      break;
+    case PAR:
+      break;
+    case OPT:
+      break;
+    case POS:
+      break;
+    case KLN:
+      break;
 
+    default:
+      Util.fatal("Unexpected cfgKind encountered in computeFirstFollowGuardSetsRec(CFGNode): " + node.cfgElement.cfgKind);
+    }
+
+    // Traversal calls below this line
     if (node.cfgElement.cfgKind == CFGElementKind.END) return;
-
     if (node.seq != null) computeFirstFollowGuardSetsRec(node.seq); // Nonterminal nodes have null seq
     if (node.alt != null) computeFirstFollowGuardSetsRec(node.alt); // The final production in a nonterminal has null alt
   }
