@@ -34,7 +34,7 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
   // TODO: These need setters that set clean to false
   public final int cfgRulesNumber;
   public final CFGRulesKind cfgRulesKind;
-  public Set<Character> characterSet = new HashSet<>();
+  public final Set<Character> characterSet = new HashSet<>();
   public final Map<CFGElement, CFGElement> elements = new TreeMap<>(); // We use a map for elements because we need there to be one canonical instance
   public final Map<String, Set<Integer>> signatures = new TreeMap<>(); // A set of signatures for each constructor keyed on constructor name
   public final Set<CFGElement> paraterminals = new TreeSet<>();
@@ -98,9 +98,9 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
   public final AbstractRelation<CFGElement, CFGElement> first = new Relation<>();
   public final AbstractRelation<CFGElement, CFGElement> follow = new Relation<>();
 
-  public final AbstractRelation<CFGNode, CFGElement> instanceFirst = new Relation<>(); // definition?
+  public final AbstractRelation<CFGNode, CFGElement> instanceFirst = new Relation<>();
   public final AbstractRelation<CFGNode, CFGElement> instanceGuard = new Relation<>(); // static version of Elizabeth's testSelect
-  public final AbstractRelation<CFGNode, CFGElement> instanceFollow = new Relation<>(); // definition?
+  public final AbstractRelation<CFGNode, CFGElement> instanceFollow = new Relation<>();
 
   public final Set<CFGNode> initialSlots = new HashSet<>(); // { X ::= \alpha . \beta} | \alpha = \epsilon }
   public final Set<CFGNode> secondSlots = new HashSet<>(); // { X ::= \alpha Y . \beta} | \alpha = \epsilon, Y \ne \epsilon }
@@ -511,17 +511,18 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
   private void computeFirstFollowGuardSets() {
     for (var n : elementToRulesNodeMap.keySet())
       if (n.cfgKind == CFGElementKind.NONTERMINAL) {
-        // Util.debug("Nonterminal: " + n);
-        // computeFirstFollowGuardSetsRec(elementToRulesNodeMap.get(n));
+        // Util.debug("computeFirstFollowGuardSets() at nonterminal: " + n);
+        computeFirstFollowGuardSetsRec(elementToRulesNodeMap.get(n));
       }
   }
 
   private void computeFirstFollowGuardSetsRec(CFGNode node) {
-    if (node == null) return;
-    Util.debug("computeFirstFollowGuardSetsRec(): " + node);
+    // Util.debug("computeFirstFollowGuardSetsRec() at node: " + node.num + " - " + node.toString());
 
-    computeFirstFollowGuardSetsRec(node.alt);
-    computeFirstFollowGuardSetsRec(node.seq);
+    if (node.cfgElement.cfgKind == CFGElementKind.END) return;
+
+    if (node.seq != null) computeFirstFollowGuardSetsRec(node.seq); // Nonterminal nodes have null seq
+    if (node.alt != null) computeFirstFollowGuardSetsRec(node.alt); // The final production in a nonterminal has null alt
   }
 
   private void computeLHSOf(CFGElement lhs, CFGNode cfgNode, CFGNode topNode) {
