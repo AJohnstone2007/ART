@@ -508,40 +508,60 @@ public final class CFGRules implements DisplayInterface { // final to avoid this
     // }
   }
 
+  boolean changed = true;
+  int pass = 0;
+
   private void computeFirstFollowGuardSets() {
-    for (var n : elementToRulesNodeMap.keySet())
-      if (n.cfgKind == CFGElementKind.NONTERMINAL) {
-        // Util.debug("computeFirstFollowGuardSets() at nonterminal: " + n);
-        computeFirstFollowGuardSetsRec(elementToRulesNodeMap.get(n));
+    while (changed) {
+      Util.debug("computeFirstFollowGuardSets() pass: " + ++pass);
+      changed = false;
+      for (var e : elements.keySet()) {
+        // Util.debug("computeFirstFollowGuardSets() at element: " + e);
+
+        switch (e.cfgKind) {
+        case EPSILON:
+          changed |= first.add(e, epsilonElement);
+          break;
+        case TRM_CS, TRM_CI, TRM_BI, TRM_CH:
+          changed |= first.add(e, e);
+          break;
+        case NONTERMINAL:
+          computeFirstFollowGuardSetsRec(elementToRulesNodeMap.get(e));
+          for (var a = elementToRulesNodeMap.get(e); a != null; a = a.alt)
+            changed |= first.addAll(e, instanceFirst.get(a));
+          break;
+        }
       }
+    }
   }
 
   private void computeFirstFollowGuardSetsRec(CFGNode node) {
     // Util.debug("computeFirstFollowGuardSetsRec() at node: " + node.num + " - " + node.toString());
     switch (node.cfgElement.cfgKind) {
-    case EPSILON:
+    case EPSILON, TRM_CS, TRM_CI, TRM_BI, TRM_CH: // Terminal INSTANCE not LHS
+      changed |= instanceFirst.addAll(node, first.get(node.cfgElement));
       break;
-    case TRM_CS:
-      break;
-    case TRM_CI:
-      break;
-    case TRM_BI:
-      break;
-    case TRM_CH:
-      break;
-    case NONTERMINAL:
+    case NONTERMINAL: // Nonterminal INSTANCE not LHS
       break;
     case ALT:
+      changed |= instanceFirst.addAll(node, instanceFirst.get(node.seq));
       break;
     case END:
+      changed |= instanceFirst.add(node, epsilonElement);
       break;
     case PAR:
+      changed |= instanceFirst.addAll(node, instanceFirst.get(node.alt));
       break;
     case OPT:
+      changed |= instanceFirst.addAll(node, instanceFirst.get(node.alt));
+      changed |= instanceFirst.add(node, epsilonElement);
       break;
     case POS:
+      changed |= instanceFirst.addAll(node, instanceFirst.get(node.alt));
       break;
     case KLN:
+      changed |= instanceFirst.addAll(node, instanceFirst.get(node.alt));
+      changed |= instanceFirst.add(node, epsilonElement);
       break;
 
     default:
