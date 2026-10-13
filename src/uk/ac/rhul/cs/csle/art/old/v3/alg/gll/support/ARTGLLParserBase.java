@@ -432,7 +432,7 @@ public abstract class ARTGLLParserBase extends ARTParserBase {
   // Note this is esentially just an un-rename - it is here as a place holder in case we need to handle descriptors differently
   protected void artFindDescriptorClustered(int restartLabel, int gssNode, int currentTokenIndex, int sppfNode) {
     artFindDescriptor(restartLabel, gssNode, currentTokenIndex, sppfNode);
-  };
+  }
 
   abstract protected void artCheckAcceptance();
 
@@ -544,8 +544,8 @@ public abstract class ARTGLLParserBase extends ARTParserBase {
       left = right;
       right = temp;
     }
-    if (ambiguityRelation.get(left) == null) ambiguityRelation.put(left, new TreeSet<Integer>());
-    if (ambiguityRelation.get(right) == null) ambiguityRelation.put(right, new TreeSet<Integer>());
+    if (ambiguityRelation.get(left) == null) ambiguityRelation.put(left, new TreeSet<>());
+    if (ambiguityRelation.get(right) == null) ambiguityRelation.put(right, new TreeSet<>());
 
     ambiguityRelation.get(left).add(right);
   }
@@ -1900,7 +1900,7 @@ public abstract class ARTGLLParserBase extends ARTParserBase {
     artLexer.artInputString = stringInput + "\0";
     artLexer.artLoadInputArray(stringInput);
     artLexer.artInputLength = artLexer.artInputString.length();
-    artTokenExtent = ARTGLLParserBase.ARTL_EPSILON;
+    artTokenExtent = ARTParserBase.ARTL_EPSILON;
 
     artTriples = new ARTRightExtentNode[artLexer.artInputLength + 1][];
 
@@ -1915,7 +1915,7 @@ public abstract class ARTGLLParserBase extends ARTParserBase {
         leftExtent = artLexer.artInputIndex;
         if (suppressWhitespace) artLexer.artLexicalisePreparseWhitespace();
         artLexer.artMatchLongestRaw();
-        suppressWhitespace = artKindOfs[artLexer.artLongestToken] != ARTGLLParserBase.ARTK_CHARACTER_TERMINAL;
+        suppressWhitespace = artKindOfs[artLexer.artLongestToken] != ARTK_CHARACTER_TERMINAL;
 
         if (artTriples[leftExtent] == null) artTriples[leftExtent] = new ARTRightExtentNode[artTokenExtent];
 
@@ -1924,7 +1924,7 @@ public abstract class ARTGLLParserBase extends ARTParserBase {
 
         if (!artContains(artLexer.artInputIndex, artTriples[leftExtent][artLexer.artLongestToken]))
           artTriples[leftExtent][artLexer.artLongestToken] = new ARTRightExtentNode(artLexer.artInputIndex, artTriples[leftExtent][artLexer.artLongestToken]); // Head
-      } while (artLexer.artLongestToken != ARTGLLParserBase.ARTL_EOS);
+      } while (artLexer.artLongestToken != ARTL_EOS);
       artWhitespaceEOSPrefixLength = artLexer.artInputLength - leftExtent;
     }
     // System.out.println("Triples from longest match front end");

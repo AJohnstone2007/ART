@@ -12,7 +12,6 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import uk.ac.rhul.cs.csle.art.old.v3.alg.ARTParserBase;
-import uk.ac.rhul.cs.csle.art.old.v3.alg.gll.support.ARTGLLParserBase;
 import uk.ac.rhul.cs.csle.art.old.v3.manager.grammar.ARTChooserSet;
 import uk.ac.rhul.cs.csle.art.old.v3.manager.grammar.ARTGrammar;
 import uk.ac.rhul.cs.csle.art.old.v3.manager.grammar.element.ARTGrammarElement;
@@ -152,10 +151,10 @@ public class ARTLexerV3 {
   public int artLongestToken; // Used during longest match processing to remember a token which has the longest lexeme seen so far
 
   protected void artLexicalisePreparseWhitespaceInstances() {
-  };
+  }
 
   protected void artLexicaliseBuiltinInstances() {
-  };
+  }
 
   public void artLexicalisePreparseWhitespace() {
     // System.out.printf("Preparse whitespace entered at index %d", artInputIndex);
@@ -196,13 +195,13 @@ public class ARTLexerV3 {
 
     if (artPeekCh() == '\0') {
       artLexemeRightIndex = artInputLength;
-      artLongestToken = ARTGLLParserBase.ARTL_EOS;
+      artLongestToken = ARTParserBase.ARTL_EOS;
       artInputIndex = artLexemeRightIndex;
       return;
     }
 
     // In this loop, artCharacterStringInputIndex does not advance becase we are using regionMatches
-    for (int tokenIndex = artParser.artFirstTerminalLabel; tokenIndex < ARTGLLParserBase.ARTL_EPSILON; tokenIndex++) {
+    for (int tokenIndex = artParser.artFirstTerminalLabel; tokenIndex < ARTParserBase.ARTL_EPSILON; tokenIndex++) {
       if (!artInputString.regionMatches(artParser.artTerminalCaseInsensitive[tokenIndex], artInputIndex, artParser.artLabelStrings[tokenIndex], 0,
           artParser.artLabelStrings[tokenIndex].length()))
         continue;
@@ -772,7 +771,7 @@ public class ARTLexerV3 {
     if (tweSet[i] != null) for (ARTTWEPair e : tweSet[i].map.keySet()) {
       // System.out.println("At " + i + ", processing pair " + e);
       if (i == j) {
-        if (!lexicalisations.contains(lex)) lexicalisations.add(new ArrayList<Integer>(lex));
+        if (!lexicalisations.contains(lex)) lexicalisations.add(new ArrayList<>(lex));
       } else {
         lex.add(e.token);
         if (artDirectives.b("tweExtents")) lex.add(e.rightExtent);

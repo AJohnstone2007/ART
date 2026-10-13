@@ -28,8 +28,8 @@ public class ARTManager {
   public final Directives artDirectives = new Directives();
 
   private final ARTV3Parser parser;
-  private final HashMap<String, ARTV3Module> modules = new HashMap<String, ARTV3Module>();
-  private final HashMap<String, ARTGrammar> grammars = new HashMap<String, ARTGrammar>();
+  private final HashMap<String, ARTV3Module> modules = new HashMap<>();
+  private final HashMap<String, ARTGrammar> grammars = new HashMap<>();
   private ARTV3Module defaultMainModule = null;
   public String defaultName = "";
 

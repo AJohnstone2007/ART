@@ -108,7 +108,7 @@ public abstract class ARTParserBase {
   public int[] artKindOfs;
   public int[] artUserNameOfs;
   public int[] artSlotInstanceOfs;
-  public int artSetExtent;
+  public static int artSetExtent;
   public int[] artlhsL;
   public boolean artFIFODescriptors;
   // protected boolean[] artNonterminalsDeclaredAsTerminals;
@@ -322,7 +322,7 @@ public abstract class ARTParserBase {
       array[tmp] = value;
   }
 
-  public void artInitialiseBooleanArray(boolean[] array, int lo, int hi, boolean value) {
+  public static void artInitialiseBooleanArray(boolean[] array, int lo, int hi, boolean value) {
     for (int tmp = lo; tmp < hi; tmp++)
       array[tmp] = value;
   }
@@ -387,7 +387,7 @@ public abstract class ARTParserBase {
 
   public void artEvaluator() {
     artEvaluator(null);
-  };
+  }
 
   public void artEvaluator(ARTGLLAttributeBlock startAttributes) {
   }

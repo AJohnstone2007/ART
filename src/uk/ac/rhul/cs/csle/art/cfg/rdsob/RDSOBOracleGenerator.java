@@ -38,7 +38,7 @@ public class RDSOBOracleGenerator {
   }
 
   public RDSOBOracleGenerator(CFGRules cfgRules) {
-    if (cfgRules.startNonterminal == null) Util.fatal("RDSOBOracle found no CFG rules");
+    if (cfgRules.getStartNonterminal() == null) Util.fatal("RDSOBOracle found no CFG rules");
     String filename = "ARTGeneratedRDSOBOracle";
     iTerms = ScriptInterpreter.iTerms;
     String timeStamp = Util.timestamp();
@@ -53,7 +53,7 @@ public class RDSOBOracleGenerator {
         + " extends uk.ac.rhul.cs.csle.art.cfg.rdsob.AbstractRDSOB {\n");
 
     // Write parse functions
-    for (var e : cfgRules.elements.keySet())
+    for (var e : cfgRules.elementsAsArray())
       if (e.cfgKind == CFGElementKind.NONTERMINAL) {
         text.printf("boolean parse_%s() {\n  int iiAtEntry = inputIndex, oiAtEntry = oracleIndex;\n", e.str);
         int pCount = 0;
@@ -98,7 +98,7 @@ public class RDSOBOracleGenerator {
 
       }
     // Write semantics functions
-    for (var e : cfgRules.elements.keySet())
+    for (var e : cfgRules.elementsAsArray())
       if (e.cfgKind == CFGElementKind.NONTERMINAL) {
         if (e.attributes.keySet().size() > 0) {
           text.printf("class Attributes_%s {", e.str);
@@ -199,12 +199,12 @@ public class RDSOBOracleGenerator {
         "  input = readInput(filename);\n\n" +
         "  System.out.println(\"Input: \" + input);" +
         "  inputIndex = oracleIndex = 0; builtIn_WHITESPACE();\n" +
-        "  if (!(parse_" + cfgRules.startNonterminal.str + "() && input.charAt(inputIndex) == '\\0')) { System.out.print(\"Rejected\\n\"); return; }\n" +
+        "  if (!(parse_" + cfgRules.getStartNonterminal().str + "() && input.charAt(inputIndex) == '\\0')) { System.out.print(\"Rejected\\n\"); return; }\n" +
         "\n" +
         "  System.out.print(\"Accepted\\n\");\n" +
         "  System.out.print(\"Oracle:\"); for (int i = 0; i < oracleIndex; i++) System.out.println(\" \" + oracle[i]); System.out.println();\n" +
         "  System.out.print(\"Semantics:\\n\"); inputIndex = oracleIndex = 0; builtIn_WHITESPACE(); semantics_" +
-           cfgRules.startNonterminal.str+"("+(cfgRules.startNonterminal.attributes.keySet().size() > 0 ? "new Attributes_" + cfgRules.startNonterminal.str + "()":"")+");\n"+
+           cfgRules.getStartNonterminal().str+"("+(cfgRules.getStartNonterminal().attributes.keySet().size() > 0 ? "new Attributes_" + cfgRules.getStartNonterminal().str + "()":"")+");\n"+
 //        "  System.out.print(\"\\nTerm:\\n\"); inputIndex = oracleIndex = 0; builtIn_WHITESPACE(); term_" + cfgRules.startNonterminal.str+"(new LinkedList<>());\n"+
         "}\n\n" +
         "public static void main(String[] args) throws FileNotFoundException{\n" +

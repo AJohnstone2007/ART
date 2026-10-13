@@ -19,14 +19,6 @@ import java.util.Set;
 import uk.ac.rhul.cs.csle.art.util.Util;
 
 public final class ITerms {
-  private class ValueException extends RuntimeException {
-    private static final long serialVersionUID = -8086174221866434606L;
-
-    public ValueException(String message) {
-      super(message);
-    }
-  }
-
   /* Term class - to be replaced by HashPool style implementation *******************************************/
   // @formatter:off
   private class ITerm { // Replace at some point with a HashPool implementation
@@ -1098,8 +1090,8 @@ public final class ITerms {
         case __stringStringIndex:
           return javaStringToTerm(termToJavaString(children[0]).substring(0, termToJavaInteger(children[1])));
         case __arrayStringIndex:
-          return javaArrayToTerm(new ArrayList<Object>(termToJavaArrayList(children[0]).subList(0, termToJavaInteger(children[1])))); // Cannot cast, so make
-                                                                                                                                      // new,sigh
+          return javaArrayToTerm(new ArrayList<>(termToJavaArrayList(children[0]).subList(0, termToJavaInteger(children[1])))); // Cannot cast, so make
+                                                                                                                                // new,sigh
         case __listStringIndex:
           return javaListToTerm(termToJavaLinkedList(children[0]).subList(0, termToJavaInteger(children[1])));
         default:
@@ -1113,7 +1105,7 @@ public final class ITerms {
           return javaStringToTerm(termToJavaString(children[0]).substring(termToJavaInteger(children[1])));
         case __arrayStringIndex:
           ArrayList<Object> arrayList = termToJavaArrayList(children[0]);
-          return javaArrayToTerm(new ArrayList<Object>(arrayList.subList(termToJavaInteger(children[1]), arrayList.size())));
+          return javaArrayToTerm(new ArrayList<>(arrayList.subList(termToJavaInteger(children[1]), arrayList.size())));
         case __listStringIndex:
           List<Object> list = termToJavaLinkedList(children[0]);
           return javaListToTerm(list.subList(termToJavaInteger(children[1]), list.size()));

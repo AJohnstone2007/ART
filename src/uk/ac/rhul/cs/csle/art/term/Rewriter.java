@@ -26,7 +26,7 @@ public class Rewriter {
         "Rewrite attempt " + ++rewriteAttemptCounter + ": "
             + ScriptInterpreter.iTerms.toString(term, ScriptInterpreter.iTerms.plainTextTraverser, false, printDepth, variableMap) + " "
             + ScriptInterpreter.iTerms.toString(relationTerm, variableMap));
-    if (!cycleCheck.containsKey(relationTerm)) cycleCheck.put(relationTerm, new HashSet<Integer>());
+    if (!cycleCheck.containsKey(relationTerm)) cycleCheck.put(relationTerm, new HashSet<>());
     Set<Integer> cycleSet = cycleCheck.get(relationTerm);
     // if (cycleSet.contains(configuration)) throw new ARTExceptionFatal("cycle detected " +ScriptTermInterpreter.iTerms.toString(configuration)
     // +ScriptTermInterpreter.iTerms.toString(relationTerm));

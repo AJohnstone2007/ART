@@ -30,6 +30,7 @@ public class GLLModal extends AbstractParser {
   private Set<ConfigurationGLL> repeats; // Test-repeat set used by EBNF closures
 
   @Override
+  @SuppressWarnings("fallthrough")
   public void parse(AbstractLexicalisations lexicalisations) {
     inLanguage = false;
     this.lexicalisations = lexicalisations;
@@ -40,7 +41,7 @@ public class GLLModal extends AbstractParser {
     tasksProcessed = 0;
 
     inputIndex = 0;
-    cfgNode = lexicalisations.cfgRules.elementToRulesNodeMap.get(lexicalisations.cfgRules.startNonterminal).alt;
+    cfgNode = lexicalisations.cfgRules.elementToRulesNodeMap.get(lexicalisations.cfgRules.getStartNonterminal()).alt;
     stackNode = stacks.getRoot();
     derivationNode = null;
     queueProductionTasks();
@@ -88,6 +89,7 @@ public class GLLModal extends AbstractParser {
 
         case KLN:
           derivationNode = updateDerivation(inputIndex); // Must match, but nothing consumed, so rightExtent = inputIndex and flow through
+          //$FALL-THROUGH$
         case POS:
           while (true) {
             if (!repeats.add(new ConfigurationGLL(inputIndex, cfgNode, stackNode, derivationNode))) continue nextTask;
@@ -146,7 +148,7 @@ public class GLLModal extends AbstractParser {
   private void retrn() {
     if (stackNode.equals(stacks.getRoot())) {
       if (lexicalisations.cfgRules.acceptingNodeNumbers.contains(cfgNode.num) && (inputIndex == lexicalisations.inputString.length() - 1)) {
-        derivations.setRoot(lexicalisations.cfgRules.elementToRulesNodeMap.get(lexicalisations.cfgRules.startNonterminal),
+        derivations.setRoot(lexicalisations.cfgRules.elementToRulesNodeMap.get(lexicalisations.cfgRules.getStartNonterminal()),
             lexicalisations.inputString.length() - 1);
         inLanguage = true;
       }

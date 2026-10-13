@@ -15,7 +15,6 @@ import uk.ac.rhul.cs.csle.art.old.v4.util.bitset.ARTBitSet;
  * ARTV4Parser.java
  *
  *******************************************************************************/
-@SuppressWarnings("fallthrough")
 public final class ARTV4Parser extends ARTGLLParserHashPool {
   private static boolean[] ARTSet1;
   private static boolean[] ARTSet2;
@@ -31686,4 +31685,4 @@ public final class ARTV4Parser extends ARTGLLParserHashPool {
     }
   }
 
-};
+}

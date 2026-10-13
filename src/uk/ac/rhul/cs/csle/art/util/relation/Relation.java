@@ -8,8 +8,8 @@ import java.util.Set;
 public class Relation<T1, T2> extends AbstractRelation<T1, T2> {
   public Relation() {
     super();
-    map = new HashMap<T1, Set<T2>>();
-    empty = new HashSet<T2>();
+    map = new HashMap<>();
+    empty = new HashSet<>();
   }
 
   public Relation(AbstractRelation<T1, T2> relation) { // copy constructor
@@ -20,11 +20,11 @@ public class Relation<T1, T2> extends AbstractRelation<T1, T2> {
 
   @Override
   protected Set<T2> makeSet() {
-    return new HashSet<T2>();
+    return new HashSet<>();
   }
 
   @Override
   protected Map<T1, Set<T2>> makeMap() {
-    return new HashMap<T1, Set<T2>>();
+    return new HashMap<>();
   }
 }

@@ -41,11 +41,11 @@ public class ARTLCNPLinkedAPI extends ARTParserBase {
   protected int crfKeyFinds;
   protected int crfLeafFinds;
   private ARTLexerV3 lexer;
-  private final boolean artTrace;
+  private final boolean traceBoolean;
 
   public ARTLCNPLinkedAPI(ARTGrammar artGrammar) {
     super(artGrammar);
-    artTrace = artGrammar.artDirectives.b("trace");
+    traceBoolean = artGrammar.artDirectives.b("trace");
   }
 
   /* Start of lexical interface **********************************************/
@@ -54,19 +54,19 @@ public class ARTLCNPLinkedAPI extends ARTParserBase {
   private int[][][] tweSet;
 
   boolean lex(int i, Set<ARTGrammarElement> T) {
-    if (artTrace) artTraceText.print("lex(" + i + ", " + T + ") returns ");
+    if (traceBoolean) artTraceText.print("lex(" + i + ", " + T + ") returns ");
 
     for (ARTGrammarElement e : T)
       if (tweSet[i][e.getElementNumber()] != null) {
-        if (artTrace) artTraceText.println("true");
+        if (traceBoolean) artTraceText.println("true");
         return true;
       }
-    if (artTrace) artTraceText.println("false");
+    if (traceBoolean) artTraceText.println("false");
     return false;
   }
 
   int[] lex(int i, ARTGrammarElement t) {
-    if (artTrace) {
+    if (traceBoolean) {
       artTraceText.print("lex(" + i + ", " + t + ") returns {");
       if (tweSet[i][t.getElementNumber()] != null) for (int e : tweSet[i][t.getElementNumber()])
         artTraceText.print(" " + e);
@@ -76,24 +76,24 @@ public class ARTLCNPLinkedAPI extends ARTParserBase {
   }
 
   Set<ARTGrammarElement> predict(ARTGrammarInstanceSlot beta, ARTGrammarElementNonterminal X) {
-    if (artTrace) artTraceText.println(
+    if (traceBoolean) artTraceText.println(
         "predict(" + X + ", " + beta.toGrammarString(".") + ") with first(beta) = " + beta.getFirst() + " and follow(X) = " + X.getFollow() + " returns " + beta.getGuard());
     return beta.getGuard();
   }
 
   Set<Integer> lexLKH(int i, ARTGrammarElementTerminal t, ARTGrammarInstanceSlot beta, ARTGrammarElementNonterminal X) { // Note I is assummed global - it's
-    if (artTrace) artTraceText.println("lexLKH(" + i + ", " + t + ", " + beta + ", " + X + ") entered");
+    if (traceBoolean) artTraceText.println("lexLKH(" + i + ", " + t + ", " + beta + ", " + X + ") entered");
     Set<Integer> J = new HashSet<>();
     int[] lexed = lex(i, t);
     if (lexed != null) for (int k : lexed)
       if (valid(i + k, predict(beta, X))) J.add(i + k);
 
-    if (artTrace) artTraceText.println("lexLKH(" + i + ", " + t + ", " + beta + ", " + X + ") returns " + J);
+    if (traceBoolean) artTraceText.println("lexLKH(" + i + ", " + t + ", " + beta + ", " + X + ") returns " + J);
     return J;
   }
 
   boolean valid(int i, Set<ARTGrammarElement> T) {
-    if (artTrace) artTraceText.println("valid(" + i + ", " + T + ")");
+    if (traceBoolean) artTraceText.println("valid(" + i + ", " + T + ")");
 
     return lex(i, T);
   }
@@ -101,7 +101,7 @@ public class ARTLCNPLinkedAPI extends ARTParserBase {
   /* End of lexical interface **********************************************/
 
   protected void ntAdd(ARTGrammarElementNonterminal N, int j) {
-    if (artTrace) artTraceText.println("ntAdd(" + N + ", " + j + ")");
+    if (traceBoolean) artTraceText.println("ntAdd(" + N + ", " + j + ")");
     for (ARTGrammarInstanceCat catNode : N.getProductions()) {
       ARTGrammarInstanceSlot firstSlot = (ARTGrammarInstanceSlot) catNode.getChild();
       if (valid(j, predict(firstSlot, N))) dscAdd(firstSlot, j, j);
@@ -109,7 +109,7 @@ public class ARTLCNPLinkedAPI extends ARTParserBase {
   }
 
   protected void dscAdd(ARTGrammarInstanceSlot slot, int i, int k) {
-    if (artTrace) artTraceText.println("dscAdd(" + slot.toGrammarString(".") + ", " + i + ", " + k + ")");
+    if (traceBoolean) artTraceText.println("dscAdd(" + slot.toGrammarString(".") + ", " + i + ", " + k + ")");
     ARTCNPDescriptor descriptor = new ARTCNPDescriptor(slot, i, k);
 
     descriptorFinds++;
@@ -120,7 +120,7 @@ public class ARTLCNPLinkedAPI extends ARTParserBase {
   }
 
   protected void rtn(ARTGrammarElementNonterminal X, int k, int j) {
-    if (artTrace) artTraceText.println("rtn(" + X + ", " + k + ", " + j + ")");
+    if (traceBoolean) artTraceText.println("rtn(" + X + ", " + k + ", " + j + ")");
     ARTCRFClusterNodeKey crfNode = new ARTCRFClusterNodeKey(X, k);
     ARTCRFClusterNodePayload crfNodePayload = CRF.get(crfNode);
     crfKeyFinds++;
@@ -138,7 +138,7 @@ public class ARTLCNPLinkedAPI extends ARTParserBase {
   }
 
   protected void call(ARTGrammarInstanceSlot L, int i, int j) {
-    if (artTrace) artTraceText.println("call(" + L.toGrammarString(".") + ", " + i + ", " + j + ")");
+    if (traceBoolean) artTraceText.println("call(" + L.toGrammarString(".") + ", " + i + ", " + j + ")");
 
     ARTGrammarElementNonterminal X = (ARTGrammarElementNonterminal) L.getLeftSibling().getPayload();
     ARTCRFLeafNode u = new ARTCRFLeafNode(L, i);
@@ -159,7 +159,7 @@ public class ARTLCNPLinkedAPI extends ARTParserBase {
       if (!children.contains(u)) {
         children.add(u);
         for (Integer h : crfNodePayload.getPopSetPartition()) {
-          if (artTrace) artTraceText.println("Contingent PP actions for cluster node " + v + " index = " + h);
+          if (traceBoolean) artTraceText.println("Contingent PP actions for cluster node " + v + " index = " + h);
           if (valid(h, L.getGuard())) {
             dscAdd(L, i, h);
             bsrAdd(L, i, j, h);
@@ -170,7 +170,7 @@ public class ARTLCNPLinkedAPI extends ARTParserBase {
   }
 
   protected void bsrAdd(ARTGrammarInstanceSlot slot, int i, int k, int j) {
-    if (artTrace) artTraceText.print("bsrAdd(" + slot.toGrammarString(".") + ", " + i + ", " + k + ", " + j + ")");
+    if (traceBoolean) artTraceText.print("bsrAdd(" + slot.toGrammarString(".") + ", " + i + ", " + k + ", " + j + ")");
     ARTBSR added = null;
     if (slot.getSibling() == null || slot.getSibling() instanceof ARTGrammarInstanceEpsilon) {
       upsilon.add(added = new ARTBSR(slot.getProductionL(), i, k, j)); // Not mapped since this is a cat representing a production, not a slot representing a
@@ -180,7 +180,7 @@ public class ARTLCNPLinkedAPI extends ARTParserBase {
       upsilon.add(added = new ARTBSR(artGrammar.getPrefixSlotMap().get(slot), i, k, j)); // Mapped to canonical slot
       bsrFinds++;
     }
-    if (artTrace) artTraceText.println(" added " + added);
+    if (traceBoolean) artTraceText.println(" added " + added);
   }
 
   void processEoC(ARTGrammarInstanceSlot slot) {
@@ -188,12 +188,12 @@ public class ARTLCNPLinkedAPI extends ARTParserBase {
   }
 
   void processCat(ARTGrammarInstanceSlot slot) {
-    if (artTrace) artTraceText.println("Start of cat with cI = " + cI + " on slot " + slot.toGrammarString("."));
+    if (traceBoolean) artTraceText.println("Start of cat with cI = " + cI + " on slot " + slot.toGrammarString("."));
     while (true) {
-      if (artTrace) artTraceText.print("In cat with cI = " + cI + " processing " + slot.toGrammarString(".") + " as ");
+      if (traceBoolean) artTraceText.print("In cat with cI = " + cI + " processing " + slot.toGrammarString(".") + " as ");
 
       if (slot.getLeftSibling() instanceof ARTGrammarInstanceTerminal) {
-        if (artTrace) artTraceText.println("terminal");
+        if (traceBoolean) artTraceText.println("terminal");
         Set<Integer> J = lexLKH(cI, (ARTGrammarElementTerminal) slot.getLeftSibling().getPayload(), slot,
             (ARTGrammarElementNonterminal) slot.getLhsL().getPayload());
         // if (J.size() != 1) {
@@ -213,7 +213,7 @@ public class ARTLCNPLinkedAPI extends ARTParserBase {
       }
 
       else if (slot.getLeftSibling() instanceof ARTGrammarInstanceNonterminal) {
-        if (artTrace) artTraceText.println("nonterminal");
+        if (traceBoolean) artTraceText.println("nonterminal");
         call(slot, cU, cI);
         break;
       }
@@ -234,7 +234,7 @@ public class ARTLCNPLinkedAPI extends ARTParserBase {
   @Override
   public void artParse(String stringInput) {
 
-    if (artTrace) {
+    if (traceBoolean) {
       // traceText = new ARTText(new ARTTextHandlerFile("CNPTrace.txt"));
       artTraceText = new ARTText(new ARTTextHandlerConsole());
       artTraceText.println("CNP trace " + ZonedDateTime.now());
@@ -258,7 +258,7 @@ public class ARTLCNPLinkedAPI extends ARTParserBase {
           tweSet[i][t][jj] -= i;
 
     m = tweSet.length - 2;
-    if (artTrace) artTraceText.println("Parsing " + m + " tokens");
+    if (traceBoolean) artTraceText.println("Parsing " + m + " tokens");
 
     descriptorFinds = bsrFinds = crfKeyFinds = crfLeafFinds = 0;
     upsilon = new HashSet<>();
@@ -275,16 +275,16 @@ public class ARTLCNPLinkedAPI extends ARTParserBase {
 
         artIsInLanguage = false;
 
-        if (artTrace) artTraceText.println("Acceptance testing against start symbol " + artGrammar.getDefaultStartNonterminal() + " with right extent " + m);
+        if (traceBoolean) artTraceText.println("Acceptance testing against start symbol " + artGrammar.getDefaultStartNonterminal() + " with right extent " + m);
 
         for (ARTGrammarInstanceCat c : artGrammar.getDefaultStartNonterminal().getProductions())
           for (ARTBSR u : upsilon) {
             artIsInLanguage |= u.getInstance() == c && u.getI() == 0 && u.getJ() == m;
-            if (artTrace)
+            if (traceBoolean)
               artTraceText.println("Test " + c + ": " + c.toGrammarString(".") + " against " + u.getInstance() + ":" + u + " yields " + artIsInLanguage);
           }
 
-        if (artTrace) {
+        if (traceBoolean) {
           artTraceText.println("Final descriptor set (U): " + U);
           artTraceText.println("Final BSR set (upsilon): " + upsilon);
           artTraceText.println("Final CRF: " + CRF);
@@ -295,13 +295,13 @@ public class ARTLCNPLinkedAPI extends ARTParserBase {
         System.out.println("Descriptor set (U) cardinality = " + U.size());
         System.out.println("BSR set (upsilon) cardinality = " + upsilon.size());
         System.out.println("LCNPInterpretLinkedAPI " + (artIsInLanguage ? "accept" : "reject"));
-        if (artTrace) artTraceText.close();
+        if (traceBoolean) artTraceText.close();
         if (lexer.artDirectives.b("twePrint")) processSLEdata();
         return;
       } else {
         // Unload a descriptor
         ARTCNPDescriptor descriptor = R.remove(0);
-        if (artTrace) artTraceText.println("\nProcessing descriptor " + descriptor);
+        if (traceBoolean) artTraceText.println("\nProcessing descriptor " + descriptor);
         artSlot = descriptor.getSlot();
         cU = descriptor.getI();
         cI = descriptor.getK();
@@ -315,7 +315,7 @@ public class ARTLCNPLinkedAPI extends ARTParserBase {
   protected void artCNPProcessDescriptor() {
     // Epsilon template
     if (artSlot.getSibling() instanceof ARTGrammarInstanceEpsilon) {
-      if (artTrace) artTraceText.println("cI = " + cI + " processing " + artSlot.toGrammarString(".") + " as epsilon");
+      if (traceBoolean) artTraceText.println("cI = " + cI + " processing " + artSlot.toGrammarString(".") + " as epsilon");
       upsilon.add(new ARTBSR(artSlot.getProductionL(), cI, cI, cI)); // doesn't need to be mapped because it is a cat representing a production, not a slot
       // representing a prefix
       bsrFinds++;
@@ -323,15 +323,15 @@ public class ARTLCNPLinkedAPI extends ARTParserBase {
     } else // production template
     // Initial slot => cat
     if (artSlot.getLeftSibling() == null) {// We are the first slot in a production
-      if (artTrace) artTraceText.println("cI = " + cI + " processing " + artSlot.toGrammarString(".") + " as initial slot");
+      if (traceBoolean) artTraceText.println("cI = " + cI + " processing " + artSlot.toGrammarString(".") + " as initial slot");
       processCat((ARTGrammarInstanceSlot) artSlot.getSibling().getSibling());
     } else {
-      if (artTrace) artTraceText.println("cI = " + cI + " processing " + artSlot.toGrammarString(".") + " as return slot");
+      if (traceBoolean) artTraceText.println("cI = " + cI + " processing " + artSlot.toGrammarString(".") + " as return slot");
       if (artSlot.getSibling() == null) {
-        if (artTrace) artTraceText.println("Return slot is at end of rule: processEoC(" + artSlot + ")");
+        if (traceBoolean) artTraceText.println("Return slot is at end of rule: processEoC(" + artSlot + ")");
         processEoC(artSlot);
       } else {
-        if (artTrace) artTraceText.println("Return slot is in rule: calling processCat(" + artSlot.getSibling().getSibling() + ")");
+        if (traceBoolean) artTraceText.println("Return slot is in rule: calling processCat(" + artSlot.getSibling().getSibling() + ")");
         processCat((ARTGrammarInstanceSlot) artSlot.getSibling().getSibling());
       }
     }

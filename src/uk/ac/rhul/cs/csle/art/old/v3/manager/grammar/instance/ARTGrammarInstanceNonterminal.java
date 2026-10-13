@@ -8,7 +8,7 @@ public class ARTGrammarInstanceNonterminal extends ARTGrammarInstance {
 
   public ARTGrammarInstanceNonterminal(int key, ARTGrammarElement payload) {
     super(key, payload);
-    getFirst().add(payload);
+    first.add(payload);
   }
 
   @Override

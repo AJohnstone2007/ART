@@ -11,9 +11,9 @@ public class ARTGrammarElementModuleNonterminal extends ARTGrammarElement {
   private final String id;
 
   // HashSet<ART_GLLRDTVertex> productions = new HashSet<ART_GLLRDTVertex>();
-  private final LinkedList<ARTGLLRDTVertex> productions = new LinkedList<ARTGLLRDTVertex>();
-  private final HashSet<ARTGrammarElementAttribute> attributes = new HashSet<ARTGrammarElementAttribute>();
-  private final HashSet<ARTGLLRDTVertex> rdtDeleters = new HashSet<ARTGLLRDTVertex>();
+  private final LinkedList<ARTGLLRDTVertex> productions = new LinkedList<>();
+  private final HashSet<ARTGrammarElementAttribute> attributes = new HashSet<>();
+  private final HashSet<ARTGLLRDTVertex> rdtDeleters = new HashSet<>();
 
   public ARTGrammarElementModuleNonterminal(ARTV3Module module, String id) {
     super();

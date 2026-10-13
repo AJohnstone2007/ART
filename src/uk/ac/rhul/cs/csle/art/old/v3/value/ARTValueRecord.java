@@ -16,11 +16,11 @@ public class ARTValueRecord extends ARTValueCollection {
   }
 
   public ARTValueRecord() {
-    payload = new LinkedHashMap<ARTValue, ARTValue>();
+    payload = new LinkedHashMap<>();
   }
 
   public ARTValueRecord(ARTValueRecord seed) {
-    payload = new LinkedHashMap<ARTValue, ARTValue>(seed.payload);
+    payload = new LinkedHashMap<>(seed.payload);
   }
 
   @Override

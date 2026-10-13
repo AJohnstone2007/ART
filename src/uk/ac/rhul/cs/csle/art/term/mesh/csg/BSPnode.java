@@ -69,11 +69,11 @@ public class BSPnode {
     this.back = temp;
   }
 
-  ArrayList<Polygon> clipPolygons(ArrayList<Polygon> polygons) {
-    if (plane == null) return new ArrayList<>(polygons);
+  ArrayList<Polygon> clipPolygons(ArrayList<Polygon> polygonList) {
+    if (plane == null) return new ArrayList<>(polygonList);
     ArrayList<Polygon> frontPolygons = new ArrayList<>();
     ArrayList<Polygon> backPolygons = new ArrayList<>();
-    for (var p : polygons)
+    for (var p : polygonList)
       this.plane.splitPolygon(p, frontPolygons, backPolygons, frontPolygons, backPolygons);
 
     if (this.front != null) frontPolygons = this.front.clipPolygons(frontPolygons);
@@ -98,12 +98,12 @@ public class BSPnode {
     return localPolygons;
   }
 
-  void build(ArrayList<Polygon> polygons) {
-    if (polygons.isEmpty()) return;
-    if (plane == null) plane = polygons.get(0).plane.clone();
+  void build(ArrayList<Polygon> polygonList) {
+    if (polygonList.isEmpty()) return;
+    if (plane == null) plane = polygonList.get(0).plane.clone();
     var frontPolygons = new ArrayList<Polygon>();
     var backPolygons = new ArrayList<Polygon>();
-    var iterationBase = new ArrayList<Polygon>(polygons);
+    var iterationBase = new ArrayList<>(polygonList);
     for (var p : iterationBase)
       this.plane.splitPolygon(p, this.polygons, this.polygons, frontPolygons, backPolygons);
 

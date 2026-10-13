@@ -5,7 +5,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 public class ARTValueArray extends ARTValueCollection {
-  ArrayList<ARTValue> payload = new ArrayList<ARTValue>(); // use array lists to support flexible arrays
+  ArrayList<ARTValue> payload = new ArrayList<>(); // use array lists to support flexible arrays
 
   @Override
   public ArrayList<ARTValue> getPayload() {

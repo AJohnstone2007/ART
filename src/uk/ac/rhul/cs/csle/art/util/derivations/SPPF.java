@@ -265,6 +265,8 @@ public class SPPF extends AbstractDerivations {
       case EPSILON:
         sppfEpsilonNodeCount++;
         break;
+      default:
+        ;// skip everything else
       }
       sppfPackNodeCount += s.packNodes.size();
       if (s.packNodes.size() > 1) sppfAmbiguityCount++;

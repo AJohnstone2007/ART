@@ -29,12 +29,12 @@ public final class __mapChain extends Value {
   }
 
   public __mapChain(HashMap<Value, Value> value) {
-    value = new HashMap<Value, Value>();
+    value = new HashMap<>();
     parent = null;
   }
 
   public __mapChain(HashMap<Value, Value> value, __mapChain parent) {
-    value = new HashMap<Value, Value>();
+    value = new HashMap<>();
     this.parent = parent;
   }
 
@@ -116,11 +116,11 @@ public final class __mapChain extends Value {
 
   @Override
   public Value __cast__map() {
-    return new __map(new HashMap<Value, Value>(javaValue));
+    return new __map(new HashMap<>(javaValue));
   }
 
   @Override
   public Value __cast__mapChain() {
-    return new __mapChain(new HashMap<Value, Value>(javaValue));
+    return new __mapChain(new HashMap<>(javaValue));
   }
 }

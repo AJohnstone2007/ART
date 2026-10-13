@@ -45,6 +45,7 @@ import uk.ac.rhul.cs.csle.art.util.Util;
 import uk.ac.rhul.cs.csle.art.util.Version;
 import uk.ac.rhul.cs.csle.art.util.statistics.Statistics;
 
+@SuppressWarnings("this-escape")
 public class ScriptInterpreter {
   public static ITerms iTerms = new ITerms();
 
@@ -74,7 +75,7 @@ public class ScriptInterpreter {
 
   private final AbstractParser scriptParser = new GLLBaseLine(true); // The script parser: note GLL not MGLL at the moment
   private final AbstractLexer scriptLexer = new LexerBaseLine(); // Standard lexer with builtins but NOT paraterminals
-  private final Map<Integer, Map<Integer, Map<Integer, Consumer<Integer>>>> directiveParameters = new HashMap<>();
+  private final static Map<Integer, Map<Integer, Map<Integer, Consumer<Integer>>>> directiveParameters = new HashMap<>();
   public static CFGRules scriptCFGRules; // The rules built by parsing the user script
   private static ChooseRules scriptChooseRules; // The rules built by parsing the user script
   private int scriptParserTerm; // The derivation from scriptParser
@@ -239,7 +240,7 @@ public class ScriptInterpreter {
   }
 
   // Directive parameter handling - note: must use lower case for argument names
-  private void addDirectiveParameter(String directive, String kind, String name, Consumer<Integer> action) {
+  private static void addDirectiveParameter(String directive, String kind, String name, Consumer<Integer> action) {
     Integer directiveIndex = iTerms.findString(directive);
     Integer kindIndex = iTerms.findString(kind);
     Integer nameIndex = iTerms.findString(name);
@@ -254,19 +255,19 @@ public class ScriptInterpreter {
     nameMap.put(nameIndex, action);
   }
 
-  void initialiseDirectiveParameters() {
+  static void initialiseDirectiveParameters() {
     //@formatter:off
     addDirectiveParameter("!set", "artArgInt", "trace", (Integer t) -> { Util.traceLevel = argInt(t); Util.debug("Trace level set to " + Util.traceLevel); });
     addDirectiveParameter("!set", "artArgInt", "error", (Integer t) -> { Util.errorLevel = argInt(t); Util.debug("Error level set to " + Util.errorLevel); });
 
-    addDirectiveParameter("!clear", "artArgBoolean", "whitespace", (Integer t) -> { currentCFGRules.seenWhitespaceDirective = true; currentCFGRules.whitespaces.clear(); });
+    addDirectiveParameter("!clear", "artArgBoolean", "whitespace", (Integer t) -> { currentCFGRules.clearWhitespaces(); });
     addDirectiveParameter("!clear", "artArgBoolean", "cfgrules", (Integer t) -> { currentCFGRules = new CFGRules(CFGRulesKind.USER); });
     addDirectiveParameter("!clear", "artArgBoolean", "chooserules", (Integer t) -> { seenChooseRule = true; currentChooseRules = new ChooseRules(); });
     addDirectiveParameter("!clear", "artArgBoolean", "trrules", (Integer t) -> { currentTRRules = new TRRules(); });
     addDirectiveParameter("!clear", "artArgBoolean", "signatures", (Integer t) -> { currentSignatures = new Signatures(); });
     addDirectiveParameter("!clear", "artArgBoolean", "statistics", (Integer t) -> { currentStatistics = new Statistics(); });
     addDirectiveParameter("!clear", "artArgBoolean", "all", (Integer t) ->
-      { currentCFGRules.seenWhitespaceDirective = true; currentCFGRules.whitespaces.clear();
+      { currentCFGRules.clearWhitespaces();
         currentCFGRules = new CFGRules(CFGRulesKind.USER);
         seenChooseRule = true; currentChooseRules = new ChooseRules();
         currentSignatures = new Signatures();
@@ -318,20 +319,20 @@ public class ScriptInterpreter {
     addDirectiveParameter("!interpreter", "artArgBoolean", "attributeaction", (Integer t) -> { currentInterpreter = new AttributeActionInterpreter(); Util.info("Interpreter set to AttributeAction"); });
     addDirectiveParameter("!interpreter", "artArgBoolean", "rig", (Integer t) -> { currentInterpreter = new RIGInterpreter(); Util.info("Interpreter set to RIG"); });
 
-    addDirectiveParameter("!generate", "artArgBoolean", "actions", (Integer t) -> new ActionsGenerator(currentCFGRules, currentCFGRules.filePrelude, currentCFGRules.classPrelude));
+    addDirectiveParameter("!generate", "artArgBoolean", "actions", (Integer t) -> new ActionsGenerator(currentCFGRules, currentCFGRules.getFilePrelude(), currentCFGRules.getClassPrelude()));
     //@formatter:on
   }
 
-  private boolean argBool(Integer t) {
+  private static boolean argBool(Integer t) {
     return iTerms.termArity(t) == 1;
   }
 
-  private int argInt(Integer t) {
+  private static int argInt(Integer t) {
     return iTerms.termToJavaInteger(iTerms.subterm(t, 1));
   }
 
   //@formatter:off
-  private enum SaveModes {cfgrules, chooserules, signatures, trrules};
+  private enum SaveModes {cfgrules, chooserules, signatures, trrules}
 
   private enum DisplayModes {
     cfgrules, chooserules, signatures, trrules,
@@ -339,7 +340,7 @@ public class ScriptInterpreter {
     term, scriptterm,
     raw, plain, latex, css,
     indent, full, file, depth,
-  };
+  }
 
   //@formatter:on
 
@@ -401,24 +402,23 @@ public class ScriptInterpreter {
 
       case "!characters":
         for (var c : iTerms.termSymbolString(iTerms.subterm(term, 0, 0, 0)).toCharArray())
-          currentCFGRules.characterSet.add(c);
+          currentCFGRules.addCharacter(c);
         break;
 
       case "!whitespace":
-        currentCFGRules.whitespaces.clear();
-        currentCFGRules.seenWhitespaceDirective = true;
+        currentCFGRules.clearWhitespaces();
         for (int i = 0; i < iTerms.termArity(iTerms.subterm(term, 0)); i++)
-          currentCFGRules.whitespaces.add(findCFGElement(iTerms.subterm(term, 0, i)));
+          currentCFGRules.addWhitespaces(findCFGElement(iTerms.subterm(term, 0, i)));
         break;
 
       case "!token":
         for (int i = 0; i < iTerms.termArity(iTerms.subterm(term, 0)); i++)
-          currentCFGRules.declaredAsTokens.add(findCFGElement(iTerms.subterm(term, 0, i)));
+          currentCFGRules.addToken(findCFGElement(iTerms.subterm(term, 0, i)));
         break;
 
       case "!paraterminal":
         for (int i = 0; i < iTerms.termArity(iTerms.subterm(term, 0)); i++)
-          currentCFGRules.paraterminals.add(findCFGElement(iTerms.subterm(term, 0, i)));
+          currentCFGRules.addParaterminal(findCFGElement(iTerms.subterm(term, 0, i)));
         break;
 
       case "!generate":
@@ -453,8 +453,8 @@ public class ScriptInterpreter {
         break;
 
       case "!support":
-        currentCFGRules.filePrelude = iTerms.termSymbolString(iTerms.subterm(term, 0, 0, 0));
-        currentCFGRules.classPrelude = iTerms.termSymbolString(iTerms.subterm(term, 0, 1, 0));
+        currentCFGRules.setFilePrelude(iTerms.termSymbolString(iTerms.subterm(term, 0, 0, 0)));
+        currentCFGRules.setClassPrelude(iTerms.termSymbolString(iTerms.subterm(term, 0, 1, 0)));
         break;
 
       case "!start":
@@ -629,16 +629,16 @@ public class ScriptInterpreter {
 
         case "cfgruleslexer":
           if (isShow)
-            currentCFGRules.cfgRulesLexer.show(outputStream, outputTraverser, indexed, full, indented, 0);
+            currentCFGRules.getCfgRulesLexer().show(outputStream, outputTraverser, indexed, full, indented, 0);
           else
-            currentCFGRules.cfgRulesLexer.print(outputStream, outputTraverser, indexed, full, indented, 0);
+            currentCFGRules.getCfgRulesLexer().print(outputStream, outputTraverser, indexed, full, indented, 0);
           break;
 
         case "cfgrulesparser":
           if (isShow)
-            currentCFGRules.cfgRulesParser.show(outputStream, outputTraverser, indexed, full, indented, 0);
+            currentCFGRules.getCfgRulesParser().show(outputStream, outputTraverser, indexed, full, indented, 0);
           else
-            currentCFGRules.cfgRulesParser.print(outputStream, outputTraverser, indexed, full, indented, 0);
+            currentCFGRules.getCfgRulesParser().print(outputStream, outputTraverser, indexed, full, indented, 0);
           break;
 
         case "chooserules":
@@ -686,8 +686,8 @@ public class ScriptInterpreter {
               currentParser.derivations.show(outputStream, outputTraverser, indexed, full, indented, 0);
             else
               currentParser.derivations.print(outputStream, outputTraverser, indexed, full, indented, 0);
-            break;
           }
+          break;
 
         case "ambiguities":
           if (currentParser.derivations == null)
@@ -698,8 +698,8 @@ public class ScriptInterpreter {
               ;
             else
               currentParser.derivations.ambiguityCheck();
-            break;
           }
+          break;
 
         case "derivationterm":
           if (currentParser.derivations == null)

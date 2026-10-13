@@ -13,9 +13,9 @@ import uk.ac.rhul.cs.csle.art.old.v4.util.text.ARTText;
 
 public class ARTGrammarInstance extends ARTTreeVertexDoublyLinked implements Comparable<ARTGrammarInstance> {
 
-  private final Set<ARTGrammarElement> first = new TreeSet<ARTGrammarElement>();
-  private final Set<ARTGrammarElement> follow = new TreeSet<ARTGrammarElement>();
-  private final Set<ARTGrammarElement> guard = new TreeSet<ARTGrammarElement>();
+  protected final Set<ARTGrammarElement> first = new TreeSet<>();
+  protected final Set<ARTGrammarElement> follow = new TreeSet<>();
+  protected final Set<ARTGrammarElement> guard = new TreeSet<>();
 
   public ARTFold fold = ARTFold.EMPTY; // Fold operator attached to this instance node
   public int instanceNumberWithinProduction; // instance number for this element in a production to generate attribute name

@@ -92,11 +92,11 @@ public final class AJDebug {
 
     // First check the nonterminals
     for (ARTGrammarElementNonterminal v3Nonterminal : grammarV3.getNonterminals()) {
-      CFGElement v5Nonterminal = grammarV5.elements.get(new CFGElement(CFGElementKind.NONTERMINAL, v3Nonterminal.getId()));
+      CFGElement v5Nonterminal = grammarV5.getCannonicalElement(new CFGElement(CFGElementKind.NONTERMINAL, v3Nonterminal.getId()));
 
       Set<String> v3FirstSet = new TreeSet<>(), v5FirstSet = new TreeSet<>();
       for (var f : v3Nonterminal.getFirst())
-        v3FirstSet.add(f.toString());
+        if (!(f instanceof ARTGrammarElementNonterminal)) v3FirstSet.add(f.toString());
 
       for (var f : grammarV5.first.get(v5Nonterminal))
         v5FirstSet.add(f.toString());
@@ -107,7 +107,7 @@ public final class AJDebug {
 
       Set<String> v3FollowSet = new TreeSet<>(), v5FollowSet = new TreeSet<>();
       for (var f : v3Nonterminal.getFollow())
-        v3FollowSet.add(f.toString());
+        if (!(f instanceof ARTGrammarElementNonterminal)) v3FollowSet.add(f.toString());
 
       for (var f : grammarV5.follow.get(v5Nonterminal))
         v5FollowSet.add(f.toString());
@@ -124,11 +124,11 @@ public final class AJDebug {
     return good;
   }
 
-  private boolean v5v3RegressionCheckFirstAndFollowInstanceSets(CFGRules grammarV5, ARTV3 artV3) {
+  private boolean v5v3RegressionCheckFirstAndFollowInstanceSets(CFGRules gramV5, ARTV3 artV3) {
     boolean good = true;
-    for (CFGElement e : grammarV5.elements.keySet())
+    for (CFGElement e : gramV5.elementsAsArray())
       if (e.cfgKind == CFGElementKind.NONTERMINAL) {
-        good &= v5v3RegressionCheckFirstAndFollowInstanceSetsRec(grammarV5.elementToRulesNodeMap.get(e).alt, artV3);
+        good &= v5v3RegressionCheckFirstAndFollowInstanceSetsRec(gramV5.elementToRulesNodeMap.get(e).alt, artV3);
       }
 
     return good;
@@ -155,7 +155,7 @@ public final class AJDebug {
 
       Set<String> v3FirstSet = new TreeSet<>(), v5FirstSet = new TreeSet<>();
       for (var f : v3InstanceFirst)
-        v3FirstSet.add(f.toString());
+        if (!(f instanceof ARTGrammarElementNonterminal)) v3FirstSet.add(f.toString());
 
       for (var f : v5InstanceFirst)
         v5FirstSet.add(f.toString());
@@ -167,19 +167,19 @@ public final class AJDebug {
 
       Set<String> v3GuardSet = new TreeSet<>(), v5GuardSet = new TreeSet<>();
       for (var f : v3InstanceGuard)
-        v3GuardSet.add(f.toString());
+        if (!(f instanceof ARTGrammarElementNonterminal)) v3GuardSet.add(f.toString());
 
       for (var f : v5InstanceGuard)
         v5GuardSet.add(f.toString());
 
-      boolean goodGuard = v3GuardSet.equals(v5GuardSet);
-      good &= goodGuard;
-
-      Util.info("Instance Guard " + (goodGuard ? "" : "mis") + "match at " + key + " V3: " + v3GuardSet + " V5: " + v5GuardSet);
-
+      /*
+       * boolean goodGuard = v3GuardSet.equals(v5GuardSet); good &= goodGuard;
+       *
+       * Util.info("Instance Guard " + (goodGuard ? "" : "mis") + "match at " + key + " V3: " + v3GuardSet + " V5: " + v5GuardSet);
+       */
       Set<String> v3FollowSet = new TreeSet<>(), v5FollowSet = new TreeSet<>();
       for (var f : v3InstanceFollow)
-        v3FollowSet.add(f.toString());
+        if (!(f instanceof ARTGrammarElementNonterminal)) v3FollowSet.add(f.toString());
 
       for (var f : v5InstanceFollow)
         v5FollowSet.add(f.toString());

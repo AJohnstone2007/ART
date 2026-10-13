@@ -1,9 +1,6 @@
 package uk.ac.rhul.cs.csle.art.cfg.rdsob;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.util.Arrays;
-import java.util.Scanner;
 
 public class AbstractRDSOB {
   protected String input;
@@ -20,10 +17,6 @@ public class AbstractRDSOB {
 
   protected String lexeme() {
     return input.substring(lexemeL, lexemeR);
-  }
-
-  protected String readInput(String filename) throws FileNotFoundException {
-    return new Scanner(new File(filename)).useDelimiter("\\Z").next() + "\0";
   }
 
   protected void oracleSet(int i) {

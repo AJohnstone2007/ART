@@ -79,19 +79,6 @@ public class ARTSceneViewer {
 
   public void addAxes(double negativeExtent, double positiveExtent) {
     double fullExtent = -negativeExtent + positiveExtent;
-
-    final PhongMaterial redMaterial = new PhongMaterial();
-    redMaterial.setDiffuseColor(Color.DARKRED);
-    redMaterial.setSpecularColor(Color.RED);
-
-    final PhongMaterial greenMaterial = new PhongMaterial();
-    greenMaterial.setDiffuseColor(Color.DARKGREEN);
-    greenMaterial.setSpecularColor(Color.GREEN);
-
-    final PhongMaterial blueMaterial = new PhongMaterial();
-    blueMaterial.setDiffuseColor(Color.DARKBLUE);
-    blueMaterial.setSpecularColor(Color.BLUE);
-
     // Initial position of axis will be centred on the middle of the bar: we need to offset by
     double offset = fullExtent / 2 + negativeExtent;
     xAxis = new Box(fullExtent, 1, 1);

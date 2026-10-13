@@ -26,8 +26,8 @@ public class RDSOBExplicitStack extends AbstractParser {
   SNode sn;
   CFGNode gn;
 
-  public boolean match(CFGNode gn, int tokenIndex) {
-    return lexicalisations.getSlice(tokenIndex)[0].cfgElement == gn.cfgElement;
+  public boolean match(CFGNode gnp, int tokenIndex) {
+    return lexicalisations.getSlice(tokenIndex)[0].cfgElement == gnp.cfgElement;
   }
 
   boolean rdsobExplicitStack() {
@@ -49,8 +49,8 @@ public class RDSOBExplicitStack extends AbstractParser {
         gn = retrn();
         if (sn == null) return true;
         break;
-      case ALT, PAR, EOS, KLN, OPT, POS:
-        Util.fatal("internal error - unexpected grammar node in rdsobExplicitStack");
+      default:
+        Util.error("rdsobExplicitStack found unexpected grammar element " + gn.cfgElement.cfgKind);
       }
   }
 
@@ -76,7 +76,7 @@ public class RDSOBExplicitStack extends AbstractParser {
         inputIndex = sn.i_entry;
         dn = sn.dnAtEntry;
         gn = gn.alt.alt.seq;
-        dn.gn = gn;
+        dn.cfgNode = gn;
         break;
       }
     }
@@ -86,7 +86,7 @@ public class RDSOBExplicitStack extends AbstractParser {
   @Override
   public void parse(AbstractLexicalisations lexicalisations) {
     inLanguage = false;
-    gn = lexicalisations.cfgRules.elementToRulesNodeMap.get(lexicalisations.cfgRules.startNonterminal).alt.seq;
+    gn = lexicalisations.cfgRules.elementToRulesNodeMap.get(lexicalisations.cfgRules.getStartNonterminal()).alt.seq;
     inputIndex = 0;
     dnRoot = dn = new DerivationSingletonNode(lexicalisations.cfgRules.endOfStringNode, null);
     sn = new SNode(lexicalisations.cfgRules.endOfStringNode, 0, null, dn);
@@ -96,18 +96,18 @@ public class RDSOBExplicitStack extends AbstractParser {
   protected DerivationSingletonNode dnRoot, dn;
 
   public class DerivationSingletonNode {
-    public CFGNode gn;
+    public CFGNode cfgNode;
     public DerivationSingletonNode next;
 
     public DerivationSingletonNode(CFGNode gn, DerivationSingletonNode next) {
       super();
-      this.gn = gn;
+      this.cfgNode = gn;
       this.next = next;
     }
 
     @Override
     public String toString() {
-      return gn.toString();
+      return cfgNode.toString();
     }
   }
 

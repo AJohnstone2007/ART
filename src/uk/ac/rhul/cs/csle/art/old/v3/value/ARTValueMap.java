@@ -8,7 +8,7 @@ import uk.ac.rhul.cs.csle.art.old.v4.core.ARTUncheckedException;
 
 public class ARTValueMap extends ARTValueCollection {
 
-  Map<ARTValue, ARTValue> payload = new HashMap<ARTValue, ARTValue>();
+  Map<ARTValue, ARTValue> payload = new HashMap<>();
 
   @Override
   public Map<ARTValue, ARTValue> getPayload() {

@@ -25,7 +25,6 @@ import uk.ac.rhul.cs.csle.art.old.v4.core.ARTUncheckedException;
 import uk.ac.rhul.cs.csle.art.old.v4.term.ITerms;
 import uk.ac.rhul.cs.csle.art.old.v4.util.bitset.ARTBitSet;
 
-@SuppressWarnings("fallthrough")
 public class ARTV3Parser extends ARTGLLParserHashPool {
   private static boolean[] ARTSet1;
   private static boolean[] ARTSet2;
@@ -9960,7 +9959,7 @@ public class ARTV3Parser extends ARTGLLParserHashPool {
       }
   }
 
-  public void ARTSet1initialise() {
+  public static void ARTSet1initialise() {
     ARTSet1 = new boolean[artSetExtent];
     artInitialiseBooleanArray(ARTSet1, 0, artSetExtent, false);
   }
@@ -19391,6 +19390,7 @@ public class ARTV3Parser extends ARTGLLParserHashPool {
     this(null, artLexer);
   }
 
+  @SuppressWarnings("this-escape")
   public ARTV3Parser(ARTGrammar artGrammar, ARTLexerV3 artLexer) {
     super(artGrammar, artLexer);
     artParserKind = "GLL Gen";
@@ -25091,4 +25091,4 @@ public class ARTV3Parser extends ARTGLLParserHashPool {
     }
   }
 
-};
+}

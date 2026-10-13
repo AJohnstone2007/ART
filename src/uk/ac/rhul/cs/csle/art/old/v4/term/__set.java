@@ -83,18 +83,21 @@ public class __set extends Value {
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public Value __union(Value r) {
     javaValue.addAll((Collection<? extends Value>) r.javaValue());
     return this;
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public Value __difference(Value r) {
     javaValue.removeAll((Collection<? extends Value>) r.javaValue());
     return this;
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public Value __intersection(Value r) {
     javaValue.retainAll((Collection<? extends Value>) r.javaValue());
     return this;

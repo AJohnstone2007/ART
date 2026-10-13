@@ -8,6 +8,7 @@ import uk.ac.rhul.cs.csle.art.old.v4.cfg.referenceFamily.grammar.GElement;
 import uk.ac.rhul.cs.csle.art.old.v4.cfg.referenceFamily.grammar.GKind;
 import uk.ac.rhul.cs.csle.art.old.v4.cfg.referenceFamily.grammar.GNode;
 import uk.ac.rhul.cs.csle.art.old.v4.cfg.referenceFamily.grammar.Grammar;
+import uk.ac.rhul.cs.csle.art.util.Util;
 
 public class OSBRDGenerator {
 
@@ -68,6 +69,8 @@ public class OSBRDGenerator {
               text.print("}");
             text.println();
             break seqLoop;
+          default:
+            Util.error("osbrdGenerator found unexpected grammar element " + seq.elm.kind);
           }
         }
       }

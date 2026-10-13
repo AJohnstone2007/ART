@@ -89,6 +89,7 @@ public class ExtractJLS {
       // System.out.println("Collected character class rule " + firstTag);
       nonterminals.add(firstTag);
     }
+    scanner.close();
   }
 
   private void scanRules(String filename, Set<String> nonterminals, Set<String> rhsTags) {
@@ -117,6 +118,7 @@ public class ExtractJLS {
         skipSpace(); // Prepare for next tag
       }
     }
+    scanner.close();
   }
 
   private void writeExtractedRules(String filename, boolean isLexicalRule) {
@@ -196,6 +198,7 @@ public class ExtractJLS {
       }
       extractedWriter.println();
     }
+    scanner.close();
   }
 
   private boolean testForComment(String str) {

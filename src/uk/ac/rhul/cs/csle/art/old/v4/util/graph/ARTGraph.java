@@ -14,7 +14,7 @@ public class ARTGraph extends ARTAbstractGraph {
     super(label);
   }
 
-  protected final Map<Object, ARTGraphVertex> keyMap = new HashMap<Object, ARTGraphVertex>();
+  protected final Map<Object, ARTGraphVertex> keyMap = new HashMap<>();
 
   public ARTGraphVertex addVertex(Object key, Object label) {
     ARTGraphVertex vertex = new ARTGraphVertex(key, label);
@@ -45,7 +45,7 @@ public class ARTGraph extends ARTAbstractGraph {
   }
 
   public ArrayList<ARTGraphVertex> findRoots() {
-    ArrayList<ARTGraphVertex> roots = new ArrayList<ARTGraphVertex>();
+    ArrayList<ARTGraphVertex> roots = new ArrayList<>();
 
     for (ARTGraphVertex v : keyMap.values())
       if (v.getInEdges().isEmpty()) roots.add((v));

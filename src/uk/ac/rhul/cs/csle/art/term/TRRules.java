@@ -315,7 +315,7 @@ public class TRRules implements DisplayInterface {
   private int nextFreeVariableNumber = 1;
 
   private void collectVariablesAndConstructorsRec(int parentRewriteTermIndex, Map<Integer, Integer> variableStringIndexToVariableNumberMap,
-      Map<Integer, Integer> constructorCount, Set<Integer> functionsInUse, Set<Integer> numericVariablesInUse, Integer termIndex) {
+      Map<Integer, Integer> constructorCount, Set<Integer> functionsInUseP, Set<Integer> numericVariablesInUse, Integer termIndex) {
     // Util.info("collectVariablesAndConstructorsRec() at " +ScriptTermInterpreter.iTerms.plainTextTraverser.toString(termIndex, null));
 
     int termSymbolStringIndex = ScriptInterpreter.iTerms.termSymbolStringIndex(termIndex);
@@ -338,7 +338,7 @@ public class TRRules implements DisplayInterface {
       }
     } else if (termSymbolString.length() > 1 && termSymbolString.charAt(0) == '_' && termSymbolString.charAt(1) == '_') { // Function
       // Util.info("Updating functionsInUse with " + termSymbolString);
-      functionsInUse.add(termSymbolStringIndex);
+      functionsInUseP.add(termSymbolStringIndex);
     } else { // Normal constructor
       if (constructorCount.get(termSymbolStringIndex) == null) constructorCount.put(termSymbolStringIndex, 0);
       // Util.info("Updating constructor counts for " + ScriptTermInterpreter.iTerms.getString(termStringIndex));
@@ -346,7 +346,7 @@ public class TRRules implements DisplayInterface {
     }
 
     for (int i = 0; i < ScriptInterpreter.iTerms.termArity(termIndex); i++)
-      collectVariablesAndConstructorsRec(parentRewriteTermIndex, variableStringIndexToVariableNumberMap, constructorCount, functionsInUse,
+      collectVariablesAndConstructorsRec(parentRewriteTermIndex, variableStringIndexToVariableNumberMap, constructorCount, functionsInUseP,
           numericVariablesInUse, ScriptInterpreter.iTerms.subterm(termIndex, i));
   }
 

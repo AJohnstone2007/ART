@@ -2,6 +2,7 @@ package uk.ac.rhul.cs.csle.art.old.v4.cfg.referenceFamily.osbrd;
 
 import uk.ac.rhul.cs.csle.art.old.v4.cfg.referenceFamily.DNode;
 import uk.ac.rhul.cs.csle.art.old.v4.cfg.referenceFamily.grammar.GNode;
+import uk.ac.rhul.cs.csle.art.util.Util;
 
 // @formatter:off
 public class OSBRDF extends OSBRDParser {
@@ -13,13 +14,15 @@ boolean osbrdF(GNode lhs) {
   GNode gn = tmp.seq;
   while (true) {
    switch (gn.elm.kind) {
-   case T: if (match(gn)) {i++; ; gn = gn.seq; break;}
+   case T: if (match(gn)) {i++;  gn = gn.seq; break;}
            else continue altLoop;
    case N: if (osbrdF(lhs(gn))) {gn = gn.seq; break;}
            else continue altLoop;
    case EPS: gn = gn.seq; break;
    case END: dn_update(tmp.num); return true;
-   }}}
+   default:
+     Util.error("osbrdF found unexpected grammar element kind " + gn.elm.kind);
+  }}}
  return false;
 }
 

@@ -4,8 +4,8 @@ import java.util.ArrayList;
 
 public class ARTGraphVertex extends ARTAbstractVertex {
 
-  final ArrayList<ARTGraphEdge> inEdges = new ArrayList<ARTGraphEdge>();
-  final ArrayList<ARTGraphEdge> outEdges = new ArrayList<ARTGraphEdge>();
+  final ArrayList<ARTGraphEdge> inEdges = new ArrayList<>();
+  final ArrayList<ARTGraphEdge> outEdges = new ArrayList<>();
 
   public ARTGraphVertex(Object key, Object payload) {
     super(key, payload);

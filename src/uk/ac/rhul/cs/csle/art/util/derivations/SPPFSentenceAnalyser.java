@@ -45,7 +45,7 @@ class SPPFSentenceAnalyser {
     if (sppf.visited.get(sppfn.number)) return;
     sppf.visited.set(sppfn.number);
 
-    if (sppfn.isSymbol() && sppf.lexicalisations.cfgRules.paraterminals.contains(sppfn.grammarNode.cfgElement)) {
+    if (sppfn.isSymbol() && sppf.lexicalisations.cfgRules.isParaterminal(sppfn.grammarNode.cfgElement)) {
       paraterminalInstanceAdd(sppfn);
       paraterminalCount++;
       return;
@@ -61,7 +61,7 @@ class SPPFSentenceAnalyser {
   }
 
   private void paraterminalInstanceAdd(SPPFSymbolNode sppfn) {
-    if (paraterminalInstances.get(sppfn.leftExtent) == null) paraterminalInstances.put(sppfn.leftExtent, new HashSet<SPPFSymbolNode>());
+    if (paraterminalInstances.get(sppfn.leftExtent) == null) paraterminalInstances.put(sppfn.leftExtent, new HashSet<>());
     paraterminalInstances.get(sppfn.leftExtent).add(sppfn);
   }
 
@@ -111,7 +111,7 @@ class SPPFSentenceAnalyser {
     }
     sppf.visited.set(node.number);
 
-    if (node.packNodes.isEmpty() || (node.isSymbol() && sppf.lexicalisations.cfgRules.paraterminals.contains(node.grammarNode.cfgElement))) {
+    if (node.packNodes.isEmpty() || (node.isSymbol() && sppf.lexicalisations.cfgRules.isParaterminal(node.grammarNode.cfgElement))) {
       if (!(node.packNodes.isEmpty() && node.grammarNode.cfgElement.cfgKind == CFGElementKind.EPSILON)) {
         Util.info("Extending with " + node.grammarNode.cfgElement.str);
         parasentence[parasentenceIndex++] = node;

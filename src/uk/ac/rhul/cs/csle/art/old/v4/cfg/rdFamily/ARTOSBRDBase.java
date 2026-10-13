@@ -1,9 +1,7 @@
 package uk.ac.rhul.cs.csle.art.old.v4.cfg.rdFamily;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
-import java.util.Scanner;
 
 public class ARTOSBRDBase {
   protected String input;
@@ -19,11 +17,11 @@ public class ARTOSBRDBase {
 
   public enum TreeKind {
     EPSILON, TERMINAL, BUILTIN, NONTERMINAL
-  };
+  }
 
   public enum GIFTKind {
     NONE, FOLD_UNDER, FOLD_OVER, FOLD_ABOVE
-  };
+  }
 
   public class TreeNode {
     String label;
@@ -42,7 +40,7 @@ public class ARTOSBRDBase {
       this.kind = kind;
       this.giftOp = giftOp;
       nodeNumber = nextNode++;
-    };
+    }
 
     public TreeNode(TreeNode old) {
       label = old.label;
@@ -50,7 +48,7 @@ public class ARTOSBRDBase {
       giftOp = old.giftOp;
       child = sibling = null;
       nodeNumber = nextNode++;
-    };
+    }
 
     public TreeNode clone(TreeNode parent, TreeNode previousSibling) {
       TreeNode ret = new TreeNode(this);
@@ -113,7 +111,7 @@ public class ARTOSBRDBase {
 
       if (child != null) child.printTree(indent + 1);
       if (sibling != null) sibling.printTree(indent);
-    };
+    }
 
     public void printTerm(int indent) {
       System.out.printf("%s%s%s", labelPreString(kind), label, labelPostString(kind));
@@ -127,7 +125,7 @@ public class ARTOSBRDBase {
         sibling.printTerm(indent);
       } else
         System.out.print(")");
-    };
+    }
 
     void dotRec(TreeNode parent) {
       dotFile.printf("\nv_%d [label=\"%d: %s%s%s\"]", nodeNumber, nodeNumber, labelPreString(kind), label, labelPostString(kind));
@@ -135,7 +133,7 @@ public class ARTOSBRDBase {
       if (parent != null) dotFile.printf("\nv_%d->v_%d", parent.nodeNumber, nodeNumber);
       if (child != null) child.dotRec(this);
       if (sibling != null) sibling.dotRec(parent);
-    };
+    }
 
     public void dot(String fileName) throws FileNotFoundException {
       dotFile = new PrintWriter(fileName);
@@ -144,8 +142,8 @@ public class ARTOSBRDBase {
       this.dotRec(null);
       dotFile.printf("\n}");
       dotFile.close();
-    };
-  };
+    }
+  }
 
   protected ARTOSBRDBase() {
     oracleLength = 1000;
@@ -155,7 +153,7 @@ public class ARTOSBRDBase {
   }
 
   protected void postParse(TreeNode tree) {
-  };
+  }
 
   protected String giftString(GIFTKind giftOp) {
     switch (giftOp) {
@@ -204,10 +202,6 @@ public class ARTOSBRDBase {
     default:
       return "!! unknown TREE kind !!";
     }
-  }
-
-  protected String readInput(String filename) throws FileNotFoundException {
-    return new Scanner(new File(filename)).useDelimiter("\\Z").next() + "\0";
   }
 
   protected void oracleSet(int i) {

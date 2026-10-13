@@ -213,7 +213,7 @@ class SPPFCycleBreak {
       Util.warning("Current parser does not have a current SPPF - skipping cycle breaking");
       return;
     }
-    this.cycleBreakTrace = cycleBreakTrace;
+    this.cycleBreakTrace = trace;
     this.cycleBreakCounts = counts;
     this.cycleBreakStatistics = statistics;
     xP = new HashSet<>();
@@ -300,7 +300,7 @@ class SPPFCycleBreak {
       countEps++;
     else if (sppfn.packNodes.size() == 0)
       countTerm++;
-    else if (sppf.lexicalisations.cfgRules.paraterminals.contains(sppfn.grammarNode.cfgElement)) {
+    else if (sppf.lexicalisations.cfgRules.isParaterminal(sppfn.grammarNode.cfgElement)) {
       countPara++;
       return;
     } else if (sppfn.isSymbol())
@@ -442,7 +442,7 @@ class SPPFCycleBreak {
     sppfComputeCoreReachability(null); // computes sppf.cyclic (set of cyclic SPPF nodes)
     loadXPartitionsFromReachability(); // Load X from computed cyclic nodes as partitions xP and xS
 
-    Configuration c_0 = new Configuration(xP, xS, new HashSet<SPPFPackedNode>(), new HashSet<SPPFPackedNode>());
+    Configuration c_0 = new Configuration(xP, xS, new HashSet<>(), new HashSet<>());
     q.add(c_0); // enqueue start element
     Util.info("C_0: " + c_0);
 

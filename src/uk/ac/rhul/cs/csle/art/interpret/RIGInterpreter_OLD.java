@@ -69,9 +69,9 @@ public class RIGInterpreter_OLD extends AbstractInterpreter {
     Integer lhsConclusionRootSymbolStringIndex = it.termSymbolStringIndex(it.subterm(term, 2, 0));
     Util.info("Adding new rule " + it.toString(relation) + "/" + it.getString(lhsConclusionRootSymbolStringIndex) + ": " + it.toString(term));
 
-    if (rules.get(relation) == null) rules.put(relation, new HashMap<Integer, ArrayList<Integer>>());
+    if (rules.get(relation) == null) rules.put(relation, new HashMap<>());
     Map<Integer, ArrayList<Integer>> constructorMap = rules.get(relation);
-    if (constructorMap.get(lhsConclusionRootSymbolStringIndex) == null) constructorMap.put(lhsConclusionRootSymbolStringIndex, new ArrayList<Integer>());
+    if (constructorMap.get(lhsConclusionRootSymbolStringIndex) == null) constructorMap.put(lhsConclusionRootSymbolStringIndex, new ArrayList<>());
     ArrayList<Integer> activeRuleList = constructorMap.get(lhsConclusionRootSymbolStringIndex);
     activeRuleList.add(term);
   }
@@ -131,7 +131,7 @@ public class RIGInterpreter_OLD extends AbstractInterpreter {
       int conclusionLHS = it.subterm(rule, 2, 0);
       int conclusionRHS = it.subterm(rule, 2, 2);
       Util.debug("Evaluate: trying rule -" + it.toString(label));
-      boolean thetaMatch = match(rho = new HashMap<Integer, Integer>(), term, conclusionLHS);
+      boolean thetaMatch = match(rho = new HashMap<>(), term, conclusionLHS);
       Util.debug("Theta match " + thetaMatch + " with bindings " + rho);
       if (!thetaMatch) continue nextRule;
       int[] premises = it.termChildren(it.subterm(rule, 1));

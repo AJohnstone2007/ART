@@ -24,18 +24,18 @@ public final class ARTV3Module {
   private ARTGrammarElementModuleNonterminal defaultStartNonterminal = null;
   private ARTGrammarElementModuleNonterminal injectNonterminal = null;
   private ARTGrammarElementModuleNonterminal absorbNonterminal = null;
-  private final Set<ARTImport> imports = new HashSet<ARTImport>();
-  private final Map<String, ARTGrammarElementModuleNonterminal> nonterminals = new HashMap<String, ARTGrammarElementModuleNonterminal>();
+  private final Set<ARTImport> imports = new HashSet<>();
+  private final Map<String, ARTGrammarElementModuleNonterminal> nonterminals = new HashMap<>();
   private final Set<ARTGrammarElementModuleNonterminal> usedNonterminals = new HashSet<>();
-  private final List<ARTGrammarElementModuleNonterminal> nonterminalList = new LinkedList<ARTGrammarElementModuleNonterminal>();
+  private final List<ARTGrammarElementModuleNonterminal> nonterminalList = new LinkedList<>();
   private final Set<ARTValueTerm> whitespaceTerminals = new HashSet<>();
   private final Set<ARTValueTerm> paraterminals = new HashSet<>();
   private final Map<ARTValueTerm, String> paraterminalAliases = new HashMap<>();
   private final Map<ARTValueTerm, Set<ARTValueTerm>> derivationHigher = new HashMap<>();
   private final Map<ARTValueTerm, Set<ARTValueTerm>> derivationLonger = new HashMap<>();
   private final Map<ARTValueTerm, Set<ARTValueTerm>> derivationShorter = new HashMap<>();
-  private final Set<String> preludeStrings = new HashSet<String>();
-  private final Set<String> supportStrings = new HashSet<String>();
+  private final Set<String> preludeStrings = new HashSet<>();
+  private final Set<String> supportStrings = new HashSet<>();
   private final boolean seenWhitespaceDeclaration = false;
   private final Set<ARTGrammarElement> elements = new HashSet<>();
   private String injectProductionString = "( `\\n | `\\r | `\\t | ` )*";
@@ -213,17 +213,17 @@ public final class ARTV3Module {
 
   public void addDerivationHigher(ARTValueTerm lhs, ARTValueTerm rhs) {
     // System.out.println("Extending Higher relation with " + lhs + " > " + rhs);
-    if (getDerivationHigher().get(lhs) == null) getDerivationHigher().put(lhs, new HashSet<ARTValueTerm>());
+    if (getDerivationHigher().get(lhs) == null) getDerivationHigher().put(lhs, new HashSet<>());
     getDerivationHigher().get(lhs).add(rhs);
   }
 
   public void addDerivationLonger(ARTValueTerm lhs, ARTValueTerm rhs) {
-    if (getDerivationLonger().get(lhs) == null) getDerivationLonger().put(lhs, new HashSet<ARTValueTerm>());
+    if (getDerivationLonger().get(lhs) == null) getDerivationLonger().put(lhs, new HashSet<>());
     getDerivationLonger().get(lhs).add(rhs);
   }
 
   public void addDerivationShorter(ARTValueTerm lhs, ARTValueTerm rhs) {
-    if (getDerivationShorter().get(lhs) == null) getDerivationShorter().put(lhs, new HashSet<ARTValueTerm>());
+    if (getDerivationShorter().get(lhs) == null) getDerivationShorter().put(lhs, new HashSet<>());
     getDerivationShorter().get(lhs).add(rhs);
   }
 

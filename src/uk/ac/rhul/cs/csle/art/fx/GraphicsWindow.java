@@ -242,7 +242,7 @@ public final class GraphicsWindow {
   double mouseDeltaX;
   double mouseDeltaY;
 
-  private void handleMouse(SubScene scene, final Node root) {
+  private void handleMouse(SubScene scene, final Node rootNode) {
     scene.setOnMousePressed(new EventHandler<MouseEvent>() {
       @Override
       public void handle(MouseEvent me) {

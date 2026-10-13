@@ -17,7 +17,7 @@ import uk.ac.rhul.cs.csle.art.old.v4.core.ARTUncheckedException;
 
 public final class ARTValueTermUsingList extends ARTValue {
   protected ARTValue payload; // this is the payload: typically a string or some other identifier signifying the constructor
-  private final List<ARTValueTermUsingList> children = new ArrayList<ARTValueTermUsingList>();
+  private final List<ARTValueTermUsingList> children = new ArrayList<>();
 
   public ARTValueTermUsingList(ARTValue payload) {
     this.payload = payload;

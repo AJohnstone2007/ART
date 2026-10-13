@@ -12,8 +12,8 @@ public class CompressSMLIdentifiers {
       System.exit(0);
     }
 
-    Set keywords = Set.of("abstype", "and", "andalso", "as", "case", "datatype", "do", "else", "end", "eqtype", "exception", "fn", "fun", "functor", "handle",
-        "if", "in", "include", "infix", "infixr", "let", "local", "nonfix", "of", "op", "open", "orelse", "raise", "rec", "sharing", "sig", "require",
+    Set<String> keywords = Set.of("abstype", "and", "andalso", "as", "case", "datatype", "do", "else", "end", "eqtype", "exception", "fn", "fun", "functor",
+        "handle", "if", "in", "include", "infix", "infixr", "let", "local", "nonfix", "of", "op", "open", "orelse", "raise", "rec", "sharing", "sig", "require",
         "signature", "struct", "structure", "then", "type", "val", "where", "while", "with", "withtype");
 
     String str = Files.readString(Paths.get(args[0]));

@@ -1,6 +1,6 @@
 package uk.ac.rhul.cs.csle.art.old.v4.cfg.referenceFamily.grammar;
 
-public class GElement implements Comparable {
+public class GElement implements Comparable<Object> {
   public int ei;
   public final GKind kind;
   public final String str;

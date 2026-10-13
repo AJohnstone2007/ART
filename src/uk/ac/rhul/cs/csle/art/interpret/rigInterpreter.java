@@ -46,7 +46,7 @@ public class RIGInterpreter extends AbstractInterpreter {
   }
 
   private void addTerminalPattern(int relation, int pattern) {
-    if (terminalPatterns.get(relation) == null) terminalPatterns.put(relation, new HashSet<Integer>());
+    if (terminalPatterns.get(relation) == null) terminalPatterns.put(relation, new HashSet<>());
     terminalPatterns.get(relation).add(pattern);
   }
 
@@ -57,9 +57,9 @@ public class RIGInterpreter extends AbstractInterpreter {
     Integer lhsConclusionRootSymbolStringIndex = it.termSymbolStringIndex(it.subterm(term, 2, 0));
     // Util.debug("Adding new rule " + it.toString(relation) + "/" + it.getString(lhsConclusionRootSymbolStringIndex) + ": " + it.toString(term));
 
-    if (rules.get(relation) == null) rules.put(relation, new HashMap<Integer, ArrayList<Integer>>());
+    if (rules.get(relation) == null) rules.put(relation, new HashMap<>());
     Map<Integer, ArrayList<Integer>> constructorMap = rules.get(relation);
-    if (constructorMap.get(lhsConclusionRootSymbolStringIndex) == null) constructorMap.put(lhsConclusionRootSymbolStringIndex, new ArrayList<Integer>());
+    if (constructorMap.get(lhsConclusionRootSymbolStringIndex) == null) constructorMap.put(lhsConclusionRootSymbolStringIndex, new ArrayList<>());
     ArrayList<Integer> activeRuleList = constructorMap.get(lhsConclusionRootSymbolStringIndex);
     activeRuleList.add(term);
   }
@@ -92,7 +92,7 @@ public class RIGInterpreter extends AbstractInterpreter {
 
   private void stepper(int term, int relation) {
     int rewriteStepCounter = rewriteAttemptCounter = 1;
-    HashSet<Integer> newTerms = new HashSet<Integer>(), oldTerms = new HashSet<Integer>(), tmp;
+    HashSet<Integer> newTerms = new HashSet<>(), oldTerms = new HashSet<>(), tmp;
     oldTerms.add(term);
 
     while (true) {

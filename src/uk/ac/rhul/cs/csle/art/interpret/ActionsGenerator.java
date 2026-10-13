@@ -38,7 +38,7 @@ public class ActionsGenerator {
     if (classPrelude != null) text.println(classPrelude);
     text.println("  public String name() { return \"" + timeStamp + "\"; }");
 
-    for (var e : cfgRules.elements.keySet())
+    for (var e : cfgRules.elementsAsArray())
       if (e.cfgKind == CFGElementKind.NONTERMINAL) {
         text.println("\n  public class ART_C_" + e.str + " extends AbstractAttributeBlock {");
         text.print("    ART_C_" + e.str + " " + e.str + " = this;"); // LHS
@@ -70,7 +70,7 @@ public class ActionsGenerator {
 
     text.println(
         "\n  public AbstractAttributeBlock init(AbstractInterpreter interpreter, int term) {\n    this.interpreter = interpreter;\n    var ret = new ART_C_"
-            + cfgRules.startNonterminal.str + "();\n    ret.term = term;\n    return ret;\n  }");
+            + cfgRules.getStartNonterminal().str + "();\n    ret.term = term;\n    return ret;\n  }");
     text.println("}");
     text.close();
   }

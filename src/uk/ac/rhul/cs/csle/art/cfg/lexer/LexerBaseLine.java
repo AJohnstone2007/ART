@@ -54,7 +54,7 @@ public class LexerBaseLine extends AbstractLexer {
     // if (index == 0) ret.add(new TWESetElement(cfgRules.startOfStringElement, 1, 1, inputIndex));
 
     int lexemeStart = index == 0 ? whitespacePrefix : index; // Index zero is special case because of leading whitespace
-    for (var e : lexicalisations.cfgRules.elements.keySet()) {
+    for (var e : lexicalisations.cfgRules.elementsAsArray()) {
       // Util.debug("Lexer at " + inputIndex + " testing " + e.toStringDetailed());
       switch (e.cfgKind) {
       case TRM_CS, TRM_CI, TRM_BI, TRM_CH:
@@ -67,6 +67,9 @@ public class LexerBaseLine extends AbstractLexer {
           ret.add(new TWESetElement(e, lexemeStart, lexemeEnd, inputIndex));
           hasSlice[inputIndex] = true; // Mark for downstream processing
         }
+        break;
+      default:
+        ; // skip everything else
       }
     }
     return ret.isEmpty() ? null : ret.toArray(new TWESetElement[0]);
@@ -76,7 +79,7 @@ public class LexerBaseLine extends AbstractLexer {
     int wsStart;
     do {
       wsStart = inputIndex;
-      for (var w : lexicalisations.cfgRules.whitespaces)
+      for (var w : lexicalisations.cfgRules.whitespacesAsArray())
         tryTokenMatch(w);
     } while (inputIndex != wsStart); // No more whitespace found
   }

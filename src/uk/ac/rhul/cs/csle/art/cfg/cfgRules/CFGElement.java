@@ -42,7 +42,11 @@ public class CFGElement implements Comparable<Object> {
   @Override
   public String toString() {
     switch (cfgKind) {
-    case SOS, EOS, EPSILON, ALT, END, PAR, OPT, POS, KLN:
+    case EPSILON:
+      return "#";
+    case EOS:
+      return "$";
+    case SOS, ALT, END, PAR, OPT, POS, KLN:
       return cfgKind.toString();
     case TRM_CS:
       return "'" + Util.escapeString(str) + "'";

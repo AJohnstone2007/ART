@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.Set;
 
 public class ARTValueSet extends ARTValueCollection {
-  private final Set<ARTValue> payload = new HashSet<ARTValue>();
+  private final Set<ARTValue> payload = new HashSet<>();
 
   @Override
   public Set<ARTValue> getPayload() {

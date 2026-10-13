@@ -91,8 +91,8 @@ public final class ARTGrammar {
   Set<ARTGrammarElement> injectInstanceReachable = new TreeSet<>();
   Set<ARTGrammarElement> injectInstanceError = new HashSet<>();
   private final Map<ARTName, ARTGrammarElementNonterminal> nonterminalNameMap = new HashMap<>();
-  private final Set<ARTGrammarElementTerminal> terminals = new TreeSet<ARTGrammarElementTerminal>();
-  private final Set<ARTGrammarElement> whitespaces = new TreeSet<ARTGrammarElement>();
+  private final Set<ARTGrammarElementTerminal> terminals = new TreeSet<>();
+  private final Set<ARTGrammarElement> whitespaces = new TreeSet<>();
   private final Map<String, ARTGrammarElementTerminalCharacter> terminalCharacterNameMap = new HashMap<>();
   private final Map<String, ARTGrammarElementTerminalCaseSensitive> terminalCaseSensitiveNameMap = new HashMap<>();
   private final Map<String, ARTGrammarElementTerminalCaseInsensitive> terminalCaseInsensitiveNameMap = new HashMap<>();
@@ -111,15 +111,15 @@ public final class ARTGrammar {
   // Todo: at the moment slots are not enumerated - we'll just set it to lastNonterminalElementNumber
   private int lastSlotNumber;
 
-  private final Set<String> preludeStrings = new HashSet<String>();
-  private final Set<String> supportStrings = new HashSet<String>();
+  private final Set<String> preludeStrings = new HashSet<>();
+  private final Set<String> supportStrings = new HashSet<>();
 
   private final ARTGrammarElementEoS eoS = new ARTGrammarElementEoS();
   private final ARTGrammarElementEpsilon epsilon = new ARTGrammarElementEpsilon();
 
   private ARTTree instanceTree;
 
-  private Set<ARTGrammarElementAttribute> supportAttributes = new HashSet<ARTGrammarElementAttribute>();
+  private Set<ARTGrammarElementAttribute> supportAttributes = new HashSet<>();
 
   private ARTGrammarInstance pendingnL;
 
@@ -391,19 +391,19 @@ public final class ARTGrammar {
 
   ITerms iTerms = new ITermsLowLevelAPI();
 
-  private void updateChooser(ARTV3Module ARTV3Module, ARTBitSet[] bits, int lhsTerm, int rhsTerm) {
+  private void updateChooser(ARTV3Module artV3Module, ARTBitSet[] bits, int lhsTerm, int rhsTerm) {
     for (int l = 0; l < iTerms.getTermArity(lhsTerm); l++) {
       // System.out.println("Updating chooser with: " + iTerms.toString(lhsTerm) + " relation " + iTerms.toString(rhsTerm));
       int lTerm = iTerms.getSubterm(lhsTerm, l);
       for (int r = 0; r < iTerms.getTermArity(rhsTerm); r++) {
         int rTerm = iTerms.getSubterm(rhsTerm, r);
-        setChooserBit(ARTV3Module, bits, lTerm, rTerm);
+        setChooserBit(artV3Module, bits, lTerm, rTerm);
       }
     }
   }
 
-  private void setChooserBit(ARTV3Module ARTV3Module, ARTBitSet[] bits, int l, int r) {
-    int lElement = convertTermToEnumerationElement(ARTV3Module, l), rElement = convertTermToEnumerationElement(ARTV3Module, r);
+  private void setChooserBit(ARTV3Module artV3Module, ARTBitSet[] bits, int l, int r) {
+    int lElement = convertTermToEnumerationElement(artV3Module, l), rElement = convertTermToEnumerationElement(artV3Module, r);
 
     if (lElement == -1 || rElement == -1) return;
     if (bits[lElement] == null) bits[lElement] = new ARTBitSet();
@@ -511,9 +511,9 @@ public final class ARTGrammar {
     artReachabilityAnalysisRec(instance.getSibling(), lexerReachable, parserReachable, paraterminal, visited, mostRecentLHS);
   }
 
-  public boolean addProduction(ARTGrammarElementNonterminal nonterminal, ARTV3Module ARTV3Module, ARTGLLRDTVertex vertex) {
+  public boolean addProduction(ARTGrammarElementNonterminal nonterminal, ARTV3Module artV3Module, ARTGLLRDTVertex vertex) {
     boolean ret = nonterminal.getProductions()
-        .add((ARTGrammarInstanceCat) buildGrammarProductionFromRDT(nonterminal, ARTV3Module, new ARTGrammarInstanceRoot(0), vertex, false));
+        .add((ARTGrammarInstanceCat) buildGrammarProductionFromRDT(nonterminal, artV3Module, new ARTGrammarInstanceRoot(0), vertex, false));
     if (ret) isDirty = true;
     return ret;
   }
@@ -560,7 +560,7 @@ public final class ARTGrammar {
   }
 
   // the belowClosure flag is set by instances of * + and ? and is used to control
-  private ARTGrammarInstance buildGrammarProductionFromRDT(ARTGrammarElementNonterminal lhs, ARTV3Module ARTV3Module, ARTGrammarInstance parent,
+  private ARTGrammarInstance buildGrammarProductionFromRDT(ARTGrammarElementNonterminal lhs, ARTV3Module artV3Module, ARTGrammarInstance parent,
       ARTGLLRDTVertex vertex, boolean belowClosure) {
     // System.out.printf("buildGrammarProduction() at %s with parent %s and belowClosure %s\n", vertex, parent, belowClosure);
     ARTGrammarInstance newParent = parent;
@@ -581,15 +581,15 @@ public final class ARTGrammar {
     } else if (vertexLabel(vertex, "?")) {
       newBelowClosure = true;
       newParent = parent.addChild(new ARTGrammarInstanceOptional(instanceCount++));
-      if (processAbbreviation(ARTV3Module, newParent, vertex)) return newParent; // Abbreviations only allowed on BNF instances, so all done
+      if (processAbbreviation(artV3Module, newParent, vertex)) return newParent; // Abbreviations only allowed on BNF instances, so all done
     } else if (vertexLabel(vertex, "*")) {
       newBelowClosure = true;
       newParent = parent.addChild(new ARTGrammarInstanceKleeneClosure(instanceCount++));
-      if (processAbbreviation(ARTV3Module, newParent, vertex)) return newParent; // Abbreviations only allowed on BNF instances, so all done
+      if (processAbbreviation(artV3Module, newParent, vertex)) return newParent; // Abbreviations only allowed on BNF instances, so all done
     } else if (vertexLabel(vertex, "+")) {
       newBelowClosure = true;
       newParent = parent.addChild(new ARTGrammarInstancePositiveClosure(instanceCount++));
-      if (processAbbreviation(ARTV3Module, newParent, vertex)) return newParent; // Abbreviations only allowed on BNF instances, so all done
+      if (processAbbreviation(artV3Module, newParent, vertex)) return newParent; // Abbreviations only allowed on BNF instances, so all done
     } else if (vertexLabel(vertex, "not"))
       newParent = parent.addChild(new ARTGrammarInstanceNot(instanceCount++));
     else if (vertexLabel(vertex, "iter"))
@@ -614,7 +614,7 @@ public final class ARTGrammar {
       } else { // annotatable nodes
         if (vertexLabel(vertex, "nonterminal"))
           newParent = parent.addChild(new ARTGrammarInstanceNonterminal(instanceCount++,
-              findNonterminal(ARTV3Module, ((ARTAT_ART_nonterminal) vertex.getPayload().getAttributes()).v)));
+              findNonterminal(artV3Module, ((ARTAT_ART_nonterminal) vertex.getPayload().getAttributes()).v)));
         else if (vertexLabel(vertex, "characterTerminal"))
           newParent = parent.addChild(
               new ARTGrammarInstanceTerminal(instanceCount++, findTerminalCharacter(((ARTAT_ART_characterTerminal) vertex.getPayload().getAttributes()).v)));
@@ -644,7 +644,7 @@ public final class ARTGrammar {
     }
 
     if (recurse) for (ARTGLLRDTVertex child = vertex.getChild(); child != null; child = child.getSibling())
-      buildGrammarProductionFromRDT(lhs, ARTV3Module, newParent, child, newBelowClosure);
+      buildGrammarProductionFromRDT(lhs, artV3Module, newParent, child, newBelowClosure);
 
     return newParent;
   }
@@ -1200,7 +1200,7 @@ public final class ARTGrammar {
       newBracketNode = node;
 
     if (node instanceof ARTGrammarInstanceRoot) {
-      ; // Nothing to do
+      // Nothing to do
     }
 
     else if (node instanceof ARTGrammarInstanceLHS) {
@@ -1219,7 +1219,7 @@ public final class ARTGrammar {
     else if (node instanceof ARTGrammarInstanceCat) {
       // Walk the children of a cat node until we find a non-nullable symbol skipping slot nodes
       for (ARTGrammarInstance child = node.getChild().getSibling(); child != null; child = child.getSibling().getSibling()) {
-        HashSet<ARTGrammarElement> tmp = new HashSet<ARTGrammarElement>(child.getFirst());
+        HashSet<ARTGrammarElement> tmp = new HashSet<>(child.getFirst());
         if (child.getSibling().getSibling() != null) tmp.remove(epsilon);
 
         changed |= node.getFirst().addAll(tmp);
@@ -1237,7 +1237,7 @@ public final class ARTGrammar {
             changed |= node.getFirst().addAll(newBracketNode.getFirst());
         }
       } else { // \beta is not epsilon so there will be an X (a terminal or a nonterminal) following, then another pos slot
-        HashSet<ARTGrammarElement> tmp = new HashSet<ARTGrammarElement>(node.getSibling().getFirst());
+        HashSet<ARTGrammarElement> tmp = new HashSet<>(node.getSibling().getFirst());
         tmp.remove(epsilon);
 
         changed |= node.getFirst().addAll(tmp);
@@ -1247,7 +1247,7 @@ public final class ARTGrammar {
       }
 
       // Guard set computation for slots
-      HashSet<ARTGrammarElement> tmp = new HashSet<ARTGrammarElement>(node.getFirst());
+      HashSet<ARTGrammarElement> tmp = new HashSet<>(node.getFirst());
       if (tmp.contains(epsilon)) if (newBracketNode == null)
         tmp.addAll(lhs.getFollow());
       else {
@@ -1269,7 +1269,7 @@ public final class ARTGrammar {
 
       changed |= node.getFirst().addAll(nonterminal.getFirst());
 
-      HashSet<ARTGrammarElement> tmp = new HashSet<ARTGrammarElement>();
+      HashSet<ARTGrammarElement> tmp = new HashSet<>();
       tmp.addAll(node.getSibling().getFirst());
       tmp.remove(epsilon);
 
@@ -1279,7 +1279,7 @@ public final class ARTGrammar {
         if (newBracketNode == null)
         changed |= node.getFollow().addAll(lhs.getFollow());
         else {
-          HashSet<ARTGrammarElement> tmp1 = new HashSet<ARTGrammarElement>(newBracketNode.getSibling().getFirst());
+          HashSet<ARTGrammarElement> tmp1 = new HashSet<>(newBracketNode.getSibling().getFirst());
           tmp1.addAll(newBracketNode.getSibling().getGuard()); // Added 8/3/24 to ensure follow set comes down
           tmp1.remove(epsilon);
           changed |= node.getFollow().addAll(tmp1); // fold in follow for this bracket
@@ -1300,7 +1300,7 @@ public final class ARTGrammar {
       changed |= node.getFirst().addAll(node.getChild().getFirst());
       if (node instanceof ARTGrammarInstanceOptional || node instanceof ARTGrammarInstanceKleeneClosure) changed |= node.getFirst().add(epsilon);
       if (!(node instanceof ARTGrammarInstanceDoFirst)) {// Do not compute for ( for consistency with V2 although the template does not use them
-        HashSet<ARTGrammarElement> tmp = new HashSet<ARTGrammarElement>(node.getChild().getFirst());
+        HashSet<ARTGrammarElement> tmp = new HashSet<>(node.getChild().getFirst());
         if (tmp.contains(epsilon)) tmp.addAll(node.getSibling().getGuard());
 
         tmp.remove(epsilon);
@@ -1345,13 +1345,13 @@ public final class ARTGrammar {
     // System.out.println(prefixStringMap);
   }
 
-  private Integer elementNumberFromTerm(ARTV3Module ARTV3Module, ARTValueTerm t) {
+  private Integer elementNumberFromTerm(ARTV3Module artV3Module, ARTValueTerm t) {
     if (t == null) return 0;
 
     if (((ARTValueString) t.getPayload()).toString().equals("slot")) return -1;
 
     if (((ARTValueString) t.getPayload()).toString().equals("nonterminal")) {
-      ARTGrammarElement e = getNonterminalNameMap().get(new ARTName(ARTV3Module, termFirstChildLabel(t)));
+      ARTGrammarElement e = getNonterminalNameMap().get(new ARTName(artV3Module, termFirstChildLabel(t)));
       return (e == null) ? 0 : e.getElementNumber();
     }
 
@@ -1476,8 +1476,8 @@ public final class ARTGrammar {
     return chooserRule;
   }
 
-  public ARTGrammarElementNonterminal findNonterminal(ARTV3Module ARTV3Module, String id) {
-    return findNonterminal(new ARTName(ARTV3Module, id));
+  public ARTGrammarElementNonterminal findNonterminal(ARTV3Module artV3Module, String id) {
+    return findNonterminal(new ARTName(artV3Module, id));
   }
 
   public ARTGrammarElementNonterminal findNonterminal(ARTGrammarElementModuleNonterminal moduleNonterminal) {
@@ -1549,7 +1549,7 @@ public final class ARTGrammar {
   }
 
   public ARTGrammarElement getElement(int n) {
-    ;
+
     return elementNumberMap.get(n);
   }
 
@@ -1932,7 +1932,7 @@ public final class ARTGrammar {
       return element.toString();
   }
 
-  private boolean processAbbreviation(ARTV3Module ARTV3Module, ARTGrammarInstance parent, ARTGLLRDTVertex abbreviationVertex) {
+  private boolean processAbbreviation(ARTV3Module artV3Module, ARTGrammarInstance parent, ARTGLLRDTVertex abbreviationVertex) {
     // System.out.println("Processing abbreviation node " + abbreviationVertex + " with label "
     // + artManager.getParser().artGetLabelString(abbreviationVertex.getPayload().getLabel()));
     ARTGLLRDTVertex vertex = abbreviationVertex.getChild();
@@ -1943,7 +1943,7 @@ public final class ARTGrammar {
     parent.addChild(new ARTGrammarInstanceSlot(instanceCount++));
     if (vertexLabel(vertex, "nonterminal"))
       parent.addChild(
-          new ARTGrammarInstanceNonterminal(instanceCount++, findNonterminal(ARTV3Module, ((ARTAT_ART_nonterminal) vertex.getPayload().getAttributes()).v)));
+          new ARTGrammarInstanceNonterminal(instanceCount++, findNonterminal(artV3Module, ((ARTAT_ART_nonterminal) vertex.getPayload().getAttributes()).v)));
     else if (vertexLabel(vertex, "characterTerminal"))
       parent.addChild(
           new ARTGrammarInstanceTerminal(instanceCount++, findTerminalCharacter(((ARTAT_ART_characterTerminal) vertex.getPayload().getAttributes()).v)));

@@ -46,8 +46,8 @@ public class ARTEarleyNFAVertex {
 
   public ARTEarleyNFAVertex(Set<ARTGrammarInstanceSlot> slots, boolean constructedByEpsilonMove) {
     super();
-    this.label = new HashSet<ARTGrammarInstanceSlot>(slots);
-    this.notCore = constructedByEpsilonMove;
+    label = new HashSet<>(slots);
+    notCore = constructedByEpsilonMove;
   }
 
   public HashMap<ARTGrammarElement, Integer> getEpnMap() {
@@ -237,11 +237,11 @@ public class ARTEarleyNFAVertex {
         ARTGrammarElementNonterminal lhs = (ARTGrammarElementNonterminal) slot.getLhsL().getPayload();
         for (ARTGrammarElement e : lhs.getFollow())
           if (e instanceof ARTGrammarElementEoS) {
-            if (redSetMap.get(epsilon) == null) redSetMap.put(epsilon, new HashSet<ARTGrammarElement>());
+            if (redSetMap.get(epsilon) == null) redSetMap.put(epsilon, new HashSet<>());
             redSetMap.get(epsilon).add(lhs);
 
           } else {
-            if (redSetMap.get(e) == null) redSetMap.put(e, new HashSet<ARTGrammarElement>());
+            if (redSetMap.get(e) == null) redSetMap.put(e, new HashSet<>());
             redSetMap.get(e).add(lhs);
           }
       }

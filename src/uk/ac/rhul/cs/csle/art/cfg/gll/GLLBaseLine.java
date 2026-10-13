@@ -38,7 +38,7 @@ public class GLLBaseLine extends AbstractParser {
     derivations = new SPPF(lexicalisations);
 
     inputIndex = 0;
-    cfgNode = lexicalisations.cfgRules.elementToRulesNodeMap.get(lexicalisations.cfgRules.startNonterminal).alt;
+    cfgNode = lexicalisations.cfgRules.elementToRulesNodeMap.get(lexicalisations.cfgRules.getStartNonterminal()).alt;
     stackNode = stacks.getRoot();
     derivationNode = null;
     queueProductionTasks();
@@ -123,7 +123,7 @@ public class GLLBaseLine extends AbstractParser {
   private void retrn() {
     if (stackNode.equals(stacks.getRoot())) {
       if (lexicalisations.cfgRules.acceptingNodeNumbers.contains(cfgNode.num) && (inputIndex == lexicalisations.inputString.length() - 1)) {
-        derivations.setRoot(lexicalisations.cfgRules.elementToRulesNodeMap.get(lexicalisations.cfgRules.startNonterminal),
+        derivations.setRoot(lexicalisations.cfgRules.elementToRulesNodeMap.get(lexicalisations.cfgRules.getStartNonterminal()),
             lexicalisations.inputString.length() - 1);
         inLanguage = true;
       }

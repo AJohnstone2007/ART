@@ -4,7 +4,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 
 public class ARTValueList extends ARTValueCollection {
-  LinkedList<ARTValue> payload = new LinkedList<ARTValue>();
+  LinkedList<ARTValue> payload = new LinkedList<>();
 
   @Override
   public LinkedList<ARTValue> getPayload() {

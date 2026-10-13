@@ -15,11 +15,11 @@ public class ARTGrammarElementNonterminal extends ARTGrammarElement {
   protected ARTV3Module module;
   protected String id;
 
-  protected List<ARTGrammarInstanceCat> productions = new ArrayList<ARTGrammarInstanceCat>();
-  protected Set<ARTGrammarElementAttribute> attributes = new HashSet<ARTGrammarElementAttribute>();
+  protected List<ARTGrammarInstanceCat> productions = new ArrayList<>();
+  protected Set<ARTGrammarElementAttribute> attributes = new HashSet<>();
 
-  private final Set<ARTGrammarElement> first = new HashSet<ARTGrammarElement>();
-  private final Set<ARTGrammarElement> follow = new HashSet<ARTGrammarElement>();
+  private final Set<ARTGrammarElement> first = new HashSet<>();
+  private final Set<ARTGrammarElement> follow = new HashSet<>();
 
   protected boolean used = false;
   protected boolean defined = false;

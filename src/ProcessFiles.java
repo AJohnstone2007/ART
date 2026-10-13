@@ -21,7 +21,7 @@ public class ProcessFiles {
     // System.out.println(k + "\n" + contents.get(k) + "\n\n");
 
     // Produce an independent sorted list so that we can manipulate the contents map
-    var filenames = new ArrayList<String>(contents.keySet());
+    var filenames = new ArrayList<>(contents.keySet());
     Collections.sort(filenames);
 
     // n^2 scan of contents to remove filenames that have duplicate contents
@@ -37,7 +37,7 @@ public class ProcessFiles {
     }
 
     // Re-sort keys
-    filenames = new ArrayList<String>(contents.keySet());
+    filenames = new ArrayList<>(contents.keySet());
     Collections.sort(filenames);
 
     // n^2 scan of contents to remove filenames that do not have a ! in theor contents
@@ -50,7 +50,7 @@ public class ProcessFiles {
     }
 
     // Re-sort keys
-    filenames = new ArrayList<String>(contents.keySet());
+    filenames = new ArrayList<>(contents.keySet());
     Collections.sort(filenames);
 
     // print files in sorted name order
@@ -59,7 +59,7 @@ public class ProcessFiles {
     // // System.out.println("*** " + n + "\n" + contents.get(n));
 
     // print directives
-    Set<String> directives = new HashSet();
+    Set<String> directives = new HashSet<>();
     for (var n : filenames) {
       String c = contents.get(n);
 

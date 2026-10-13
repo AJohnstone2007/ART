@@ -1,10 +1,18 @@
 package uk.ac.rhul.cs.csle.art.util;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.PrintStream;
+import java.nio.ByteBuffer;
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Set;
 
+import uk.ac.rhul.cs.csle.art.fx.AleroException;
 import uk.ac.rhul.cs.csle.art.old.v3.manager.grammar.element.ARTGrammarElement;
 
 public class Util {
@@ -349,4 +357,20 @@ public class Util {
     for (var o : rightSet)
       if (!leftSet.contains(o)) info("Regression: " + rightSetName + " has extra " + o);
   }
+
+  public static String readFile(String filename) throws AleroException {
+    String inputString = "";
+    try {
+      byte[] encoded = Files.readAllBytes(Paths.get(filename));
+      inputString = Charset.forName("ISO-8859-1").newDecoder().decode(ByteBuffer.wrap(encoded)).toString();
+    } catch (FileNotFoundException ex) {
+      throw new AleroException("Unable to open input file " + filename + "\n");
+    } catch (CharacterCodingException e) {
+      throw new AleroException("Encoding error in input file " + filename + "\n");
+    } catch (IOException e) {
+      throw new AleroException("I/O error whilst attempting to read input file " + filename + "\n");
+    }
+    return inputString;
+  }
+
 }

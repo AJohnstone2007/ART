@@ -44,8 +44,9 @@ public class RDSOBFunction extends AbstractParser {
           break;
         case END:
           return true;
-        case ALT, PAR, EOS, KLN, OPT, POS:
-          Util.fatal("internal error - unexpected grammar node in rdsobFunction: " + gn);
+
+        default:
+          Util.error("rdsobFunction found unexpected grammar element " + gn.cfgElement.cfgKind);
         }
       }
     }
@@ -58,7 +59,7 @@ public class RDSOBFunction extends AbstractParser {
 
     inputIndex = 0;
     dnRoot = dn = new DerivationSingletonNode(lexicalisations.cfgRules.endOfStringNode, null);
-    inLanguage = rdsobFunction(lexicalisations.cfgRules.elementToRulesNodeMap.get(lexicalisations.cfgRules.startNonterminal))
+    inLanguage = rdsobFunction(lexicalisations.cfgRules.elementToRulesNodeMap.get(lexicalisations.cfgRules.getStartNonterminal()))
         && lexicalisations.getSlice(inputIndex)[0].cfgElement.number == 0;
     if (!inLanguage) Util.echo("Syntax error at location " + inputIndex, Util.lineNumber(inputIndex, lexicalisations.inputString), lexicalisations.inputString);
   }

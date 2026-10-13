@@ -235,7 +235,7 @@ public class ChooseRules implements DisplayInterface {
       default:
         Util.fatal("Unexpected chooser set: " + chooseSetName);
       }
-      for (var e : ScriptInterpreter.currentCFGRules.elements.keySet())
+      for (var e : ScriptInterpreter.currentCFGRules.elementsAsArray())
         if (collectKinds.contains(e.cfgKind)) set.add(e);
     } else
       set.add(ScriptInterpreter.findCFGElement(firstChild)); // First element is implicit add

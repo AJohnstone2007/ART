@@ -1,7 +1,7 @@
 package uk.ac.rhul.cs.csle.art.old.v3.term;
 
 public class ARTExceptionTermParser extends Exception {
-
+  static final long serialVersionUID = 666;
   private final String errorMessage;
   private final int inputIndex;
   private final String input;

@@ -19,7 +19,6 @@ import uk.ac.rhul.cs.csle.art.old.v3.manager.grammar.ARTGrammar;
 import uk.ac.rhul.cs.csle.art.old.v3.manager.mode.ARTModeGrammarKind;
 import uk.ac.rhul.cs.csle.art.old.v4.util.bitset.ARTBitSet;
 
-@SuppressWarnings("fallthrough")
 public class ARTTGParser extends ARTGLLParserHashPool {
   private static boolean[] ARTSet1;
   private static boolean[] ARTSet2;
@@ -2011,4 +2010,4 @@ public class ARTTGParser extends ARTGLLParserHashPool {
     }
   }
 
-};
+}

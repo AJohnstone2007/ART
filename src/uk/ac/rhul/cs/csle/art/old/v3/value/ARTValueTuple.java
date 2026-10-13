@@ -7,8 +7,9 @@ import java.util.Map;
 
 public class ARTValueTuple extends ARTValueCollection {
 
-  List<ARTValue> payload = new ArrayList<ARTValue>();
+  List<ARTValue> payload = new ArrayList<>();
 
+  @Override
   public List<ARTValue> getPayload() {
     return payload;
   }

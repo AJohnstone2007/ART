@@ -17,6 +17,7 @@ import uk.ac.rhul.cs.csle.art.old.v4.cfg.referenceFamily.grammar.GKind;
 import uk.ac.rhul.cs.csle.art.old.v4.cfg.referenceFamily.grammar.GNode;
 import uk.ac.rhul.cs.csle.art.old.v4.cfg.referenceFamily.grammar.Grammar;
 import uk.ac.rhul.cs.csle.art.old.v4.core.ARTUncheckedException;
+import uk.ac.rhul.cs.csle.art.util.Util;
 
 public class GLLBL extends ReferenceParser {
   @Override
@@ -98,7 +99,7 @@ public class GLLBL extends ReferenceParser {
           gn = gn.seq;
           trace(1, "Index " + i + " Node " + gn.num + " Epsilon - continue thread");
           break;
-        case C, B, T:
+        case C, B, T, TI:
           if (match(gn)) {
             trace(1, "Index " + i + " Node " + gn.num + " " + gn + " Terminal match - continue thread");
             du(1);
@@ -281,6 +282,7 @@ void gllBL() {
      for (GNode tmp = gn; tmp != null; tmp = tmp.alt)
        queueDesc(tmp.seq, i, sn, dn);
      continue nextDescriptor;
+   default: Util.error("gllBL found unexpected grammar element " + gn.elm.kind);
 }}}
 
 void gllBLP() {
@@ -304,6 +306,7 @@ void gllBLP() {
     for (GNode tmp = gn; tmp != null; tmp = tmp.alt)
      queueDesc(tmp.seq, i, sn, dn);
      continue nextDescriptor;
+   default: Util.error("gllBLP found unexpected grammar element " + gn.elm.kind);
  }}}
 
 

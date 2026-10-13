@@ -38,7 +38,6 @@ public class RelationOverNaturals {
 
   // if a->b and b->c then set a->c
   public void transitiveClosure() {
-    @SuppressWarnings("unchecked")
     boolean changed = true;
     while (changed) {
       changed = false;

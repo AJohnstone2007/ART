@@ -43,7 +43,7 @@ public class RewriterESOS extends Rewriter {
     if (relationTerm == 0) throw new ARTUncheckedException("rewrite attempted on null relation");
 
     trace(4, level, "Rewrite call " + ++pp.rewriteAttemptCounter + " " + pp.render(term) + pp.render(relationTerm));
-    if (!pp.cycleCheck.containsKey(relationTerm)) pp.cycleCheck.put(relationTerm, new HashSet<Integer>());
+    if (!pp.cycleCheck.containsKey(relationTerm)) pp.cycleCheck.put(relationTerm, new HashSet<>());
     Set<Integer> cycleSet = pp.cycleCheck.get(relationTerm);
     // if (cycleSet.contains(configuration)) throw new ARTExceptionFatal("cycle detected " +iTerms.toString(configuration) +iTerms.toString(relationTerm));
     cycleSet.add(term);

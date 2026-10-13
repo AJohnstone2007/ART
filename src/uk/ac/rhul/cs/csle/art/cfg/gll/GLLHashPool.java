@@ -102,7 +102,7 @@ public class GLLHashPool extends HashPool {
 
     // 1. Make local references to grammar tables
     endOfStringNodeNi = lexicalisations.cfgRules.endOfStringNode.num;
-    startNonterminalNodeNi = lexicalisations.cfgRules.elementToRulesNodeMap.get(lexicalisations.cfgRules.startNonterminal).num;
+    startNonterminalNodeNi = lexicalisations.cfgRules.elementToRulesNodeMap.get(lexicalisations.cfgRules.getStartNonterminal()).num;
     kindOf = lexicalisations.cfgRules.makeKindsArray();
     altOf = lexicalisations.cfgRules.makeAltsArray();
     seqOf = lexicalisations.cfgRules.makeSeqsArray();
@@ -281,9 +281,9 @@ public class GLLHashPool extends HashPool {
     return true;
   }
 
-  private void enqueueDescriptor(int gn, int i, int sn, int dn) {
+  private void enqueueDescriptor(int gnp, int i, int snp, int dnp) {
     // Util.debug("enqueueDescriptor(" + toStringSlot(gn) + "," + i + ", (" + toStringGSSNode(sn) + "), (" + toStringSPPFNode(dn) + "))");
-    find(descriptorBuckets, descriptorBucketCount, descriptor_SIZE, gn, i, sn, dn);
+    find(descriptorBuckets, descriptorBucketCount, descriptor_SIZE, gnp, i, snp, dnp);
     if (findMadeNew) {
       poolSet(findIndex + descriptor_queue, descriptorQueue);
       descriptorQueue = findIndex;
@@ -359,33 +359,23 @@ public class GLLHashPool extends HashPool {
     return count;
   }
 
-  String toStringSlot(int gn) {
-    return lexicalisations.cfgRules.numberToRulesNodeMap.get(gn).toStringAsProduction();
+  String toStringSlot(int gnp) {
+    return lexicalisations.cfgRules.numberToRulesNodeMap.get(gnp).toStringAsProduction();
   }
 
-  String toStringGSSNode(int sn) {
-    if (sn == 0) return "null GSS node";
-    int gn = poolGet(sn + gssNode_gn);
-    int i = poolGet(sn + gssNode_i);
-
-    return toStringSlot(gn) + ", " + i;
+  String toStringGSSNode(int snp) {
+    if (snp == 0) return "null GSS node";
+    return toStringSlot(poolGet(snp + gssNode_gn)) + ", " + poolGet(snp + gssNode_i);
   }
 
-  String toStringSPPFNode(int dn) {
-    if (dn == 0) return "null SPPF node";
-    int gn = poolGet(dn + sppfNode_gn);
-    int leftExtent = poolGet(dn + sppfNode_leftExt);
-    int rightExtent = poolGet(dn + sppfNode_rightExt);
-
-    return toStringSlot(gn) + ", " + leftExtent + ", " + rightExtent;
+  String toStringSPPFNode(int dnp) {
+    if (dnp == 0) return "null SPPF node";
+    return toStringSlot(poolGet(dnp + sppfNode_gn)) + ", " + poolGet(dnp + sppfNode_leftExt) + ", " + poolGet(dnp + sppfNode_rightExt);
   }
 
   String toStringSPPFPackNode(int n) {
     if (n == 0) return "null SPPF pack node";
-    int gn = poolGet(n + sppfPackNode_gn);
-    int pivot = poolGet(n + sppfPackNode_pivot);
-
-    return lexicalisations.cfgRules.numberToRulesNodeMap.get(gn).toStringAsProduction() + ", " + pivot;
+    return lexicalisations.cfgRules.numberToRulesNodeMap.get(poolGet(n + sppfPackNode_gn)).toStringAsProduction() + ", " + poolGet(n + sppfPackNode_pivot);
   }
 
   @Override

@@ -112,6 +112,7 @@ class RunExp {
                           System.out.println("   " + ss);
                           execute(logFile, ss.split(" "));
                         }
+                        scanner.close();
                       }
                     }
                   } else
@@ -138,13 +139,17 @@ class RunExp {
   }
 
   void fileCat(String dstFilename, File... files) throws IOException {
-    FileChannel dst = new FileOutputStream(dstFilename).getChannel();
+    FileOutputStream dstFile = new FileOutputStream(dstFilename);
+    FileChannel dst = dstFile.getChannel();
     for (var file : files) {
-      FileChannel src = new FileInputStream(file).getChannel();
+      FileInputStream srcFile = new FileInputStream(file);
+      FileChannel src = srcFile.getChannel();
       src.transferTo(0, src.size(), dst);
       src.close();
+      srcFile.close();
     }
     dst.close();
+    dstFile.close();
   }
 
   String getFileType(String filename) {
@@ -282,9 +287,12 @@ class MakeTimeSummary {
         System.out.println("Bad format: " + line);
         continue;
       }
+
+      scanner.close();
+
       var key = new SummaryKey(fields[toolCol], fields[scriptCol], fields[languageCol], fields[grammarCol], fields[stringCol], fields[tweECol],
           fields[algorithmCol], fields[resultCol]);
-      if (summaryMap.get(key) == null) summaryMap.put(key, new ArrayList<Double>());
+      if (summaryMap.get(key) == null) summaryMap.put(key, new ArrayList<>());
       summaryMap.get(key).add(Double.parseDouble(fields[TParseCol])); // Add parse time
       // map.get(key).add(Double.parseDouble(fields[17])); // Add parse chooser time
     }
@@ -353,7 +361,7 @@ class MakeTimeSummary {
       timeSumaryWriter.write("\n");
 
       // Now create latex table data
-      if (tableMap.get(k) == null) tableMap.put(k, new ArrayList<Double>());
+      if (tableMap.get(k) == null) tableMap.put(k, new ArrayList<>());
       tableMap.get(k).add(meanQ123);
       tableMap.get(k).add(stDevQ123);
     }

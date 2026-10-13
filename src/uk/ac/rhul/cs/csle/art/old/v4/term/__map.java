@@ -97,11 +97,11 @@ public class __map extends Value {
 
   @Override
   public Value __cast__map() {
-    return new __map(new HashMap<Value, Value>(javaValue));
+    return new __map(new HashMap<>(javaValue));
   }
 
   @Override
   public Value __cast__mapChain() {
-    return new __mapChain(new HashMap<Value, Value>(javaValue));
+    return new __mapChain(new HashMap<>(javaValue));
   }
 }

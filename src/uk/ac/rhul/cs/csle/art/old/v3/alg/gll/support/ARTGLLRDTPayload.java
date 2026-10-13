@@ -1,5 +1,6 @@
 package uk.ac.rhul.cs.csle.art.old.v3.alg.gll.support;
 
+import uk.ac.rhul.cs.csle.art.old.v3.alg.ARTParserBase;
 import uk.ac.rhul.cs.csle.art.old.v4.util.graph.ARTAbstractGraph;
 
 public class ARTGLLRDTPayload {
@@ -43,17 +44,17 @@ public class ARTGLLRDTPayload {
   public String toStringNoAttributes(ARTAbstractGraph graph) {
     ARTGLLRDT tree = (ARTGLLRDT) graph;
     String ret = ""; // "(" + leftExtent + ":" + rightExtent + " " + label + ") ";
-    if (tree.artGetLabelKind(label) == ARTGLLParserBase.ARTK_EPSILON)
+    if (tree.artGetLabelKind(label) == ARTParserBase.ARTK_EPSILON)
       ret += "#";
-    else if (tree.artGetLabelKind(label) == ARTGLLParserBase.ARTK_BUILTIN_TERMINAL)
+    else if (tree.artGetLabelKind(label) == ARTParserBase.ARTK_BUILTIN_TERMINAL)
       ret += (/* "&" + tree.artGetLabelString(label) + " " + */ tree.artLexeme(leftExtent, rightExtent).trim());
-    else if (tree.artGetLabelKind(label) == ARTGLLParserBase.ARTK_CHARACTER_TERMINAL)
+    else if (tree.artGetLabelKind(label) == ARTParserBase.ARTK_CHARACTER_TERMINAL)
       ret += ("`" + tree.artGetLabelString(label));
-    else if (tree.artGetLabelKind(label) == ARTGLLParserBase.ARTK_CASE_SENSITIVE_TERMINAL)
+    else if (tree.artGetLabelKind(label) == ARTParserBase.ARTK_CASE_SENSITIVE_TERMINAL)
       ret += ("'" + tree.artGetLabelString(label) + "'");
-    else if (tree.artGetLabelKind(label) == ARTGLLParserBase.ARTK_CASE_INSENSITIVE_TERMINAL)
+    else if (tree.artGetLabelKind(label) == ARTParserBase.ARTK_CASE_INSENSITIVE_TERMINAL)
       ret += ("\"" + tree.artGetLabelString(label) + "\"");
-    else if (tree.artGetLabelKind(label) == ARTGLLParserBase.ARTK_NONTERMINAL)
+    else if (tree.artGetLabelKind(label) == ARTParserBase.ARTK_NONTERMINAL)
       ret += (tree.artGetLabelString(label));
     else
       ret += "unknown RDT payload kind";

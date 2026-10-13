@@ -1,6 +1,5 @@
 package uk.ac.rhul.cs.csle.art.old.v4.term;
 
-import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -126,19 +125,12 @@ public final class ITermsLowLevelAPI extends ITerms {
     doneTermIndex = findTerm("__done");
     emptyTermIndex = findTerm("__empty");
 
-   /* valueBoolTrue = new __bool(true);
-    valueBoolFalse = new __bool(false);
-    valueInt32Zero = new __int32(0, 0);
-    valueInt32One = new __int32(1, 0);
-    valueInt32MinusOne = new __int32(-1, 0);
-    valueIntAPZero = new __intAP(new BigInteger("0"));
-    valueIntAPOne = new __intAP(new BigInteger("1"));
-    valueIntAPMinusOne = new __intAP(new BigInteger("-1"));
-    valueBottom = new __bottom();
-    valueDone = new __done();
-    valueEmpty = new __empty();
-    valueBlob = new __blob(emptyTermIndex);
-  */}
+    /*
+     * valueBoolTrue = new __bool(true); valueBoolFalse = new __bool(false); valueInt32Zero = new __int32(0, 0); valueInt32One = new __int32(1, 0);
+     * valueInt32MinusOne = new __int32(-1, 0); valueIntAPZero = new __intAP(new BigInteger("0")); valueIntAPOne = new __intAP(new BigInteger("1"));
+     * valueIntAPMinusOne = new __intAP(new BigInteger("-1")); valueBottom = new __bottom(); valueDone = new __done(); valueEmpty = new __empty(); valueBlob =
+     * new __blob(emptyTermIndex);
+     */}
 
   abstract class ITermAPI {
     public abstract String getSymbolString();

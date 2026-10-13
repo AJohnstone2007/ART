@@ -250,7 +250,7 @@ public class ARTValuePluginSolidModelling extends AbstractValuePlugin {
   double mouseDeltaX;
   double mouseDeltaY;
 
-  private void handleMouse(Scene solidView, final Node root) {
+  private void handleMouse(Scene solidView, final Node rootNode) {
     solidView.setOnMousePressed(new EventHandler<MouseEvent>() {
       @Override
       public void handle(MouseEvent me) {

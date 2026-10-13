@@ -209,7 +209,7 @@ public class PickMesh3D extends Application {
 
     shape.setId(name);
 
-    EventHandler<MouseEvent> moveHandler = new EventHandler<MouseEvent>() {
+    EventHandler<MouseEvent> moveHandler = new EventHandler<>() {
       @Override
       public void handle(MouseEvent event) {
         PickResult res = event.getPickResult();

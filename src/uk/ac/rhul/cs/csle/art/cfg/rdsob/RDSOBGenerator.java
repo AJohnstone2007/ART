@@ -27,7 +27,7 @@ public class RDSOBGenerator {
             + "String[] lexemes = {");
 
     boolean firstLexeme = true;
-    for (CFGElement s : grammar.elements.keySet()) {
+    for (CFGElement s : grammar.elementsAsArray()) {
       if (s.cfgKind != CFGElementKind.TRM_CS) continue;
       if (firstLexeme)
         firstLexeme = false;
@@ -77,7 +77,7 @@ public class RDSOBGenerator {
       text.printf("}\n\n");
     }
 
-    text.print("public void parse(String string) {\n input = new LexerLM().lex(string, lexemes);\n accepted = p_" + grammar.startNonterminal.str
+    text.print("public void parse(String string) {\n input = new LexerLM().lex(string, lexemes);\n accepted = p_" + grammar.getStartNonterminal().str
         + "() && input[i] == 0;\n }\n\n" + "public static void main(String[] args) throws IOException {\n" + " " + className + " parser = new " + className
         + "();\n parser.parse(Files.readString(Paths.get(args[0])));\n"
         + " System.out.println((parser.accepted ? \"Accept\" : \"Reject\")\n    + \" with derivation: \" + parser.dn);\n }\n}");

@@ -6,7 +6,7 @@ import java.util.Set;
 
 public abstract class AbstractRelation<T1, T2> {
   protected Map<T1, Set<T2>> map;
-  protected Set<T2> empty;
+  protected Set<T2> empty = new HashSet<>();
 
   abstract protected Set<T2> makeSet();
 
@@ -55,8 +55,12 @@ public abstract class AbstractRelation<T1, T2> {
     map.get(src).remove(dst);
   }
 
-  public void clear() {
+  public void clearEntireRelation() {
     map.clear();
+  }
+
+  public void clear(T1 src) {
+    map.get(src).clear();
   }
 
   @Override
@@ -102,6 +106,7 @@ public abstract class AbstractRelation<T1, T2> {
     }
   }
 
+  @SuppressWarnings("unlikely-arg-type")
   public Set<T1> cyclic() {
     final Relation<T1, T2> tmp = new Relation<>(this);
     tmp.transitiveClosure();
@@ -109,7 +114,7 @@ public abstract class AbstractRelation<T1, T2> {
     Set<T1> ret = new HashSet<>();
 
     for (var e : tmp.getDomain())
-      if (tmp.get(e).contains(e)) ret.add(e);
+      if (tmp.get(e).contains(e)) ret.add(e); // Note java warning because T1 and T2 are disjoint, so suppressed abive
     return ret;
   }
 }

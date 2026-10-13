@@ -59,6 +59,8 @@ public class AttributeActionInterpreter extends AbstractInterpreter {
 
         lexeme = parser.lexicalisations.lexeme(node.cfgElement, Integer.parseInt(labelElements[1]), Integer.parseInt(labelElements[2]));
         break;
+      default:
+        Util.error("attribute interpreter found unexpected grammar element kind " + node.cfgElement.cfgKind);
       }
       childNumber++;
       // Util.info("Calling action at " + node.toStringAsProduction());

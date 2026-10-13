@@ -102,7 +102,7 @@ public class __list extends Value {
 
   @Override
   public Value __cast__list() {
-    return new __list(new LinkedList<Value>(javaValue));
+    return new __list(new LinkedList<>(javaValue));
   }
 
   @Override

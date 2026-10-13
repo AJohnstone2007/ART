@@ -7,7 +7,6 @@ import uk.ac.rhul.cs.csle.art.old.v3.lex.ARTLexerV3;
  * ARTGeneratedLexer.java
  *
  *******************************************************************************/
-@SuppressWarnings("fallthrough")
 public class ARTV3Lexer extends ARTLexerV3 {
   @Override
   public void artLexicaliseBuiltinInstances() {
@@ -36,4 +35,4 @@ public class ARTV3Lexer extends ARTLexerV3 {
     artBuiltin_SIMPLE_WHITESPACE();
   }
 
-};
+}

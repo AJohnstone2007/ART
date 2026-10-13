@@ -4,6 +4,7 @@ import uk.ac.rhul.cs.csle.art.old.v4.cfg.referenceFamily.DNode;
 import uk.ac.rhul.cs.csle.art.old.v4.cfg.referenceFamily.SNode;
 import uk.ac.rhul.cs.csle.art.old.v4.cfg.referenceFamily.grammar.GKind;
 import uk.ac.rhul.cs.csle.art.old.v4.cfg.referenceFamily.grammar.GNode;
+import uk.ac.rhul.cs.csle.art.util.Util;
 
 //@formatter:off
 public class OSBRDE extends OSBRDParser {
@@ -35,6 +36,7 @@ boolean osbrdE() {
   dn_update(gn.alt.num); gn = retrn();
   if (sn == null) return true;
   break;
+  default: Util.error("osbrdE found unexpected grammar element " + gn.elm.kind);
  }}
 
 void initialise() {

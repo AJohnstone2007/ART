@@ -15,7 +15,6 @@ import uk.ac.rhul.cs.csle.art.old.v4.util.bitset.ARTBitSet;
  * ReferenceGrammarParser.java
  *
  *******************************************************************************/
-@SuppressWarnings("fallthrough")
 public class ReferenceGrammarParser extends ARTGLLParserHashPool {
   private static boolean[] ARTSet1;
   private static boolean[] ARTSet2;
@@ -6684,4 +6683,4 @@ public class ReferenceGrammarParser extends ARTGLLParserHashPool {
     }
   }
 
-};
+}
