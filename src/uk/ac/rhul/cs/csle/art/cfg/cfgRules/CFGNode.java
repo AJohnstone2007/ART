@@ -76,7 +76,7 @@ public class CFGNode {
     case EOS, ALT, PAR, KLN, OPT, POS:
       ret += cfgElement.cfgKind;
       break;
-    case TRM_CS, TRM_CH, TRM_BI, NONTERMINAL, EPSILON:
+    case TERM_CS, TERM_CH, TERM_BI, NONTERMINAL, EPSILON:
       ret += cfgElement.cfgKind + "\n" + cfgElement.str + giftToString();
       break;
     case END:
@@ -133,7 +133,7 @@ public class CFGNode {
       }
       if (tmpSeq.cfgElement.cfgKind == CFGElementKind.END) return;
       // Print space except between character terminals
-      if ((tmpSeq.cfgElement.cfgKind == CFGElementKind.TRM_CH) && tmpSeq.previous.cfgElement.cfgKind == CFGElementKind.TRM_CH)
+      if ((tmpSeq.cfgElement.cfgKind == CFGElementKind.TERM_CH) && tmpSeq.previous.cfgElement.cfgKind == CFGElementKind.TERM_CH)
         ;
       else
         sb.append(" ");

@@ -175,7 +175,7 @@ public class SPPF extends AbstractDerivations {
   }
 
   private String readableLabel(SPPFSymbolNode sppfn, CFGNode gn) {
-    return (gn.cfgElement.cfgKind == CFGElementKind.TRM_BI) ? lexicalisations.lexeme(sppfn.grammarNode.cfgElement, sppfn.leftExtent, sppfn.rightExtent)
+    return (gn.cfgElement.cfgKind == CFGElementKind.TERM_BI) ? lexicalisations.lexeme(sppfn.grammarNode.cfgElement, sppfn.leftExtent, sppfn.rightExtent)
         : gn.cfgElement.str;
   }
 
@@ -259,7 +259,7 @@ public class SPPF extends AbstractDerivations {
     for (SPPFSymbolNode s : nodes.keySet()) {
       switch (s.grammarNode.cfgElement.cfgKind) {
       // Dodgy - how do we test the flavour of an SPPF node?
-      case TRM_CS, TRM_CI, TRM_CH, TRM_BI:
+      case TERM_CS, TERM_CI, TERM_CH, TERM_BI:
         sppfTerminalNodeCount++;
         break;
       case EPSILON:

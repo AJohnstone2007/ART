@@ -174,14 +174,14 @@ public class ScriptInterpreter {
 
     ret.addAction("cfgEpsilon", (Integer t) -> currentCFGRules.actionSEQ(CFGElementKind.EPSILON, "#", t), null, null);
     ret.addActionBreak("cfgNonterminal", (Integer t) -> currentCFGRules.actionSEQ(CFGElementKind.NONTERMINAL, childSymbolString(t), t), null, null);
-    ret.addActionBreak("cfgCaseSensitiveTerminal", (Integer t) -> currentCFGRules.actionSEQ(CFGElementKind.TRM_CS, childSymbolString(t), t), null, null);
-    ret.addActionBreak("cfgBuiltinTerminal", (Integer t) -> currentCFGRules.actionSEQ(CFGElementKind.TRM_BI, childSymbolString(t), t), null, null);
+    ret.addActionBreak("cfgCaseSensitiveTerminal", (Integer t) -> currentCFGRules.actionSEQ(CFGElementKind.TERM_CS, childSymbolString(t), t), null, null);
+    ret.addActionBreak("cfgBuiltinTerminal", (Integer t) -> currentCFGRules.actionSEQ(CFGElementKind.TERM_BI, childSymbolString(t), t), null, null);
 
-    ret.addActionBreak("cfgCharacterTerminal", (Integer t) -> currentCFGRules.actionSEQ(CFGElementKind.TRM_CH, childSymbolString(t), t), null, null);
-    ret.addActionBreak("cfgCharacterSetTerminal", (Integer t) -> currentCFGRules.actionSEQ(CFGElementKind.TRM_CH_SET, childSymbolString(t), t), null, null);
-    ret.addActionBreak("cfgCharacterAntiSetTerminal", (Integer t) -> currentCFGRules.actionSEQ(CFGElementKind.TRM_CH_ANTI_SET, childSymbolString(t), t), null,
+    ret.addActionBreak("cfgCharacterTerminal", (Integer t) -> currentCFGRules.actionSEQ(CFGElementKind.TERM_CH, childSymbolString(t), t), null, null);
+    ret.addActionBreak("cfgCharacterSetTerminal", (Integer t) -> currentCFGRules.actionSEQ(CFGElementKind.TERM_CH_SET, childSymbolString(t), t), null, null);
+    ret.addActionBreak("cfgCharacterAntiSetTerminal", (Integer t) -> currentCFGRules.actionSEQ(CFGElementKind.TERM_CH_ANTI_SET, childSymbolString(t), t), null,
         null);
-    ret.addActionBreak("cfgCharacterOutOfBand", (Integer t) -> currentCFGRules.actionSEQ(CFGElementKind.TRM_CH_UOB, "!{}", t), null, null);
+    ret.addActionBreak("cfgCharacterOutOfBand", (Integer t) -> currentCFGRules.actionSEQ(CFGElementKind.TERM_CH_UOB, "!{}", t), null, null);
     ret.addActionBreak("cfgStartOfString", (Integer t) -> currentCFGRules.actionSEQ(CFGElementKind.SOS, "$$", t), null, null);
 
     ret.addAction("cfgDoFirst", (Integer t) -> currentCFGRules.actionSEQ(CFGElementKind.PAR, currentCFGRules.nextUniqueLabel(), t), null, null);
@@ -844,19 +844,19 @@ public class ScriptInterpreter {
     case "cfgEpsilon":
       return currentCFGRules.findElement(CFGElementKind.EPSILON, "#");
     case "cfgCaseSensitiveTerminal":
-      return currentCFGRules.findElement(CFGElementKind.TRM_CS, iTerms.termSymbolString(iTerms.termChildren(term)[0]));
+      return currentCFGRules.findElement(CFGElementKind.TERM_CS, iTerms.termSymbolString(iTerms.termChildren(term)[0]));
     case "cfgCaseInsensitiveTerminal":
-      return currentCFGRules.findElement(CFGElementKind.TRM_CI, iTerms.termSymbolString(iTerms.termChildren(term)[0]));
+      return currentCFGRules.findElement(CFGElementKind.TERM_CI, iTerms.termSymbolString(iTerms.termChildren(term)[0]));
     case "cfgBuiltinTerminal":
-      return currentCFGRules.findElement(CFGElementKind.TRM_BI, iTerms.termSymbolString(iTerms.termChildren(term)[0]));
+      return currentCFGRules.findElement(CFGElementKind.TERM_BI, iTerms.termSymbolString(iTerms.termChildren(term)[0]));
     case "cfgNonterminal":
       return currentCFGRules.findElement(CFGElementKind.NONTERMINAL, iTerms.termSymbolString(iTerms.termChildren(term)[0]));
     case "cfgCharacterTerminal":
-      return currentCFGRules.findElement(CFGElementKind.TRM_CH, iTerms.termSymbolString(iTerms.termChildren(term)[0]));
+      return currentCFGRules.findElement(CFGElementKind.TERM_CH, iTerms.termSymbolString(iTerms.termChildren(term)[0]));
     case "cfgCharacterSetTerminal":
-      return currentCFGRules.findElement(CFGElementKind.TRM_CH_SET, iTerms.termSymbolString(iTerms.termChildren(term)[0]));
+      return currentCFGRules.findElement(CFGElementKind.TERM_CH_SET, iTerms.termSymbolString(iTerms.termChildren(term)[0]));
     case "cfgCharacterAntiSetTerminal":
-      return currentCFGRules.findElement(CFGElementKind.TRM_CH_ANTI_SET, iTerms.termSymbolString(iTerms.termChildren(term)[0]));
+      return currentCFGRules.findElement(CFGElementKind.TERM_CH_ANTI_SET, iTerms.termSymbolString(iTerms.termChildren(term)[0]));
 
     default:
       Util.fatal("Unknown CFG element type " + iTerms.termSymbolString(term));

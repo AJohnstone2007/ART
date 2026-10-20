@@ -22,7 +22,6 @@ public class GLLHashPool extends HashPool {
   int elementOf[];
   boolean firstOf[][];
   boolean followOf[][];
-  boolean secondOf[];
 
   /** Constant field offsets. In each case, offset zero links to next in hash chain ********/
   final int gssNode_gn = 1; // Key
@@ -110,7 +109,6 @@ public class GLLHashPool extends HashPool {
     elementOf = lexicalisations.cfgRules.makeElementOfArray();
     firstOf = lexicalisations.cfgRules.makeFirstOfArray();
     followOf = lexicalisations.cfgRules.makeFollowOfArray();
-    secondOf = lexicalisations.cfgRules.makeSecondOfArray();
 
     // 1a. (Debug): print precomputed tables
     // Util.debug("CFGRules:" + lexicalisations.cfgRules);

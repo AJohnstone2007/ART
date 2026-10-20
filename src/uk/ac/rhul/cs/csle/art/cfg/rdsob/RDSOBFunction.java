@@ -24,7 +24,7 @@ public class RDSOBFunction extends AbstractParser {
       CFGNode gn = tmp.seq;
       while (true) {
         switch (gn.cfgElement.cfgKind) {
-        case TRM_BI, TRM_CH, TRM_CS, TRM_CI:
+        case TERM_BI, TERM_CH, TERM_CS, TERM_CI:
           if (lexicalisations.getSlice(inputIndex)[0].cfgElement == gn.cfgElement) {
             Util.trace(8, "Match " + gn);
             inputIndex++;

@@ -21,7 +21,7 @@ public class CFGElement implements Comparable<Object> {
     super();
     this.cfgKind = kind;
     switch (this.cfgKind) {
-    case TRM_CH_SET, TRM_CH_ANTI_SET:
+    case TERM_CH_SET, TERM_CH_ANTI_SET:
       set = new TreeSet<>();
       // Util.debug("Processing to set: " + s);
       for (var c : Util.unescapeString(s).toCharArray())
@@ -48,19 +48,19 @@ public class CFGElement implements Comparable<Object> {
       return "$";
     case SOS, ALT, END, PAR, OPT, POS, KLN:
       return cfgKind.toString();
-    case TRM_CS:
+    case TERM_CS:
       return "'" + Util.escapeString(str) + "'";
-    case TRM_CI:
+    case TERM_CI:
       return "\"" + Util.escapeString(str) + "\"";
-    case TRM_CH:
+    case TERM_CH:
       return "`" + Util.escapeString(str);
-    case TRM_CH_SET:
+    case TERM_CH_SET:
       return "{" + setToString() + "}";
-    case TRM_CH_ANTI_SET:
+    case TERM_CH_ANTI_SET:
       return "~{" + setToString() + "}";
-    case TRM_CH_UOB:
+    case TERM_CH_UOB:
       return "!{}" + Util.escapeString(str);
-    case TRM_BI:
+    case TERM_BI:
       return "&" + Util.escapeString(str);
     case NONTERMINAL:
       return Util.escapeString(str);

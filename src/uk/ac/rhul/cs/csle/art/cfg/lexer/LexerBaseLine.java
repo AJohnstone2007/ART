@@ -57,13 +57,13 @@ public class LexerBaseLine extends AbstractLexer {
     for (var e : lexicalisations.cfgRules.elementsAsArray()) {
       // Util.debug("Lexer at " + inputIndex + " testing " + e.toStringDetailed());
       switch (e.cfgKind) {
-      case TRM_CS, TRM_CI, TRM_BI, TRM_CH:
+      case TERM_CS, TERM_CI, TERM_BI, TERM_CH:
         inputIndex = lexemeStart;
         tryTokenMatch(e);
         if (inputIndex != lexemeStart) {// Matched?
           // Util.debug("constructTWESlice() matched " + e + " with right extent " + inputIndex + " - " + inputString.substring(lexemeStart, inputIndex));
           lexemeEnd = inputIndex;
-          if (e.cfgKind != CFGElementKind.TRM_CH) whitespaceLongstMatch(); // absorb trailing whitespace
+          if (e.cfgKind != CFGElementKind.TERM_CH) whitespaceLongstMatch(); // absorb trailing whitespace
           ret.add(new TWESetElement(e, lexemeStart, lexemeEnd, inputIndex));
           hasSlice[inputIndex] = true; // Mark for downstream processing
         }
@@ -91,25 +91,25 @@ public class LexerBaseLine extends AbstractLexer {
     default:
       Util.fatal("tryTokenMatch() on cfgElement with unexpected cfgKind " + e);
       break;
-    case TRM_CS:
+    case TERM_CS:
       match_SINGLETON_CASE_SENSITIVE(e.str);
       break;
-    case TRM_CI:
+    case TERM_CI:
       match_SINGLETON_CASE_INSENSITIVE(e.str);
       break;
-    case TRM_CH:
+    case TERM_CH:
       match_CHARACTER(e.str);
       break;
-    case TRM_CH_SET:
+    case TERM_CH_SET:
       match_CHARACTER_SET(e.set);
       break;
-    case TRM_CH_ANTI_SET:
+    case TERM_CH_ANTI_SET:
       match_CHARACTER_SET(e.set); // care:note that anti-sets look for characters in the set
       break;
     case NONTERMINAL:
       Util.fatal("tryTokenMatch() in class " + this.getClass().getSimpleName() + " can never support paraterminals; try using !lexer gllRecogniser instead");
       break;
-    case TRM_BI:
+    case TERM_BI:
       switch (e.str) {
       case "ID":
         match_ID();

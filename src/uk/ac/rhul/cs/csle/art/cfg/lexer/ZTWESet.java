@@ -37,7 +37,7 @@ public class ZTWESet {
       if (slice != null) for (var e : slice)
         for (var f : slice)
           if ((e.rightExtent > f.rightExtent)
-              || (e.rightExtent == f.rightExtent && e.cfgElement.cfgKind != CFGElementKind.TRM_BI && f.cfgElement.cfgKind == CFGElementKind.TRM_BI))
+              || (e.rightExtent == f.rightExtent && e.cfgElement.cfgKind != CFGElementKind.TERM_BI && f.cfgElement.cfgKind == CFGElementKind.TERM_BI))
             f.suppressed = true;
     suppressDeadPaths();
   }

@@ -70,11 +70,11 @@ public class RDSOBOracleGenerator {
               text.printf("\n  if (parse_%s()) {", seq.cfgElement.str);
               braceCount++;
               break;
-            case TRM_CS:
+            case TERM_CS:
               text.printf("\n  if (match(\"%s\")) {", seq.cfgElement.str);
               braceCount++;
               break;
-            case TRM_BI:
+            case TERM_BI:
               text.printf("\n  if (builtIn_%s()) {", seq.cfgElement.str);
               braceCount++;
               break;
@@ -130,10 +130,10 @@ public class RDSOBOracleGenerator {
               else
                 text.printf("    semantics_%s();\n", seq.cfgElement.str);
               break;
-            case TRM_CS:
+            case TERM_CS:
               text.printf("    match(\"%s\");\n", seq.cfgElement.str);
               break;
-            case TRM_BI:
+            case TERM_BI:
               text.printf("    builtIn_%s();\n", seq.cfgElement.str);
               break;
             case EPSILON:

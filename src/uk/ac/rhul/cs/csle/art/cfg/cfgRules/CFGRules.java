@@ -23,15 +23,15 @@ import uk.ac.rhul.cs.csle.art.util.relation.RelationOrdered;
 public final class CFGRules implements DisplayInterface { // class made final to avoid this-escape warning messages
   /************************************************************************************************
    *
-   * Fields hard-set by the constructor
+   * Fields hard-set by the constructor - all private with limited access
    *
    ***********************************************************************************************/
   private static int nextFreeCFGRulesNumber = 1; // Global count of instances
   public final int cfgRulesNumber; // This instance's number
   public final CFGRulesKind cfgRulesKind; // one of SCRIPT, USER, LEXER, PARSER her emust be one SCRIPT. There may be mant USER. Only USER can have subgrammars
-  private boolean clean = false; // reset at initialisation; true by normalise(); reset by anything that touches the data stuctures
+  private boolean normalised = false; // reset at initialisation; set by normalise(); reset by anything that touches the data stuctures
 
-  private final int nextGeneratedNonterminalNumber = 1;
+  // private final int nextGeneratedNonterminalNumber = 1; // No longr used?
 
   private int nextUniqueLabelNumber = 0;
 
@@ -64,7 +64,7 @@ public final class CFGRules implements DisplayInterface { // class made final to
   }
 
   public void addCharacter(char c) {
-    clean = false;
+    normalised = false;
     characterSet.add(c);
   }
 
@@ -81,7 +81,7 @@ public final class CFGRules implements DisplayInterface { // class made final to
   private final Map<String, Set<Integer>> signatures = new TreeMap<>(); // A set of signatures for each constructor keyed on constructor name
 
   public void addSignature(int term) {
-    clean = false;
+    normalised = false;
     String constructor = ScriptInterpreter.iTerms.termSymbolString(term);
 
     if (signatures.get(constructor) == null) signatures.put(constructor, new HashSet<>());
@@ -92,7 +92,7 @@ public final class CFGRules implements DisplayInterface { // class made final to
   private final Set<CFGElement> paraterminals = new TreeSet<>();
 
   public void addParaterminal(CFGElement e) {
-    clean = false;
+    normalised = false;
     paraterminals.add(e);
   }
 
@@ -103,7 +103,7 @@ public final class CFGRules implements DisplayInterface { // class made final to
   private final Set<CFGElement> declaredAsTokens = new TreeSet<>();
 
   public void addToken(CFGElement e) {
-    clean = false;
+    normalised = false;
     declaredAsTokens.add(e);
   }
 
@@ -111,13 +111,13 @@ public final class CFGRules implements DisplayInterface { // class made final to
   private final Set<CFGElement> whitespaces = new TreeSet<>();
 
   public void clearWhitespaces() {
-    clean = false;
+    normalised = false;
     whitespaces.clear();
     seenWhitespaceDirective = true;
   }
 
   public void addWhitespaces(CFGElement e) {
-    clean = false;
+    normalised = false;
     whitespaces.add(e);
     seenWhitespaceDirective = true;
   }
@@ -133,7 +133,7 @@ public final class CFGRules implements DisplayInterface { // class made final to
   }
 
   public void setFilePrelude(String filePrelude) {
-    clean = false;
+    normalised = false;
     this.filePrelude = filePrelude;
   }
 
@@ -144,18 +144,18 @@ public final class CFGRules implements DisplayInterface { // class made final to
   }
 
   public void setClassPrelude(String classPrelude) {
-    clean = false;
+    normalised = false;
     this.classPrelude = classPrelude;
   }
 
   private CFGElement startNonterminal = null;
 
   public CFGElement getStartNonterminal() {
-    clean = false;
     return startNonterminal;
   }
 
   public void setStartNonterminal(CFGElement startNonterminal) {
+    normalised = false;
     this.startNonterminal = startNonterminal;
   }
 
@@ -164,17 +164,17 @@ public final class CFGRules implements DisplayInterface { // class made final to
    * Static fields that are constant across all instances and thus do not need to be cloned
    *
    ***********************************************************************************************/
-  private final static Set<CFGElementKind> terminalKinds = Set.of(CFGElementKind.TRM_BI, CFGElementKind.TRM_CH, CFGElementKind.TRM_CS, CFGElementKind.TRM_CI,
-      CFGElementKind.TRM_CH_SET, CFGElementKind.TRM_CH_ANTI_SET);
+  private final static Set<CFGElementKind> terminalKinds = Set.of(CFGElementKind.TERM_BI, CFGElementKind.TERM_CH, CFGElementKind.TERM_CS, CFGElementKind.TERM_CI,
+      CFGElementKind.TERM_CH_SET, CFGElementKind.TERM_CH_ANTI_SET);
   private final static Set<CFGElementKind> bracketKinds = Set.of(CFGElementKind.PAR, CFGElementKind.OPT, CFGElementKind.KLN, CFGElementKind.POS);
-  private final static Set<CFGElementKind> selfFirst = Set.of(CFGElementKind.TRM_BI, CFGElementKind.TRM_CH, CFGElementKind.EOS, CFGElementKind.TRM_CS,
-      CFGElementKind.TRM_CI, CFGElementKind.EPSILON);
+  // private final static Set<CFGElementKind> selfFirst = Set.of(CFGElementKind.TRM_BI, CFGElementKind.TRM_CH, CFGElementKind.EOS, CFGElementKind.TRM_CS,
+  // CFGElementKind.TRM_CI, CFGElementKind.EPSILON); // Not used
   private final static Set<CFGElementKind> scaffoldingKinds = Set.of(CFGElementKind.SOS, CFGElementKind.EOS, CFGElementKind.EPSILON, CFGElementKind.ALT,
       CFGElementKind.END, CFGElementKind.PAR, CFGElementKind.OPT, CFGElementKind.POS, CFGElementKind.KLN);
   private final static Set<CFGElementKind> doNotCloneKinds = Set.of(CFGElementKind.ALT, CFGElementKind.END, CFGElementKind.PAR, CFGElementKind.OPT,
       CFGElementKind.POS, CFGElementKind.KLN);
 
-  // These integer literals are use dby gllHashPool
+  // These integer literals are used by gllHashPool instead of the enumeration elements
   public static final int SOS = 0;
   public static final int EOS = 1;
   public static final int EPSILON = 2;
@@ -197,6 +197,8 @@ public final class CFGRules implements DisplayInterface { // class made final to
   /************************************************************************************************
    *
    * Fields that are computed by !try or normalise() and thus do not need to be cloned
+   *
+   * TODO: Currently public, but need to be reined in
    *
    ***********************************************************************************************/
   // fields relating to the enumeration
@@ -253,6 +255,7 @@ public final class CFGRules implements DisplayInterface { // class made final to
    *
    ***********************************************************************************************/
 
+  /* Main constructor */
   public CFGRules(CFGRulesKind cfgRulesKind) { // Ab initio constructor for an empty rules set
     cfgRulesNumber = nextFreeCFGRulesNumber++;
     // Util.debug("Primary CFGRules constructor " + cfgRulesNumber + " " + cfgRulesKind);
@@ -267,6 +270,8 @@ public final class CFGRules implements DisplayInterface { // class made final to
   }
 
   /*
+   * Cloning constructor
+   *
    * This is a copy constuctor which makes a fresh set of elements and optionally modifies the rules as they are copied It is important that the terminal and
    * paraterminal numberings match the source element numberings because this constructor is used to create the lexer and parser sub-grammars which need to be
    * in sync
@@ -286,7 +291,7 @@ public final class CFGRules implements DisplayInterface { // class made final to
     endOfStringNode.seq = endOfStringNode; // trick to ensure initial call collects rootNode
 
     for (var e : src.elements.keySet()) // Make new elements and collect TRM_CS elements
-      if (character && e.cfgKind == CFGElementKind.TRM_CS)
+      if (character && e.cfgKind == CFGElementKind.TERM_CS)
         terminalNumbers.put(e.str, 0);
       else if (!doNotCloneKinds.contains(e.cfgKind)) findElement(e.cfgKind, e.str);
 
@@ -333,6 +338,7 @@ public final class CFGRules implements DisplayInterface { // class made final to
         actionLHS(n.str);
         cloneGrammarRulesRec(src, src.elementToRulesNodeMap.get(n).alt, character, createParaterminals, bnfLeft, bnfRight);
       }
+    // TODO: no rules are ever queued so what is going on?
     dequeueRules(src, cfgRulesKind, character, createParaterminals, bnfLeft, bnfRight);
     if (character) { // We've handled whitespace explictly
       whitespaces.clear();
@@ -342,7 +348,7 @@ public final class CFGRules implements DisplayInterface { // class made final to
 
   private void trm_CS_to_TRM_CH(String s, boolean addWS) {
     for (int i = 0; i < s.length(); i++)
-      actionSEQ(CFGElementKind.TRM_CH, s.substring(i, i + 1), ScriptInterpreter.iTerms.termEmpty);
+      actionSEQ(CFGElementKind.TERM_CH, s.substring(i, i + 1), ScriptInterpreter.iTerms.termEmpty);
     if (addWS) actionSEQ(CFGElementKind.NONTERMINAL, "ART_0", ScriptInterpreter.iTerms.termEmpty);
   }
 
@@ -370,7 +376,7 @@ public final class CFGRules implements DisplayInterface { // class made final to
       cloneGrammarRulesRec(src, cfgNode.alt, character, createParaterminals, closureLeft, closureRight);
       cloneGrammarRulesRec(src, cfgNode.seq, character, createParaterminals, closureLeft, closureRight);
       break;
-    case TRM_CS:
+    case TERM_CS:
       if (character) {
         // Util.debug("Expanding to characters: " + cfgNode);
         if (createParaterminals)
@@ -402,7 +408,7 @@ public final class CFGRules implements DisplayInterface { // class made final to
     }
   }
 
-  private void dequeueRules(CFGRules src, CFGRulesKind cfgRulesKind, boolean character, boolean createParaterminals, boolean closureLeft,
+  private void dequeueRules(CFGRules src, CFGRulesKind cfgRulesKindP, boolean character, boolean createParaterminals, boolean closureLeft,
       boolean closureRight) {
     QueueRuleElement ruleElement;
     while ((ruleElement = listRules.poll()) != null) {
@@ -412,33 +418,258 @@ public final class CFGRules implements DisplayInterface { // class made final to
     }
   }
 
+  /*
+   * End of constructors
+   */
+
+  /************************************************************************************************
+   *
+   * Utility routines
+   *
+   ***********************************************************************************************/
+  public boolean isEmpty() {
+    return elementToRulesNodeMap.keySet().isEmpty();
+  }
+
+  public static boolean isLHS(CFGNode gn) {
+    if (gn == null) return false;
+    return gn.cfgElement != null && gn.cfgElement.cfgKind == CFGElementKind.NONTERMINAL && gn.seq == null;
+  }
+
+  /************************************************************************************************
+   *
+   * Action routines called from the script term traverser
+   *
+   *************************************************************************************************/
+  public CFGNode workingNode;
+  public GIFTKind workingFold = GIFTKind.NONE;
+  // public int workingAction = 0;
+
+  CFGNode mostRecentLHS;
+
+  public CFGElement findElement(CFGElementKind kind, String s) {
+    CFGElement candidate = new CFGElement(kind, s);
+    if (elements.get(candidate) == null) elements.put(candidate, candidate);
+    var ret = elements.get(candidate);
+
+    switch (kind) { // Create individual character terminals from the contents of the set
+    case TERM_CH_SET, TERM_CH_ANTI_SET:
+      for (var c : ret.set)
+        findElement(CFGElementKind.TERM_CH, "" + c);
+      break;
+    default:
+      ; // skip everything else
+    }
+    return ret;
+  }
+
+  LinkedList<CFGNode> stack = new LinkedList<>();
+
+  public void actionLHS(int t) {
+    actionLHS(ScriptInterpreter.childSymbolString(t));
+    if (ScriptInterpreter.iTerms.termArity(t) == 2) // Is there an attribute declaration?
+      for (int i = 0; i < ScriptInterpreter.iTerms.termArity(ScriptInterpreter.iTerms.subterm(t, 1)); i++) {
+        String typeParameter = "";
+        if (ScriptInterpreter.iTerms.termArity(ScriptInterpreter.iTerms.subterm(t, 1, i)) == 3)
+          typeParameter = ScriptInterpreter.iTerms.termSymbolString(ScriptInterpreter.iTerms.subterm(t, 1, i, 2));
+        mostRecentLHS.cfgElement.attributes.put(ScriptInterpreter.iTerms.termSymbolString(ScriptInterpreter.iTerms.subterm(t, 1, i, 0)),
+            ScriptInterpreter.iTerms.termSymbolString(ScriptInterpreter.iTerms.subterm(t, 1, i, 1)) + typeParameter);
+      }
+  }
+
+  public void actionLHS(String id) {
+    CFGElement element = findElement(CFGElementKind.NONTERMINAL, id);
+    defined.add(element);
+    if (getStartNonterminal() == null) setStartNonterminal(element);
+    workingNode = elementToRulesNodeMap.get(element);
+    if (workingNode == null) elementToRulesNodeMap.put(element, actionSEQ(CFGElementKind.NONTERMINAL, id, 0));
+    mostRecentLHS = elementToRulesNodeMap.get(element);
+    normalised = false;
+
+  }
+
+  public void actionALT() {
+    stack.push(workingNode);
+    while (workingNode.alt != null) // Maintain specification order by adding new alternate at the end
+      workingNode = workingNode.alt;
+    workingNode = new CFGNode(this, CFGElementKind.ALT, nextUniqueLabel(), 0, workingFold, null, workingNode);
+    workingFold = GIFTKind.NONE;
+    normalised = false;
+  }
+
+  public CFGNode actionSEQ(CFGElementKind kind, String str, Integer actionAsTerm) {
+    // Util.debug("Update working node with kind " + kind + " string " + str + " and slot term " + slotTerm);
+    workingNode = new CFGNode(this, kind, str, actionAsTerm, workingFold, workingNode, null);
+    if (kind != CFGElementKind.END) used.add(workingNode.cfgElement);
+    workingFold = GIFTKind.NONE;
+    normalised = false;
+    return workingNode;
+  }
+
+  public void actionAttribute(String name, String type) {
+  }
+
+  public void actionEND(String actions) {
+    actionSEQ(CFGElementKind.END, "", 0);
+    workingNode = stack.pop();
+    normalised = false;
+  }
+
+  /************************************************************************************************
+   *
+   * Normalisation
+   *
+   ***********************************************************************************************/
   public void normalise() { // Compute the fields that are not directly set by the script interpeter
-    if (clean) return;
-    // Util.debug("Normalising cfgRulesNumber " + cfgRulesNumber + " " + cfgRulesKind);
+    if (normalised) return;
+    Util.debug("Normalising cfgRulesNumber " + cfgRulesNumber + " " + cfgRulesKind);
     if (!seenWhitespaceDirective) {
-      // Util.info("Adding default whitespace handling");
-      whitespaces.add(findElement(CFGElementKind.TRM_BI, "SIMPLE_WHITESPACE"));
+      Util.info("Adding default whitespace handling");
+      whitespaces.add(findElement(CFGElementKind.TERM_BI, "SIMPLE_WHITESPACE"));
     }
 
-    derivesExactly = new Relation<>();
-
-    // Add singleton grammar nodes for terminals, # and epsilon. These are used by the SPPF.
-    for (CFGElement e : elements.keySet())
-      if (e.cfgKind == CFGElementKind.TRM_BI || e.cfgKind == CFGElementKind.TRM_CS || e.cfgKind == CFGElementKind.TRM_CI || e.cfgKind == CFGElementKind.TRM_CH
-          || e.cfgKind == CFGElementKind.TRM_CH_SET || e.cfgKind == CFGElementKind.TRM_CH_ANTI_SET || e.cfgKind == CFGElementKind.EPSILON)
-        elementToRulesNodeMap.put(e, new CFGNode(this, e.cfgKind, e.str, 0, GIFTKind.NONE, null, null));
+    // Add implicit aspects of the rules
+    normaliseAddSingletonNodes();
+    normaliseAddCharacters();
 
     // Element and node numbering
     nextFreeEnumerationElement = 0;
-    numberElementsAndNodes();
-    setEndNodeLinks();
+    normaliseNumberElementsAndNodes();
+    normaliseSetEndNodeLinks();
 
+    // Set lhsOf
+    for (CFGElement ge : elements.keySet())
+      normaliseComputeLHSOfRec(ge, elementToRulesNodeMap.get(ge));
+
+    normaliseSetAcceptingNodes();
+    normaliseComputePositionalAcceptingAttributes();
+
+    // Look for dubious literals which contain whitespace and issue warnings not errors - there may be situations where that is valid
+    if (cfgRulesKind == CFGRulesKind.USER) for (var e : elements.keySet())
+      if (e.cfgKind == CFGElementKind.TERM_CI || e.cfgKind == CFGElementKind.TERM_CS)
+        if (Util.containsWhitespace(e.str)) Util.warning("Context free terminal contains whitespace: " + e);
+
+    normaliseComputeReachabilities();
+    normaliseComputeAndCheckParaterminalSets();
+    derivesExactly = new Relation<>();
+    normaliseComputeCyclicSlots();
+    normaliseCollectAndCheckAttributes();
+    if (cfgRulesKind == CFGRulesKind.USER) normaliseConstructSubgrammars();
+    normalised = true;
+  }
+
+  /************************************************************************************************
+   *
+   * Instance ordering and linking
+   *
+   ***********************************************************************************************/
+  private void normaliseNumberElementsAndNodes() {
+    for (CFGElement s : elements.keySet()) {
+      s.number = nextFreeEnumerationElement++;
+      if (terminalKinds.contains(s.cfgKind)) lexSize = s.number;
+      // Util.info("Enumerating grammar element " + s.ei + ": " + s.str);
+    }
+    lexSize++;
+
+    numberToRulesNodeMap.put(endOfStringNode.num = nextFreeEnumerationElement++, endOfStringNode);
+    for (CFGElement n : elementToRulesNodeMap.keySet())
+      numberElementsAndNodesRec(elementToRulesNodeMap.get(n));
+  }
+
+  private void numberElementsAndNodesRec(CFGNode node) {
+    if (node != null) {
+      numberToRulesNodeMap.put(node.num = nextFreeEnumerationElement++, node);
+      if (node.cfgElement.cfgKind != CFGElementKind.END) {
+        numberElementsAndNodesRec(node.seq);
+        numberElementsAndNodesRec(node.alt);
+      }
+    }
+  }
+
+  private void normaliseSetEndNodeLinks() {
+    for (CFGElement n : elementToRulesNodeMap.keySet()) {
+      CFGNode lhs = elementToRulesNodeMap.get(n);
+      for (CFGNode production = lhs.alt; production != null; production = production.alt)
+        setEndNodeLinksRec(lhs, production);
+    }
+  }
+
+  private void setEndNodeLinksRec(CFGNode parentNode, CFGNode altNode) {
+    CFGNode gn;
+    for (gn = altNode.seq; gn.cfgElement.cfgKind != CFGElementKind.END; gn = gn.seq) {
+      // Util.info("processEndNodes at " + gn.ni + " " + gn);
+      if (gn.alt != null) for (CFGNode alternate = gn.alt; alternate != null; alternate = alternate.alt)
+        setEndNodeLinksRec(gn, alternate); // Recurse into brackets
+    }
+    // Util.info("processEndNodes processing " + gn.ni + " " + gn);
+    gn.alt = altNode; // We are now at the end of a production or of a bracketed alternate
+    gn.seq = parentNode;
+    if (parentNode == elementToRulesNodeMap.get(getStartNonterminal())) acceptingNodeNumbers.add(gn.num);
+    // Util.info("processEndNodes updated alt and seq to " + gn.alt.ni + " " + gn.seq.ni);
+  }
+
+  private void normaliseComputeLHSOfRec(CFGElement lhs, CFGNode cfgNode) {
+    if (cfgNode == null) return;
+    lhsOf.put(cfgNode, lhs);
+    if (cfgNode.cfgElement.cfgKind == CFGElementKind.END) return;
+    normaliseComputeLHSOfRec(lhs, cfgNode.seq);
+    normaliseComputeLHSOfRec(lhs, cfgNode.alt);
+  }
+
+  private void normaliseSetAcceptingNodes() {
+    for (var p = elementToRulesNodeMap.get(getStartNonterminal()).alt; p != null; p = p.alt) { // Walk all productions
+      CFGNode s;
+      for (s = p.seq; s.cfgElement.cfgKind != CFGElementKind.END; s = s.seq) // Walk top level sequence
+        ;
+      acceptingSlots.add(s);
+      acceptingNodeNumbers.add(s.num);
+    }
+  }
+
+  private void normaliseComputePositionalAcceptingAttributes() {
+    // Set positional attributes and seed nullablePrefixSlots and nullableSuffixSlots
+    for (CFGElement ge : elements.keySet())
+      if (ge.cfgKind == CFGElementKind.NONTERMINAL && elementToRulesNodeMap.get(ge) != null) computePositionalAttributesRec(elementToRulesNodeMap.get(ge));
+  }
+
+  private void computePositionalAttributesRec(CFGNode parent) {
+    for (CFGNode gn = parent.alt; gn != null; gn = gn.alt) { // walk all productions
+      CFGNode penultimateSlot = gn.seq;
+      CFGNode gs = gn.seq;
+      initialSlots.add(gs);
+      nullablePrefixSlots.add(gs);
+      if (gs.seq.cfgElement.cfgKind != CFGElementKind.END) secondSlots.add(gs.seq);
+      while (gs.cfgElement.cfgKind != CFGElementKind.END) {
+        penultimateSlot = gs;
+        if (gs.alt != null) computePositionalAttributesRec(gs);
+        gs = gs.seq;
+      }
+      penultimateSlots.add(penultimateSlot);
+      finalSlots.add(gs);
+      nullableSuffixSlots.add(gs);
+    }
+  }
+
+  /************************************************************************************************
+   *
+   * Adding implicit aspects of a rule set
+   *
+   ***********************************************************************************************/
+  private void normaliseAddSingletonNodes() {
+    // Add singleton grammar nodes for terminals, # and epsilon. These are used by the SPPF.
+    for (CFGElement e : elements.keySet())
+      if (e.cfgKind == CFGElementKind.TERM_BI || e.cfgKind == CFGElementKind.TERM_CS || e.cfgKind == CFGElementKind.TERM_CI || e.cfgKind == CFGElementKind.TERM_CH
+          || e.cfgKind == CFGElementKind.TERM_CH_SET || e.cfgKind == CFGElementKind.TERM_CH_ANTI_SET || e.cfgKind == CFGElementKind.EPSILON)
+        elementToRulesNodeMap.put(e, new CFGNode(this, e.cfgKind, e.str, 0, GIFTKind.NONE, null, null));
+  }
+
+  private void normaliseAddCharacters() {
     // Load characters
-    String printableASCII = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
-    String defaultCharacterSet = "\r\n\t£" + printableASCII;
+    // String printableASCII = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\\\]^_`abcdefghijklmnopqrstuvwxyz{|}~"; // Not used?
+    // String defaultCharacterSet = "\r\n\t£" + printableASCII; // Not used?
     for (CFGElement e : elements.keySet())
       switch (e.cfgKind) {
-      case TRM_BI:
+      case TERM_BI:
         switch (e.str) {
         case "ID":
           addCharacters("_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz");
@@ -526,61 +757,15 @@ public final class CFGRules implements DisplayInterface { // class made final to
           break;
         }
         break;
-      case TRM_CS, TRM_CI, TRM_CH, TRM_CH_SET, TRM_CH_ANTI_SET:
+      case TERM_CS, TERM_CI, TERM_CH, TERM_CH_SET, TERM_CH_ANTI_SET:
         addCharacters(e.str);
         break;
       default:
         ;// skip everything else
       }
+  }
 
-    // Set lhsOf
-    for (CFGElement ge : elements.keySet())
-      computeLHSOf(ge, elementToRulesNodeMap.get(ge));
-
-    // Set positional attributes and accepting slots, and seed nullablePrefixSlots and nullableSuffixSlots
-    for (CFGElement ge : elements.keySet())
-      if (ge.cfgKind == CFGElementKind.NONTERMINAL && elementToRulesNodeMap.get(ge) != null)
-        for (CFGNode gn = elementToRulesNodeMap.get(ge).alt; gn != null; gn = gn.alt) {
-          CFGNode gs = gn.seq;
-          initialSlots.add(gs);
-          nullablePrefixSlots.add(gs);
-          if (gs.seq.cfgElement.cfgKind != CFGElementKind.END) secondSlots.add(gs.seq);
-          while (gs.seq.cfgElement.cfgKind != CFGElementKind.END)
-            gs = gs.seq;
-          penultimateSlots.add(gs);
-          finalSlots.add(gs.seq);
-          nullableSuffixSlots.add(gs.seq);
-          if (ge == getStartNonterminal()) {
-            acceptingSlots.add(gs.seq);
-            acceptingNodeNumbers.add(gs.seq.num);
-          }
-        }
-
-    // Look for dubious literals
-    if (cfgRulesKind == CFGRulesKind.USER) for (var e : elements.keySet())
-      if (e.cfgKind == CFGElementKind.TRM_CI || e.cfgKind == CFGElementKind.TRM_CS)
-        if (Util.containsWhitespace(e.str)) Util.warning("Context free terminal contains whitespace: " + e);
-
-    // Compute reachability relation
-    computeReachabilities();
-
-    // Check kindof nonterminals
-    computeAndCheckParaterminalSets();
-
-    // First and follow sets
-    // if (startNonterminal != null) follow.add(startNonterminal, endOfStringElement);
-    // for (CFGElement ge : elements.keySet())
-    // if (selfFirst.contains(ge.cfgKind)) first.add(ge, ge);
-    // computeFirstSetsAndNullablePrefixes();
-    // computeNullableSuffixesAndCyclic();
-    // computeFollowSets();
-
-    Util.debug("Warning - only computing first and follow for USER grammars");
-    if (cfgRulesKind == CFGRulesKind.USER) computeFirstFollowGuardSets();
-
-    computeCyclicSlots();
-
-    // Collect attributes
+  private void normaliseCollectAndCheckAttributes() {
     for (CFGElement e : elements.keySet()) {
       Map<String, Integer> rhsNonterminalsInProduction = new HashMap<>();
       if (e.cfgKind == CFGElementKind.NONTERMINAL && elementToRulesNodeMap.get(e) != null) { // Only look at nonterminals
@@ -606,7 +791,6 @@ public final class CFGRules implements DisplayInterface { // class made final to
         }
 
         // Util.info("LHS: " + lhs + " with valid nonterminals=instances: " + rhsNonterminalsInProduction);
-
         // Now check each action to see if it is trying to access a RHS nonterminal which is not instances in this LHS
         for (CFGNode gn = elementToRulesNodeMap.get(e).alt; gn != null; gn = gn.alt) {
           for (CFGNode gs = gn.seq; gs.cfgElement.cfgKind != CFGElementKind.END; gs = gs.seq) {
@@ -630,102 +814,46 @@ public final class CFGRules implements DisplayInterface { // class made final to
         }
       }
     }
-
-    clean = true;
-
-    // Construct lexer and parser subgrammars ONLY if we are a USER grammar
-    // Note, by the time we get here, we are fully normalised so the subgrammars can use our reachability information
-    // if (cfgRulesKind == CFGRulesKind.USER) {
-    // cfgRulesLexer = new CFGRules(this, CFGRulesKind.LEXER, false, false, false, false);
-    // cfgRulesLexer.normalise(); // recurse only once for the lexer grammar
-    // cfgRulesParser = new CFGRules(this, CFGRulesKind.PARSER, false, false, false, false);
-    // cfgRulesParser.normalise(); // recurse only once for the parser grammar
-    // subGrammarConsistencyCheck();
-    // }
   }
 
-  boolean changed = true;
-  Set<CFGElementKind> newParentElements = Set.of(CFGElementKind.PAR, CFGElementKind.OPT, CFGElementKind.POS, CFGElementKind.KLN);
+  /************************************************************************************************
+   *
+   * Cycle detection
+   *
+   ***********************************************************************************************/
+  // TODO: dubious code
+  private void normaliseComputeCyclicSlots() {
+    for (CFGElement lhs : elements.keySet())
+      if (lhs.cfgKind == CFGElementKind.NONTERMINAL) {
+        CFGNode topNode = elementToRulesNodeMap.get(lhs);
+        if (topNode == null) continue;
+        // Util.info("Compute nullable suffix visiting top node " + topNode.num + ":" + topNode);
+        for (CFGNode altNode = topNode.alt; altNode != null; altNode = altNode.alt) {
+          CFGNode seqNode = altNode;
+          // boolean seenOnlyNullable = true; // Not used?
+          while (true) {
+            // Flow control
+            seqNode = seqNode.seq;
+            // Util.info("Visiting seq node " + seqNode.num + ":" + seqNode + " with seenOnlyNullable " + seenOnlyNullable);
 
-  private void computeFirstFollowGuardSets() {
-    follow.add(getStartNonterminal(), endOfStringElement);
-    while (changed) {
-      changed = false;
-      for (var e : elements.keySet()) // Iterate over all grammar elements
-        switch (e.cfgKind) {
-        case EPSILON:
-          changed |= first.add(e, epsilonElement);
-          break;
-        case TRM_CS, TRM_CI, TRM_BI, TRM_CH:
-          changed |= first.add(e, e);
-          break;
-        case NONTERMINAL:
-          computeFirstFollowSetsRec(elementToRulesNodeMap.get(e), elementToRulesNodeMap.get(e).alt);
-          break;
-        default:
-          ; // skip everything else
+            if (cyclicNonterminals.contains(seqNode.cfgElement) && derivesExactlyTransitiveClosure.get(seqNode.cfgElement).contains(lhs))
+              cyclicSlots.add(seqNode.seq);
+            if (seqNode.cfgElement.cfgKind == CFGElementKind.END) break;
+          }
         }
-    }
-  }
-
-  private void computeFirstFollowSetsRec(CFGNode parentNode, CFGNode traverserNode) {
-    // Traversal calls below this line
-    if (traverserNode.cfgElement.cfgKind == CFGElementKind.END) // Reached the end of a sequence
-      return;
-    computeFirstFollowSetsRec(parentNode, traverserNode.seq); // continue across sequence
-    if (traverserNode.alt != null) //
-      computeFirstFollowSetsRec(newParentElements.contains(traverserNode.cfgElement.cfgKind) ? traverserNode : parentNode, traverserNode.alt);
-    // Util.debug("computeFirstFollowSetsRec with parent " + parentNode + " and traverser node " + traverserNode);
-    switch (traverserNode.cfgElement.cfgKind) {
-    case TRM_CS, TRM_CI, TRM_BI, TRM_CH, EPSILON:
-      if (instanceFirst.get(traverserNode).isEmpty()) changed |= instanceFirst.addAll(traverserNode, first.get(traverserNode.cfgElement));
-      break;
-    case NONTERMINAL:
-      changed |= instanceFirst.addAll(traverserNode, first.get(traverserNode.cfgElement));
-      var firstOfNext = instanceFirst.get(traverserNode.seq);
-      if (firstOfNext.contains(epsilonElement)) {
-        for (var f : firstOfNext)
-          if (!f.equals(epsilonElement)) changed |= instanceFollow.add(traverserNode, f);
       }
-      changed |= instanceFollow.addAll(traverserNode, firstOfNext);
-      changed |= follow.addAll(traverserNode.cfgElement, instanceFollow.get(traverserNode)); // Union instance follow of this node into follow of payload
-      break;
-    case ALT:
-      changed |= instanceFirst.addAll(traverserNode, instanceFirst.get(traverserNode.seq));
-      // If this ALT is at top level, then its parent will be a nonterminal in which case union first of this alt into the LHS first set
-      if (parentNode.cfgElement.cfgKind == CFGElementKind.NONTERMINAL) changed |= first.addAll(parentNode.cfgElement, instanceFirst.get(traverserNode));
-      break;
-    case END:
-      changed |= instanceFirst.add(traverserNode, epsilonElement);
-      break;
-    case PAR:
-      changed |= instanceFirst.addAll(traverserNode, instanceFirst.get(traverserNode.alt));
-      break;
-    case OPT:
-      changed |= instanceFirst.addAll(traverserNode, instanceFirst.get(traverserNode.alt));
-      changed |= instanceFirst.add(traverserNode, epsilonElement);
-      break;
-    case POS:
-      changed |= instanceFirst.addAll(traverserNode, instanceFirst.get(traverserNode.alt));
-      break;
-    case KLN:
-      changed |= instanceFirst.addAll(traverserNode, instanceFirst.get(traverserNode.alt));
-      changed |= instanceFirst.add(traverserNode, epsilonElement);
-      break;
-
-    default:
-      Util.fatal("Unexpected cfgKind encountered in computeFirstFollowGuardSetsRec(CFGNode): " + traverserNode.cfgElement.cfgKind);
-    }
-
   }
 
-  private void computeLHSOf(CFGElement lhs, CFGNode cfgNode) {
-    if (cfgNode == null) return;
-    lhsOf.put(cfgNode, lhs);
-    if (cfgNode.cfgElement.cfgKind == CFGElementKind.END) return;
-    computeLHSOf(lhs, cfgNode.seq);
-    computeLHSOf(lhs, cfgNode.alt);
-  }
+  // First and follow sets
+  // if (startNonterminal != null) follow.add(startNonterminal, endOfStringElement);
+  // for (CFGElement ge : elements.keySet())
+  // if (selfFirst.contains(ge.cfgKind)) first.add(ge, ge);
+  // computeFirstSetsAndNullablePrefixes();
+  // computeNullableSuffixesAndCyclic();
+  // computeFollowSets();
+
+  // Util.debug("Warning - only computing first and follow for USER grammars");
+  // if (cfgRulesKind == CFGRulesKind.USER) computeFirstFollowGuardSets();
 
   /*
    * Compute reachabilities
@@ -738,7 +866,7 @@ public final class CFGRules implements DisplayInterface { // class made final to
    *
    *
    */
-  private void computeReachabilities() {
+  private void normaliseComputeReachabilities() {
     for (var lhs : elements.keySet())
       if (lhs.cfgKind == CFGElementKind.NONTERMINAL && elementToRulesNodeMap.get(lhs) != null) { // avoid nonterminals that have no rules in this grammar
         reachable.add(lhs); // Make empty relation codomains
@@ -779,21 +907,25 @@ public final class CFGRules implements DisplayInterface { // class made final to
   private void addElements(AbstractRelation<CFGElement, CFGElement> relation, CFGElement key, CFGNode node) {
     // if (cfgRulesKind == CFGRulesKind.USER) Util.debug("Binding " + node.cfgElement + " to key " + key + " in " + relation);
     relation.add(key, node.cfgElement);
-    if (node.cfgElement.cfgKind == CFGElementKind.TRM_CH_SET || node.cfgElement.cfgKind == CFGElementKind.TRM_CH_ANTI_SET) for (var c : node.cfgElement.set)
-      relation.add(key, findElement(CFGElementKind.TRM_CH, c.toString()));
+    if (node.cfgElement.cfgKind == CFGElementKind.TERM_CH_SET || node.cfgElement.cfgKind == CFGElementKind.TERM_CH_ANTI_SET) for (var c : node.cfgElement.set)
+      relation.add(key, findElement(CFGElementKind.TERM_CH, c.toString()));
   }
 
-  /*
-   * Having built reachbility sets, compute nonterminals kind sets and ensure they form a partition of the nonterminal elements
+  /************************************************************************************************
    *
+   * Compute and check subgrammar sets
+   *
+   ***********************************************************************************************/
+  /*
    * parserNonterminals are nonterminals reachable from start symbol, stopping at (and not including) paraterminals
    *
    * reachableParaterminals are paraterminals reachable from start symbol
    *
    * lexerNonterminals are nonterminals reachable from every reachable paraterminal, including paraterminals
+   *
    */
 
-  private void computeAndCheckParaterminalSets() {
+  private void normaliseComputeAndCheckParaterminalSets() {
     if (getStartNonterminal() == null) return; // empty grammar
     parserNonterminals.addAll(reachableNonterminalsPara.get(getStartNonterminal()));
     parserNonterminals.add(getStartNonterminal());
@@ -869,197 +1001,21 @@ public final class CFGRules implements DisplayInterface { // class made final to
       }
   }
 
-  Set<CFGElement> removeEpsilon(Set<CFGElement> set) {
-    Set<CFGElement> tmp = new HashSet<>(set);
-    tmp.remove(epsilonElement);
-    return tmp;
+  private void normaliseConstructSubgrammars() {
+    // Construct lexer and parser subgrammars ONLY if we are a USER grammar
+    // Note, by the time we get here, we are fully normalised so the subgrammars can use our reachability information
+    cfgRulesLexer = new CFGRules(this, CFGRulesKind.LEXER, false, false, false, false);
+    cfgRulesLexer.normalise(); // recurse only once for the lexer grammar
+    cfgRulesParser = new CFGRules(this, CFGRulesKind.PARSER, false, false, false, false);
+    cfgRulesParser.normalise(); // recurse only once for the parser grammar
+    subGrammarConsistencyCheck();
   }
 
-  // private void computeFirstSetsAndNullablePrefixes() {
-  // // Closure loop
-  // boolean changed = true;
-  // while (changed) {
-  // changed = false;
-  // for (CFGElement lhs : elements.keySet())
-  // if (lhs.cfgKind == CFGElementKind.NONTERMINAL) {
-  // CFGNode topNode = elementToRulesNodeMap.get(lhs);
-  // if (topNode == null) continue;
-  // // Util.info("Visiting top node " + topNode.num + ":" + topNode);
-  // for (CFGNode altNode = topNode.alt; altNode != null; altNode = altNode.alt) {
-  // // Util.info("Visiting alt node " + altNode.num + ":" + altNode);
-  // CFGNode seqNode = altNode;
-  // boolean seenOnlyNullable = true;
-  // while (true) {
-  // // Flow control
-  // seqNode = seqNode.seq;
-  // // Util.info("Visiting seq node " + seqNode.num + ":" + seqNode + " with seenOnlyNullable " + seenOnlyNullable);
-  //
-  // // 1. Capture nullable prefixes
-  // if (seenOnlyNullable) {
-  // // Util.info("Adding nullable prefixslot " + seqNode.toStringAsProduction());
-  // changed |= nullablePrefixSlots.add(seqNode);
-  // }
-  //
-  // if (seqNode.cfgElement.cfgKind == CFGElementKind.END) {
-  // instanceFirst.add(seqNode, epsilonElement);
-  // break;
-  // }
-  //
-  // // 2. Update instance first with the element itself for nonterminals only
-  // if (seqNode.cfgElement.cfgKind == CFGElementKind.NONTERMINAL) changed |= instanceFirst.add(seqNode, seqNode.cfgElement);
-  //
-  // // 3. Fold in the first set of this node's element after suppressing epsilon
-  // changed |= instanceFirst.addAll(seqNode, removeEpsilon(first.get(seqNode.cfgElement))); // Update instance first with element first
-  //
-  // // 4. If epsilon is in this node's element's first set, fold the first set of our successor in
-  // if (first.get(seqNode.cfgElement).contains(epsilonElement))
-  // changed |= instanceFirst.addAll(seqNode, instanceFirst.get(seqNode.seq));
-  // else // otherwise reset seenOnlyNullable
-  // seenOnlyNullable = false;
-  // }
-  // if (seenOnlyNullable) {
-  // // Util.info("All elements in sequence are nullable; adding epsilon to first of " + lhs);
-  // changed |= first.add(lhs, epsilonElement); // If the whole sequence is made up of nullable elements, thenadd epsilon to the left hand side
-  // }
-  // // Now fold the instance first set of the first slot in this sequence into the LHS
-  // changed |= first.addAll(lhs, instanceFirst.get(altNode.seq));
-  // }
-  // }
-  // }
-  // }
-
-  private void computeNullableSuffixesAndCyclic() {
-    for (CFGElement lhs : elements.keySet())
-      if (lhs.cfgKind == CFGElementKind.NONTERMINAL) {
-        CFGNode topNode = elementToRulesNodeMap.get(lhs);
-        if (topNode == null) continue;
-        // Util.info("Compute nullable suffix visiting top node " + topNode.num + ":" + topNode);
-        for (CFGNode altNode = topNode.alt; altNode != null; altNode = altNode.alt) {
-          // Util.info("Compute nullable suffix visiting alt node " + altNode.num + ":" + altNode);
-          computeNullableSuffixAndDerivesExactlyRec(lhs, altNode.seq);
-        }
-      }
-    derivesExactlyTransitiveClosure = new Relation<>(derivesExactly);
-    derivesExactlyTransitiveClosure.transitiveClosure();
-    for (var n : derivesExactlyTransitiveClosure.getDomain())
-      if (derivesExactlyTransitiveClosure.get(n).contains(n)) cyclicNonterminals.add(n);
-  }
-
-  private void computeCyclicSlots() {
-    for (CFGElement lhs : elements.keySet())
-      if (lhs.cfgKind == CFGElementKind.NONTERMINAL) {
-        CFGNode topNode = elementToRulesNodeMap.get(lhs);
-        if (topNode == null) continue;
-        // Util.info("Compute nullable suffix visiting top node " + topNode.num + ":" + topNode);
-        for (CFGNode altNode = topNode.alt; altNode != null; altNode = altNode.alt) {
-          CFGNode seqNode = altNode;
-          boolean seenOnlyNullable = true;
-          while (true) {
-            // Flow control
-            seqNode = seqNode.seq;
-            // Util.info("Visiting seq node " + seqNode.num + ":" + seqNode + " with seenOnlyNullable " + seenOnlyNullable);
-
-            if (cyclicNonterminals.contains(seqNode.cfgElement) && derivesExactlyTransitiveClosure.get(seqNode.cfgElement).contains(lhs))
-              cyclicSlots.add(seqNode.seq);
-            if (seqNode.cfgElement.cfgKind == CFGElementKind.END) break;
-          }
-        }
-      }
-  }
-
-  private boolean computeNullableSuffixAndDerivesExactlyRec(CFGElement lhs, CFGNode seqNode) {
-    boolean nullableSuffix;
-    // Util.info("Compute nullable suffix REC visiting seq node " + seqNode.num + ":" + seqNode + " under lhs " + lhs);
-
-    if (seqNode.cfgElement.cfgKind == CFGElementKind.END)
-      nullableSuffix = true;
-    else
-      nullableSuffix = computeNullableSuffixAndDerivesExactlyRec(lhs, seqNode.seq) && first.get(seqNode.cfgElement).contains(epsilonElement);
-
-    if (nullableSuffix) nullableSuffixSlots.add(seqNode);
-
-    if (seqNode.cfgElement.cfgKind == CFGElementKind.NONTERMINAL && nullablePrefixSlots.contains(seqNode) && nullableSuffixSlots.contains(seqNode.seq))
-      derivesExactly.add(lhs, seqNode.cfgElement);
-
-    return nullableSuffix;
-  }
-
-  // private void computeFollowSets() {
-  // boolean changed = true;
-  // while (changed) {
-  // changed = false;
-  // for (CFGElement lhs : elements.keySet())
-  // if (lhs.cfgKind == CFGElementKind.NONTERMINAL) {
-  // CFGNode topNode = elementToRulesNodeMap.get(lhs);
-  // if (topNode == null) continue;
-  // // Util.debug("Visiting top node " + topNode.num + ":" + topNode);
-  // for (CFGNode altNode = topNode.alt; altNode != null; altNode = altNode.alt) {
-  // // Util.debug("Visiting alt node " + altNode.num + ":" + altNode);
-  // CFGNode seqNode = altNode.seq;
-  // while (true) {
-  // changed |= instanceFollow.addAll(seqNode, removeEpsilon(instanceFirst.get(seqNode.seq)));
-  // if (seqNode.cfgElement.cfgKind == CFGElementKind.NONTERMINAL)
-  // changed |= follow.addAll(seqNode.cfgElement, removeEpsilon(instanceFirst.get(seqNode.seq)));
-  // if (nullableSuffixSlots.contains(seqNode.seq)) changed |= follow.addAll(seqNode.cfgElement, follow.get(lhs));
-  // if (seqNode.cfgElement.cfgKind == CFGElementKind.END) {
-  // break;
-  // }
-  // seqNode = seqNode.seq;
-  // }
-  // }
-  // }
-  // }
-  // }
-
-  public boolean isEmpty() {
-    return elementToRulesNodeMap.keySet().isEmpty();
-  }
-
-  private class InstancePair {
-    String nonterminalID;
-    String attributeID;
-
-    @Override
-    public int hashCode() {
-      final int prime = 31;
-      int result = 1;
-      result = prime * result + ((attributeID == null) ? 0 : attributeID.hashCode());
-      result = prime * result + ((nonterminalID == null) ? 0 : nonterminalID.hashCode());
-      return result;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-      if (this == obj) return true;
-      if (obj == null) return false;
-      if (getClass() != obj.getClass()) return false;
-      InstancePair other = (InstancePair) obj;
-      if (attributeID == null) {
-        if (other.attributeID != null) return false;
-      } else if (!attributeID.equals(other.attributeID)) return false;
-      if (nonterminalID == null) {
-        if (other.nonterminalID != null) return false;
-      } else if (!nonterminalID.equals(other.nonterminalID)) return false;
-      return true;
-    }
-
-  }
-
-  private void addAttribute(String nonterminalID, String attributeID) {
-    if (findElement(CFGElementKind.NONTERMINAL, nonterminalID).attributes.get(attributeID) == null)
-      findElement(CFGElementKind.NONTERMINAL, nonterminalID).attributes.put(attributeID, "int");
-  }
-
-  private void checkNativeActions(String action, String lhs, Map<String, Integer> rhsNonterminals, boolean warning) {
-    String attributeRegex = "\\w+\\.\\w+";
-    Pattern pattern = Pattern.compile(attributeRegex);
-    Matcher matcher = pattern.matcher(action);
-    while (matcher.find()) {
-      String[] parts = matcher.group().split("\\.");
-      validateAttribute(parts[0], parts[1], lhs, rhsNonterminals, warning);
-    }
-  }
-
+  /************************************************************************************************
+   *
+   * Attribute and acton consistency checking
+   *
+   ***********************************************************************************************/
   private void checkTermActionsRec(int annotationRoot, String lhs, Map<String, Integer> rhsNonterminals) {
     if (ScriptInterpreter.iTerms.termSymbolString(annotationRoot).equals("cfgAttribute")) {
       String nonterminalID = ScriptInterpreter.iTerms.termSymbolString(ScriptInterpreter.iTerms.subterm(annotationRoot, 0));
@@ -1106,133 +1062,26 @@ public final class CFGRules implements DisplayInterface { // class made final to
       Util.fatal("invalid attribute " + nonterminalID + "." + attributeID + " in production for nonterminal " + lhs);
   }
 
-  private void numberElementsAndNodes() {
-    for (CFGElement s : elements.keySet()) {
-      s.number = nextFreeEnumerationElement++;
-      if (terminalKinds.contains(s.cfgKind)) lexSize = s.number;
-      // Util.info("Enumerating grammar element " + s.ei + ": " + s.str);
-    }
-    lexSize++;
-
-    numberToRulesNodeMap.put(endOfStringNode.num = nextFreeEnumerationElement++, endOfStringNode);
-    for (CFGElement n : elementToRulesNodeMap.keySet())
-      numberElementsAndNodesRec(elementToRulesNodeMap.get(n));
+  private void addAttribute(String nonterminalID, String attributeID) {
+    if (findElement(CFGElementKind.NONTERMINAL, nonterminalID).attributes.get(attributeID) == null)
+      findElement(CFGElementKind.NONTERMINAL, nonterminalID).attributes.put(attributeID, "int");
   }
 
-  private void numberElementsAndNodesRec(CFGNode node) {
-    if (node != null) {
-      numberToRulesNodeMap.put(node.num = nextFreeEnumerationElement++, node);
-      if (node.cfgElement.cfgKind != CFGElementKind.END) {
-        numberElementsAndNodesRec(node.seq);
-        numberElementsAndNodesRec(node.alt);
-      }
+  private void checkNativeActions(String action, String lhs, Map<String, Integer> rhsNonterminals, boolean warning) {
+    String attributeRegex = "\\w+\\.\\w+";
+    Pattern pattern = Pattern.compile(attributeRegex);
+    Matcher matcher = pattern.matcher(action);
+    while (matcher.find()) {
+      String[] parts = matcher.group().split("\\.");
+      validateAttribute(parts[0], parts[1], lhs, rhsNonterminals, warning);
     }
   }
 
-  private void setEndNodeLinks() {
-    for (CFGElement n : elementToRulesNodeMap.keySet()) {
-      CFGNode lhs = elementToRulesNodeMap.get(n);
-      for (CFGNode production = lhs.alt; production != null; production = production.alt)
-        setEndNodeLinksRec(lhs, production);
-    }
-  }
-
-  private void setEndNodeLinksRec(CFGNode parentNode, CFGNode altNode) {
-    CFGNode gn;
-    for (gn = altNode.seq; gn.cfgElement.cfgKind != CFGElementKind.END; gn = gn.seq) {
-      // Util.info("processEndNodes at " + gn.ni + " " + gn);
-      if (gn.alt != null) for (CFGNode alternate = gn.alt; alternate != null; alternate = alternate.alt)
-        setEndNodeLinksRec(gn, alternate); // Recurse into brackets
-    }
-    // Util.info("processEndNodes processing " + gn.ni + " " + gn);
-    gn.alt = altNode; // We are now at the end of a production or of a bracketed alternate
-    gn.seq = parentNode;
-    if (parentNode == elementToRulesNodeMap.get(getStartNonterminal())) acceptingNodeNumbers.add(gn.num);
-    // Util.info("processEndNodes updated alt and seq to " + gn.alt.ni + " " + gn.seq.ni);
-  }
-
-  // Atttribute-action functions from ReferenceGrammarParser.art below this line
-  public CFGNode workingNode;
-  public GIFTKind workingFold = GIFTKind.NONE;
-  // public int workingAction = 0;
-
-  CFGNode mostRecentLHS;
-
-  /* Action routines called from the script term traverser */
-  public CFGElement findElement(CFGElementKind kind, String s) {
-    CFGElement candidate = new CFGElement(kind, s);
-    if (elements.get(candidate) == null) elements.put(candidate, candidate);
-    var ret = elements.get(candidate);
-
-    switch (kind) { // Create individual character terminals from the contents of the set
-    case TRM_CH_SET, TRM_CH_ANTI_SET:
-      for (var c : ret.set)
-        findElement(CFGElementKind.TRM_CH, "" + c);
-      break;
-    default:
-      ; // skip everything else
-    }
-    return ret;
-  }
-
-  LinkedList<CFGNode> stack = new LinkedList<>();
-
-  public void actionLHS(int t) {
-    actionLHS(ScriptInterpreter.childSymbolString(t));
-    if (ScriptInterpreter.iTerms.termArity(t) == 2) // Is there an attribute declaration?
-      for (int i = 0; i < ScriptInterpreter.iTerms.termArity(ScriptInterpreter.iTerms.subterm(t, 1)); i++) {
-        String typeParameter = "";
-        if (ScriptInterpreter.iTerms.termArity(ScriptInterpreter.iTerms.subterm(t, 1, i)) == 3)
-          typeParameter = ScriptInterpreter.iTerms.termSymbolString(ScriptInterpreter.iTerms.subterm(t, 1, i, 2));
-        mostRecentLHS.cfgElement.attributes.put(ScriptInterpreter.iTerms.termSymbolString(ScriptInterpreter.iTerms.subterm(t, 1, i, 0)),
-            ScriptInterpreter.iTerms.termSymbolString(ScriptInterpreter.iTerms.subterm(t, 1, i, 1)) + typeParameter);
-      }
-  }
-
-  public void actionLHS(String id) {
-    CFGElement element = findElement(CFGElementKind.NONTERMINAL, id);
-    defined.add(element);
-    if (getStartNonterminal() == null) setStartNonterminal(element);
-    workingNode = elementToRulesNodeMap.get(element);
-    if (workingNode == null) elementToRulesNodeMap.put(element, actionSEQ(CFGElementKind.NONTERMINAL, id, 0));
-    mostRecentLHS = elementToRulesNodeMap.get(element);
-    clean = false;
-
-  }
-
-  public void actionALT() {
-    stack.push(workingNode);
-    while (workingNode.alt != null) // Maintain specification order by adding new alternate at the end
-      workingNode = workingNode.alt;
-    workingNode = new CFGNode(this, CFGElementKind.ALT, nextUniqueLabel(), 0, workingFold, null, workingNode);
-    workingFold = GIFTKind.NONE;
-    clean = false;
-  }
-
-  public CFGNode actionSEQ(CFGElementKind kind, String str, Integer actionAsTerm) {
-    // Util.debug("Update working node with kind " + kind + " string " + str + " and slot term " + slotTerm);
-    workingNode = new CFGNode(this, kind, str, actionAsTerm, workingFold, workingNode, null);
-    if (kind != CFGElementKind.END) used.add(workingNode.cfgElement);
-    workingFold = GIFTKind.NONE;
-    clean = false;
-    return workingNode;
-  }
-
-  public void actionAttribute(String name, String type) {
-  }
-
-  public void actionEND(String actions) {
-    actionSEQ(CFGElementKind.END, "", 0);
-    workingNode = stack.pop();
-    clean = false;
-  }
-
-  /** Support for table driven parsers sich as GLLHashPool ***************************************/
-  public static void main(String[] args) {
-    for (var v : CFGElementKind.values())
-      System.out.println("public static final int " + v + "=" + v.ordinal() + ";");
-  }
-
+  /************************************************************************************************
+   *
+   * Support for parsers that use array based grammar representation - called from GLLHashPool
+   *
+   ***********************************************************************************************/
   public int[] makeKindsArray() {
     int ret[] = new int[nextFreeEnumerationElement];
     for (CFGElement gs : elements.keySet())
@@ -1305,87 +1154,11 @@ public final class CFGRules implements DisplayInterface { // class made final to
     return ret;
   }
 
-  public boolean[] makeSecondOfArray() { // SecondOf is a slot -> boolean
-    boolean ret[] = new boolean[nextFreeEnumerationElement];
-    for (var s : secondSlots)
-      // ret[s.]
-      ;
-    return ret;
-  }
-
-  /** Static methods *********************************************************/
-
-  public static boolean isLHS(CFGNode gn) {
-    if (gn == null) return false;
-    return gn.cfgElement != null && gn.cfgElement.cfgKind == CFGElementKind.NONTERMINAL && gn.seq == null;
-  }
-
-  public void generate(int max, boolean sentencesOnly) {
-    LinkedList<LinkedList<CFGElement>> sententialForms = new LinkedList<>();
-    LinkedList<CFGElement> sententialForm = new LinkedList<>();
-    sententialForm.add(getStartNonterminal());
-    sententialForms.addLast(sententialForm);
-    int leftmostNonterminalIndex;
-    int count = 1;
-
-    while (count <= max && sententialForms.size() > 0) {
-      sententialForm = sententialForms.removeFirst();
-
-      for (leftmostNonterminalIndex = 0; leftmostNonterminalIndex < sententialForm.size(); leftmostNonterminalIndex++)
-        if (sententialForm.get(leftmostNonterminalIndex).cfgKind == CFGElementKind.NONTERMINAL) break;
-
-      if (leftmostNonterminalIndex == sententialForm.size()) { // This is a sentence
-        printSententialForm(count++, sententialForm);
-        continue;
-      }
-
-      if (!sentencesOnly) printSententialForm(count++, sententialForm);
-
-      CFGElement expansionNonterminal = sententialForm.get(leftmostNonterminalIndex);
-
-      for (var altNode = elementToRulesNodeMap.get(expansionNonterminal).alt; altNode != null; altNode = altNode.alt) {
-        LinkedList<CFGElement> newSententialForm = new LinkedList<>();
-
-        for (int i = 0; i < leftmostNonterminalIndex; i++)
-          newSententialForm.addLast(sententialForm.get(i));
-
-        for (var seqNode = altNode.seq; seqNode.cfgElement.cfgKind != CFGElementKind.END; seqNode = seqNode.seq)
-          switch (seqNode.cfgElement.cfgKind) {
-          case TRM_CS, TRM_CI, TRM_CH, TRM_BI, NONTERMINAL:
-            newSententialForm.add(seqNode.cfgElement);
-            break;
-          case EPSILON:
-            break; // do nothing
-          default:
-            Util.error("illegal kind of grammar element encountered during generation: " + seqNode.cfgElement.cfgKind);
-            break;
-          }
-
-        for (int i = leftmostNonterminalIndex + 1; i < sententialForm.size(); i++)
-          newSententialForm.addLast(sententialForm.get(i));
-
-        sententialForms.addLast(newSententialForm);
-      }
-    }
-  }
-
-  private void printSententialForm(int i, LinkedList<CFGElement> sententialForm) {
-
-    System.out.print((isSentence(sententialForm) ? "\"" : " ") + i);
-    for (var e : sententialForm)
-      if (e.cfgKind == CFGElementKind.NONTERMINAL)
-        System.out.print(" _" + e.str);
-      else
-        System.out.print(" " + e.str);
-    System.out.println();
-  }
-
-  private boolean isSentence(LinkedList<CFGElement> sententialForm) {
-    for (var e : sententialForm)
-      if (e.cfgKind == CFGElementKind.NONTERMINAL) return false;
-    return true;
-  }
-
+  /************************************************************************************************
+   *
+   * !print and !show action routines overriding defaults in DisplayInterface
+   *
+   ***********************************************************************************************/
   @Override
   public void print(PrintStream outputStream, TermTraverserText outputTraverser, boolean indexed, boolean full, boolean indent, int depthLimit) {
     normalise();
@@ -1531,16 +1304,16 @@ public final class CFGRules implements DisplayInterface { // class made final to
     }
   }
 
-  private void printSet(PrintStream outputStream, Set<CFGElement> elements, String title) {
+  private void printSet(PrintStream outputStream, Set<CFGElement> elementsP, String title) {
     outputStream.print(title + ": {");
-    printElements(outputStream, elements);
+    printElements(outputStream, elementsP);
     outputStream.println("}");
   }
 
-  private void printElements(PrintStream outputStream, Set<CFGElement> elements) {
-    if (elements == null) return;
+  private void printElements(PrintStream outputStream, Set<CFGElement> elementsP) {
+    if (elementsP == null) return;
     boolean firstElement = true;
-    for (CFGElement e : elements) {
+    for (CFGElement e : elementsP) {
       if (firstElement)
         firstElement = false;
       else
@@ -1584,4 +1357,311 @@ public final class CFGRules implements DisplayInterface { // class made final to
     toStringDotRec(outputStream, cs.seq);
   }
 
+  /************************************************************************************************
+   *
+   * Sentential form and sentence generator called from ScriptInterpreter - could be a separate class
+   *
+   ***********************************************************************************************/
+  public void generate(int max, boolean sentencesOnly) {
+    LinkedList<LinkedList<CFGElement>> sententialForms = new LinkedList<>();
+    LinkedList<CFGElement> sententialForm = new LinkedList<>();
+    sententialForm.add(getStartNonterminal());
+    sententialForms.addLast(sententialForm);
+    int leftmostNonterminalIndex;
+    int count = 1;
+
+    while (count <= max && sententialForms.size() > 0) {
+      sententialForm = sententialForms.removeFirst();
+
+      for (leftmostNonterminalIndex = 0; leftmostNonterminalIndex < sententialForm.size(); leftmostNonterminalIndex++)
+        if (sententialForm.get(leftmostNonterminalIndex).cfgKind == CFGElementKind.NONTERMINAL) break;
+
+      if (leftmostNonterminalIndex == sententialForm.size()) { // This is a sentence
+        printSententialForm(count++, sententialForm);
+        continue;
+      }
+
+      if (!sentencesOnly) printSententialForm(count++, sententialForm);
+
+      CFGElement expansionNonterminal = sententialForm.get(leftmostNonterminalIndex);
+
+      for (var altNode = elementToRulesNodeMap.get(expansionNonterminal).alt; altNode != null; altNode = altNode.alt) {
+        LinkedList<CFGElement> newSententialForm = new LinkedList<>();
+
+        for (int i = 0; i < leftmostNonterminalIndex; i++)
+          newSententialForm.addLast(sententialForm.get(i));
+
+        for (var seqNode = altNode.seq; seqNode.cfgElement.cfgKind != CFGElementKind.END; seqNode = seqNode.seq)
+          switch (seqNode.cfgElement.cfgKind) {
+          case TERM_CS, TERM_CI, TERM_CH, TERM_BI, NONTERMINAL:
+            newSententialForm.add(seqNode.cfgElement);
+            break;
+          case EPSILON:
+            break; // do nothing
+          default:
+            Util.error("illegal kind of grammar element encountered during generation: " + seqNode.cfgElement.cfgKind);
+            break;
+          }
+
+        for (int i = leftmostNonterminalIndex + 1; i < sententialForm.size(); i++)
+          newSententialForm.addLast(sententialForm.get(i));
+
+        sententialForms.addLast(newSententialForm);
+      }
+    }
+  }
+
+  private void printSententialForm(int i, LinkedList<CFGElement> sententialForm) {
+
+    System.out.print((isSentence(sententialForm) ? "\"" : " ") + i);
+    for (var e : sententialForm)
+      if (e.cfgKind == CFGElementKind.NONTERMINAL)
+        System.out.print(" _" + e.str);
+      else
+        System.out.print(" " + e.str);
+    System.out.println();
+  }
+
+  private boolean isSentence(LinkedList<CFGElement> sententialForm) {
+    for (var e : sententialForm)
+      if (e.cfgKind == CFGElementKind.NONTERMINAL) return false;
+    return true;
+  }
+
 }
+
+// boolean changed = true;
+//
+// Set<CFGElementKind> newParentElements = Set.of(CFGElementKind.PAR, CFGElementKind.OPT, CFGElementKind.POS, CFGElementKind.KLN);
+//
+// private void computeFirstFollowGuardSets() {
+// follow.add(getStartNonterminal(), endOfStringElement);
+// while (changed) {
+// changed = false;
+// for (var e : elements.keySet()) // Iterate over all grammar elements
+// switch (e.cfgKind) {
+// case EPSILON:
+// changed |= first.add(e, epsilonElement);
+// break;
+// case TRM_CS, TRM_CI, TRM_BI, TRM_CH:
+// changed |= first.add(e, e);
+// break;
+// case NONTERMINAL:
+// computeFirstFollowSetsRec(elementToRulesNodeMap.get(e), elementToRulesNodeMap.get(e).alt);
+// break;
+// default:
+// ; // skip everything else
+// }
+// }
+// }
+//
+// private void computeFirstFollowSetsRec(CFGNode parentNode, CFGNode traverserNode) {
+// // Traversal calls below this line
+// if (traverserNode.cfgElement.cfgKind == CFGElementKind.END) // Reached the end of a sequence
+// return;
+// computeFirstFollowSetsRec(parentNode, traverserNode.seq); // continue across sequence
+// if (traverserNode.alt != null) //
+// computeFirstFollowSetsRec(newParentElements.contains(traverserNode.cfgElement.cfgKind) ? traverserNode : parentNode, traverserNode.alt);
+// // Util.debug("computeFirstFollowSetsRec with parent " + parentNode + " and traverser node " + traverserNode);
+// switch (traverserNode.cfgElement.cfgKind) {
+// case TRM_CS, TRM_CI, TRM_BI, TRM_CH, EPSILON:
+// if (instanceFirst.get(traverserNode).isEmpty()) changed |= instanceFirst.addAll(traverserNode, first.get(traverserNode.cfgElement));
+// break;
+// case NONTERMINAL:
+// changed |= instanceFirst.addAll(traverserNode, first.get(traverserNode.cfgElement));
+// var firstOfNext = instanceFirst.get(traverserNode.seq);
+// if (firstOfNext.contains(epsilonElement)) {
+// for (var f : firstOfNext)
+// if (!f.equals(epsilonElement)) changed |= instanceFollow.add(traverserNode, f);
+// }
+// changed |= instanceFollow.addAll(traverserNode, firstOfNext);
+// changed |= follow.addAll(traverserNode.cfgElement, instanceFollow.get(traverserNode)); // Union instance follow of this node into follow of payload
+// break;
+// case ALT:
+// changed |= instanceFirst.addAll(traverserNode, instanceFirst.get(traverserNode.seq));
+// // If this ALT is at top level, then its parent will be a nonterminal in which case union first of this alt into the LHS first set
+// if (parentNode.cfgElement.cfgKind == CFGElementKind.NONTERMINAL) changed |= first.addAll(parentNode.cfgElement, instanceFirst.get(traverserNode));
+// break;
+// case END:
+// changed |= instanceFirst.add(traverserNode, epsilonElement);
+// break;
+// case PAR:
+// changed |= instanceFirst.addAll(traverserNode, instanceFirst.get(traverserNode.alt));
+// break;
+// case OPT:
+// changed |= instanceFirst.addAll(traverserNode, instanceFirst.get(traverserNode.alt));
+// changed |= instanceFirst.add(traverserNode, epsilonElement);
+// break;
+// case POS:
+// changed |= instanceFirst.addAll(traverserNode, instanceFirst.get(traverserNode.alt));
+// break;
+// case KLN:
+// changed |= instanceFirst.addAll(traverserNode, instanceFirst.get(traverserNode.alt));
+// changed |= instanceFirst.add(traverserNode, epsilonElement);
+// break;
+//
+// default:
+// Util.fatal("Unexpected cfgKind encountered in computeFirstFollowGuardSetsRec(CFGNode): " + traverserNode.cfgElement.cfgKind);
+// }
+//
+// }
+//
+// private void computeLHSOf(CFGElement lhs, CFGNode cfgNode) {
+// if (cfgNode == null) return;
+// lhsOf.put(cfgNode, lhs);
+// if (cfgNode.cfgElement.cfgKind == CFGElementKind.END) return;
+// computeLHSOf(lhs, cfgNode.seq);
+// computeLHSOf(lhs, cfgNode.alt);
+// }
+//
+//
+// // private void computeFirstSetsAndNullablePrefixes() {
+// // // Closure loop
+// // boolean changed = true;
+// // while (changed) {
+// // changed = false;
+// // for (CFGElement lhs : elements.keySet())
+// // if (lhs.cfgKind == CFGElementKind.NONTERMINAL) {
+// // CFGNode topNode = elementToRulesNodeMap.get(lhs);
+// // if (topNode == null) continue;
+// // // Util.info("Visiting top node " + topNode.num + ":" + topNode);
+// // for (CFGNode altNode = topNode.alt; altNode != null; altNode = altNode.alt) {
+// // // Util.info("Visiting alt node " + altNode.num + ":" + altNode);
+// // CFGNode seqNode = altNode;
+// // boolean seenOnlyNullable = true;
+// // while (true) {
+// // // Flow control
+// // seqNode = seqNode.seq;
+// // // Util.info("Visiting seq node " + seqNode.num + ":" + seqNode + " with seenOnlyNullable " + seenOnlyNullable);
+// //
+// // // 1. Capture nullable prefixes
+// // if (seenOnlyNullable) {
+// // // Util.info("Adding nullable prefixslot " + seqNode.toStringAsProduction());
+// // changed |= nullablePrefixSlots.add(seqNode);
+// // }
+// //
+// // if (seqNode.cfgElement.cfgKind == CFGElementKind.END) {
+// // instanceFirst.add(seqNode, epsilonElement);
+// // break;
+// // }
+// //
+// // // 2. Update instance first with the element itself for nonterminals only
+// // if (seqNode.cfgElement.cfgKind == CFGElementKind.NONTERMINAL) changed |= instanceFirst.add(seqNode, seqNode.cfgElement);
+// //
+// // // 3. Fold in the first set of this node's element after suppressing epsilon
+// // changed |= instanceFirst.addAll(seqNode, removeEpsilon(first.get(seqNode.cfgElement))); // Update instance first with element first
+// //
+// // // 4. If epsilon is in this node's element's first set, fold the first set of our successor in
+// // if (first.get(seqNode.cfgElement).contains(epsilonElement))
+// // changed |= instanceFirst.addAll(seqNode, instanceFirst.get(seqNode.seq));
+// // else // otherwise reset seenOnlyNullable
+// // seenOnlyNullable = false;
+// // }
+// // if (seenOnlyNullable) {
+// // // Util.info("All elements in sequence are nullable; adding epsilon to first of " + lhs);
+// // changed |= first.add(lhs, epsilonElement); // If the whole sequence is made up of nullable elements, thenadd epsilon to the left hand side
+// // }
+// // // Now fold the instance first set of the first slot in this sequence into the LHS
+// // changed |= first.addAll(lhs, instanceFirst.get(altNode.seq));
+// // }
+// // }
+// // }
+// // }
+//
+// private void computeNullableSuffixesAndCyclic() {
+// for (CFGElement lhs : elements.keySet())
+// if (lhs.cfgKind == CFGElementKind.NONTERMINAL) {
+// CFGNode topNode = elementToRulesNodeMap.get(lhs);
+// if (topNode == null) continue;
+// // Util.info("Compute nullable suffix visiting top node " + topNode.num + ":" + topNode);
+// for (CFGNode altNode = topNode.alt; altNode != null; altNode = altNode.alt) {
+// // Util.info("Compute nullable suffix visiting alt node " + altNode.num + ":" + altNode);
+// computeNullableSuffixAndDerivesExactlyRec(lhs, altNode.seq);
+// }
+// }
+// derivesExactlyTransitiveClosure = new Relation<>(derivesExactly);
+// derivesExactlyTransitiveClosure.transitiveClosure();
+// for (var n : derivesExactlyTransitiveClosure.getDomain())
+// if (derivesExactlyTransitiveClosure.get(n).contains(n)) cyclicNonterminals.add(n);
+// }
+//
+//
+// private boolean computeNullableSuffixAndDerivesExactlyRec(CFGElement lhs, CFGNode seqNode) {
+// boolean nullableSuffix;
+// // Util.info("Compute nullable suffix REC visiting seq node " + seqNode.num + ":" + seqNode + " under lhs " + lhs);
+//
+// if (seqNode.cfgElement.cfgKind == CFGElementKind.END)
+// nullableSuffix = true;
+// else
+// nullableSuffix = computeNullableSuffixAndDerivesExactlyRec(lhs, seqNode.seq) && first.get(seqNode.cfgElement).contains(epsilonElement);
+//
+// if (nullableSuffix) nullableSuffixSlots.add(seqNode);
+//
+// if (seqNode.cfgElement.cfgKind == CFGElementKind.NONTERMINAL && nullablePrefixSlots.contains(seqNode) && nullableSuffixSlots.contains(seqNode.seq))
+// derivesExactly.add(lhs, seqNode.cfgElement);
+//
+// return nullableSuffix;
+// }
+//
+// // private void computeFollowSets() {
+// // boolean changed = true;
+// // while (changed) {
+// // changed = false;
+// // for (CFGElement lhs : elements.keySet())
+// // if (lhs.cfgKind == CFGElementKind.NONTERMINAL) {
+// // CFGNode topNode = elementToRulesNodeMap.get(lhs);
+// // if (topNode == null) continue;
+// // // Util.debug("Visiting top node " + topNode.num + ":" + topNode);
+// // for (CFGNode altNode = topNode.alt; altNode != null; altNode = altNode.alt) {
+// // // Util.debug("Visiting alt node " + altNode.num + ":" + altNode);
+// // CFGNode seqNode = altNode.seq;
+// // while (true) {
+// // changed |= instanceFollow.addAll(seqNode, removeEpsilon(instanceFirst.get(seqNode.seq)));
+// // if (seqNode.cfgElement.cfgKind == CFGElementKind.NONTERMINAL)
+// // changed |= follow.addAll(seqNode.cfgElement, removeEpsilon(instanceFirst.get(seqNode.seq)));
+// // if (nullableSuffixSlots.contains(seqNode.seq)) changed |= follow.addAll(seqNode.cfgElement, follow.get(lhs));
+// // if (seqNode.cfgElement.cfgKind == CFGElementKind.END) {
+// // break;
+// // }
+// // seqNode = seqNode.seq;
+// // }
+// // }
+// // }
+// // }
+// // }
+// //
+// private class InstancePair {
+// String nonterminalID;
+// String attributeID;
+//
+// @Override
+// public int hashCode() {
+// final int prime = 31;
+// int result = 1;
+// result = prime * result + ((attributeID == null) ? 0 : attributeID.hashCode());
+// result = prime * result + ((nonterminalID == null) ? 0 : nonterminalID.hashCode());
+// return result;
+// }
+//
+// @Override
+// public boolean equals(Object obj) {
+// if (this == obj) return true;
+// if (obj == null) return false;
+// if (getClass() != obj.getClass()) return false;
+// InstancePair other = (InstancePair) obj;
+// if (attributeID == null) {
+// if (other.attributeID != null) return false;
+// } else if (!attributeID.equals(other.attributeID)) return false;
+// if (nonterminalID == null) {
+// if (other.nonterminalID != null) return false;
+// } else if (!nonterminalID.equals(other.nonterminalID)) return false;
+// return true;
+// }
+//
+// }
+//
+// Set<CFGElement> removeEpsilon(Set<CFGElement> set) {
+// Set<CFGElement> tmp = new HashSet<>(set);
+// tmp.remove(epsilonElement);
+// return tmp;
+// }

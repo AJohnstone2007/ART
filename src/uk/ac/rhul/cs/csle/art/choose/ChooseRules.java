@@ -210,25 +210,25 @@ public class ChooseRules implements DisplayInterface {
       String chooseSetName = ScriptInterpreter.iTerms.termSymbolString(ScriptInterpreter.iTerms.subterm(firstChild, 0));
       switch (chooseSetName) {
       case "anyCharacterTerminal":
-        collectKinds.add(CFGElementKind.TRM_CH);
+        collectKinds.add(CFGElementKind.TERM_CH);
         break;
       case "anyBuiltinTerminal":
-        collectKinds.add(CFGElementKind.TRM_BI);
+        collectKinds.add(CFGElementKind.TERM_BI);
         break;
       case "anyCaseSensitiveTerminal":
-        collectKinds.add(CFGElementKind.TRM_CS);
+        collectKinds.add(CFGElementKind.TERM_CS);
         break;
       case "anyCaseInsensitiveTerminal":
-        collectKinds.add(CFGElementKind.TRM_CI);
+        collectKinds.add(CFGElementKind.TERM_CI);
         break;
       case "anyParaterminal":
         collectKinds.add(CFGElementKind.NONTERMINAL);
         break;
       case "anyTerminal":
-        collectKinds.add(CFGElementKind.TRM_CH);
-        collectKinds.add(CFGElementKind.TRM_BI);
-        collectKinds.add(CFGElementKind.TRM_CS);
-        collectKinds.add(CFGElementKind.TRM_CI);
+        collectKinds.add(CFGElementKind.TERM_CH);
+        collectKinds.add(CFGElementKind.TERM_BI);
+        collectKinds.add(CFGElementKind.TERM_CS);
+        collectKinds.add(CFGElementKind.TERM_CI);
         collectKinds.add(CFGElementKind.NONTERMINAL);
         break;
 

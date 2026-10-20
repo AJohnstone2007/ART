@@ -91,7 +91,7 @@ public class TWESet extends AbstractLexicalisations {
   public String lexeme(TWESetElement element) {
     String full = inputString.substring(element.leftExtent, element.lexemeEnd);
     // Util.debug("Computing lexeme for " + full);
-    if (element.cfgElement.cfgKind == CFGElementKind.TRM_BI) {
+    if (element.cfgElement.cfgKind == CFGElementKind.TERM_BI) {
       switch (element.cfgElement.str) {
       case "STRING_SHRIEK_SHRIEK":
         return full.substring(2, full.length() - 2);
@@ -162,7 +162,7 @@ public class TWESet extends AbstractLexicalisations {
           var e = tweSlices[i][ee];
           if (e.rightExtent > f.rightExtent)
             f.suppressed = true;
-          else if (e.rightExtent == f.rightExtent && f.cfgElement.cfgKind == CFGElementKind.TRM_BI) {
+          else if (e.rightExtent == f.rightExtent && f.cfgElement.cfgKind == CFGElementKind.TERM_BI) {
             // Util.debug("TWE pair " + e + " and " + f + " - suppressing " + f);
             f.suppressed = true;
           }

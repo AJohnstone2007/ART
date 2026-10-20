@@ -57,7 +57,7 @@ public class GLLModal extends AbstractParser {
           derivationNode = updateDerivation(inputIndex); // Must match, but nothing consumed, so rightExtent = inputIndex
           cfgNode = cfgNode.seq; // Next grammar node which will be an END node
           continue nextCFGNode; // Continue with this sequence
-        case SOS, TRM_BI, TRM_CS, TRM_CI, TRM_CH, TRM_CH_SET, TRM_CH_ANTI_SET: // Look for exact instance
+        case SOS, TERM_BI, TERM_CS, TERM_CI, TERM_CH, TERM_CH_SET, TERM_CH_ANTI_SET: // Look for exact instance
           var slice = lexicalisations.getSlice(inputIndex);
           if (slice == null) continue nextTask;// Nothing to do for empty TWE slices
           for (int sliceIndex = 0; sliceIndex < slice.length; sliceIndex++) // Iterate over the TWE set elements in this slice
@@ -105,10 +105,10 @@ public class GLLModal extends AbstractParser {
 
   private boolean matchTerminal(CFGElement cfgElement) {
     switch (cfgNode.cfgElement.cfgKind) {
-    case TRM_CH_SET:
-      return cfgElement.cfgKind == CFGElementKind.TRM_CH && cfgNode.cfgElement.set.contains(cfgElement.str.charAt(0));
-    case TRM_CH_ANTI_SET:
-      return cfgElement.cfgKind == CFGElementKind.TRM_CH && !cfgNode.cfgElement.set.contains(cfgElement.str.charAt(0));
+    case TERM_CH_SET:
+      return cfgElement.cfgKind == CFGElementKind.TERM_CH && cfgNode.cfgElement.set.contains(cfgElement.str.charAt(0));
+    case TERM_CH_ANTI_SET:
+      return cfgElement.cfgKind == CFGElementKind.TERM_CH && !cfgNode.cfgElement.set.contains(cfgElement.str.charAt(0));
     default:
       return (cfgElement == cfgNode.cfgElement);
     }

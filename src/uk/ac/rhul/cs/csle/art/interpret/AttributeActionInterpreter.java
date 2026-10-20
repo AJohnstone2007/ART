@@ -54,7 +54,7 @@ public class AttributeActionInterpreter extends AbstractInterpreter {
       case NONTERMINAL:
         if (!node.delayed) interpret(attributes.getAttributes(node.num));
         break;
-      case TRM_CS, TRM_CI, TRM_CH, TRM_BI:
+      case TERM_CS, TERM_CI, TERM_CH, TERM_BI:
         String[] labelElements = ScriptInterpreter.iTerms.termSymbolString(children[childNumber]).split(",");
 
         lexeme = parser.lexicalisations.lexeme(node.cfgElement, Integer.parseInt(labelElements[1]), Integer.parseInt(labelElements[2]));

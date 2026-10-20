@@ -28,7 +28,7 @@ public class RDSOBGenerator {
 
     boolean firstLexeme = true;
     for (CFGElement s : grammar.elementsAsArray()) {
-      if (s.cfgKind != CFGElementKind.TRM_CS) continue;
+      if (s.cfgKind != CFGElementKind.TERM_CS) continue;
       if (firstLexeme)
         firstLexeme = false;
       else
@@ -49,7 +49,7 @@ public class RDSOBGenerator {
           text.print("\n i = eI; dn = eDN;");
         seqLoop: for (CFGNode seq = alt.seq;; seq = seq.seq) {
           switch (seq.cfgElement.cfgKind) {
-          case TRM_CS:
+          case TERM_CS:
             text.print("\n if (input[i]==" + seq.cfgElement.number + "/*" + seq.cfgElement.str + "*/) {i++;");
             braceCount++;
             break;

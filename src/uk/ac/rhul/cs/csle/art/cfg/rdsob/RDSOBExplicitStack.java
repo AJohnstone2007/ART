@@ -33,7 +33,7 @@ public class RDSOBExplicitStack extends AbstractParser {
   boolean rdsobExplicitStack() {
     while (true)
       switch (gn.cfgElement.cfgKind) {
-      case TRM_BI, TRM_CH, TRM_CS, TRM_CI:
+      case TERM_BI, TERM_CH, TERM_CS, TERM_CI:
         if (match(gn, inputIndex++))
           gn = gn.seq;
         else if (backtrack()) return false;
