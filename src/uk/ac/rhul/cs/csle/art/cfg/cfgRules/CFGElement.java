@@ -40,7 +40,7 @@ public class CFGElement implements Comparable<Object> {
   }
 
   @Override
-  public String toString() {
+  public String toString() { // standard for use in visualisations
     switch (cfgKind) {
     case EPSILON:
       return "#";
@@ -74,6 +74,43 @@ public class CFGElement implements Comparable<Object> {
     for (var s : set)
       sb.append(Util.escapeString(s.toString()));
     return sb.toString();
+  }
+
+  public String toStringAsProductionElement() { // nonstandard for use when printing productions from cfgRules - a ( is inserted and we are used postorder
+    switch (cfgKind) {
+    case EPSILON:
+      return "#";
+    case EOS:
+      return "$";
+    case SOS, ALT, END:
+      return cfgKind.toString();
+    case PAR:
+      return (")");
+    case OPT:
+      return (")?");
+    case POS:
+      return (")+");
+    case KLN:
+      return (")*");
+    case TERM_CS:
+      return "'" + Util.escapeString(str) + "'";
+    case TERM_CI:
+      return "\"" + Util.escapeString(str) + "\"";
+    case TERM_CH:
+      return "`" + Util.escapeString(str);
+    case TERM_CH_SET:
+      return "{" + setToString() + "}";
+    case TERM_CH_ANTI_SET:
+      return "~{" + setToString() + "}";
+    case TERM_CH_UOB:
+      return "!{}" + Util.escapeString(str);
+    case TERM_BI:
+      return "&" + Util.escapeString(str);
+    case NONTERMINAL:
+      return Util.escapeString(str);
+    default:
+      return "???";
+    }
   }
 
   @Override

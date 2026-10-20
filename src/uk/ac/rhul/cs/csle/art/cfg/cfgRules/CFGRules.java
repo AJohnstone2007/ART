@@ -164,8 +164,8 @@ public final class CFGRules implements DisplayInterface { // class made final to
    * Static fields that are constant across all instances and thus do not need to be cloned
    *
    ***********************************************************************************************/
-  private final static Set<CFGElementKind> terminalKinds = Set.of(CFGElementKind.TERM_BI, CFGElementKind.TERM_CH, CFGElementKind.TERM_CS, CFGElementKind.TERM_CI,
-      CFGElementKind.TERM_CH_SET, CFGElementKind.TERM_CH_ANTI_SET);
+  private final static Set<CFGElementKind> terminalKinds = Set.of(CFGElementKind.TERM_BI, CFGElementKind.TERM_CH, CFGElementKind.TERM_CS,
+      CFGElementKind.TERM_CI, CFGElementKind.TERM_CH_SET, CFGElementKind.TERM_CH_ANTI_SET);
   private final static Set<CFGElementKind> bracketKinds = Set.of(CFGElementKind.PAR, CFGElementKind.OPT, CFGElementKind.KLN, CFGElementKind.POS);
   // private final static Set<CFGElementKind> selfFirst = Set.of(CFGElementKind.TRM_BI, CFGElementKind.TRM_CH, CFGElementKind.EOS, CFGElementKind.TRM_CS,
   // CFGElementKind.TRM_CI, CFGElementKind.EPSILON); // Not used
@@ -522,7 +522,7 @@ public final class CFGRules implements DisplayInterface { // class made final to
    ***********************************************************************************************/
   public void normalise() { // Compute the fields that are not directly set by the script interpeter
     if (normalised) return;
-    Util.debug("Normalising cfgRulesNumber " + cfgRulesNumber + " " + cfgRulesKind);
+    Util.debug("Normalising cfgRules object with number " + cfgRulesNumber + " " + cfgRulesKind);
     if (!seenWhitespaceDirective) {
       Util.info("Adding default whitespace handling");
       whitespaces.add(findElement(CFGElementKind.TERM_BI, "SIMPLE_WHITESPACE"));
@@ -534,27 +534,28 @@ public final class CFGRules implements DisplayInterface { // class made final to
 
     // Element and node numbering
     nextFreeEnumerationElement = 0;
-    normaliseNumberElementsAndNodes();
-    normaliseSetEndNodeLinks();
+    normaliseNumberElementsAndNodes(); // EBNF equipped
+    normaliseSetEndNodeLinks(); // EBNF equipped
 
     // Set lhsOf
     for (CFGElement ge : elements.keySet())
-      normaliseComputeLHSOfRec(ge, elementToRulesNodeMap.get(ge));
+      normaliseComputeLHSOfRec(ge, elementToRulesNodeMap.get(ge)); // EBNF equipped
 
-    normaliseSetAcceptingNodes();
-    normaliseComputePositionalAcceptingAttributes();
+    normaliseSetAcceptingNodes(); // EBNF not needed - we only look at the top level productions
+    normaliseComputePositionalAcceptingAttributes(); // EBNF equipped
 
     // Look for dubious literals which contain whitespace and issue warnings not errors - there may be situations where that is valid
-    if (cfgRulesKind == CFGRulesKind.USER) for (var e : elements.keySet())
+    if (cfgRulesKind == CFGRulesKind.USER) for (var e : elements.keySet()) // Elements only - no EBNF implications
       if (e.cfgKind == CFGElementKind.TERM_CI || e.cfgKind == CFGElementKind.TERM_CS)
         if (Util.containsWhitespace(e.str)) Util.warning("Context free terminal contains whitespace: " + e);
 
-    normaliseComputeReachabilities();
-    normaliseComputeAndCheckParaterminalSets();
+    normaliseComputeReachabilities(); // ENF equipped
+    normaliseComputeAndCheckParaterminalSets(); // Reachable element manipulation - no EBNF implications
     derivesExactly = new Relation<>();
-    normaliseComputeCyclicSlots();
-    normaliseCollectAndCheckAttributes();
+    normaliseComputeCyclicSlots(); // TODO: Not understood
+    normaliseCollectAndCheckAttributes(); // TODO: BNF only?
     if (cfgRulesKind == CFGRulesKind.USER) normaliseConstructSubgrammars();
+    normaliseSubgrammarConsistencyCheck();
     normalised = true;
   }
 
@@ -658,8 +659,9 @@ public final class CFGRules implements DisplayInterface { // class made final to
   private void normaliseAddSingletonNodes() {
     // Add singleton grammar nodes for terminals, # and epsilon. These are used by the SPPF.
     for (CFGElement e : elements.keySet())
-      if (e.cfgKind == CFGElementKind.TERM_BI || e.cfgKind == CFGElementKind.TERM_CS || e.cfgKind == CFGElementKind.TERM_CI || e.cfgKind == CFGElementKind.TERM_CH
-          || e.cfgKind == CFGElementKind.TERM_CH_SET || e.cfgKind == CFGElementKind.TERM_CH_ANTI_SET || e.cfgKind == CFGElementKind.EPSILON)
+      if (e.cfgKind == CFGElementKind.TERM_BI || e.cfgKind == CFGElementKind.TERM_CS || e.cfgKind == CFGElementKind.TERM_CI
+          || e.cfgKind == CFGElementKind.TERM_CH || e.cfgKind == CFGElementKind.TERM_CH_SET || e.cfgKind == CFGElementKind.TERM_CH_ANTI_SET
+          || e.cfgKind == CFGElementKind.EPSILON)
         elementToRulesNodeMap.put(e, new CFGNode(this, e.cfgKind, e.str, 0, GIFTKind.NONE, null, null));
   }
 
@@ -765,6 +767,7 @@ public final class CFGRules implements DisplayInterface { // class made final to
       }
   }
 
+  // TODO: this looks like BNF only
   private void normaliseCollectAndCheckAttributes() {
     for (CFGElement e : elements.keySet()) {
       Map<String, Integer> rhsNonterminalsInProduction = new HashMap<>();
@@ -821,7 +824,7 @@ public final class CFGRules implements DisplayInterface { // class made final to
    * Cycle detection
    *
    ***********************************************************************************************/
-  // TODO: dubious code
+  // TODO: dubious code (why?)
   private void normaliseComputeCyclicSlots() {
     for (CFGElement lhs : elements.keySet())
       if (lhs.cfgKind == CFGElementKind.NONTERMINAL) {
@@ -866,6 +869,9 @@ public final class CFGRules implements DisplayInterface { // class made final to
    *
    *
    */
+
+  // TODO: // Something odd here - all nonterminals are scanned but recursive routine dives into them all - shouldn't we just test from start symbol to avoid
+  // unreacheachables?
   private void normaliseComputeReachabilities() {
     for (var lhs : elements.keySet())
       if (lhs.cfgKind == CFGElementKind.NONTERMINAL && elementToRulesNodeMap.get(lhs) != null) { // avoid nonterminals that have no rules in this grammar
@@ -873,8 +879,8 @@ public final class CFGRules implements DisplayInterface { // class made final to
         reachableNonterminals.add(lhs);
         reachablePara.add(lhs);
         reachableNonterminalsPara.add(lhs);
-        computeReachabilityRec(lhs, elementToRulesNodeMap.get(lhs), reachable, reachableNonterminals, false);
-        computeReachabilityRec(lhs, elementToRulesNodeMap.get(lhs), reachablePara, reachableNonterminalsPara, true);
+        addDirectlyReachable(lhs, elementToRulesNodeMap.get(lhs), reachable, reachableNonterminals, false);
+        addDirectlyReachable(lhs, elementToRulesNodeMap.get(lhs), reachablePara, reachableNonterminalsPara, true);
       }
     reachable.transitiveClosure();
     reachableNonterminals.transitiveClosure();
@@ -882,7 +888,7 @@ public final class CFGRules implements DisplayInterface { // class made final to
     reachableNonterminalsPara.transitiveClosure();
   }
 
-  private void computeReachabilityRec(CFGElement lhs, CFGNode topNode, AbstractRelation<CFGElement, CFGElement> allRel,
+  private void addDirectlyReachable(CFGElement lhs, CFGNode topNode, AbstractRelation<CFGElement, CFGElement> allRel,
       AbstractRelation<CFGElement, CFGElement> nonterminalRel, boolean stopOnParaterminal) {
     // if (cfgRulesKind == CFGRulesKind.USER) Util.debug("computeReachabilityRec with LHS " + lhs + " and topNode " + topNode);
     if (topNode == null) return;
@@ -892,12 +898,12 @@ public final class CFGRules implements DisplayInterface { // class made final to
     for (var altNode = topNode.alt; altNode != null; altNode = altNode.alt)
       for (var seqNode = altNode.seq; seqNode.cfgElement.cfgKind != CFGElementKind.END; seqNode = seqNode.seq) {
         if (bracketKinds.contains(seqNode.cfgElement.cfgKind))
-          computeReachabilityRec(lhs, seqNode, allRel, nonterminalRel, stopOnParaterminal);
+          addDirectlyReachable(lhs, seqNode, allRel, nonterminalRel, stopOnParaterminal);
         else {
           addElements(allRel, lhs, seqNode);
           if (seqNode.cfgElement.cfgKind == CFGElementKind.NONTERMINAL) {
             addElements(nonterminalRel, lhs, seqNode);
-            computeReachabilityRec(lhs, elementToRulesNodeMap.get(seqNode.cfgElement), allRel, nonterminalRel, stopOnParaterminal);
+            addDirectlyReachable(lhs, elementToRulesNodeMap.get(seqNode.cfgElement), allRel, nonterminalRel, stopOnParaterminal);
           }
         }
       }
@@ -976,7 +982,16 @@ public final class CFGRules implements DisplayInterface { // class made final to
 
   }
 
-  private void subGrammarConsistencyCheck() {
+  private void normaliseConstructSubgrammars() {
+    // Construct lexer and parser subgrammars ONLY if we are a USER grammar
+    // Note, by the time we get here, we are fully normalised so the subgrammars can use our reachability information
+    cfgRulesLexer = new CFGRules(this, CFGRulesKind.LEXER, false, false, false, false);
+    cfgRulesLexer.normalise(); // recurse only once for the lexer grammar
+    cfgRulesParser = new CFGRules(this, CFGRulesKind.PARSER, false, false, false, false);
+    cfgRulesParser.normalise(); // recurse only once for the parser grammar
+  }
+
+  private void normaliseSubgrammarConsistencyCheck() {
     for (var n : elementToRulesNodeMap.keySet())
       if (terminalKinds.contains(n.cfgKind)) {
         var mainElement = elementToRulesNodeMap.get(n);
@@ -999,16 +1014,6 @@ public final class CFGRules implements DisplayInterface { // class made final to
             Util.error("Main and parser element has number mismatch " + mainElement + ": " + mainElement.num + " -> " + parserElement.num);
         }
       }
-  }
-
-  private void normaliseConstructSubgrammars() {
-    // Construct lexer and parser subgrammars ONLY if we are a USER grammar
-    // Note, by the time we get here, we are fully normalised so the subgrammars can use our reachability information
-    cfgRulesLexer = new CFGRules(this, CFGRulesKind.LEXER, false, false, false, false);
-    cfgRulesLexer.normalise(); // recurse only once for the lexer grammar
-    cfgRulesParser = new CFGRules(this, CFGRulesKind.PARSER, false, false, false, false);
-    cfgRulesParser.normalise(); // recurse only once for the parser grammar
-    subGrammarConsistencyCheck();
   }
 
   /************************************************************************************************

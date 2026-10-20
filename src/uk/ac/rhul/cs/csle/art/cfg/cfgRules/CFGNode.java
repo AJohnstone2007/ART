@@ -137,7 +137,7 @@ public class CFGNode {
         ;
       else
         sb.append(" ");
-      sb.append(tmpSeq);
+      sb.append(tmpSeq.cfgElement.toStringAsProductionElement());
     }
   }
 
