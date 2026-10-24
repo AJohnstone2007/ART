@@ -232,18 +232,6 @@ public final class CFGRules implements DisplayInterface { // class made final to
   public final RelationOrdered<CFGNode, CFGElement> instanceFollow = new RelationOrdered<>();
   public final RelationOrdered<CFGNode, CFGElement> instanceGuard = new RelationOrdered<>(); // static version of Elizabeth's testSelect
 
-  // positional sets
-  public final Set<CFGNode> initialSlots = new HashSet<>(); // { X ::= \alpha . \beta} | \alpha = \epsilon }
-  public final Set<CFGNode> secondSlots = new HashSet<>(); // { X ::= \alpha Y . \beta} | \alpha = \epsilon, Y \ne \epsilon }
-  public final Set<CFGNode> penultimateSlots = new HashSet<>(); // { X ::= \alpha . Y \beta} | \beta = \epsilon, Y \ne \epsilon }
-  public final Set<CFGNode> finalSlots = new HashSet<>(); // { X ::= \alpha . \beta} | \beta = \epsilon }
-
-  // nullable sets
-  public final Set<CFGNode> nullablePrefixSlots = new HashSet<>(); // { X ::= \alpha . \beta} | \alpha =>* \epsilon }
-  public final Set<CFGNode> nullableSuffixSlots = new HashSet<>(); // { X ::= \alpha . \beta} | \beta =>* \epsilon }
-  public final Set<CFGNode> nullableSlots = new HashSet<>(); // { X ::= \alpha . X \beta} | X =>* \epsilon }
-  public final Set<CFGElement> nullableElements = new HashSet<>(); // { X | X =>* \epsilon }
-
   // cycle detection
   public final Set<CFGElement> cyclicNonterminals = new HashSet<>(); // { X ::= \alpha X \beta} | \alpha,\beta =>* \epsilon }
   public final Set<CFGNode> cyclicSlots = new HashSet<>(); // { X ::= \alpha X \beta} | \alpha,\beta =>* \epsilon }
@@ -278,7 +266,10 @@ public final class CFGRules implements DisplayInterface { // class made final to
    * This is a copy constuctor which makes a fresh set of elements and optionally modifies the rules as they are copied
    *
    * It is important that the terminal and paraterminal numberings match the source element numberings because this constructor is used to create the lexer and
-   * parser sub-grammars which need to be synchronised
+   * parser sub-grammars which need to be synchronised.
+   *
+   * TODO: this needs to be analysed and tests - there are dubious aspects to this
+   *
    */
   private final Map<String, Integer> terminalNumbers = new TreeMap<>();
 
@@ -547,15 +538,14 @@ public final class CFGRules implements DisplayInterface { // class made final to
     for (CFGElement ge : elements.keySet())
       normaliseComputeLHSOfRec(ge, elementToRulesNodeMap.get(ge)); // EBNF equipped
 
-    normaliseSetAcceptingNodes(); // EBNF not needed - we only look at the top level productions
     normaliseSetPositionalAttributes(); // EBNF equipped
-    normaliseComputeNullableNonterminals(); // EBNF equipped
+    if (cfgRulesKind == CFGRulesKind.USER) normaliseComputeNullableSlots(); // EBNF equipped
+    normaliseSetAcceptingSlotsAndNodes(); // EBNF not needed - we only look at the top level productions
 
     // First and follow sets
-    if (startNonterminal != null) follow.add(startNonterminal, endOfStringElement);
-
-    Util.debug("Warning - only computing first and follow for USER grammars");
-    if (cfgRulesKind == CFGRulesKind.USER) computeFirstFollowGuardSets();
+    // if (startNonterminal != null) follow.add(startNonterminal, endOfStringElement);
+    // Util.debug("Warning - only computing first and follow for USER grammars");
+    // if (cfgRulesKind == CFGRulesKind.USER) computeFirstFollowGuardSets();
 
     normaliseComputeReachabilities(); // ENF equipped
     normaliseComputeAndCheckParaterminalSets(); // Reachable element manipulation - no EBNF implications
@@ -627,18 +617,7 @@ public final class CFGRules implements DisplayInterface { // class made final to
     normaliseComputeLHSOfRec(lhs, cfgNode.alt);
   }
 
-  private void normaliseSetAcceptingNodes() {
-    for (var p = elementToRulesNodeMap.get(getStartNonterminal()).alt; p != null; p = p.alt) { // Walk all productions
-      CFGNode s;
-      for (s = p.seq; s.cfgElement.cfgKind != CFGElementKind.END; s = s.seq) // Walk top level sequence
-        ;
-      acceptingSlots.add(s);
-      acceptingNodeNumbers.add(s.num);
-    }
-  }
-
   private void normaliseSetPositionalAttributes() {
-    // Set positional attributes and seed nullablePrefixSlots and nullableSuffixSlots
     for (CFGElement ge : elements.keySet())
       if (ge.cfgKind == CFGElementKind.NONTERMINAL && elementToRulesNodeMap.get(ge) != null) computePositionalAttributesRec(elementToRulesNodeMap.get(ge));
   }
@@ -647,17 +626,76 @@ public final class CFGRules implements DisplayInterface { // class made final to
     for (CFGNode gn = parent.alt; gn != null; gn = gn.alt) { // walk all productions
       CFGNode penultimateSlot = gn.seq;
       CFGNode gs = gn.seq;
-      initialSlots.add(gs);
-      nullablePrefixSlots.add(gs);
-      if (gs.seq.cfgElement.cfgKind != CFGElementKind.END) secondSlots.add(gs.seq);
+      gs.initial = true;
+      gs.setNullablePrefix();
+      if (gs.seq.cfgElement.cfgKind != CFGElementKind.END) gs.second = true;
       while (gs.cfgElement.cfgKind != CFGElementKind.END) {
         penultimateSlot = gs;
         if (gs.alt != null) computePositionalAttributesRec(gs);
         gs = gs.seq;
       }
-      penultimateSlots.add(penultimateSlot);
-      finalSlots.add(gs);
-      nullableSuffixSlots.add(gs);
+      penultimateSlot.penultimate = true;
+      gs.ultimate = true;
+      gs.setNullableSuffix();
+    }
+  }
+
+  boolean nullableChanged;
+
+  private void normaliseComputeNullableSlots() {
+    nullableChanged = true;
+    int pass = 1;
+    while (nullableChanged) {
+      Util.debug("normaliseComputeNullable pass " + pass++);
+      nullableChanged = false;
+      for (CFGElement ge : elements.keySet())
+        if (ge.cfgKind == CFGElementKind.NONTERMINAL && elementToRulesNodeMap.get(ge) != null) {
+          computeNullableSlotsAndElementsRec(ge, elementToRulesNodeMap.get(ge).alt);
+        }
+    }
+  }
+
+  private void computeNullableSlotsAndElementsRec(CFGElement lhs, CFGNode headAlt) {
+    for (CFGNode a = headAlt; a != null; a = a.alt) { // walk all productions
+      if (a.getNullable()) nullableChanged = headAlt.setNullable();
+      if (a.getNullable() && lhs != null) nullableChanged = lhs.setNullable();
+      CFGNode s = a.seq;
+
+      while (true) {
+        switch (s.cfgElement.cfgKind) {
+        case OPT, KLN:
+          nullableChanged |= s.setNullable(); // Note flow through
+        case PAR, POS:
+          computeNullableSlotsAndElementsRec(null, s); // Recurse into EBNF subtrees
+          break;
+        default:
+          ;
+        }
+
+        if (s.initial) nullableChanged |= s.setNullablePrefix(); // First slot is nullable prefix by definition
+        if (s.ultimate) nullableChanged |= s.setNullableSuffix(); // Final slot is nullable sufffix by definition
+
+        if (s.cfgElement.cfgKind == CFGElementKind.END) {
+          if (s.getNullablePrefix()) nullableChanged |= a.setNullable(); // The nullable prefix reached the end, so this whole sequence is nullable
+          break; // No more to do in this sequence
+        }
+
+        if (s.cfgElement.getNullable()) nullableChanged |= s.setNullable(); // This slot is itself nullable
+
+        if (s.getNullable() && s.getNullablePrefix()) nullableChanged |= s.seq.setNullablePrefix(); // Propogate nullable prefix
+        if (s.getNullable() && s.seq.getNullableSuffix()) nullableChanged |= s.setNullableSuffix(); // Propogate nullable suffix
+        s = s.seq;
+      }
+    }
+  }
+
+  private void normaliseSetAcceptingSlotsAndNodes() {
+    for (var p = elementToRulesNodeMap.get(getStartNonterminal()).alt; p != null; p = p.alt) { // Walk all productions
+      CFGNode s;
+      for (s = p.seq; s.cfgElement.cfgKind != CFGElementKind.END; s = s.seq) // Walk top level sequence
+        ;
+      acceptingSlots.add(s);
+      acceptingNodeNumbers.add(s.num);
     }
   }
 
@@ -1209,6 +1247,8 @@ public final class CFGRules implements DisplayInterface { // class made final to
       outputStream.print("Elements:\n");
       for (CFGElement s : elements.keySet()) {
         outputStream.print(" (" + s.toStringDetailed() + ") " + s);
+
+        if (s.getNullable()) outputStream.print(" nullable");
         if (whitespaces.contains(s)) outputStream.print(" whitespace");
         if (cyclicNonterminals.contains(s)) outputStream.print(" cyclic");
         if (paraterminals.contains(s)) outputStream.print(" paraterminal");
@@ -1227,12 +1267,14 @@ public final class CFGRules implements DisplayInterface { // class made final to
         CFGNode gn = numberToRulesNodeMap.get(i);
         outputStream.print(" " + i + ": " + gn.toStringAsProduction());
         if (full) {
-          if (initialSlots.contains(gn)) outputStream.print(" initial");
-          if (secondSlots.contains(gn)) outputStream.print(" second");
-          if (penultimateSlots.contains(gn)) outputStream.print(" penultimate");
-          if (finalSlots.contains(gn)) outputStream.print(" final");
-          if (nullableSuffixSlots.contains(gn)) outputStream.print(" nullableSuffix");
-          if (nullablePrefixSlots.contains(gn)) outputStream.print(" nullablePrefix");
+          outputStream.print(" LHS: " + lhsOf.get(gn));
+          if (gn.getNullable()) outputStream.print(" nullable");
+          if (gn.getNullablePrefix()) outputStream.print(" nullablePrefix");
+          if (gn.getNullableSuffix()) outputStream.print(" nullableSuffix");
+          if (gn.initial) outputStream.print(" initial");
+          if (gn.second) outputStream.print(" second");
+          if (gn.penultimate) outputStream.print(" penultimate");
+          if (gn.ultimate) outputStream.print(" final");
 
           if (!instanceFirst.get(gn).isEmpty()) {
             outputStream.print(" instfirst = {");
@@ -1241,9 +1283,9 @@ public final class CFGRules implements DisplayInterface { // class made final to
             printElements(outputStream, instanceFollow.get(gn));
             outputStream.print("}");
           }
+          String action = gn.toStringActions();
+          if (!action.isEmpty()) outputStream.print(" Action: " + action);
         }
-        outputStream.print(" LHS: " + lhsOf.get(gn));
-        outputStream.print(" Action: " + gn.toStringActions());
         outputStream.print("\n");
       }
 
@@ -1259,49 +1301,50 @@ public final class CFGRules implements DisplayInterface { // class made final to
       printSet(outputStream, declaredAsTokens, "Declared as tokens");
       printSet(outputStream, paraterminals, "Paraterminals");
 
-      outputStream.print("Reachable all elements:\n" + reachable);
-      outputStream.print("Reachable nonterminals:\n" + reachableNonterminals);
-      outputStream.print("Reachable all elements stop at paraterminals:\n" + reachablePara);
-      outputStream.print("Reachable nonterminal stop at paraterminals:\n" + reachableNonterminalsPara);
-
-      printSet(outputStream, cyclicNonterminals, "Cyclic nonterminals");
-
       printSet(outputStream, defined, "Defined nonterminals");
       printSet(outputStream, used, "Used elements");
 
-      outputStream.print("derivesExactly(R):");
-      outputStream.println();
-      if (derivesExactly != null) for (var n : derivesExactly.getDomain())
-        if (cyclicNonterminals.contains(n)) {
-          outputStream.print(n + ": {");
-          for (var nf : derivesExactly.get(n))
-            outputStream.print(" " + nf);
-          outputStream.println(" }");
-        }
-
-      outputStream.println("derivesExactlyTrasitiveClosure (R+):");
-      if (derivesExactlyTransitiveClosure != null) for (var n : derivesExactlyTransitiveClosure.getDomain())
-        if (cyclicNonterminals.contains(n)) {
-          outputStream.print(n + ": {");
-          for (var nf : derivesExactlyTransitiveClosure.get(n))
-            outputStream.print(" " + nf);
-          outputStream.println(" }");
-        }
-
-      outputStream.print("cocyclic nonterminals:\n");
-      if (derivesExactlyTransitiveClosure != null) for (var n : derivesExactlyTransitiveClosure.getDomain())
-        if (cyclicNonterminals.contains(n)) {
-          outputStream.print(n + ": {");
-          for (var nf : derivesExactlyTransitiveClosure.get(n))
-            if (derivesExactlyTransitiveClosure.get(nf).contains(n)) outputStream.print(" " + nf);
-          outputStream.println(" }");
-        }
-
-      outputStream.print("cyclic slots:\n");
-      if (cyclicSlots != null) for (var n : cyclicSlots) {
-        outputStream.print(n.toStringAsProduction());
-        outputStream.println();
-      }
+      // outputStream.print("Reachable all elements:\n" + reachable);
+      // outputStream.print("Reachable nonterminals:\n" + reachableNonterminals);
+      // outputStream.print("Reachable all elements stop at paraterminals:\n" + reachablePara);
+      // outputStream.print("Reachable nonterminal stop at paraterminals:\n" + reachableNonterminalsPara);
+      //
+      // printSet(outputStream, cyclicNonterminals, "Cyclic nonterminals");
+      //
+      //
+      // outputStream.print("derivesExactly(R):");
+      // outputStream.println();
+      // if (derivesExactly != null) for (var n : derivesExactly.getDomain())
+      // if (cyclicNonterminals.contains(n)) {
+      // outputStream.print(n + ": {");
+      // for (var nf : derivesExactly.get(n))
+      // outputStream.print(" " + nf);
+      // outputStream.println(" }");
+      // }
+      //
+      // outputStream.println("derivesExactlyTransitiveClosure (R+):");
+      // if (derivesExactlyTransitiveClosure != null) for (var n : derivesExactlyTransitiveClosure.getDomain())
+      // if (cyclicNonterminals.contains(n)) {
+      // outputStream.print(n + ": {");
+      // for (var nf : derivesExactlyTransitiveClosure.get(n))
+      // outputStream.print(" " + nf);
+      // outputStream.println(" }");
+      // }
+      //
+      // outputStream.print("cocyclic nonterminals:\n");
+      // if (derivesExactlyTransitiveClosure != null) for (var n : derivesExactlyTransitiveClosure.getDomain())
+      // if (cyclicNonterminals.contains(n)) {
+      // outputStream.print(n + ": {");
+      // for (var nf : derivesExactlyTransitiveClosure.get(n))
+      // if (derivesExactlyTransitiveClosure.get(nf).contains(n)) outputStream.print(" " + nf);
+      // outputStream.println(" }");
+      // }
+      //
+      // outputStream.print("cyclic slots:\n");
+      // if (cyclicSlots != null) for (var n : cyclicSlots) {
+      // outputStream.print(n.toStringAsProduction());
+      // outputStream.println();
+      // }
     }
   }
 
@@ -1330,32 +1373,54 @@ public final class CFGRules implements DisplayInterface { // class made final to
         + "node[fontname=Helvetica fontsize=9 shape=box height = 0 width = 0 margin= 0.04 color=gray]\n"
         + "edge[fontname=Helvetica fontsize=9 arrowsize = 0.3 color=gray]\n\n");
     for (CFGElement n : elementToRulesNodeMap.keySet())
-      toStringDotRec(outputStream, elementToRulesNodeMap.get(n));
+      toStringDotRec(outputStream, elementToRulesNodeMap.get(n), full);
     outputStream.print("}\n");
   }
 
-  private void toStringDotRec(PrintStream outputStream, CFGNode cs) {
-    outputStream.print("\"" + cs.num + "\"[label=\"" + cs.toStringDot() + "\"]\n");
-    if (cs.cfgElement.cfgKind == CFGElementKind.ALT) {
-      toStringDotSeqArrow(outputStream, cs);
-      toStringDotAltArrow(outputStream, cs);
-    } else if (cs.cfgElement.cfgKind != CFGElementKind.END) {
-      toStringDotAltArrow(outputStream, cs);
-      toStringDotSeqArrow(outputStream, cs);
+  private void toStringDotRec(PrintStream outputStream, CFGNode gn, boolean full) {
+    outputStream.print("\"" + gn.num + "\"[label=\"" + gn.toStringDot());
+    if (full) {
+      outputStream.print("\nLHS: " + lhsOf.get(gn));
+      if (gn.getNullable()) outputStream.print(" nullable");
+      if (gn.getNullablePrefix()) outputStream.print(" nullablePrefix");
+      if (gn.getNullableSuffix()) outputStream.print(" nullableSuffix");
+      // if (initialSlots.contains(gn)) outputStream.print(" initial");
+      // if (secondSlots.contains(gn)) outputStream.print(" second");
+      // if (penultimateSlots.contains(gn)) outputStream.print(" penultimate");
+      // if (finalSlots.contains(gn)) outputStream.print(" final");
+      //
+      // if (!instanceFirst.get(gn).isEmpty()) {
+      // outputStream.print(" instfirst = {");
+      // printElements(outputStream, instanceFirst.get(gn));
+      // outputStream.print("} instfollow = {");
+      // printElements(outputStream, instanceFollow.get(gn));
+      // outputStream.print("}");
+      // }
+      String action = gn.toStringActions();
+      if (!action.isEmpty()) outputStream.print(" Action: " + action);
+
+    }
+    outputStream.print("\"]\n");
+    if (gn.cfgElement.cfgKind == CFGElementKind.ALT) {
+      toStringDotSeqArrow(outputStream, gn, full);
+      toStringDotAltArrow(outputStream, gn, full);
+    } else if (gn.cfgElement.cfgKind != CFGElementKind.END) {
+      toStringDotAltArrow(outputStream, gn, full);
+      toStringDotSeqArrow(outputStream, gn, full);
     }
   }
 
-  private void toStringDotAltArrow(PrintStream outputStream, CFGNode cs) {
+  private void toStringDotAltArrow(PrintStream outputStream, CFGNode cs, boolean full) {
     if (cs.alt == null) return;
     outputStream.print(
         "\"" + cs.num + "\"->\"" + cs.alt.num + "\"" + "{rank = same; \"" + cs.num + "\"" + ";\"" + cs.alt.num + "\"" + ";" + "}" + "[label=\" a\"" + "]\n");
-    if (!isLHS(cs.alt)) toStringDotRec(outputStream, cs.alt);
+    if (!isLHS(cs.alt)) toStringDotRec(outputStream, cs.alt, full);
   }
 
-  private void toStringDotSeqArrow(PrintStream outputStream, CFGNode cs) {
+  private void toStringDotSeqArrow(PrintStream outputStream, CFGNode cs, boolean full) {
     if (cs.seq == null) return;
     outputStream.print("\"" + cs.num + "\"->\"" + cs.seq.num + "\"\n");
-    toStringDotRec(outputStream, cs.seq);
+    toStringDotRec(outputStream, cs.seq, full);
   }
 
   /************************************************************************************************

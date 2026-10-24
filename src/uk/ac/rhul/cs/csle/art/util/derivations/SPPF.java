@@ -55,7 +55,7 @@ public class SPPF extends AbstractDerivations {
 
     if (gn == null) return rightNode;
 
-    if (ScriptInterpreter.currentParser.compactDerivations && lexicalisations.cfgRules.secondSlots.contains(gn)) {
+    if (ScriptInterpreter.currentParser.compactDerivations && gn.second) {
       // Util.debug("sppf.extend grammar node is second node - returning rightNode");
       return rightNode;
     }
@@ -211,11 +211,11 @@ public class SPPF extends AbstractDerivations {
       throw new TermException();
     }
 
-    // if (ambiguous) {
-    // Util.info("Ambiguous SPPF node " + sppfn.toString() + " involving slots: ");
-    // for (SPPFPackedNode p : sppfn.packNodes)
-    // if (!p.suppressed) Util.info(" " + p);
-    // }
+    if (ambiguous) {
+      Util.info("Ambiguous SPPF node " + sppfn.toString() + " involving slots: ");
+      for (SPPFPackedNode p : sppfn.packNodes)
+        if (!p.suppressed) Util.info(" " + p);
+    }
     return candidate;
   }
 

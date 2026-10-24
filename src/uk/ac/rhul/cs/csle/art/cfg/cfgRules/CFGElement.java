@@ -13,22 +13,40 @@ public class CFGElement implements Comparable<Object> {
   public final CFGElementKind cfgKind;
   public final String str;
   public final Set<Character> set;
-
+  private boolean nullable; // This element can derive epsilon
   public final Map<String, String> attributes = new HashMap<>();
   public final Map<String, Integer> rhsNonterminalsAcrossAllProductions = new HashMap<>();
+  public final Set<CFGElement> first = new TreeSet<>();
+
+  boolean setNullable() {
+    if (nullable) return false; // already set
+    nullable = true; // We have changed it
+    return true;
+  }
+
+  boolean getNullable() {
+    return nullable;
+  }
 
   public CFGElement(CFGElementKind kind, String s) {
     super();
     this.cfgKind = kind;
     switch (this.cfgKind) {
     case TERM_CH_SET, TERM_CH_ANTI_SET:
+      nullable = false;
       set = new TreeSet<>();
       // Util.debug("Processing to set: " + s);
       for (var c : Util.unescapeString(s).toCharArray())
         set.add(c);
       this.str = set.toString(); // canonicalise string for character sets
       return;
+    case EPSILON:
+      nullable = true;
+      set = null;
+      this.str = s;
+      return;
     default:
+      nullable = false;
       set = null;
       this.str = s;
       return;

@@ -1,9 +1,17 @@
 package uk.ac.rhul.cs.csle.art.cfg.cfgRules;
 
+import java.util.Set;
+import java.util.TreeSet;
+
 import uk.ac.rhul.cs.csle.art.script.ScriptInterpreter;
 import uk.ac.rhul.cs.csle.art.util.Util;
 
-public class CFGNode {
+/*
+ *
+ * A CFGNode represents a slot and the symbol that follows it; the final slot has special symbol of kind END
+ *
+ */
+public class CFGNode implements Comparable<Object> {
   public static String caseSensitiveTerminalStrop = "'";
   public static String caseInsensitiveTerminalStrop = "\"";
   public static String characterTerminalStrop = "`";
@@ -18,6 +26,46 @@ public class CFGNode {
   public boolean delayed;
   public int actionAsTerm; // Holds the slot term as parent to slot decorations
   public int instanceNumber = -1;
+  private boolean nullable; // The symbol is nullable
+  private boolean nullablePrefix; // The slots before this one in a sequence are all nullable
+  private boolean nullableSuffix; // The slots after this one in a sequence are all nullable
+  public boolean initial;
+  public boolean second;
+  public boolean penultimate;
+  public boolean ultimate;
+  public final Set<CFGElement> first = new TreeSet<>();
+  public final Set<CFGElement> follow = new TreeSet<>();
+  public final Set<CFGElement> guard = new TreeSet<>();
+
+  boolean setNullable() {
+    if (nullable) return false; // already set
+    nullable = true; // We have changed it
+    return true;
+  }
+
+  boolean getNullable() {
+    return nullable;
+  }
+
+  boolean setNullablePrefix() {
+    if (nullablePrefix) return false; // already set
+    nullablePrefix = true; // We have changed it
+    return true;
+  }
+
+  boolean getNullablePrefix() {
+    return nullablePrefix;
+  }
+
+  boolean setNullableSuffix() {
+    if (nullableSuffix) return false; // already set
+    nullableSuffix = true; // We have changed it
+    return true;
+  }
+
+  boolean getNullableSuffix() {
+    return nullableSuffix;
+  }
 
   public CFGNode(CFGRules cfgRules, CFGElementKind kind, String str, int actionAsTerm, GIFTKind giftKind, CFGNode previous, CFGNode parent) {
     super();
@@ -87,6 +135,7 @@ public class CFGNode {
       break;
     }
     if (actionAsTerm != 0) ret += Util.escapeString(ScriptInterpreter.iTerms.toString(actionAsTerm), false);
+
     return ret;
   }
 
@@ -161,6 +210,18 @@ public class CFGNode {
     }
     for (int i = 0; i < ScriptInterpreter.iTerms.termArity(actionAsTerm); i++)
       toStringActionsRec(sb, ScriptInterpreter.iTerms.termChildren(actionAsTerm)[i]);
+  }
+
+  @Override
+  public int compareTo(Object o) {
+    if (o == null) return 1;
+    CFGNode other = (CFGNode) o;
+    if (num > other.num)
+      return 1;
+    else if (num < other.num)
+      return -1;
+    else
+      return 0;
   }
 
 }
