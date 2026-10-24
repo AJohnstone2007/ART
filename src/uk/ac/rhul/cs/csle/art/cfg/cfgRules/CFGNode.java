@@ -26,13 +26,14 @@ public class CFGNode implements Comparable<Object> {
   public boolean delayed;
   public int actionAsTerm; // Holds the slot term as parent to slot decorations
   public int instanceNumber = -1;
-  private boolean nullable; // The symbol is nullable
-  private boolean nullablePrefix; // The slots before this one in a sequence are all nullable
-  private boolean nullableSuffix; // The slots after this one in a sequence are all nullable
+  public CFGElement lhs;
   public boolean initial;
   public boolean second;
   public boolean penultimate;
   public boolean ultimate;
+  private boolean nullable; // The symbol is nullable
+  private boolean nullablePrefix; // The slots before this one in a sequence are all nullable
+  private boolean nullableSuffix; // The slots after this one in a sequence are all nullable
   public final Set<CFGElement> first = new TreeSet<>();
   public final Set<CFGElement> follow = new TreeSet<>();
   public final Set<CFGElement> guard = new TreeSet<>();

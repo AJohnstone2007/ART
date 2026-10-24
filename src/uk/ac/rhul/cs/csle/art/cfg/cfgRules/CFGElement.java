@@ -17,6 +17,7 @@ public class CFGElement implements Comparable<Object> {
   public final Map<String, String> attributes = new HashMap<>();
   public final Map<String, Integer> rhsNonterminalsAcrossAllProductions = new HashMap<>();
   public final Set<CFGElement> first = new TreeSet<>();
+  public final Set<CFGElement> follow = new TreeSet<>();
 
   boolean setNullable() {
     if (nullable) return false; // already set

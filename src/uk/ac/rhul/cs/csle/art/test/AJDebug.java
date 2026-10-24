@@ -98,7 +98,7 @@ public final class AJDebug {
       for (var f : v3Nonterminal.getFirst())
         if (!(f instanceof ARTGrammarElementNonterminal)) v3FirstSet.add(f.toString());
 
-      for (var f : grammarV5.first.get(v5Nonterminal))
+      for (var f : v5Nonterminal.first)
         v5FirstSet.add(f.toString());
 
       boolean goodFirst = v3FirstSet.equals(v5FirstSet);
@@ -109,7 +109,7 @@ public final class AJDebug {
       for (var f : v3Nonterminal.getFollow())
         if (!(f instanceof ARTGrammarElementNonterminal)) v3FollowSet.add(f.toString());
 
-      for (var f : grammarV5.follow.get(v5Nonterminal))
+      for (var f : v5Nonterminal.follow)
         v5FollowSet.add(f.toString());
 
       boolean goodFollow = v3FollowSet.equals(v5FollowSet);
@@ -144,8 +144,7 @@ public final class AJDebug {
     String key = v5.toStringAsProduction().replaceAll("\\s", "");
     Set<ARTGrammarElement> v3InstanceFirst = v3InstanceFirsts.get(key), v3InstanceGuard = v3InstanceGuards.get(key),
         v3InstanceFollow = v3InstanceFollows.get(key);
-    Set<CFGElement> v5InstanceFirst = grammarV5.instanceFirst.get(v5), v5InstanceGuard = grammarV5.instanceGuard.get(v5),
-        v5InstanceFollow = grammarV5.instanceFollow.get(v5);
+    Set<CFGElement> v5InstanceFirst = v5.first, v5InstanceGuard = v5.guard, v5InstanceFollow = v5.follow;
 
     if (!scaffoldingKinds.contains(v5.cfgElement.cfgKind)) {
       if (v3InstanceFirsts.get(key) == null) {

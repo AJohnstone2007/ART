@@ -160,7 +160,7 @@ public class GLLModal extends AbstractParser {
   private boolean lookaheadInstanceFirst(String mode, CFGNode cfgNode) {
     // if (!ScriptInterpreter.currentModes.contains(mode)) return true;
 
-    var set = lexicalisations.cfgRules.instanceFirst.get(cfgNode);
+    var set = cfgNode.first;
     var slice = lexicalisations.getSlice(inputIndex);
     // Util.debug("lookaheadInstanceFirst() on node " + cfgNode + " with instance first " + set + " and slice ");
     // for (var s : slice)
@@ -169,16 +169,14 @@ public class GLLModal extends AbstractParser {
     for (TWESetElement s : slice)
       if (!s.suppressed) {
         if (set.contains(s.cfgElement)) return true;
-        if (set.contains(lexicalisations.cfgRules.epsilonElement)
-            && lexicalisations.cfgRules.follow.get(lexicalisations.cfgRules.lhsOf.get(cfgNode)).contains(s.cfgElement))
-          return true;
+        if (set.contains(lexicalisations.cfgRules.epsilonElement) && cfgNode.lhs.follow.contains(s.cfgElement)) return true;
       }
     // Util.debug("lookahead() false");
     return false;
   }
 
   private boolean lookaheadFollow(CFGElement cfgElement) {
-    var set = lexicalisations.cfgRules.follow.get(cfgElement);
+    var set = cfgElement.follow;
     var slice = lexicalisations.getSlice(inputIndex);
     // Util.debug("lookaheadFollow() on element " + cfgElement + " with set " + set + " and slice ");
     // for (var s : slice)
