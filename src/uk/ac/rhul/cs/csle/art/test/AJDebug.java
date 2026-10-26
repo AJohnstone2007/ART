@@ -99,22 +99,28 @@ public final class AJDebug {
         if (!(f instanceof ARTGrammarElementNonterminal)) v3FirstSet.add(f.toString());
 
       for (var f : v5Nonterminal.first)
-        v5FirstSet.add(f.toString());
+        if (f.cfgKind != CFGElementKind.NONTERMINAL) { // v3 does not have nonterminals in first sets
+          String s = f.toString();
+          if (s.equals("`\\'")) s = "`'"; // fixup to un-escape V5 \' for compatibility with v3
+          v5FirstSet.add(s);
+        }
 
       boolean goodFirst = v3FirstSet.equals(v5FirstSet);
       good &= goodFirst;
-      Util.info("First " + (goodFirst ? "" : "mis") + "match for " + v3Nonterminal + " V3: " + v3FirstSet + " V5: " + v5FirstSet);
+      if (!goodFirst) Util.info("First mismatch for " + v3Nonterminal + " V3: " + v3FirstSet + " V5: " + v5FirstSet);
+      // else
+      // Util.info("First match for " + v3Nonterminal + " V3: " + v3FirstSet + " V5: " + v5FirstSet);
 
-      Set<String> v3FollowSet = new TreeSet<>(), v5FollowSet = new TreeSet<>();
-      for (var f : v3Nonterminal.getFollow())
-        if (!(f instanceof ARTGrammarElementNonterminal)) v3FollowSet.add(f.toString());
-
-      for (var f : v5Nonterminal.follow)
-        v5FollowSet.add(f.toString());
-
-      boolean goodFollow = v3FollowSet.equals(v5FollowSet);
-      good &= goodFollow;
-      Util.info("Follow " + (goodFollow ? "" : "mis") + "match for " + v3Nonterminal + " V3: " + v3FollowSet + " V5: " + v5FollowSet);
+      // Set<String> v3FollowSet = new TreeSet<>(), v5FollowSet = new TreeSet<>();
+      // for (var f : v3Nonterminal.getFollow())
+      // if (!(f instanceof ARTGrammarElementNonterminal)) v3FollowSet.add(f.toString());
+      //
+      // for (var f : v5Nonterminal.follow)
+      // v5FollowSet.add(f.toString());
+      //
+      // boolean goodFollow = v3FollowSet.equals(v5FollowSet);
+      // good &= goodFollow;
+      // Util.info("Follow " + (goodFollow ? "" : "mis") + "match for " + v3Nonterminal + " V3: " + v3FollowSet + " V5: " + v5FollowSet);
 
     }
 
@@ -156,13 +162,15 @@ public final class AJDebug {
       for (var f : v3InstanceFirst)
         if (!(f instanceof ARTGrammarElementNonterminal)) v3FirstSet.add(f.toString());
 
-      for (var f : v5InstanceFirst)
-        v5FirstSet.add(f.toString());
+      for (CFGElement f : v5InstanceFirst)
+        if (f.cfgKind != CFGElementKind.NONTERMINAL) v5FirstSet.add(v5fixup(f.toString()));
 
       boolean goodFirst = v3FirstSet.equals(v5FirstSet);
       good &= goodFirst;
 
-      Util.info("Instance first " + (goodFirst ? "" : "mis") + "match at " + key + " V3: " + v3FirstSet + " V5: " + v5FirstSet);
+      if (!goodFirst) Util.info("Instance first mismatch at " + key + " V3: " + v3FirstSet + " V5: " + v5FirstSet);
+      // else
+      // Util.info("Instance first match at " + key + " V3: " + v3FirstSet + " V5: " + v5FirstSet);
 
       Set<String> v3GuardSet = new TreeSet<>(), v5GuardSet = new TreeSet<>();
       for (var f : v3InstanceGuard)
@@ -195,6 +203,11 @@ public final class AJDebug {
     good &= v5v3RegressionCheckFirstAndFollowInstanceSetsRec(v5.alt, artV3);
 
     return good;
+  }
+
+  private String v5fixup(String string) {
+    if (string.equals("`\\'")) return "`'";
+    return string;
   }
 
   Map<String, TreeSet<ARTGrammarElement>> v3InstanceFirsts = new HashMap<>();

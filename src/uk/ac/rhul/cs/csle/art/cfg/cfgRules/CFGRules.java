@@ -537,7 +537,7 @@ public final class CFGRules implements DisplayInterface { // class made final to
     // First and follow sets
     if (startNonterminal != null) startNonterminal.follow.add(endOfStringElement);
     Util.debug("Warning - only computing first and follow for USER grammars");
-    if (cfgRulesKind == CFGRulesKind.USER) computeFirstFollowGuardSets();
+    if (cfgRulesKind == CFGRulesKind.USER) computeFirstSets();
 
     normaliseComputeReachabilities(); // ENF equipped
     normaliseComputeAndCheckParaterminalSets(); // Reachable element manipulation - no EBNF implications
@@ -827,41 +827,56 @@ public final class CFGRules implements DisplayInterface { // class made final to
    *
    ***********************************************************************************************/
   boolean ffgChanged;
+  Set<CFGElementKind> ebnfKinds = Set.of(CFGElementKind.OPT, CFGElementKind.KLN, CFGElementKind.PAR, CFGElementKind.POS);
 
-  private void computeFirstFollowGuardSets() {
+  private void computeFirstSets() {
     getStartNonterminal().follow.add(endOfStringElement);
 
     for (var e : elements.keySet()) // Self-seed first sets
-      if (e.cfgKind == CFGElementKind.EPSILON) // use canonical epsilon
+      if (e.cfgKind == CFGElementKind.EPSILON || e.cfgKind == CFGElementKind.END) // use canonical epsilon
         e.first.add(epsilonElement);
-      else
-        e.first.add(e);
+      else if (!ebnfKinds.contains(e.cfgKind)) e.first.add(e);
 
     ffgChanged = true;
     while (ffgChanged) {
       ffgChanged = false;
       for (var ge : elements.keySet())
-        if (ge.cfgKind == CFGElementKind.NONTERMINAL && elementToRulesNodeMap.get(ge) != null) computeFirstFollowSetsRec(ge, elementToRulesNodeMap.get(ge).alt);
+        if (ge.cfgKind == CFGElementKind.NONTERMINAL && elementToRulesNodeMap.get(ge) != null) {
+          computeFirstSetsRec(elementToRulesNodeMap.get(ge));
+          ffgChanged |= ge.first.addAll(elementToRulesNodeMap.get(ge).first); // lift head node's first to the LHS element
+        }
     }
   }
 
-  Set<CFGElementKind> ebnfKinds = Set.of(CFGElementKind.PAR, CFGElementKind.OPT, CFGElementKind.POS, CFGElementKind.KLN);
+  private void computeFirstSetsRec(CFGNode parent) {
+    // Util.debug("computeFirstFollowSetsRec with parent " + parent + (topLevel ? " TOP" : " EBNF"));
+    for (CFGNode a = parent.alt; a != null; a = a.alt) { // walk all productions
 
-  private void computeFirstFollowSetsRec(CFGElement lhs, CFGNode headAlt) {
-    Util.debug("computeFirstFollowSetsRec with LHS " + lhs + " and headAlt " + headAlt);
-    for (CFGNode a = headAlt; a != null; a = a.alt) { // walk all productions
-      CFGNode s = a.seq;
+      CFGNode s;
+      for (s = a.seq; s.cfgElement.cfgKind != CFGElementKind.END; s = s.seq) {
+        if (ebnfKinds.contains(s.cfgElement.cfgKind)) computeFirstSetsRec(s);
+        ffgChanged |= s.first.addAll(sequenceFirst(s));
+      } // Notes terminated on END slot
+      s.first.add(epsilonElement); // End slots have epsilon by definition
 
-      while (true) {
-        if (ebnfKinds.contains(s.cfgElement.cfgKind)) {
-          computeFirstFollowSetsRec(null, s.alt);
-        } else
-          ffgChanged |= s.first.addAll(s.cfgElement.first);
-        if (s.cfgElement.cfgKind == CFGElementKind.END) break;
-        if (s.first.contains(epsilonElement)) s.first.addAll(s.seq.first);
-        s = s.seq;
-      }
+      // For loops, fold first set of squence into first of the END slot
+      if (parent.cfgElement.cfgKind == CFGElementKind.POS || parent.cfgElement.cfgKind == CFGElementKind.KLN) ffgChanged |= s.first.addAll(parent.first);
+
+      ffgChanged |= a.first.addAll(a.seq.first);
+      ffgChanged |= parent.first.addAll(a.seq.first);
     }
+
+  }
+
+  private Set<CFGElement> sequenceFirst(CFGNode s) {
+    Set<CFGElement> tmp = new HashSet(s.cfgElement.first);
+    while (s.getNullable()) {
+      tmp.remove(epsilonElement);
+      tmp.addAll(s.seq.first);
+      s = s.seq;
+      if (s.cfgElement.cfgKind == CFGElementKind.END) break;
+    }
+    return tmp;
   }
 
   /************************************************************************************************
@@ -1442,18 +1457,18 @@ public final class CFGRules implements DisplayInterface { // class made final to
       if (gn.getNullable()) outputStream.print(" nullable");
       if (gn.getNullablePrefix()) outputStream.print(" nullablePrefix");
       if (gn.getNullableSuffix()) outputStream.print(" nullableSuffix");
-      // if (initialSlots.contains(gn)) outputStream.print(" initial");
-      // if (secondSlots.contains(gn)) outputStream.print(" second");
-      // if (penultimateSlots.contains(gn)) outputStream.print(" penultimate");
-      // if (finalSlots.contains(gn)) outputStream.print(" final");
-      //
-      // if (!instanceFirst.get(gn).isEmpty()) {
-      // outputStream.print(" instfirst = {");
-      // printElements(outputStream, instanceFirst.get(gn));
-      // outputStream.print("} instfollow = {");
-      // printElements(outputStream, instanceFollow.get(gn));
-      // outputStream.print("}");
-      // }
+      if (gn.initial) outputStream.print(" initial");
+      if (gn.second) outputStream.print(" second");
+      if (gn.penultimate) outputStream.print(" penultimate");
+      if (gn.ultimate) outputStream.print(" final");
+
+      if (!gn.first.isEmpty()) {
+        outputStream.print("\nfirst = {");
+        printElements(outputStream, gn.first);
+        outputStream.print("}\nfollow = {");
+        printElements(outputStream, gn.follow);
+        outputStream.print("}");
+      }
       String action = gn.toStringActions();
       if (!action.isEmpty()) outputStream.print(" Action: " + action);
 
