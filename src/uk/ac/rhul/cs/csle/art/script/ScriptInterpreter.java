@@ -76,8 +76,8 @@ public class ScriptInterpreter {
   private final AbstractParser scriptParser = new GLLBaseLine(true); // The script parser: note GLL not MGLL at the moment
   private final AbstractLexer scriptLexer = new LexerBaseLine(); // Standard lexer with builtins but NOT paraterminals
   private final static Map<Integer, Map<Integer, Map<Integer, Consumer<Integer>>>> directiveParameters = new HashMap<>();
-  public static CFGRules scriptCFGRules; // The rules built by parsing the user script
-  private static ChooseRules scriptChooseRules; // The rules built by parsing the user script
+  public final CFGRules scriptCFGRules; // The rules built by parsing the user script
+  private final ChooseRules scriptChooseRules; // The rules built by parsing the user script
   private int scriptParserTerm; // The derivation from scriptParser
   private final Map<String, ScriptValue> scriptVariables = new HashMap<>(); // Save and restore symbol table
   private int scriptDerivationTerm = 0;
@@ -257,6 +257,7 @@ public class ScriptInterpreter {
 
   static void initialiseDirectiveParameters() {
     //@formatter:off
+    directiveParameters.clear();
     addDirectiveParameter("!set", "artArgInt", "trace", (Integer t) -> { Util.traceLevel = argInt(t); Util.debug("Trace level set to " + Util.traceLevel); });
     addDirectiveParameter("!set", "artArgInt", "error", (Integer t) -> { Util.errorLevel = argInt(t); Util.debug("Error level set to " + Util.errorLevel); });
 

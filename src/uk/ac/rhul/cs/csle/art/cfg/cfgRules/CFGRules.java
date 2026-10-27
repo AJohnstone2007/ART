@@ -507,7 +507,7 @@ public final class CFGRules implements DisplayInterface { // class made final to
   public void normalise() {
     if (normalised) return; // Nothing to do
     // Util.debug("Normalising cfgRules object with number " + cfgRulesNumber + " " + cfgRulesKind);
-    if (!seenWhitespaceDirective) {
+    if (!seenWhitespaceDirective && cfgRulesKind == CFGRulesKind.USER) {
       Util.info("Adding default whitespace handling");
       whitespaces.add(findElement(CFGElementKind.TERM_BI, "SIMPLE_WHITESPACE"));
     }
@@ -534,12 +534,12 @@ public final class CFGRules implements DisplayInterface { // class made final to
     normaliseComputeNullableSlotsAndElements(); // EBNF equipped
     normaliseSetAcceptingSlotsAndNodes(); // EBNF not needed - we only look at the top level productions
 
+    normaliseComputeReachabilities(); // ENF equipped
+
     // First and follow sets
     if (startNonterminal != null) startNonterminal.follow.add(endOfStringElement);
-    Util.debug("Warning - only computing first and follow for USER grammars");
-    if (cfgRulesKind == CFGRulesKind.USER) computeFirstSets();
+    computeFirstSets();
 
-    normaliseComputeReachabilities(); // ENF equipped
     normaliseComputeAndCheckParaterminalSets(); // Reachable element manipulation - no EBNF implications
     derivesExactly = new Relation<>();
     normaliseComputeCyclicSlots(); // TODO: Not understood
@@ -653,7 +653,7 @@ public final class CFGRules implements DisplayInterface { // class made final to
           Util.warning("Found SML builtin " + e.str + " whilst extending character set - ignoring");
           break;
         case "SML_COMMENT":
-          Util.warning("Found SML builtin " + e.str + " whilst extending character set - ignoring");
+          addCharacters("(*)");
           break;
         default:
           Util.fatal("Character set update found unexpected built in " + e);
@@ -841,7 +841,7 @@ public final class CFGRules implements DisplayInterface { // class made final to
     while (ffgChanged) {
       ffgChanged = false;
       for (var ge : elements.keySet())
-        if (ge.cfgKind == CFGElementKind.NONTERMINAL && elementToRulesNodeMap.get(ge) != null) {
+        if (ge.cfgKind == CFGElementKind.NONTERMINAL && elementToRulesNodeMap.get(ge) != null) { // Avoid used but not defined nonterminals
           computeFirstSetsRec(elementToRulesNodeMap.get(ge));
           ffgChanged |= ge.first.addAll(elementToRulesNodeMap.get(ge).first); // lift head node's first to the LHS element
         }
@@ -851,21 +851,19 @@ public final class CFGRules implements DisplayInterface { // class made final to
   private void computeFirstSetsRec(CFGNode parent) {
     // Util.debug("computeFirstFollowSetsRec with parent " + parent + (topLevel ? " TOP" : " EBNF"));
     for (CFGNode a = parent.alt; a != null; a = a.alt) { // walk all productions
-
-      CFGNode s;
+      CFGNode s; // We need to access the end node, so declare outside of the scope of the for loop
       for (s = a.seq; s.cfgElement.cfgKind != CFGElementKind.END; s = s.seq) {
-        if (ebnfKinds.contains(s.cfgElement.cfgKind)) computeFirstSetsRec(s);
-        ffgChanged |= s.first.addAll(sequenceFirst(s));
-      } // Notes terminated on END slot
-      s.first.add(epsilonElement); // End slots have epsilon by definition
+        if (ebnfKinds.contains(s.cfgElement.cfgKind)) computeFirstSetsRec(s); // recurse into EBNF bodies
+        ffgChanged |= s.first.addAll(sequenceFirst(s)); // collect firsts over nullable successors
+      } // Note: at termination s will be the END slot
+      ffgChanged |= s.first.add(epsilonElement); // End slots have epsilon by definition
 
-      // For loops, fold first set of squence into first of the END slot
+      // For Kleene and Positive closures, fold first set of squence into first of the END slot
       if (parent.cfgElement.cfgKind == CFGElementKind.POS || parent.cfgElement.cfgKind == CFGElementKind.KLN) ffgChanged |= s.first.addAll(parent.first);
 
-      ffgChanged |= a.first.addAll(a.seq.first);
-      ffgChanged |= parent.first.addAll(a.seq.first);
+      ffgChanged |= a.first.addAll(a.seq.first); // fold sequence first into the alternate's first
+      ffgChanged |= parent.first.addAll(a.seq.first); // fold sequence first into the parent's first
     }
-
   }
 
   private Set<CFGElement> sequenceFirst(CFGNode s) {
@@ -890,8 +888,6 @@ public final class CFGRules implements DisplayInterface { // class made final to
    * reachable from all nonterminals with recursion stopping at paraterminals
    *
    ***********************************************************************************************/
-  // TODO: Something odd here - all nonterminals are scanned but recursive routine dives into them all - shouldn't we just test from start symbol to avoid
-  // unreacheachables?
   private void normaliseComputeReachabilities() {
     for (var lhs : elements.keySet())
       if (lhs.cfgKind == CFGElementKind.NONTERMINAL && elementToRulesNodeMap.get(lhs) != null) { // avoid nonterminals that have no rules in this grammar
@@ -989,6 +985,13 @@ public final class CFGRules implements DisplayInterface { // class made final to
       lexerNonterminals.addAll(reachableNonterminals.get(n)); // Note we want all reachable nonterminals including paraterminals
 
     if (cfgRulesKind == CFGRulesKind.USER) {
+      // Report unreachable nonterminals
+
+      Set<CFGElement> unreachable = new TreeSet<>(reachableNonterminals.getDomain());
+      unreachable.removeAll(reachable.get(startNonterminal));
+      unreachable.remove(startNonterminal);
+      if (unreachable.size() > 0) Util.warning("unreachable nonterminal" + (unreachable.size() == 1 ? "" : "s") + ": " + unreachable);
+
       TreeSet<CFGElement> tmp = new TreeSet<>(elements.keySet());
       tmp.removeAll(reachable.get(getStartNonterminal()));
       tmp.remove(getStartNonterminal());
@@ -1377,10 +1380,10 @@ public final class CFGRules implements DisplayInterface { // class made final to
       printSet(outputStream, defined, "Defined nonterminals");
       printSet(outputStream, used, "Used elements");
 
-      // outputStream.print("Reachable all elements:\n" + reachable);
-      // outputStream.print("Reachable nonterminals:\n" + reachableNonterminals);
-      // outputStream.print("Reachable all elements stop at paraterminals:\n" + reachablePara);
-      // outputStream.print("Reachable nonterminal stop at paraterminals:\n" + reachableNonterminalsPara);
+      outputStream.print("Reachable elements:\n" + reachable);
+      outputStream.print("Reachable nonterminals:\n" + reachableNonterminals);
+      outputStream.print("Reachable elements stopping at paraterminals:\n" + reachablePara);
+      outputStream.print("Reachable nonterminals stopping at paraterminals:\n" + reachableNonterminalsPara);
       //
       // printSet(outputStream, cyclicNonterminals, "Cyclic nonterminals");
       //

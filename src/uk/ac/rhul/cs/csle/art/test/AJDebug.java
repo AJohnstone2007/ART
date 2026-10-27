@@ -147,14 +147,14 @@ public final class AJDebug {
 
     // Util.debug("v5v3RegressionCheckFirstAndFollowInstanceSetsRec at " + v5.toStringDot());
     boolean good = true;
-    String key = v5.toStringAsProduction().replaceAll("\\s", "");
-    Set<ARTGrammarElement> v3InstanceFirst = v3InstanceFirsts.get(key), v3InstanceGuard = v3InstanceGuards.get(key),
-        v3InstanceFollow = v3InstanceFollows.get(key);
+    String v3key = v5.toStringAsProduction().replaceAll("\\s", "").replaceAll("\\\\'", "'");
+    Set<ARTGrammarElement> v3InstanceFirst = v3InstanceFirsts.get(v3key), v3InstanceGuard = v3InstanceGuards.get(v3key),
+        v3InstanceFollow = v3InstanceFollows.get(v3key);
     Set<CFGElement> v5InstanceFirst = v5.first, v5InstanceGuard = v5.guard, v5InstanceFollow = v5.follow;
 
     if (!scaffoldingKinds.contains(v5.cfgElement.cfgKind)) {
-      if (v3InstanceFirsts.get(key) == null) {
-        Util.info(" v3 key is missing: " + key);
+      if (v3InstanceFirsts.get(v3key) == null) {
+        Util.info(" v3 key is missing: " + v3key);
         return false;
       }
 
@@ -168,7 +168,7 @@ public final class AJDebug {
       boolean goodFirst = v3FirstSet.equals(v5FirstSet);
       good &= goodFirst;
 
-      if (!goodFirst) Util.info("Instance first mismatch at " + key + " V3: " + v3FirstSet + " V5: " + v5FirstSet);
+      if (!goodFirst) Util.info("Instance first mismatch at " + v3key + " V3: " + v3FirstSet + " V5: " + v5FirstSet);
       // else
       // Util.info("Instance first match at " + key + " V3: " + v3FirstSet + " V5: " + v5FirstSet);
 
@@ -192,7 +192,7 @@ public final class AJDebug {
         v5FollowSet.add(f.toString());
 
       boolean goodFollow = v3FollowSet.equals(v5FollowSet);
-      if (!goodFollow) Util.info("Instance follow " + (goodFollow ? "" : "mis") + "match at " + key + " V3: " + v3FollowSet + " V5: " + v5FollowSet);
+      if (!goodFollow) Util.info("Instance follow " + (goodFollow ? "" : "mis") + "match at " + v3key + " V3: " + v3FollowSet + " V5: " + v5FollowSet);
 
       good &= goodFollow;
 
