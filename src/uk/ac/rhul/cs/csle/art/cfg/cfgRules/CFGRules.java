@@ -539,6 +539,8 @@ public final class CFGRules implements DisplayInterface { // class made final to
     // First and follow sets
     if (startNonterminal != null) startNonterminal.follow.add(endOfStringElement);
     computeFirstSets();
+    computeFollowSets();
+    computeGuardSets();
 
     normaliseComputeAndCheckParaterminalSets(); // Reachable element manipulation - no EBNF implications
     derivesExactly = new Relation<>();
@@ -830,8 +832,6 @@ public final class CFGRules implements DisplayInterface { // class made final to
   Set<CFGElementKind> ebnfKinds = Set.of(CFGElementKind.OPT, CFGElementKind.KLN, CFGElementKind.PAR, CFGElementKind.POS);
 
   private void computeFirstSets() {
-    getStartNonterminal().follow.add(endOfStringElement);
-
     for (var e : elements.keySet()) // Self-seed first sets
       if (e.cfgKind == CFGElementKind.EPSILON || e.cfgKind == CFGElementKind.END) // use canonical epsilon
         e.first.add(epsilonElement);
@@ -875,6 +875,41 @@ public final class CFGRules implements DisplayInterface { // class made final to
       if (s.cfgElement.cfgKind == CFGElementKind.END) break;
     }
     return tmp;
+  }
+
+  private void computeFollowSets() {
+    getStartNonterminal().follow.add(endOfStringElement);
+
+    ffgChanged = true;
+    while (ffgChanged) {
+      ffgChanged = false;
+      for (var ge : elements.keySet())
+        if (ge.cfgKind == CFGElementKind.NONTERMINAL && elementToRulesNodeMap.get(ge) != null) // Avoid used but not defined nonterminals
+          computeFollowSetsRec(elementToRulesNodeMap.get(ge));
+    }
+  }
+
+  private void computeFollowSetsRec(CFGNode parent) {
+    for (CFGNode a = parent.alt; a != null; a = a.alt) { // walk all productions
+      CFGNode s; // We need to access the end node, so declare outside of the scope of the for loop
+      for (s = a.seq; s.cfgElement.cfgKind != CFGElementKind.END; s = s.seq) {
+        Set<CFGElement> nextFirst = s.seq.first;
+
+        if (nextFirst.contains(epsilonElement)) {
+          nextFirst = new HashSet<>(nextFirst);
+          nextFirst.remove(epsilonElement);
+          nextFirst.addAll(parent.follow);
+        }
+        ffgChanged = s.follow.addAll(nextFirst);
+        if (s.cfgElement.cfgKind == CFGElementKind.NONTERMINAL) ffgChanged = s.cfgElement.follow.addAll(s.follow);
+      }
+    }
+  }
+
+  private void computeGuardSets() {
+  }
+
+  private void computeGuardSetsRec(CFGNode parent) {
   }
 
   /************************************************************************************************

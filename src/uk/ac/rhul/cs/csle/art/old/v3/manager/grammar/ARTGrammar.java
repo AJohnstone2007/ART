@@ -1180,7 +1180,6 @@ public final class ARTGrammar {
       else
         lastNonPosChildNode.getSibling().isPredictivePop = true;
     }
-
   }
 
   private boolean computeSetsRec(ARTGrammarInstance node, int level, ARTGrammarElementNonterminal lhs, ARTGrammarInstance bracketNode) {
@@ -1273,6 +1272,7 @@ public final class ARTGrammar {
       tmp.addAll(node.getSibling().getFirst());
       tmp.remove(epsilon);
 
+      Util.debug("V3 - adding " + tmp + " to follow set of node " + node.toGrammarString());
       changed |= node.getFollow().addAll(tmp);
 
       if (node.getSibling().getFirst().contains(epsilon)) // are we at the end of a rule?
@@ -1287,6 +1287,7 @@ public final class ARTGrammar {
 
       // This is the only place where nonterminal follows are updated
       changed |= nonterminal.getFollow().addAll(node.getFollow());
+      // Util.debug("V3 - nonterminal " + nonterminal + " follow set updated from node " + node + " with instance follow " + node.getFollow());
     }
 
     else if (node instanceof ARTGrammarInstanceTerminal)
