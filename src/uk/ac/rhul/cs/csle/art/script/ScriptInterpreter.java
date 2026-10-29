@@ -19,6 +19,7 @@ import uk.ac.rhul.cs.csle.art.cfg.cfgRules.GIFTKind;
 import uk.ac.rhul.cs.csle.art.cfg.chart.AlgX;
 import uk.ac.rhul.cs.csle.art.cfg.chart.CYK;
 import uk.ac.rhul.cs.csle.art.cfg.gll.GLLBaseLine;
+import uk.ac.rhul.cs.csle.art.cfg.gll.GLLBaseLineNew;
 import uk.ac.rhul.cs.csle.art.cfg.gll.GLLHashPool;
 import uk.ac.rhul.cs.csle.art.cfg.gll.GLLModal;
 import uk.ac.rhul.cs.csle.art.cfg.lexer.AbstractLexer;
@@ -307,6 +308,7 @@ public class ScriptInterpreter {
     addDirectiveParameter("!parser", "artArgBoolean", "rdsobexplicitstack", (Integer t) -> { currentParser = new RDSOBExplicitStack(); Util.info("Parser set to RDSOBExplicitStack"); });
     addDirectiveParameter("!parser", "artArgBoolean", "gllhashpool", (Integer t) -> { currentParser = new GLLHashPool(); Util.info("Parser set to GLLHashPool"); });
     addDirectiveParameter("!parser", "artArgBoolean", "gllbaseline", (Integer t) -> { currentParser = new GLLBaseLine(false); Util.info("Parser set to GLLBaseline"); });
+    addDirectiveParameter("!parser", "artArgBoolean", "gllbaselinenew", (Integer t) -> { currentParser = new GLLBaseLineNew(false); Util.info("Parser set to GLLBaselineNew"); });
     addDirectiveParameter("!parser", "artArgBoolean", "mgllbaseline", (Integer t) -> { currentParser = new GLLBaseLine(true); Util.info("Parser set to MGLLBaseline"); });
     addDirectiveParameter("!parser", "artArgBoolean", "gllmodal", (Integer t) -> { currentParser = new GLLModal(); Util.info("Parser set to GLLModal"); });
 

@@ -1272,7 +1272,7 @@ public final class ARTGrammar {
       tmp.addAll(node.getSibling().getFirst());
       tmp.remove(epsilon);
 
-      Util.debug("V3 - adding " + tmp + " to follow set of node " + node.toGrammarString());
+      // Util.debug("V3 - adding " + tmp + " to follow set of node " + node.toGrammarString());
       changed |= node.getFollow().addAll(tmp);
 
       if (node.getSibling().getFirst().contains(epsilon)) // are we at the end of a rule?

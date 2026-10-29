@@ -107,9 +107,10 @@ public final class AJDebug {
 
       boolean goodFirst = v3FirstSet.equals(v5FirstSet);
       good &= goodFirst;
-      if (!goodFirst) Util.info("First mismatch for " + v3Nonterminal + " V3: " + v3FirstSet + " V5: " + v5FirstSet);
-      // else
-      // Util.info("First match for " + v3Nonterminal + " V3: " + v3FirstSet + " V5: " + v5FirstSet);
+      if (!goodFirst)
+        Util.info("First mismatch for " + v3Nonterminal + " V3: " + v3FirstSet + " V5: " + v5FirstSet);
+      else
+        Util.info("First match for " + v3Nonterminal + " V3: " + v3FirstSet + " V5: " + v5FirstSet);
 
       Set<String> v3FollowSet = new TreeSet<>(), v5FollowSet = new TreeSet<>();
       for (var f : v3Nonterminal.getFollow())
@@ -120,7 +121,10 @@ public final class AJDebug {
 
       boolean goodFollow = v3FollowSet.equals(v5FollowSet);
       good &= goodFollow;
-      if (!goodFollow) Util.info("Follow mismatch for " + v3Nonterminal + " V3: " + v3FollowSet + " V5: " + v5FollowSet);
+      if (!goodFollow)
+        Util.info("Follow mismatch for " + v3Nonterminal + " V3: " + v3FollowSet + " V5: " + v5FollowSet);
+      else
+        Util.info("Follow match for " + v3Nonterminal + " V3: " + v3FollowSet + " V5: " + v5FollowSet);
     }
 
     // Now work through instance sets
@@ -144,7 +148,7 @@ public final class AJDebug {
   private boolean v5v3RegressionCheckFirstAndFollowInstanceSetsRec(CFGNode v5, ARTV3 artV3) {
     if (v5 == null) return true;
 
-    Util.debug("v5v3RegressionCheckFirstAndFollowInstanceSetsRec at " + v5.toStringAsProduction());
+    // Util.debug("v5v3RegressionCheckFirstAndFollowInstanceSetsRec at " + v5.toStringAsProduction());
     boolean good = true;
     String v3key = v5.toStringAsProduction().replaceAll("\\s", "").replaceAll("\\\\'", "'");
     Set<ARTGrammarElement> v3InstanceFirst = v3InstanceFirsts.get(v3key), v3InstanceGuard = v3InstanceGuards.get(v3key),
@@ -167,9 +171,10 @@ public final class AJDebug {
       boolean goodFirst = v3FirstSet.equals(v5FirstSet);
       good &= goodFirst;
 
-      if (!goodFirst) Util.info("Instance first mismatch at " + v3key + " V3: " + v3FirstSet + " V5: " + v5FirstSet);
-      // else
-      // Util.info("Instance first match at " + key + " V3: " + v3FirstSet + " V5: " + v5FirstSet);
+      if (!goodFirst)
+        Util.info("Instance first mismatch at " + v3key + " V3: " + v3FirstSet + " V5: " + v5FirstSet);
+      else
+        Util.info("Instance first match at " + v3key + " V3: " + v3FirstSet + " V5: " + v5FirstSet);
 
       Set<String> v3GuardSet = new TreeSet<>(), v5GuardSet = new TreeSet<>();
       for (var f : v3InstanceGuard)
@@ -222,16 +227,16 @@ public final class AJDebug {
   /* Note - v3 only computes instance follow sets for nonterminals that follow nonterminal slots. We combine them here */
   void v5v3RegressionGatherV3InstanceSetsRec(ARTGrammarInstance v3) {
     if (v3 == null) return;
-    Util.debug(
-        "v5v3RegressionGatherV3InstanceSetsRec at [" + v3.getKey() + "] " + v3.toGrammarString(".") + " first=" + v3.getFirst() + " follow=" + v3.getFollow());
-    // Note: replaceAll on \s takes out whitespace
+    // Util.debug(
+    // "v5v3RegressionGatherV3InstanceSetsRec at [" + v3.getKey() + "] " + v3.toGrammarString(".") + " first=" + v3.getFirst() + " follow=" + v3.getFollow());
+    // // Note: replaceAll on \s takes out whitespace
     if (v3 instanceof ARTGrammarInstanceSlot) {
       var key = v3.toGrammarString(".").replaceAll("\\s", "");
       v3InstanceFirsts.put(key, new TreeSet<>(v3.getFirst()));
       v3InstanceGuards.put(key, new TreeSet<>(v3.getGuard()));
       if (v3.getSibling() != null) {
         v3InstanceFollows.put(key, new TreeSet<>(v3.getSibling().getFollow()));
-        if (v3InstanceFollows.get(key).size() != 0) Util.debug("V3 instance follow non empty at " + key + "=" + v3InstanceFollows.get(key));
+        // if (v3InstanceFollows.get(key).size() != 0) Util.debug("V3 instance follow non empty at " + key + "=" + v3InstanceFollows.get(key));
       }
     }
     v5v3RegressionGatherV3InstanceSetsRec(v3.getChild());
