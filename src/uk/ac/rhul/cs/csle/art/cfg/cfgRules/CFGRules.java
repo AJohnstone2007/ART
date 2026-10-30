@@ -867,7 +867,7 @@ public final class CFGRules implements DisplayInterface { // class made final to
   }
 
   private Set<CFGElement> sequenceFirst(CFGNode s) {
-    Set<CFGElement> tmp = new HashSet(s.cfgElement.first);
+    Set<CFGElement> tmp = new HashSet<>(s.cfgElement.first);
     while (s.getNullable()) {
       tmp.remove(epsilonElement);
       tmp.addAll(s.seq.first);

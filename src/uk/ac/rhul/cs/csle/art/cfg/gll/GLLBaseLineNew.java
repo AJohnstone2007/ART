@@ -47,6 +47,10 @@ public class GLLBaseLineNew extends AbstractParser {
     queueProductionTasks();
     nextTask: while (nextTask()) {
       nextCFGNode: while (true) {
+        if (cfgNode == null) {
+          retrn();
+          continue nextTask;
+        }
         switch (cfgNode.cfgElement.cfgKind) {
         case ALT:
           queueProductionTasks(); // Create task descriptor for the start of each production - is this needed for BNF?
@@ -63,7 +67,7 @@ public class GLLBaseLineNew extends AbstractParser {
           if (slice == null) continue nextTask;// Nothing todo for empty TWE slices
           for (int sliceIndex = 0; sliceIndex < slice.length; sliceIndex++) {// Iterate over the TWE set elements in this slice
             if (!slice[sliceIndex].suppressed && matchTerminal(slice[sliceIndex].cfgElement)) { // Ignore suppressed TWE set elements
-              Util.debug("Matched " + cfgNode.toStringAsProduction());
+              // Util.debug("Matched " + cfgNode.toStringAsProduction());
               if (isMGLL) // MGLL only: create continuation task descriptors for all subsequent matches in this slice. For GLL we process this one and ignore
                           // the rest
                 for (int restOfIndex = sliceIndex + 1; restOfIndex < slice.length; restOfIndex++)
@@ -131,17 +135,15 @@ public class GLLBaseLineNew extends AbstractParser {
   }
 
   private void retrn() {
-    do {
-      if (stackNode.equals(stacks.getRoot())) {
-        if ((cfgNode.lhs == lexicalisations.cfgRules.getStartNonterminal()) && (inputIndex == lexicalisations.inputString.length() - 1)) {
-          derivations.setRoot(lexicalisations.cfgRules.elementToRulesNodeMap.get(lexicalisations.cfgRules.getStartNonterminal()),
-              lexicalisations.inputString.length() - 1);
-          inLanguage = true;
-        }
-        return;
+    if (stackNode.equals(stacks.getRoot())) {
+      if ((cfgNode.lhs == lexicalisations.cfgRules.getStartNonterminal()) && (inputIndex == lexicalisations.inputString.length() - 1)) {
+        derivations.setRoot(lexicalisations.cfgRules.elementToRulesNodeMap.get(lexicalisations.cfgRules.getStartNonterminal()),
+            lexicalisations.inputString.length() - 1);
+        inLanguage = true;
       }
-      stacks.pop(derivations, tasks, inputIndex, stackNode, derivationNode);
-    } while (cfgNode.cfgElement.cfgKind == CFGElementKind.END);
+      return;
+    }
+    stacks.pop(derivations, tasks, inputIndex, stackNode, derivationNode);
   }
 
   @Override
