@@ -159,7 +159,7 @@ public class GLLBaseLineNew extends AbstractParser {
 
   @Override
   protected String name() {
-    return isMGLL ? "MGLL" : "GLL";
+    return super.name() + (isMGLL ? " (MGLL mode)" : " (GLL mode)");
   }
 
 }

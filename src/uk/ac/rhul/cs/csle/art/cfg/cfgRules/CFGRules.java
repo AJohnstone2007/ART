@@ -772,6 +772,7 @@ public final class CFGRules implements DisplayInterface { // class made final to
     }
   }
 
+  @SuppressWarnings("fallthrough")
   private void computeNullableRec(CFGNode parent, boolean topLevel) {
     for (CFGNode a = parent.alt; a != null; a = a.alt) { // walk all productions
       CFGNode s = a.seq;

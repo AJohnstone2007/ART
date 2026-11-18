@@ -207,7 +207,7 @@ public class GLLModal extends AbstractParser {
 
   @Override
   protected String name() {
-    return "GLLModal";
+    return super.name() + (ScriptInterpreter.currentParser.modeMGLL ? " (MGLL mode)" : " (GLL mode)");
   }
 
 }

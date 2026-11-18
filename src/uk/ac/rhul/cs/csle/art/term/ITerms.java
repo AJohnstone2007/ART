@@ -131,9 +131,9 @@ public final class ITerms {
     // Try and find a plugin for __plugin() calls
     try {
       plugin = (AbstractValuePlugin) getClass().getClassLoader().loadClass("ARTValuePlugin").getDeclaredConstructor().newInstance();
-      Util.trace(3, "Attached to " + plugin.description());
+      Util.debug("Attached to " + plugin.description());
     } catch (Exception e) {
-      Util.trace(3, "Attached to ARTDefaultPlugin");
+      // Util.debug("Attached to ARTDefaultPlugin");
     }
   }
 

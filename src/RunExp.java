@@ -1,5 +1,3 @@
-import static java.util.Map.entry;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -13,12 +11,9 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
@@ -27,19 +22,18 @@ class RunExp {
 
   DateTimeFormatter dtf = DateTimeFormatter.ofPattern("YYYY-MM-dd,HH:mm:ss");
   int line = 1;
-  static String logFileName = "log.csv", timeSummaryFileName = "timeSummary.csv", spaceSummaryFileName = "spaceSummary.csv",
-      latexTableFileName = "latexTable.tex";
+  static String logFileName = "log.csv", timeSummaryFileName = "timeSummary.csv", spaceSummaryFileName = "spaceSummary.csv";
 
   public static void main(String[] args) throws IOException, InterruptedException {
     if (args.length < 2)
       fatal("Usage: java RunExp <RLC> <count> <group> <group>? ...\n" + "where <RLC> is the path to the ReferenceLanguageCorpora directory root\n"
           + "      <count> is the number of iterations per experiment\n" + "      <group> is a group of grammars and strings to test\n\n"
-          + "      If countis zero, then skip the experimetal run, otherwise there must be at least one group. Standard groups include: org cws tok amb");
+          + "      If count is zero, then skip the experimental run, otherwise there must be at least one group. Standard groups include: org cws tok amb");
     if (Integer.parseInt(args[1]) > 0)
       new RunExp(args);
     else
       System.out.println("Count is zero - skipping experimental run and recomputing summaries");
-    new MakeTimeSummary(logFileName, timeSummaryFileName, latexTableFileName);
+    new MakeTimeSummary(logFileName, timeSummaryFileName);
     new MakeSpaceSummary(logFileName, spaceSummaryFileName);
   }
 
@@ -47,9 +41,7 @@ class RunExp {
 
     Files.deleteIfExists(Paths.get(logFileName));
     File logFile = new File(logFileName);
-    appendTo(logFile,
-        "line,date,time,tool,script,iter,language,grammar,string,length,algorithm,result,status,TSetup,TLex,TLChoose,TParse,TPChoose,TTerm,TSem,twe N,twe E,lexes,"
-            + "Desc,GSS N,GGS E,Pops,SPPF Eps,SPPF T,SPPF NonT,SPPF Inter,SPPF SymInter,SPPF Pack,SPPF Amb,SPPF Edge,SPPF Cyc SCC,Deriv N,Deriv Amb,Mem,Pool,H0,H1,H2,H3,H4,H5,H6+\n");
+    appendTo(logFile, "line,date,time,tool,script,iter,language,grammar,string\n");
     String rlc = args[0];
     int count = Integer.parseInt(args[1]);
     Set<String> groupSet = new HashSet<>();
@@ -112,7 +104,6 @@ class RunExp {
                           System.out.println("   " + ss);
                           execute(logFile, ss.split(" "));
                         }
-                        scanner.close();
                       }
                     }
                   } else
@@ -126,8 +117,8 @@ class RunExp {
 
   void logExperiment(File log, int iteration, File s, File l, String a, File g, File c, File tt, File gg, File cc) throws IOException {
     String toolName = tt == null ? "bat" : tt.getName();
-    // System.out.println(line + " " + dtf.format(LocalDateTime.now(ZoneId.systemDefault())) + " " + toolName + " " + s.getName() + " " + l.getName() + " "
-    // + g.getName() + "/" + a + "/" + gg.getName() + " " + c.getName() + "/" + a + "/" + cc.getName() + " " + iteration);
+    System.out.println(line + " " + dtf.format(LocalDateTime.now(ZoneId.systemDefault())) + " " + toolName + " " + s.getName() + " " + l.getName() + " "
+        + g.getName() + "/" + a + "/" + gg.getName() + " " + c.getName() + "/" + a + "/" + cc.getName() + " " + iteration);
     appendTo(log, (line++) + "," + dtf.format(LocalDateTime.now(ZoneId.systemDefault())) + "," + toolName + "," + s.getName() + "," + iteration + ","
         + l.getName() + "," + g.getName() + "/" + a + "/" + gg.getName() + "," + c.getName() + "/" + a + "/" + cc.getName() + ",");
   }
@@ -139,17 +130,13 @@ class RunExp {
   }
 
   void fileCat(String dstFilename, File... files) throws IOException {
-    FileOutputStream dstFile = new FileOutputStream(dstFilename);
-    FileChannel dst = dstFile.getChannel();
+    FileChannel dst = new FileOutputStream(dstFilename).getChannel();
     for (var file : files) {
-      FileInputStream srcFile = new FileInputStream(file);
-      FileChannel src = srcFile.getChannel();
+      FileChannel src = new FileInputStream(file).getChannel();
       src.transferTo(0, src.size(), dst);
       src.close();
-      srcFile.close();
     }
     dst.close();
-    dstFile.close();
   }
 
   String getFileType(String filename) {
@@ -264,21 +251,18 @@ class MakeTimeSummary {
       algorithmCol = 10, resultCol = 11, statusCol = 12, TSetupCol = 13, TLexCol = 14, TLChooseCol = 15, TParseCol = 16, TPChooseCol = 17, TTermCol = 18,
       TSemCol = 19, tweNCol = 20, tweECol = 21, lexesCol = 22, DescCol = 23, GSSNCol = 24, GGSECol = 25, PopsCol = 26, SPPFEpsCol = 27, SPPFTCol = 28,
       SPPFNonTCol = 29, SPPFInterCol = 30, SPPFSymInterCol = 31, SPPFPackCol = 32, SPPFAmbCol = 33, SPPFEdgeCol = 34, SPPFCycCol = 35; // SCC Deriv N Deriv Amb
-  // Mem Pool H0 H1 H2 H3
-  // H4 H5 H6+;
+                                                                                                                                       // Mem Pool H0 H1 H2 H3
+                                                                                                                                       // H4 H5 H6+;
 
-  MakeTimeSummary(String logFileName, String summaryFileName, String latexTableFileName) throws IOException {
+  MakeTimeSummary(String logFileName, String summaryFileName) throws IOException {
     Files.deleteIfExists(Paths.get(summaryFileName));
-    var timeSumaryWriter = new FileWriter(new File(summaryFileName), true);
-    timeSumaryWriter.write("tool,script,language,grammar,string,tokens,algorithm,result,"
+    var fw = new FileWriter(new File(summaryFileName), true);
+    fw.write("tool,script,language,grammar,string,tokens,algorithm,result,"
         + "Runs,TMin,TMax,TMean,TStdev,TMedian,Outlier threshold,Dropped,TMeanAfterDrop,TStdedAfterDrop,TMeanQ123,TStdedQ123,Results...\n");
-
-    Files.deleteIfExists(Paths.get(latexTableFileName));
-    var tableWriter = new FileWriter(new File(latexTableFileName), true);
 
     var scanner = new Scanner(new File(logFileName));
     var header = scanner.nextLine();
-    Map<SummaryKey, ArrayList<Double>> summaryMap = new HashMap<>(), tableMap = new HashMap<>();
+    Map<SummaryKey, ArrayList<Double>> map = new HashMap<>();
     while (scanner.hasNext()) {
       String line = scanner.nextLine();
       // System.out.println(line);
@@ -287,18 +271,15 @@ class MakeTimeSummary {
         System.out.println("Bad format: " + line);
         continue;
       }
-
-      scanner.close();
-
       var key = new SummaryKey(fields[toolCol], fields[scriptCol], fields[languageCol], fields[grammarCol], fields[stringCol], fields[tweECol],
           fields[algorithmCol], fields[resultCol]);
-      if (summaryMap.get(key) == null) summaryMap.put(key, new ArrayList<>());
-      summaryMap.get(key).add(Double.parseDouble(fields[TParseCol])); // Add parse time
+      if (map.get(key) == null) map.put(key, new ArrayList<>());
+      map.get(key).add(Double.parseDouble(fields[TParseCol])); // Add parse time
       // map.get(key).add(Double.parseDouble(fields[17])); // Add parse chooser time
     }
 
-    for (var k : summaryMap.keySet()) {
-      ArrayList<Double> list = summaryMap.get(k);
+    for (var k : map.keySet()) {
+      ArrayList<Double> list = map.get(k);
       Collections.sort(list);
 
       double mean = 0;
@@ -340,10 +321,15 @@ class MakeTimeSummary {
       int count = 75;
       int lo = 0, hi = lo + count;
       double meanQ123 = 0;
-      for (int i = lo; i < hi; i++)
+      for (int i = lo; i < hi; i++) {
+        if (k.script.equals("brnglr_slr1.gtb") && k.string.equals("rhul/earleyTableData/c1.tok"))
+          System.out.println("Adding " + list.get(i) + " to mean in " + k);
         meanQ123 += list.get(i);
+      }
 
+      if (k.script.equals("brnglr_slr1.gtb") && k.string.equals("rhul/earleyTableData/c1.tok")) System.out.println("MeanQ123 sum is " + meanQ123);
       meanQ123 /= count;
+      if (k.script.equals("brnglr_slr1.gtb") && k.string.equals("rhul/earleyTableData/c1.tok")) System.out.println("MeanQ123 is " + meanQ123);
 
       double stDevQ123 = 0;
       for (int i = lo; i < hi; i++)
@@ -351,112 +337,16 @@ class MakeTimeSummary {
 
       stDevQ123 = Math.sqrt(stDevQ123 / (count - 1));
 
-      timeSumaryWriter.write(k + "," + list.size() + "," + list.get(0) + "," + list.get(list.size() - 1) + "," + String.format("%6.3f", mean) + ","
+      fw.write(k + "," + list.size() + "," + list.get(0) + "," + list.get(list.size() - 1) + "," + String.format("%6.3f", mean) + ","
           + String.format("%6.3f", stdDev) + "," + String.format("%6.3f", median) + "," + String.format("%6.3f", outlierThreshold) + ","
           + (list.size() - highWaterMark) + "," + String.format("%6.3f", meanAfterDrop) + "," + String.format("%6.3f", stdDevAfterDrop) + ","
           + String.format("%6.3f", meanQ123) + "," + String.format("%6.3f", stDevQ123));
-      timeSumaryWriter.write(",***,");
+      fw.write(",***,");
       // for (var l : list)
       // fw.write(l + ",");
-      timeSumaryWriter.write("\n");
-
-      // Now create latex table data
-      if (tableMap.get(k) == null) tableMap.put(k, new ArrayList<>());
-      tableMap.get(k).add(meanQ123);
-      tableMap.get(k).add(stDevQ123);
+      fw.write("\n");
     }
-    timeSumaryWriter.close();
-
-    // Now output latex table - this example is for Earley Table paper Tables 2 and 3
-    boolean rejectTimings = true;
-    var acceptAlgorithmList = Arrays.asList("ARTEarleyIndexedPool", "ARTEarleyTableIndexedPool", "ARTEarleyIndexedPool (C)", "ARTEarleyTableIndexedPool (C)",
-        "BRNLGR (GTB with Pool)");
-    var rejectAlgorithmList = Arrays.asList("ARTEarleyIndexedPool (C)", "ARTEarleyTableIndexedPool (C)", "BRNLGR (GTB with Pool)");
-    Map<String, String> algorithmAliases = Map.ofEntries(entry("ARTEarleyIndexedPool", "EarleyJ"), entry("ARTEarleyTableIndexedPool", "TableJ"),
-        entry("ARTEarleyIndexedPool (C)", "EarleyC"), entry("ARTEarleyTableIndexedPool (C)", "TableC"), entry("BRNLGR (GTB with Pool)", "BRNGLR"));
-
-    Map<String, List<String>> languageStringMap = new LinkedHashMap<>();
-    if (rejectTimings) {
-      languageStringMap.put("C",
-          Arrays.asList("rhul/earleyTableDataReject/c1.tok.reject", "rhul/earleyTableDataReject/c2.tok.reject", "rhul/earleyTableDataReject/c3.tok.reject"));
-      languageStringMap.put("Java", Arrays.asList("rhul/earleyTableDataReject/java1.tok.reject", "rhul/earleyTableDataReject/java2.tok.reject",
-          "rhul/earleyTableDataReject/java3.tok.reject"));
-      languageStringMap.put("Pascal", Arrays.asList("rhul/earleyTableDataReject/pascal1.tok.reject", "rhul/earleyTableDataReject/pascal2.tok.reject"));
-      languageStringMap.put("COBOL", Arrays.asList("rhul/earleyTableDataReject/cobol1.tok.reject"));
-      languageStringMap.put("SML", Arrays.asList("MLWorks/earleyTableDataReject/lego_lex.tok.reject", "MLWorks/earleyTableDataReject/_yacc.tok.reject",
-          "MLWorks/earleyTableDataReject/_simplelambda.tok.reject"));
-    } else {
-      languageStringMap.put("C", Arrays.asList("rhul/earleyTableData/c1.tok", "rhul/earleyTableData/c2.tok", "rhul/earleyTableData/c3.tok"));
-      languageStringMap.put("Java", Arrays.asList("rhul/earleyTableData/java1.tok", "rhul/earleyTableData/java2.tok", "rhul/earleyTableData/java3.tok"));
-      languageStringMap.put("Pascal", Arrays.asList("rhul/earleyTableData/pascal1.tok", "rhul/earleyTableData/pascal2.tok"));
-      languageStringMap.put("COBOL", Arrays.asList("rhul/earleyTableData/cobol1.tok"));
-      languageStringMap.put("SML",
-          Arrays.asList("MLWorks/earleyTableData/lego_lex.tok", "MLWorks/earleyTableData/_yacc.tok", "MLWorks/earleyTableData/_simplelambda.tok"));
-    }
-    Map<String, String> stringAliases = Map.ofEntries(entry("rhul/earleyTableData/c1.tok", "C1"), entry("rhul/earleyTableData/c2.tok", "C2"),
-        entry("rhul/earleyTableData/c3.tok", "C3"), entry("rhul/earleyTableData/java1.tok", "J1"), entry("rhul/earleyTableData/java2.tok", "J2"),
-        entry("rhul/earleyTableData/java3.tok", "J3"), entry("rhul/earleyTableData/pascal1.tok", "P1"), entry("rhul/earleyTableData/pascal2.tok", "P2"),
-        entry("rhul/earleyTableData/cobol1.tok", "B1"), entry("MLWorks/earleyTableData/lego_lex.tok", "S1"), entry("MLWorks/earleyTableData/_yacc.tok", "S2"),
-        entry("MLWorks/earleyTableData/_simplelambda.tok", "S3"),
-
-        entry("rhul/earleyTableDataReject/c1.tok.reject", "C1"), entry("rhul/earleyTableDataReject/c2.tok.reject", "C2"),
-        entry("rhul/earleyTableDataReject/c3.tok.reject", "C3"), entry("rhul/earleyTableDataReject/java1.tok.reject", "J1"),
-        entry("rhul/earleyTableDataReject/java2.tok.reject", "J2"), entry("rhul/earleyTableDataReject/java3.tok.reject", "J3"),
-        entry("rhul/earleyTableDataReject/pascal1.tok.reject", "P1"), entry("rhul/earleyTableDataReject/pascal2.tok.reject", "P2"),
-        entry("rhul/earleyTableDataReject/cobol1.tok.reject", "B1"), entry("MLWorks/earleyTableDataReject/lego_lex.tok.reject", "S1"),
-        entry("MLWorks/earleyTableDataReject/_yacc.tok.reject", "S2"), entry("MLWorks/earleyTableDataReject/_simplelambda.tok.reject", "S3"));
-
-    tableWriter.write("Key&Tokens\n");
-    if (rejectTimings) tableWriter.write("&RE");
-    for (String alg : rejectTimings ? rejectAlgorithmList : acceptAlgorithmList)
-      tableWriter.write("&\\multicolumn{2}{c|}{" + algorithmAliases.get(alg) + "}");
-    tableWriter.write("\\\\\n\\hline\n");
-    for (String language : languageStringMap.keySet())
-      for (String str : languageStringMap.get(language)) {
-        tableWriter.write(stringAliases.get(str) + "&");
-        tableWriter.write(tokenCountOf(str, tableMap));
-        if (rejectTimings) {
-          tableWriter.write("&" + rightExtentOf(str, tableMap));
-          for (String alg : rejectAlgorithmList)
-            printTableElement(language, str, alg, tableMap, tableWriter);
-        } else
-          for (String alg : acceptAlgorithmList)
-            printTableElement(language, str, alg, tableMap, tableWriter);
-        tableWriter.write("\\\\\n");
-      }
-
-    tableWriter.close();
-  }
-
-  String tokenCountOf(String str, Map<SummaryKey, ArrayList<Double>> tableMap) {
-    for (var key : tableMap.keySet())
-      if (key.string.equals(str)) return insertThousands(key.tokens);
-    return "???";
-  }
-
-  String rightExtentOf(String str, Map<SummaryKey, ArrayList<Double>> tableMap) { // rightextent data is not currently in time summary, sigh
-    return "?";
-  }
-
-  String insertThousands(String str) {
-    switch (str.length()) {
-    case 1, 2, 3:
-      return str;
-    default:
-      return str.substring(0, str.length() - 3) + "," + str.substring(str.length() - 3);
-    }
-  }
-
-  void printTableElement(String language, String str, String alg, Map<SummaryKey, ArrayList<Double>> tableMap, FileWriter tableWriter) throws IOException {
-    boolean found = false;
-    for (var key : tableMap.keySet()) {
-      if (key.language.equals(language) && key.string.equals(str) && key.algorithm.equals(alg)) {
-        found = true;
-        for (var col : tableMap.get(key))
-          tableWriter.write(String.format("&%1.2f", col));
-      }
-    }
-    if (!found) tableWriter.write("&---&---");
+    fw.close();
   }
 }
 
@@ -503,5 +393,4 @@ class MakeSpaceSummary {
     // }
     // fw.close();
   }
-
 }

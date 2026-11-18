@@ -259,8 +259,8 @@ public class ScriptInterpreter {
   static void initialiseDirectiveParameters() {
     //@formatter:off
     directiveParameters.clear();
-    addDirectiveParameter("!set", "artArgInt", "trace", (Integer t) -> { Util.traceLevel = argInt(t); Util.debug("Trace level set to " + Util.traceLevel); });
-    addDirectiveParameter("!set", "artArgInt", "error", (Integer t) -> { Util.errorLevel = argInt(t); Util.debug("Error level set to " + Util.errorLevel); });
+    addDirectiveParameter("!set", "artArgInt", "trace", (Integer t) -> { Util.traceLevel = argInt(t); Util.info("Trace level set to " + Util.traceLevel); });
+    addDirectiveParameter("!set", "artArgInt", "error", (Integer t) -> { Util.errorLevel = argInt(t); Util.info("Error level set to " + Util.errorLevel); });
 
     addDirectiveParameter("!clear", "artArgBoolean", "whitespace", (Integer t) -> { currentCFGRules.clearWhitespaces(); });
     addDirectiveParameter("!clear", "artArgBoolean", "cfgrules", (Integer t) -> { currentCFGRules = new CFGRules(CFGRulesKind.USER); });
@@ -1166,8 +1166,7 @@ public class ScriptInterpreter {
     ret.addAction("!try", "!try\\artGap", " ", null);
     ret.addAction("!print", "!print\\artGap", "\\artGap", null);
     ret.addAction("!support", "!support\\artGap", "\\artGap", null);
-    ret.addAction("!errorLevel", "!errorLevel\\artGap", "\\artGap", null);
-    ret.addAction("!traceLevel", "!traceLevel\\artGap", "\\artGap", null);
+    ret.addAction("!set", "!errorLevel\\artGap", "\\artGap", null);
     ret.addAction("!parse", "!parser\\artGap", "\\artGap", null);
     ret.addAction("!interpreter", "!interpreter\\artGap", "\\artGap", null);
     ret.addAction("!rewriter", "!rewriter\\artGap", "\\artGap", null);

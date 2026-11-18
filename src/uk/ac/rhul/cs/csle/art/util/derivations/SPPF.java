@@ -302,7 +302,7 @@ public class SPPF extends AbstractDerivations {
     }
     chooseRec(root);
 
-    if (!ambiguousSlots.isEmpty()) {
+    if (!ambiguousSlots.isEmpty() && Util.errorLevel > 2) {
       Util.warning("After choose rule application, ambiguities remain involving the following slots. Use !print ambiguities for full details");
       for (var s : ambiguousSlots)
         Util.info(s.toStringAsProduction());

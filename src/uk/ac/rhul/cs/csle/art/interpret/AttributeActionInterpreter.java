@@ -19,7 +19,7 @@ public class AttributeActionInterpreter extends AbstractInterpreter {
       // Silently absorb exceptions - uncomment the line below for debugging
       Util.info(e.getMessage() + "\nUnable to dynamically load user ARTActions - using default empty actions");
     }
-    Util.trace(3, "Attached to " + artActions.getClass().getSimpleName() + " " + artActions.name());
+    // Util.debug("Attached to " + artActions.getClass().getSimpleName() + " " + artActions.name());
   }
 
   private int intFromTermSymbol(int term) {
