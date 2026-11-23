@@ -777,8 +777,11 @@ public class ScriptInterpreter {
             currentStatistics.print(outputStream, outputTraverser, indexed, full, indented, 0);
           break;
 
-        case "cardinalities":
-          currentParser.printCardinalities(outputStream);
+        case "statisticsheader":
+          if (isShow)
+            currentStatistics.showHeader(outputStream, outputTraverser, indexed, full, indented, 0);
+          else
+            currentStatistics.printHeader(outputStream, outputTraverser, indexed, full, indented, 0);
           break;
 
         case "paraterminals":
@@ -794,7 +797,7 @@ public class ScriptInterpreter {
               + " raw plain latex css full indented depth n\n" + " cfgRules cfgRulesLexer cfgRulesParser chooseRules trRules\n"
               + " lexicalisations tasks stacks derivations ambiguities tryTerm\n"
               + " scriptCFGRules scriptChooseRules scriptLexicalisations scriptDerivations scriptTerm\n"
-              + " version statistics cardinalities paraterminals parasentences\n");
+              + " version statistics statisticsHeader paraterminals parasentences\n");
         }
       }
         break;
@@ -901,9 +904,7 @@ public class ScriptInterpreter {
       currentTryTerm = currentParser.derivations.derivationAsTerm();
       currentStatistics.putTime("Term construction time");
     }
-
-    if (Util.traceLevel >= 8) currentParser.printCardinalities(System.out);
-
+    currentParser.statisticsUpdate();
   }
 
   /* 12. PLAIN text traverser set up for console messages ******************************************/

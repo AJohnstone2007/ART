@@ -1,11 +1,10 @@
 package uk.ac.rhul.cs.csle.art.cfg.gll;
 
-import java.io.PrintStream;
-
 import uk.ac.rhul.cs.csle.art.cfg.AbstractParser;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGElement;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGElementKind;
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
+import uk.ac.rhul.cs.csle.art.script.ScriptInterpreter;
 import uk.ac.rhul.cs.csle.art.util.Util;
 import uk.ac.rhul.cs.csle.art.util.derivations.AbstractDerivationNode;
 import uk.ac.rhul.cs.csle.art.util.derivations.SPPF;
@@ -147,14 +146,15 @@ public class GLLBaseLineNew extends AbstractParser {
   }
 
   @Override
-  public void printCardinalities(PrintStream outputStream) {
-    outputStream.println(name() + ": characters:" + fmt(lexicalisations.inputString.length()) + " TWEs:" + fmt(lexicalisations.cardinality()) + " tasks:"
-        + fmt(tasks.cardinality()) + " stackNodes:" + fmt(stacks.nodeCardinality()) + " stackEdges:" + fmt(stacks.edgeCardinality()) + " pops:"
-        + fmt(stacks.popCardinality()) + " derivationNodes:" + fmt(derivations.symbolCardinality()) + " BSRs:" + fmt(derivations.bsrCardinality()));
-  }
-
-  private String fmt(long n) {
-    return String.format("%,d", n);
+  public void statisticsUpdate() {
+    ScriptInterpreter.currentStatistics.put("inputCharacters", lexicalisations.inputString.length());
+    ScriptInterpreter.currentStatistics.put("TWEs", lexicalisations.cardinality());
+    ScriptInterpreter.currentStatistics.put("tasks", tasks.cardinality());
+    ScriptInterpreter.currentStatistics.put("stackNodes", stacks.nodeCardinality());
+    ScriptInterpreter.currentStatistics.put("stackEdges", stacks.edgeCardinality());
+    ScriptInterpreter.currentStatistics.put("pops", stacks.popCardinality());
+    ScriptInterpreter.currentStatistics.put("derivationNodes", derivations.symbolCardinality());
+    ScriptInterpreter.currentStatistics.put("BSRs", derivations.bsrCardinality());
   }
 
   @Override

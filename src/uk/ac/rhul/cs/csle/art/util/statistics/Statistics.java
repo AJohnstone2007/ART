@@ -45,11 +45,21 @@ public class Statistics implements DisplayInterface {
 
   @Override
   public void print(PrintStream outputStream, TermTraverserText outputTraverser, boolean indexed, boolean full, boolean indent, int depthLimit) {
-    // for (var k : elements.keySet())
-    // outputStream.print(k + ",");
-    // outputStream.println();
     for (var k : elements.keySet())
       outputStream.print(elements.get(k) + ",");
+    outputStream.println();
+  }
+
+  public void printHeader(PrintStream outputStream, TermTraverserText outputTraverser, boolean indexed, boolean full, boolean indented, int i) {
+    for (var k : elements.keySet())
+      outputStream.print(k + ",");
+    outputStream.println();
+  }
+
+  public void showHeader(PrintStream outputStream, TermTraverserText outputTraverser, boolean indexed, boolean full, boolean indented, int i) {
+    for (var k : elements.keySet())
+      outputStream.print(k + ",");
+    outputStream.println();
   }
 
 }

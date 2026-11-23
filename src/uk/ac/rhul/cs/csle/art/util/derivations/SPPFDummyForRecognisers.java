@@ -1,10 +1,7 @@
 package uk.ac.rhul.cs.csle.art.util.derivations;
 
-import java.io.PrintStream;
-
 import uk.ac.rhul.cs.csle.art.cfg.cfgRules.CFGNode;
 import uk.ac.rhul.cs.csle.art.choose.ChooseRules;
-import uk.ac.rhul.cs.csle.art.term.TermTraverserText;
 import uk.ac.rhul.cs.csle.art.util.lexicalisations.AbstractLexicalisations;
 import uk.ac.rhul.cs.csle.art.util.statistics.Statistics;
 
@@ -88,9 +85,5 @@ public class SPPFDummyForRecognisers extends AbstractDerivations {
   @Override
   public long symbolCardinality() {
     return -1;
-  }
-
-  @Override
-  public void print(PrintStream outputStream, TermTraverserText outputTraverser, boolean indent) {
   }
 }

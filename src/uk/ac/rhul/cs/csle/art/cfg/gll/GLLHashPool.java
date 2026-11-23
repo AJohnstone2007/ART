@@ -295,7 +295,9 @@ public class GLLHashPool extends HashPool {
       enqueueDescriptor(productions[p++] + 1, i, parentGSSNode, sppfNode);
   }
 
-  /* Statistics support ******************************************************/
+  /*
+   * support
+   ******************************************************/
   private void loadCounts() {
     ScriptInterpreter.currentStatistics.put("twes", lexicalisations.cardinality());
     ScriptInterpreter.currentStatistics.put("descriptorCount", cardinality(descriptorBuckets));
@@ -377,28 +379,18 @@ public class GLLHashPool extends HashPool {
   }
 
   @Override
-  public void printCardinalities(PrintStream outputStream) {
-    loadCounts();
-    outputStream.println(">> " + name() + ": characters:" + fmt(lexicalisations.inputString.length()) + " TWEs:" + fmt(lexicalisations.cardinality()));
-
-    // !! Debug !!
-    // for (int bucket : sppfNodeBuckets)
-    // for (int chain = bucket; chain != 0; chain = poolGet(chain)) {
-    // Util.debug("SPPF node " + toStringSPPFNode(chain));
-    // for (int packNode = poolGet(chain + sppfNode_packNodeList); packNode != 0; packNode = poolGet(packNode + sppfPackNode_packNodeList)) {
-    // Util.debug("Pack node " + toStringSPPFPackNode(packNode) + ": " + "[" + toStringSPPFNode(poolGet(packNode + sppfPackNode_leftChild)) + "] " + "["
-    // + toStringSPPFNode(poolGet(packNode + sppfPackNode_rightChild)) + "]");
-    // }
-    // }
-
-  }
-
-  private String fmt(long n) {
-    return String.format("%,d", n);
+  public void statisticsUpdate() {
+    ScriptInterpreter.currentStatistics.put("inputCharacters", lexicalisations.inputString.length());
+    ScriptInterpreter.currentStatistics.put("TWEs", lexicalisations.cardinality());
+    ScriptInterpreter.currentStatistics.put("tasks", tasks.cardinality());
+    ScriptInterpreter.currentStatistics.put("stackNodes", stacks.nodeCardinality());
+    ScriptInterpreter.currentStatistics.put("stackEdges", stacks.edgeCardinality());
+    ScriptInterpreter.currentStatistics.put("pops", stacks.popCardinality());
+    ScriptInterpreter.currentStatistics.put("derivationNodes", derivations.symbolCardinality());
+    ScriptInterpreter.currentStatistics.put("BSRs", derivations.bsrCardinality());
   }
 
   public void printReport(PrintStream outputStream, int count) {
     outputStream.println(">> After " + count + " tasks: " + ScriptInterpreter.currentStatistics.currentTime() + "s elapsed");
   }
-
 }

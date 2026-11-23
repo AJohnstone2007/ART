@@ -103,6 +103,10 @@ public class GLLModal extends AbstractParser {
     derivations.numberNodes();
   }
 
+  public void printReport(PrintStream outputStream, int count) {
+    outputStream.println(">> After " + count + " tasks: " + ScriptInterpreter.currentStatistics.currentTime() + "s elapsed");
+  }
+
   private boolean matchTerminal(CFGElement cfgElement) {
     switch (cfgNode.cfgElement.cfgKind) {
     case TERM_CH_SET:
@@ -189,20 +193,15 @@ public class GLLModal extends AbstractParser {
   }
 
   @Override
-  public void printCardinalities(PrintStream outputStream) {
-    outputStream.println(name() + ": characters:" + fmt(lexicalisations.inputString.length()) + " TWEs:" + fmt(lexicalisations.cardinality()) + " tasks:"
-        + fmt(tasks.cardinality()) + " stackNodes:" + fmt(stacks.nodeCardinality()) + " stackEdges:" + fmt(stacks.edgeCardinality()) + " pops:"
-        + fmt(stacks.popCardinality()) + " derivationNodes:" + fmt(derivations.symbolCardinality()) + " BSRs:" + fmt(derivations.bsrCardinality()));
-  }
-
-  private String fmt(long n) {
-    return String.format("%,d", n);
-  }
-
-  public void printReport(PrintStream outputStream, int count) {
-    outputStream.println(">> After " + count + " tasks: " + ScriptInterpreter.currentStatistics.currentTime() + "s elapsed, tasks:" + fmt(tasks.cardinality())
-        + " stackNodes:" + fmt(stacks.nodeCardinality()) + " stackEdges:" + fmt(stacks.edgeCardinality()) + " pops:" + fmt(stacks.popCardinality())
-        + " derivationNodes:" + fmt(derivations.symbolCardinality()) + " BSRs:" + fmt(derivations.bsrCardinality()));
+  public void statisticsUpdate() {
+    ScriptInterpreter.currentStatistics.put("inputCharacters", lexicalisations.inputString.length());
+    ScriptInterpreter.currentStatistics.put("TWEs", lexicalisations.cardinality());
+    ScriptInterpreter.currentStatistics.put("tasks", tasks.cardinality());
+    ScriptInterpreter.currentStatistics.put("stackNodes", stacks.nodeCardinality());
+    ScriptInterpreter.currentStatistics.put("stackEdges", stacks.edgeCardinality());
+    ScriptInterpreter.currentStatistics.put("pops", stacks.popCardinality());
+    ScriptInterpreter.currentStatistics.put("derivationNodes", derivations.symbolCardinality());
+    ScriptInterpreter.currentStatistics.put("BSRs", derivations.bsrCardinality());
   }
 
   @Override

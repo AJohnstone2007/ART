@@ -268,7 +268,7 @@ class MakeTimeSummary {
       // System.out.println(line);
       var fields = line.split(",");
       if (fields.length < 17) {
-        System.out.println("Bad format: " + line);
+        System.out.println("RunExp time summary - bad format: " + line);
         continue;
       }
       var key = new SummaryKey(fields[toolCol], fields[scriptCol], fields[languageCol], fields[grammarCol], fields[stringCol], fields[tweECol],

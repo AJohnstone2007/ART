@@ -1,7 +1,5 @@
 package uk.ac.rhul.cs.csle.art.cfg;
 
-import java.io.PrintStream;
-
 import uk.ac.rhul.cs.csle.art.util.Util;
 import uk.ac.rhul.cs.csle.art.util.derivations.AbstractDerivations;
 import uk.ac.rhul.cs.csle.art.util.lexicalisations.AbstractLexicalisations;
@@ -55,7 +53,7 @@ public abstract class AbstractParser {
     return getClass().getSimpleName();
   }
 
-  public void printCardinalities(PrintStream outputStream) {
-    outputStream.println("!print cardinalities not implmented for parser " + name());
+  public void statisticsUpdate() {
+    Util.warning("statistics updating not implemented for parser " + name());
   }
 }
