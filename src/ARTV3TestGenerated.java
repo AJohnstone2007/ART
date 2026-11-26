@@ -34,8 +34,8 @@ public class ARTV3TestGenerated {
       input = ARTText.readFile(inputFilename);
       parser.artParse(input);
       System.out.println(parser.artStats());
-    } catch (ARTUncheckedException e) {
-      System.out.println("Fatal error: " + e.getMessage());
+    } catch (Throwable e) {
+      System.out.println("ARTV3TestGenerated fatal error: " + e);
     }
   }
 }

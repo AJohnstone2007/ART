@@ -872,39 +872,43 @@ public class ScriptInterpreter {
 
   /* 11. Try processing ****************************************************************************/
   private void tryParse(String inputString) {
-    currentStatistics = new Statistics();
-    currentStatistics.setBaseTime();
+    try {
+      currentStatistics = new Statistics();
+      currentStatistics.setBaseTime();
 
-    currentLexer.lex(inputString, currentCFGRules);
-    ScriptInterpreter.currentStatistics.putTime("Lexer time");
+      currentLexer.lex(inputString, currentCFGRules);
+      ScriptInterpreter.currentStatistics.putTime("Lexer time");
 
-    if (seenChooseRule)
-      currentLexer.lexicalisations.choose(currentChooseRules);
-    else
-      currentLexer.lexicalisations.chooseDefault();
+      if (seenChooseRule)
+        currentLexer.lexicalisations.choose(currentChooseRules);
+      else
+        currentLexer.lexicalisations.chooseDefault();
 
-    ScriptInterpreter.currentStatistics.putTime("Lexical choose time");
+      ScriptInterpreter.currentStatistics.putTime("Lexical choose time");
 
-    if (currentLexer.lexicalisations.valid()) {
-      currentParser.parse(currentLexer.lexicalisations);
-      ScriptInterpreter.currentStatistics.putTime("Parse time");
-      currentParser.outcomeReport();
+      if (currentLexer.lexicalisations.valid()) {
+        currentParser.parse(currentLexer.lexicalisations);
+        ScriptInterpreter.currentStatistics.putTime("Parse time");
+        currentParser.outcomeReport();
+      }
+
+      // // Output derivation term - crowbar for bootstrap
+      // int trm = currentParser.derivations.derivationAsTerm();
+      // Util.debug("derivation term: " + trm + "\n" + iTerms.toString(trm, iTerms.rawTextTraverser, false, -1));
+      // if (scriptParserTerm == trm) Util.debug("Bootstrap achieved: script parser term and current derivation term identical");
+      // // End of crowbar
+
+      if (currentParser.derivations != null) {
+        currentParser.derivations.choose(currentChooseRules);
+        currentStatistics.putTime("Derivation choose time");
+        currentTryTerm = 0;
+        currentTryTerm = currentParser.derivations.derivationAsTerm();
+        currentStatistics.putTime("Term construction time");
+      }
+      currentParser.statisticsUpdate();
+    } catch (Throwable e) {
+      Util.fatal("Fatal error in tryParse():" + e);
     }
-
-    // // Output derivation term - crowbar for bootstrap
-    // int trm = currentParser.derivations.derivationAsTerm();
-    // Util.debug("derivation term: " + trm + "\n" + iTerms.toString(trm, iTerms.rawTextTraverser, false, -1));
-    // if (scriptParserTerm == trm) Util.debug("Bootstrap achieved: script parser term and current derivation term identical");
-    // // End of crowbar
-
-    if (currentParser.derivations != null) {
-      currentParser.derivations.choose(currentChooseRules);
-      currentStatistics.putTime("Derivation choose time");
-      currentTryTerm = 0;
-      currentTryTerm = currentParser.derivations.derivationAsTerm();
-      currentStatistics.putTime("Term construction time");
-    }
-    currentParser.statisticsUpdate();
   }
 
   /* 12. PLAIN text traverser set up for console messages ******************************************/

@@ -41,7 +41,9 @@ class RunExp {
 
     Files.deleteIfExists(Paths.get(logFileName));
     File logFile = new File(logFileName);
-    appendTo(logFile, "line,date,time,tool,script,iter,language,grammar,string\n");
+    appendTo(logFile,
+        "line,date,time,tool,script,iter,language,grammar,string,Lexer time,Lexical choose time,Parse time,Derivation choose time,Term construction time,outcome,inputCharacters,TWEs,tasks,stackNodes,stackEdges,pops,derivationNodes,BSRs\n");
+
     String rlc = args[0];
     int count = Integer.parseInt(args[1]);
     Set<String> groupSet = new HashSet<>();

@@ -133,8 +133,9 @@ public class GLLBaseLine extends AbstractParser {
 
   @Override
   public void statisticsUpdate() {
-    ScriptInterpreter.currentStatistics.put("inputCharacters", lexicalisations.inputString.length());
-    ScriptInterpreter.currentStatistics.put("TWEs", lexicalisations.cardinality());
+    ScriptInterpreter.currentStatistics.put("outcome", inLanguage ? "accept" : "reject");
+    ScriptInterpreter.currentStatistics.put("inputCharacters", (lexicalisations == null ? "?" : lexicalisations.inputString.length()));
+    ScriptInterpreter.currentStatistics.put("TWEs", (lexicalisations == null ? 0 : lexicalisations.cardinality()));
     ScriptInterpreter.currentStatistics.put("tasks", tasks.cardinality());
     ScriptInterpreter.currentStatistics.put("stackNodes", stacks.nodeCardinality());
     ScriptInterpreter.currentStatistics.put("stackEdges", stacks.edgeCardinality());
